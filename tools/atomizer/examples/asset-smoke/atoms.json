@@ -1,0 +1,99 @@
+{
+ "schema": "endoforge/atoms/1",
+ "need": {
+  "id": "ASSET-SMOKE",
+  "text": "Prove an asset atom can run headless Blender on the CPU inside its isolate, read a GLB from a read-only bind of a hydrated worktree, and hand a report to compose."
+ },
+ "acceptance": [
+  {
+   "id": "A1",
+   "statement": "The composed report names the bollard GLB and at least one imported object.",
+   "check": {
+    "kind": "command",
+    "run": "python3 -c \"import json,sys; d=json.load(open('/in/compose/report.json')); sys.exit(0 if d['glb'].endswith('set_bollard.glb') and d['objects']>0 else 1)\""
+   }
+  }
+ ],
+ "atoms": [
+  {
+   "id": "probe",
+   "kind": "asset",
+   "title": "Import a set GLB in headless Blender",
+   "contract": "Import set_bollard.glb from the read-only bind with Blender on the CPU and write report.json with the GLB path and the number of imported objects.",
+   "inputs": [
+    {
+     "from": "need"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "report",
+     "path": "report.json",
+     "describe": "{glb, objects, blender}"
+    }
+   ],
+   "verify": "report.json parses and objects > 0",
+   "worker": {
+    "model": "script",
+    "toolchain": [
+     "python3",
+     "blender",
+     "blender-libs",
+     "blender-cpu"
+    ],
+    "timeoutSec": 600,
+    "binds": [
+     {
+      "host": "/mnt/cold-steam/factory-scratch/wt/set/media/nh3-kit/trial/set/glb",
+      "guest": "/assets/set-glb"
+     }
+    ],
+    "command": [
+     "blender-cpu",
+     "-t",
+     "4",
+     "--python-expr",
+     "import bpy,json; p='/assets/set-glb/set_bollard.glb'; bpy.ops.import_scene.gltf(filepath=p); json.dump({'glb': p, 'objects': len(bpy.data.objects), 'blender': bpy.app.version_string}, open('/out/report.json','w'))"
+    ]
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "compose",
+   "kind": "compose",
+   "title": "Pass the report through",
+   "contract": "Copy the probe's report.json to the output unchanged so acceptance can check it.",
+   "inputs": [
+    {
+     "from": "probe",
+     "output": "report"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "report",
+     "path": "report.json"
+    }
+   ],
+   "verify": "report.json exists",
+   "worker": {
+    "model": "script",
+    "toolchain": [
+     "python3"
+    ],
+    "command": [
+     "python3",
+     "-c",
+     "import shutil; shutil.copy('/in/probe/report.json', '/out/report.json')"
+    ]
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  }
+ ]
+}

@@ -10,6 +10,7 @@ import { fileURLToPath } from 'node:url';
 import { validate } from '../lib/validate.mjs';
 import { plan, deps } from '../lib/dag.mjs';
 import { makeHomeTemplate, runIsolated, sha256File, listFiles } from '../lib/isolate.mjs';
+import { atomBinds, atomTimeoutMs } from '../lib/binds.mjs';
 import { workerCommand, parseUsage, stripFences, toolchainFor } from '../lib/workers.mjs';
 import { augment } from '../lib/augment.mjs';
 import { emit, context, load, newId, archiveRun, shaFile } from '../lib/ledger.mjs';
@@ -77,7 +78,7 @@ async function runAtom(atom) {
       const pfStart = nowEpoch();
       const pf = atom.worker.preflight;
       const subst = (x) => x.replaceAll('{in}', '/in').replaceAll('{out}', '/out').replaceAll('{work}', '/work').replaceAll('{atomizer}', path.join(REPO, policy.toolchain.atomizer)).replaceAll('{gate}', path.join(REPO, policy.toolchain.gate, 'gate.mjs'));
-      const pr = await runIsolated({ homeTemplate, mounts: [{ host: inDir, guest: '/in', mode: 'ro' }, { host: outDir, guest: '/out', mode: 'rw' }, { host: workDir, guest: '/work', mode: 'rw' }], toolchain: toolchainFor(pf.toolchain ?? ['node'], policy, REPO), cmd: pf.command.map(subst), stdin: null, cwd: '/work', timeoutMs: TIMEOUT });
+      const pr = await runIsolated({ homeTemplate, mounts: [{ host: inDir, guest: '/in', mode: 'ro' }, { host: outDir, guest: '/out', mode: 'rw' }, { host: workDir, guest: '/work', mode: 'rw' }, ...atomBinds(atom, policy).mounts], toolchain: toolchainFor(pf.toolchain ?? ['node'], policy, REPO), cmd: pf.command.map(subst), stdin: null, cwd: '/work', timeoutMs: atomTimeoutMs(atom, policy, TIMEOUT) });
       const pmissing = atom.outputs.filter((o) => { const p = path.join(outDir, o.path); return !fs.existsSync(p) || fs.statSync(p).size === 0; }).map((o) => o.path);
       const hit = pr.exit === 0 && pmissing.length === 0;
       fs.writeFileSync(path.join(RUN, 'atoms', atom.id, 'preflight-stdout.txt'), pr.stdout); fs.writeFileSync(path.join(RUN, 'atoms', atom.id, 'preflight-stderr.txt'), pr.stderr);
@@ -101,7 +102,7 @@ async function runAtom(atom) {
         w = { cmd: [] }; r = { exit: 127, stdout: '', stderr: meta.reason, wallMs: 0 }; break;
       }
       w = workerCommand(doc, atom, staged, policy, REPO, sel);
-      r = await runIsolated({ homeTemplate, mounts: [{ host: inDir, guest: '/in', mode: 'ro' }, { host: outDir, guest: '/out', mode: 'rw' }, { host: workDir, guest: '/work', mode: 'rw' }], toolchain: w.toolchain, cmd: w.cmd, stdin: w.stdin, cwd: '/work', timeoutMs: TIMEOUT,
+      r = await runIsolated({ homeTemplate, mounts: [{ host: inDir, guest: '/in', mode: 'ro' }, { host: outDir, guest: '/out', mode: 'rw' }, { host: workDir, guest: '/work', mode: 'rw' }, ...atomBinds(atom, policy).mounts], toolchain: w.toolchain, cmd: w.cmd, stdin: w.stdin, cwd: '/work', timeoutMs: atomTimeoutMs(atom, policy, TIMEOUT),
         ...(isCodex ? { pool: { bin, env: { CODEX_POOL_TIER: sel.tier, ...(sel.tier === 'throwaway' ? { CODEX_POOL_THROWAWAY: '1' } : {}) } } } : {}) });
       T.span('isolate.home', r.spawnEpoch - r.homeMs, r.spawnEpoch, { atom: atom.id, attempt });
       if (isCodex) {

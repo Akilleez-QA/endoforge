@@ -32,7 +32,11 @@
   "asc": "experiments/P-02-compiler-in-isolate/node_modules",
   "wasmtime": "~/.local/bin/wasmtime",
   "gate": "campaigns/x1-spec-study/factory",
-  "atomizer": "tools/atomizer"
+  "atomizer": "tools/atomizer",
+  "python3": "/usr/bin/python3",
+  "blender": "/usr/bin/blender",
+  "blender-cpu": "../../media/nh3-kit/tools",
+  "blender-libs": "/opt/intel/oneapi"
  },
  "models": {
   "sonnet": "claude-sonnet-5-5",
@@ -53,7 +57,15 @@
   "--max-budget-usd",
   "4"
  ],
- "codexToolFlags": ["exec", "--dangerously-bypass-approvals-and-sandbox", "--skip-git-repo-check", "--ephemeral", "--json", "-C", "/work"],
+ "codexToolFlags": [
+  "exec",
+  "--dangerously-bypass-approvals-and-sandbox",
+  "--skip-git-repo-check",
+  "--ephemeral",
+  "--json",
+  "-C",
+  "/work"
+ ],
  "codexFlags": [
   "exec",
   "-s",
@@ -89,6 +101,12 @@
    "node",
    "asc",
    "gate"
+  ],
+  "asset": [
+   "python3",
+   "blender",
+   "blender-libs",
+   "blender-cpu"
   ]
  },
  "kindProcedures": {
@@ -99,9 +117,15 @@
   "review": "Fixed procedure for review atoms: judge from the request and the artefact's interface, contract, glue and gate record only; you never see the kernel source. Output one JSON object: {\"persona\": \"<your frame>\", \"verdict\": \"accept\" | \"accept-with-change\" | \"reject\", \"change\": \"the one change named (accept-with-change) or the reason (reject), else null\", \"reasons\": [\"...\"]}. accept = usable as returned; accept-with-change = one named change would make it usable; reject = it answers a question that was not asked, its default assumption is unsafe or implausible for the field, or its output cannot be acted on.",
   "compose-draft": "Fixed procedure for the compose atom: run exactly `node {helper} --id {needId} --in /in --out /out --work /work --gate {gate}`. It assembles /work/{needId} (CONTRACT.md from the contract atom, tests.json merged from the test atoms, frozen before any code; kernel.ts concatenated from the kernel atoms; glue.json merged from the glue atoms), runs the fixed gates G1-G7 and copies kernel.wasm, CONTRACT.md, tests.json, glue.json and gates.json to /out. If it fails to compile because two kernel parts declare the same private name, edit /work/{needId}/kernel.ts to drop exact duplicate private declarations or rename one private helper (never an export, never a formula, never a constant's value), run `node {gate} run /work/{needId}` again, and copy the five outputs to /out yourself (result.json becomes gates.json). Never edit tests.json or CONTRACT.md: they are frozen. If a gate still fails, copy the outputs anyway with gates.json showing the failure, and finish.",
   "repair": "Fixed procedure for the repair atom: among your inputs, failures.json lists the tests the draft composition failed (name, fn, args, expected, got); an empty list means every gate passed. If it is empty, copy every kernel part to /out unchanged under its original filename and write /out/repair-notes.md saying no gate failed. Otherwise, for each failing test decide from the contract, the interface and the data whether the kernel or the expectation is wrong: where the kernel is wrong, fix the part file (keep every export, keep the helper prefixes, no imports, refusals via unreachable()); where the expectation is wrong, leave the kernel and write exactly why in repair-notes.md with the arithmetic. Never edit tests or the contract (they are frozen and you do not have them). Compile-check each part with {asc} <file> --runtime stub -O3 --noAssert -o /tmp/check.wasm --textFile /tmp/check.wat. Write every part to /out under the output filename declared for it, plus repair-notes.md. One round only.",
-  "direct": "Fixed procedure for the direct worker (one worker does the whole capability; the incumbent loop-0 protocol): (1) In /work/{needId}/ write CONTRACT.md (what is computed; the assumption taken wherever the request leaves a fact open; the one question that resolves it; which inputs are refused) and tests.json (a JSON array in the gate format: [{\"name\", \"fn\", \"args\": [numbers], \"expect\": number|boolean, \"tol\": absolute tolerance for non-integers, \"expectError\": true for refusals}]; write 1e999 for +Infinity, -1e999 for -Infinity, the string \"NaN\" for NaN; include the request's own case, boundaries and refusals). (2) Freeze them before any code: node {gate} freeze /work/{needId}. Never edit CONTRACT.md or tests.json after this. (3) Write /work/{needId}/kernel.ts (AssemblyScript, exported pure functions over f64/i32/bool, no imports, refusals via unreachable()) and /work/{needId}/glue.json (closed schema below; id must be \"{needId}\"). (4) Run node {gate} run /work/{needId}; on failure repair kernel.ts and glue.json only, at most 3 repair rounds. (5) Copy kernel.wasm, kernel.wat, kernel.ts, CONTRACT.md, tests.json, glue.json and frozen.sha256 from /work/{needId}/ to /out/, and copy /work/{needId}/result.json to /out/gates.json. Finish. Glue schema: {glueSchema}"
+  "direct": "Fixed procedure for the direct worker (one worker does the whole capability; the incumbent loop-0 protocol): (1) In /work/{needId}/ write CONTRACT.md (what is computed; the assumption taken wherever the request leaves a fact open; the one question that resolves it; which inputs are refused) and tests.json (a JSON array in the gate format: [{\"name\", \"fn\", \"args\": [numbers], \"expect\": number|boolean, \"tol\": absolute tolerance for non-integers, \"expectError\": true for refusals}]; write 1e999 for +Infinity, -1e999 for -Infinity, the string \"NaN\" for NaN; include the request's own case, boundaries and refusals). (2) Freeze them before any code: node {gate} freeze /work/{needId}. Never edit CONTRACT.md or tests.json after this. (3) Write /work/{needId}/kernel.ts (AssemblyScript, exported pure functions over f64/i32/bool, no imports, refusals via unreachable()) and /work/{needId}/glue.json (closed schema below; id must be \"{needId}\"). (4) Run node {gate} run /work/{needId}; on failure repair kernel.ts and glue.json only, at most 3 repair rounds. (5) Copy kernel.wasm, kernel.wat, kernel.ts, CONTRACT.md, tests.json, glue.json and frozen.sha256 from /work/{needId}/ to /out/, and copy /work/{needId}/result.json to /out/gates.json. Finish. Glue schema: {glueSchema}",
+  "asset": "Fixed procedure for asset atoms (3D assets for the media kit): build with the CPU wrapper `blender-cpu -t 8 -P <script> -- <args>` (it is on PATH; it adds -b, --factory-startup and --python-exit-code 1). Read sources and references only from the read-only binds named in your inputs; write every declared output under /out. Never write into a bind, never use a GPU, never fetch from the network. Run the atom's own check or gate command before finishing, and write its result to /out next to the asset. If the check fails, keep the outputs and the failing result; do not hide failures."
  },
  "repairStage": true,
  "repairSees": "failing tests only (name, fn, args, expected, got); one round; tests and contract stay frozen",
- "scriptFirst": true
+ "scriptFirst": true,
+ "bindRoots": [
+  "/mnt/cold-steam/factory-scratch/wt",
+  "~/Code/akilleez"
+ ],
+ "maxAtomTimeoutSec": 5400
 }

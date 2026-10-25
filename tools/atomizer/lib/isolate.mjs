@@ -8,7 +8,7 @@ import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 const HOME = os.homedir();
 export const expand = (p) => (p.startsWith('~/') ? path.join(HOME, p.slice(2)) : p);
-const SYSTEM_RO = ['/usr', '/lib', '/lib64', '/bin', '/sbin', '/etc/ssl', '/etc/ca-certificates', '/etc/resolv.conf', '/etc/hosts', '/etc/passwd', '/etc/group', '/etc/localtime', '/etc/nsswitch.conf'];
+const SYSTEM_RO = ['/usr', '/lib', '/lib64', '/bin', '/sbin', '/etc/ssl', '/etc/ca-certificates', '/etc/resolv.conf', '/etc/hosts', '/etc/passwd', '/etc/group', '/etc/localtime', '/etc/nsswitch.conf', '/etc/fonts', '/etc/ld.so.cache', '/etc/ld.so.conf', '/etc/ld.so.conf.d'];
 const CREDENTIAL_FILES = ['.claude/.credentials.json', '.claude.json'];
 /** A template home with only the user's own subscription credentials; private (0700); caller deletes it. */
 export function makeHomeTemplate(dir) {
@@ -41,7 +41,9 @@ export async function runIsolated(spec) {
   const args = [];
   for (const p of SYSTEM_RO) if (fs.existsSync(p)) args.push('--ro-bind', p, p);
   args.push('--bind', runHome, HOME);
-  for (const t of spec.toolchain ?? []) if (fs.existsSync(t.host)) args.push('--ro-bind', t.host, t.guest ?? t.host);
+  // System paths are already bound read-only; re-binding a toolchain inside them (e.g. /usr/bin/python3, often a symlink) fails.
+  const inSystem = (p) => SYSTEM_RO.some((r) => p === r || p.startsWith(r + '/'));
+  for (const t of spec.toolchain ?? []) if (fs.existsSync(t.host) && !inSystem(t.guest ?? t.host)) args.push('--ro-bind', t.host, t.guest ?? t.host);
   for (const m of spec.mounts ?? []) args.push(m.mode === 'rw' ? '--bind' : '--ro-bind', m.host, m.guest);
   args.push('--tmpfs', '/tmp', '--proc', '/proc', '--dev', '/dev', '--unshare-pid', '--unshare-uts', '--unshare-ipc', '--unshare-cgroup-try', '--die-with-parent', '--new-session', '--clearenv',
     '--setenv', 'HOME', HOME, '--setenv', 'USER', os.userInfo().username, '--setenv', 'TERM', 'dumb', '--setenv', 'LANG', 'C.UTF-8',

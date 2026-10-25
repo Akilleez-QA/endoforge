@@ -75,3 +75,13 @@ node tools/atomizer/bin/verify.mjs work/atom-runs/C-005
 ## How it enters the factory and the loop (deviation D-08 for loop 1)
 
 The incumbent protocol has one worker do contract, tests, kernel, glue and self-repair in sequence (`campaigns/x1-spec-study/factory/README.md`). D-08 proposes: one atomizer turn per request, then the DAG under `schedule.mjs`, then `verify.mjs` plus the oracle panel. Predicted effects: lower wall per request (bounded as above), fewer gate-blind defects because tests are written without sight of the kernel, and per-atom receipts that locate failures. Cost: one extra model turn per request (about 10k output tokens) and the interface-error risk. Test: a factor in the loop-1 screen or a separate arm on the working set. The owner's rule applies to this file too: if the loop finds a better decomposition rule, it changes `policy.json` and this README and records why.
+
+## Asset atoms (media kit, 2026-10-25)
+
+Atoms of kind `asset` build 3D assets for `media/nh3-kit` on the CPU, inside the same isolate model.
+
+- **Toolchains:** `python3`, `blender` and `blender-libs` (`/opt/intel/oneapi`, the runtime libraries Blender links), plus `blender-cpu` (`media/nh3-kit/tools/blender-cpu`, which runs headless with `--python-exit-code 1`). Toolchains under the system binds (`/usr`) are visible without being re-bound.
+- **Read-only binds:** `worker.binds: [{ "host": "<dir>", "guest": "/assets/<name>" }]` mounts a large tree, such as a worktree hydrated with `media/nh3-kit/tools/assets_hydrate.py` or a reference pack. Hosts must sit under `policy.bindRoots`. Binds are always read-only and may not shadow `/in`, `/out`, `/work` or system paths.
+- **Timeouts:** `worker.timeoutSec` sets an atom's timeout, capped by `policy.maxAtomTimeoutSec` (5,400 s). Other atoms keep the run's `--timeout-ms`.
+- **No GPU in isolates.** Renders stay on `gpu-queue.py` or the RunPod farm; atoms build, gate and report.
+- **Example:** `examples/asset-smoke/atoms.json` imports a set GLB from a bind and composes a report. `endoforge run asset-smoke` → done, verify ok, about 1.2 s.

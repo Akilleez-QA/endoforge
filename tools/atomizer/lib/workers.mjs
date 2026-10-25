@@ -17,7 +17,7 @@ export function toolchainFor(names, policy, repoRoot) {
     if ((n === 'codex' || n === 'claude') && !fs.existsSync(h)) {
       throw new Error(`toolchain ${n} host path does not exist: ${h}; override with ${toolchainEnv(n)}`);
     }
-    const bin = n === 'node' || n === 'codex' ? path.join(h, 'bin') : n === 'claude' ? h : n === 'wasmtime' ? path.dirname(h) : n === 'asc' ? path.join(h, '.bin') : null;
+    const bin = n === 'node' || n === 'codex' ? path.join(h, 'bin') : n === 'claude' ? h : n === 'wasmtime' ? path.dirname(h) : n === 'asc' ? path.join(h, '.bin') : (fs.existsSync(h) && fs.statSync(h).isFile() ? path.dirname(h) : fs.existsSync(h) && fs.statSync(h).isDirectory() ? h : null);
     out.push({ host: h, guest: h, bin });
   }
   return out;

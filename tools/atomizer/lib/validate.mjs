@@ -1,6 +1,7 @@
 // Structural validation of atoms.json against the schema in README.md and policy.json. Zero dependencies.
 import { topo, deps } from './dag.mjs';
-const KINDS = new Set(['interface', 'contract', 'tests', 'kernel', 'glue', 'data', 'compose', 'compose-draft', 'direct', 'review', 'repair', 'acceptance', 'other']);
+import { atomBinds } from './binds.mjs';
+const KINDS = new Set(['interface', 'contract', 'tests', 'kernel', 'glue', 'data', 'compose', 'compose-draft', 'direct', 'review', 'repair', 'acceptance', 'asset', 'other']);
 const MODELS = new Set(['sonnet', 'opus', 'codex', 'script']);
 export function validate(doc, policy) {
   const errors = [], warnings = [];
@@ -27,6 +28,9 @@ export function validate(doc, policy) {
     if (!a.worker || !MODELS.has(a.worker.model)) E(`${a.id}: worker.model must be sonnet | opus | codex | script`);
     if (a.worker?.model === 'script' && !Array.isArray(a.worker.command)) E(`${a.id}: a script worker needs worker.command (array)`);
     if (a.worker?.model !== 'script' && !a.worker?.prompt) E(`${a.id}: a model worker needs worker.prompt`);
+    for (const m of atomBinds(a, policy).errors) E(m);
+    if (a.worker?.timeoutSec != null && !(Number(a.worker.timeoutSec) > 0)) E(`${a.id}: worker.timeoutSec must be a positive number`);
+    if (Number(a.worker?.timeoutSec) > Number(policy.maxAtomTimeoutSec ?? Infinity)) W(`${a.id}: worker.timeoutSec ${a.worker.timeoutSec} is capped at policy.maxAtomTimeoutSec ${policy.maxAtomTimeoutSec}`);
     const work = Number(a.size?.work), iface = Number(a.size?.interface);
     if (!(work >= 1 && work <= 5) || !(iface >= 1 && iface <= 5)) E(`${a.id}: size.work and size.interface must be 1..5`);
     else { if (work > policy.singleShotMaxWork) E(`${a.id}: size.work ${work} > ${policy.singleShotMaxWork}: split further (not single-shot)`); if (iface > work) W(`${a.id}: interface ${iface} > work ${work}: over-atomized, consider merging`); }

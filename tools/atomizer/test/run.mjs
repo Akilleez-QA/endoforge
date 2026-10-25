@@ -81,6 +81,23 @@ check('run archive written and hashed', arch && /\.tar\.(zst|gz)$/.test(arch.pat
 // 5. receipts
 const rec = JSON.parse(fs.readFileSync(path.join(tmp, 'fanout', 'receipt', 'atoms', 'compose.json'), 'utf8'));
 check('compose receipt lists 8 inputs and a hashed output', rec.inputs.length === 8 && /^[0-9a-f]{64}$/.test(rec.outputs['all.txt']));
+// 6. asset atoms: binds and timeouts
+{
+  const { validate } = await import('../lib/validate.mjs');
+  const { atomBinds, atomTimeoutMs } = await import('../lib/binds.mjs');
+  const pol = JSON.parse(fs.readFileSync(new URL('../policy.json', import.meta.url), 'utf8'));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'bind-root-'));
+  const P = { ...pol, bindRoots: [root], maxAtomTimeoutSec: 60 };
+  const mk = (binds, extra = {}) => ({ id: 'a1', kind: 'asset', contract: 'build one asset from the bound tree', outputs: [{ name: 'o', path: 'o.json' }], verify: 'o.json parses', worker: { model: 'script', command: ['true'], binds, ...extra }, size: { work: 1, interface: 1 } });
+  check('bind under a root is accepted, read-only', (() => { const r = atomBinds(mk([{ host: root, guest: '/assets/x' }]), P); return !r.errors.length && r.mounts[0].mode === 'ro'; })());
+  check('bind outside bindRoots is rejected', atomBinds(mk([{ host: os.tmpdir(), guest: '/assets/x' }]), P).errors.some((e) => /outside policy.bindRoots/.test(e)));
+  check('bind may not shadow /out or /usr', ['/out', '/usr/lib'].every((g) => atomBinds(mk([{ host: root, guest: g }]), P).errors.length === 1));
+  check('missing bind host is rejected', atomBinds(mk([{ host: path.join(root, 'nope'), guest: '/assets/x' }]), P).errors.length === 1);
+  check('timeoutSec is capped by policy', atomTimeoutMs(mk([], { timeoutSec: 600 }), P, 900000) === 60000 && atomTimeoutMs(mk([]), P, 900000) === 900000);
+  const doc = { schema: 'endoforge/atoms/1', need: { id: 'T', text: 't' }, acceptance: [{ id: 'A1', statement: 's', check: { kind: 'manual' } }], atoms: [mk([{ host: os.tmpdir(), guest: '/assets/x' }]), { ...mk([]), id: 'compose', kind: 'compose', inputs: [{ from: 'a1' }] }] };
+  check('validate surfaces bind errors and accepts kind asset', (() => { const v = validate(doc, P); return !v.ok && v.errors.some((e) => /bindRoots/.test(e)) && !v.errors.some((e) => /kind must be/.test(e)); })());
+  fs.rmSync(root, { recursive: true, force: true });
+}
 fs.rmSync(tmp, { recursive: true, force: true });
 console.log(fails ? `${fails} failure(s)` : 'all atomizer tests passed');
 process.exit(fails ? 1 : 0);
