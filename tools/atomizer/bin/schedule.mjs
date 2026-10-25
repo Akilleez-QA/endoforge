@@ -104,6 +104,7 @@ async function runAtom(atom) {
       w = workerCommand(doc, atom, staged, policy, REPO, sel);
       r = await runIsolated({ homeTemplate, mounts: [{ host: inDir, guest: '/in', mode: 'ro' }, { host: outDir, guest: '/out', mode: 'rw' }, { host: workDir, guest: '/work', mode: 'rw' }, ...atomBinds(atom, policy).mounts], toolchain: w.toolchain, cmd: w.cmd, stdin: w.stdin, cwd: '/work', timeoutMs: atomTimeoutMs(atom, policy, TIMEOUT),
         ...(isCodex ? { pool: { bin, env: { CODEX_POOL_TIER: sel.tier, ...(sel.tier === 'throwaway' ? { CODEX_POOL_THROWAWAY: '1' } : {}) } } } : {}) });
+      if (r.claudeAccount) meta.account = r.claudeAccount;  // which pool login served this attempt (name only)
       T.span('isolate.home', r.spawnEpoch - r.homeMs, r.spawnEpoch, { atom: atom.id, attempt });
       if (isCodex) {
         T.span('pool.acquire', r.spawnEpoch, r.tries[0]?.start ?? r.endEpoch, { atom: atom.id, attempt });

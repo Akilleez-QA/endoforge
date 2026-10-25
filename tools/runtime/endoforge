@@ -181,7 +181,7 @@ if [[ -n $tier ]]; then
 fi
 # Gate and prompts resolve asc inside the tree, so mount the layer there and point the toolchain at the same path.
 ascTree=$inst/tree/forge/endoforge/experiments/P-02-compiler-in-isolate/node_modules
-export ATOMIZER_LEDGER_DIR=$inst/ledger ENDOFORGE_TOOLCHAIN_ASC=$ascTree ENDOFORGE_WORKER=codex
+export ATOMIZER_LEDGER_DIR=$inst/ledger ENDOFORGE_TOOLCHAIN_ASC=$ascTree ENDOFORGE_WORKER=${ENDOFORGE_WORKER:-codex}
 export ENDOFORGE_TOOLCHAIN_CODEX=${ENDOFORGE_TOOLCHAIN_CODEX:-$HOME/.local/share/endoforge-tc/codex} ENDOFORGE_CODEX_POOL=${ENDOFORGE_CODEX_POOL:-$HOME/.local/bin/codex-pool}
 wrapper=(bwrap --ro-bind / / --bind /proc /proc --dev /dev --overlay-src "$image" --tmp-overlay "$inst/tree" --ro-bind "$layer/node_modules" "$ascTree")
 for d in run ledger tmp; do wrapper+=(--bind "$inst/$d" "$inst/$d"); done
@@ -193,7 +193,7 @@ if [[ -n $replay ]]; then
   printf '%s\n' '#!/bin/sh' 'echo '\''{"type":"thread.started"}'\''' 'echo '\''{"type":"turn.completed","usage":{"input_tokens":0,"cached_input_tokens":0,"output_tokens":0}}'\''' > "$ENDOFORGE_TOOLCHAIN_CODEX/bin/codex"
   chmod +x "$ENDOFORGE_TOOLCHAIN_CODEX/bin/codex"; wrapper+=(--ro-bind "$replay" "$replay")
 else
-  for d in "$HOME/.codex" "$HOME/.codex-accounts" "${CODEX_POOL_STATE_DIR:-$HOME/.codex-pool}"; do [[ ! -d $d ]] || wrapper+=(--bind "$d" "$d"); done
+  for d in "$HOME/.codex" "$HOME/.codex-accounts" "${CODEX_POOL_STATE_DIR:-$HOME/.codex-pool}" "${ENDOFORGE_CLAUDE_ACCOUNTS:-$HOME/.claude-accts}"; do [[ ! -d $d ]] || wrapper+=(--bind "$d" "$d"); done
 fi
 wrapper+=(--unshare-ipc --unshare-uts --die-with-parent --setenv TMPDIR "$inst/tmp" --setenv ENDOFORGE_INSTANCE "$id" --chdir "$inst/tree/forge/endoforge" --)
 spawn() {

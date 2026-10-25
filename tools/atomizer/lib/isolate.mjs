@@ -10,9 +10,25 @@ const HOME = os.homedir();
 export const expand = (p) => (p.startsWith('~/') ? path.join(HOME, p.slice(2)) : p);
 const SYSTEM_RO = ['/usr', '/lib', '/lib64', '/bin', '/sbin', '/etc/ssl', '/etc/ca-certificates', '/etc/resolv.conf', '/etc/hosts', '/etc/passwd', '/etc/group', '/etc/localtime', '/etc/nsswitch.conf', '/etc/fonts', '/etc/ld.so.cache', '/etc/ld.so.conf', '/etc/ld.so.conf.d'];
 const CREDENTIAL_FILES = ['.claude/.credentials.json', '.claude.json'];
+/**
+ * Claude subscription logins for native workers: ENDOFORGE_CLAUDE_ACCOUNTS (default ~/.claude-accts) holds one
+ * CLAUDE_CONFIG_DIR per login, a folder with .credentials.json (presence checked, never read). Each `claude` launch
+ * mounts the next one read-write at its own path and sets CLAUDE_CONFIG_DIR, so token refreshes land in the pool
+ * folder; a credential copied into a throwaway home can rotate the original's refresh token away. With no pool
+ * folder, the home template copies ~/.claude's files as before.
+ */
+export function claudeAccounts() {
+  const root = expand(process.env.ENDOFORGE_CLAUDE_ACCOUNTS || '~/.claude-accts');
+  let names = [];
+  try { names = fs.readdirSync(root).sort(); } catch { return []; }
+  return names.map((n) => path.join(root, n)).filter((d) => fs.existsSync(path.join(d, '.credentials.json')));
+}
+let claudeNext = 0;
+const nextClaudeAccount = () => { const a = claudeAccounts(); return a.length ? a[claudeNext++ % a.length] : null; };
 /** A template home with only the user's own subscription credentials; private (0700); caller deletes it. */
 export function makeHomeTemplate(dir) {
   fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
+  if (claudeAccounts().length) return dir;
   for (const rel of CREDENTIAL_FILES) {
     const src = path.join(HOME, rel);
     if (!fs.existsSync(src)) continue;
@@ -30,7 +46,7 @@ export function listFiles(dir) {
 }
 /**
  * spec: { homeTemplate, mounts: [{host, guest, mode:'ro'|'rw'}], toolchain: [{host, guest}], cmd: [...], stdin, cwd, env, timeoutMs, pool?: {bin, env} }
- * Returns { exit, signal, wallMs, stdout, stderr, timedOut, bwrapArgs, poolPid? }.
+ * Returns { exit, signal, wallMs, stdout, stderr, timedOut, bwrapArgs, poolPid?, claudeAccount? }.
  */
 export async function runIsolated(spec) {
   const homeStart = nowEpoch();
@@ -45,9 +61,12 @@ export async function runIsolated(spec) {
   const inSystem = (p) => SYSTEM_RO.some((r) => p === r || p.startsWith(r + '/'));
   for (const t of spec.toolchain ?? []) if (fs.existsSync(t.host) && !inSystem(t.guest ?? t.host)) args.push('--ro-bind', t.host, t.guest ?? t.host);
   for (const m of spec.mounts ?? []) args.push(m.mode === 'rw' ? '--bind' : '--ro-bind', m.host, m.guest);
+  const claudeAccount = spec.cmd?.[0] === 'claude' && !spec.env?.CLAUDE_CONFIG_DIR ? nextClaudeAccount() : null;
+  if (claudeAccount) args.push('--bind', claudeAccount, claudeAccount);
   args.push('--tmpfs', '/tmp', '--proc', '/proc', '--dev', '/dev', '--unshare-pid', '--unshare-uts', '--unshare-ipc', '--unshare-cgroup-try', '--die-with-parent', '--new-session', '--clearenv',
     '--setenv', 'HOME', HOME, '--setenv', 'USER', os.userInfo().username, '--setenv', 'TERM', 'dumb', '--setenv', 'LANG', 'C.UTF-8',
     '--setenv', 'PATH', [...(spec.toolchain ?? []).map((t) => t.bin).filter(Boolean), '/usr/bin', '/bin'].join(':'));
+  if (claudeAccount) args.push('--setenv', 'CLAUDE_CONFIG_DIR', claudeAccount);
   for (const [k, v] of Object.entries(spec.env ?? {})) args.push('--setenv', k, String(v));
   args.push('--chdir', spec.cwd ?? '/work');
   // Keep the launch spec outside the writable guest home across pool failovers.
@@ -78,5 +97,5 @@ export async function runIsolated(spec) {
       fs.rmSync(specDir, { recursive: true, force: true });
     }
   }
-  return { ...result, homeMs, spawnEpoch, endEpoch, firstStdoutEpoch, tries, wallMs: Number(process.hrtime.bigint() - t0) / 1e6, bwrapArgs: args.filter((a) => !a.startsWith(runHome)) };
+  return { ...result, homeMs, spawnEpoch, endEpoch, firstStdoutEpoch, tries, wallMs: Number(process.hrtime.bigint() - t0) / 1e6, bwrapArgs: args.filter((a) => !a.startsWith(runHome)), ...(claudeAccount ? { claudeAccount: path.basename(claudeAccount) } : {}) };
 }

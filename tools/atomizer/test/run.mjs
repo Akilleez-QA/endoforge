@@ -15,6 +15,7 @@ const routing = spawnSync(node, [path.join(HERE, 'routing.test.mjs')], { encodin
 check('routing unit tests', !routing.error && routing.status === 0, routing.error?.message ?? (routing.stdout + routing.stderr).trim());
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'atomizer-test-'));
 process.env.ATOMIZER_LEDGER_DIR = path.join(tmp, 'ledger');
+process.env.ENDOFORGE_CLAUDE_ACCOUNTS = path.join(tmp, 'no-claude-accts');  // hermetic: never mount the host's real logins
 // Toolchain overrides are independent of the host's installed versions.
 const repoRoot = path.resolve(HERE, '../../..');
 const savedCodex = process.env.ENDOFORGE_TOOLCHAIN_CODEX;
@@ -97,6 +98,37 @@ check('compose receipt lists 8 inputs and a hashed output', rec.inputs.length ==
   const doc = { schema: 'endoforge/atoms/1', need: { id: 'T', text: 't' }, acceptance: [{ id: 'A1', statement: 's', check: { kind: 'manual' } }], atoms: [mk([{ host: os.tmpdir(), guest: '/assets/x' }]), { ...mk([]), id: 'compose', kind: 'compose', inputs: [{ from: 'a1' }] }] };
   check('validate surfaces bind errors and accepts kind asset', (() => { const v = validate(doc, P); return !v.ok && v.errors.some((e) => /bindRoots/.test(e)) && !v.errors.some((e) => /kind must be/.test(e)); })());
   fs.rmSync(root, { recursive: true, force: true });
+}
+// 7. native Claude launches take pool logins in turn, mounted read-write as CLAUDE_CONFIG_DIR (no credential copies)
+{
+  const { makeHomeTemplate, runIsolated } = await import('../lib/isolate.mjs');
+  const root = fs.mkdtempSync(path.join(HERE, 'claude-accts-'));  // outside /tmp: the isolate overlays /tmp
+  const saved = process.env.ENDOFORGE_CLAUDE_ACCOUNTS;
+  try {
+    for (const n of ['a', 'b']) {
+      fs.mkdirSync(path.join(root, 'accts', n), { recursive: true });
+      fs.closeSync(fs.openSync(path.join(root, 'accts', n, '.credentials.json'), 'wx', 0o000));  // unreadable: never opened
+    }
+    fs.mkdirSync(path.join(root, 'accts', 'no-login'));
+    const stub = path.join(root, 'claude'); fs.mkdirSync(stub);
+    fs.writeFileSync(path.join(stub, 'claude'), '#!/bin/sh\ntouch "$CLAUDE_CONFIG_DIR/seen" && echo "$CLAUDE_CONFIG_DIR"\n', { mode: 0o755 });
+    process.env.ENDOFORGE_CLAUDE_ACCOUNTS = path.join(root, 'accts');
+    const home = makeHomeTemplate(fs.mkdtempSync(path.join(root, 'home-')));
+    check('pool logins: the home template copies no credentials', fs.readdirSync(home).length === 0);
+    const seen = [];
+    for (let i = 0; i < 3; i++) {
+      const r = await runIsolated({ homeTemplate: home, toolchain: [{ host: stub, guest: stub, bin: stub }], cmd: ['claude'], cwd: '/', mounts: [] });
+      seen.push(r.exit === 0 ? `${r.claudeAccount}:${r.stdout.trim()}` : `exit ${r.exit}: ${r.stderr.trim()}`);
+    }
+    const a = path.join(root, 'accts', 'a'), b = path.join(root, 'accts', 'b');
+    check('pool logins: launches alternate a, b, a and see CLAUDE_CONFIG_DIR', seen.join('|') === `a:${a}|b:${b}|a:${a}`, seen.join(' | '));
+    check('pool logins: the folder is mounted read-write, so refreshed tokens persist', fs.existsSync(path.join(a, 'seen')) && fs.existsSync(path.join(b, 'seen')));
+    const s = await runIsolated({ homeTemplate: home, toolchain: [{ host: stub, guest: stub, bin: stub }], cmd: ['sh', '-c', 'echo "${CLAUDE_CONFIG_DIR:-unset}"'], cwd: '/', mounts: [] });
+    check('pool logins: non-claude commands get no login', s.stdout.trim() === 'unset' && !s.claudeAccount);
+  } finally {
+    if (saved === undefined) delete process.env.ENDOFORGE_CLAUDE_ACCOUNTS; else process.env.ENDOFORGE_CLAUDE_ACCOUNTS = saved;
+    fs.rmSync(root, { recursive: true, force: true });
+  }
 }
 fs.rmSync(tmp, { recursive: true, force: true });
 console.log(fails ? `${fails} failure(s)` : 'all atomizer tests passed');
