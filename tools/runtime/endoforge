@@ -1,0 +1,215 @@
+#!/usr/bin/env bash
+set -uo pipefail
+RUNTIME_DIR=$(dirname "$(readlink -f "$0")")
+[[ ! -f $HOME/.config/endoforge/runtime.env ]] || source "$HOME/.config/endoforge/runtime.env"
+ms() { date +%s%3N; }
+start=$(ms); root=${ENDOFORGE_HOME:-$HOME/.cache/endoforge}; src=${ENDOFORGE_SRC_REPO:-/workspace/repos/akilleez/main}
+ref=${ENDOFORGE_REF:-HEAD}; id=; sha=; input=; out=; tier=; inst=; pgid=; pgidStart=; watchdog=; signaled=0
+scheduleExit=null; verifyOk=false; status=failed; imageMs=0; layerMs=0; createMs=0; coldStartMs=0; scheduleMs=0; verifyMs=0; copyMs=0; teardownMs=0
+usage() { echo 'usage: endoforge run <atoms.json|example-id> [--out DIR] [--tier light|standard|deep|throwaway] [--ref REF] [--timeout SEC] [--concurrency N] [--no-verify] [--stub-replay DIR] | ls | reap'; }
+fail() { echo "endoforge: $*" >&2; exit 1; }
+sweep_marker() {
+  local p
+  for p in /proc/[0-9]*; do
+    [[ -O $p ]] || continue
+    if { grep -zFxq "ENDOFORGE_INSTANCE=$1" "$p/environ"; } 2>/dev/null; then kill -KILL "${p##*/}" 2>/dev/null || :; fi
+  done
+}
+proc_start() {
+  local stat fields
+  IFS= read -r stat 2>/dev/null < "/proc/$1/stat" || return 1
+  read -ra fields <<< "${stat##*) }"; printf '%s\n' "${fields[19]:-}"
+}
+reap() {
+  local d fd g born guard
+  [[ -d $root/instances ]] || return 0
+  exec {guard}>"$root/instances/.lock"; flock "$guard"
+  for d in "$root"/instances/*; do
+    [[ -d $d ]] || continue
+    exec {fd}>"$d/lease" || continue
+    if flock -n "$fd"; then
+      read -r g born < <(node -e 'try { const m=JSON.parse(require("fs").readFileSync(process.argv[1])); console.log(m.pgid || "",m.pgidStart || "") } catch {}' "$d/manifest.json")
+      [[ $g =~ ^[0-9]+$ && $g -gt 1 && $born =~ ^[0-9]+$ && $(proc_start "$g") == "$born" ]] && kill -KILL -- "-$g" 2>/dev/null || :
+      sweep_marker "${d##*/}"; chmod -R u+w "$d"; rm -rf -- "$d"; echo "reaped ${d##*/}" >&2
+    fi
+    exec {fd}>&-
+  done
+  exec {guard}>&-
+  for d in images layers; do
+    [[ ! -d $root/$d ]] || find "$root/$d" -maxdepth 1 -name '.tmp-*' -mmin +60 -exec chmod -R u+w {} \; -exec rm -rf -- {} \;
+  done
+}
+manifest() {
+  node -e 'const fs=require("fs"), [file,id,sha,ref,input,tier,pid,out,pgid,pgidStart]=process.argv.slice(1); let m; try {m=JSON.parse(fs.readFileSync(file))} catch {m={id,sha,ref,input,tier,pid:+pid,created:new Date().toISOString(),out}}; if(pgid){m.pgid=+pgid;m.pgidStart=pgidStart;} fs.writeFileSync(file,JSON.stringify(m)+"\n")' "$inst/manifest.json" "$id" "$sha" "$ref" "$input" "$tier" "$$" "$out" "$pgid" "$pgidStart"
+}
+result() {
+  node -e 'const fs=require("fs"), a=process.argv.slice(1), [id,status,sha,input,out,se,vo,...times]=a; const read=p=>{try{return JSON.parse(fs.readFileSync(p))}catch{return null}}; const r=status==="refused"?null:read(out+"/run/receipt/run.json"), g=status==="refused"?null:read(out+"/run/atoms/compose/out/gates.json"); const o={id,ok:status==="done",status,sha,input,out,scheduleExit:JSON.parse(se),verifyOk:vo==="true",gates:g?.promotable??null,tokens:r?.tokens??null,codexAccounts:r?.codexAccounts??null,timings:Object.fromEntries(["imageMs","layerMs","createMs","coldStartMs","scheduleMs","verifyMs","copyMs","teardownMs","totalMs"].map((k,i)=>[k,+times[i]]))}; const line=JSON.stringify(o).replace(/(sk-[A-Za-z0-9_-]{20,}|eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}|gh[pousr]_[A-Za-z0-9]{20,})/g,"[REDACTED]"); if(out&&status!=="refused"&&fs.existsSync(out))fs.writeFileSync(out+"/result.json",line+"\n"); console.log(line)' "$id" "$status" "$sha" "$input" "$out" "$scheduleExit" "$verifyOk" "$imageMs" "$layerMs" "$createMs" "$coldStartMs" "$scheduleMs" "$verifyMs" "$copyMs" "$teardownMs" "$(($(ms)-start))"
+}
+scrub() {
+  find "$out" -type f \( -name '*.log' -o -name '*.json' \) -exec sed -E -i 's/(sk-[A-Za-z0-9_-]{20,}|eyJ[A-Za-z0-9_-]{20,}\.[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}|gh[pousr]_[A-Za-z0-9]{20,})/[REDACTED]/g' {} +
+}
+cleanup() {
+  local rc=$? t k killMs=0
+  trap - EXIT; trap '' TERM INT HUP
+  if [[ -n $watchdog ]]; then kill "$watchdog" 2>/dev/null || :; wait "$watchdog" 2>/dev/null || :; fi
+  t=$(ms)
+  if [[ -n $pgid ]]; then
+    kill -TERM -- "-$pgid" 2>/dev/null || :
+    for ((k=0;k<100;k++)); do kill -0 -- "-$pgid" 2>/dev/null || break; sleep .1; done
+    kill -KILL -- "-$pgid" 2>/dev/null || :; wait "$pgid" 2>/dev/null || :
+  fi
+  [[ -z $id ]] || sweep_marker "$id"
+  killMs=$(($(ms)-t))
+  if ((signaled)); then status=signal; rc=143; fi
+  if [[ -n $inst && -d $inst ]]; then
+    [[ ! -f $inst/timedout ]] || { status=timeout; rc=124; }
+    t=$(ms)
+    if mkdir -p "$out" && cp -a "$inst/run" "$out/run"; then
+      for k in schedule.log verify.log verify.json manifest.json; do [[ ! -f $inst/$k ]] || cp -a "$inst/$k" "$out/$k"; done
+      scrub || { status=failed; rc=1; }
+    else status=failed; rc=1; fi
+    copyMs=$(($(ms)-t)); t=$(ms)
+    chmod -R u+w "$inst"; rm -rf -- "$inst"; teardownMs=$((killMs+$(ms)-t))
+    [[ -z ${lease:-} ]] || exec {lease}>&-
+  fi
+  result || rc=1
+  [[ -z ${slot:-} ]] || exec {slot}>&-
+  exit "$rc"
+}
+cmd=${1:---help}; shift "$(( $# > 0 ? 1 : 0 ))"
+case $cmd in
+  --help|-h) usage; exit 0;;
+  reap) reap; exit 0;;
+  ls) for d in "$root"/instances/*; do
+    [[ -d $d ]] || continue
+    exec {fd}>"$d/lease" || continue; held=yes; flock -n "$fd" && held=no
+    node -e 'try{const m=JSON.parse(require("fs").readFileSync(process.argv[1])); console.log(`${m.id} held=${process.argv[2]} age=${Math.floor((Date.now()-Date.parse(m.created))/1000)}s pid=${m.pid}`)}catch{}' "$d/manifest.json" "$held"
+    exec {fd}>&-
+  done; exit 0;;
+  run) :;; *) usage >&2; exit 2;;
+esac
+input=${1:-}; [[ -n $input ]] || { usage >&2; exit 2; }; shift
+limit=3600; concurrency=; verify=1; replay=
+while (($#)); do
+  case $1 in
+    --no-verify) verify=0; shift; continue;;
+    --out|--tier|--ref|--timeout|--concurrency|--stub-replay) (($#>=2)) || { usage >&2; exit 2; };;
+    *) usage >&2; exit 2;;
+  esac
+  case $1 in --out) out=$2;; --tier) tier=$2;; --ref) ref=$2;; --timeout) limit=$2;; --concurrency) concurrency=$2;; --stub-replay) replay=$2;; esac; shift 2
+done
+[[ -z $tier || $tier =~ ^(light|standard|deep|throwaway)$ ]] || { usage >&2; exit 2; }
+[[ $limit =~ ^[1-9][0-9]*$ && ( -z $concurrency || $concurrency =~ ^[1-9][0-9]*$ ) ]] || { usage >&2; exit 2; }
+[[ $input != *.md ]] || { echo 'endoforge: need->atoms (atomize) is not wired through codex-pool yet; pass an atoms.json' >&2; exit 2; }
+if [[ -n $out ]]; then
+  out=$(realpath -m "$out")
+  if [[ -e $out && ( ! -d $out || -n $(find "$out" -mindepth 1 -maxdepth 1 -print -quit) ) ]]; then
+    echo 'endoforge: --out must be absent or an empty directory' >&2; exit 2
+  fi
+fi
+for shield in /workspace/ops/shields/CODEX_BLOCKED /var/lib/shields/CODEX_BLOCKED "${ENDOFORGE_SHIELDS_FILE:-}"; do
+  if [[ -n $shield && -e $shield ]]; then
+    reason=; IFS= read -r reason < "$shield" || :
+    echo "endoforge: shields up ($reason); refusing to start" >&2; status=refused; result; exit 75
+  fi
+done
+sha=$(git -C "$src" rev-parse --verify "$ref^{commit}") || exit 2
+[[ $root != /tmp && $root != /tmp/* ]] || fail 'ENDOFORGE_HOME must be outside /tmp'
+mkdir -p "$root"/{images,layers,instances,slots} || exit 1
+root=$(readlink -f "$root"); [[ $root != /tmp && $root != /tmp/* ]] || fail 'cache resolves under /tmp'; reap
+trap cleanup EXIT
+trap 'signaled=1; exit 143' TERM INT HUP
+max=${ENDOFORGE_MAX_INSTANCES:-4}; slotWait=${ENDOFORGE_SLOT_WAIT:-900}
+[[ $max =~ ^[1-9][0-9]*$ && $slotWait =~ ^[0-9]+$ ]] || fail 'invalid slot limits'
+deadline=$((SECONDS+slotWait)); acquired=0
+while (( ! acquired )); do
+  for ((n=1;n<=max;n++)); do
+    exec {slot}>"$root/slots/$n.lock"
+    if flock -n "$slot"; then acquired=1; break; fi
+    exec {slot}>&-
+  done
+  ((acquired)) && break
+  ((SECONDS<deadline)) || fail 'instance slot wait expired'; sleep 1
+done
+t=$(ms); image=$root/images/$sha
+(
+  flock 9
+  if [[ ! -d $image ]]; then
+    temp=$root/images/.tmp-$sha-$$; mkdir -p "$temp" || exit 1
+    git -C "$src" archive "$sha" forge/endoforge products/hmi/shields | tar -x -C "$temp" || exit 1
+    mv "$temp" "$image" && chmod -R a-w "$image"
+  fi
+) 9>"$root/images/.lock" || fail 'image build failed'
+imageMs=$(($(ms)-t)); t=$(ms)
+compiler=$image/forge/endoforge/experiments/P-02-compiler-in-isolate
+hash=$(sha256sum "$compiler/package-lock.json") || fail 'missing compiler lockfile'; hash=${hash%% *}; layer=$root/layers/asc-${hash:0:16}
+(
+  flock 9
+  if [[ ! -d $layer/node_modules ]]; then
+    temp=$root/layers/.tmp-asc-${hash:0:16}-$$; mkdir -p "$temp" || exit 1
+    seed=${ENDOFORGE_ASC_SEED:-}; seedHash=
+    if [[ -d $seed && -f $seed/../package-lock.json ]]; then seedHash=$(sha256sum "$seed/../package-lock.json"); seedHash=${seedHash%% *}; fi
+    if [[ $seedHash == "$hash" ]]; then cp -a "$seed" "$temp/node_modules" || exit 1
+    else cp "$compiler/package.json" "$compiler/package-lock.json" "$temp/" && (cd "$temp" && npm ci --ignore-scripts --no-audit --no-fund >&2) || exit 1; fi
+    mv "$temp" "$layer" && chmod -R a-w "$layer"
+  fi
+) 9>"$root/layers/.lock" || fail 'asc layer build failed'
+layerMs=$(($(ms)-t)); t=$(ms)
+exec {creation}>"$root/instances/.lock"; flock "$creation"
+while :; do
+  candidateId=ef-$(date +%Y%m%d-%H%M%S)-$(od -An -N6 -tx1 /dev/urandom | tr -d ' \n'); candidate=$root/instances/$candidateId
+  if mkdir "$candidate"; then break; fi
+  [[ -e $candidate ]] || fail 'instance mkdir failed'
+done
+exec {lease}>"$candidate/lease" && flock -n "$lease" || fail 'instance lease failed'
+inst=$candidate; id=$candidateId
+if [[ -z $out ]]; then
+  parent=${ENDOFORGE_RUNS_DIR:-/workspace/ops/endoforge/runs}
+  if ! mkdir -p "$parent" 2>/dev/null || [[ ! -w $parent ]]; then parent=$HOME/endoforge-runs; fi
+  out=$parent/$id
+fi
+out=$(realpath -m "$out")
+mkdir -p "$inst"/{tree,run,ledger,tmp,run-input} || fail 'instance subdirs failed'
+manifest
+exec {creation}>&-
+createMs=$(($(ms)-t))
+if [[ -f $input ]]; then cp -- "$input" "$inst/run-input/atoms.json" || fail 'input copy failed'
+elif [[ $input =~ ^[A-Za-z0-9_-]+$ ]]; then cp "$image/forge/endoforge/tools/atomizer/examples/$input/atoms.json" "$inst/run-input/atoms.json" || fail 'unknown example'
+else fail 'input not found'; fi
+if [[ -n $tier ]]; then
+  node -e 'const fs=require("fs"),p=process.argv[1],d=JSON.parse(fs.readFileSync(p)); for(const a of d.atoms)if(a.worker.model!=="script")a.worker.tier=process.argv[2]; fs.writeFileSync(p,JSON.stringify(d))' "$inst/run-input/atoms.json" "$tier" || fail 'tier rewrite failed'
+fi
+# Gate and prompts resolve asc inside the tree, so mount the layer there and point the toolchain at the same path.
+ascTree=$inst/tree/forge/endoforge/experiments/P-02-compiler-in-isolate/node_modules
+export ATOMIZER_LEDGER_DIR=$inst/ledger ENDOFORGE_TOOLCHAIN_ASC=$ascTree ENDOFORGE_WORKER=codex
+export ENDOFORGE_TOOLCHAIN_CODEX=${ENDOFORGE_TOOLCHAIN_CODEX:-$HOME/.local/share/endoforge-tc/codex} ENDOFORGE_CODEX_POOL=${ENDOFORGE_CODEX_POOL:-$HOME/.local/bin/codex-pool}
+wrapper=(bwrap --ro-bind / / --bind /proc /proc --dev /dev --overlay-src "$image" --tmp-overlay "$inst/tree" --ro-bind "$layer/node_modules" "$ascTree")
+for d in run ledger tmp; do wrapper+=(--bind "$inst/$d" "$inst/$d"); done
+wrapper+=(--bind "$inst/tmp" /tmp --ro-bind "$inst/run-input" "$inst/run-input")
+if [[ -n $replay ]]; then
+  replay=$(readlink -f "$replay"); [[ -d $replay ]] || fail 'replay not found'
+  export ENDOFORGE_CODEX_POOL=$RUNTIME_DIR/stub-pool.mjs ENDOFORGE_TOOLCHAIN_CODEX=$inst/tmp/stub-prefix CODEX_POOL_STATE_DIR=$inst/tmp/pool-state ENDOFORGE_STUB_REPLAY=$replay
+  mkdir -p "$ENDOFORGE_TOOLCHAIN_CODEX/bin"
+  printf '%s\n' '#!/bin/sh' 'echo '\''{"type":"thread.started"}'\''' 'echo '\''{"type":"turn.completed","usage":{"input_tokens":0,"cached_input_tokens":0,"output_tokens":0}}'\''' > "$ENDOFORGE_TOOLCHAIN_CODEX/bin/codex"
+  chmod +x "$ENDOFORGE_TOOLCHAIN_CODEX/bin/codex"; wrapper+=(--ro-bind "$replay" "$replay")
+else
+  for d in "$HOME/.codex" "$HOME/.codex-accounts" "${CODEX_POOL_STATE_DIR:-$HOME/.codex-pool}"; do [[ ! -d $d ]] || wrapper+=(--bind "$d" "$d"); done
+fi
+wrapper+=(--unshare-ipc --unshare-uts --die-with-parent --setenv TMPDIR "$inst/tmp" --setenv ENDOFORGE_INSTANCE "$id" --chdir "$inst/tree/forge/endoforge" --)
+spawn() {
+  ( exec {lease}>&-; exec {slot}>&-; exec setsid "${wrapper[@]}" "$@" ) & pgid=$!; pgidStart=$(proc_start "$pgid") || pgidStart=; manifest
+}
+args=(node tools/atomizer/bin/schedule.mjs run "$inst/run-input/atoms.json" --run-dir "$inst/run")
+[[ -z $concurrency ]] || args+=(--concurrency "$concurrency")
+[[ ${ENDOFORGE_NO_AUGMENT:-0} != 1 ]] || args+=(--no-augment)
+t=$(ms); spawn "${args[@]}" >"$inst/schedule.log" 2>&1; coldStartMs=$(($(ms)-start))
+# One deadline covers scheduling and verification; read the current pgid from the manifest.
+( exec {lease}>&-; exec {slot}>&-; sleep "$limit" & sleeper=$!; trap 'kill "$sleeper" 2>/dev/null; exit' TERM INT HUP; wait "$sleeper"; touch "$inst/timedout"; g=$(node -p 'JSON.parse(require("fs").readFileSync(process.argv[1])).pgid' "$inst/manifest.json"); kill -TERM -- "-$g" 2>/dev/null || :; kill -TERM "$$" ) & watchdog=$!
+wait "$pgid"; scheduleExit=$?; scheduleMs=$(($(ms)-t))
+if [[ ! -f $inst/timedout && $verify == 1 ]]; then
+  t=$(ms); spawn node tools/atomizer/bin/verify.mjs "$inst/run" >"$inst/verify.json" 2>"$inst/verify.log"
+  wait "$pgid"; v=$?; verifyMs=$(($(ms)-t))
+  if ((v==0)); then verifyOk=$(node -p 'JSON.parse(require("fs").readFileSync(process.argv[1])).ok===true' "$inst/verify.json"); fi
+elif (( ! verify )); then verifyOk=true; fi
+if [[ $scheduleExit == 0 && $verifyOk == true ]]; then status=done; exit 0; fi
+exit 1

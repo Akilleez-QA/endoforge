@@ -35,3 +35,6 @@ factory-check: ## deterministic quality and real state-crash checks; no models
 
 factory-integration: ## offline Docker/WASmtime controls; test writer fixtures, not live qualification
 	$(PYTHON) -m tools.factory_campaign.test
+
+runtime-test: ## ephemeral runtime launcher tests (stub codex, no model)
+	bash tools/runtime/test/runtime.test.sh
