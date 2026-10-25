@@ -1,0 +1,124 @@
+{
+  "version": 1,
+  "providerPacketSha256": "a295ffb694931e48cbe80a61fb1d4d34536ed6013fe6296ba9a6492234976ef7",
+  "sourceHashesAndBindingsValidated": true,
+  "bindings": [
+    {
+      "sourceId": "CC-027|oracle-sonnet|7",
+      "status": "missing-exact-reference"
+    },
+    {
+      "sourceId": "CC-027|oracle-opus|13",
+      "status": "missing-exact-reference"
+    },
+    {
+      "sourceId": "CC-007|oracle-sonnet|7",
+      "status": "missing-exact-reference"
+    },
+    {
+      "sourceId": "CC-007|oracle-opus|13",
+      "status": "missing-exact-reference"
+    },
+    {
+      "sourceId": "CC-022|oracle-sonnet|8",
+      "status": "exact-source-records"
+    },
+    {
+      "sourceId": "CC-022|oracle-sonnet|9",
+      "status": "phase-choice-required"
+    },
+    {
+      "sourceId": "CC-022|oracle-opus|12",
+      "status": "phase-choice-required"
+    },
+    {
+      "sourceId": "CC-022|oracle-opus|13",
+      "status": "phase-choice-required"
+    },
+    {
+      "sourceId": "CC-022|oracle-opus|14",
+      "status": "exact-source-records"
+    }
+  ],
+  "r22ConditionalArithmetic": {
+    "providerRecords": [
+      {
+        "fluid": "R22",
+        "temperatureF": 40,
+        "pressurePsig": 68.6,
+        "phase": "single-component-saturation",
+        "quantity": "saturation-pressure",
+        "sourcePdfSha256": "1adcd48fbbbc16eb146221652fc2691d23d754b3aea1fcc7cfdde24b5d1148fb",
+        "sourceTextLineSha256": "3262e0c154f2f54db2422284be1e66167780e5467adc3bf7d1d9b595843437d3",
+        "precisionPsig": 0.1
+      },
+      {
+        "fluid": "R22",
+        "temperatureF": 45,
+        "pressurePsig": 76.1,
+        "phase": "single-component-saturation",
+        "quantity": "saturation-pressure",
+        "sourcePdfSha256": "1adcd48fbbbc16eb146221652fc2691d23d754b3aea1fcc7cfdde24b5d1148fb",
+        "sourceTextLineSha256": "881413dfa8099b6680b2997ce8ade065fcfff811a858e20f83faeece7d0f03fc",
+        "precisionPsig": 0.1
+      }
+    ],
+    "expectedFromPublishedRoundedRecords": 1.5,
+    "tablePrecisionPsig": 0.1,
+    "engineTolerance": 1e-12,
+    "fastPathObserved": 1.5,
+    "fastPathPassed": true,
+    "moduleSha256": "0118013dc8cbb58e2b76b7e99ede1c266e718ea1b8217225583950b7609436c4",
+    "raw": {
+      "stdout": "1.5\n",
+      "stderr": "warning: using `--invoke` with a function that takes arguments is experimental and may break in the future\nwarning: using `--invoke` with a function that returns values is experimental and may break in the future\n",
+      "version": 1,
+      "exit": 0,
+      "outcome": "passed",
+      "wallMs": 13.565069006290287,
+      "outputLimit": 1048576,
+      "argv": [
+        "systemd-run",
+        "--user",
+        "--scope",
+        "--quiet",
+        "--unit",
+        "endoforge-wasm-1ffec2b477394b0e92ded9d4c9ab7a79",
+        "-p",
+        "RuntimeMaxSec=3s",
+        "-p",
+        "MemoryMax=512M",
+        "-p",
+        "MemorySwapMax=0",
+        "-p",
+        "TasksMax=32",
+        "-p",
+        "CPUQuota=100%",
+        "/home/user/Work/endoforge/experiments/P-01-kernel-instantiate/.tools/wasmtime",
+        "run",
+        "-W",
+        "fuel=100000",
+        "-W",
+        "max-memory-size=1048576",
+        "-W",
+        "trap-on-grow-failure=y",
+        "-W",
+        "timeout=100ms",
+        "--invoke",
+        "slope_psi_per_F",
+        "/home/user/Work/endoforge/tools/atomizer/work/baseline-20/runs/CC-022/atoms/direct/work/CC-022/kernel.wasm",
+        "76.1",
+        "68.6",
+        "45",
+        "40"
+      ],
+      "wallTimeout": false
+    },
+    "incumbentOutcome": "missing-interface-contract",
+    "incumbentReason": "Documented psiPerDegF(p,t) and claimTrue(claimed,p,t) describe one supplied absolute point; no documented route consumes both supplied PT endpoints. No reinterpretation or newly authored composition is credited."
+  },
+  "modelCalls": 0,
+  "interpolationUsed": false,
+  "priorProviderPacketSha256": "bbc6b271c8122a1094f3d9c2f0e04a2d826bd226a5c383ee9da8cb4bb4b409e5",
+  "revisionNote": "Current strict phase/unit query controls12 pass; source records and exact binding statuses unchanged; original arithmetic observation retained."
+}

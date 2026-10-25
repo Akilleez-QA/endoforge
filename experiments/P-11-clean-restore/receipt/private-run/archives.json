@@ -1,0 +1,30 @@
+{
+  "imageSha256": "d5f69702b5d8e1dd59d1914c7922a75f79980f9c136bb9f83b59b2da6c1bb70a",
+  "inputSha256": "95800d52a5e30ab6f6522ac09ea7d1906d1a90212ae2f72afaa7ddf6b2b89c08",
+  "imageBytes": 104060928,
+  "inputBytes": 61403,
+  "manifest": [
+    {
+      "Config": "blobs/sha256/5407fa2b6f7fac21ef527ce0be5bfce9b3034cd5b8e9818435b8100389826e28",
+      "RepoTags": [
+        "endoforge-p09:probe"
+      ],
+      "Layers": [
+        "blobs/sha256/b1badc6e50664185acfaa0ca255d8076061c2a9d881cecaaad281ae11af000ce",
+        "blobs/sha256/7d0731002e5f78a5a17484bce03c29cb6e053875de4a31ff3244b6e5e7880e68",
+        "blobs/sha256/e27ae6f53ba4439325ee069de45f39b873e39a177c8116f2e317adfc666f0a4e",
+        "blobs/sha256/9ebb4f79935d9398dc2bf52eb9dd2d2898be4ae2f19428dcfd200ee4b0c59387",
+        "blobs/sha256/3d741e5a2c15f09f73507900c996aa5bacf9d2ea2811bc5222075fefa6217431",
+        "blobs/sha256/07b54feb78e7b61007904f9ac83c132de26c834f34c884a1fa2d98249edcdb96",
+        "blobs/sha256/9addb4c7f3afa99b03f24f9e05cb87d274a63ae9ba30c94f02c75e85d133e9de"
+      ]
+    }
+  ],
+  "derivedImageId": "sha256:5407fa2b6f7fac21ef527ce0be5bfce9b3034cd5b8e9818435b8100389826e28",
+  "copyCommand": [
+    "sudo",
+    "-n",
+    "cat",
+    "/home/user/Work/endoforge/experiments/P-09-portable-campaign/work/image.tar"
+  ]
+}

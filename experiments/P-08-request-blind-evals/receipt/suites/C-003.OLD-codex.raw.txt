@@ -1,0 +1,199 @@
+=== FILE: CONTRACT.md ===
+# Acceptance contract for C-003
+
+Written with the timer running. Do not record times here; the kit records them. Do not consult the requester during the timed interval.
+
+## 1. Observable
+
+The requester receives a dew point of approximately 55.5 °F for air at 70 °F and 60% relative humidity.
+
+## 2. Authoritative inputs
+
+| Input | Source | Wins on conflict? |
+|---|---|---|
+| Dry-bulb temperature and relative humidity | Arguments to `dewPointF(tF, rhPercent)`; requester supplied 70 °F and 60% | Yes, for the measured quantities |
+| Units, humidity domain, output precision and correlation | Fixed C-003 stub | Yes, for interpretation and computation |
+| Same-location dry-bulb measurements at ordinary room pressure; liquid-water dew point | Fixed stub assumption | Pinned unless the requester explicitly contradicts it |
+| Reference calculations | Alduchov–Eskridge Magnus relation, with A = 17.625 and B = 243.04 °C | Implements the stub; does not override measurements |
+
+## 3. Required behaviours and acceptance tests
+
+| # | Behaviour | Acceptance test (input → expected) | Universal gate / domain invariant / residual |
+|---|---|---|---|
+| 1 | Answer the requested example in Fahrenheit | `(70, 60)` → 55.5 °F ±0.2 °F | residual |
+| 2 | Apply the pinned dry-bulb, same-location, liquid-water assumption | `(68, 50)` → 48.7 °F ±0.2 °F under that assumption | residual |
+| 3 | Increase dew point as RH increases at fixed temperature | `(70, 40)`, `(70, 60)` → approximately 44.6, 55.5 °F, respectively | domain invariant |
+| 4 | Increase dew point as temperature increases at fixed RH | `(70, 60)`, `(80, 60)` → approximately 55.5, 64.9 °F, respectively | domain invariant |
+| 5 | Return dry-bulb temperature at saturation, including below freezing | `(70, 100)` → 70.0 °F; `(-4, 100)` → -4.0 °F, each ±0.1 °F | domain invariant |
+| 6 | Preserve Fahrenheit units and the liquid-water convention below freezing | `(32, 50)` → 15.5 °F ±0.2 °F | residual |
+| 7 | Refuse RH outside its stated domain | `(70, 0)`, `(70, -1)`, `(70, 100.1)` → each call traps | universal gate |
+
+## 4. Failure meaning
+
+A wrong answer includes returning Celsius as Fahrenheit, computing wet-bulb temperature, substituting frost point, or returning a plausible number for invalid RH.
+
+A refusal is a trapped call for RH ≤0 or RH >100. A surrounding user interface should explain that RH must be above 0% and at most 100%; the numerical interface does not expose explanation text.
+
+An ask identifies uncertainty about the measurement interpretation. The stub settles that uncertainty through its pinned assumption, so valid calls must return a number. If the requester explicitly contradicts that assumption, clarification is preferable to silently applying it. Invalid RH requires refusal.
+
+## 5. Permitted effects
+
+None.
+
+## 6. Composition
+
+Ordinary logarithm and arithmetic library operations cover the calculation and Fahrenheit/Celsius conversion. Argument validation covers the humidity guard. No existing Field OS capability is identified in the supplied materials. The remaining work is to expose the fixed function and apply the pinned interpretation consistently.
+
+## Open
+
+Are the 70 F and 60% RH both read from the same place in the room, with 70 F being the plain dry-bulb air temperature (not a wet-bulb or surface reading)?
+
+The stub assumption pins the answer to yes for this contract, so this question does not block the required calculation.
+=== END FILE ===
+=== FILE: properties.md ===
+# Properties and test construction
+
+All numerical reference values below come from the Alduchov–Eskridge Magnus relation specified by the stub: O. A. Alduchov and R. E. Eskridge, “Improved Magnus Form Approximation of Saturation Vapor Pressure,” Journal of Applied Meteorology, 1996. Use the liquid-water coefficients A = 17.625 and B = 243.04 °C.
+
+For each valid input:
+
+1. Convert dry-bulb temperature using T = (tF − 32) × 5/9.
+2. Compute g = ln(rhPercent / 100) + A × T / (B + T).
+3. Compute dew point D = B × g / (A − g), in Celsius.
+4. Return 32 + 9D/5, in Fahrenheit.
+
+Reference expectations are rounded to tenths. Absolute tolerances of 0.2 °F accommodate displayed precision while rejecting materially different quantities. Saturation identities use 0.1 °F tolerance.
+
+## Requested reference and assumption
+
+`requested_room_reference`: `(70, 60)` gives approximately 55.5 °F.
+
+`dry_bulb_assumption_reference`: `(68, 50)` gives approximately 48.7 °F. The interpretation is explicitly dry-bulb temperature with co-located RH at ordinary room pressure. The function cannot detect whether the physical measurements satisfy that interpretation; this row pins the numerical consequence of assuming they do.
+
+Source for both values: the relation above.
+
+## Monotonicity in humidity
+
+At fixed room temperature, ln(RH/100) increases with RH, and the dew-point inversion increases with that logarithm. Therefore higher RH must yield higher dew point.
+
+Concrete pair: `humidity_monotonic_low` at `(70, 40)` gives approximately 44.6 °F, while `requested_room_reference` at `(70, 60)` gives approximately 55.5 °F. Their tolerance intervals remain strictly ordered.
+
+Source: algebraic monotonicity of the stated Magnus relation.
+
+## Monotonicity in dry-bulb temperature
+
+At fixed valid RH in the room range, increasing dry-bulb temperature increases dew point.
+
+Concrete pair: `requested_room_reference` at `(70, 60)` gives approximately 55.5 °F, while `temperature_monotonic_high` at `(80, 60)` gives approximately 64.9 °F.
+
+Source: the stated Magnus relation.
+
+## Inverse round-trip
+
+The inverse relation is:
+
+RH = 100 × exp(A × D/(B + D) − A × T/(B + T)).
+
+Use the unrounded reference dew point computed from `(68, 50)` and substitute it into this inverse with T = 20 °C. It returns 50% RH. The executable forward row is `dry_bulb_assumption_reference`; its expected value is independently constructed using this inverse pair. There is no inverse export to call.
+
+At saturation the inverse reduces exactly to RH = 100 when D = T. Executable round-trip identities are `saturation_room_boundary` and `saturation_cold_boundary`.
+
+Source: algebraic inversion of the stated Magnus relation.
+
+## Dimensional identity and liquid-water convention
+
+The Fahrenheit/Celsius mapping is affine: F = 32 + 9C/5. At saturation, converting to Celsius, calculating dew point, and converting back must return the original Fahrenheit input.
+
+Concrete rows: `(70, 100)` → 70.0 °F and `(-4, 100)` → -4.0 °F.
+
+`freezing_air_liquid_water` uses `(32, 50)` → approximately 15.5 °F. Its subfreezing dew point must still use the liquid-water coefficients rather than an ice correlation.
+
+Source: the defined Fahrenheit/Celsius conversion and the stated liquid-water Magnus relation.
+
+## Scaling applicability
+
+Neither Fahrenheit temperature nor dew point obeys proportional scaling: Fahrenheit has an offset and the humidity relation is logarithmic. No proportional scaling requirement is imposed. Humidity is converted from percent to a dimensionless fraction by division by 100, as exercised by every nonsaturated reference row.
+
+## Range guard
+
+The complete stated RH domain is 0 < RH ≤100. Test the excluded lower endpoint, a value below it, and a value above the included upper endpoint:
+
+- `reject_zero_humidity`: `(70, 0)` must trap.
+- `reject_negative_humidity`: `(70, -1)` must trap.
+- `reject_above_saturation`: `(70, 100.1)` must trap.
+
+The two saturation rows verify that exactly 100% is accepted. No temperature range is stated, so no temperature-range refusal is invented.
+
+Source: the fixed stub's explicit argument range and refusal requirement.
+=== END FILE ===
+=== FILE: tests.json ===
+[
+  {
+    "name": "requested_room_reference",
+    "fn": "dewPointF",
+    "args": [70, 60],
+    "expect": 55.5,
+    "tol": 0.2
+  },
+  {
+    "name": "dry_bulb_assumption_reference",
+    "fn": "dewPointF",
+    "args": [68, 50],
+    "expect": 48.7,
+    "tol": 0.2
+  },
+  {
+    "name": "humidity_monotonic_low",
+    "fn": "dewPointF",
+    "args": [70, 40],
+    "expect": 44.6,
+    "tol": 0.2
+  },
+  {
+    "name": "temperature_monotonic_high",
+    "fn": "dewPointF",
+    "args": [80, 60],
+    "expect": 64.9,
+    "tol": 0.2
+  },
+  {
+    "name": "saturation_room_boundary",
+    "fn": "dewPointF",
+    "args": [70, 100],
+    "expect": 70,
+    "tol": 0.1
+  },
+  {
+    "name": "saturation_cold_boundary",
+    "fn": "dewPointF",
+    "args": [-4, 100],
+    "expect": -4,
+    "tol": 0.1
+  },
+  {
+    "name": "freezing_air_liquid_water",
+    "fn": "dewPointF",
+    "args": [32, 50],
+    "expect": 15.5,
+    "tol": 0.2
+  },
+  {
+    "name": "reject_zero_humidity",
+    "fn": "dewPointF",
+    "args": [70, 0],
+    "expectError": true
+  },
+  {
+    "name": "reject_negative_humidity",
+    "fn": "dewPointF",
+    "args": [70, -1],
+    "expectError": true
+  },
+  {
+    "name": "reject_above_saturation",
+    "fn": "dewPointF",
+    "args": [70, 100.1],
+    "expectError": true
+  }
+]
+=== END FILE ===

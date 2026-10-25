@@ -1,0 +1,288 @@
+{
+  "id": "C-006",
+  "command": {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "--host",
+      "unix:///home/user/Work/endoforge/experiments/P-11-clean-restore/work/docker.sock",
+      "run",
+      "--name",
+      "endoforge-p11-3716445-c-006",
+      "--rm",
+      "--pull=never",
+      "--network=none",
+      "--read-only",
+      "--user",
+      "1000:1000",
+      "--cap-drop=ALL",
+      "--security-opt=no-new-privileges",
+      "--cpus=1",
+      "--memory=512m",
+      "--memory-swap=512m",
+      "--pids-limit=64",
+      "--tmpfs",
+      "/tmp:rw,nosuid,nodev,size=64m",
+      "--mount",
+      "type=bind,src=/home/user/Work/endoforge/experiments/P-11-clean-restore/work/restored/inputs/candidates,dst=/out",
+      "--entrypoint",
+      "/usr/local/bin/node",
+      "sha256:5407fa2b6f7fac21ef527ce0be5bfce9b3034cd5b8e9818435b8100389826e28",
+      "/bundle/campaigns/x1-spec-study/factory/gate.mjs",
+      "run",
+      "/out/C-006"
+    ],
+    "exit": 0,
+    "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 6843,\n   \"wasmSha256\": \"3975e5ca20a69703d7ccee8ba257e31ce47b8d3f2524fd848d4c0df096816bbb\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"maxChargeR290\",\n    \"minRoomAreaR290\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 15,\n   \"total\": 15\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.048351\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+    "stderr": "",
+    "wallMs": 2364.768777995778
+  },
+  "result": {
+    "at": "2026-10-18T18:59:55.663Z",
+    "gates": {
+      "G1_frozen": {
+        "ok": true
+      },
+      "G2_compiles": {
+        "ok": true,
+        "wasmBytes": 6843,
+        "wasmSha256": "3975e5ca20a69703d7ccee8ba257e31ce47b8d3f2524fd848d4c0df096816bbb"
+      },
+      "G3_exports": {
+        "ok": true,
+        "exports": [
+          "maxChargeR290",
+          "minRoomAreaR290"
+        ]
+      },
+      "G4_tests": {
+        "ok": true,
+        "passed": 15,
+        "total": 15
+      },
+      "G6_bounded": {
+        "ok": true,
+        "maxMs": 0.048351
+      },
+      "G5_deterministic": {
+        "ok": true
+      },
+      "G7_glue": {
+        "ok": true
+      }
+    },
+    "tests": [
+      {
+        "name": "default class 0: self-contained commercial appliance, 494 g (pins the stated assumption)",
+        "fn": "maxChargeR290",
+        "args": [
+          0,
+          0,
+          0
+        ],
+        "expect": 494,
+        "got": 494,
+        "ms": 0.048,
+        "pass": true
+      },
+      {
+        "name": "class 0 ignores room inputs (no 338 g for an unspecified system)",
+        "fn": "maxChargeR290",
+        "args": [
+          0,
+          20,
+          2
+        ],
+        "expect": 494,
+        "got": 494,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "class 1: older edition / household, 150 g",
+        "fn": "maxChargeR290",
+        "args": [
+          1,
+          0,
+          0
+        ],
+        "expect": 150,
+        "got": 150,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "class 2 explicit room formula: wall unit in 20 m2 (the first kernel's case)",
+        "fn": "maxChargeR290",
+        "args": [
+          2,
+          20,
+          2
+        ],
+        "expect": 337.64,
+        "got": 337.6424223562904,
+        "ms": 0.038,
+        "pass": true
+      },
+      {
+        "name": "class 2: ceiling unit in 10 m2",
+        "fn": "maxChargeR290",
+        "args": [
+          2,
+          10,
+          3
+        ],
+        "expect": 291.8,
+        "got": 291.80463456758207,
+        "ms": 0.002,
+        "pass": true
+      },
+      {
+        "name": "boundary: class 2, 1 m2 floor-standing",
+        "fn": "maxChargeR290",
+        "args": [
+          2,
+          1,
+          0
+        ],
+        "expect": 25.17,
+        "got": 25.166380282545333,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "boundary: class 2 with zero room area traps",
+        "fn": "maxChargeR290",
+        "args": [
+          2,
+          0,
+          0
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.041,
+        "pass": true
+      },
+      {
+        "name": "class 2 with negative room area traps",
+        "fn": "maxChargeR290",
+        "args": [
+          2,
+          -5,
+          2
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.003,
+        "pass": true
+      },
+      {
+        "name": "unknown class code traps",
+        "fn": "maxChargeR290",
+        "args": [
+          3,
+          20,
+          2
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.003,
+        "pass": true
+      },
+      {
+        "name": "negative class code traps",
+        "fn": "maxChargeR290",
+        "args": [
+          -1,
+          0,
+          0
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.002,
+        "pass": true
+      },
+      {
+        "name": "class 2 with unknown mount code traps",
+        "fn": "maxChargeR290",
+        "args": [
+          2,
+          20,
+          4
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.003,
+        "pass": true
+      },
+      {
+        "name": "inverse: 338 g wall unit needs about 20 m2",
+        "fn": "minRoomAreaR290",
+        "args": [
+          338,
+          2
+        ],
+        "expect": 20.04,
+        "got": 20.042384127700206,
+        "ms": 0.005,
+        "pass": true
+      },
+      {
+        "name": "inverse: 150 g floor-standing needs about 35.5 m2",
+        "fn": "minRoomAreaR290",
+        "args": [
+          150,
+          0
+        ],
+        "expect": 35.53,
+        "got": 35.5255662079347,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "inverse: zero charge traps",
+        "fn": "minRoomAreaR290",
+        "args": [
+          0,
+          2
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.006,
+        "pass": true
+      },
+      {
+        "name": "inverse: unknown mount code traps",
+        "fn": "minRoomAreaR290",
+        "args": [
+          338,
+          7
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.003,
+        "pass": true
+      }
+    ],
+    "promotable": true
+  },
+  "wasmSha256": "3975e5ca20a69703d7ccee8ba257e31ce47b8d3f2524fd848d4c0df096816bbb",
+  "comparisons": {
+    "bubblewrap": {
+      "semanticMatch": true,
+      "wasmMatch": true,
+      "exitMatch": true
+    },
+    "docker": {
+      "semanticMatch": true,
+      "wasmMatch": true,
+      "exitMatch": true
+    },
+    "roundtrip": {
+      "semanticMatch": true,
+      "wasmMatch": true,
+      "exitMatch": true
+    }
+  }
+}

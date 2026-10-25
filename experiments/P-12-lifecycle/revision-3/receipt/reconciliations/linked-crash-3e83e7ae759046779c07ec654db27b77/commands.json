@@ -1,0 +1,42 @@
+[
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "inspect",
+      "endoforge-p12-ff666f67ffbd44dfa7e0a3213dd36d26"
+    ],
+    "exit": 1,
+    "stdout": "[]\n",
+    "stderr": "error: no such object: endoforge-p12-ff666f67ffbd44dfa7e0a3213dd36d26\n"
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "ps",
+      "-aq",
+      "--filter",
+      "name=^/endoforge-p12-ff666f67ffbd44dfa7e0a3213dd36d26$"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "ps",
+      "-aq",
+      "--filter",
+      "name=^/endoforge-p12-ff666f67ffbd44dfa7e0a3213dd36d26$"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]

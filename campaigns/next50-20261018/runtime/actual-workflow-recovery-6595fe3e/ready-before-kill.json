@@ -1,0 +1,252 @@
+{
+  "container": {
+    "Id": "9a3241e0eaebde03935c10554942d643656257360dbe503e26bc82b1e5af69c1",
+    "Created": "2026-10-18T22:50:09.346354744Z",
+    "Path": "/bin/sh",
+    "Args": [
+      "-c",
+      "printf 'PARTIAL_UNTRUSTED_OUTPUT\\n'; touch /tmp/compile-ready; sleep 90; exec /usr/local/bin/node -e 'const fs=require('\"'\"'fs'\"'\"'),cp=require('\"'\"'child_process'\"'\"'),p=JSON.parse(fs.readFileSync('\"'\"'/input.txt'\"'\"','\"'\"'utf8'\"'\"'));\nif(p.version!==1||!/^[-A-Za-z0-9_]{1,80}$/.test(p.job))throw Error('\"'\"'payload'\"'\"');\nconst names=['\"'\"'CONTRACT.md'\"'\"','\"'\"'tests.json'\"'\"','\"'\"'frozen.sha256'\"'\"','\"'\"'kernel.ts'\"'\"','\"'\"'glue.json'\"'\"'];\nif(Object.keys(p.files).sort().join()!=names.sort().join())throw Error('\"'\"'file set'\"'\"');\nconst d='\"'\"'/tmp/'\"'\"'+p.job;fs.mkdirSync(d);for(const n of names){if(typeof p.files[n]!=='\"'\"'string'\"'\"')throw Error('\"'\"'file content'\"'\"');fs.writeFileSync(d+'\"'\"'/'\"'\"'+n,p.files[n]);}\ncp.execFileSync('\"'\"'/usr/local/bin/node'\"'\"',['\"'\"'/bundle/experiments/P-02-compiler-in-isolate/node_modules/assemblyscript/bin/asc.js'\"'\"',d+'\"'\"'/kernel.ts'\"'\"','\"'\"'--runtime'\"'\"','\"'\"'stub'\"'\"','\"'\"'-O3'\"'\"','\"'\"'--noAssert'\"'\"','\"'\"'-o'\"'\"',d+'\"'\"'/kernel.wasm'\"'\"'],{timeout:60000,stdio:['\"'\"'ignore'\"'\"','\"'\"'pipe'\"'\"','\"'\"'pipe'\"'\"']});\nconst b=fs.readFileSync(d+'\"'\"'/kernel.wasm'\"'\"'),m=new WebAssembly.Module(b);if(WebAssembly.Module.imports(m).length)throw Error('\"'\"'imports denied'\"'\"');\nprocess.stdout.write(b.toString('\"'\"'base64'\"'\"')+'\"'\"'\\n'\"'\"');'"
+    ],
+    "State": {
+      "Status": "running",
+      "Running": true,
+      "Paused": false,
+      "Restarting": false,
+      "OOMKilled": false,
+      "Dead": false,
+      "Pid": 362338,
+      "ExitCode": 0,
+      "Error": "",
+      "StartedAt": "2026-10-18T22:50:09.560458693Z",
+      "FinishedAt": "0001-01-01T00:00:00Z"
+    },
+    "Image": "sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541",
+    "ResolvConfPath": "/var/lib/docker/containers/9a3241e0eaebde03935c10554942d643656257360dbe503e26bc82b1e5af69c1/resolv.conf",
+    "HostnamePath": "/var/lib/docker/containers/9a3241e0eaebde03935c10554942d643656257360dbe503e26bc82b1e5af69c1/hostname",
+    "HostsPath": "/var/lib/docker/containers/9a3241e0eaebde03935c10554942d643656257360dbe503e26bc82b1e5af69c1/hosts",
+    "LogPath": "/var/lib/docker/containers/9a3241e0eaebde03935c10554942d643656257360dbe503e26bc82b1e5af69c1/9a3241e0eaebde03935c10554942d643656257360dbe503e26bc82b1e5af69c1-json.log",
+    "Name": "/endoforge-v1-19f08e360a4c48f4b8510cc91adffaf6",
+    "RestartCount": 0,
+    "Driver": "overlayfs",
+    "Platform": "linux",
+    "MountLabel": "",
+    "ProcessLabel": "",
+    "AppArmorProfile": "",
+    "ExecIDs": null,
+    "HostConfig": {
+      "Binds": null,
+      "ContainerIDFile": "",
+      "LogConfig": {
+        "Type": "json-file",
+        "Config": {
+          "max-file": "1",
+          "max-size": "1m"
+        }
+      },
+      "NetworkMode": "none",
+      "PortBindings": {},
+      "RestartPolicy": {
+        "Name": "no",
+        "MaximumRetryCount": 0
+      },
+      "AutoRemove": false,
+      "VolumeDriver": "",
+      "VolumesFrom": null,
+      "ConsoleSize": [
+        0,
+        0
+      ],
+      "CapAdd": null,
+      "CapDrop": [
+        "ALL"
+      ],
+      "CgroupnsMode": "private",
+      "Dns": null,
+      "DnsOptions": [],
+      "DnsSearch": [],
+      "ExtraHosts": null,
+      "GroupAdd": null,
+      "IpcMode": "private",
+      "Cgroup": "",
+      "Links": null,
+      "OomScoreAdj": 0,
+      "PidMode": "",
+      "Privileged": false,
+      "PublishAllPorts": false,
+      "ReadonlyRootfs": true,
+      "SecurityOpt": [
+        "no-new-privileges"
+      ],
+      "Tmpfs": {
+        "/out": "rw,nosuid,nodev,size=8m,uid=1000,gid=1000",
+        "/tmp": "rw,nosuid,nodev,size=64m"
+      },
+      "UTSMode": "",
+      "UsernsMode": "",
+      "ShmSize": 67108864,
+      "Runtime": "runc",
+      "Isolation": "",
+      "CpuShares": 0,
+      "Memory": 536870912,
+      "NanoCpus": 1000000000,
+      "CgroupParent": "",
+      "BlkioWeight": 0,
+      "BlkioWeightDevice": [],
+      "BlkioDeviceReadBps": [],
+      "BlkioDeviceWriteBps": [],
+      "BlkioDeviceReadIOps": [],
+      "BlkioDeviceWriteIOps": [],
+      "CpuPeriod": 0,
+      "CpuQuota": 0,
+      "CpuRealtimePeriod": 0,
+      "CpuRealtimeRuntime": 0,
+      "CpusetCpus": "",
+      "CpusetMems": "",
+      "Devices": [],
+      "DeviceCgroupRules": null,
+      "DeviceRequests": null,
+      "MemoryReservation": 0,
+      "MemorySwap": 536870912,
+      "MemorySwappiness": null,
+      "OomKillDisable": null,
+      "PidsLimit": 32,
+      "Ulimits": null,
+      "CpuCount": 0,
+      "CpuPercent": 0,
+      "IOMaximumIOps": 0,
+      "IOMaximumBandwidth": 0,
+      "Mounts": [
+        {
+          "Type": "bind",
+          "Source": "/home/user/Work/endoforge/campaigns/next50-20261018/runtime/actual-workflow-recovery-6595fe3e/runtime/attempts/compile-interrupted/input.txt",
+          "Target": "/input.txt",
+          "ReadOnly": true
+        }
+      ],
+      "MaskedPaths": [
+        "/proc/acpi",
+        "/proc/asound",
+        "/proc/interrupts",
+        "/proc/kcore",
+        "/proc/keys",
+        "/proc/latency_stats",
+        "/proc/sched_debug",
+        "/proc/scsi",
+        "/proc/timer_list",
+        "/proc/timer_stats",
+        "/sys/devices/virtual/powercap",
+        "/sys/firmware"
+      ],
+      "ReadonlyPaths": [
+        "/proc/bus",
+        "/proc/fs",
+        "/proc/irq",
+        "/proc/sys",
+        "/proc/sysrq-trigger"
+      ]
+    },
+    "Storage": {
+      "RootFS": {
+        "Snapshot": {
+          "Name": "overlayfs"
+        }
+      }
+    },
+    "Mounts": [
+      {
+        "Type": "bind",
+        "Source": "/home/user/Work/endoforge/campaigns/next50-20261018/runtime/actual-workflow-recovery-6595fe3e/runtime/attempts/compile-interrupted/input.txt",
+        "Destination": "/input.txt",
+        "Mode": "",
+        "RW": false,
+        "Propagation": "rprivate"
+      }
+    ],
+    "Config": {
+      "Hostname": "9a3241e0eaeb",
+      "Domainname": "",
+      "User": "1000:1000",
+      "AttachStdin": false,
+      "AttachStdout": true,
+      "AttachStderr": true,
+      "Tty": false,
+      "OpenStdin": false,
+      "StdinOnce": false,
+      "Env": [
+        "PATH=/usr/local/bin:/usr/bin:/bin",
+        "NODE_VERSION=22.18.0",
+        "YARN_VERSION=1.22.22",
+        "HOME=/tmp"
+      ],
+      "Cmd": [
+        "-c",
+        "printf 'PARTIAL_UNTRUSTED_OUTPUT\\n'; touch /tmp/compile-ready; sleep 90; exec /usr/local/bin/node -e 'const fs=require('\"'\"'fs'\"'\"'),cp=require('\"'\"'child_process'\"'\"'),p=JSON.parse(fs.readFileSync('\"'\"'/input.txt'\"'\"','\"'\"'utf8'\"'\"'));\nif(p.version!==1||!/^[-A-Za-z0-9_]{1,80}$/.test(p.job))throw Error('\"'\"'payload'\"'\"');\nconst names=['\"'\"'CONTRACT.md'\"'\"','\"'\"'tests.json'\"'\"','\"'\"'frozen.sha256'\"'\"','\"'\"'kernel.ts'\"'\"','\"'\"'glue.json'\"'\"'];\nif(Object.keys(p.files).sort().join()!=names.sort().join())throw Error('\"'\"'file set'\"'\"');\nconst d='\"'\"'/tmp/'\"'\"'+p.job;fs.mkdirSync(d);for(const n of names){if(typeof p.files[n]!=='\"'\"'string'\"'\"')throw Error('\"'\"'file content'\"'\"');fs.writeFileSync(d+'\"'\"'/'\"'\"'+n,p.files[n]);}\ncp.execFileSync('\"'\"'/usr/local/bin/node'\"'\"',['\"'\"'/bundle/experiments/P-02-compiler-in-isolate/node_modules/assemblyscript/bin/asc.js'\"'\"',d+'\"'\"'/kernel.ts'\"'\"','\"'\"'--runtime'\"'\"','\"'\"'stub'\"'\"','\"'\"'-O3'\"'\"','\"'\"'--noAssert'\"'\"','\"'\"'-o'\"'\"',d+'\"'\"'/kernel.wasm'\"'\"'],{timeout:60000,stdio:['\"'\"'ignore'\"'\"','\"'\"'pipe'\"'\"','\"'\"'pipe'\"'\"']});\nconst b=fs.readFileSync(d+'\"'\"'/kernel.wasm'\"'\"'),m=new WebAssembly.Module(b);if(WebAssembly.Module.imports(m).length)throw Error('\"'\"'imports denied'\"'\"');\nprocess.stdout.write(b.toString('\"'\"'base64'\"'\"')+'\"'\"'\\n'\"'\"');'"
+      ],
+      "Image": "sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541",
+      "Volumes": null,
+      "WorkingDir": "/tmp",
+      "Entrypoint": [
+        "/bin/sh"
+      ],
+      "Labels": {
+        "endoforge.owner": "19f08e360a4c48f4b8510cc91adffaf6",
+        "endoforge.runtime": "v1"
+      }
+    },
+    "NetworkSettings": {
+      "SandboxID": "e48a506f6ae71a43bac51ea51ddc8ef27f04095dbfe64599efbb1588057893c5",
+      "SandboxKey": "/var/run/docker/netns/e48a506f6ae7",
+      "Ports": {},
+      "Networks": {
+        "none": {
+          "IPAMConfig": null,
+          "Links": null,
+          "Aliases": null,
+          "DriverOpts": null,
+          "GwPriority": 0,
+          "NetworkID": "71b70e061c4cf3fb02a1b8daa6c619af2e2e0bb4e89e2841e16869b20eb456d5",
+          "EndpointID": "4aaf4b623051f2a86309151203efe2c50075dbef710b5456cd3d7d7f86c27834",
+          "Gateway": "",
+          "IPAddress": "",
+          "MacAddress": "",
+          "IPPrefixLen": 0,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "DNSNames": null
+        }
+      }
+    },
+    "ImageManifestDescriptor": {
+      "mediaType": "application/vnd.oci.image.manifest.v1+json",
+      "digest": "sha256:b4356e815af83cb01924298cc24739640ce70062772972751ab46ec155ce3131",
+      "size": 1624,
+      "platform": {
+        "architecture": "amd64",
+        "os": "linux"
+      }
+    }
+  },
+  "journal": {
+    "version": 1,
+    "attempt": "compile-interrupted",
+    "job": "dev-affine-01",
+    "token": "19f08e360a4c48f4b8510cc91adffaf6",
+    "containerName": "endoforge-v1-19f08e360a4c48f4b8510cc91adffaf6",
+    "expectedSha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "controller": {
+      "pid": 362089,
+      "starttime": "5671275",
+      "bootId": "7825b838-79a4-4963-8969-3a87477e4ce4"
+    },
+    "generation": "e10b255326e4430e881bb58ea1ee9897",
+    "captureOnly": true
+  },
+  "readinessMarker": "/tmp/compile-ready",
+  "stdout": "PARTIAL_UNTRUSTED_OUTPUT\n",
+  "controller": {
+    "pid": 362089,
+    "starttime": "5671275",
+    "bootId": "7825b838-79a4-4963-8969-3a87477e4ce4"
+  }
+}

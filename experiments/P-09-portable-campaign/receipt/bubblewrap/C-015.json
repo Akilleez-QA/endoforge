@@ -1,0 +1,260 @@
+{
+  "id": "C-015",
+  "argv": [
+    "bwrap",
+    "--ro-bind",
+    "/usr",
+    "/usr",
+    "--ro-bind",
+    "/lib",
+    "/lib",
+    "--ro-bind",
+    "/lib64",
+    "/lib64",
+    "--ro-bind",
+    "/bin",
+    "/bin",
+    "--ro-bind",
+    "/sbin",
+    "/sbin",
+    "--ro-bind",
+    "/home/user/Work/endoforge/experiments/P-09-portable-campaign/work/node",
+    "/opt/node",
+    "--ro-bind",
+    "/home/user/Work/endoforge/experiments/P-09-portable-campaign/work/context/bundle",
+    "/bundle",
+    "--bind",
+    "/home/user/Work/endoforge/experiments/P-09-portable-campaign/work/bubblewrap",
+    "/out",
+    "--tmpfs",
+    "/tmp",
+    "--proc",
+    "/proc",
+    "--dev",
+    "/dev",
+    "--unshare-all",
+    "--die-with-parent",
+    "--new-session",
+    "--clearenv",
+    "--setenv",
+    "PATH",
+    "/opt:/usr/bin:/bin",
+    "--setenv",
+    "HOME",
+    "/tmp",
+    "--chdir",
+    "/tmp",
+    "--",
+    "/opt/node",
+    "/bundle/campaigns/x1-spec-study/factory/gate.mjs",
+    "run",
+    "/out/C-015"
+  ],
+  "exit": 0,
+  "wallMs": 443.4058909973828,
+  "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 117,\n   \"wasmSha256\": \"f2b1c0da9031adf8a14e482fe9ee6df343fbefc918bcd644a0e6da65a7fa1666\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"decide\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 11,\n   \"total\": 11\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.036979\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+  "stderr": "",
+  "result": {
+    "at": "2026-10-18T18:45:26.693Z",
+    "gates": {
+      "G1_frozen": {
+        "ok": true
+      },
+      "G2_compiles": {
+        "ok": true,
+        "wasmBytes": 117,
+        "wasmSha256": "f2b1c0da9031adf8a14e482fe9ee6df343fbefc918bcd644a0e6da65a7fa1666"
+      },
+      "G3_exports": {
+        "ok": true,
+        "exports": [
+          "decide"
+        ]
+      },
+      "G4_tests": {
+        "ok": true,
+        "passed": 11,
+        "total": 11
+      },
+      "G6_bounded": {
+        "ok": true,
+        "maxMs": 0.036979
+      },
+      "G5_deterministic": {
+        "ok": true
+      },
+      "G7_glue": {
+        "ok": true
+      }
+    },
+    "tests": [
+      {
+        "name": "waiver allowed with role right and unexpiring qualification",
+        "fn": "decide",
+        "args": [
+          1,
+          1,
+          1,
+          -1,
+          100
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0.033,
+        "pass": true
+      },
+      {
+        "name": "waiver denied: role right but no qualification",
+        "fn": "decide",
+        "args": [
+          1,
+          1,
+          0,
+          -1,
+          100
+        ],
+        "expect": 2,
+        "got": 2,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "MOC denied: role right but no qualification",
+        "fn": "decide",
+        "args": [
+          2,
+          1,
+          0,
+          -1,
+          100
+        ],
+        "expect": 2,
+        "got": 2,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "MOC allowed with role right and future expiry",
+        "fn": "decide",
+        "args": [
+          2,
+          1,
+          1,
+          200,
+          100
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "waiver denied: no role right even with qualification",
+        "fn": "decide",
+        "args": [
+          1,
+          0,
+          1,
+          -1,
+          100
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0.002,
+        "pass": true
+      },
+      {
+        "name": "MOC denied: no role right, no qualification",
+        "fn": "decide",
+        "args": [
+          2,
+          0,
+          0,
+          -1,
+          100
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "other action: role right alone allows",
+        "fn": "decide",
+        "args": [
+          0,
+          1,
+          0,
+          -1,
+          100
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "other action: no role right denies",
+        "fn": "decide",
+        "args": [
+          0,
+          0,
+          1,
+          -1,
+          100
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "assumption: expired qualification denied with code 3",
+        "fn": "decide",
+        "args": [
+          1,
+          1,
+          1,
+          99,
+          100
+        ],
+        "expect": 3,
+        "got": 3,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "boundary: expiry on as-of day still valid",
+        "fn": "decide",
+        "args": [
+          1,
+          1,
+          1,
+          100,
+          100
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "unknown action code traps",
+        "fn": "decide",
+        "args": [
+          7,
+          1,
+          1,
+          -1,
+          100
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.037,
+        "pass": true
+      }
+    ],
+    "promotable": true
+  },
+  "wasmSha256": "f2b1c0da9031adf8a14e482fe9ee6df343fbefc918bcd644a0e6da65a7fa1666"
+}

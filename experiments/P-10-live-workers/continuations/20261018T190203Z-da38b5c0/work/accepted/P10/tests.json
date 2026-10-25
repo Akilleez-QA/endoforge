@@ -1,0 +1,13 @@
+[
+  {"name":"freezing point","fn":"celsiusToFahrenheit","args":[0],"expect":32,"tol":1e-9},
+  {"name":"boiling point","fn":"celsiusToFahrenheit","args":[100],"expect":212,"tol":1e-9},
+  {"name":"negative ordinary value","fn":"celsiusToFahrenheit","args":[-40],"expect":-40,"tol":1e-9},
+  {"name":"fractional ordinary value","fn":"celsiusToFahrenheit","args":[37.5],"expect":99.5,"tol":1e-9},
+  {"name":"inclusive lower bound","fn":"celsiusToFahrenheit","args":[-273.15],"expect":-459.67,"tol":1e-9},
+  {"name":"inclusive upper bound","fn":"celsiusToFahrenheit","args":[1000],"expect":1832,"tol":1e-9},
+  {"name":"below lower bound","fn":"celsiusToFahrenheit","args":[-273.150001],"expectError":true},
+  {"name":"above upper bound","fn":"celsiusToFahrenheit","args":[1000.000001],"expectError":true},
+  {"name":"NaN refused","fn":"celsiusToFahrenheit","args":["NaN"],"expectError":true},
+  {"name":"positive infinity refused","fn":"celsiusToFahrenheit","args":["Infinity"],"expectError":true},
+  {"name":"negative infinity refused","fn":"celsiusToFahrenheit","args":["-Infinity"],"expectError":true}
+]

@@ -1,0 +1,70 @@
+{
+  "requiredInputs": [],
+  "cases": [
+    {
+      "name": "Requested case: T=(70-32)*5/9; g=ln(0.60)+17.625*T/(243.04+T); dew point=32+(9/5)*243.04*g/(17.625-g), approximately 55.5 F",
+      "fn": "dewPointF",
+      "args": [70, 60],
+      "expect": 55.5,
+      "tol": 0.5
+    },
+    {
+      "name": "At saturation, dew point equals air temperature: 70 F",
+      "fn": "dewPointF",
+      "args": [70, 100],
+      "expect": 70,
+      "tol": 0.000001
+    },
+    {
+      "name": "At saturation, dew point equals air temperature: 32 F",
+      "fn": "dewPointF",
+      "args": [32, 100],
+      "expect": 32,
+      "tol": 0.000001
+    },
+    {
+      "name": "Negative relative humidity is physically impossible",
+      "fn": "dewPointF",
+      "args": [70, -1],
+      "refuse": true
+    },
+    {
+      "name": "Zero relative humidity has no finite dew point",
+      "fn": "dewPointF",
+      "args": [70, 0],
+      "refuse": true
+    },
+    {
+      "name": "Temperature below absolute zero: -460 F < -459.67 F",
+      "fn": "dewPointF",
+      "args": [-460, 60],
+      "refuse": true
+    }
+  ],
+  "properties": [
+    {
+      "name": "For ordinary unsaturated air, finite dew point lies below air temperature and above absolute zero",
+      "fn": "dewPointF",
+      "ranges": [[50, 100], [20, 99]],
+      "check": "out !== null && Number.isFinite(out) && out > -459.67 && out < a[0]"
+    },
+    {
+      "name": "Saturated air has dew point equal to air temperature",
+      "fn": "dewPointF",
+      "ranges": [[32, 100], [100, 100]],
+      "check": "out !== null && Number.isFinite(out) && Math.abs(out-a[0]) <= 0.000001"
+    },
+    {
+      "name": "Negative relative humidity must be refused",
+      "fn": "dewPointF",
+      "ranges": [[32, 100], [-100, -0.01]],
+      "check": "out === null"
+    },
+    {
+      "name": "Temperatures below absolute zero must be refused",
+      "fn": "dewPointF",
+      "ranges": [[-1000, -460], [1, 100]],
+      "check": "out === null"
+    }
+  ]
+}

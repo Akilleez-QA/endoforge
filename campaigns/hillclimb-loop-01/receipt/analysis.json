@@ -1,0 +1,5085 @@
+{
+  "at": "2026-10-18T08:00:50.062Z",
+  "screen": {
+    "requests": 20,
+    "armStats": {
+      "A": {
+        "n": 20,
+        "gated": 20,
+        "promoted": 18,
+        "personaReject": 2,
+        "personaChange": 16,
+        "g8ok": 20,
+        "clean": 1,
+        "cleanCI": {
+          "k": 1,
+          "n": 20,
+          "point": 0.05,
+          "lower": 0.0012650894979498051,
+          "upper": 0.24873276277202766,
+          "conf": 0.95
+        },
+        "strict": 0,
+        "lenient": 1,
+        "cleanQ8": 1,
+        "tokensMean": 19315,
+        "wallMedian": 50.9,
+        "perOracleClean": {
+          "oracle-sonnet": 6,
+          "oracle-opus": 1,
+          "oracle-codex": 0
+        }
+      },
+      "B": {
+        "n": 20,
+        "gated": 20,
+        "promoted": 19,
+        "personaReject": 1,
+        "personaChange": 18,
+        "g8ok": 20,
+        "clean": 0,
+        "cleanCI": {
+          "k": 0,
+          "n": 20,
+          "point": 0,
+          "lower": 0,
+          "upper": 0.1684334709830852,
+          "conf": 0.95
+        },
+        "strict": 0,
+        "lenient": 2,
+        "cleanQ8": 0,
+        "tokensMean": 33307,
+        "wallMedian": 38.85,
+        "perOracleClean": {
+          "oracle-sonnet": 4,
+          "oracle-opus": 1,
+          "oracle-codex": 1
+        }
+      },
+      "E": {
+        "n": 20,
+        "gated": 20,
+        "promoted": 19,
+        "personaReject": 1,
+        "personaChange": 14,
+        "g8ok": 19,
+        "clean": 1,
+        "cleanCI": {
+          "k": 1,
+          "n": 20,
+          "point": 0.05,
+          "lower": 0.0012650894979498051,
+          "upper": 0.24873276277202766,
+          "conf": 0.95
+        },
+        "strict": 0,
+        "lenient": 1,
+        "cleanQ8": 1,
+        "tokensMean": 35976,
+        "wallMedian": 75.3,
+        "perOracleClean": {
+          "oracle-sonnet": 7,
+          "oracle-opus": 0,
+          "oracle-codex": 1
+        }
+      }
+    },
+    "contrasts": {
+      "E_vs_A_primary": {
+        "median": {
+          "n": 20,
+          "a": 1,
+          "b": 1,
+          "improved": 0,
+          "worsened": 0,
+          "both": 1,
+          "neither": 19,
+          "diff": 0,
+          "ci": [
+            0,
+            0
+          ],
+          "sign": {
+            "n": 0,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [],
+          "worsenedIds": []
+        },
+        "strict": {
+          "n": 20,
+          "a": 0,
+          "b": 0,
+          "improved": 0,
+          "worsened": 0,
+          "both": 0,
+          "neither": 20,
+          "diff": 0,
+          "ci": [
+            0,
+            0
+          ],
+          "sign": {
+            "n": 0,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [],
+          "worsenedIds": []
+        },
+        "lenient": {
+          "n": 20,
+          "a": 1,
+          "b": 1,
+          "improved": 1,
+          "worsened": 1,
+          "both": 0,
+          "neither": 18,
+          "diff": 0,
+          "ci": [
+            -0.15,
+            0.15
+          ],
+          "sign": {
+            "n": 2,
+            "improved": 1,
+            "worsened": 1,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [
+            "C-003"
+          ],
+          "worsenedIds": [
+            "CC-019"
+          ]
+        },
+        "withG8": {
+          "n": 20,
+          "a": 1,
+          "b": 1,
+          "improved": 0,
+          "worsened": 0,
+          "both": 1,
+          "neither": 19,
+          "diff": 0,
+          "ci": [
+            0,
+            0
+          ],
+          "sign": {
+            "n": 0,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [],
+          "worsenedIds": []
+        }
+      },
+      "E_vs_B_secondary": {
+        "median": {
+          "n": 20,
+          "a": 0,
+          "b": 1,
+          "improved": 1,
+          "worsened": 0,
+          "both": 0,
+          "neither": 19,
+          "diff": 0.05,
+          "ci": [
+            0,
+            0.15
+          ],
+          "sign": {
+            "n": 1,
+            "improved": 1,
+            "worsened": 0,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [
+            "C-003"
+          ],
+          "worsenedIds": []
+        },
+        "strict": {
+          "n": 20,
+          "a": 0,
+          "b": 0,
+          "improved": 0,
+          "worsened": 0,
+          "both": 0,
+          "neither": 20,
+          "diff": 0,
+          "ci": [
+            0,
+            0
+          ],
+          "sign": {
+            "n": 0,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [],
+          "worsenedIds": []
+        },
+        "lenient": {
+          "n": 20,
+          "a": 2,
+          "b": 1,
+          "improved": 0,
+          "worsened": 1,
+          "both": 1,
+          "neither": 18,
+          "diff": -0.05,
+          "ci": [
+            -0.15,
+            0
+          ],
+          "sign": {
+            "n": 1,
+            "improved": 0,
+            "worsened": 1,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [],
+          "worsenedIds": [
+            "C-024"
+          ]
+        },
+        "withG8": {
+          "n": 20,
+          "a": 0,
+          "b": 1,
+          "improved": 1,
+          "worsened": 0,
+          "both": 0,
+          "neither": 19,
+          "diff": 0.05,
+          "ci": [
+            0,
+            0.15
+          ],
+          "sign": {
+            "n": 1,
+            "improved": 1,
+            "worsened": 0,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [
+            "C-003"
+          ],
+          "worsenedIds": []
+        }
+      },
+      "B_vs_A_exploratory": {
+        "median": {
+          "n": 20,
+          "a": 1,
+          "b": 0,
+          "improved": 0,
+          "worsened": 1,
+          "both": 0,
+          "neither": 19,
+          "diff": -0.05,
+          "ci": [
+            -0.15,
+            0
+          ],
+          "sign": {
+            "n": 1,
+            "improved": 0,
+            "worsened": 1,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [],
+          "worsenedIds": [
+            "C-003"
+          ]
+        },
+        "strict": {
+          "n": 20,
+          "a": 0,
+          "b": 0,
+          "improved": 0,
+          "worsened": 0,
+          "both": 0,
+          "neither": 20,
+          "diff": 0,
+          "ci": [
+            0,
+            0
+          ],
+          "sign": {
+            "n": 0,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [],
+          "worsenedIds": []
+        },
+        "lenient": {
+          "n": 20,
+          "a": 1,
+          "b": 2,
+          "improved": 2,
+          "worsened": 1,
+          "both": 0,
+          "neither": 17,
+          "diff": 0.05,
+          "ci": [
+            -0.1,
+            0.2
+          ],
+          "sign": {
+            "n": 3,
+            "improved": 2,
+            "worsened": 1,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [
+            "C-003",
+            "C-024"
+          ],
+          "worsenedIds": [
+            "CC-019"
+          ]
+        },
+        "withG8": {
+          "n": 20,
+          "a": 1,
+          "b": 0,
+          "improved": 0,
+          "worsened": 1,
+          "both": 0,
+          "neither": 19,
+          "diff": -0.05,
+          "ci": [
+            -0.15,
+            0
+          ],
+          "sign": {
+            "n": 1,
+            "improved": 0,
+            "worsened": 1,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [],
+          "worsenedIds": [
+            "C-003"
+          ]
+        }
+      }
+    },
+    "ordinal": {
+      "E_vs_A": {
+        "n": 20,
+        "improved": 3,
+        "worsened": 7,
+        "improvedIds": [
+          "CC-018",
+          "CC-024",
+          "CC-035"
+        ],
+        "worsenedIds": [
+          "C-004",
+          "C-008",
+          "C-024",
+          "CC-017",
+          "CC-019",
+          "CC-029",
+          "CC-034"
+        ],
+        "sign": {
+          "n": 10,
+          "improved": 3,
+          "worsened": 7,
+          "p": 0.34375
+        },
+        "meanLevelX": 1.6,
+        "meanLevelY": 1.8
+      },
+      "E_vs_B": {
+        "n": 20,
+        "improved": 2,
+        "worsened": 4,
+        "improvedIds": [
+          "C-003",
+          "CC-024"
+        ],
+        "worsenedIds": [
+          "C-024",
+          "CC-017",
+          "CC-019",
+          "CC-029"
+        ],
+        "sign": {
+          "n": 6,
+          "improved": 2,
+          "worsened": 4,
+          "p": 0.6875
+        },
+        "meanLevelX": 1.75,
+        "meanLevelY": 1.8
+      },
+      "B_vs_A": {
+        "n": 20,
+        "improved": 2,
+        "worsened": 5,
+        "improvedIds": [
+          "CC-018",
+          "CC-035"
+        ],
+        "worsenedIds": [
+          "C-003",
+          "C-004",
+          "C-008",
+          "CC-024",
+          "CC-034"
+        ],
+        "sign": {
+          "n": 7,
+          "improved": 2,
+          "worsened": 5,
+          "p": 0.453125
+        },
+        "meanLevelX": 1.6,
+        "meanLevelY": 1.75
+      }
+    },
+    "verdictDist": {
+      "A": {
+        "oracle-sonnet": {
+          "clean": 6,
+          "withChange": 8,
+          "notUsable": 6
+        },
+        "oracle-opus": {
+          "clean": 1,
+          "withChange": 8,
+          "notUsable": 11
+        },
+        "oracle-codex": {
+          "clean": 0,
+          "withChange": 1,
+          "notUsable": 19
+        },
+        "panelMedian": {
+          "clean": 1,
+          "withChange": 8,
+          "notUsable": 11
+        }
+      },
+      "B": {
+        "oracle-sonnet": {
+          "clean": 4,
+          "withChange": 8,
+          "notUsable": 8
+        },
+        "oracle-opus": {
+          "clean": 1,
+          "withChange": 6,
+          "notUsable": 13
+        },
+        "oracle-codex": {
+          "clean": 1,
+          "withChange": 1,
+          "notUsable": 18
+        },
+        "panelMedian": {
+          "clean": 0,
+          "withChange": 6,
+          "notUsable": 14
+        }
+      },
+      "E": {
+        "oracle-sonnet": {
+          "clean": 7,
+          "withChange": 9,
+          "notUsable": 4
+        },
+        "oracle-opus": {
+          "clean": 0,
+          "withChange": 5,
+          "notUsable": 15
+        },
+        "oracle-codex": {
+          "clean": 1,
+          "withChange": 0,
+          "notUsable": 19
+        },
+        "panelMedian": {
+          "clean": 1,
+          "withChange": 3,
+          "notUsable": 16
+        }
+      }
+    },
+    "repair": {
+      "eligible": 20,
+      "triggered": 18,
+      "resolved": 4,
+      "gatedAfterRepair": 18,
+      "cleanAfterRepair": 0,
+      "cleanBeforeRepairOnTriggered": 0
+    },
+    "spec": {
+      "n": 20,
+      "frozen": 20,
+      "stubRevised": 17,
+      "retrievalHits": 1,
+      "testsMedian": 13,
+      "consequencePhysical": 15
+    },
+    "guardrails": {
+      "gatePass": {
+        "incumbent": 20,
+        "challenger": 20,
+        "bound": "E >= A - 3",
+        "holds": true
+      },
+      "g56": {
+        "incumbentFails": 0,
+        "challengerFails": 0,
+        "holds": true
+      },
+      "wall": {
+        "incumbentMedian": 50.9,
+        "challengerCriticalMedian": 188.45,
+        "bound": "E <= 2.0 x A",
+        "holds": false
+      },
+      "tokens": {
+        "incumbentMean": 19315,
+        "challengerMean": 98836,
+        "bound": "E <= 3.0 x A",
+        "holds": false
+      }
+    },
+    "pairedLogWall_EoverA": {
+      "median": 1.3101080723735277,
+      "lower": 1.1531228829569193,
+      "upper": 1.5000206307726804,
+      "n": 20
+    },
+    "oracleAgreement": {
+      "oracle-sonnet|oracle-opus": {
+        "n": 60,
+        "exact": 26,
+        "within1": 52,
+        "kappa3": 0.1460862285475094,
+        "cleanAgree": 43,
+        "kappaClean": 0.04850746268656693
+      },
+      "oracle-sonnet|oracle-codex": {
+        "n": 60,
+        "exact": 20,
+        "within1": 45,
+        "kappa3": 0.04306220095693783,
+        "cleanAgree": 43,
+        "kappaClean": 0.04850746268656693
+      },
+      "oracle-opus|oracle-codex": {
+        "n": 60,
+        "exact": 41,
+        "within1": 58,
+        "kappa3": 0.17030567685589532,
+        "cleanAgree": 56,
+        "kappaClean": -0.03448275862068811
+      }
+    },
+    "within1AllPairs80": false,
+    "efficiency": {
+      "tokensPerCleanA": 386291,
+      "tokensPerCleanE": 1976713
+    },
+    "scoredArtefacts": 60,
+    "per": {
+      "C-003": {
+        "A": {
+          "status": "promoted-with-assumption",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": false,
+          "panel": "clean",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "clean",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 1,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 1,
+          "tokens": 17528,
+          "wall_s": 44,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": false,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "clean"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 1,
+          "cleanQ8": 0,
+          "tokens": 26408,
+          "wall_s": 17.3,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-with-assumption",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": false,
+          "panel": "clean",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "clean"
+          },
+          "clean": 1,
+          "strict": 0,
+          "lenient": 1,
+          "cleanQ8": 1,
+          "tokens": 0,
+          "wall_s": 0,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": false,
+          "repairResolved": null
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 12,
+          "tokens": 29551,
+          "wall_s": 65.8,
+          "retrieval": {
+            "id": "CC-002",
+            "jaccard": 0.667
+          },
+          "consequence": "informational"
+        },
+        "wallE": 83.1,
+        "tokensE": 55959,
+        "tokensA": 17528
+      },
+      "C-004": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 18108,
+          "wall_s": 48,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 35768,
+          "wall_s": 36.7,
+          "rounds": null,
+          "selected": "2"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 40555,
+          "wall_s": 71.8,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 14,
+          "tokens": 29477,
+          "wall_s": 73.1,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 181.6,
+        "tokensE": 105800,
+        "tokensA": 18108
+      },
+      "C-008": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 19158,
+          "wall_s": 54.4,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 44531,
+          "wall_s": 83.6,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 47520,
+          "wall_s": 129,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 13,
+          "tokens": 32252,
+          "wall_s": 85.5,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 298.1,
+        "tokensE": 124303,
+        "tokensA": 19158
+      },
+      "C-011": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 18678,
+          "wall_s": 51,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 29949,
+          "wall_s": 28.1,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 37023,
+          "wall_s": 71.3,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 14,
+          "tokens": 30583,
+          "wall_s": 85.7,
+          "retrieval": null,
+          "consequence": "informational"
+        },
+        "wallE": 185.2,
+        "tokensE": 97555,
+        "tokensA": 18678
+      },
+      "C-018": {
+        "A": {
+          "status": "promoted-with-assumption",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 18895,
+          "wall_s": 44.7,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 24984,
+          "wall_s": 19.7,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 34339,
+          "wall_s": 62.9,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 12,
+          "tokens": 27254,
+          "wall_s": 58.5,
+          "retrieval": null,
+          "consequence": "informational"
+        },
+        "wallE": 141.1,
+        "tokensE": 86577,
+        "tokensA": 18895
+      },
+      "C-020": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 15207,
+          "wall_s": 31.5,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 32150,
+          "wall_s": 27,
+          "rounds": null,
+          "selected": "esc"
+        },
+        "E": {
+          "status": "promoted-with-assumption",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 29632,
+          "wall_s": 48,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": true
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 9,
+          "tokens": 26105,
+          "wall_s": 54.6,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 129.5,
+        "tokensE": 87887,
+        "tokensA": 15207
+      },
+      "C-022": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 19962,
+          "wall_s": 55.2,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 36147,
+          "wall_s": 53.5,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 43140,
+          "wall_s": 103,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 13,
+          "tokens": 31646,
+          "wall_s": 82.5,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 239.1,
+        "tokensE": 110933,
+        "tokensA": 19962
+      },
+      "C-024": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 19642,
+          "wall_s": 49.9,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "usable-with-change"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 1,
+          "cleanQ8": 0,
+          "tokens": 24901,
+          "wall_s": 18.2,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 41269,
+          "wall_s": 68.1,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 9,
+          "tokens": 28645,
+          "wall_s": 71,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 157.3,
+        "tokensE": 94815,
+        "tokensA": 19642
+      },
+      "CC-006": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 18558,
+          "wall_s": 47.1,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "clean",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 34123,
+          "wall_s": 41,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-with-assumption",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": false,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 40413,
+          "wall_s": 84.1,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": true
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 14,
+          "tokens": 31728,
+          "wall_s": 87.6,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 212.7,
+        "tokensE": 106264,
+        "tokensA": 18558
+      },
+      "CC-010": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 32196,
+          "wall_s": 80.9,
+          "rounds": 2,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 38988,
+          "wall_s": 61.1,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 47712,
+          "wall_s": 134.6,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 12,
+          "tokens": 32563,
+          "wall_s": 95.8,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 291.5,
+        "tokensE": 119263,
+        "tokensA": 32196
+      },
+      "CC-017": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 19692,
+          "wall_s": 52.8,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 27834,
+          "wall_s": 28.8,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "gated-rejected-by-persona",
+          "gated": true,
+          "g8": true,
+          "personaReject": true,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 34591,
+          "wall_s": 52,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 12,
+          "tokens": 28290,
+          "wall_s": 66.3,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 147.1,
+        "tokensE": 90715,
+        "tokensA": 19692
+      },
+      "CC-018": {
+        "A": {
+          "status": "gated-rejected-by-persona",
+          "gated": true,
+          "g8": true,
+          "personaReject": true,
+          "personaChange": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 19064,
+          "wall_s": 50.8,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 26548,
+          "wall_s": 24.4,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 33618,
+          "wall_s": 56.3,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 11,
+          "tokens": 29683,
+          "wall_s": 76.6,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 157.3,
+        "tokensE": 89849,
+        "tokensA": 19064
+      },
+      "CC-019": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "usable-with-change"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 1,
+          "cleanQ8": 0,
+          "tokens": 19106,
+          "wall_s": 54,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 29416,
+          "wall_s": 34.1,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-with-assumption",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 36365,
+          "wall_s": 78.8,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": true
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 13,
+          "tokens": 29029,
+          "wall_s": 78.9,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 191.7,
+        "tokensE": 94810,
+        "tokensA": 19106
+      },
+      "CC-020": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 17716,
+          "wall_s": 42.6,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 22953,
+          "wall_s": 15.9,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 27772,
+          "wall_s": 48.3,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": false,
+          "cpersona": null,
+          "tests": 8,
+          "tokens": 20375,
+          "wall_s": 49.5,
+          "retrieval": null,
+          "consequence": "informational"
+        },
+        "wallE": 113.7,
+        "tokensE": 71100,
+        "tokensA": 17716
+      },
+      "CC-021": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 19349,
+          "wall_s": 54.8,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 36201,
+          "wall_s": 55.6,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 43706,
+          "wall_s": 116,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 13,
+          "tokens": 33505,
+          "wall_s": 99.3,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 270.9,
+        "tokensE": 113412,
+        "tokensA": 19349
+      },
+      "CC-024": {
+        "A": {
+          "status": "promoted-with-assumption",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 19450,
+          "wall_s": 50.8,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": true,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 37518,
+          "wall_s": 63.6,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 43308,
+          "wall_s": 118.2,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 12,
+          "tokens": 32974,
+          "wall_s": 95.7,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 277.5,
+        "tokensE": 113800,
+        "tokensA": 19450
+      },
+      "CC-029": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 17017,
+          "wall_s": 39.1,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 45994,
+          "wall_s": 111.9,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 45413,
+          "wall_s": 124.9,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": false,
+          "cpersona": null,
+          "tests": 14,
+          "tokens": 24594,
+          "wall_s": 66.7,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 303.5,
+        "tokensE": 116001,
+        "tokensA": 17017
+      },
+      "CC-030": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 19218,
+          "wall_s": 54.7,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 35478,
+          "wall_s": 53.7,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-with-assumption",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 44052,
+          "wall_s": 123.2,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": true
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": false,
+          "cpersona": null,
+          "tests": 14,
+          "tokens": 24456,
+          "wall_s": 66.3,
+          "retrieval": null,
+          "consequence": "informational"
+        },
+        "wallE": 243.3,
+        "tokensE": 103986,
+        "tokensA": 19218
+      },
+      "CC-034": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 18585,
+          "wall_s": 52.9,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 37140,
+          "wall_s": 66.9,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-with-assumption",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 0,
+          "wall_s": 0,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": false,
+          "repairResolved": null
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 14,
+          "tokens": 33473,
+          "wall_s": 101.3,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 168.2,
+        "tokensE": 70613,
+        "tokensA": 18585
+      },
+      "CC-035": {
+        "A": {
+          "status": "gated-rejected-by-persona",
+          "gated": true,
+          "g8": true,
+          "personaReject": true,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 19162,
+          "wall_s": 53.5,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 39117,
+          "wall_s": 42.9,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": false,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 49085,
+          "wall_s": 100.8,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 14,
+          "tokens": 34869,
+          "wall_s": 105,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 248.7,
+        "tokensE": 123071,
+        "tokensA": 19162
+      }
+    },
+    "reasons": {
+      "C-003": {
+        "A": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "clean: ",
+          "oracle-codex": "not-usable: Remove the irrelevant frost-point question: this request supplies both inputs and produces a dew point above freezing."
+        },
+        "B": {
+          "oracle-sonnet": "usable-with-change: Enforce a temperature range of about -40 to 130 F, since it currently accepts any finite temperature.",
+          "oracle-opus": "usable-with-change: Below 32 F, label results as over-water dew point (not frost point), and warn when the dry bulb is outside the Magnus range (-45 to 60 C, about -49 to 140 F).",
+          "oracle-codex": "clean: "
+        },
+        "E": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "usable-with-change: Add an out-of-range warning for a dry bulb above 140 F (60 C, the Magnus validity limit) and label results below 32 F as dew point over water, not frost point.",
+          "oracle-codex": "clean: "
+        }
+      },
+      "C-004": {
+        "A": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "usable-with-change: Reject efficiencies of 100% or above and below 50% (it currently accepts 100% and anything above 0), and flag that a hermetic compressor's hp is not shaft power.",
+          "oracle-codex": "not-usable: The electrical-draw calculation silently assumes rated shaft load; ask for operating load and efficiency at that load."
+        },
+        "B": {
+          "oracle-sonnet": "usable-with-change: Lead with shaft output (about 3,729 W, 1 hp = 745.7 W), since that is what 'watts of a 5 hp motor' usually means, and show the 89% electrical input second.",
+          "oracle-opus": "not-usable: It justifies leading with the input watts as the 'conservative figure for sizing wiring and breakers', which conflicts with its own note; it accepts efficiencies from 1 % to 100 %; and it never asks output vs draw or ope",
+          "oracle-codex": "not-usable: It leads with electrical input based on assumed efficiency and full rated shaft load without first resolving the requested power type and operating load."
+        },
+        "E": {
+          "oracle-sonnet": "usable-with-change: The question it asks (volts, phase, FLA) is not what the capability uses; ask 'shaft output or electrical input, and what is the efficiency?', or add a V/A/PF input path.",
+          "oracle-opus": "not-usable: It never asks whether the requester needs rated output or electrical draw, or whether this is an open motor or a hermetic compressor. It accepts efficiency up to 100% and down to 1% (100% returns input = output). The 89%",
+          "oracle-codex": "not-usable: Ask shaft output versus electrical input and establish operating load and efficiency before calculating electrical input."
+        }
+      },
+      "C-008": {
+        "A": {
+          "oracle-sonnet": "usable-with-change: Make the pattern explicit as low superheat, and have the tool take refrigerant plus actual pressures and line temperatures and do the PT conversion itself, instead of taking a bare suction saturation number under a gener",
+          "oracle-opus": "usable-with-change: Attach the confirming test to the restriction diagnosis: measure the temperature drop across the drier/strainer and check TXV bulb contact and charge.",
+          "oracle-codex": "not-usable: Replace definite fault classification from generic targets with a conditional starvation assessment and request refrigerant, pressures, line temperatures and measurement locations."
+        },
+        "B": {
+          "oracle-sonnet": "not-usable: The tech asked what is wrong given low superheat, low suction saturation and good subcooling. The tool only computes superheat and saturation temperature from numbers the tech did not give, and it offers no ranked causes",
+          "oracle-opus": "not-usable: The person reported the symptoms and wants the likely fault; it only recomputes superheat, ignores subcooling and metering device, and gives no restriction diagnosis or confirming test.",
+          "oracle-codex": "not-usable: It calculates superheat instead of addressing the fault pattern, and asks only for refrigerant rather than actual measurements and locations."
+        },
+        "E": {
+          "oracle-sonnet": "not-usable: It only computes superheat from pressure and line temperature, which the person already reported as low. It gives no diagnosis or ranked causes (low load or airflow, TXV overfeeding, not charge) for low superheat with go",
+          "oracle-opus": "not-usable: The symptoms call for a diagnosis (a restriction or metering-device underfeed, with a confirming drier/strainer temperature-drop and bulb check); the tool only computes superheat, ignores subcooling and metering type, an",
+          "oracle-codex": "not-usable: It calculates superheat instead of explaining the reported fault pattern, and asks only for refrigerant rather than actual pressures, temperatures and measurement locations."
+        }
+      },
+      "C-011": {
+        "A": {
+          "oracle-sonnet": "not-usable: Both functions accept NaN for the stated range 'sent >= 0' (waitMs returned 0 ms, i.e. go ahead), so a stated range is not enforced and bad input fails open. It also gives no margin under the ceiling: 49 of 50 reads as s",
+          "oracle-opus": "not-usable: It ignores the rate-limit headers and retry_after (per-route buckets and 429s are not covered), and NaN for sent returns 0 ms, so its stated '>= 0' range is not enforced and it fails open.",
+          "oracle-codex": "not-usable: Unverified fixed windows cannot establish safe pacing; the question omits the action and authorized bot/webhook method."
+        },
+        "B": {
+          "oracle-sonnet": "not-usable: A NaN failure count is accepted and returns 9000 headroom, so a stated range (count >= 0) is not enforced and it reports safety when the data is invalid.",
+          "oracle-opus": "not-usable: Two arithmetic helpers do not keep a client inside the limits: no retry_after handling, no header-driven buckets, no global limiter, no halt on 401/403. A blank route limit defaults to 50/s, and NaN failures are accepted",
+          "oracle-codex": "not-usable: Fixed spacing and invalid-request headroom do not enforce Discord limits; the question also omits the action and authorized bot/webhook method."
+        },
+        "E": {
+          "oracle-sonnet": "not-usable: The stated refusal of a non-numeric failure count is not enforced: invalidRequestHeadroom(NaN, 10%) returns 9000, as if there were no failures, so it fails open on the ban counter.",
+          "oracle-opus": "not-usable: It says a non-numeric failure count is refused, but the NaN probe returned 9000. It is only arithmetic helpers: no retry_after handling, no global limiter, no halt on 401/403. It never asks whether this is a bot token.",
+          "oracle-codex": "not-usable: Fixed pacing and invalid-request headroom do not enforce Discord's bucket/global limits; the question also omits the action and authorized account method."
+        }
+      },
+      "C-018": {
+        "A": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "not-usable: It labels the creator as recorded_by (recorded_by is the submitter; created_by is the creator), takes role flags from the caller instead of the audit records, and asks about the never-reviewed default rather than which r",
+          "oracle-codex": "not-usable: It assumes recorded_by identifies the creator and asks about first-review history instead of resolving the required identity-field mapping."
+        },
+        "B": {
+          "oracle-sonnet": "not-usable: It fails open on bad input: a NaN actorIsRecordedBy flag returned 'Review allowed'; a missing or non-numeric identity must refuse, never allow.",
+          "oracle-opus": "not-usable: It fails open: the probe actorIsRecordedBy = NaN returned 'Review allowed'. Authorship facts come as caller-supplied flags instead of audit records, and created_by is merged with recorded_by.",
+          "oracle-codex": "not-usable: It conflates recorded_by with both required identities and permits review without validated identity and contributor evidence."
+        },
+        "E": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "not-usable: The author facts come as caller-supplied 0/1 answers instead of being derived from audit records by immutable ID. It merges recorded_by and created_by. It asks the requester for case facts instead of which event resets '",
+          "oracle-codex": "not-usable: It conflates recorded_by with both submitter and creator instead of resolving their identities from application records."
+        }
+      },
+      "C-020": {
+        "A": {
+          "oracle-sonnet": "not-usable: The question it would ask ('refuse when the QA check fails, or when it passes?') is the wrong one: the request already says refuse when not good. It should ask what values the QA result can take and which count as good.",
+          "oracle-opus": "not-usable: The QA result is not bound to the load or lot and has no validity window (operator-entered pass/fail only), so a pass from another lot or a stale pass would allow the load.",
+          "oracle-codex": "not-usable: It reverses the supplied arrow before confirmation and labels a QA pass as general permission to load."
+        },
+        "B": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "not-usable: It accepts a bare QA code that is not tied to the load: there is no QA check ID matched to the lot and no timestamp checked against a validity window. It also silently reinterprets the inverted 'good -> refuse' mapping i",
+          "oracle-codex": "not-usable: Resolve whether pass or fail means refusal before applying the QA rule; the sheet reverses the supplied arrow."
+        },
+        "E": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "not-usable: It accepts a bare QA code that is not bound to this load or lot and has no validity window. It also never confirms the inverted 'good → refuse' wording; it silently reinterprets it.",
+          "oracle-codex": "not-usable: It silently reverses the arrow instead of asking whether refusal is intended on pass or fail."
+        }
+      },
+      "C-022": {
+        "A": {
+          "oracle-sonnet": "not-usable: It silently assumes ammonia and never asks refrigerant or whether the system is running or equalized. It works in kPa/degC rather than psig/F, and its question asks about the author's workbook instead of the job.",
+          "oracle-opus": "not-usable: It accepts 'condenser outlet / ambient' temperature with no running vs idle-equalized distinction, ignores elevation (fixed 101.325 kPa not labelled sea level), defaults the refrigerant to ammonia, and issues a 'Purge re",
+          "oracle-codex": "not-usable: Assumed ammonia and ambient/outlet temperature cannot establish non-condensables or justify purging; the question omits temperature location and equilibrium conditions."
+        },
+        "B": {
+          "oracle-sonnet": "not-usable: It never asks whether the system is running or off and for how long, and it returns negative excess (-2.4 psi, -0.0 psi) instead of 'no evidence, recheck temperature and gauge'; the default of 0 subcooling overstates exc",
+          "oracle-opus": "not-usable: The subcooling input and question are circular: subcooling read off the head gauge already includes the NCG pressure, so supplying it drives the excess toward zero. It never asks or enforces 'liquid line while running vs",
+          "oracle-codex": "not-usable: Assuming ammonia and zero unknown subcooling does not establish a defensible excess pressure; timestamps and tracking are also absent."
+        },
+        "E": {
+          "oracle-sonnet": "usable-with-change: Never return a negative excess; below saturation say 'no evidence of non-condensables, recheck temperature and gauge' and add a suspect flag above a stated threshold.",
+          "oracle-opus": "not-usable: It asks for 'subcooling' (which needs the true saturation temperature the NCG distorts) instead of whether the temperature is running liquid-line or idle-equalized ambient; it does not enforce the running-ambient refusal",
+          "oracle-codex": "not-usable: It defaults to ammonia and treats outlet temperature as saturation when subcooling is unknown, without establishing representative equilibrium measurements or timestamped tracking."
+        }
+      },
+      "C-024": {
+        "A": {
+          "oracle-sonnet": "usable-with-change: Add an ammonia (B2L) refrigerant class, which the node codes cannot express, so a combustion smell on an ammonia node also points to the separate pungent-smell ammonia procedure. Also state the legitimate route (owner, O",
+          "oracle-opus": "usable-with-change: Add an R-717/B2L refrigerant class and a sharp/pungent-smell topic that routes to the ammonia evacuate-and-IIAR-emergency response; the credential refusal should also carry the OEM/distributor reset referral.",
+          "oracle-codex": "not-usable: Required emergency-response and authorized-recovery directions are missing; the proposed question concerns an unrelated smell policy."
+        },
+        "B": {
+          "oracle-sonnet": "usable-with-change: The combustion answer leads with leave and ventilate but omits calling the gas utility or 911 if there are symptoms, asking about headache or nausea and the fuel type, and noting a sharp pungent smell on an ammonia node ",
+          "oracle-opus": "usable-with-change: Add a branch keyed on the node refrigerant for an R-717 sharp or pungent smell (the ammonia-leak and IIAR evacuation response). Combustion or exhaust wording must still keep CO first.",
+          "oracle-codex": "usable-with-change: Replace the CO response with immediate fresh-air evacuation and emergency contact, competent clearance despite a single zero reading, and separate ammonia/CO₂ hazard distinctions."
+        },
+        "E": {
+          "oracle-sonnet": "not-usable: The question asks the person to classify their own topic instead of leading with the CO line and then asking about headache/nausea and the unit's fuel. The routing needs the requester to supply a topic code, and the resp",
+          "oracle-opus": "not-usable: It relies on the user to self-classify the topic, has no ammonia (R-717) leak branch or node-refrigerant input, and the default path leads with a routing question rather than safety guidance.",
+          "oracle-codex": "not-usable: The CO response omits emergency contact and competent investigation, assigns ventilation work, and presents a CO-meter check as the re-entry condition."
+        }
+      },
+      "CC-006": {
+        "A": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "usable-with-change: Ask for (and accept) the nameplate FLA instead of efficiency/PF, and stop returning the single-phase unity-factor P/V figure (8.1 A) for a 460 V motor.",
+          "oracle-codex": "not-usable: Resolve phase and whether watts are electrical input or shaft output before calculating; the question omits the latter."
+        },
+        "B": {
+          "oracle-sonnet": "usable-with-change: The question should ask whether the motor is three-phase and whether 3730 W is shaft output; as written it just asks for the FLA, which is the amps the person wanted.",
+          "oracle-opus": "clean: ",
+          "oracle-codex": "not-usable: Establish phase, input versus shaft watts, running power factor and required efficiency before calculating running current."
+        },
+        "E": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "usable-with-change: Add 'is it three-phase?' to the question. Phase is assumed and single-phase or DC cannot be declared, so it is never refused, only noted as not covered.",
+          "oracle-codex": "not-usable: It substitutes a three-phase shaft-power table answer and assumed estimates; its question omits phase, input/output clarification and running power factor."
+        }
+      },
+      "CC-010": {
+        "A": {
+          "oracle-sonnet": "usable-with-change: It reads 'zero' as full vacuum (0.583 lb) by default. Field zero is 0 psig (0.070 lb, about 1.1 oz), an 8x difference, so the default should be gauge zero or both figures shown.",
+          "oracle-opus": "not-usable: It accepts gas temperatures below saturation at 2 psig (about -24 F) and returns a vapour-only mass; it must refuse below saturation and ask whether the line was warm and all vapour.",
+          "oracle-codex": "not-usable: It defaults ambiguous “zero” to absolute vacuum and assumes vapor only; its question must also confirm isolation and absence of liquid."
+        },
+        "B": {
+          "oracle-sonnet": "not-usable: It takes the vapor as saturated at the gauge pressure (about -22 F) and ignores the actual line temperature, so the result is biased high. It needs a line temperature input (about 70 F ambient) and must state it.",
+          "oracle-opus": "usable-with-change: When no end pressure is given, report both the 0 psig and full-vacuum results (vacuum is the conservative release figure) instead of defaulting to 0 psig.",
+          "oracle-codex": "not-usable: It returns a mass before confirming vapor-only contents, pressure references and temperatures, using an unjustified saturated-vapor assumption."
+        },
+        "E": {
+          "oracle-sonnet": "not-usable: Line temperature is not an input; vapor is taken as saturated at the stated pressure (about -22F at 2 psig) instead of at line or ambient temperature (~70F), so the denser vapor overstates the mass (0.73 lb vs about 0.58",
+          "oracle-opus": "usable-with-change: When no end point is given, report both cases (0 psig and full vacuum: 0.08 lb and 0.73 lb) instead of silently defaulting to 0 psig; the release-report conservative side is the vacuum case.",
+          "oracle-codex": "not-usable: It returns a mass using unconfirmed vapor-only contents, pressure interpretation and saturation temperatures instead of resolving the job conditions first."
+        }
+      },
+      "CC-017": {
+        "A": {
+          "oracle-sonnet": "usable-with-change: The question should also ask for the nameplate refrigerant (flagging A2L refrigerants such as R-32 or R-454B) and the number of indoor heads, since MZL is multi-zone. Output should be in lb/oz.",
+          "oracle-opus": "not-usable: It answers only when given the factory charge (the very quantity asked for) and omits the refrigerant, flammable-refrigerant charge limits and the leak/top-off check.",
+          "oracle-codex": "not-usable: It assumes a factory-charge-plus-line-adjustment scheme applies and gives an addition without establishing the installed system's existing charge."
+        },
+        "B": {
+          "oracle-sonnet": "usable-with-change: Also ask for the nameplate refrigerant (A2L flammability), factory charge and number of indoor heads, so the answer is a total charge and not only the add-on for extra line.",
+          "oracle-opus": "not-usable: The question never asks the refrigerant, factory charge or whether this is a full recharge after evacuation vs a top-off. There is no OEM maximum line length check and no flammable-refrigerant charge-limit check.",
+          "oracle-codex": "not-usable: An extra-line-length allowance cannot establish the installed system's charge or remaining addition, and factory-charge coverage and existing inventory are unverified."
+        },
+        "E": {
+          "oracle-sonnet": "usable-with-change: The question should also ask for the nameplate refrigerant type and factory charge, and for the number and models of indoor heads, because MZL is multi-zone. The result is only the add-on charge, so say that in the answe",
+          "oracle-opus": "not-usable: It never asks for the refrigerant, or whether this is a full recharge after evacuation or a top-off on a leaking system. It also has no check against the OEM maximum line length or flammable-refrigerant charge limits.",
+          "oracle-codex": "not-usable: Assumes factory charge covers the matched installation and calculates a line-length allowance without establishing refrigerant, applicable charging instructions or existing inventory."
+        }
+      },
+      "CC-018": {
+        "A": {
+          "oracle-sonnet": "not-usable: The 10,600 kg headline (0.53 kg/L, transport rule) is about 87% liquid-full at 20 C and about 89% at 32 C, above the 80% limit, so it overfills; use a maximum 80% fill at a stated temperature (about 9,470 to 9,760 kg).",
+          "oracle-opus": "not-usable: It returns 10,600 kg from volume × an assumed 0.53 kg/L with no maximum-temperature basis, no design-pressure or NH3-rating check, and less than 10 % vapour space at 50 °C (the conservative limit is about 10,130 kg).",
+          "oracle-codex": "not-usable: A generic transport filling ratio cannot establish this vessel's safe inventory without its approved fill basis and maximum temperature."
+        },
+        "B": {
+          "oracle-sonnet": "usable-with-change: Show the result in lb as well as kg and flag that 9,760 kg (about 21,500 lb) is above the 10,000 lb PSM/RMP threshold. The answer currently omits this.",
+          "oracle-opus": "not-usable: It returns a mass from volume x 80% x 610 kg/m3 with no maximum-temperature basis and no design-pressure check, assumes the vessel is NH3-rated, and asks about nameplate charge instead of service type, MAWP and maximum t",
+          "oracle-codex": "not-usable: It supplies a safe-charge claim from an unapproved 80% limit at 20 C and omits maximum temperature and existing inventory."
+        },
+        "E": {
+          "oracle-sonnet": "usable-with-change: Flag that 9,760 kg (about 21,500 lb) exceeds the 10,000 lb (4,536 kg) PSM/RMP threshold, and give lb alongside kg.",
+          "oracle-opus": "not-usable: It assumes the vessel is NH3-rated and uses a 20 C reference instead of the maximum temperature (50 C or more). There is no design-pressure check and no filling-density limit. It should ask about the service type, MAWP a",
+          "oracle-codex": "not-usable: Require the approved fill basis at maximum credible temperature and existing inventory before stating maximum charge or kilograms available to add."
+        }
+      },
+      "CC-019": {
+        "A": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "usable-with-change: Ask for the highest temperature the liquid will see, and warn whenever a colder temperature is used that the fill rises as the liquid warms. It currently returns a cold-fill mass such as -40 °C with no warning.",
+          "oracle-codex": "usable-with-change: Correct the ammonia safety classification to B2L; remove the misleading A2L alternative."
+        },
+        "B": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "usable-with-change: Ask for, and take density at, the highest liquid temperature the vessel will see (not the current or a 68 F default), and flag when the saturation pressure at that temperature exceeds the nameplate MAWP.",
+          "oracle-codex": "not-usable: Require the actual liquid temperature or a justified density basis; substituting 68°F when temperature is unknown can overstate the mass."
+        },
+        "E": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "not-usable: It asks for the current liquid temperature, not the highest the liquid will see. Its note says colder liquid allows more mass, with no warning that cold-filled ammonia expands on warming (an overfill hazard). It must use",
+          "oracle-codex": "not-usable: Require the actual liquid temperature or a documented density basis; substituting 90°F for unknown temperature is not a safe mass default."
+        }
+      },
+      "CC-020": {
+        "A": {
+          "oracle-sonnet": "not-usable: It only converts a Btu/h or kW capacity the person must already supply, so it does not answer the TR the person asked for from the model number.",
+          "oracle-opus": "not-usable: It only converts a rated capacity the user must supply, which is the very quantity asked for. It has no catalogue data for the RALTG-3040, and its example (30400 Btu/h -> 2.53 TR) echoes the model digits.",
+          "oracle-codex": "not-usable: Obtain a traceable RALTG-3040 rating and its conditions; requiring the requester to supply its capacity only converts the quantity they came to find."
+        },
+        "B": {
+          "oracle-sonnet": "not-usable: It has no inputs and never produces a TR figure. Add a conversion from the rated Btu/h or kW to TR (÷12,000 or ÷3.517) that shows the rating conditions, alongside the refusal.",
+          "oracle-opus": "not-usable: It can only answer when given the rated capacity, which is the quantity asked for. The requester came without it.",
+          "oracle-codex": "not-usable: It only requests the capacity being sought; it provides neither a traceable model rating nor a calculation accepting documented capacity data."
+        },
+        "E": {
+          "oracle-sonnet": "usable-with-change: It only ever refuses; add the conversion from nameplate capacity (Btu/h or kW) to TR (1 TR = 12,000 Btu/h = 3.517 kW), keeping the rating conditions with the answer.",
+          "oracle-opus": "not-usable: It can only answer when given the nameplate capacity, the very quantity asked for. It needs the OEM catalog or AHRI 420 rating for the RALTG-3040, with TD correction.",
+          "oracle-codex": "not-usable: The refusal is appropriate, but this no-input capability cannot establish or convert a documented rating into the requested TR."
+        }
+      },
+      "CC-021": {
+        "A": {
+          "oracle-sonnet": "usable-with-change: The mass and gas-volume answers assume the solution stays at the stated temperature, but the heat of solution warms it and cuts the uptake. Say this next to the number, not only in the footnote, and state that the figure",
+          "oracle-opus": "usable-with-change: It asks for pressure but has no pressure input. Either add an NH3 partial-pressure input, or state that results are valid only at 1 atm NH3 and refuse any other pressure. It should also refuse when the liquid is not wate",
+          "oracle-codex": "not-usable: Assumes water and saturated absorption at 1 atm without establishing the liquid, initial concentration, endpoint or maintained temperature; the question omits the endpoint."
+        },
+        "B": {
+          "oracle-sonnet": "usable-with-change: Give the result in kg or g of NH3 (and wt % solution) per litre of water; the headline is in lb against a litre input, so the tech has to convert, and no gas volume or mass-per-litre figure is shown.",
+          "oracle-opus": "usable-with-change: Report the result in g (or kg) and as gas volume in litres at the stated temperature and 1 atm, alongside the lb figure.",
+          "oracle-codex": "not-usable: Identify the liquid, initial concentration, ammonia partial pressure and endpoint before claiming absorption capacity; pure water and atmospheric saturation are unsupported defaults."
+        },
+        "E": {
+          "oracle-sonnet": "usable-with-change: Give the mass in g or kg alongside lb, since the request was in litres; lb-only is awkward for a litre of water.",
+          "oracle-opus": "usable-with-change: Add the absorbed gas volume in litres at a stated T and P, and the mass in g/kg, next to the lb figure.",
+          "oracle-codex": "not-usable: Identify the liquid, initial concentration, temperature, ammonia partial pressure and endpoint before giving an absorption capacity."
+        }
+      },
+      "CC-024": {
+        "A": {
+          "oracle-sonnet": "usable-with-change: Take the refrigerant and use the 32 psig and 55.9 F readings to recompute superheat (about 61 F for R-404A, 37 F for R-22, 20 F for R-134a), and flag that the stated 56 F fits only one refrigerant.",
+          "oracle-opus": "not-usable: It takes the stated 56 and the '2.8 goal' as °F superheat targets without computing saturation from 32/266 psig, cross-checking 56, resolving the unit of 2.8 or asking about the metering device, and its 'high superheat: ",
+          "oracle-codex": "not-usable: It assumes Fahrenheit and an unsupported tolerance, and diagnoses before establishing units, measurement conditions, and the target's approved basis."
+        },
+        "B": {
+          "oracle-sonnet": "not-usable: It silently defaults to R-410A, giving 71.7 F at 32 psig, which contradicts the person's own 56 F and does not diagnose why superheat is high versus the 2.8 goal; the refrigerant must be required, not defaulted.",
+          "oracle-opus": "not-usable: Defaults the refrigerant (R-410A placeholder, giving a 71.7 F superheat) and asks only for the refrigerant. It never asks for the metering device or the meaning and unit of '2.8', never cross-checks against the stated 56",
+          "oracle-codex": "not-usable: It calculates from an unverified refrigerant and assumed units, while its question omits units and the basis for the 2.8 target."
+        },
+        "E": {
+          "oracle-sonnet": "usable-with-change: It only computes superheat and gives no diagnosis; add the likely causes and checks for high superheat (restriction, starved TXV, charge, bad gauge or sensor) and ask what the 105.7 F line is.",
+          "oracle-opus": "usable-with-change: Also ask the metering device (TXV or fixed orifice) and what '2.8' is (superheat or subcooling target, °F or K), and compute subcooling from 266 psig and 105.7°F. Fix the range-error text, which wrongly says 'refrigerant",
+          "oracle-codex": "not-usable: It assumes pressure and temperature conventions, offers refrigerant guessing, and omits the target's basis from its question."
+        }
+      },
+      "CC-029": {
+        "A": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "usable-with-change: Add a refrigerant input and report the saturation temperature at each gauge pressure, keeping the qualitative-only answer when no refrigerant is given; the question it asks has no input to feed.",
+          "oracle-codex": "not-usable: It assumes “boils most” means colder boiling; its question must also distinguish temperature from evaporation rate."
+        },
+        "B": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "usable-with-change: Remove the R-410A default: give the qualitative answer (10 psig boils at the lower temperature) without a refrigerant, and output saturation temperatures only for a named refrigerant.",
+          "oracle-codex": "not-usable: It assumes R-410A and interprets 'boils most' as colder boiling without asking whether the requester means evaporation rate."
+        },
+        "E": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "not-usable: It defaults to R-410A to produce boiling temperatures; with no refrigerant named it must give the qualitative answer only.",
+          "oracle-codex": "not-usable: Require the refrigerant and clarify colder boiling versus greater evaporation rate before answering; defaulting to R410A and temperature comparison is inadmissible."
+        }
+      },
+      "CC-030": {
+        "A": {
+          "oracle-sonnet": "usable-with-change: Ask for or state the refrigerant and the product (mass, start temperature, freezing point) and check that the saturation temperature is below the freezing point. Also fix the out-of-range pressure refusals, which wrongly",
+          "oracle-opus": "not-usable: It guesses R-134a, which is inadmissible. The headline needs no refrigerant, but the shown temperatures depend on it; ask for the refrigerant first and drop the irrelevant required charge input.",
+          "oracle-codex": "not-usable: It declares lower pressure faster without the load or net capacities and supplies no freezing time."
+        },
+        "B": {
+          "oracle-sonnet": "usable-with-change: Do not assume R-134a silently. Take the product's freezing point and state whether the saturation temperature is below it, or say it won't freeze. State that the heat removed from the 0.5 kg is about the same at both pre",
+          "oracle-opus": "not-usable: It defaults the refrigerant to R-134a, which the criteria rule inadmissible. It should give the qualitative answer (10 psig is faster, all else equal) without a refrigerant, and give saturation temperatures only once a r",
+          "oracle-codex": "not-usable: Equates lower saturation temperature with faster freezing and assumes R-134a; the question omits the freezing load and net capacities."
+        },
+        "E": {
+          "oracle-sonnet": "usable-with-change: Name the product and its freezing point and say it will only freeze if the saturation temperature is below that. State that 0.5 kg evaporated removes about the same heat at 10 and 20 psig, with an estimate of mass frozen",
+          "oracle-opus": "not-usable: The refrigerant is guessed (R-134a) when the request gives none; with no refrigerant it should give the qualitative ranking only and ask.",
+          "oracle-codex": "not-usable: It declares faster freezing from lower saturation temperature without the freezing load or net capacities, and assumes an unstated refrigerant."
+        }
+      },
+      "CC-034": {
+        "A": {
+          "oracle-sonnet": "usable-with-change: Return the step-by-step breakdown with each answer (psia = psig + 14.7, the lookup, dew or bubble point, sea-level assumption), because the person asked for it and the calls return only a number.",
+          "oracle-opus": "usable-with-change: Report the dew point (headline) and the bubble point separately instead of one mid value.",
+          "oracle-codex": "not-usable: It uses an unnamed-source midpoint fit instead of a traceable dew/bubble lookup, and its 0 psig result misses the required tolerance."
+        },
+        "B": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "not-usable: The reference values are wrong. At 15 psig it gives dew -23.5 °F and bubble -25.0 °F, against about -21.5 °F and -22.5 °F (±1 °F), and its glide is overstated. It needs a corrected R-404A P-T table.",
+          "oracle-codex": "not-usable: No named property source or demonstrated lookup method supports the temperature; the requested Celsius result and complete breakdown are also missing."
+        },
+        "E": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "not-usable: The P-T data are off: 15 psig gives -23.5 F dew and -25.0 F bubble against reference -21.5 F and -22.5 F (±1 F).",
+          "oracle-codex": "not-usable: Provide a named property source and its lookup or interpolation breakdown, including the Celsius result."
+        }
+      },
+      "CC-035": {
+        "A": {
+          "oracle-sonnet": "not-usable: It names one air temperature (165°F) from a fixed 0.5 effectiveness with no airflow or heat duty. Derive the result from the energy balance (Q = 1.02 to 1.08 × cfm × ΔT) using cfm and refrigerant flow or duty, or give on",
+          "oracle-opus": "not-usable: It returns a single point value (165 °F) from the three temperatures alone by silently assuming effectiveness 0.5, i.e. assuming airflow. It does not flag the 5 °F approach.",
+          "oracle-codex": "not-usable: The assumed 0.5 effectiveness invents a realistic temperature without establishing heat duty and air mass flow."
+        },
+        "B": {
+          "oracle-sonnet": "not-usable: The headline returns one air temperature (136 F) from an assumed 0.25 ratio with no airflow or duty; it should give only the 110-220 F bounds, or ask for cfm and duty first.",
+          "oracle-opus": "not-usable: With no airflow or duty it returns a point value (136 F) from an assumed 0.25 capacity-rate ratio; it must give bounds only, and it never flags the 5 F approach or checks phase.",
+          "oracle-codex": "not-usable: Replace the assumed capacity ratio and planning bound with measured air-side duty and mass flow; tons or horsepower do not resolve those inputs."
+        },
+        "E": {
+          "oracle-sonnet": "usable-with-change: Without airflow or duty it still returns a single 136 F headline. It should lead with the 126-152 F range and the above-110 F, below-220 F bounds, and its refusals should name only the failing input as its own note claim",
+          "oracle-opus": "not-usable: With no airflow or capacity it still gives a point value (136 F) from an assumed capacity-rate ratio; it must give bounds only. It also never flags the 5 F approach or checks phase against head pressure.",
+          "oracle-codex": "not-usable: The unsupported capacity-rate fallback invents a temperature range; the question needs heat duty and air mass flow, or actual CFM with density."
+        }
+      }
+    }
+  },
+  "sealed": {
+    "requests": 20,
+    "armStats": {
+      "A": {
+        "n": 20,
+        "gated": 18,
+        "promoted": 16,
+        "personaReject": 2,
+        "personaChange": 17,
+        "g8ok": 17,
+        "clean": 1,
+        "cleanCI": {
+          "k": 1,
+          "n": 20,
+          "point": 0.05,
+          "lower": 0.0012650894979498051,
+          "upper": 0.24873276277202766,
+          "conf": 0.95
+        },
+        "strict": 0,
+        "lenient": 2,
+        "cleanQ8": 1,
+        "tokensMean": 20771,
+        "wallMedian": 52.2,
+        "perOracleClean": {
+          "oracle-sonnet": 3,
+          "oracle-opus": 0,
+          "oracle-codex": 1
+        }
+      },
+      "B": {
+        "n": 20,
+        "gated": 20,
+        "promoted": 15,
+        "personaReject": 5,
+        "personaChange": 13,
+        "g8ok": 19,
+        "clean": 1,
+        "cleanCI": {
+          "k": 1,
+          "n": 20,
+          "point": 0.05,
+          "lower": 0.0012650894979498051,
+          "upper": 0.24873276277202766,
+          "conf": 0.95
+        },
+        "strict": 0,
+        "lenient": 1,
+        "cleanQ8": 1,
+        "tokensMean": 33067,
+        "wallMedian": 28.8,
+        "perOracleClean": {
+          "oracle-sonnet": 4,
+          "oracle-opus": 0,
+          "oracle-codex": 1
+        }
+      },
+      "E": {
+        "n": 20,
+        "gated": 19,
+        "promoted": 17,
+        "personaReject": 2,
+        "personaChange": 14,
+        "g8ok": 18,
+        "clean": 1,
+        "cleanCI": {
+          "k": 1,
+          "n": 20,
+          "point": 0.05,
+          "lower": 0.0012650894979498051,
+          "upper": 0.24873276277202766,
+          "conf": 0.95
+        },
+        "strict": 0,
+        "lenient": 1,
+        "cleanQ8": 1,
+        "tokensMean": 31652,
+        "wallMedian": 67.8,
+        "perOracleClean": {
+          "oracle-sonnet": 5,
+          "oracle-opus": 0,
+          "oracle-codex": 2
+        }
+      }
+    },
+    "contrasts": {
+      "E_vs_A_primary": {
+        "median": {
+          "n": 20,
+          "a": 1,
+          "b": 1,
+          "improved": 0,
+          "worsened": 0,
+          "both": 1,
+          "neither": 19,
+          "diff": 0,
+          "ci": [
+            0,
+            0
+          ],
+          "sign": {
+            "n": 0,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [],
+          "worsenedIds": []
+        },
+        "strict": {
+          "n": 20,
+          "a": 0,
+          "b": 0,
+          "improved": 0,
+          "worsened": 0,
+          "both": 0,
+          "neither": 20,
+          "diff": 0,
+          "ci": [
+            0,
+            0
+          ],
+          "sign": {
+            "n": 0,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [],
+          "worsenedIds": []
+        },
+        "lenient": {
+          "n": 20,
+          "a": 2,
+          "b": 1,
+          "improved": 0,
+          "worsened": 1,
+          "both": 1,
+          "neither": 18,
+          "diff": -0.05,
+          "ci": [
+            -0.15,
+            0
+          ],
+          "sign": {
+            "n": 1,
+            "improved": 0,
+            "worsened": 1,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [],
+          "worsenedIds": [
+            "CC-005"
+          ]
+        },
+        "withG8": {
+          "n": 20,
+          "a": 1,
+          "b": 1,
+          "improved": 0,
+          "worsened": 0,
+          "both": 1,
+          "neither": 19,
+          "diff": 0,
+          "ci": [
+            0,
+            0
+          ],
+          "sign": {
+            "n": 0,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [],
+          "worsenedIds": []
+        }
+      },
+      "E_vs_B_secondary": {
+        "median": {
+          "n": 20,
+          "a": 1,
+          "b": 1,
+          "improved": 0,
+          "worsened": 0,
+          "both": 1,
+          "neither": 19,
+          "diff": 0,
+          "ci": [
+            0,
+            0
+          ],
+          "sign": {
+            "n": 0,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [],
+          "worsenedIds": []
+        },
+        "strict": {
+          "n": 20,
+          "a": 0,
+          "b": 0,
+          "improved": 0,
+          "worsened": 0,
+          "both": 0,
+          "neither": 20,
+          "diff": 0,
+          "ci": [
+            0,
+            0
+          ],
+          "sign": {
+            "n": 0,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [],
+          "worsenedIds": []
+        },
+        "lenient": {
+          "n": 20,
+          "a": 1,
+          "b": 1,
+          "improved": 0,
+          "worsened": 0,
+          "both": 1,
+          "neither": 19,
+          "diff": 0,
+          "ci": [
+            0,
+            0
+          ],
+          "sign": {
+            "n": 0,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [],
+          "worsenedIds": []
+        },
+        "withG8": {
+          "n": 20,
+          "a": 1,
+          "b": 1,
+          "improved": 0,
+          "worsened": 0,
+          "both": 1,
+          "neither": 19,
+          "diff": 0,
+          "ci": [
+            0,
+            0
+          ],
+          "sign": {
+            "n": 0,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [],
+          "worsenedIds": []
+        }
+      },
+      "B_vs_A_exploratory": {
+        "median": {
+          "n": 20,
+          "a": 1,
+          "b": 1,
+          "improved": 0,
+          "worsened": 0,
+          "both": 1,
+          "neither": 19,
+          "diff": 0,
+          "ci": [
+            0,
+            0
+          ],
+          "sign": {
+            "n": 0,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [],
+          "worsenedIds": []
+        },
+        "strict": {
+          "n": 20,
+          "a": 0,
+          "b": 0,
+          "improved": 0,
+          "worsened": 0,
+          "both": 0,
+          "neither": 20,
+          "diff": 0,
+          "ci": [
+            0,
+            0
+          ],
+          "sign": {
+            "n": 0,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [],
+          "worsenedIds": []
+        },
+        "lenient": {
+          "n": 20,
+          "a": 2,
+          "b": 1,
+          "improved": 0,
+          "worsened": 1,
+          "both": 1,
+          "neither": 18,
+          "diff": -0.05,
+          "ci": [
+            -0.15,
+            0
+          ],
+          "sign": {
+            "n": 1,
+            "improved": 0,
+            "worsened": 1,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [],
+          "worsenedIds": [
+            "CC-005"
+          ]
+        },
+        "withG8": {
+          "n": 20,
+          "a": 1,
+          "b": 1,
+          "improved": 0,
+          "worsened": 0,
+          "both": 1,
+          "neither": 19,
+          "diff": 0,
+          "ci": [
+            0,
+            0
+          ],
+          "sign": {
+            "n": 0,
+            "p": 1
+          },
+          "requests": 20,
+          "improvedIds": [],
+          "worsenedIds": []
+        }
+      }
+    },
+    "ordinal": {
+      "E_vs_A": {
+        "n": 20,
+        "improved": 7,
+        "worsened": 4,
+        "improvedIds": [
+          "C-002",
+          "C-013",
+          "C-017",
+          "C-021",
+          "CC-004",
+          "CC-012",
+          "CC-016"
+        ],
+        "worsenedIds": [
+          "C-009",
+          "C-014",
+          "C-023",
+          "CC-015"
+        ],
+        "sign": {
+          "n": 11,
+          "improved": 7,
+          "worsened": 4,
+          "p": 0.548828125
+        },
+        "meanLevelX": 1.9,
+        "meanLevelY": 1.7
+      },
+      "E_vs_B": {
+        "n": 20,
+        "improved": 5,
+        "worsened": 1,
+        "improvedIds": [
+          "C-013",
+          "C-021",
+          "CC-004",
+          "CC-023",
+          "CC-028"
+        ],
+        "worsenedIds": [
+          "CC-033"
+        ],
+        "sign": {
+          "n": 6,
+          "improved": 5,
+          "worsened": 1,
+          "p": 0.21875
+        },
+        "meanLevelX": 1.9,
+        "meanLevelY": 1.7
+      },
+      "B_vs_A": {
+        "n": 20,
+        "improved": 5,
+        "worsened": 7,
+        "improvedIds": [
+          "C-002",
+          "C-017",
+          "CC-012",
+          "CC-016",
+          "CC-033"
+        ],
+        "worsenedIds": [
+          "C-009",
+          "C-013",
+          "C-014",
+          "C-023",
+          "CC-015",
+          "CC-023",
+          "CC-028"
+        ],
+        "sign": {
+          "n": 12,
+          "improved": 5,
+          "worsened": 7,
+          "p": 0.7744140625
+        },
+        "meanLevelX": 1.9,
+        "meanLevelY": 1.9
+      }
+    },
+    "verdictDist": {
+      "A": {
+        "oracle-sonnet": {
+          "clean": 3,
+          "withChange": 8,
+          "notUsable": 7
+        },
+        "oracle-opus": {
+          "clean": 0,
+          "withChange": 6,
+          "notUsable": 12
+        },
+        "oracle-codex": {
+          "clean": 1,
+          "withChange": 1,
+          "notUsable": 16
+        },
+        "panelMedian": {
+          "clean": 1,
+          "withChange": 4,
+          "notUsable": 13
+        }
+      },
+      "B": {
+        "oracle-sonnet": {
+          "clean": 4,
+          "withChange": 9,
+          "notUsable": 7
+        },
+        "oracle-opus": {
+          "clean": 0,
+          "withChange": 7,
+          "notUsable": 13
+        },
+        "oracle-codex": {
+          "clean": 1,
+          "withChange": 2,
+          "notUsable": 17
+        },
+        "panelMedian": {
+          "clean": 1,
+          "withChange": 6,
+          "notUsable": 13
+        }
+      },
+      "E": {
+        "oracle-sonnet": {
+          "clean": 5,
+          "withChange": 9,
+          "notUsable": 5
+        },
+        "oracle-opus": {
+          "clean": 0,
+          "withChange": 8,
+          "notUsable": 11
+        },
+        "oracle-codex": {
+          "clean": 2,
+          "withChange": 0,
+          "notUsable": 17
+        },
+        "panelMedian": {
+          "clean": 1,
+          "withChange": 7,
+          "notUsable": 11
+        }
+      }
+    },
+    "repair": {
+      "eligible": 20,
+      "triggered": 15,
+      "resolved": 0,
+      "gatedAfterRepair": 14,
+      "cleanAfterRepair": 0,
+      "cleanBeforeRepairOnTriggered": 0
+    },
+    "spec": {
+      "n": 20,
+      "frozen": 20,
+      "stubRevised": 16,
+      "retrievalHits": 2,
+      "testsMedian": 12,
+      "consequencePhysical": 13
+    },
+    "guardrails": {
+      "gatePass": {
+        "incumbent": 18,
+        "challenger": 19,
+        "bound": "E >= A - 3",
+        "holds": true
+      },
+      "g56": {
+        "incumbentFails": 0,
+        "challengerFails": 0,
+        "holds": true
+      },
+      "wall": {
+        "incumbentMedian": 52.2,
+        "challengerCriticalMedian": 158.8,
+        "bound": "E <= 2.0 x A",
+        "holds": false
+      },
+      "tokens": {
+        "incumbentMean": 20771,
+        "challengerMean": 93506,
+        "bound": "E <= 3.0 x A",
+        "holds": false
+      }
+    },
+    "pairedLogWall_EoverA": {
+      "median": 1.1997084761096533,
+      "lower": 0.947338876908012,
+      "upper": 1.3971019507352755,
+      "n": 20
+    },
+    "oracleAgreement": {
+      "oracle-sonnet|oracle-opus": {
+        "n": 57,
+        "exact": 25,
+        "within1": 54,
+        "kappa3": 0.09658246656760777,
+        "cleanAgree": 45,
+        "kappaClean": 0
+      },
+      "oracle-sonnet|oracle-codex": {
+        "n": 57,
+        "exact": 23,
+        "within1": 48,
+        "kappa3": 0.10814542107685232,
+        "cleanAgree": 47,
+        "kappaClean": 0.30147058823529427
+      },
+      "oracle-opus|oracle-codex": {
+        "n": 57,
+        "exact": 34,
+        "within1": 56,
+        "kappa3": 0.05411255411255411,
+        "cleanAgree": 53,
+        "kappaClean": 0
+      }
+    },
+    "within1AllPairs80": true,
+    "efficiency": {
+      "tokensPerCleanA": 415415,
+      "tokensPerCleanE": 1870123
+    },
+    "scoredArtefacts": 57,
+    "per": {
+      "C-001": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "clean",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "clean"
+          },
+          "clean": 1,
+          "strict": 0,
+          "lenient": 1,
+          "cleanQ8": 1,
+          "tokens": 17694,
+          "wall_s": 46.3,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": false,
+          "panel": "clean",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "clean"
+          },
+          "clean": 1,
+          "strict": 0,
+          "lenient": 1,
+          "cleanQ8": 1,
+          "tokens": 27099,
+          "wall_s": 21.6,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-with-assumption",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": false,
+          "panel": "clean",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "clean"
+          },
+          "clean": 1,
+          "strict": 0,
+          "lenient": 1,
+          "cleanQ8": 1,
+          "tokens": 0,
+          "wall_s": 0,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": false,
+          "repairResolved": null
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": false,
+          "cpersona": "accept",
+          "tests": 12,
+          "tokens": 22061,
+          "wall_s": 49.1,
+          "retrieval": {
+            "id": "CC-002",
+            "jaccard": 0.462
+          },
+          "consequence": "informational"
+        },
+        "wallE": 70.7,
+        "tokensE": 49160,
+        "tokensA": 17694
+      },
+      "C-002": {
+        "A": {
+          "status": "not-gated",
+          "gated": false,
+          "g8": null,
+          "personaReject": false,
+          "personaChange": false,
+          "panel": null,
+          "verdicts": {
+            "oracle-sonnet": null,
+            "oracle-opus": null,
+            "oracle-codex": null
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 40692,
+          "wall_s": 95.3,
+          "rounds": 4,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": false,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 28739,
+          "wall_s": 21.1,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-with-assumption",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": false,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 0,
+          "wall_s": 0,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": false,
+          "repairResolved": null
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 14,
+          "tokens": 29914,
+          "wall_s": 64.2,
+          "retrieval": {
+            "id": "CC-002",
+            "jaccard": 0.667
+          },
+          "consequence": "informational"
+        },
+        "wallE": 85.3,
+        "tokensE": 58653,
+        "tokensA": 40692
+      },
+      "C-009": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 21865,
+          "wall_s": 52.7,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": true,
+          "personaChange": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 37024,
+          "wall_s": 31.4,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "gated-rejected-by-persona",
+          "gated": true,
+          "g8": true,
+          "personaReject": true,
+          "personaChange": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 0,
+          "wall_s": 0,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": false,
+          "repairResolved": null
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 0,
+          "tokens": 25233,
+          "wall_s": 54.2,
+          "retrieval": null,
+          "consequence": "informational"
+        },
+        "wallE": 85.6,
+        "tokensE": 62257,
+        "tokensA": 21865
+      },
+      "C-013": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 17713,
+          "wall_s": 40.3,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": true,
+          "personaChange": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 37756,
+          "wall_s": 20.9,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 39041,
+          "wall_s": 78.4,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 6,
+          "tokens": 26913,
+          "wall_s": 60.3,
+          "retrieval": null,
+          "consequence": "informational"
+        },
+        "wallE": 159.6,
+        "tokensE": 103710,
+        "tokensA": 17713
+      },
+      "C-014": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 18687,
+          "wall_s": 47,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 24058,
+          "wall_s": 19.2,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 32648,
+          "wall_s": 61.6,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": false,
+          "cpersona": "accept",
+          "tests": 10,
+          "tokens": 21191,
+          "wall_s": 46.5,
+          "retrieval": null,
+          "consequence": "informational"
+        },
+        "wallE": 127.3,
+        "tokensE": 77897,
+        "tokensA": 18687
+      },
+      "C-017": {
+        "A": {
+          "status": "unfinished",
+          "gated": false,
+          "g8": null,
+          "personaReject": false,
+          "personaChange": false,
+          "panel": null,
+          "verdicts": {
+            "oracle-sonnet": null,
+            "oracle-opus": null,
+            "oracle-codex": null
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 11443,
+          "wall_s": 34.7,
+          "rounds": null,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 26007,
+          "wall_s": 22.2,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 32300,
+          "wall_s": 54.5,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 14,
+          "tokens": 28927,
+          "wall_s": 71.2,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 147.9,
+        "tokensE": 87234,
+        "tokensA": 11443
+      },
+      "C-021": {
+        "A": {
+          "status": "gated-rejected-by-persona",
+          "gated": true,
+          "g8": false,
+          "personaReject": true,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 19810,
+          "wall_s": 51.2,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": true,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 25242,
+          "wall_s": 19.2,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 33782,
+          "wall_s": 60,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 12,
+          "tokens": 28153,
+          "wall_s": 65.7,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 145,
+        "tokensE": 87177,
+        "tokensA": 19810
+      },
+      "C-023": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 24203,
+          "wall_s": 86.5,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 47949,
+          "wall_s": 86.7,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 53939,
+          "wall_s": 161.3,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": false,
+          "cpersona": null,
+          "tests": 14,
+          "tokens": 28688,
+          "wall_s": 81.1,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 329.1,
+        "tokensE": 130576,
+        "tokensA": 24203
+      },
+      "CC-003": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 19785,
+          "wall_s": 50,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 35427,
+          "wall_s": 55.8,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 57483,
+          "wall_s": 152.9,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 11,
+          "tokens": 31186,
+          "wall_s": 84.5,
+          "retrieval": null,
+          "consequence": "informational"
+        },
+        "wallE": 293.2,
+        "tokensE": 124096,
+        "tokensA": 19785
+      },
+      "CC-004": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 19436,
+          "wall_s": 59.2,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 34900,
+          "wall_s": 56,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "clean"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 39744,
+          "wall_s": 98.5,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 9,
+          "tokens": 30762,
+          "wall_s": 89.9,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 244.4,
+        "tokensE": 105406,
+        "tokensA": 19436
+      },
+      "CC-005": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "usable-with-change"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 1,
+          "cleanQ8": 0,
+          "tokens": 19367,
+          "wall_s": 52.7,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "usable-with-change"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 39898,
+          "wall_s": 72.5,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 40393,
+          "wall_s": 92.2,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 13,
+          "tokens": 33098,
+          "wall_s": 94.2,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 259,
+        "tokensE": 113389,
+        "tokensA": 19367
+      },
+      "CC-008": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 19479,
+          "wall_s": 51.5,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 27617,
+          "wall_s": 27.2,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-with-assumption",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 0,
+          "wall_s": 0,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": false,
+          "repairResolved": null
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 12,
+          "tokens": 29770,
+          "wall_s": 72.1,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 99.3,
+        "tokensE": 57387,
+        "tokensA": 19479
+      },
+      "CC-012": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 20549,
+          "wall_s": 54.9,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": false,
+          "personaReject": false,
+          "personaChange": false,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 43388,
+          "wall_s": 49.3,
+          "rounds": null,
+          "selected": "2"
+        },
+        "E": {
+          "status": "promoted-with-assumption",
+          "gated": true,
+          "g8": false,
+          "personaReject": false,
+          "personaChange": false,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 0,
+          "wall_s": 0,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": false,
+          "repairResolved": null
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 14,
+          "tokens": 31877,
+          "wall_s": 85.5,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 134.8,
+        "tokensE": 75265,
+        "tokensA": 20549
+      },
+      "CC-015": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 18844,
+          "wall_s": 67.4,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": true,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "usable-with-change"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 33814,
+          "wall_s": 29.5,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "gated-rejected-by-persona",
+          "gated": true,
+          "g8": true,
+          "personaReject": true,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 43940,
+          "wall_s": 84.3,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 14,
+          "tokens": 31689,
+          "wall_s": 82.3,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 196.2,
+        "tokensE": 109443,
+        "tokensA": 18844
+      },
+      "CC-016": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 18593,
+          "wall_s": 51.7,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 22740,
+          "wall_s": 16.2,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 29160,
+          "wall_s": 49.6,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 8,
+          "tokens": 26278,
+          "wall_s": 58.5,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 124.3,
+        "tokensE": 78178,
+        "tokensA": 18593
+      },
+      "CC-023": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 18815,
+          "wall_s": 45.6,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": true,
+          "personaChange": false,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 27815,
+          "wall_s": 25.7,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 34920,
+          "wall_s": 62.1,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 11,
+          "tokens": 28753,
+          "wall_s": 70.2,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 158,
+        "tokensE": 91488,
+        "tokensA": 18815
+      },
+      "CC-028": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 18597,
+          "wall_s": 45.6,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 28506,
+          "wall_s": 28.1,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 36292,
+          "wall_s": 73.5,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": false,
+          "cpersona": "accept",
+          "tests": 13,
+          "tokens": 23271,
+          "wall_s": 58.7,
+          "retrieval": null,
+          "consequence": "informational"
+        },
+        "wallE": 160.4,
+        "tokensE": 88069,
+        "tokensA": 18597
+      },
+      "CC-031": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 20400,
+          "wall_s": 64,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 43404,
+          "wall_s": 86,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 61655,
+          "wall_s": 158.8,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 14,
+          "tokens": 33217,
+          "wall_s": 94.4,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 339.3,
+        "tokensE": 138276,
+        "tokensA": 20400
+      },
+      "CC-032": {
+        "A": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 29710,
+          "wall_s": 83,
+          "rounds": 2,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 30292,
+          "wall_s": 46.6,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "promoted-pending-change",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 45926,
+          "wall_s": 128.2,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 11,
+          "tokens": 30955,
+          "wall_s": 89.1,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 263.9,
+        "tokensE": 107173,
+        "tokensA": 29710
+      },
+      "CC-033": {
+        "A": {
+          "status": "gated-rejected-by-persona",
+          "gated": true,
+          "g8": true,
+          "personaReject": true,
+          "personaChange": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 19733,
+          "wall_s": 60.2,
+          "rounds": 1,
+          "selected": null
+        },
+        "B": {
+          "status": "gated",
+          "gated": true,
+          "g8": true,
+          "personaReject": false,
+          "personaChange": true,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 39655,
+          "wall_s": 69.9,
+          "rounds": null,
+          "selected": "1"
+        },
+        "E": {
+          "status": "not-gated",
+          "gated": false,
+          "g8": null,
+          "personaReject": false,
+          "personaChange": false,
+          "panel": null,
+          "verdicts": {
+            "oracle-sonnet": null,
+            "oracle-opus": null,
+            "oracle-codex": null
+          },
+          "clean": 0,
+          "strict": 0,
+          "lenient": 0,
+          "cleanQ8": 0,
+          "tokens": 51810,
+          "wall_s": 146.4,
+          "rounds": null,
+          "selected": null,
+          "repairNeeded": true,
+          "repairResolved": false
+        },
+        "S": {
+          "status": "spec-frozen",
+          "revised": true,
+          "cpersona": "revise",
+          "tests": 14,
+          "tokens": 33824,
+          "wall_s": 101.2,
+          "retrieval": null,
+          "consequence": "physical"
+        },
+        "wallE": 317.5,
+        "tokensE": 125289,
+        "tokensA": 19733
+      }
+    },
+    "reasons": {
+      "C-001": {
+        "A": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "usable-with-change: Cap the range at Magnus validity (-40..122 °F, i.e. 50 °C) or label results beyond it, and label results below 32 °F as over-water dew point, not frost point.",
+          "oracle-codex": "clean: "
+        },
+        "B": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "usable-with-change: Label results below 32 F as frost point (or state the over-water basis on that result), as 45 F / 60% gives 31.9 F; also cap or flag dry-bulb above 122 F (Magnus limit 50 C).",
+          "oracle-codex": "clean: "
+        },
+        "E": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "usable-with-change: Label any result below 32 F as dew point over water and give the frost point too. The sheet's own example (45 F, 60 %) returns 31.9 F with no frost-point label.",
+          "oracle-codex": "clean: "
+        }
+      },
+      "C-002": {
+        "A": {
+          "oracle-sonnet": null,
+          "oracle-opus": null,
+          "oracle-codex": null
+        },
+        "B": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "usable-with-change: Drop the superfluous question (both values are given and the sheet itself says elevation moves the result well under 0.5 F); answer directly.",
+          "oracle-codex": "not-usable: Use the supplied temperature and humidity directly; asking for elevation introduces an irrelevant requirement and misleading pressure qualification."
+        },
+        "E": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "usable-with-change: Cap the stated range at the Alduchov–Eskridge validity (≤50 °C / 122 °F) or flag results above it; it currently accepts up to 60 °C / 140 °F as valid.",
+          "oracle-codex": "not-usable: Remove the unnecessary elevation question and misleading pressure-basis qualification; the supplied temperature and RH suffice."
+        }
+      },
+      "C-009": {
+        "A": {
+          "oracle-sonnet": "not-usable: The rule ignores indented trailers (no leading spaces allowed, but the rule should allow them), and messageClean(NaN) returns clean, so it passes a bad input instead of refusing; it also cannot take the message text or q",
+          "oracle-opus": "not-usable: messageClean(NaN) returns clean, so it passes input it could not read; it also misses 'Co-Authored-By :' and indented lines and needs the message hand-split into code points.",
+          "oracle-codex": "not-usable: It requires preclassified lines instead of checking the complete message, restricts matching to line prefixes, and reports NaN as clean."
+        },
+        "B": {
+          "oracle-sonnet": "not-usable: It never reads the commit message and only converts a trailer count the caller must supply, which is the very quantity the person needs checked. It should take the message text, match the trailer case-insensitively, quot",
+          "oracle-opus": "not-usable: It needs the trailer count as input, which is the very thing the person asked to have determined. It never reads the message text.",
+          "oracle-codex": "not-usable: Requires an externally determined attribution count instead of checking the complete message, and asks an enforcement-location question unnecessary to the requested check."
+        },
+        "E": {
+          "oracle-sonnet": "not-usable: It cannot read the message; it only converts a trailer count the caller must already supply, which is the quantity asked. It reports no pass/fail with the offending line quoted, and its question about where to enforce is",
+          "oracle-opus": "not-usable: It takes a caller-supplied trailer count instead of the message text, so it needs the very answer the person came for. Its question (where to enforce) is not the scope or prose-mention question.",
+          "oracle-codex": "not-usable: It requires an already determined trailer count instead of checking the complete message, and narrows the prohibition to trailers."
+        }
+      },
+      "C-013": {
+        "A": {
+          "oracle-sonnet": "not-usable: The question it asks (can Fresh start cover more than one site) is not one the screen user can or should answer; it also never builds the scope line, row-count list and total, and never compares the typed text.",
+          "oracle-opus": "not-usable: It asks whether Fresh start can cover several sites, which the request already settles; the open question is which tables are in scope, and the deletion itself is not covered.",
+          "oracle-codex": "not-usable: A display-flag gate does not perform the scoped reset, and its multi-site question is already answered by the request."
+        },
+        "B": {
+          "oracle-sonnet": "not-usable: It computes nothing: no scope line, row-count list or total, and no typed-text match. It also asks for the confirmation phrase and the deletable tables, when a selected site needs no question (the phrase can be the site ",
+          "oracle-opus": "usable-with-change: Require one atomic transaction with rollback, counts queried live at prompt time, and abort if any count changes before execution. The per-data-set opt-in is a scope change that needs the requester's answer.",
+          "oracle-codex": "not-usable: The constant 'Not computed' response provides no site-specific preview or reset, and the question omits the missing site."
+        },
+        "E": {
+          "oracle-sonnet": "usable-with-change: Confirm the actual data-set list (my Plant 4 example has readings, work orders, alarms; its four sets are readings, alarms, events, reports) and the confirmation text, which it invented as FRESH START rather than somethi",
+          "oracle-opus": "usable-with-change: Re-query the per-table counts at execution and abort the whole operation if any count differs from the counts displayed before confirmation.",
+          "oracle-codex": "not-usable: It totals supplied counts and enables a generic confirmation without establishing the actual site, complete deletion dependencies, fresh counts, or scoped deletion."
+        }
+      },
+      "C-014": {
+        "A": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "usable-with-change: Include the finding's creator as an 'own finding' party (owner, creator and closer is the conservative default until answered); today only owner and closer are checked.",
+          "oracle-codex": "not-usable: The self-verification grant alone permits verification without checking customer policy, ordinary verification permission, or the recorded action."
+        },
+        "B": {
+          "oracle-sonnet": "not-usable: It fails open: the NaN probe returns 'May verify', but unknown inputs must refuse. It also cannot compare person IDs, show the 'Verified by' name or 'Not verified', mark self-verified, or refuse a blank or unknown verifi",
+          "oracle-opus": "not-usable: NaN for the owner flag returns 'May verify' (invalid input passes). 'Own' omits the creator, short of the conservative default. 'Verified by' derivation from verify events is not covered.",
+          "oracle-codex": "not-usable: It treats a self-verification grant as sufficient without checking customer policy, ordinary verification rights or an actual verification action."
+        },
+        "E": {
+          "oracle-sonnet": "usable-with-change: Output the 'Verified by' result: the verifier's name, 'Not verified' when nobody verified, and a 'self-verified' mark when the granted right is used.",
+          "oracle-opus": "not-usable: Treats 'own finding' as owner or closer only; the conservative default until asked also includes the creator. It takes self-asserted 0/1 flags instead of effective rights at action time, and never ties 'Verified by' to a",
+          "oracle-codex": "not-usable: An explicit self-verification grant overrides customer policy, and permission is offered without checking ordinary verification rights or an actual verification event."
+        }
+      },
+      "C-017": {
+        "A": {
+          "oracle-sonnet": null,
+          "oracle-opus": null,
+          "oracle-codex": null
+        },
+        "B": {
+          "oracle-sonnet": "not-usable: It treats the switched-on flag as the preview flag, so a non-preview schedule with the flag off is dropped from Fail/overdue; it needs separate preview and switched-on inputs, and it should flag a missing flag rather tha",
+          "oracle-opus": "not-usable: It asks about grace days instead of the real ambiguity (on switch-on, is the item overdue immediately or does the clock start then), and it does not show null-flag handling.",
+          "oracle-codex": "not-usable: It substitutes an invented overdue/Fail classification for separate recorded-state counts and asks about grace days instead of switched-on status."
+        },
+        "E": {
+          "oracle-sonnet": "not-usable: The tool treats 'switched on = false' as 'preview', so a non-preview schedule with its flag off is never counted (an overdue inspection is hidden), and it asks for grace days rather than the as-of date; it needs separate",
+          "oracle-opus": "not-usable: It asks about grace days instead of whether a past-due preview is overdue immediately at switch-on or its clock starts then, and the boolean flag gives no confirmed null-is-counted handling.",
+          "oracle-codex": "not-usable: It returns individual status codes instead of separate schedule counts and invents grace, overdue and Fail rules."
+        }
+      },
+      "C-021": {
+        "A": {
+          "oracle-sonnet": "usable-with-change: Name the specific values in the document that conflict, state that the lower (more protective) threshold applies until the setpoint is confirmed, and warn that Red (above 5,000 ppm) cannot trigger on a 0-1000 ppm head an",
+          "oracle-opus": "not-usable: It has no fault or saturation input and no detector full-scale, so a saturated 0–1,000 ppm cell reading 1,000 would be reported as Orange as a settled answer.",
+          "oracle-codex": "not-usable: Require the plant-authorized resolution of the conflicting rules before assigning a definitive alarm level."
+        },
+        "B": {
+          "oracle-sonnet": "usable-with-change: Take the detector range, treat a reading at full scale as 'at least', and warn that Red (above 5,000 ppm) cannot trigger on a 0-1000 ppm head; also add the IDLH note at 300 ppm.",
+          "oracle-opus": "not-usable: It has no fault or saturation input, so a faulted or full-scale cell (for example 1,000 on a 0–1,000 ppm cell) gets a settled level below Red. It also flags the document conflict without naming the conflicting values or ",
+          "oracle-codex": "not-usable: Withhold definitive classifications until the plant authorizes the controlling rule; the warning does not resolve the contradiction."
+        },
+        "E": {
+          "oracle-sonnet": "usable-with-change: Name the conflicting values instead of a generic warning, and take the detector range, so a 0-1000 ppm head warns that Red cannot trigger. Add a refusal above 1,000,000 ppm, an explicit IDLH note at 300 ppm, and a protec",
+          "oracle-opus": "not-usable: There is no fault/saturation flag and no full-scale input, so a saturated or faulted detector gets a settled level. The conflict is labeled but its two values are not named, and the lower one is not applied.",
+          "oracle-codex": "not-usable: It assigns alarm levels before the plant resolves the conflicting rules; warnings do not authorize those classifications."
+        }
+      },
+      "C-023": {
+        "A": {
+          "oracle-sonnet": "usable-with-change: Add R-717 (ammonia), and make the negative-superheat refusal say the probe is bad or the unit is flooding back instead of the generic 'impossible' message.",
+          "oracle-opus": "usable-with-change: Label the discharge-as-liquid-pressure stand-in ('line ΔP ignored; subcooling overstated by the drop'); also stop refusing a bad refrigerant code with the 're-read the gauges' message.",
+          "oracle-codex": "not-usable: The question must confirm liquid-line temperature and corresponding pressure/temperature measurement locations."
+        },
+        "B": {
+          "oracle-sonnet": "not-usable: It builds in R-410A as the refrigerant, which I would not accept for a tech's gauge readings. The refrigerant must be required and never defaulted. Negative superheat is also only caught by the separate readingsCheck, an",
+          "oracle-opus": "not-usable: It is built on a defaulted refrigerant (R-410A) and a defaulted gauge basis. The criteria say never to default either; both must be required inputs with no default.",
+          "oracle-codex": "not-usable: The assumption guesses refrigerant and pressure reference, and the question omits confirmation of liquid-line temperature and corresponding measurement locations."
+        },
+        "E": {
+          "oracle-sonnet": "usable-with-change: superheat and subcooling return negative values (e.g. -0.1 F) as ordinary results; make them refuse or flag those, and drop the R-410A default and add R-717.",
+          "oracle-opus": "not-usable: Reports an impossible reading as a number: subcooling returns -0.1 F while readingsCheck would flag negative subcooling; also no upper pressure bound or critical-point refusal.",
+          "oracle-codex": "not-usable: It defaults to an unspecified refrigerant and pressure reference, and its question omits liquid-line identity and corresponding measurement locations."
+        }
+      },
+      "CC-003": {
+        "A": {
+          "oracle-sonnet": "usable-with-change: Show the formula in words (TR = lb/h x Δh / 12,000, and 500 x gpm x ΔT for water only) and warn that the 500 factor is wrong for glycol or brine.",
+          "oracle-opus": "not-usable: It applies mass flow x enthalpy rise without asking feed type or overfeed/outlet quality (a 4:1 recirc gives 40 TR, not 10), and it asks TR-vs-weight instead of which side and what feed type.",
+          "oracle-codex": "not-usable: The clarification must also establish available fluid-side measurements or NH3 mass flow and inlet/outlet states; identifying the meaning of tonnage alone is insufficient."
+        },
+        "B": {
+          "oracle-sonnet": "usable-with-change: Add the process-side route (fluid, gpm, entering/leaving temperatures, with glycol concentration) since a tech rarely has NH3 lb/min, and show the tons-from-flow formula the person asked for.",
+          "oracle-opus": "not-usable: It assumes saturated vapor leaves the exchanger for any feed type, so a pump-recirculated exchanger is overstated by the overfeed ratio; it never asks feed type or offers the process-side 500 x GPM x dT form.",
+          "oracle-codex": "not-usable: It assumes complete evaporation to saturated vapor and an optional saturated-liquid feed instead of establishing inlet and outlet states."
+        },
+        "E": {
+          "oracle-sonnet": "usable-with-change: Enforce the stated -40 to 40 F saturation range, which is only advisory and has no upper pressure limit, and add the process-side route (gpm x 500 x dT), since a tech may not know the evaporated lb/min.",
+          "oracle-opus": "not-usable: It asks for the evaporated NH3 mass flow, which a technician on an overfed or recirculated exchanger cannot measure. It offers no process-side (fluid, GPM, ΔT) route, does not ask the feed type, and its stated -40 to 40 ",
+          "oracle-codex": "not-usable: Assumes unverified inlet/outlet states and requests evaporated flow without establishing the available fluid-side measurements or NH3 state data."
+        }
+      },
+      "CC-004": {
+        "A": {
+          "oracle-sonnet": "usable-with-change: Add the statement that near-zero superheat (1.9 °F) means the evaporator is flooding and liquid may return to the compressor (target 6-10 °F), and check the bulb contact and insulation and the TXV setting; also flag a bu",
+          "oracle-opus": "not-usable: It asks about sea level and the PT column instead of where the 15 psig was read, and gives 1.9 °F with no warning that this is below the 4–6 °F low-temperature TEV setting or a floodback risk.",
+          "oracle-codex": "not-usable: Ask whether 15 psig was measured beside the bulb; with compressor pressure and unknown pressure drop, withhold definitive evaporator superheat."
+        },
+        "B": {
+          "oracle-sonnet": "usable-with-change: A bulb temperature below saturation (-10.6 F and -4.2 F in the examples) is returned as a real negative superheat; flag it as a bad reading or sensor/gauge error instead.",
+          "oracle-opus": "not-usable: It returns negative superheat as a valid number (25 psig/-20 F gives -10.6 F; 20 psig/-20 F gives -4.2 F). These must be refused as a measurement or flooding fault.",
+          "oracle-codex": "not-usable: Require pressure at the bulb location: combining compressor pressure with bulb temperature does not establish superheat at either location."
+        },
+        "E": {
+          "oracle-sonnet": "usable-with-change: Flag or refuse a bulb temperature that gives negative superheat as a bad reading, and state that near-zero superheat means flooding, with the 6-10 F target.",
+          "oracle-opus": "not-usable: It returns a negative superheat as a valid result (bulb -100 F -> -77.9 F) instead of refusing and flagging a measurement or flooding problem. It also needs an explicit flag when the result is below the 4-6 F low-tempera",
+          "oracle-codex": "clean: "
+        }
+      },
+      "CC-005": {
+        "A": {
+          "oracle-sonnet": "usable-with-change: Its PT table puts R-404A dew at 15 psig at -21.5°F, outside my -25°F ±3 check, so superheat reads 1.5°F instead of about 5°F; correct the table and have it flag negative superheat as a bad reading.",
+          "oracle-opus": "usable-with-change: Return 'measurement error' instead of a number when the bulb temperature is below saturation (it gives -3.5 °F at -25 °F); also state the ~0.8 °F R-404A glide.",
+          "oracle-codex": "usable-with-change: Identify the actual R404A dew-point P–T table or property source used."
+        },
+        "B": {
+          "oracle-sonnet": "usable-with-change: Flag negative or very low superheat (here 2.7 F at sea level, with 8 to 12 F typical for a TEV) as a bad reading or flood-back risk instead of reporting it as a plain number.",
+          "oracle-opus": "not-usable: It reports 2.7 F superheat with no low-superheat or floodback warning, and the gauge-to-chart explanation (psig to psia, dew column, interpolation, ~0.8 F glide) is only implied, not given.",
+          "oracle-codex": "usable-with-change: Identify the actual R404A dew-point property source and explain how its lookup produces −22.7°F at 15 psig."
+        },
+        "E": {
+          "oracle-sonnet": "usable-with-change: Flag a bulb temperature below saturation as a bad reading, not a normal negative superheat, and state the 29.7 psia (psig + 14.7) step plus the 8-12 F typical target in the answer.",
+          "oracle-opus": "usable-with-change: Refuse a bulb temperature below the dew temperature as a measurement error instead of returning a number (the -100..200 F range allows it). The explanation should also state the glide (~0.8 F) and the psig -> psia -> dew",
+          "oracle-codex": "not-usable: Identify the actual R404A dew P–T source and explain its lookup or interpolation for 15 psig; merely returning a saturation temperature does not explain its derivation."
+        }
+      },
+      "CC-008": {
+        "A": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "not-usable: It defaults to the 77 F density basis (6 x 30-lb) rather than the conservative 130 F basis (7 x 30-lb), and it ignores existing cylinder contents and the DOT rating/DOT-39 refusal.",
+          "oracle-codex": "not-usable: A safe count requires verified permitted fill limits at expected storage temperature and existing contents, rather than assumed empty cylinders and fixed 77°F capacities."
+        },
+        "B": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "not-usable: It uses 80% of the nominal rating as pounds (24 lb / 40 lb) with no water-capacity or density basis; the conservative 130 F basis on a 30-lb cylinder (WC 26.2) gives 18.4 lb and 7 cylinders, not 6.",
+          "oracle-codex": "not-usable: It assumes empty cylinders and derives permitted fill from 80% of marketed weight instead of verified R404A limits and existing contents."
+        },
+        "E": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "not-usable: It treats 80 % of the marked rating (24 lb in a 30 lb cylinder) as the fill limit, with no WC or liquid-density basis. Against stamped WC 26.2 the limit is 21.8 lb at 77 F or 18.4 lb at 130 F, so the conservative count i",
+          "oracle-codex": "not-usable: It substitutes 80% of marketed cylinder weight and assumed emptiness for verified permitted R404A fill minus existing contents."
+        }
+      },
+      "CC-012": {
+        "A": {
+          "oracle-sonnet": "usable-with-change: Refuse ppm = 0 (and 1,000,000), since the range is stated as 0..1000000 and ppm = 0 returns 0.000 kg as a normal answer.",
+          "oracle-opus": "not-usable: Defaults to 25 °C, which gives the smaller, non-conservative mass (a low temperature is required), and never asks what the dose is for (calibration, test, or a disguised charge-limit question).",
+          "oracle-codex": "not-usable: It supplies a life-threatening release dose using unestablished room conditions instead of withholding dosing and asking whether this is an incident or theoretical assessment."
+        },
+        "B": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "usable-with-change: Add a triggered flammability flag for targets at or above the LFL (about 15 % v/v, 150,000 ppm), with a note on the displaced-air correction, and cap ppm at 1e6. The question should also ask what the dose is for (calibra",
+          "oracle-codex": "not-usable: It supplies a dangerous release dose and asks temperature instead of whether this is an actual incident or theoretical safety assessment."
+        },
+        "E": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "usable-with-change: Ask what the dose is for (calibration/bump test, ventilation test, or a charge limit), state the figure is not a permissible refrigerant charge, and add the SCBA warning.",
+          "oracle-codex": "not-usable: It supplies a release dose for a life-threatening concentration and asks temperature instead of whether this is an actual incident or theoretical assessment."
+        }
+      },
+      "CC-015": {
+        "A": {
+          "oracle-sonnet": "not-usable: It states R32 and a 7.5 m pre-charge with 20 g/m for a model it cannot identify. It should ask for the nameplate refrigerant, line size and pre-charge length, and name no type until given them.",
+          "oracle-opus": "not-usable: It names R32 and uses a generic 7.5 m / 20 g/m rule that does not come from the nameplate or the manual. It should refuse to name a refrigerant or charge until nameplate or OEM data is supplied.",
+          "oracle-codex": "not-usable: Invents model-specific refrigerant and charging rules; the clarification also omits factory-charge mass needed for specified total charge."
+        },
+        "B": {
+          "oracle-sonnet": "not-usable: It only works if I supply the pre-charge length and g/m rate, which is the quantity I asked for; it should estimate from liquid-line size and density, with the manual overriding.",
+          "oracle-opus": "not-usable: It can only answer the refrigerant type and charge by being given them (nameplate and manual values), and those are the very quantities the person asked for.",
+          "oracle-codex": "usable-with-change: Combine the helpers into a manual-validated result giving the documented refrigerant, specified total and additional charge, with refusal below the minimum pipe length."
+        },
+        "E": {
+          "oracle-sonnet": "not-usable: It can only answer if given the pre-charged length and g/m rate (the quantity asked for) and never names the refrigerant; it should ask for the nameplate refrigerant, liquid line size and pre-charge length, and estimate ",
+          "oracle-opus": "usable-with-change: Add the A2L check: request the room area and compare the total charge against the IEC 60335-2-40 m_max.",
+          "oracle-codex": "not-usable: Enforce verified manual pipe-length limits within the charge calculation, refusing an installable recommendation for a prohibited 1 m run."
+        }
+      },
+      "CC-016": {
+        "A": {
+          "oracle-sonnet": "not-usable: It returns the nameplate charge it is given, so it does not answer the question; it also assumes an evacuated, self-contained unit, ignores line-set length for split systems, and works in grams rather than lb/oz.",
+          "oracle-opus": "not-usable: It can only return the nameplate charge the user enters, which is the quantity asked, and it never asks whether the unit is self-contained or remote (line-set length).",
+          "oracle-codex": "not-usable: It requires the requested full-charge quantity as input, answers a top-up question instead, and assumes recovery and evacuation without confirmation."
+        },
+        "B": {
+          "oracle-sonnet": "usable-with-change: Also ask whether the unit is self-contained or a split with a line set (length, liquid line OD), and say any line-set addition applies only where the manufacturer allows it.",
+          "oracle-opus": "usable-with-change: Also ask whether the unit is self-contained or remote/split (line-set length), and accept the nameplate charge as input: echo it exactly, give the A2L/A3 charge-limit warning, and reject any entry above the nameplate val",
+          "oracle-codex": "not-usable: The no-input capability only refuses and redirects to the nameplate; it cannot establish or return this unit's specified refrigerant and full charge."
+        },
+        "E": {
+          "oracle-sonnet": "clean: ",
+          "oracle-opus": "usable-with-change: State that for R-290 or other A2L/A3 refrigerants the tag charge is a safety maximum (UL 60335-2-89) never to be exceeded, and ask whether the unit is self-contained or remote (line-set length).",
+          "oracle-codex": "not-usable: It cannot establish the requested charge; its question also omits manufacturer and unnecessarily restricts nameplate units to lb/oz."
+        }
+      },
+      "CC-023": {
+        "A": {
+          "oracle-sonnet": "not-usable: Headline eprDropAbs returns 34.5 psi as a normal-looking drop, hiding the reversed inlet and outlet; it never asks the refrigerant or which port each gauge is on.",
+          "oracle-opus": "not-usable: The headline eprDropAbs returns 34.5 psi on the inverted readings with no inconsistency flag. It gives no saturation temperatures and never asks for the refrigerant.",
+          "oracle-codex": "not-usable: It assumes matching gauge references and inlet/outlet identity without establishing evaporator side or simultaneous readings."
+        },
+        "B": {
+          "oracle-sonnet": "usable-with-change: The question should also ask for the refrigerant and confirm psig, and the tool should offer saturation temperature once a refrigerant is given; it currently only asks upstream/downstream vs adjustment.",
+          "oracle-opus": "usable-with-change: Ask for the refrigerant and report each pressure's saturation temperature; give no difference figure when the readings are flagged as swapped.",
+          "oracle-codex": "not-usable: Its clarification does not establish which reading is on the evaporator side and whether both are simultaneous readings with confirmed pressure references."
+        },
+        "E": {
+          "oracle-sonnet": "not-usable: The headline guesses 'before/after an adjustment' (+34.5 psi) instead of asking; it should lead with the EPR inlet/outlet reading, flag outlet higher than inlet as swapped or wrong, and ask for the refrigerant and which ",
+          "oracle-opus": "not-usable: The headline reinterprets the readings as an adjustment change (+34.5 psi) instead of flagging inlet < outlet as inconsistent; it gives no saturation temperatures and never asks for the refrigerant.",
+          "oracle-codex": "not-usable: It defaults to an adjustment and matching psig references without establishing valve sides, pressure references, or simultaneous readings."
+        }
+      },
+      "CC-028": {
+        "A": {
+          "oracle-sonnet": "usable-with-change: The headline airDrop must take the room and SST temperatures and flag or refuse a drop larger than the 12 F TD, and it should also query the 115,169 CFM figure.",
+          "oracle-opus": "usable-with-change: Make the actual-density basis (factor about 1.30, about 4.5 F) the primary result, report both bases, and enforce ΔT < room - SST in the headline airDrop result instead of only noting it.",
+          "oracle-codex": "not-usable: Returns a definitive result without establishing sensible capacity, and its clarification asks only about airflow basis."
+        },
+        "B": {
+          "oracle-sonnet": "usable-with-change: Take SST (or TD) as an input and flag or refuse any drop at or above the room-minus-SST TD, and flag that 115,169 CFM at this capacity is implausible and may be a typo.",
+          "oracle-opus": "not-usable: SST is not an input, so a ΔT at or above the coil TD (room − SST) is neither rejected nor flagged. Leaving-air temperature is not returned.",
+          "oracle-codex": "not-usable: It assumes the unspecified capacity is entirely sensible, and its question establishes only airflow basis."
+        },
+        "E": {
+          "oracle-sonnet": "usable-with-change: Check the result against the coil TD (room minus SST, 12 F here) and refuse or flag any drop above it. The tool states that SST is not used, so 100,000 BTUH at 1,000 CFM would report 92 F with no flag. It should also fla",
+          "oracle-opus": "usable-with-change: Take SST as an input, reject any delta-T at or above the coil TD (room minus SST), and report the leaving-air temperature.",
+          "oracle-codex": "not-usable: The question must establish sensible capacity as well as airflow basis before providing an actionable air-drop result."
+        }
+      },
+      "CC-031": {
+        "A": {
+          "oracle-sonnet": "not-usable: It silently assumes R-404A (-20 F at 16 psig) when the refrigerant was not given; require the refrigerant before returning any temperature, and give the yes/no with the capacity, compression-ratio and low-pressure-cutout",
+          "oracle-opus": "not-usable: It assumes R-404A, which is inadmissible. It also omits the capacity, compression-ratio and discharge-temperature consequences and does not direct the adjustment to the thermostat, TXV or EPR per the OEM.",
+          "oracle-codex": "not-usable: Assumes R-404A and running suction, while the follow-up omits measurement condition, required freezer temperature and manufacturer control limits."
+        },
+        "B": {
+          "oracle-sonnet": "not-usable: It assumes R-404A when no refrigerant was given, where it should ask and give no temperature figure. It also accepts targets at or below 0 psig with no unsafe flag, and it never gives a yes/no with limits (capacity, comp",
+          "oracle-opus": "not-usable: It silently defaults to R-404A when no refrigerant is stated. It also leaves out whether and how to lower the pressure (thermostat, TXV or EPR per the OEM), the capacity, compression-ratio and discharge-temperature conse",
+          "oracle-codex": "not-usable: Assumes refrigerant and suction service, and omits the running condition, required freezer temperature and manufacturer limits needed to assess adjustment."
+        },
+        "E": {
+          "oracle-sonnet": "not-usable: It defaults to R-404A when the refrigerant was never named, and it gives -25 F and -34 F as the answer. The refrigerant must be asked for with no temperature given until the tech supplies it. The yes/no and the limits (c",
+          "oracle-opus": "not-usable: It defaults the refrigerant to R-404A and returns saturation temperatures anyway. Its R-404A values (-25.0 F at 16 psig, -34.0 F at 10 psig) also miss the reference (-20.5 and -30 F, ±1.5 F). It gives no decision, conseq",
+          "oracle-codex": "not-usable: It calculates saturation temperatures using assumed refrigerant and suction conditions instead of deciding suitability from running conditions, required freezer temperature, and manufacturer limits."
+        }
+      },
+      "CC-032": {
+        "A": {
+          "oracle-sonnet": "usable-with-change: Correct the R-407C dew table (dewF(6 psig) returns -26.8 F, outside the accepted -26 to -18 F, about -22 F expected), and do not default the box to 0 F when it isn't given.",
+          "oracle-opus": "not-usable: Dew at 6 psig is given as -26.8 F, but the R-407C chart gives about -21 F (±2 F). It also gives a good/bad verdict on a default 0 F box with an 8-20 F TD band instead of requiring the setpoint.",
+          "oracle-codex": "not-usable: Assumes a 0°F box setpoint and gives suitability flags from pressure and box temperature alone."
+        },
+        "B": {
+          "oracle-sonnet": "usable-with-change: State the R-407C dew temperature at 6 psig (about -21 F) and give a yes/no/borderline against the box temperature and TD, with a note that R-407C is unusual for freezers.",
+          "oracle-opus": "not-usable: It omits the caveat that R-407C is outside its normal envelope in low-temperature duty (high discharge temperature, low capacity). It also understates the glide as 5-7 F when it is about 12 F, and it reports no bubble te",
+          "oracle-codex": "not-usable: Asks for design coil temperature instead of required box temperature and does not provide the requested conditional suitability assessment."
+        },
+        "E": {
+          "oracle-sonnet": "usable-with-change: It treats the freezer target as the coil temperature, so a box setpoint like -10 F gives a misleading delta; ask for the box temperature (and TD) and add the note that R-407C is unusual for freezers.",
+          "oracle-opus": "not-usable: 6 psig dew of -23.7 F is outside the -21 ±2 F reference, and the low-temperature compressor-envelope caveat for R-407C (high discharge temperature, low capacity) is missing.",
+          "oracle-codex": "not-usable: It asks for a design coil temperature instead of the freezer's required box temperature."
+        }
+      },
+      "CC-033": {
+        "A": {
+          "oracle-sonnet": "not-usable: It silently assumes R-22 and gives no target window at the compressor (the note only quotes 8-12 F at the evaporator outlet, not the roughly 20-30 F total I expect); require the refrigerant and state the compressor-sucti",
+          "oracle-opus": "usable-with-change: State the compressor-inlet target (about 20-30 F, or the compressor OEM minimum return-gas superheat) the person asked about, instead of only the 8-12 F evaporator-outlet target.",
+          "oracle-codex": "not-usable: Assumes R-22 and omits the compressor model and manufacturer guidance needed to establish the required compressor-inlet target."
+        },
+        "B": {
+          "oracle-sonnet": "usable-with-change: State a target window at the compressor (about 20 to 30 F total, not just the 20 F floor) and ask for the suction line temperature at the compressor so the actual superheat can be judged.",
+          "oracle-opus": "usable-with-change: Add a measured-superheat function (suction line temp minus dew saturation) that flags negative superheat, so the measured value is reported alongside the 20 F floor.",
+          "oracle-codex": "not-usable: The universal 20°F compressor-superheat floor is unsupported; establish the applicable manufacturer's requirement before giving a required value."
+        },
+        "E": {
+          "oracle-sonnet": null,
+          "oracle-opus": null,
+          "oracle-codex": null
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "version": 1,
+  "criteriaSheets": 60,
+  "sourceLines": 783,
+  "classifications": {
+    "supported-but-not-yet-covered": 620,
+    "obsolete/conflicting": 38,
+    "executable": 81,
+    "genuinely-unsupported-backend": 44
+  },
+  "perArmTruth": {
+    "incumbent": {
+      "unknown": 694,
+      "true": 53,
+      "false": 36
+    },
+    "fast-path": {
+      "unknown": 695,
+      "true": 47,
+      "false": 41
+    }
+  },
+  "manualCompilerAssertionsReviewed": 197,
+  "manualCompilerAdmissionCounts": {
+    "valid-subcheck": 26,
+    "complete-finite-criterion": 5,
+    "necessary-FALSE": 4,
+    "unresolved-source/interface": 11,
+    "accepted-subcheck": 112,
+    "rejected-semantic": 30,
+    "full-finite-criterion": 4,
+    "UNKNOWN": 5
+  },
+  "referencePreconditionsExecuted": 9,
+  "referenceBindingStatuses": {
+    "missing-exact-reference": 4,
+    "exact-source-records": 2,
+    "phase-choice-required": 3
+  },
+  "compilerBoundedWasmCalls": 76,
+  "additionalReviewedAccuracyCalls": 2,
+  "additionalExactSourceArithmeticCalls": 1,
+  "numericTruthAutoPromotions": 0,
+  "N43": "PARTIAL: every clause is traced, actual applicable subsets executed; remaining supported-but-not-yet-covered clauses are substantive conversion gaps. No keyword suggestions accepted as coverage.",
+  "N44": "PARTIAL: same executed predicates and all20 paired artifacts compared, with outcomes/costs preserved; whole historical criteria comparison incomplete.",
+  "privateTraceSha256": "9df72545e7884a9cfec9bff7009d7fe444069ba0fd09488c79ddbc84b0e1462e",
+  "privateCoverageSummarySha256": "68137a3d2d2bb10e76ea0add7097181b04c5f50c08dc1741fefb4f138cc01b59",
+  "privacy": "Local-only detailed evidence excluded; this aggregate contains no raw requests or normative clauses."
+}

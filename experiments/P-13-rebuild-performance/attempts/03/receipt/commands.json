@@ -1,0 +1,52 @@
+[
+  {
+    "argv": [
+      "git",
+      "-C",
+      "/home/user/Work/endoforge",
+      "rev-parse",
+      "HEAD"
+    ],
+    "exit": 0,
+    "stdout": "226f8bb9ac8c0d5e7f09a006aef02a874322fcf3\n",
+    "stderr": "",
+    "timeout": false,
+    "wallMs": 1.274146998184733
+  },
+  {
+    "argv": [
+      "/home/user/Work/endoforge/experiments/P-09-portable-campaign/work/node",
+      "/home/user/.local/share/mise/installs/node/26.8.1/lib/node_modules/npm/bin/npm-cli.js",
+      "--version"
+    ],
+    "exit": 0,
+    "stdout": "12.0.2\n",
+    "stderr": "npm warn cli npm v12.0.2 does not support Node.js v22.18.0. This version of npm supports the following node versions: `^22.22.2 || ^24.15.0 || >=26.0.0`. You can find the latest version at https://nodejs.org/.\n",
+    "timeout": false,
+    "wallMs": 52.968887001043186
+  },
+  {
+    "argv": [
+      "/home/user/Work/endoforge/experiments/P-09-portable-campaign/work/node",
+      "/home/user/.local/share/mise/installs/node/26.8.1/lib/node_modules/npm/bin/npm-cli.js",
+      "ci",
+      "--prefix",
+      "/home/user/Work/endoforge/experiments/P-13-rebuild-performance/attempts/03/work/fresh-deps",
+      "--ignore-scripts",
+      "--no-audit",
+      "--no-fund",
+      "--userconfig=/dev/null",
+      "--globalconfig=/dev/null",
+      "--cache",
+      "/home/user/Work/endoforge/experiments/P-13-rebuild-performance/attempts/03/work/fresh-cache",
+      "--fetch-retries=0",
+      "--fetch-timeout=20000",
+      "--registry=https://registry.npmjs.org"
+    ],
+    "exit": 1,
+    "stdout": "",
+    "stderr": "Exit prior to config file resolving\ncause\ndouble-loading config \"/dev/null\" as \"global\", previously loaded as \"user\"\n",
+    "timeout": false,
+    "wallMs": 41.08324999833712
+  }
+]

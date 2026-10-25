@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "request": {
+    "id": "dev-threshold-03",
+    "raw": "Classify finite score s in [0,100] as numeric 0 when s < 60 and numeric 1 when s >= 60, absolute tolerance 0 score-class. Refuse other values naming s. Require s; return number labelled score-class."
+  },
+  "signature": {
+    "version": 1,
+    "name": "classifyScore",
+    "inputs": [
+      {
+        "path": "s",
+        "type": "number",
+        "unit": "score",
+        "domain": [
+          0,
+          100
+        ]
+      }
+    ],
+    "output": {
+      "type": "number",
+      "unit": "score-class"
+    }
+  },
+  "reference": null
+}

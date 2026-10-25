@@ -1,0 +1,257 @@
+{
+  "id": "C-005",
+  "command": {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "--host",
+      "unix:///home/user/Work/endoforge/experiments/P-11-clean-restore/work/docker.sock",
+      "run",
+      "--name",
+      "endoforge-p11-3716445-c-005",
+      "--rm",
+      "--pull=never",
+      "--network=none",
+      "--read-only",
+      "--user",
+      "1000:1000",
+      "--cap-drop=ALL",
+      "--security-opt=no-new-privileges",
+      "--cpus=1",
+      "--memory=512m",
+      "--memory-swap=512m",
+      "--pids-limit=64",
+      "--tmpfs",
+      "/tmp:rw,nosuid,nodev,size=64m",
+      "--mount",
+      "type=bind,src=/home/user/Work/endoforge/experiments/P-11-clean-restore/work/restored/inputs/candidates,dst=/out",
+      "--entrypoint",
+      "/usr/local/bin/node",
+      "sha256:5407fa2b6f7fac21ef527ce0be5bfce9b3034cd5b8e9818435b8100389826e28",
+      "/bundle/campaigns/x1-spec-study/factory/gate.mjs",
+      "run",
+      "/out/C-005"
+    ],
+    "exit": 0,
+    "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 920,\n   \"wasmSha256\": \"bc5bd05968a22f7a45b71141313077f488d8c11084461a13e8ad8de48d891c98\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"tubeInnerVolumeMlPerMeter\",\n    \"liquidLineHoldupGrams\",\n    \"suctionLineHoldupGrams\",\n    \"lineSetHoldupGrams\",\n    \"additionalChargeGrams\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 12,\n   \"total\": 12\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.040647\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+    "stderr": "",
+    "wallMs": 2305.5624839980737
+  },
+  "result": {
+    "at": "2026-10-18T18:59:53.373Z",
+    "gates": {
+      "G1_frozen": {
+        "ok": true
+      },
+      "G2_compiles": {
+        "ok": true,
+        "wasmBytes": 920,
+        "wasmSha256": "bc5bd05968a22f7a45b71141313077f488d8c11084461a13e8ad8de48d891c98"
+      },
+      "G3_exports": {
+        "ok": true,
+        "exports": [
+          "tubeInnerVolumeMlPerMeter",
+          "liquidLineHoldupGrams",
+          "suctionLineHoldupGrams",
+          "lineSetHoldupGrams",
+          "additionalChargeGrams"
+        ]
+      },
+      "G4_tests": {
+        "ok": true,
+        "passed": 12,
+        "total": 12
+      },
+      "G6_bounded": {
+        "ok": true,
+        "maxMs": 0.040647
+      },
+      "G5_deterministic": {
+        "ok": true
+      },
+      "G7_glue": {
+        "ok": true
+      }
+    },
+    "tests": [
+      {
+        "name": "inner volume 1/4 in",
+        "fn": "tubeInnerVolumeMlPerMeter",
+        "args": [
+          1
+        ],
+        "expect": 18.29,
+        "got": 18.292139995419664,
+        "ms": 0.034,
+        "pass": true
+      },
+      {
+        "name": "inner volume 1/2 in",
+        "fn": "tubeInnerVolumeMlPerMeter",
+        "args": [
+          3
+        ],
+        "expect": 96.32,
+        "got": 96.31610682144505,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "liquid holdup 1 m 1/4 R410A",
+        "fn": "liquidLineHoldupGrams",
+        "args": [
+          1,
+          1,
+          1
+        ],
+        "expect": 18.3,
+        "got": 18.292139995419664,
+        "ms": 0.009,
+        "pass": true
+      },
+      {
+        "name": "liquid holdup 2 m 3/8 R410A",
+        "fn": "liquidLineHoldupGrams",
+        "args": [
+          2,
+          2,
+          1
+        ],
+        "expect": 98,
+        "got": 98.00858174410249,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "request as stated: 1 m, 1/4 + 1/2, R410A",
+        "fn": "lineSetHoldupGrams",
+        "args": [
+          1,
+          1,
+          3,
+          1
+        ],
+        "expect": 21.7,
+        "got": 21.66320373417024,
+        "ms": 0.016,
+        "pass": true
+      },
+      {
+        "name": "assumption pin: 1 m inside 5 m precharge needs 0 g",
+        "fn": "additionalChargeGrams",
+        "args": [
+          1,
+          5,
+          1,
+          1
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0.004,
+        "pass": true
+      },
+      {
+        "name": "boundary: length equals precharge",
+        "fn": "additionalChargeGrams",
+        "args": [
+          5,
+          5,
+          1,
+          1
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "one metre beyond precharge",
+        "fn": "additionalChargeGrams",
+        "args": [
+          6,
+          5,
+          1,
+          1
+        ],
+        "expect": 18.3,
+        "got": 18.292139995419664,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "boundary: zero length",
+        "fn": "lineSetHoldupGrams",
+        "args": [
+          0,
+          1,
+          3,
+          1
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "negative length traps",
+        "fn": "liquidLineHoldupGrams",
+        "args": [
+          -1,
+          1,
+          1
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.041,
+        "pass": true
+      },
+      {
+        "name": "unknown pipe code traps",
+        "fn": "liquidLineHoldupGrams",
+        "args": [
+          1,
+          9,
+          1
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.003,
+        "pass": true
+      },
+      {
+        "name": "unknown refrigerant code traps",
+        "fn": "liquidLineHoldupGrams",
+        "args": [
+          1,
+          1,
+          0
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.004,
+        "pass": true
+      }
+    ],
+    "promotable": true
+  },
+  "wasmSha256": "bc5bd05968a22f7a45b71141313077f488d8c11084461a13e8ad8de48d891c98",
+  "comparisons": {
+    "bubblewrap": {
+      "semanticMatch": true,
+      "wasmMatch": true,
+      "exitMatch": true
+    },
+    "docker": {
+      "semanticMatch": true,
+      "wasmMatch": true,
+      "exitMatch": true
+    },
+    "roundtrip": {
+      "semanticMatch": true,
+      "wasmMatch": true,
+      "exitMatch": true
+    }
+  }
+}

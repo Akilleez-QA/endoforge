@@ -1,0 +1,106 @@
+=== FILE: CONTRACT.md ===
+# Acceptance contract for CC-029
+
+Written with the timer running. Do not record times here; the kit records them. Do not consult the requester during the timed interval.
+
+## 1. Observable
+
+The requester sees that 10 psig has the lower boiling temperature than 20 psig for the same refrigerant, with optional saturation temperatures in °F.
+
+## 2. Authoritative inputs
+
+| Input | Source | Wins on conflict? |
+|---|---|---|
+| Pressures 10 and 20 psig | Request | Yes; do not reinterpret as absolute pressure |
+| Export arguments, refrigerant codes and result codes | Stub | Yes |
+| Meaning of “boils most” | Stub assumption | Yes: lower saturation temperature, not greater boiling rate |
+| Refrigerant and atmosphere | Stub assumption | Explicit refrigerant argument wins; otherwise the stated default is R-410A; atmosphere is 14.7 psi |
+| Numerical saturation references | Manufacturer PT chart linked in properties.md | Verification evidence; does not override explicit inputs or prescribe an interpolation algorithm |
+
+Pinned assumption: Both pressures describe the same refrigerant. With no refrigerant named, the interpretation defaults to R-410A. “Boils most” means lower saturation temperature and therefore easier boiling against sufficiently warm surroundings. Pressure is gauge pressure at 14.7 psi atmosphere. Changing refrigerant changes temperatures but preserves pressure ordering within its saturation domain. The fixed function arities require an explicit refrigerant code; code 0 represents the default.
+
+## 3. Required behaviours and acceptance tests
+
+| # | Behaviour | Acceptance test (input → expected) | Universal gate / domain invariant / residual |
+|---|---|---|---|
+| 1 | Answer the original comparison under the pinned default | whichBoilsMost(10,20,0) → 0 | residual |
+| 2 | Preserve argument order in result codes | whichBoilsMost(20,10,0) → 1 | domain invariant |
+| 3 | Return equality for identical pressures | whichBoilsMost(20,20,1) → 2 | domain invariant |
+| 4 | Accept comparison endpoints and preserve ordering across refrigerants | whichBoilsMost(-14,600,3) → 0; whichBoilsMost(10,20,2) → 0 | domain invariant |
+| 5 | Return saturation temperature in °F using gauge pressure | saturationTemperature(27.8,2) → 32 ± 1 °F | residual |
+| 6 | Increase saturation temperature with pressure | saturationTemperature(11.9,2) → 10 ± 1 °F; saturationTemperature(18.4,2) → 20 ± 1 °F | domain invariant |
+| 7 | Reject pressure outside either comparison argument’s range | whichBoilsMost(-14.01,20,0) and whichBoilsMost(10,600.01,0) trap | universal gate |
+| 8 | Reject pressure outside the temperature export’s range | saturationTemperature(-14.01,2) and saturationTemperature(600.01,2) trap | universal gate |
+| 9 | Reject unsupported refrigerant codes | whichBoilsMost(10,20,4) and saturationTemperature(20,-1) trap | universal gate |
+
+## 4. Failure meaning
+
+A wrong answer includes choosing 20 psig for the original comparison, reversing the output codes, treating psig as psia, returning Celsius, ignoring the refrigerant argument, or inventing a boiling rate.
+
+A refusal is a trapped call. Invalid pressure or refrigerant arguments must trap rather than clamp or silently substitute defaults. A saturation state outside a refrigerant’s physical saturation domain must not produce a fabricated temperature; these tests do not prescribe an extension above critical pressure.
+
+Asking the requester means presenting the Open question. The stub’s pinned assumption permits answering the original comparison immediately. Actual boiling rate remains underdetermined and cannot be inferred from pressure alone.
+
+## 5. Permitted effects
+
+None.
+
+## 6. Composition
+
+A refrigerant property library or manufacturer PT table can supply saturation temperatures after converting gauge pressure to absolute pressure. Validation and a pressure comparison supply the remaining behaviours. No particular library or correlation is required. The fixed exports provide no pressure-from-temperature inverse.
+
+## Open
+
+Which refrigerant is in the system (nameplate or tag), and are both pressures from the same system?
+=== END FILE ===
+=== FILE: properties.md ===
+# Verification procedure
+
+Run every tests.json row independently. Successful code results must match exactly. Numerical temperature results must be finite and fall within the specified absolute tolerance in °F. An expectError row passes only if the call traps; returning a sentinel, NaN, or a normal result does not pass.
+
+## Sources
+
+The [Carrier R-134a Temperature–Pressure Chart](https://www.transcentral.carrier.com/CPGTechPubs/toolbox/temp-pressure-chart_r134a.html) gives 11.9 psig at 10 °F, 18.4 psig at 20 °F, and 27.8 psig at 32 °F. These three positive-pressure entries avoid the chart’s separately marked vacuum readings. A ±1 °F tolerance accommodates chart rounding, interpolation and reasonable property correlations.
+
+Pressure ordering follows the Clapeyron relation, dP_sat/dT = h_fg / (T·(v_g−v_l)), positive along ordinary liquid–vapor coexistence. A textbook source is Çengel and Boles, *Thermodynamics: An Engineering Approach*, section on the Clapeyron equation. This supplies the direction, not any numerical refrigerant temperature.
+
+All codes, bounds, the 14.7 psi atmosphere and the default refrigerant come directly from the supplied stub.
+
+## Properties and concrete instances
+
+1. **Original answer and assumption.** Under code 0, 10 psig precedes 20 psig in saturation temperature. `default_original` expects result 0. Because the signature requires three arguments, this pins the default through explicit code 0; it does not test an unsupported omitted argument.
+
+2. **Permutation and inverse permutation.** Swapping pressure arguments exchanges result codes 0 and 1; swapping twice restores the original tuple and result. `default_original` and `swapped_original` instantiate this relation. Equality is fixed by permutation: `equal_pressures` expects code 2. This is an argument-permutation round-trip, not an invented thermodynamic inverse export.
+
+3. **Monotonicity and composition.** For R-134a, the accepted interval for `temperature_low` lies strictly below that for `temperature_high`: 9–11 °F versus 19–21 °F. `same_order_other_refrigerant` checks the same ordering direction on the original pressures. Generally the comparison result must agree with the ordering of two physically defined saturation temperatures evaluated for the same refrigerant.
+
+4. **Boundary behaviour.** `comparison_endpoints` exercises both inclusive comparison pressure endpoints and refrigerant code 3. `temperature_below_range` and `temperature_above_range` exercise the temperature export immediately beyond its pressure boundaries. No extrapolated temperature at a pressure endpoint is used as a reference.
+
+5. **Gauge and dimensional identity.** Internally P_absolute = P_gauge + 14.7 psi; the temperature conversion is T_F = 1.8·T_C + 32. `temperature_freezing_reference` checks the resulting R-134a point 27.8 psig → 32 °F. `temperature_low` and `temperature_high` provide additional Fahrenheit checks. They detect interpreting gauge pressure as absolute pressure or returning Celsius.
+
+6. **Scaling.** The comparison is invariant under a common positive scaling of both pressures whenever the transformed inputs remain valid: sign(kA−kB) = sign(A−B), k > 0. `temperature_low` and `temperature_high` establish physical monotonicity; `default_original`, `same_order_other_refrigerant` and `comparison_endpoints` instantiate the lower-pressure ordering at different pressure separations. No linear scaling of saturation temperature is required: Fahrenheit is affine and the saturation curve is nonlinear. A dedicated equal-scale pair is not included in the frozen rows.
+
+7. **Range guards.** Validate each numeric pressure against the inclusive interval [-14,600] before comparison or property evaluation. `comparison_a_below_range` and `comparison_b_above_range` exercise the two comparison pressure arguments separately. `temperature_below_range` and `temperature_above_range` exercise both sides of the temperature pressure range. Validate refrigerant membership in the integer set {0,1,2,3}; `comparison_invalid_code` and `temperature_invalid_code` exercise unsupported codes on both exports. The general guard also rejects fractional codes and pressures beyond the opposite untested sides.
+
+## Scope limits
+
+No temperature-to-pressure export exists, so an executable thermodynamic inverse round-trip cannot be expressed using the fixed interface. The suite uses a monotonic pair instead. It does not require a bubble-versus-dew convention for blends, fabricate saturation temperatures above critical pressure, or infer mass boiling rate from pressure.
+=== END FILE ===
+=== FILE: tests.json ===
+[
+  {"name":"default_original","fn":"whichBoilsMost","args":[10,20,0],"expect":0},
+  {"name":"swapped_original","fn":"whichBoilsMost","args":[20,10,0],"expect":1},
+  {"name":"equal_pressures","fn":"whichBoilsMost","args":[20,20,1],"expect":2},
+  {"name":"comparison_endpoints","fn":"whichBoilsMost","args":[-14,600,3],"expect":0},
+  {"name":"same_order_other_refrigerant","fn":"whichBoilsMost","args":[10,20,2],"expect":0},
+  {"name":"temperature_low","fn":"saturationTemperature","args":[11.9,2],"expect":10,"tol":1},
+  {"name":"temperature_high","fn":"saturationTemperature","args":[18.4,2],"expect":20,"tol":1},
+  {"name":"temperature_freezing_reference","fn":"saturationTemperature","args":[27.8,2],"expect":32,"tol":1},
+  {"name":"comparison_a_below_range","fn":"whichBoilsMost","args":[-14.01,20,0],"expectError":true},
+  {"name":"comparison_b_above_range","fn":"whichBoilsMost","args":[10,600.01,0],"expectError":true},
+  {"name":"comparison_invalid_code","fn":"whichBoilsMost","args":[10,20,4],"expectError":true},
+  {"name":"temperature_below_range","fn":"saturationTemperature","args":[-14.01,2],"expectError":true},
+  {"name":"temperature_above_range","fn":"saturationTemperature","args":[600.01,2],"expectError":true},
+  {"name":"temperature_invalid_code","fn":"saturationTemperature","args":[20,-1],"expectError":true}
+]
+=== END FILE ===

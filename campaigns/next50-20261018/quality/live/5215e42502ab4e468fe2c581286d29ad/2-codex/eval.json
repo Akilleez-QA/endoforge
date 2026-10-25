@@ -1,0 +1,176 @@
+{
+  "procedure": {
+    "version": 1,
+    "id": "score-threshold-procedure",
+    "kind": "threshold",
+    "input": "s",
+    "domain": [
+      0,
+      100
+    ],
+    "seed": 7919,
+    "count": 16,
+    "tolerance": 0,
+    "unit": "score-class",
+    "threshold": 60,
+    "below": 0,
+    "above": 1
+  },
+  "cases": [
+    {
+      "id": "minimum",
+      "inputs": {
+        "s": 0
+      },
+      "expect": 0,
+      "tolerance": 0,
+      "unit": "score-class"
+    },
+    {
+      "id": "below-boundary",
+      "inputs": {
+        "s": 59.99999999999999
+      },
+      "expect": 0,
+      "tolerance": 0,
+      "unit": "score-class"
+    },
+    {
+      "id": "boundary",
+      "inputs": {
+        "s": 60
+      },
+      "expect": 1,
+      "tolerance": 0,
+      "unit": "score-class"
+    },
+    {
+      "id": "above-boundary",
+      "inputs": {
+        "s": 60.00000000000001
+      },
+      "expect": 1,
+      "tolerance": 0,
+      "unit": "score-class"
+    },
+    {
+      "id": "maximum",
+      "inputs": {
+        "s": 100
+      },
+      "expect": 1,
+      "tolerance": 0,
+      "unit": "score-class"
+    },
+    {
+      "id": "out-of-range-low",
+      "inputs": {
+        "s": -1
+      },
+      "expectError": true,
+      "errorPath": "s",
+      "tolerance": 0,
+      "unit": "score-class"
+    },
+    {
+      "id": "out-of-range-high",
+      "inputs": {
+        "s": 101
+      },
+      "expectError": true,
+      "errorPath": "s",
+      "tolerance": 0,
+      "unit": "score-class"
+    },
+    {
+      "id": "nan-string",
+      "inputs": {
+        "s": "NaN"
+      },
+      "expectError": true,
+      "errorPath": "s",
+      "tolerance": 0,
+      "unit": "score-class"
+    },
+    {
+      "id": "infinity-string",
+      "inputs": {
+        "s": "Infinity"
+      },
+      "expectError": true,
+      "errorPath": "s",
+      "tolerance": 0,
+      "unit": "score-class"
+    },
+    {
+      "id": "negative-infinity-string",
+      "inputs": {
+        "s": "-Infinity"
+      },
+      "expectError": true,
+      "errorPath": "s",
+      "tolerance": 0,
+      "unit": "score-class"
+    },
+    {
+      "id": "missing-input",
+      "inputs": {},
+      "expectError": true,
+      "errorPath": "s",
+      "tolerance": 0,
+      "unit": "score-class"
+    },
+    {
+      "id": "numeric-string",
+      "inputs": {
+        "s": "60"
+      },
+      "expectError": true,
+      "errorPath": "s",
+      "tolerance": 0,
+      "unit": "score-class"
+    },
+    {
+      "id": "null-input",
+      "inputs": {
+        "s": null
+      },
+      "expectError": true,
+      "errorPath": "s",
+      "tolerance": 0,
+      "unit": "score-class"
+    },
+    {
+      "id": "boolean-input",
+      "inputs": {
+        "s": true
+      },
+      "expectError": true,
+      "errorPath": "s",
+      "tolerance": 0,
+      "unit": "score-class"
+    },
+    {
+      "id": "array-input",
+      "inputs": {
+        "s": [
+          60
+        ]
+      },
+      "expectError": true,
+      "errorPath": "s",
+      "tolerance": 0,
+      "unit": "score-class"
+    },
+    {
+      "id": "object-input",
+      "inputs": {
+        "s": {}
+      },
+      "expectError": true,
+      "errorPath": "s",
+      "tolerance": 0,
+      "unit": "score-class"
+    }
+  ]
+}

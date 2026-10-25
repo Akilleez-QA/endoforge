@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "/usr/bin/python3",
+    "/home/user/Work/endoforge/experiments/P-12-lifecycle/lifecycle.py",
+    "/home/user/Work/endoforge/experiments/P-12-lifecycle/receipt",
+    "interrupted",
+    "interrupted",
+    "/home/user/Work/endoforge/experiments/P-12-lifecycle/receipt/frozen-input.txt",
+    "dbaf7474156488138270f1702761bf71cbf7d900db6e073558c544ef18812878",
+    "dbaf7474156488138270f1702761bf71cbf7d900db6e073558c544ef18812878",
+    "echo ready >&2; sleep 100",
+    "--timeout",
+    "20"
+  ],
+  "signal": "SIGINT",
+  "exit": 0,
+  "stdout": "{\"attempt\": \"interrupted\", \"job\": \"interrupted\", \"containerName\": \"endoforge-p12-283b0d0a98b4470c88ebf683112c400d\", \"image\": \"sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541\", \"outcome\": \"interrupted\", \"published\": false, \"inputSha256\": \"dbaf7474156488138270f1702761bf71cbf7d900db6e073558c544ef18812878\", \"containerId\": \"75e15c5f79552612d83106d9ae4fead178d456c36f5ede90cdfa9c02affebb29\", \"terminalState\": {\"Status\": \"exited\", \"Running\": false, \"Paused\": false, \"Restarting\": false, \"OOMKilled\": false, \"Dead\": false, \"Pid\": 0, \"ExitCode\": 137, \"Error\": \"\", \"StartedAt\": \"2026-10-18T19:00:10.116637902Z\", \"FinishedAt\": \"2026-10-18T19:00:10.429687565Z\"}, \"cleanupVerified\": true, \"signals\": [2], \"wallMs\": 870.3182190001826}\n",
+  "stderr": ""
+}

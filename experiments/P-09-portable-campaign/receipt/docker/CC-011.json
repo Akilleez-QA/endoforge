@@ -1,0 +1,281 @@
+{
+  "id": "CC-011",
+  "argv": [
+    "sudo",
+    "-n",
+    "docker",
+    "run",
+    "--rm",
+    "--pull=never",
+    "--network=none",
+    "--read-only",
+    "--user",
+    "1000:1000",
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges",
+    "--cpus=1",
+    "--memory=512m",
+    "--memory-swap=512m",
+    "--pids-limit=64",
+    "--tmpfs",
+    "/tmp:rw,nosuid,nodev,size=64m",
+    "--mount",
+    "type=bind,src=/home/user/Work/endoforge/experiments/P-09-portable-campaign/work/docker,dst=/out",
+    "--entrypoint",
+    "/usr/local/bin/node",
+    "endoforge-p09:probe",
+    "/bundle/campaigns/x1-spec-study/factory/gate.mjs",
+    "run",
+    "/out/CC-011"
+  ],
+  "exit": 0,
+  "wallMs": 1332.200892000401,
+  "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 431,\n   \"wasmSha256\": \"e8329e9444b9d49b8426d9a9024ed6712e6e02a59c698d9db39717fde8677bd4\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"perPoundFromTotal\",\n    \"quoteTotalFromPerPound\",\n    \"quoteBand\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 16,\n   \"total\": 16\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.04809\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+  "stderr": "",
+  "result": {
+    "at": "2026-10-18T18:45:49.026Z",
+    "gates": {
+      "G1_frozen": {
+        "ok": true
+      },
+      "G2_compiles": {
+        "ok": true,
+        "wasmBytes": 431,
+        "wasmSha256": "e8329e9444b9d49b8426d9a9024ed6712e6e02a59c698d9db39717fde8677bd4"
+      },
+      "G3_exports": {
+        "ok": true,
+        "exports": [
+          "perPoundFromTotal",
+          "quoteTotalFromPerPound",
+          "quoteBand"
+        ]
+      },
+      "G4_tests": {
+        "ok": true,
+        "passed": 16,
+        "total": 16
+      },
+      "G6_bounded": {
+        "ok": true,
+        "maxMs": 0.04809
+      },
+      "G5_deterministic": {
+        "ok": true
+      },
+      "G7_glue": {
+        "ok": true
+      }
+    },
+    "tests": [
+      {
+        "name": "per-lb from a 900 USD quote for 15 lb",
+        "fn": "perPoundFromTotal",
+        "args": [
+          900,
+          15
+        ],
+        "expect": 60,
+        "got": 60,
+        "ms": 0.048,
+        "pass": true
+      },
+      {
+        "name": "per-lb from a 1237.50 USD quote for 15 lb",
+        "fn": "perPoundFromTotal",
+        "args": [
+          1237.5,
+          15
+        ],
+        "expect": 82.5,
+        "got": 82.5,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "pins assumption: no tax or deposit added, 900/15 is exactly 60",
+        "fn": "perPoundFromTotal",
+        "args": [
+          900,
+          15
+        ],
+        "expect": 60,
+        "got": 60,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "total from 60 USD/lb for 15 lb",
+        "fn": "quoteTotalFromPerPound",
+        "args": [
+          60,
+          15
+        ],
+        "expect": 900,
+        "got": 900,
+        "ms": 0.004,
+        "pass": true
+      },
+      {
+        "name": "boundary: zero quoted price is a valid quote",
+        "fn": "quoteTotalFromPerPound",
+        "args": [
+          0,
+          15
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0.002,
+        "pass": true
+      },
+      {
+        "name": "band: 60 USD/lb within 40..80",
+        "fn": "quoteBand",
+        "args": [
+          900,
+          15,
+          40,
+          80
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0.005,
+        "pass": true
+      },
+      {
+        "name": "boundary: 60 USD/lb on the low edge of 60..80 is within",
+        "fn": "quoteBand",
+        "args": [
+          900,
+          15,
+          60,
+          80
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "boundary: 80 USD/lb on the high edge of 40..80 is within",
+        "fn": "quoteBand",
+        "args": [
+          1200,
+          15,
+          40,
+          80
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "band: 100 USD/lb above 40..80",
+        "fn": "quoteBand",
+        "args": [
+          1500,
+          15,
+          40,
+          80
+        ],
+        "expect": 2,
+        "got": 2,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "band: 20 USD/lb below 40..80",
+        "fn": "quoteBand",
+        "args": [
+          300,
+          15,
+          40,
+          80
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "trap: zero pounds",
+        "fn": "perPoundFromTotal",
+        "args": [
+          900,
+          0
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.042,
+        "pass": true
+      },
+      {
+        "name": "trap: negative quote",
+        "fn": "perPoundFromTotal",
+        "args": [
+          -1,
+          15
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.003,
+        "pass": true
+      },
+      {
+        "name": "trap: negative pounds",
+        "fn": "quoteTotalFromPerPound",
+        "args": [
+          60,
+          -15
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.003,
+        "pass": true
+      },
+      {
+        "name": "trap: negative per-lb price",
+        "fn": "quoteTotalFromPerPound",
+        "args": [
+          -60,
+          15
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.006,
+        "pass": true
+      },
+      {
+        "name": "trap: band low above high",
+        "fn": "quoteBand",
+        "args": [
+          900,
+          15,
+          80,
+          40
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.004,
+        "pass": true
+      },
+      {
+        "name": "trap: band with zero pounds",
+        "fn": "quoteBand",
+        "args": [
+          900,
+          0,
+          40,
+          80
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.004,
+        "pass": true
+      }
+    ],
+    "promotable": true
+  },
+  "wasmSha256": "e8329e9444b9d49b8426d9a9024ed6712e6e02a59c698d9db39717fde8677bd4"
+}

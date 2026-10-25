@@ -1,0 +1,100 @@
+{
+  "id": "S1-lean-B-2",
+  "arm": "S1-lean",
+  "at": "2026-10-17T17:59:34.896Z",
+  "argv": [
+    "-p",
+    "--output-format",
+    "json",
+    "--no-session-persistence",
+    "--tools",
+    "",
+    "--strict-mcp-config",
+    "--mcp-config",
+    "{\"mcpServers\":{}}",
+    "--disable-slash-commands",
+    "--no-chrome",
+    "--setting-sources",
+    "",
+    "--max-budget-usd",
+    "2"
+  ],
+  "cwd": "/tmp/claude-1000/p04b-empty-cwd",
+  "prompt_sha256": "559eb751ecc7bf7deb83a3c08728bb6b4d2e79e68d723492404789b72ffb5283",
+  "prompt_bytes": 10500,
+  "exit_code": 0,
+  "is_error": false,
+  "subtype": "success",
+  "terminal_reason": "completed",
+  "stop_reason": "end_turn",
+  "model_ids": [
+    "claude-opus-5-5"
+  ],
+  "model_usage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 13108,
+      "cacheReadInputTokens": 6678,
+      "cacheCreationInputTokens": 527,
+      "webSearchRequests": 0,
+      "costUSD": 0.2677196,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 8830,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "wall_ms": 116226.6,
+  "duration_ms": 114565,
+  "duration_api_ms": 112299,
+  "num_turns": 1,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 527,
+    "cache_read_input_tokens": 6678,
+    "output_tokens": 13108,
+    "output_tokens_details": {
+      "thinking_tokens": 8830
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 527,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 13108,
+        "cache_read_input_tokens": 6678,
+        "cache_creation_input_tokens": 527,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 527
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "thinking_tokens": 8830,
+  "visible_tokens": 4278,
+  "context_size_tokens": 7207,
+  "total_cost_usd_list": 0.2677196,
+  "tok_s_wall": 112.78,
+  "tok_s_api": 116.72,
+  "result_chars": 8228,
+  "result_head": "@external(\"host\", \"host_record_count\") declare function host_record_count(set: u32): i32;\n@external(\"host\", \"host_record_field_i64\") declare function host_recor",
+  "stderr_head": "",
+  "asc_gate": {
+    "status": "pass",
+    "lines": 195
+  }
+}

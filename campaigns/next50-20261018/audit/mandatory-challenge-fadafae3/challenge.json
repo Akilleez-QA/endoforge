@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "frozenSuiteHash": "0e58ef3d016d32223a3d5374058953d047a8d94cf271eba2555c45b19df8d43f",
+  "requirement": {
+    "caseId": "contradiction",
+    "referenceKey": "metresToKilometres",
+    "inputs": {
+      "m": 1000
+    },
+    "unit": "km",
+    "expect": 1000,
+    "tolerance": 1e-09
+  },
+  "evidence": {
+    "source": "campaigns/next50-20261018/quality/bipm-prefixes-source.html",
+    "sourceSha256": "db6bb75731bc92dcf3961b219ec9f9bdf3596ca5f43b74b5e85e492be55773c9",
+    "computation": "campaigns/next50-20261018/quality/challenge-evidence.json",
+    "computationSha256": "80246604dff8ff74b272ae93af3460d25119772c1adf6dc4bc80ee057c7915cb",
+    "independentOfCandidate": true,
+    "resolution": "eval-invalid"
+  },
+  "action": "new-eval-version-required"
+}

@@ -1,0 +1,893 @@
+[
+  {
+    "id": "CC-009:physics:mass-upper-bound-bottom",
+    "requestId": "CC-009",
+    "kind": "range",
+    "expected": [
+      0,
+      686.4
+    ],
+    "tolerance": 1e-09,
+    "routes": {
+      "incumbent": [
+        "evaporatorInventoryLb",
+        [
+          16,
+          -35,
+          2,
+          3
+        ]
+      ],
+      "fast-path": [
+        "evap_inventory_lb",
+        [
+          16,
+          -35,
+          3,
+          1
+        ]
+      ]
+    },
+    "expectedUnit": "lb",
+    "referencePolicy": "Conditional on caller-supplied rhoL42.9lb/ft3 at this state: any physical mixture mass <=V*rhoL; no claim that historical property table is validated"
+  },
+  {
+    "id": "CC-009:physics:mass-upper-bound-top",
+    "requestId": "CC-009",
+    "kind": "range",
+    "expected": [
+      0,
+      686.4
+    ],
+    "tolerance": 1e-09,
+    "routes": {
+      "incumbent": [
+        "evaporatorInventoryLb",
+        [
+          16,
+          -35,
+          1,
+          3
+        ]
+      ],
+      "fast-path": [
+        "evap_inventory_lb",
+        [
+          16,
+          -35,
+          3,
+          2
+        ]
+      ]
+    },
+    "expectedUnit": "lb",
+    "referencePolicy": "Conditional on caller-supplied rhoL42.9lb/ft3 at this state: any physical mixture mass <=V*rhoL; no claim that historical property table is validated"
+  },
+  {
+    "id": "CC-009:physics:zero-volume-refusal",
+    "requestId": "CC-009",
+    "kind": "refusal",
+    "expected": null,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "evaporatorInventoryLb",
+        [
+          0,
+          -2,
+          2,
+          3
+        ]
+      ],
+      "fast-path": [
+        "evap_inventory_lb",
+        [
+          0,
+          -2,
+          3,
+          1
+        ]
+      ]
+    },
+    "expectedUnit": "lb",
+    "referencePolicy": "Historical requested volume<=0 refusal; unlike the model-derived acceptance contract zero must refuse"
+  },
+  {
+    "id": "CC-009:physics:negative-volume-refusal",
+    "requestId": "CC-009",
+    "kind": "refusal",
+    "expected": null,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "evaporatorInventoryLb",
+        [
+          -1,
+          -2,
+          2,
+          3
+        ]
+      ],
+      "fast-path": [
+        "evap_inventory_lb",
+        [
+          -1,
+          -2,
+          3,
+          1
+        ]
+      ]
+    },
+    "expectedUnit": "lb",
+    "referencePolicy": "Explicit volume<=0 domain; no property lookup involved"
+  },
+  {
+    "id": "CC-009:physics:subunit-overfeed-ratio",
+    "requestId": "CC-009",
+    "kind": "refusal",
+    "expected": null,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "evaporatorInventoryLb",
+        [
+          16,
+          -2,
+          2,
+          0.5
+        ]
+      ],
+      "fast-path": [
+        "evap_inventory_lb",
+        [
+          16,
+          -2,
+          0.5,
+          1
+        ]
+      ]
+    },
+    "expectedUnit": "lb",
+    "referencePolicy": "Subunit overfeed ratio violates given ratio domain; does not establish source of liquid holdup"
+  },
+  {
+    "id": "CC-013:physics:zeroF-water50",
+    "requestId": "CC-013",
+    "kind": "numeric",
+    "expected": -14.259986862539414,
+    "tolerance": 0.5,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          0,
+          50
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          0,
+          50
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Explicit water-Magnus coefficients17.625/243.04 supplied by codex criterion; arithmetic reference only"
+  },
+  {
+    "id": "CC-013:physics:dew-below--40-1",
+    "requestId": "CC-013",
+    "kind": "below",
+    "expected": -40,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          -40,
+          1
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          -40,
+          1
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Physical water-dew inequality for RH<100, deterministic declared sample grid; not a proof over all floats"
+  },
+  {
+    "id": "CC-013:physics:dew-below--40-25",
+    "requestId": "CC-013",
+    "kind": "below",
+    "expected": -40,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          -40,
+          25
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          -40,
+          25
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Physical water-dew inequality for RH<100, deterministic declared sample grid; not a proof over all floats"
+  },
+  {
+    "id": "CC-013:physics:dew-below--40-75",
+    "requestId": "CC-013",
+    "kind": "below",
+    "expected": -40,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          -40,
+          75
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          -40,
+          75
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Physical water-dew inequality for RH<100, deterministic declared sample grid; not a proof over all floats"
+  },
+  {
+    "id": "CC-013:physics:dew-below--40-99",
+    "requestId": "CC-013",
+    "kind": "below",
+    "expected": -40,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          -40,
+          99
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          -40,
+          99
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Physical water-dew inequality for RH<100, deterministic declared sample grid; not a proof over all floats"
+  },
+  {
+    "id": "CC-013:physics:dew-below--20-1",
+    "requestId": "CC-013",
+    "kind": "below",
+    "expected": -20,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          -20,
+          1
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          -20,
+          1
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Physical water-dew inequality for RH<100, deterministic declared sample grid; not a proof over all floats"
+  },
+  {
+    "id": "CC-013:physics:dew-below--20-25",
+    "requestId": "CC-013",
+    "kind": "below",
+    "expected": -20,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          -20,
+          25
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          -20,
+          25
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Physical water-dew inequality for RH<100, deterministic declared sample grid; not a proof over all floats"
+  },
+  {
+    "id": "CC-013:physics:dew-below--20-75",
+    "requestId": "CC-013",
+    "kind": "below",
+    "expected": -20,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          -20,
+          75
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          -20,
+          75
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Physical water-dew inequality for RH<100, deterministic declared sample grid; not a proof over all floats"
+  },
+  {
+    "id": "CC-013:physics:dew-below--20-99",
+    "requestId": "CC-013",
+    "kind": "below",
+    "expected": -20,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          -20,
+          99
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          -20,
+          99
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Physical water-dew inequality for RH<100, deterministic declared sample grid; not a proof over all floats"
+  },
+  {
+    "id": "CC-013:physics:dew-below-0-1",
+    "requestId": "CC-013",
+    "kind": "below",
+    "expected": 0,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          0,
+          1
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          0,
+          1
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Physical water-dew inequality for RH<100, deterministic declared sample grid; not a proof over all floats"
+  },
+  {
+    "id": "CC-013:physics:dew-below-0-25",
+    "requestId": "CC-013",
+    "kind": "below",
+    "expected": 0,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          0,
+          25
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          0,
+          25
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Physical water-dew inequality for RH<100, deterministic declared sample grid; not a proof over all floats"
+  },
+  {
+    "id": "CC-013:physics:dew-below-0-75",
+    "requestId": "CC-013",
+    "kind": "below",
+    "expected": 0,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          0,
+          75
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          0,
+          75
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Physical water-dew inequality for RH<100, deterministic declared sample grid; not a proof over all floats"
+  },
+  {
+    "id": "CC-013:physics:dew-below-0-99",
+    "requestId": "CC-013",
+    "kind": "below",
+    "expected": 0,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          0,
+          99
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          0,
+          99
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Physical water-dew inequality for RH<100, deterministic declared sample grid; not a proof over all floats"
+  },
+  {
+    "id": "CC-013:physics:dew-below-20-1",
+    "requestId": "CC-013",
+    "kind": "below",
+    "expected": 20,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          20,
+          1
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          20,
+          1
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Physical water-dew inequality for RH<100, deterministic declared sample grid; not a proof over all floats"
+  },
+  {
+    "id": "CC-013:physics:dew-below-20-25",
+    "requestId": "CC-013",
+    "kind": "below",
+    "expected": 20,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          20,
+          25
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          20,
+          25
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Physical water-dew inequality for RH<100, deterministic declared sample grid; not a proof over all floats"
+  },
+  {
+    "id": "CC-013:physics:dew-below-20-75",
+    "requestId": "CC-013",
+    "kind": "below",
+    "expected": 20,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          20,
+          75
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          20,
+          75
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Physical water-dew inequality for RH<100, deterministic declared sample grid; not a proof over all floats"
+  },
+  {
+    "id": "CC-013:physics:dew-below-20-99",
+    "requestId": "CC-013",
+    "kind": "below",
+    "expected": 20,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          20,
+          99
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          20,
+          99
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Physical water-dew inequality for RH<100, deterministic declared sample grid; not a proof over all floats"
+  },
+  {
+    "id": "CC-013:physics:dew-below-40-1",
+    "requestId": "CC-013",
+    "kind": "below",
+    "expected": 40,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          40,
+          1
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          40,
+          1
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Physical water-dew inequality for RH<100, deterministic declared sample grid; not a proof over all floats"
+  },
+  {
+    "id": "CC-013:physics:dew-below-40-25",
+    "requestId": "CC-013",
+    "kind": "below",
+    "expected": 40,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          40,
+          25
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          40,
+          25
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Physical water-dew inequality for RH<100, deterministic declared sample grid; not a proof over all floats"
+  },
+  {
+    "id": "CC-013:physics:dew-below-40-75",
+    "requestId": "CC-013",
+    "kind": "below",
+    "expected": 40,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          40,
+          75
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          40,
+          75
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Physical water-dew inequality for RH<100, deterministic declared sample grid; not a proof over all floats"
+  },
+  {
+    "id": "CC-013:physics:dew-below-40-99",
+    "requestId": "CC-013",
+    "kind": "below",
+    "expected": 40,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          40,
+          99
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          40,
+          99
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Physical water-dew inequality for RH<100, deterministic declared sample grid; not a proof over all floats"
+  },
+  {
+    "id": "CC-013:physics:rh-refusal--1",
+    "requestId": "CC-013",
+    "kind": "refusal",
+    "expected": null,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          -10,
+          -1
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          -10,
+          -1
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Ordinary0\u2013100% calculator RH domain; these are new cases beyond prior RH0/120 replay"
+  },
+  {
+    "id": "CC-013:physics:rh-refusal-101",
+    "requestId": "CC-013",
+    "kind": "refusal",
+    "expected": null,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          -10,
+          101
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          -10,
+          101
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Ordinary0\u2013100% calculator RH domain; these are new cases beyond prior RH0/120 replay"
+  },
+  {
+    "id": "CC-013:physics:rh-refusal-nan",
+    "requestId": "CC-013",
+    "kind": "refusal",
+    "expected": null,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          -10,
+          "nan"
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          -10,
+          "nan"
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Ordinary0\u2013100% calculator RH domain; these are new cases beyond prior RH0/120 replay"
+  },
+  {
+    "id": "CC-013:physics:rh-refusal-inf",
+    "requestId": "CC-013",
+    "kind": "refusal",
+    "expected": null,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          -10,
+          "inf"
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          -10,
+          "inf"
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Ordinary0\u2013100% calculator RH domain; these are new cases beyond prior RH0/120 replay"
+  },
+  {
+    "id": "CC-013:physics:below-water-validity-range",
+    "requestId": "CC-013",
+    "kind": "refusal",
+    "expected": null,
+    "tolerance": 0,
+    "routes": {
+      "incumbent": [
+        "dewPointF",
+        [
+          -50,
+          50
+        ]
+      ],
+      "fast-path": [
+        "dewpoint_f",
+        [
+          -50,
+          50
+        ]
+      ]
+    },
+    "expectedUnit": "degF",
+    "referencePolicy": "Explicit historical criterion requires another validated correlation OR flag at-50F. Both frozen sources implement water Magnus; absent a replacement, refusal is required."
+  },
+  {
+    "id": "CC-022:physics:defined-rigid-ideal-gas",
+    "requestId": "CC-022",
+    "kind": "numeric",
+    "expected": 0.1887967980063081,
+    "tolerance": 0.002,
+    "routes": {
+      "incumbent": [
+        "psiPerDegF",
+        [
+          100,
+          70
+        ]
+      ],
+      "fast-path": [
+        "slope_psi_per_F",
+        [
+          100,
+          99.81120320199369,
+          70,
+          69
+        ]
+      ]
+    },
+    "expectedUnit": "psi/degF",
+    "referencePolicy": "Caller explicitly supplies rigid sealed ideal-gas process: Pabs/Tabsolute constant,529.67R initially; over one degreeF rate equals drop numerically"
+  },
+  {
+    "id": "CC-022:physics:r22-supplied",
+    "requestId": "CC-022",
+    "kind": "numeric",
+    "expected": 1.5,
+    "tolerance": 0.15,
+    "routes": {
+      "incumbent": null,
+      "fast-path": [
+        "slope_psi_per_F",
+        [
+          76,
+          68.5,
+          45,
+          40
+        ]
+      ]
+    },
+    "expectedUnit": "psi/degF",
+    "referencePolicy": "Conditional on explicitly supplied P/T points; validates subtraction/division and units, NOT fluid/dew/bubble lookup truth"
+  },
+  {
+    "id": "CC-022:physics:r410-low-supplied",
+    "requestId": "CC-022",
+    "kind": "numeric",
+    "expected": 2.4,
+    "tolerance": 0.24,
+    "routes": {
+      "incumbent": null,
+      "fast-path": [
+        "slope_psi_per_F",
+        [
+          130,
+          118,
+          45,
+          40
+        ]
+      ]
+    },
+    "expectedUnit": "psi/degF",
+    "referencePolicy": "Conditional on explicitly supplied P/T points; validates subtraction/division and units, NOT fluid/dew/bubble lookup truth"
+  },
+  {
+    "id": "CC-022:physics:r410-high-supplied",
+    "requestId": "CC-022",
+    "kind": "numeric",
+    "expected": 4.6,
+    "tolerance": 0.46,
+    "routes": {
+      "incumbent": null,
+      "fast-path": [
+        "slope_psi_per_F",
+        [
+          340,
+          317,
+          105,
+          100
+        ]
+      ]
+    },
+    "expectedUnit": "psi/degF",
+    "referencePolicy": "Conditional on explicitly supplied P/T points; validates subtraction/division and units, NOT fluid/dew/bubble lookup truth"
+  }
+]

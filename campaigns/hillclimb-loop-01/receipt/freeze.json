@@ -1,0 +1,227 @@
+{
+  "at": "2026-10-18T07:13:34.914Z",
+  "loop": 1,
+  "seed": 20261018,
+  "splitRule": "the 40 reserve ids of campaigns/x1-spec-study/receipt/freeze.json (seed 20261017), stratified by source prefix (C-: 13 owner/study requests; CC-: 27 chatbot calculation requests), each stratum shuffled with lib/stats.mjs shuffle (mulberry32) at seed 20261018 (C-) and 20261019 (CC-); working = first 7 C- and first 13 CC-, sealed = the rest (6 C-, 14 CC-)",
+  "development": [
+    "C-019",
+    "CC-027",
+    "CC-026",
+    "C-007",
+    "CC-007",
+    "C-010",
+    "CC-001",
+    "CC-022",
+    "C-015",
+    "C-016",
+    "CC-009",
+    "CC-002",
+    "CC-013",
+    "CC-036",
+    "C-006",
+    "CC-025",
+    "C-012",
+    "C-005",
+    "CC-011",
+    "CC-014"
+  ],
+  "working": [
+    "C-018",
+    "C-022",
+    "C-004",
+    "C-020",
+    "C-003",
+    "C-008",
+    "C-024",
+    "C-011",
+    "CC-017",
+    "CC-010",
+    "CC-018",
+    "CC-029",
+    "CC-021",
+    "CC-035",
+    "CC-030",
+    "CC-034",
+    "CC-006",
+    "CC-019",
+    "CC-024",
+    "CC-020"
+  ],
+  "sealed": [
+    "C-009",
+    "C-023",
+    "C-017",
+    "C-021",
+    "C-014",
+    "C-013",
+    "C-001",
+    "C-002",
+    "CC-015",
+    "CC-031",
+    "CC-016",
+    "CC-028",
+    "CC-008",
+    "CC-005",
+    "CC-003",
+    "CC-012",
+    "CC-032",
+    "CC-033",
+    "CC-004",
+    "CC-023"
+  ],
+  "poolSha256": "15ae2abcf73996c5b3afa2e168d24c59f65f0101ce0c87c02463aad1eb615446",
+  "canaries": {
+    "packetSeed": 20261020,
+    "keySha256": "b31fa190c9eb78a5d83aeae55c8e4449616e503ae2a9984d9a724820f44409ac",
+    "items": [
+      {
+        "item": 1,
+        "sheetSha256": "8d3ee966a8a3f342020370d24bbf372108c8fb653f67210ba5df9c18f2b3270b"
+      },
+      {
+        "item": 2,
+        "sheetSha256": "1d0f01598e14179b7d93c010ea21724dd04a031b9669c49b63e66014caca3315"
+      },
+      {
+        "item": 3,
+        "sheetSha256": "9859c2ff2636f45d6d3f6df6c48080853f8145b4d328c98419ce3b7c657c1d7b"
+      },
+      {
+        "item": 4,
+        "sheetSha256": "ebf2ecdaa7ef6f31a0e4ebe9a9215a872ade1df4e6a19c447fe2a884e96ade45"
+      },
+      {
+        "item": 5,
+        "sheetSha256": "8e1b657fb0286c321fb9c5737e7ddcbc0058f9630427dbaa06c801d7ceef7dfa"
+      },
+      {
+        "item": 6,
+        "sheetSha256": "1f7098e549e6b6ca94e13ce694d43053df1331c3c84ad4e8cb790a34c483c65b"
+      }
+    ],
+    "definitions": [
+      {
+        "id": "C-006",
+        "variant": "v1",
+        "defect": "wrong default equipment class for an A3 (R290) charge limit",
+        "mustBe": "not-usable",
+        "extraCalls": [],
+        "source": "campaigns/hillclimb-loop-01/work/canaries/C-006-v1"
+      },
+      {
+        "id": "CC-011",
+        "variant": "v2",
+        "defect": "answers a question that was not asked (divides a quote instead of pricing R-22)",
+        "mustBe": "not-usable",
+        "extraCalls": [
+          {
+            "fn": "perPoundFromTotal",
+            "args": [
+              900,
+              15
+            ],
+            "why": "the usage example: a quoted total divided by pounds"
+          }
+        ],
+        "source": "campaigns/x1-spec-study/work/factory/CC-011"
+      },
+      {
+        "id": "CC-009",
+        "variant": "v1",
+        "defect": "nh3EvapInventoryLb(16, 1, -50) returns 556.93 with no trap outside the -40..40 F fit range",
+        "mustBe": "usable-with-change-or-worse naming the range guard",
+        "extraCalls": [
+          {
+            "fn": "nh3EvapInventoryLb",
+            "args": [
+              16,
+              1,
+              -50
+            ],
+            "why": "operating temperature below the stated fit range"
+          }
+        ],
+        "source": "campaigns/x1-spec-study/work/factory/CC-009"
+      }
+    ],
+    "fillers": [
+      "CC-014",
+      "CC-025",
+      "CC-036"
+    ],
+    "recallRule": "a canary is caught when at least two of the three oracles flag it as required (C-006 v1 and CC-011: not-usable; CC-009: usable-with-change or not-usable with the reason naming the range or the -50 F call); 3/3 or the loop is void; a filler counted against the oracle that calls it not-usable (false reject)",
+    "note": "C-006 v1 has no glue in loop 0; the sheet uses a coordinator-written glue that restates the v1 contract and outcome (work/canaries/C-006-v1/PROVENANCE.md); kernel, contract and tests are byte copies"
+  },
+  "fixed": {
+    "campaigns/x1-spec-study/factory/gate.mjs": "a4d55778fae50de352fbdc685d0a43163503ecd44486dce588aa830bc0a730d7",
+    "campaigns/x1-spec-study/factory/glue.schema.json": "7ac2816742201e3005c29f87294917ae6d3383193b6b353e498974f083173274",
+    "campaigns/x1-spec-study/factory/try.mjs": "31ece833776a28b670d72a05f1babe658ae214fe226dccbb2e70890bcb4d5c90",
+    "campaigns/x1-spec-study/factory/promote.mjs": "9673ac31d4da216a34845a8b07b68379f4eec28bcf0339e0ce794e1fa70790f6",
+    "campaigns/x1-spec-study/lib/stats.mjs": "bed5be8c270370b81f74680764d378cba28b9dde78f8ff42bd390f8118506f7b",
+    "campaigns/x1-spec-study/templates/CONTRACT.md": "e889fb359554a8f85bb906e50f19b63336e59748f7b7d15fa10df22635fe0fe4",
+    "campaigns/x1-spec-study/receipt/freeze.json": "bcfe119c1d86577c0c8f0d6141e7b660f8f005a65258896f55d0d39574f1ed8c",
+    "campaigns/x1-spec-study/RUBRIC.md": "3eca71977820c1143ec87fd84d5714ad7c611128fe6586b7c2e58e0144aa0ad8",
+    "campaigns/hillclimb-loop-01/lib/analysis.mjs": "e79e3e1ba6779270900358b52cb957e5981fc06b67845f1e41a526d4d5d24154",
+    "campaigns/hillclimb-loop-01/lib/factory.mjs": "e08b14f554dd81b38bb80152b905268fcb277402a248b9df8996b7550d818a89",
+    "campaigns/hillclimb-loop-01/lib/gate8.mjs": "7d23093666f76b6e12f98364a9f50b9d2f966df781c6fbfa0565167ff41073ef",
+    "campaigns/hillclimb-loop-01/lib/gates.mjs": "26d8b740e8f73eb062b7472f7248c83eee9057d7bee84823c85ac23464d6b389",
+    "campaigns/hillclimb-loop-01/lib/oracle.mjs": "35e25e0c374571032c21ff42b9b0a05bb706555f75f0a1f0c561634c271fbba6",
+    "campaigns/hillclimb-loop-01/lib/retrieval.mjs": "a1de32b7f6ee209158a3607273a3329acb407c7df2cad047c68df08a5b51e890",
+    "campaigns/hillclimb-loop-01/lib/runner.mjs": "177fcb9a089f32778b3c1bcbca77863043a8bd6ff85effc4e617742147de6e68",
+    "campaigns/hillclimb-loop-01/lib/sheet.mjs": "9972eaf673d85baf0776ed115c6269396a9f9cdd2b94acdf356746077f83a1ed",
+    "campaigns/hillclimb-loop-01/receipt/manifest-incumbent.json": "8ff05ce22c07c8ff5c406d1db101d5108db8e25f6c21fc32646961d7b227b1a8",
+    "campaigns/hillclimb-loop-01/receipt/manifest-challenger.json": "6ccbc2cd3ee2a052e89c351349d375ebe156a1c2b2f2607ed68fb85f1b129626",
+    "campaigns/hillclimb-loop-01/work/canaries/C-006-v1/glue.json": "33c6f018b2ead50e7f203ab7ec442e7ead05a1289c7616a77c11d481d80897ff",
+    "campaigns/hillclimb-loop-01/work/canaries/C-006-v1/kernel.wasm": "8cb93d91ec00026356c5b466d7929543ef73f0f59b675364fb1e5ee2240b8795",
+    "campaigns/hillclimb-loop-01/work/canaries/C-006-v1/CONTRACT.md": "355b4a5423b1b398af847b19a9f65c6165f76367e38596fb55e3562dfd37a07a",
+    "campaigns/hillclimb-loop-01/work/canaries/C-006-v1/tests.json": "4229ac741d8918db088aa05599f6a5e972703b826648edb18f26202e17468050"
+  },
+  "briefs": {
+    "consumer-use-v1.md": "ea3aeb18ab1e9052b2a9933c1c2c5fb8c1aeb35a02d14cca89d17bd5084b2def",
+    "criteria-audit-v1.md": "794d2b254774978147d3451d80b52468530d239804ce744fe4a54296961fc1d5",
+    "deviation-critic-v1.md": "e8d23ba05b39d36d56b3ff60d06cccb2108b10c790ea89b638dcae4442cd6757",
+    "evaluator-v1.md": "64973c724008b19b2afd25ba0b442f1d74cbf15641a1e9eeafaba18218da1253",
+    "generator-blind-v1.md": "b37448fa426537a8a50d1e57a8477af57974f837151f27cdeef9a33c602c1983",
+    "generator-compilefix-v1.md": "967bc759bcab7a17035a8910b91610a8c1e43ffdf75f8c515fccbc6cc168aa66",
+    "generator-escalation-v1.md": "3a03e61323b13e59bd7aff56dfa6a7a24839c231ff692941ced582bb662e9d3e",
+    "generator-schemafix-v1.md": "91820ac7838d72572744fe003fdcb7711547df33fc0d64e3bdbcb82c4d647ae2",
+    "generator-sequential-v1.md": "46d6b844a58788201aeeff03eabab08d0f5fe461e4422fadfd4cc0253dc35644",
+    "incumbent-repair-v1.md": "8b49fcced871e35f49ed0628bbfdb38837c2022bbf7e73a18b4a3fb10e537c68",
+    "incumbent-worker-v1.md": "9f56b92b8810590e08dc75ee9bbbd5a5a04fa1ee7fd956e42235a5f6f16668be",
+    "oracle-criteria-reviewer-v1.md": "6f8f8b9e806adb74aa509f73d2e6eac7ec09b205c66a5f4b18a0637674894879",
+    "oracle-criteria-technician-v1.md": "60c268fb4e09a9388caff52757ee72cd71cc48b4d65bd453ac400491a086a62a",
+    "oracle-score-reviewer-v1.md": "52d5eb76485c2251ae8e2ef5995d8aa9c82512184f69d446e249ad10853e95aa",
+    "oracle-score-reviewer-v2.md": "e9e3194d187fc4be10900f3b9277018ae17c4f3691378c4be94e8752d2b73546",
+    "oracle-score-technician-v1.md": "79adbb49c6e063fc59d62aeae69dd0ffc3d66a32983030faed63b457995d0d6c",
+    "oracle-score-technician-v2.md": "741291542d933e0d691ef5646bccfa09614398d06cf341f7359257d4ce519196",
+    "persona-contract-v1.md": "007e659de75d2af8cb8eb43c1a80941f4eaac7b541bcab441e4c33e3337edbdd",
+    "persona-output-v1.md": "0a9020392259c2362a280361b9d38201b7296222ffeb1f8272050c3cb235489f",
+    "personas-v1.md": "7c131b024f1df7d5b261fd53361acf78b503ec56ef1b3dd61d13a7f8dfe95929",
+    "stub-v1.md": "d88449dd292f0fcfe1330452bdc47371a39424734d5c24fec6a549239dd7310b"
+  },
+  "tools": {
+    "node": "v26.8.1",
+    "asc": "Version 0.28.20",
+    "claude": "2.1.302 (Claude Code)",
+    "codex": "codex-cli 0.163.0",
+    "wasmtime": null,
+    "kernel": "7.2.8-9-omarchy",
+    "cpu": "AMD Ryzen 9 7950X 16-Core Processor",
+    "git": "f80a16ea2a296bd66832eedcd5f97d5004694ffb"
+  },
+  "models": {
+    "incumbent": "claude-opus-5-5 via claude -p (CLI default), --effort low; third noise arm at default effort",
+    "challenger": "claude-sonnet-5-5 for stub (low), contract persona, evaluator, blind candidates; claude-opus-5-5 default for escalation",
+    "personaStage": "claude-sonnet-5-5",
+    "oracles": {
+      "oracle-sonnet": "claude-sonnet-5-5 technician",
+      "oracle-opus": "claude-opus-5-5 reviewer",
+      "oracle-codex": "codex exec gpt-6.1-sol (config.toml) reasoning high, technician"
+    }
+  },
+  "budget": {
+    "targetTokens": 8000000,
+    "hardStopTokens": 12000000,
+    "meter": "receipt/tokens.jsonl: one line per CLI call; total = input + cache_read + cache_creation + output (thinking is inside output)"
+  }
+}

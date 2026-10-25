@@ -1,0 +1,463 @@
+{
+ "schema": "endoforge/atoms/1",
+ "need": {
+  "id": "C-007",
+  "text": "Sub cooler delta is 45 degrees"
+ },
+ "acceptance": [
+  {
+   "id": "A1",
+   "statement": "The module exports subcool_status and subcool_deviation_f, each taking one f64.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const fs=require('fs');const m=new WebAssembly.Module(fs.readFileSync('/in/compose/kernel.wasm'));const e=WebAssembly.Module.exports(m).map(x=>x.name);if(!e.includes('subcool_status')||!e.includes('subcool_deviation_f'))process.exit(1)\""
+   }
+  },
+  {
+   "id": "A2",
+   "statement": "A reading of 45 F is reported as above the assumed normal band (status 2) with deviation +33 F.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const fs=require('fs');const i=new WebAssembly.Instance(new WebAssembly.Module(fs.readFileSync('/in/compose/kernel.wasm')),{});if(i.exports.subcool_status(45)!==2||Math.abs(i.exports.subcool_deviation_f(45)-33)>1e-9)process.exit(1)\""
+   }
+  },
+  {
+   "id": "A3",
+   "statement": "Readings that are NaN, infinite, negative or above 100 F are refused with a trap.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const fs=require('fs');const i=new WebAssembly.Instance(new WebAssembly.Module(fs.readFileSync('/in/compose/kernel.wasm')),{});for(const v of [NaN,Infinity,-Infinity,-0.5,100.5]){let t=false;try{i.exports.subcool_status(v)}catch(e){t=true}if(!t)process.exit(1)}\""
+   }
+  },
+  {
+   "id": "A4",
+   "statement": "Readings inside the assumed band (8 to 12 F inclusive) give status 1 and deviation 0; below the band give status 0 and a negative deviation.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const fs=require('fs');const i=new WebAssembly.Instance(new WebAssembly.Module(fs.readFileSync('/in/compose/kernel.wasm')),{});const x=i.exports;if(x.subcool_status(8)!==1||x.subcool_status(12)!==1||x.subcool_deviation_f(10)!==0||x.subcool_status(3)!==0||x.subcool_deviation_f(3)>=0)process.exit(1)\""
+   }
+  },
+  {
+   "id": "A5",
+   "statement": "CONTRACT.md records the assumption (reading is subcooling in F, normal band 8-12 F as for a TXV system, refrigerant and metering device unknown), one question, and the refused inputs.",
+   "check": {
+    "kind": "command",
+    "run": "grep -qi 'assum' /in/compose/CONTRACT.md && grep -qi 'question' /in/compose/CONTRACT.md && grep -qi 'refus' /in/compose/CONTRACT.md"
+   }
+  },
+  {
+   "id": "A6",
+   "statement": "glue.json parses and carries the assumption, the question, units and trap messages.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const g=JSON.parse(require('fs').readFileSync('/in/compose/glue.json','utf8'));const s=JSON.stringify(g).toLowerCase();for(const k of ['assum','question','trap'])if(!s.includes(k))process.exit(1)\""
+   }
+  },
+  {
+   "id": "A7",
+   "statement": "The answer a technician sees tells them 45 F is far above the usual band, without claiming a fault in their equipment, and asks the one question that resolves the open fact (metering device type, with refrigerant if needed).",
+   "check": {
+    "kind": "oracle",
+    "criteria": "From glue.json and CONTRACT.md alone, a technician reading the result for 45 F understands it is high versus the stated assumed band, sees the assumption named, and sees a single question; no invented equipment facts."
+   }
+  },
+  {
+   "id": "A8",
+   "statement": "Gates G1-G7 pass on the composed artefact.",
+   "check": {
+    "kind": "oracle",
+    "criteria": "The compose report shows G1 through G7 all passed."
+   }
+  }
+ ],
+ "atoms": [
+  {
+   "id": "iface",
+   "kind": "interface",
+   "title": "Interface stub",
+   "contract": "A single interface.json listing exports subcool_status(delta_f: f64): i32 and subcool_deviation_f(delta_f: f64): f64, with argument names, units (degrees F, a temperature difference), return codes (0 below band, 1 within band, 2 above band) and the deviation sign convention (negative below band, positive above, 0 within).",
+   "inputs": [
+    {
+     "from": "need"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "interface",
+     "path": "interface.json",
+     "describe": "export names, argument names, units, return types and codes"
+    }
+   ],
+   "verify": "JSON parses; exactly two exports with the stated names and f64 argument; codes 0,1,2 present.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Write the interface stub for a subcooling-reading check from the request. Two exports: a status code and a deviation in F from the assumed normal band. Name units and codes explicitly."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "contract",
+   "kind": "contract",
+   "title": "Contract with assumption and question",
+   "contract": "CONTRACT.md stating what is computed, the assumption (the number is subcooling in F; assumed normal band 8 to 12 F inclusive, as for a TXV system; refrigerant and metering device are not given), the single question that resolves it, and refused inputs (NaN, infinite, negative, above 100 F) with trap behaviour.",
+   "inputs": [
+    {
+     "from": "need"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "contract",
+     "path": "CONTRACT.md",
+     "describe": "the contract document"
+    }
+   ],
+   "verify": "File contains sections or words for computed, assumption, question, refused; band values 8 and 12 and limit 100 appear.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Write the contract for checking a single subcooling reading against an assumed normal band. Record the assumption and one question (what metering device does the system have, TXV or fixed orifice?). Do not invent equipment facts. State the refused inputs."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "kstatus",
+   "kind": "kernel",
+   "title": "Kernel: subcool_status",
+   "contract": "Exports subcool_status(delta_f: f64): i32 returning 0 below 8, 1 for 8 to 12 inclusive, 2 above 12; aborts on NaN, infinite, negative, or above 100. All private names prefixed kstatus_.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "src",
+     "path": "kstatus.ts",
+     "describe": "AssemblyScript source for subcool_status"
+    }
+   ],
+   "verify": "Compiles with asc; export present; 45 gives 2, 10 gives 1, 3 gives 0; NaN traps.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [
+     "Bash",
+     "Read",
+     "Write",
+     "Edit"
+    ],
+    "toolchain": "asc",
+    "prompt": "Implement subcool_status from the interface and the contract."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "kdev",
+   "kind": "kernel",
+   "title": "Kernel: subcool_deviation_f",
+   "contract": "Exports subcool_deviation_f(delta_f: f64): f64 returning delta-8 if below 8 (negative), delta-12 if above 12, else 0; aborts on NaN, infinite, negative, or above 100. All private names prefixed kdev_.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "src",
+     "path": "kdev.ts",
+     "describe": "AssemblyScript source for subcool_deviation_f"
+    }
+   ],
+   "verify": "Compiles with asc; export present; 45 gives 33, 10 gives 0, 3 gives -5; invalid inputs trap.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [
+     "Bash",
+     "Read",
+     "Write",
+     "Edit"
+    ],
+    "toolchain": "asc",
+    "prompt": "Implement subcool_deviation_f from the interface and the contract."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "tstatus",
+   "kind": "tests",
+   "title": "Tests: subcool_status",
+   "contract": "Tests for subcool_status covering below, at both edges, inside, above (including 45), and expected traps for NaN, infinity, negative and above-100 values.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "tests",
+     "path": "tests_status.json",
+     "describe": "test cases for subcool_status"
+    }
+   ],
+   "verify": "JSON parses; every case names subcool_status; includes 45 -> 2, edges 8 and 12 -> 1 and at least four trap cases.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Write executable tests for subcool_status from the interface and the contract only."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "tdev",
+   "kind": "tests",
+   "title": "Tests: subcool_deviation_f",
+   "contract": "Tests for subcool_deviation_f covering below band (negative), inside (0), above including 45 -> 33, boundary values 8 and 12, and expected traps for invalid inputs.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "tests",
+     "path": "tests_dev.json",
+     "describe": "test cases for subcool_deviation_f"
+    }
+   ],
+   "verify": "JSON parses; every case names subcool_deviation_f; includes 45 -> 33, 3 -> -5, 10 -> 0 and trap cases.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Write executable tests for subcool_deviation_f from the interface and the contract only."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "glue",
+   "kind": "glue",
+   "title": "Glue content",
+   "contract": "glue.json with labels, units (F), precision, status code meanings, the assumption, the one question, and a trap message for each refused input class.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "glue",
+     "path": "glue.json",
+     "describe": "labels, units, precision, codes, assumption, question, trap messages"
+    }
+   ],
+   "verify": "JSON parses; has assumption, question, units, codes 0/1/2 and trap messages for NaN, negative, above 100.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Write the glue for a technician reading: plain labels, codes, the assumption and the question exactly as in the contract, clear refusal messages."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "compose",
+   "kind": "compose",
+   "title": "Compose artefact and run gates",
+   "contract": "Concatenates kernel parts into one module, merges tests, places CONTRACT.md and glue.json, compiles, and runs gates G1-G7; reports results.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    },
+    {
+     "from": "kstatus",
+     "output": "src"
+    },
+    {
+     "from": "kdev",
+     "output": "src"
+    },
+    {
+     "from": "tstatus",
+     "output": "tests"
+    },
+    {
+     "from": "tdev",
+     "output": "tests"
+    },
+    {
+     "from": "glue",
+     "output": "glue"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "artefact",
+     "path": "compose",
+     "describe": "directory with kernel.wasm, CONTRACT.md, tests.json, glue.json and the gate report"
+    }
+   ],
+   "verify": "All gates G1-G7 pass; acceptance A1-A8 hold.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [
+     "Bash",
+     "Read",
+     "Write",
+     "Edit"
+    ],
+    "toolchain": "asc",
+    "prompt": "Assemble the parts into the artefact and run the gates. Report failures verbatim; do not alter part contents beyond merging."
+   },
+   "size": {
+    "work": 2,
+    "interface": 2
+   }
+  },
+  {
+   "id": "rev-tech",
+   "kind": "review",
+   "title": "Review: service technician persona",
+   "contract": "Blind review from the request and the artefact interface by a refrigeration service technician: is the answer to 'is 45 normal?' clear, useful and not overclaiming.",
+   "inputs": [
+    {
+     "from": "need"
+    },
+    {
+     "from": "compose",
+     "output": "artefact"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "review",
+     "path": "review_tech.json",
+     "describe": "verdict and findings"
+    }
+   ],
+   "verify": "JSON parses with verdict pass or fail and a findings list.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Judge as a field technician who asked this question."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "rev-eng",
+   "kind": "review",
+   "title": "Review: refrigeration engineer persona",
+   "contract": "Blind review for technical soundness of the assumed band and the handling of unknown refrigerant and metering device.",
+   "inputs": [
+    {
+     "from": "need"
+    },
+    {
+     "from": "compose",
+     "output": "artefact"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "review",
+     "path": "review_eng.json",
+     "describe": "verdict and findings"
+    }
+   ],
+   "verify": "JSON parses with verdict pass or fail and a findings list.",
+   "worker": {
+    "model": "codex",
+    "tools": [],
+    "prompt": "Judge as a refrigeration systems engineer: is the assumption honest and the question the right one?"
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "rev-safe",
+   "kind": "review",
+   "title": "Review: skeptic and misuse persona",
+   "contract": "Blind review for overclaiming, silent acceptance of bad inputs, and unclear refusals.",
+   "inputs": [
+    {
+     "from": "need"
+    },
+    {
+     "from": "compose",
+     "output": "artefact"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "review",
+     "path": "review_safe.json",
+     "describe": "verdict and findings"
+    }
+   ],
+   "verify": "JSON parses with verdict pass or fail and a findings list.",
+   "worker": {
+    "model": "opus",
+    "tools": [],
+    "prompt": "Judge as a skeptical reviewer looking for overclaims, hidden assumptions and weak refusals."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  }
+ ]
+}

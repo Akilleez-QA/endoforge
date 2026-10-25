@@ -1,0 +1,17 @@
+{
+  "command": [
+    "sudo",
+    "-n",
+    "docker",
+    "ps",
+    "-aq",
+    "--filter",
+    "name=^/endoforge-p10verify-eac1214eb843$"
+  ],
+  "precommitSha256": "230e9c6c1cd6e0c8a72df171094b02ece48289c9084ad96fd50c00ead36ea1fa",
+  "exit": 0,
+  "timeout": false,
+  "stdout": "",
+  "stderr": "",
+  "wallMs": 20
+}

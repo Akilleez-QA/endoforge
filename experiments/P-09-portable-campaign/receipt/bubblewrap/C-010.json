@@ -1,0 +1,304 @@
+{
+  "id": "C-010",
+  "argv": [
+    "bwrap",
+    "--ro-bind",
+    "/usr",
+    "/usr",
+    "--ro-bind",
+    "/lib",
+    "/lib",
+    "--ro-bind",
+    "/lib64",
+    "/lib64",
+    "--ro-bind",
+    "/bin",
+    "/bin",
+    "--ro-bind",
+    "/sbin",
+    "/sbin",
+    "--ro-bind",
+    "/home/user/Work/endoforge/experiments/P-09-portable-campaign/work/node",
+    "/opt/node",
+    "--ro-bind",
+    "/home/user/Work/endoforge/experiments/P-09-portable-campaign/work/context/bundle",
+    "/bundle",
+    "--bind",
+    "/home/user/Work/endoforge/experiments/P-09-portable-campaign/work/bubblewrap",
+    "/out",
+    "--tmpfs",
+    "/tmp",
+    "--proc",
+    "/proc",
+    "--dev",
+    "/dev",
+    "--unshare-all",
+    "--die-with-parent",
+    "--new-session",
+    "--clearenv",
+    "--setenv",
+    "PATH",
+    "/opt:/usr/bin:/bin",
+    "--setenv",
+    "HOME",
+    "/tmp",
+    "--chdir",
+    "/tmp",
+    "--",
+    "/opt/node",
+    "/bundle/campaigns/x1-spec-study/factory/gate.mjs",
+    "run",
+    "/out/C-010"
+  ],
+  "exit": 0,
+  "wallMs": 496.74206000054255,
+  "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 970,\n   \"wasmSha256\": \"911ee504eaadba9f1b695765324066747a5f5842851fd0526246cd869f2d536f\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"dayStart\",\n    \"dayStartTz\",\n    \"rollDate\",\n    \"rollDateTz\",\n    \"dayOffset\",\n    \"dayOffsetTz\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 16,\n   \"total\": 16\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.039193\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+  "stderr": "",
+  "result": {
+    "at": "2026-10-18T18:45:25.743Z",
+    "gates": {
+      "G1_frozen": {
+        "ok": true
+      },
+      "G2_compiles": {
+        "ok": true,
+        "wasmBytes": 970,
+        "wasmSha256": "911ee504eaadba9f1b695765324066747a5f5842851fd0526246cd869f2d536f"
+      },
+      "G3_exports": {
+        "ok": true,
+        "exports": [
+          "dayStart",
+          "dayStartTz",
+          "rollDate",
+          "rollDateTz",
+          "dayOffset",
+          "dayOffsetTz"
+        ]
+      },
+      "G4_tests": {
+        "ok": true,
+        "passed": 16,
+        "total": 16
+      },
+      "G6_bounded": {
+        "ok": true,
+        "maxMs": 0.039193
+      },
+      "G5_deterministic": {
+        "ok": true
+      },
+      "G7_glue": {
+        "ok": true
+      }
+    },
+    "tests": [
+      {
+        "name": "dayStart of anchor is UTC midnight",
+        "fn": "dayStart",
+        "args": [
+          1792244933000
+        ],
+        "expect": 1792195200000,
+        "got": 1792195200000,
+        "ms": 0.039,
+        "pass": true
+      },
+      {
+        "name": "dayStart boundary: -1 ms is previous day",
+        "fn": "dayStart",
+        "args": [
+          -1
+        ],
+        "expect": -86400000,
+        "got": -86400000,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "rollDate -3 days at 09:00",
+        "fn": "rollDate",
+        "args": [
+          1792244933000,
+          -3,
+          32400000
+        ],
+        "expect": 1791968400000,
+        "got": 1791968400000,
+        "ms": 0.006,
+        "pass": true
+      },
+      {
+        "name": "rollDate offset 0 tod 0 is anchor day start",
+        "fn": "rollDate",
+        "args": [
+          1792244933000,
+          0,
+          0
+        ],
+        "expect": 1792195200000,
+        "got": 1792195200000,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "rollDate boundary tod DAY-1",
+        "fn": "rollDate",
+        "args": [
+          1792244933000,
+          1,
+          86399999
+        ],
+        "expect": 1792367999999,
+        "got": 1792367999999,
+        "ms": 0.002,
+        "pass": true
+      },
+      {
+        "name": "rollDate boundary tod == DAY traps",
+        "fn": "rollDate",
+        "args": [
+          1792244933000,
+          1,
+          86400000
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.035,
+        "pass": true
+      },
+      {
+        "name": "rollDate non-integer offset traps",
+        "fn": "rollDate",
+        "args": [
+          1792244933000,
+          1.5,
+          0
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.003,
+        "pass": true
+      },
+      {
+        "name": "stability: anchor at 00:00:00.000",
+        "fn": "rollDate",
+        "args": [
+          1792195200000,
+          5,
+          0
+        ],
+        "expect": 1792627200000,
+        "got": 1792627200000,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "stability: anchor at 23:59:59.999 same result",
+        "fn": "rollDate",
+        "args": [
+          1792281599999,
+          5,
+          0
+        ],
+        "expect": 1792627200000,
+        "got": 1792627200000,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "dayOffset +3 (1 ms after midnight)",
+        "fn": "dayOffset",
+        "args": [
+          1792244933000,
+          1792454400001
+        ],
+        "expect": 3,
+        "got": 3,
+        "ms": 0.004,
+        "pass": true
+      },
+      {
+        "name": "assumption: UTC calendar day, 1 ms before midnight is -1",
+        "fn": "dayOffset",
+        "args": [
+          1792244933000,
+          1792195199999
+        ],
+        "expect": -1,
+        "got": -1,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "dayOffset same day is 0",
+        "fn": "dayOffset",
+        "args": [
+          1792244933000,
+          1792278000000
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "tz variant: local midnight at UTC-5",
+        "fn": "rollDateTz",
+        "args": [
+          1792244933000,
+          0,
+          0,
+          -300
+        ],
+        "expect": 1792213200000,
+        "got": 1792213200000,
+        "ms": 0.005,
+        "pass": true
+      },
+      {
+        "name": "tz variant: 03:00Z is still the 16th at UTC-5",
+        "fn": "rollDateTz",
+        "args": [
+          1792206000000,
+          0,
+          0,
+          -300
+        ],
+        "expect": 1792126800000,
+        "got": 1792126800000,
+        "ms": 0.003,
+        "pass": true
+      },
+      {
+        "name": "tz out of range traps",
+        "fn": "rollDateTz",
+        "args": [
+          1792244933000,
+          0,
+          0,
+          900
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.006,
+        "pass": true
+      },
+      {
+        "name": "dayOffsetTz at UTC-5",
+        "fn": "dayOffsetTz",
+        "args": [
+          1792244933000,
+          1792299599999,
+          -300
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0.011,
+        "pass": true
+      }
+    ],
+    "promotable": true
+  },
+  "wasmSha256": "911ee504eaadba9f1b695765324066747a5f5842851fd0526246cd869f2d536f"
+}

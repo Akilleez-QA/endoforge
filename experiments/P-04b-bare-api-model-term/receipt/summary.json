@@ -1,0 +1,1008 @@
+{
+  "probe": "P-04b-bare-api-model-term (amendment 1: subscription arms)",
+  "at": "2026-10-17T18:39:31.693Z",
+  "cli": "2.1.299 (Claude Code)",
+  "probe_cwd": "/tmp/claude-1000/p04b-empty-cwd",
+  "p04_reference_context_tokens": {
+    "min": 453290,
+    "max": 468214,
+    "note": "P-04 phases A/B-1,2/D cache_read + cache_creation (RESULT.md §2)"
+  },
+  "arms": {
+    "S1-lean": {
+      "runs": 12,
+      "errors": 0,
+      "model_ids": [
+        "claude-opus-5-5"
+      ],
+      "all_ok": {
+        "wall_ms": {
+          "n": 12,
+          "min": 76840.1,
+          "median": 90596.2,
+          "p95": 122391,
+          "max": 122391
+        },
+        "duration_api_ms": {
+          "n": 12,
+          "min": 72508,
+          "median": 85546,
+          "p95": 118286,
+          "max": 118286
+        },
+        "output_tokens": {
+          "n": 12,
+          "min": 8523,
+          "median": 10007,
+          "p95": 13521,
+          "max": 13521
+        },
+        "thinking_tokens": {
+          "n": 12,
+          "min": 5266,
+          "median": 6447,
+          "p95": 9490,
+          "max": 9490
+        },
+        "visible_tokens": {
+          "n": 12,
+          "min": 3257,
+          "median": 3532,
+          "p95": 4278,
+          "max": 4278
+        },
+        "tok_s_wall": {
+          "n": 12,
+          "min": 103.82,
+          "median": 111.75,
+          "p95": 113.29,
+          "max": 113.29
+        },
+        "tok_s_api": {
+          "n": 12,
+          "min": 109.71,
+          "median": 116.5,
+          "p95": 120.06,
+          "max": 120.06
+        },
+        "input_tokens": {
+          "n": 12,
+          "min": 2,
+          "median": 2,
+          "p95": 2,
+          "max": 2
+        },
+        "cache_read": {
+          "n": 12,
+          "min": 535,
+          "median": 6647,
+          "p95": 6678,
+          "max": 6678
+        },
+        "cache_creation": {
+          "n": 12,
+          "min": 521,
+          "median": 527,
+          "p95": 6639,
+          "max": 6639
+        },
+        "context_size_tokens": {
+          "n": 12,
+          "min": 7173,
+          "median": 7176,
+          "p95": 7207,
+          "max": 7207
+        },
+        "cost_usd_list": {
+          "n": 12,
+          "min": 0.17602140000000002,
+          "median": 0.21273740000000002,
+          "p95": 0.317547,
+          "max": 0.317547
+        },
+        "kernel_lines": {
+          "n": 12,
+          "min": 156,
+          "median": 173,
+          "p95": 224,
+          "max": 224
+        }
+      },
+      "A_sequential": {
+        "wall_ms": {
+          "n": 3,
+          "min": 76840.1,
+          "median": 111086.7,
+          "p95": 117844.7,
+          "max": 117844.7
+        },
+        "output_tokens": {
+          "n": 3,
+          "min": 8705,
+          "median": 11533,
+          "p95": 13216,
+          "max": 13216
+        },
+        "cache_read": [
+          535,
+          6647,
+          6647
+        ],
+        "cache_creation": [
+          6639,
+          526,
+          527
+        ]
+      },
+      "B_variant": {
+        "wall_ms": {
+          "n": 3,
+          "min": 90596.2,
+          "median": 113966.1,
+          "p95": 116226.6,
+          "max": 116226.6
+        },
+        "cache_read": [
+          2147,
+          6678,
+          6678
+        ],
+        "cache_creation": [
+          5057,
+          527,
+          521
+        ]
+      },
+      "C_parallel4": {
+        "per_call_wall_ms": [
+          86415.6,
+          88340.4,
+          77742.8,
+          92711
+        ],
+        "cache_read": [
+          6647,
+          6647,
+          6647,
+          6647
+        ],
+        "errors": 0
+      },
+      "D_stream": {
+        "ttft_first_text_delta_ms": {
+          "n": 2,
+          "min": 60559.5,
+          "median": 60559.5,
+          "p95": 93079.8,
+          "max": 93079.8
+        },
+        "first_thinking_delta_ms": {
+          "n": 2,
+          "min": 2898.6,
+          "median": 2898.6,
+          "p95": 5100.3,
+          "max": 5100.3
+        },
+        "first_event_ms": {
+          "n": 2,
+          "min": 1141,
+          "median": 1141,
+          "p95": 1916.6,
+          "max": 1916.6
+        },
+        "message_start_ms": {
+          "n": 2,
+          "min": 2464.4,
+          "median": 2464.4,
+          "p95": 4675.2,
+          "max": 4675.2
+        },
+        "decode_visible_tok_s": {
+          "n": 2,
+          "min": 137.52,
+          "median": 137.52,
+          "p95": 139.14,
+          "max": 139.14
+        },
+        "decode_all_output_tok_s": {
+          "n": 2,
+          "min": 389.8,
+          "median": 389.8,
+          "p95": 461.29,
+          "max": 461.29
+        }
+      },
+      "asc_gate": {
+        "S1-lean-A-1": "pass",
+        "S1-lean-A-2": "pass",
+        "S1-lean-A-3": "pass",
+        "S1-lean-B-1": "pass",
+        "S1-lean-B-2": "pass",
+        "S1-lean-B-3": "pass",
+        "S1-lean-C-1": "pass",
+        "S1-lean-C-2": "pass",
+        "S1-lean-C-3": "pass",
+        "S1-lean-C-4": "pass",
+        "S1-lean-D-1": "pass",
+        "S1-lean-D-2": "pass"
+      },
+      "errors_detail": []
+    },
+    "S2-lean-low": {
+      "runs": 12,
+      "errors": 0,
+      "model_ids": [
+        "claude-opus-5-5"
+      ],
+      "all_ok": {
+        "wall_ms": {
+          "n": 12,
+          "min": 46350.8,
+          "median": 56388.9,
+          "p95": 68403.6,
+          "max": 68403.6
+        },
+        "duration_api_ms": {
+          "n": 12,
+          "min": 41686,
+          "median": 51431,
+          "p95": 62812,
+          "max": 62812
+        },
+        "output_tokens": {
+          "n": 12,
+          "min": 4740,
+          "median": 5921,
+          "p95": 7176,
+          "max": 7176
+        },
+        "thinking_tokens": {
+          "n": 12,
+          "min": 1554,
+          "median": 2306,
+          "p95": 3913,
+          "max": 3913
+        },
+        "visible_tokens": {
+          "n": 12,
+          "min": 3163,
+          "median": 3510,
+          "p95": 4118,
+          "max": 4118
+        },
+        "tok_s_wall": {
+          "n": 12,
+          "min": 99.34,
+          "median": 104.99,
+          "p95": 107.75,
+          "max": 107.75
+        },
+        "tok_s_api": {
+          "n": 12,
+          "min": 110.46,
+          "median": 115.1,
+          "p95": 122.62,
+          "max": 122.62
+        },
+        "input_tokens": {
+          "n": 12,
+          "min": 2,
+          "median": 2,
+          "p95": 2,
+          "max": 2
+        },
+        "cache_read": {
+          "n": 12,
+          "min": 6647,
+          "median": 6647,
+          "p95": 6678,
+          "max": 6678
+        },
+        "cache_creation": {
+          "n": 12,
+          "min": 522,
+          "median": 524,
+          "p95": 534,
+          "max": 534
+        },
+        "context_size_tokens": {
+          "n": 12,
+          "min": 7171,
+          "median": 7175,
+          "p95": 7214,
+          "max": 7214
+        },
+        "cost_usd_list": {
+          "n": 12,
+          "min": 0.1003294,
+          "median": 0.12394139999999998,
+          "p95": 0.14907340000000002,
+          "max": 0.14907340000000002
+        },
+        "kernel_lines": {
+          "n": 12,
+          "min": 131,
+          "median": 149,
+          "p95": 191,
+          "max": 191
+        }
+      },
+      "A_sequential": {
+        "wall_ms": {
+          "n": 3,
+          "min": 50534.1,
+          "median": 56388.9,
+          "p95": 62105.4,
+          "max": 62105.4
+        },
+        "output_tokens": {
+          "n": 3,
+          "min": 5288,
+          "median": 5920,
+          "p95": 6650,
+          "max": 6650
+        },
+        "cache_read": [
+          6647,
+          6647,
+          6647
+        ],
+        "cache_creation": [
+          524,
+          522,
+          522
+        ]
+      },
+      "B_variant": {
+        "wall_ms": {
+          "n": 3,
+          "min": 56601.6,
+          "median": 57695.9,
+          "p95": 65806.2,
+          "max": 65806.2
+        },
+        "cache_read": [
+          6678,
+          6678,
+          6678
+        ],
+        "cache_creation": [
+          525,
+          534,
+          524
+        ]
+      },
+      "C_parallel4": {
+        "per_call_wall_ms": [
+          48915.1,
+          47713.8,
+          68403.6,
+          46350.8
+        ],
+        "cache_read": [
+          6647,
+          6647,
+          6647,
+          6647
+        ],
+        "errors": 0
+      },
+      "D_stream": {
+        "ttft_first_text_delta_ms": {
+          "n": 2,
+          "min": 23542.8,
+          "median": 23542.8,
+          "p95": 40694.1,
+          "max": 40694.1
+        },
+        "first_thinking_delta_ms": {
+          "n": 2,
+          "min": 3543,
+          "median": 3543,
+          "p95": 4120.2,
+          "max": 4120.2
+        },
+        "first_event_ms": {
+          "n": 2,
+          "min": 1230.1,
+          "median": 1230.1,
+          "p95": 1563.8,
+          "max": 1563.8
+        },
+        "message_start_ms": {
+          "n": 2,
+          "min": 3275.1,
+          "median": 3275.1,
+          "p95": 3698.6,
+          "max": 3698.6
+        },
+        "decode_visible_tok_s": {
+          "n": 2,
+          "min": 131.11,
+          "median": 131.11,
+          "p95": 134.33,
+          "max": 134.33
+        },
+        "decode_all_output_tok_s": {
+          "n": 2,
+          "min": 188.51,
+          "median": 188.51,
+          "p95": 269.34,
+          "max": 269.34
+        }
+      },
+      "asc_gate": {
+        "S2-lean-low-A-1": "pass",
+        "S2-lean-low-A-2": "pass",
+        "S2-lean-low-A-3": "pass",
+        "S2-lean-low-B-1": "pass",
+        "S2-lean-low-B-2": "pass",
+        "S2-lean-low-B-3": "pass",
+        "S2-lean-low-C-1": "pass",
+        "S2-lean-low-C-2": "pass",
+        "S2-lean-low-C-3": "pass",
+        "S2-lean-low-C-4": "pass",
+        "S2-lean-low-D-1": "pass",
+        "S2-lean-low-D-2": "pass"
+      },
+      "errors_detail": []
+    },
+    "S3-lean-sonnet": {
+      "runs": 12,
+      "errors": 0,
+      "model_ids": [
+        "claude-sonnet-5-5"
+      ],
+      "all_ok": {
+        "wall_ms": {
+          "n": 12,
+          "min": 57029.8,
+          "median": 65611.8,
+          "p95": 97507.1,
+          "max": 97507.1
+        },
+        "duration_api_ms": {
+          "n": 12,
+          "min": 52003,
+          "median": 60128,
+          "p95": 94099,
+          "max": 94099
+        },
+        "output_tokens": {
+          "n": 12,
+          "min": 7655,
+          "median": 9090,
+          "p95": 14253,
+          "max": 14253
+        },
+        "thinking_tokens": {
+          "n": 12,
+          "min": 4227,
+          "median": 5798,
+          "p95": 10181,
+          "max": 10181
+        },
+        "visible_tokens": {
+          "n": 12,
+          "min": 3084,
+          "median": 3385,
+          "p95": 4129,
+          "max": 4129
+        },
+        "tok_s_wall": {
+          "n": 12,
+          "min": 134.23,
+          "median": 141.85,
+          "p95": 147.44,
+          "max": 147.44
+        },
+        "tok_s_api": {
+          "n": 12,
+          "min": 143.15,
+          "median": 151.47,
+          "p95": 156.56,
+          "max": 156.56
+        },
+        "input_tokens": {
+          "n": 12,
+          "min": 2,
+          "median": 2,
+          "p95": 2,
+          "max": 2
+        },
+        "cache_read": {
+          "n": 12,
+          "min": 535,
+          "median": 6647,
+          "p95": 6678,
+          "max": 6678
+        },
+        "cache_creation": {
+          "n": 12,
+          "min": 527,
+          "median": 529,
+          "p95": 6641,
+          "max": 6641
+        },
+        "context_size_tokens": {
+          "n": 12,
+          "min": 7176,
+          "median": 7178,
+          "p95": 7210,
+          "max": 7210
+        },
+        "cost_usd_list": {
+          "n": 12,
+          "min": 0.07934670000000002,
+          "median": 0.09696469999999999,
+          "p95": 0.1453218,
+          "max": 0.1453218
+        },
+        "kernel_lines": {
+          "n": 12,
+          "min": 160,
+          "median": 173,
+          "p95": 240,
+          "max": 240
+        }
+      },
+      "A_sequential": {
+        "wall_ms": {
+          "n": 3,
+          "min": 57029.8,
+          "median": 65611.8,
+          "p95": 66992.3,
+          "max": 66992.3
+        },
+        "output_tokens": {
+          "n": 3,
+          "min": 7655,
+          "median": 9090,
+          "p95": 9418,
+          "max": 9418
+        },
+        "cache_read": [
+          535,
+          6647,
+          6647
+        ],
+        "cache_creation": [
+          6641,
+          529,
+          532
+        ]
+      },
+      "B_variant": {
+        "wall_ms": {
+          "n": 3,
+          "min": 70345,
+          "median": 71032.1,
+          "p95": 97507.1,
+          "max": 97507.1
+        },
+        "cache_read": [
+          2147,
+          6678,
+          6678
+        ],
+        "cache_creation": [
+          5061,
+          530,
+          529
+        ]
+      },
+      "C_parallel4": {
+        "per_call_wall_ms": [
+          69496.1,
+          60024.4,
+          63316.6,
+          58948
+        ],
+        "cache_read": [
+          6647,
+          6647,
+          6647,
+          6647
+        ],
+        "errors": 0
+      },
+      "D_stream": {
+        "ttft_first_text_delta_ms": {
+          "n": 2,
+          "min": 47924.5,
+          "median": 47924.5,
+          "p95": 48949.2,
+          "max": 48949.2
+        },
+        "first_thinking_delta_ms": {
+          "n": 2,
+          "min": 2820.2,
+          "median": 2820.2,
+          "p95": 2918.8,
+          "max": 2918.8
+        },
+        "first_event_ms": {
+          "n": 2,
+          "min": 995.5,
+          "median": 995.5,
+          "p95": 1186.4,
+          "max": 1186.4
+        },
+        "message_start_ms": {
+          "n": 2,
+          "min": 2124,
+          "median": 2124,
+          "p95": 2389.4,
+          "max": 2389.4
+        },
+        "decode_visible_tok_s": {
+          "n": 2,
+          "min": 193.65,
+          "median": 193.65,
+          "p95": 194.67,
+          "max": 194.67
+        },
+        "decode_all_output_tok_s": {
+          "n": 2,
+          "min": 570.28,
+          "median": 570.28,
+          "p95": 570.55,
+          "max": 570.55
+        }
+      },
+      "asc_gate": {
+        "S3-lean-sonnet-A-1": "pass",
+        "S3-lean-sonnet-A-2": "pass",
+        "S3-lean-sonnet-A-3": "pass",
+        "S3-lean-sonnet-B-1": "pass",
+        "S3-lean-sonnet-B-2": "pass",
+        "S3-lean-sonnet-B-3": "pass",
+        "S3-lean-sonnet-C-1": "pass",
+        "S3-lean-sonnet-C-2": "fail",
+        "S3-lean-sonnet-C-3": "pass",
+        "S3-lean-sonnet-C-4": "pass",
+        "S3-lean-sonnet-D-1": "pass",
+        "S3-lean-sonnet-D-2": "pass"
+      },
+      "errors_detail": []
+    },
+    "S4-lean-sysprompt": {
+      "runs": 12,
+      "errors": 0,
+      "model_ids": [
+        "claude-opus-5-5"
+      ],
+      "all_ok": {
+        "wall_ms": {
+          "n": 12,
+          "min": 56719.6,
+          "median": 80240.8,
+          "p95": 120437,
+          "max": 120437
+        },
+        "duration_api_ms": {
+          "n": 12,
+          "min": 53422,
+          "median": 75640,
+          "p95": 115059,
+          "max": 115059
+        },
+        "output_tokens": {
+          "n": 12,
+          "min": 5525,
+          "median": 9091,
+          "p95": 13222,
+          "max": 13222
+        },
+        "thinking_tokens": {
+          "n": 12,
+          "min": 4379,
+          "median": 5441,
+          "p95": 8232,
+          "max": 8232
+        },
+        "visible_tokens": {
+          "n": 12,
+          "min": 21,
+          "median": 3605,
+          "p95": 4990,
+          "max": 4990
+        },
+        "tok_s_wall": {
+          "n": 12,
+          "min": 97.41,
+          "median": 112.31,
+          "p95": 115.12,
+          "max": 115.12
+        },
+        "tok_s_api": {
+          "n": 12,
+          "min": 103.42,
+          "median": 117.73,
+          "p95": 120.19,
+          "max": 120.19
+        },
+        "input_tokens": {
+          "n": 12,
+          "min": 2,
+          "median": 2,
+          "p95": 2,
+          "max": 2
+        },
+        "cache_read": {
+          "n": 12,
+          "min": 0,
+          "median": 4545,
+          "p95": 4576,
+          "max": 4576
+        },
+        "cache_creation": {
+          "n": 12,
+          "min": 523,
+          "median": 526,
+          "p95": 5099,
+          "max": 5099
+        },
+        "context_size_tokens": {
+          "n": 12,
+          "min": 5070,
+          "median": 5073,
+          "p95": 5104,
+          "max": 5104
+        },
+        "cost_usd_list": {
+          "n": 12,
+          "min": 0.11560900000000002,
+          "median": 0.186953,
+          "p95": 0.2695712,
+          "max": 0.2695712
+        },
+        "kernel_lines": {
+          "n": 12,
+          "min": 1,
+          "median": 168,
+          "p95": 244,
+          "max": 244
+        }
+      },
+      "A_sequential": {
+        "wall_ms": {
+          "n": 3,
+          "min": 71217.4,
+          "median": 78069,
+          "p95": 80301.2,
+          "max": 80301.2
+        },
+        "output_tokens": {
+          "n": 3,
+          "min": 7919,
+          "median": 8946,
+          "p95": 9244,
+          "max": 9244
+        },
+        "cache_read": [
+          0,
+          4545,
+          4545
+        ],
+        "cache_creation": [
+          5069,
+          526,
+          523
+        ]
+      },
+      "B_variant": {
+        "wall_ms": {
+          "n": 3,
+          "min": 85743.3,
+          "median": 92427.6,
+          "p95": 120437,
+          "max": 120437
+        },
+        "cache_read": [
+          0,
+          4576,
+          4576
+        ],
+        "cache_creation": [
+          5099,
+          526,
+          525
+        ]
+      },
+      "C_parallel4": {
+        "per_call_wall_ms": [
+          96004.6,
+          80240.8,
+          76958.2,
+          56719.6
+        ],
+        "cache_read": [
+          4545,
+          4545,
+          4545,
+          4545
+        ],
+        "errors": 0
+      },
+      "D_stream": {
+        "ttft_first_text_delta_ms": {
+          "n": 2,
+          "min": 49973.5,
+          "median": 49973.5,
+          "p95": 58184.4,
+          "max": 58184.4
+        },
+        "first_thinking_delta_ms": {
+          "n": 2,
+          "min": 2839.1,
+          "median": 2839.1,
+          "p95": 2962.5,
+          "max": 2962.5
+        },
+        "first_event_ms": {
+          "n": 2,
+          "min": 916.5,
+          "median": 916.5,
+          "p95": 954.7,
+          "max": 954.7
+        },
+        "message_start_ms": {
+          "n": 2,
+          "min": 2482.6,
+          "median": 2482.6,
+          "p95": 2678.2,
+          "max": 2678.2
+        },
+        "decode_visible_tok_s": {
+          "n": 2,
+          "min": 138.55,
+          "median": 138.55,
+          "p95": 139.36,
+          "max": 139.36
+        },
+        "decode_all_output_tok_s": {
+          "n": 2,
+          "min": 330.43,
+          "median": 330.43,
+          "p95": 371.07,
+          "max": 371.07
+        }
+      },
+      "asc_gate": {
+        "S4-lean-sysprompt-A-1": "pass",
+        "S4-lean-sysprompt-A-2": "pass",
+        "S4-lean-sysprompt-A-3": "pass",
+        "S4-lean-sysprompt-B-1": "pass",
+        "S4-lean-sysprompt-B-2": "pass",
+        "S4-lean-sysprompt-B-3": "fail",
+        "S4-lean-sysprompt-C-1": "pass",
+        "S4-lean-sysprompt-C-2": "pass",
+        "S4-lean-sysprompt-C-3": "pass",
+        "S4-lean-sysprompt-C-4": "fail",
+        "S4-lean-sysprompt-D-1": "pass",
+        "S4-lean-sysprompt-D-2": "pass"
+      },
+      "errors_detail": []
+    }
+  },
+  "C_parallel4_batch": {
+    "S1-lean": {
+      "batch_wall_ms": 94810.9,
+      "per_call_wall_ms": [
+        86415.6,
+        88340.4,
+        77742.8,
+        92711
+      ],
+      "per_call_output_tokens": [
+        9697,
+        10007,
+        8523,
+        10360
+      ],
+      "per_call_cache_read": [
+        6647,
+        6647,
+        6647,
+        6647
+      ],
+      "errors": 0,
+      "aggregate_tok_s_wall": 406.99
+    },
+    "S2-lean-low": {
+      "batch_wall_ms": 69776.7,
+      "per_call_wall_ms": [
+        48915.1,
+        47713.8,
+        68403.6,
+        46350.8
+      ],
+      "per_call_output_tokens": [
+        5220,
+        4740,
+        7148,
+        4904
+      ],
+      "per_call_cache_read": [
+        6647,
+        6647,
+        6647,
+        6647
+      ],
+      "errors": 0,
+      "aggregate_tok_s_wall": 315.46
+    },
+    "S3-lean-sonnet": {
+      "batch_wall_ms": 70281.7,
+      "per_call_wall_ms": [
+        69496.1,
+        60024.4,
+        63316.6,
+        58948
+      ],
+      "per_call_output_tokens": [
+        10089,
+        8060,
+        9028,
+        8089
+      ],
+      "per_call_cache_read": [
+        6647,
+        6647,
+        6647,
+        6647
+      ],
+      "errors": 0,
+      "aggregate_tok_s_wall": 501.78
+    },
+    "S4-lean-sysprompt": {
+      "batch_wall_ms": 96475.8,
+      "per_call_wall_ms": [
+        96004.6,
+        80240.8,
+        76958.2,
+        56719.6
+      ],
+      "per_call_output_tokens": [
+        10511,
+        9091,
+        8757,
+        5525
+      ],
+      "per_call_cache_read": [
+        4545,
+        4545,
+        4545,
+        4545
+      ],
+      "errors": 0,
+      "aggregate_tok_s_wall": 351.22
+    }
+  },
+  "load_before": [
+    16.14,
+    28.39,
+    30.09
+  ],
+  "load_after": [
+    3.66,
+    6.13,
+    18.34
+  ],
+  "usage_fields_seen": [
+    "input_tokens",
+    "cache_creation_input_tokens",
+    "cache_read_input_tokens",
+    "output_tokens",
+    "output_tokens_details",
+    "server_tool_use",
+    "service_tier",
+    "cache_creation",
+    "inference_geo",
+    "iterations",
+    "speed",
+    "fallback_credit"
+  ],
+  "total_cost_usd_list_sum": 7.833
+}

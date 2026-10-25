@@ -1,0 +1,257 @@
+{
+  "version": 1,
+  "suite": {
+    "cases": [
+      {
+        "expect": 32,
+        "id": "codex-freezing",
+        "inputs": {
+          "c": 0
+        },
+        "tolerance": 1e-9,
+        "unit": "degF"
+      },
+      {
+        "errorPath": "c",
+        "expectError": true,
+        "id": "codex-missing",
+        "inputs": {},
+        "tolerance": 0,
+        "unit": "degF"
+      },
+      {
+        "errorPath": "c",
+        "expectError": true,
+        "id": "codex-nonfinite",
+        "inputs": {
+          "c": "NaN"
+        },
+        "tolerance": 0,
+        "unit": "degF"
+      },
+      {
+        "errorPath": "c",
+        "expectError": true,
+        "id": "codex-outside-domain",
+        "inputs": {
+          "c": -274
+        },
+        "tolerance": 0,
+        "unit": "degF"
+      },
+      {
+        "expect": 32,
+        "id": "qwen-case-01",
+        "inputs": {
+          "c": 0
+        },
+        "tolerance": 1e-9,
+        "unit": "degF"
+      },
+      {
+        "expect": 212,
+        "id": "qwen-case-02",
+        "inputs": {
+          "c": 100
+        },
+        "tolerance": 1e-9,
+        "unit": "degF"
+      },
+      {
+        "expect": -459.67,
+        "id": "qwen-case-03",
+        "inputs": {
+          "c": -273.15
+        },
+        "tolerance": 1e-9,
+        "unit": "degF"
+      },
+      {
+        "errorPath": "c",
+        "expectError": true,
+        "id": "qwen-case-04",
+        "inputs": {
+          "c": "NaN"
+        },
+        "tolerance": 0,
+        "unit": "degF"
+      },
+      {
+        "errorPath": "c",
+        "expectError": true,
+        "id": "qwen-case-05",
+        "inputs": {},
+        "tolerance": 0,
+        "unit": "degF"
+      },
+      {
+        "errorPath": "c",
+        "expectError": true,
+        "id": "qwen-case-06",
+        "inputs": {
+          "c": 1001
+        },
+        "tolerance": 0,
+        "unit": "degF"
+      },
+      {
+        "errorPath": "c",
+        "expectError": true,
+        "id": "host-validity-nan",
+        "inputs": {
+          "c": "NaN"
+        },
+        "tolerance": 0,
+        "unit": "degF"
+      },
+      {
+        "errorPath": "c",
+        "expectError": true,
+        "id": "host-validity-positive-infinity",
+        "inputs": {
+          "c": "Infinity"
+        },
+        "tolerance": 0,
+        "unit": "degF"
+      },
+      {
+        "errorPath": "c",
+        "expectError": true,
+        "id": "host-validity-negative-infinity",
+        "inputs": {
+          "c": "-Infinity"
+        },
+        "tolerance": 0,
+        "unit": "degF"
+      },
+      {
+        "errorPath": "c",
+        "expectError": true,
+        "id": "host-validity-below-domain",
+        "inputs": {
+          "c": -273.15000000000003
+        },
+        "tolerance": 0,
+        "unit": "degF"
+      },
+      {
+        "errorPath": "c",
+        "expectError": true,
+        "id": "host-validity-above-domain",
+        "inputs": {
+          "c": 1000.0000000000001
+        },
+        "tolerance": 0,
+        "unit": "degF"
+      },
+      {
+        "errorPath": "c",
+        "expectError": true,
+        "id": "host-validity-missing",
+        "inputs": {},
+        "tolerance": 0,
+        "unit": "degF"
+      }
+    ],
+    "procedures": [
+      {
+        "count": 6,
+        "domain": [
+          -273.15,
+          1000
+        ],
+        "id": "codex-values",
+        "input": "c",
+        "kind": "affine",
+        "offset": 32,
+        "seed": 7919,
+        "slope": 1.8,
+        "tolerance": 1e-9,
+        "unit": "degF",
+        "version": 1
+      },
+      {
+        "count": 6,
+        "domain": [
+          -273.15,
+          1000
+        ],
+        "id": "qwen-values",
+        "input": "c",
+        "kind": "affine",
+        "offset": 32,
+        "seed": 7919,
+        "slope": 1.8,
+        "tolerance": 1e-9,
+        "unit": "degF",
+        "version": 1
+      }
+    ],
+    "request": {
+      "artifactClass": "closed-form",
+      "id": "dev-affine-01",
+      "raw": "Convert a finite Celsius input c in [-273.15,1000] to Fahrenheit with absolute tolerance 1e-9 degF. Refuse other inputs naming c. Input c is required. Return a number labelled degF.",
+      "requiredFacts": [
+        {
+          "domain": [
+            -273.15,
+            1000
+          ],
+          "path": "c",
+          "plausible": [
+            {
+              "result": 32,
+              "value": 0
+            },
+            {
+              "result": 212,
+              "value": 100
+            }
+          ],
+          "tolerance": 1e-9,
+          "unit": "degC"
+        }
+      ],
+      "sources": [
+        "BIPM SI Brochure 9th edition, Celsius offset and temperature intervals"
+      ],
+      "version": 1
+    },
+    "signature": {
+      "inputs": [
+        {
+          "domain": [
+            -273.15,
+            1000
+          ],
+          "path": "c",
+          "type": "number",
+          "unit": "degC"
+        }
+      ],
+      "name": "celsiusToFahrenheit",
+      "output": {
+        "type": "number",
+        "unit": "degF"
+      },
+      "version": 1
+    },
+    "version": 1,
+    "writers": [
+      {
+        "family": "codex",
+        "outputHash": "b7ed810c9eebdb0132a454fd39dbb167ea7a173ee0e6b9f7429c28795e582880",
+        "viewHash": "60b2794ceb40f3cf1080226ececf459483ec192f85d26278f83331f790acdc90"
+      },
+      {
+        "family": "qwen",
+        "outputHash": "bb17f2c62381ddb14157fc1bcb22bbda654b1103f251319ca3e84e189eeab3d4",
+        "viewHash": "60b2794ceb40f3cf1080226ececf459483ec192f85d26278f83331f790acdc90"
+      }
+    ]
+  },
+  "suiteHash": "070df2ccdcfe8820ce541fca8652e04ad5db6259c3719b77f03e45f3d33765f5",
+  "procedureHash": "dd29e82e55092827634d66df15b5f84e397a9b3e36c718de6aaaa3590e9d1ab2",
+  "casesHash": "8891d0beb5050acebdd4571b80757a5de81383aaa27cfa93749161279c9b18fa",
+  "frozenAt": "2026-10-18T22:54:10.758Z"
+}

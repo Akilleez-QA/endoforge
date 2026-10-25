@@ -1,0 +1,155 @@
+{
+  "label": "Recorded (probe)",
+  "cleanDependenciesMatch": true,
+  "replayParity": true,
+  "candidateCount": 19,
+  "comparisons": [
+    {
+      "id": "C-005",
+      "match": true,
+      "wasmSha256": "bc5bd05968a22f7a45b71141313077f488d8c11084461a13e8ad8de48d891c98"
+    },
+    {
+      "id": "C-006",
+      "match": true,
+      "wasmSha256": "3975e5ca20a69703d7ccee8ba257e31ce47b8d3f2524fd848d4c0df096816bbb"
+    },
+    {
+      "id": "C-007",
+      "match": true,
+      "wasmSha256": "4f9b17467028c661ec853ae5135218af0fefdf3fba94f98d0971bddfaf1f3bf3"
+    },
+    {
+      "id": "C-010",
+      "match": true,
+      "wasmSha256": "911ee504eaadba9f1b695765324066747a5f5842851fd0526246cd869f2d536f"
+    },
+    {
+      "id": "C-012",
+      "match": true,
+      "wasmSha256": "5c66947677c7d4dcdcddf5c5a009fd4f7cfad0c97707f346ba54ed4c82c8debc"
+    },
+    {
+      "id": "C-015",
+      "match": true,
+      "wasmSha256": "f2b1c0da9031adf8a14e482fe9ee6df343fbefc918bcd644a0e6da65a7fa1666"
+    },
+    {
+      "id": "C-016",
+      "match": true,
+      "wasmSha256": "ec5b2f16466e802a5d6f5ee398e1f785413e0f84a49fc73d0e5d4d35fb63ee1a"
+    },
+    {
+      "id": "C-019",
+      "match": true,
+      "wasmSha256": "12ec1da2a231da757776b0acfa465162d5592520bb1ba1c622d659268c8778a8"
+    },
+    {
+      "id": "CC-002",
+      "match": true,
+      "wasmSha256": "4b533b3561901f1c4e1e378011b2ba485cc34d954784c60039963847bfe459d2"
+    },
+    {
+      "id": "CC-007",
+      "match": true,
+      "wasmSha256": "93c451be05fdca001e9655d6d275b2b51cb973df1ba0e4bdecf20b896f9be26a"
+    },
+    {
+      "id": "CC-009",
+      "match": true,
+      "wasmSha256": "60c56cd9114be8ed2fdcef40759ce04efd4857986761a6a0cffc28fb0ec5bbb2"
+    },
+    {
+      "id": "CC-011",
+      "match": true,
+      "wasmSha256": "e8329e9444b9d49b8426d9a9024ed6712e6e02a59c698d9db39717fde8677bd4"
+    },
+    {
+      "id": "CC-013",
+      "match": true,
+      "wasmSha256": "54cc7d6c627e8004a255fa74170eb0486649be60f45501a6cfd1cff1404cce7b"
+    },
+    {
+      "id": "CC-014",
+      "match": true,
+      "wasmSha256": "0fee55c736fe13068287c5460da9d1732b979de78ebee332cdfb9b5987c6636a"
+    },
+    {
+      "id": "CC-022",
+      "match": true,
+      "wasmSha256": "ad6fdb263dd8e65ba67d5aac50d211f75516504e8dc62c4d0de59d89a8fe202c"
+    },
+    {
+      "id": "CC-025",
+      "match": true,
+      "wasmSha256": "b1be039cf02e418c0e7532b8966f7643f0e61faad23576d7bab329d105ad5189"
+    },
+    {
+      "id": "CC-026",
+      "match": true,
+      "wasmSha256": "9592a6407d05cea92b04caa05d4b9c27d302a67e3883959bcb465b9273d2e12a"
+    },
+    {
+      "id": "CC-027",
+      "match": true,
+      "wasmSha256": "fdac4f53f93cfdb169e1704054c552462ab5d7e1a2f8af22510983314482eaf5"
+    },
+    {
+      "id": "CC-036",
+      "match": true,
+      "wasmSha256": "c32c136e95c0c9397844fbeb29e4ffe89cc06edec1917101e4da759668c6b02e"
+    }
+  ],
+  "equalResourceArmQualified": true,
+  "timingMs": {
+    "bubblewrap": {
+      "host": {
+        "n": 10,
+        "median": 43.98427549676853,
+        "p95": 46.9837179989554,
+        "min": 37.15169300267007,
+        "max": 46.9837179989554
+      },
+      "work": {
+        "n": 10,
+        "median": 4.8293230000000005,
+        "p95": 5.408763,
+        "min": 4.731198,
+        "max": 5.408763
+      }
+    },
+    "dockerFresh": {
+      "host": {
+        "n": 10,
+        "median": 495.25339499814436,
+        "p95": 543.73755800043,
+        "min": 483.61870099324733,
+        "max": 543.73755800043
+      },
+      "work": {
+        "n": 10,
+        "median": 4.8256855000000005,
+        "p95": 5.658713,
+        "min": 4.676586,
+        "max": 5.658713
+      }
+    },
+    "dockerPersistent": {
+      "host": {
+        "n": 10,
+        "median": 77.84075799645507,
+        "p95": 82.09893599996576,
+        "min": 74.00153100024909,
+        "max": 82.09893599996576
+      },
+      "work": {
+        "n": 10,
+        "median": 4.9097645,
+        "p95": 5.130259,
+        "min": 4.759741,
+        "max": 5.130259
+      }
+    }
+  },
+  "elapsedSeconds": 40.54851630199846
+}

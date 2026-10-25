@@ -1,0 +1,59 @@
+{
+  "Id": "sha256:d55f6101f61e7f3b52ea2e3490ceb2e8ce2e4fc19c45f9b7fbf205737c68499e",
+  "RepoTags": [
+    "endoforge-p13:rebuild"
+  ],
+  "RepoDigests": [
+    "endoforge-p13@sha256:d55f6101f61e7f3b52ea2e3490ceb2e8ce2e4fc19c45f9b7fbf205737c68499e"
+  ],
+  "Comment": "buildkit.dockerfile.v0",
+  "Created": "2026-10-18T15:04:29.159101249-04:00",
+  "Config": {
+    "Env": [
+      "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "NODE_VERSION=22.18.0",
+      "YARN_VERSION=1.22.22",
+      "HOME=/tmp"
+    ],
+    "Entrypoint": [
+      "docker-entrypoint.sh"
+    ],
+    "Cmd": [
+      "node"
+    ],
+    "WorkingDir": "/tmp"
+  },
+  "Architecture": "amd64",
+  "Os": "linux",
+  "Size": 452365475,
+  "RootFS": {
+    "Type": "layers",
+    "Layers": [
+      "sha256:eb5f13bce9936c760b9fa73aeb1b608787daa36106cc888104132e353ed37252",
+      "sha256:5e63d79d36027aac3b9fffcdd79aec007ba39bac1fbb918dcd6db5aa41f9c19a",
+      "sha256:06769c9c802b79461910d4a68119c97dce29b4e1d1d47039c760aba60e084629",
+      "sha256:4f5fd88901b05e59a3cd054b22447a2ad4b13fb964da9489f023ffea11683856",
+      "sha256:b54dd33191f2b56314b0cb0e39066c22ec5a18f11f1fcc7a279f319d3da8a49a",
+      "sha256:c82ea883d62923238ee94150434f6c1f2887c5c91d5c22b1e0cb2b62f901d03c",
+      "sha256:879065a01d3fb070878413e746e1e3c8429cc66127de3c3b63b4883e7c1ea0a8",
+      "sha256:7a8a5a7af9c57566ace01721ee3f0b9b650b018ec72640b5321429ea69eb6c3b",
+      "sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef"
+    ]
+  },
+  "Metadata": {
+    "LastTagTime": "2026-10-18T19:04:30.638128396Z"
+  },
+  "Descriptor": {
+    "mediaType": "application/vnd.oci.image.index.v1+json",
+    "digest": "sha256:d55f6101f61e7f3b52ea2e3490ceb2e8ce2e4fc19c45f9b7fbf205737c68499e",
+    "size": 856
+  },
+  "Identity": {
+    "Build": [
+      {
+        "Ref": "wzaiiufnmv8s26isykuwd7xpu",
+        "CreatedAt": "2026-10-18T15:04:31.183501028-04:00"
+      }
+    ]
+  }
+}

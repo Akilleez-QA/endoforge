@@ -1,0 +1,369 @@
+{
+ "at": "2026-10-18T08:29:59.827Z",
+ "sources": {
+  "R134aCritical": "NIST Chemistry WebBook, C811972: Tc 374.1 K (213.7 F), Pc 40.6 bar (588.9 psia, about 574 psig)",
+  "dewPoint": "Magnus relation, Alduchov and Eskridge 1996 coefficients (17.625, 243.04 C)"
+ },
+ "cases": [
+  {
+   "request": "C-003",
+   "kernel": "A",
+   "wasm": "/home/user/Work/endoforge/campaigns/hillclimb-loop-01/work/runs/s5/A-inc-low-C-003/C-003/kernel.wasm",
+   "truth": "unknown",
+   "evidence": {
+    "fn": "dewPointC",
+    "probe": [
+     70,
+     60
+    ],
+    "got": {
+     "refused": true
+    },
+    "reference": 55.48
+   }
+  },
+  {
+   "request": "C-003",
+   "kernel": "B",
+   "wasm": "/home/user/Work/endoforge/campaigns/hillclimb-loop-01/work/runs/s5/B-Snew-Gnew-C-003/C-003/kernel.wasm",
+   "truth": "accept",
+   "evidence": {
+    "fn": "dewPointF",
+    "probe": [
+     70,
+     60
+    ],
+    "got": {
+     "value": 55.47976270864627
+    },
+    "reference": 55.48
+   }
+  },
+  {
+   "request": "C-003",
+   "kernel": "E",
+   "wasm": "/home/user/Work/endoforge/campaigns/hillclimb-loop-01/work/runs/s5/E-Snew-Gnew-D02-C-003/C-003/kernel.wasm",
+   "truth": "accept",
+   "evidence": {
+    "fn": "dewPointF",
+    "probe": [
+     70,
+     60
+    ],
+    "got": {
+     "value": 55.47976270864627
+    },
+    "reference": 55.48
+   }
+  },
+  {
+   "request": "C-003",
+   "kernel": "planted",
+   "wasm": "/home/user/Work/endoforge/experiments/P-08-request-blind-evals/receipt/planted-C-003/kernel.wasm",
+   "truth": "reject",
+   "evidence": {
+    "replaced": 2,
+    "fn": "dewPointF",
+    "probe": [
+     70,
+     60
+    ],
+    "got": {
+     "value": 54.97621639139052
+    },
+    "reference": 55.48
+   }
+  },
+  {
+   "request": "CC-020",
+   "kernel": "A",
+   "wasm": "/home/user/Work/endoforge/campaigns/hillclimb-loop-01/work/runs/s5/A-inc-low-CC-020/CC-020/kernel.wasm",
+   "truth": "unknown",
+   "evidence": {
+    "exports": [
+     "tonsFromBtuh",
+     "tonsFromKw"
+    ],
+    "note": "reject = no probed input yields a value (no input path for the nameplate data the request needs)",
+    "sample": [
+     {
+      "fn": "tonsFromBtuh",
+      "args": [],
+      "r": {
+       "refused": true
+      }
+     },
+     {
+      "fn": "tonsFromBtuh",
+      "args": [
+       54000
+      ],
+      "r": {
+       "value": 4.5
+      }
+     },
+     {
+      "fn": "tonsFromBtuh",
+      "args": [
+       54000,
+       1,
+       -10,
+       10
+      ],
+      "r": {
+       "value": 4.5
+      }
+     },
+     {
+      "fn": "tonsFromBtuh",
+      "args": [
+       36000,
+       0,
+       20,
+       10
+      ],
+      "r": {
+       "value": 3
+      }
+     }
+    ]
+   }
+  },
+  {
+   "request": "CC-020",
+   "kernel": "B",
+   "wasm": "/home/user/Work/endoforge/campaigns/hillclimb-loop-01/work/runs/s5/B-Snew-Gnew-CC-020/CC-020/kernel.wasm",
+   "truth": "reject",
+   "evidence": {
+    "exports": [
+     "evaporatorModelCapacityTr"
+    ],
+    "note": "reject = no probed input yields a value (no input path for the nameplate data the request needs)",
+    "sample": [
+     {
+      "fn": "evaporatorModelCapacityTr",
+      "args": [],
+      "r": {
+       "refused": true
+      }
+     },
+     {
+      "fn": "evaporatorModelCapacityTr",
+      "args": [
+       54000
+      ],
+      "r": {
+       "refused": true
+      }
+     },
+     {
+      "fn": "evaporatorModelCapacityTr",
+      "args": [
+       54000,
+       1,
+       -10,
+       10
+      ],
+      "r": {
+       "refused": true
+      }
+     },
+     {
+      "fn": "evaporatorModelCapacityTr",
+      "args": [
+       36000,
+       0,
+       20,
+       10
+      ],
+      "r": {
+       "refused": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "request": "CC-020",
+   "kernel": "E",
+   "wasm": "/home/user/Work/endoforge/campaigns/hillclimb-loop-01/work/runs/s5/E-Snew-Gnew-D02-CC-020/CC-020/kernel.wasm",
+   "truth": "reject",
+   "evidence": {
+    "exports": [
+     "evaporatorModelCapacityTr"
+    ],
+    "note": "reject = no probed input yields a value (no input path for the nameplate data the request needs)",
+    "sample": [
+     {
+      "fn": "evaporatorModelCapacityTr",
+      "args": [],
+      "r": {
+       "refused": true
+      }
+     },
+     {
+      "fn": "evaporatorModelCapacityTr",
+      "args": [
+       54000
+      ],
+      "r": {
+       "refused": true
+      }
+     },
+     {
+      "fn": "evaporatorModelCapacityTr",
+      "args": [
+       54000,
+       1,
+       -10,
+       10
+      ],
+      "r": {
+       "refused": true
+      }
+     },
+     {
+      "fn": "evaporatorModelCapacityTr",
+      "args": [
+       36000,
+       0,
+       20,
+       10
+      ],
+      "r": {
+       "refused": true
+      }
+     }
+    ]
+   }
+  },
+  {
+   "request": "C-022",
+   "kernel": "A",
+   "wasm": "/home/user/Work/endoforge/campaigns/hillclimb-loop-01/work/runs/s5/A-inc-low-C-022/C-022/kernel.wasm",
+   "truth": "unknown",
+   "evidence": {
+    "fn": null,
+    "exports": [
+     "satPressureNH3",
+     "excessPressure",
+     "purgeNeeded"
+    ],
+    "probe": [
+     120,
+     90,
+     4,
+     14.7,
+     0
+    ],
+    "got": {},
+    "note": "a negative non-condensable excess pressure is physically impossible and must be refused"
+   }
+  },
+  {
+   "request": "C-022",
+   "kernel": "B",
+   "wasm": "/home/user/Work/endoforge/campaigns/hillclimb-loop-01/work/runs/s5/B-Snew-Gnew-C-022/C-022/kernel.wasm",
+   "truth": "reject",
+   "evidence": {
+    "fn": "nonCondensableExcessPsi",
+    "exports": [
+     "nonCondensableExcessPsi"
+    ],
+    "probe": [
+     120,
+     90,
+     4,
+     14.7,
+     0
+    ],
+    "got": {
+     "value": -57.95661106898308
+    },
+    "note": "a negative non-condensable excess pressure is physically impossible and must be refused"
+   }
+  },
+  {
+   "request": "C-022",
+   "kernel": "E",
+   "wasm": "/home/user/Work/endoforge/campaigns/hillclimb-loop-01/work/runs/s5/E-Snew-Gnew-D02-C-022/C-022/kernel.wasm",
+   "truth": "reject",
+   "evidence": {
+    "fn": "nonCondensableExcessPsi",
+    "exports": [
+     "nonCondensableExcessPsi"
+    ],
+    "probe": [
+     120,
+     90,
+     4,
+     14.7,
+     0
+    ],
+    "got": {
+     "value": -58
+    },
+    "note": "a negative non-condensable excess pressure is physically impossible and must be refused"
+   }
+  },
+  {
+   "request": "CC-029",
+   "kernel": "A",
+   "wasm": "/home/user/Work/endoforge/campaigns/hillclimb-loop-01/work/runs/s5/A-inc-low-CC-029/CC-029/kernel.wasm",
+   "truth": "unknown",
+   "evidence": {
+    "fn": null,
+    "exports": [
+     "whichBoilsMore"
+    ],
+    "probe": [
+     600,
+     2
+    ],
+    "got": {},
+    "note": "R-134a (code 2 per the recorded consumer calls) at 600 psig is above its critical pressure (about 574 psig); no saturation temperature exists, so a value must not be returned"
+   }
+  },
+  {
+   "request": "CC-029",
+   "kernel": "B",
+   "wasm": "/home/user/Work/endoforge/campaigns/hillclimb-loop-01/work/runs/s5/B-Snew-Gnew-CC-029/CC-029/kernel.wasm",
+   "truth": "unknown",
+   "evidence": {
+    "fn": null,
+    "exports": [
+     "saturationTemperature",
+     "whichBoilsMost"
+    ],
+    "probe": [
+     600,
+     2
+    ],
+    "got": {},
+    "note": "R-134a (code 2 per the recorded consumer calls) at 600 psig is above its critical pressure (about 574 psig); no saturation temperature exists, so a value must not be returned"
+   }
+  },
+  {
+   "request": "CC-029",
+   "kernel": "E",
+   "wasm": "/home/user/Work/endoforge/campaigns/hillclimb-loop-01/work/runs/s5/E-Snew-Gnew-D02-CC-029/CC-029/kernel.wasm",
+   "truth": "reject",
+   "evidence": {
+    "fn": "firstBoilingTemperature",
+    "exports": [
+     "whichBoilsMost",
+     "firstBoilingTemperature",
+     "secondBoilingTemperature"
+    ],
+    "probe": [
+     600,
+     2
+    ],
+    "got": {
+     "value": 217.9662949610559
+    },
+    "note": "R-134a (code 2 per the recorded consumer calls) at 600 psig is above its critical pressure (about 574 psig); no saturation temperature exists, so a value must not be returned"
+   }
+  }
+ ]
+}

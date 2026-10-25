@@ -1,0 +1,36 @@
+{
+  "attempt": "verify-2140dd7a59a8",
+  "job": "dev-affine-01",
+  "containerName": "endoforge-v1-258b34a6c60a4761944d9787fec629ae",
+  "image": "sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541",
+  "outcome": "passed",
+  "published": true,
+  "inputSha256": "b42fc1e3471ac9ea1c785d63a91a1f52154afc3ca8c5ecc61e10511b9a1e1f21",
+  "containerId": "ebf0b5225c2df89ac5738bb3b44ab6ec7bc0311aff2eb74da1a390cc52e3621c",
+  "terminalState": {
+    "Status": "exited",
+    "Running": false,
+    "Paused": false,
+    "Restarting": false,
+    "OOMKilled": false,
+    "Dead": false,
+    "Pid": 0,
+    "ExitCode": 0,
+    "Error": "",
+    "StartedAt": "2026-10-18T20:39:50.371475461Z",
+    "FinishedAt": "2026-10-18T20:39:51.189075415Z"
+  },
+  "artifactSha256": "b42fc1e3471ac9ea1c785d63a91a1f52154afc3ca8c5ecc61e10511b9a1e1f21",
+  "cleanupVerified": true,
+  "signals": [],
+  "wallMs": 1400.793982000323,
+  "version": 1,
+  "parent": null,
+  "stage": "verification",
+  "usage": {
+    "wallMs": 1400.793982000323,
+    "tokens": null
+  },
+  "generation": "51fc8faac7d04220931c94069b69a077",
+  "auditConclusion": "Mismatch between job raw request and frozen eval bundle must reject before generation."
+}

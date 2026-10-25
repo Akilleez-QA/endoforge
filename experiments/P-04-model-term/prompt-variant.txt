@@ -1,0 +1,127 @@
+# Endoforge host SDK — candidate authoring context (fixed probe context, revision p04-1)
+
+You are generating a candidate for the Endoforge workcell. A candidate is a pure WebAssembly kernel plus declarative glue. The kernel is a WebAssembly module exporting pure functions: state in, event in, state out, effects out as data. Its declared imports are its only capabilities. It receives linear-memory isolation and no ambient authority. The glue is data: a view specification over the host's registered components, data and action bindings that name exact owners and revisions, interaction tests, and a result schema. Closed schemas validate the glue. The host renders it and runs the event loop. The candidate never touches the renderer, the broker, or the ledger. No generated imperative JavaScript executes anywhere in the kernel lane.
+
+## 1. Kernel contract (normative)
+
+1.1 A kernel is compiled from AssemblyScript to a single WASM module. It must export exactly the functions named in its manifest and nothing else that is callable from the host.
+1.2 Exported functions are pure: the same inputs produce the same outputs; no reads of time, randomness, environment, or host state except through declared imports.
+1.3 Large inputs are never copied into the kernel. The host owns input buffers and hands the kernel an opaque handle (u32). The kernel reads records through `host_record_count`, `host_record_field_i64`, `host_record_field_f64`, and `host_record_field_str` imports. A kernel never receives a pointer into trusted state.
+1.4 Outputs are written as records into a host-owned output buffer through `out_begin`, `out_set_i64`, `out_set_f64`, `out_set_str`, and `out_commit`. The kernel returns the number of committed records.
+1.5 Effects are data. A kernel that wants something to happen appends an effect record with `effect_emit(kind: i32, payloadHandle: u32)`. It never performs the effect.
+1.6 Strings cross the boundary as UTF-8 byte ranges within the kernel's own linear memory; the host copies them out at `out_set_str(ptr, len)`.
+1.7 No `unreachable`, `abort`, or trap on well-formed input. Malformed input produces a discrepancy record classified `MALFORMED`, not a trap.
+1.8 Memory: the module declares an initial memory of at most 16 pages and must not grow beyond 64 pages for inputs up to 100,000 records.
+1.9 Floating point: all arithmetic in f64; comparisons against tolerances use absolute-then-relative form: |a - b| <= abs_tol OR |a - b| <= rel_tol * max(|a|, |b|).
+1.10 Determinism: iteration order over records is ascending by record index; join output order is ascending by left record index then right record index.
+
+## 2. Declared imports available to a kernel (namespace "host")
+
+| Import | Signature | Meaning |
+|---|---|---|
+| host_record_count | (set: u32) -> i32 | Number of records in input set `set` |
+| host_record_field_i64 | (set: u32, idx: i32, field: i32) -> i64 | Integer field `field` of record `idx` |
+| host_record_field_f64 | (set: u32, idx: i32, field: i32) -> f64 | Floating field |
+| host_record_field_str | (set: u32, idx: i32, field: i32, dst: usize, cap: i32) -> i32 | Copies the UTF-8 field into kernel memory at `dst`, at most `cap` bytes; returns bytes written, or -1 if truncated |
+| host_field_kind | (set: u32, field: i32) -> i32 | 0 = i64, 1 = f64, 2 = str, -1 = absent |
+| out_begin | () -> void | Start a new output record |
+| out_set_i64 | (field: i32, v: i64) -> void | Set integer field on the current output record |
+| out_set_f64 | (field: i32, v: f64) -> void | Set floating field |
+| out_set_str | (field: i32, ptr: usize, len: i32) -> void | Set string field from kernel memory |
+| out_commit | () -> void | Commit the current output record |
+| effect_emit | (kind: i32, payload: u32) -> void | Append an effect record; the host decides whether to perform it |
+| log_debug | (ptr: usize, len: i32) -> void | Debug text; dropped in production; may be used freely |
+
+Declare imports in AssemblyScript with `@external("host", "name") declare function name(...)`.
+
+## 3. Registered components the glue may bind to (owner, revision)
+
+- `table.grid` (owner: ui-core, rev 14): tabular display with column schema, sort, filter.
+- `chart.series` (owner: ui-core, rev 9): line/bar series over a numeric field.
+- `badge.status` (owner: ui-core, rev 3): discrete status badge; maps enumerated string to color.
+- `form.params` (owner: ui-core, rev 6): parameter form bound to kernel scalar inputs.
+- `panel.discrepancy` (owner: fieldops-ui, rev 2): discrepancy list with severity grouping and drill-down.
+- `export.csv` (owner: io-core, rev 5): effect sink; accepts `effect kind 100` with a record-set handle.
+
+## 4. Data bindings (owners and revisions are exact)
+
+- Record set 0, `fieldops.refrigerant_log` (owner: fieldops-data, rev 31). Fields: 0 `asset_id` (i64), 1 `reading_ts` (i64, unix seconds), 2 `charge_mass` (f64), 3 `charge_unit` (str: "kg" or "lb"), 4 `pressure` (f64), 5 `pressure_unit` (str: "kPa", "bar", or "psi"), 6 `technician` (str).
+- Record set 1, `fieldops.asset_register` (owner: fieldops-data, rev 18). Fields: 0 `asset_id` (i64), 1 `rated_charge_kg` (f64), 2 `rated_pressure_kpa` (f64), 3 `site` (str), 4 `refrigerant` (str), 5 `tolerance_pct` (f64).
+- Scalar inputs (from `form.params`): `abs_tol_kg` (f64, default 0.05), `rel_tol` (f64, default 0.02), `max_age_days` (i64, default 30), `as_of_ts` (i64).
+
+## 5. Result schema (output record fields, exact indices)
+
+| Field | Name | Type | Values |
+|---|---|---|---|
+| 0 | asset_id | i64 | from set 1 |
+| 1 | reading_ts | i64 | from set 0, or -1 if no reading |
+| 2 | charge_kg | f64 | converted to kg; NaN if no reading |
+| 3 | rated_charge_kg | f64 | from set 1 |
+| 4 | charge_delta_kg | f64 | charge_kg - rated_charge_kg |
+| 5 | pressure_kpa | f64 | converted to kPa; NaN if no reading |
+| 6 | rated_pressure_kpa | f64 | from set 1 |
+| 7 | classification | str | one of the enumerated classes in section 6 |
+| 8 | detail | str | short human-readable reason, at most 80 bytes |
+
+## 6. Discrepancy classification (enumerated, exhaustive, first match wins)
+
+1. `MALFORMED` — unknown unit string, negative mass, non-finite value, or absent field.
+2. `NO_READING` — asset present in set 1 with no matching record in set 0.
+3. `STALE` — newest reading older than `max_age_days` relative to `as_of_ts`.
+4. `UNDERCHARGE` — charge_kg below rated_charge_kg by more than tolerance (tolerance is the larger of `abs_tol_kg` and `tolerance_pct`/100 of rated).
+5. `OVERCHARGE` — charge_kg above rated by more than tolerance.
+6. `PRESSURE_HIGH` — pressure_kpa exceeds rated_pressure_kpa by more than `rel_tol` relative.
+7. `PRESSURE_LOW` — pressure_kpa below rated by more than `rel_tol` relative.
+8. `ORPHAN_READING` — reading in set 0 whose asset_id has no record in set 1 (emit one output per orphan with rated fields NaN).
+9. `OK` — none of the above.
+
+Unit conversions: 1 lb = 0.45359237 kg; 1 bar = 100 kPa; 1 psi = 6.894757293168 kPa. Units are compared case-insensitively after trimming ASCII whitespace.
+
+Join semantics: left set is the asset register (set 1); for each asset select the newest reading (largest `reading_ts`) from set 0 with the same `asset_id`. Then emit one output record per asset, then one output record per orphan reading. The kernel returns the total count of committed output records.
+
+## 7. Authoring rules for kernels
+
+- Write AssemblyScript (not TypeScript). Use `i32`, `i64`, `f64`, `usize`, `StaticArray`, and `String.UTF8` helpers only; no `Map`, `Set`, closures, or classes with inheritance. Fixed-size arrays are preferred.
+- Export exactly one entry point: `export function run(abs_tol_kg: f64, rel_tol: f64, max_age_days: i64, as_of_ts: i64): i32`.
+- Allocate string scratch space with `memory.data(256)` style static buffers; never allocate per record.
+- Avoid O(n*m) joins when `n*m > 10^7`; a sort-then-merge or a simple open-addressing index on `asset_id` is acceptable. For this probe, a straightforward nested loop is accepted if clearly commented.
+- No comments longer than one line. No trailing whitespace. Use 2-space indentation.
+- The code must compile with `asc` (AssemblyScript 0.28) using `--runtime stub` with no warnings.
+- Output only the code. No prose, no explanation, no markdown fences.
+
+## 8. Interaction tests the glue will run (for reference; do not implement)
+
+- T1: 3 assets, 5 readings including one in lb and one in psi; expect classifications [OK, UNDERCHARGE, PRESSURE_HIGH].
+- T2: asset with no reading → NO_READING with charge_kg NaN.
+- T3: unit string "LBS" → MALFORMED.
+- T4: reading 45 days old with max_age_days 30 → STALE.
+- T5: orphan reading → ORPHAN_READING appended after all asset rows.
+- T6: 100,000 readings and 5,000 assets must complete under the host deadline and within 64 pages.
+
+## 8a. Example glue (for reference; the kernel does not read this)
+
+{
+  "kernel": { "module": "sha256:<filled by build>", "entry": "run", "memory_pages_max": 64 },
+  "view": {
+    "component": "panel.discrepancy", "owner": "fieldops-ui", "rev": 2,
+    "children": [
+      { "component": "table.grid", "owner": "ui-core", "rev": 14, "fields": [0, 1, 2, 3, 4, 7, 8] },
+      { "component": "badge.status", "owner": "ui-core", "rev": 3, "field": 7,
+        "colors": { "OK": "green", "STALE": "amber", "UNDERCHARGE": "red", "OVERCHARGE": "red",
+                    "PRESSURE_HIGH": "red", "PRESSURE_LOW": "amber", "NO_READING": "grey",
+                    "ORPHAN_READING": "grey", "MALFORMED": "purple" } }
+    ]
+  },
+  "bindings": {
+    "sets": [ { "handle": 0, "source": "fieldops.refrigerant_log", "owner": "fieldops-data", "rev": 31 },
+              { "handle": 1, "source": "fieldops.asset_register", "owner": "fieldops-data", "rev": 18 } ],
+    "scalars": { "abs_tol_kg": 0.05, "rel_tol": 0.02, "max_age_days": 30, "as_of_ts": "$now" }
+  },
+  "effects": { "100": { "sink": "export.csv", "owner": "io-core", "rev": 5 } },
+  "result_schema": "fieldops.discrepancy.v1"
+}
+
+The host rejects glue whose owners or revisions do not match the registry exactly. The kernel is admitted only if its exports match the manifest, it compiles with no warnings, and all interaction tests pass.
+
+## 9. Task
+Write an AssemblyScript kernel of about 100 lines that joins the two record sets with unit conversion and discrepancy classification as specified above, but order output by classification then asset_id, and emit a summary effect (kind 100) after the last record; output only code.

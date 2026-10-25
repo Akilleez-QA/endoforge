@@ -1,0 +1,10 @@
+{
+  "exit": 88,
+  "stdout": "",
+  "stderr": "",
+  "injectedCode": "import os,sys\nimport lifecycle\noriginal=lifecycle.write\ndef crash(path,value):\n    if str(path).endswith('/result.json'): os._exit(88)\n    return original(path,value)\nlifecycle.write=crash\nlifecycle.run_attempt(sys.argv[1],'linked-crash','linked-job',sys.argv[2],sys.argv[3],sys.argv[3],'cat /input.txt')\n",
+  "publications": {
+    "retry-job.txt": "dbaf7474156488138270f1702761bf71cbf7d900db6e073558c544ef18812878",
+    "linked-job.txt": "dbaf7474156488138270f1702761bf71cbf7d900db6e073558c544ef18812878"
+  }
+}

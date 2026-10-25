@@ -1,0 +1,205 @@
+{
+  "execution": {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "run",
+      "--rm",
+      "--name",
+      "endoforge-p13-gate-cc-025-3739593",
+      "--pull=never",
+      "--network=none",
+      "--read-only",
+      "--user",
+      "1000:1000",
+      "--cap-drop=ALL",
+      "--security-opt=no-new-privileges",
+      "--cpus=1",
+      "--memory=512m",
+      "--memory-swap=512m",
+      "--pids-limit=64",
+      "--tmpfs",
+      "/tmp:rw,nosuid,nodev,size=64m",
+      "--mount",
+      "type=bind,src=/home/user/Work/endoforge/experiments/P-13-rebuild-performance/attempts/04/work/replay/CC-025,dst=/out/CC-025",
+      "--entrypoint",
+      "/usr/local/bin/node",
+      "sha256:d55f6101f61e7f3b52ea2e3490ceb2e8ce2e4fc19c45f9b7fbf205737c68499e",
+      "/bundle/campaigns/x1-spec-study/factory/gate.mjs",
+      "run",
+      "/out/CC-025"
+    ],
+    "exit": 0,
+    "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 293,\n   \"wasmSha256\": \"b1be039cf02e418c0e7532b8966f7643f0e61faad23576d7bab329d105ad5189\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"kwToHp\",\n    \"hpToKw\",\n    \"kwToHpWithEfficiency\",\n    \"roundTrip\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 11,\n   \"total\": 11\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.044494\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+    "stderr": "",
+    "timeout": false,
+    "wallMs": 1109.6522970037768
+  },
+  "result": {
+    "at": "2026-10-18T19:04:54.621Z",
+    "gates": {
+      "G1_frozen": {
+        "ok": true
+      },
+      "G2_compiles": {
+        "ok": true,
+        "wasmBytes": 293,
+        "wasmSha256": "b1be039cf02e418c0e7532b8966f7643f0e61faad23576d7bab329d105ad5189"
+      },
+      "G3_exports": {
+        "ok": true,
+        "exports": [
+          "kwToHp",
+          "hpToKw",
+          "kwToHpWithEfficiency",
+          "roundTrip"
+        ]
+      },
+      "G4_tests": {
+        "ok": true,
+        "passed": 11,
+        "total": 11
+      },
+      "G6_bounded": {
+        "ok": true,
+        "maxMs": 0.044494
+      },
+      "G5_deterministic": {
+        "ok": true
+      },
+      "G7_glue": {
+        "ok": true
+      }
+    },
+    "tests": [
+      {
+        "name": "6.2 kW to hp",
+        "fn": "kwToHp",
+        "args": [
+          6.2
+        ],
+        "expect": 8.3144,
+        "got": 8.314335523669035,
+        "ms": 0.036,
+        "pass": true
+      },
+      {
+        "name": "assumption pin: 0.7457 kW is exactly 1 mechanical hp",
+        "fn": "kwToHp",
+        "args": [
+          0.7457
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "assumption pin: metric hp constant is not 1 hp",
+        "fn": "kwToHp",
+        "args": [
+          0.7355
+        ],
+        "expect": 0.9863,
+        "got": 0.9863215770417058,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "efficiency form 90%",
+        "fn": "kwToHpWithEfficiency",
+        "args": [
+          6.2,
+          0.9
+        ],
+        "expect": 7.483,
+        "got": 7.482901971302132,
+        "ms": 0.006,
+        "pass": true
+      },
+      {
+        "name": "efficiency form 100% equals direct",
+        "fn": "kwToHpWithEfficiency",
+        "args": [
+          6.2,
+          1
+        ],
+        "expect": 8.3144,
+        "got": 8.314335523669035,
+        "ms": 0.002,
+        "pass": true
+      },
+      {
+        "name": "inverse hp to kW",
+        "fn": "hpToKw",
+        "args": [
+          10
+        ],
+        "expect": 7.457,
+        "got": 7.457000000000001,
+        "ms": 0.003,
+        "pass": true
+      },
+      {
+        "name": "boundary: zero kW",
+        "fn": "kwToHp",
+        "args": [
+          0
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "boundary: negative kW traps",
+        "fn": "kwToHp",
+        "args": [
+          -1
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.044,
+        "pass": true
+      },
+      {
+        "name": "boundary: efficiency 0 traps",
+        "fn": "kwToHpWithEfficiency",
+        "args": [
+          6.2,
+          0
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.004,
+        "pass": true
+      },
+      {
+        "name": "boundary: efficiency >1 traps",
+        "fn": "kwToHpWithEfficiency",
+        "args": [
+          6.2,
+          1.5
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.002,
+        "pass": true
+      },
+      {
+        "name": "round trip",
+        "fn": "roundTrip",
+        "args": [
+          8.3144
+        ],
+        "expect": 8.3144,
+        "got": 8.3144,
+        "ms": 0.004,
+        "pass": true
+      }
+    ],
+    "promotable": true
+  },
+  "match": true
+}

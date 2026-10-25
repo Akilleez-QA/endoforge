@@ -1,0 +1,14 @@
+{
+  "command": [
+    "/home/user/.local/share/mise/installs/node/26.8.1/bin/node",
+    "/home/user/Work/endoforge/campaigns/x1-spec-study/factory/gate.mjs",
+    "run",
+    "/home/user/Work/endoforge/experiments/P-10-live-workers/continuations/20261018T190203Z-da38b5c0/work/accepted/P10"
+  ],
+  "precommitSha256": "641198665f436646e237c7bb3e0bf9066864f50ddce4341e9ca2966141cb34af",
+  "exit": 0,
+  "timeout": false,
+  "wallMs": 482,
+  "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 148,\n   \"wasmSha256\": \"d86902c5f835e64eb3e5aad5752627dcf6cc4fb9162bc71a754dda25e88be1f5\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"celsiusToFahrenheit\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 11,\n   \"total\": 11\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.038302\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+  "stderr": ""
+}

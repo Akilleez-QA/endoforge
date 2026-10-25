@@ -1,0 +1,63 @@
+{
+  "passed": true,
+  "wasmtime_sha256": "b213b0678c0afc807c53130e5b7ca357f0307c1f8deb18cac35fcc65480b9c85",
+  "checks": [
+    {
+      "name": "answer",
+      "argv": [
+        "/work/bundle/bin/wasmtime",
+        "run",
+        "-W",
+        "fuel=100000",
+        "-W",
+        "timeout=100ms",
+        "-W",
+        "max-memory-size=1048576",
+        "--invoke",
+        "run",
+        "/tmp/tmpsdbkt8o5/answer.wat"
+      ],
+      "exit": 0,
+      "stdout": "42\n",
+      "stderr": "warning: using `--invoke` with a function that returns values is experimental and may break in the future\n"
+    },
+    {
+      "name": "loop",
+      "argv": [
+        "/work/bundle/bin/wasmtime",
+        "run",
+        "-W",
+        "fuel=100000",
+        "-W",
+        "timeout=100ms",
+        "-W",
+        "max-memory-size=1048576",
+        "--invoke",
+        "run",
+        "/tmp/tmpsdbkt8o5/loop.wat"
+      ],
+      "exit": 134,
+      "stdout": "",
+      "stderr": "Error: failed to run main module `/tmp/tmpsdbkt8o5/loop.wat`\n\nCaused by:\n    0: failed to invoke `run`\n    1: error while executing at wasm backtrace:\n    0:     0x20 - <unknown>!<wasm function 0>\n    2: wasm trap: all fuel consumed by WebAssembly\n\n"
+    },
+    {
+      "name": "trap",
+      "argv": [
+        "/work/bundle/bin/wasmtime",
+        "run",
+        "-W",
+        "fuel=100000",
+        "-W",
+        "timeout=100ms",
+        "-W",
+        "max-memory-size=1048576",
+        "--invoke",
+        "run",
+        "/tmp/tmpsdbkt8o5/trap.wat"
+      ],
+      "exit": 134,
+      "stdout": "",
+      "stderr": "Error: failed to run main module `/tmp/tmpsdbkt8o5/trap.wat`\n\nCaused by:\n    0: failed to invoke `run`\n    1: error while executing at wasm backtrace:\n    0:     0x20 - <unknown>!<wasm function 0>\n    2: wasm trap: wasm `unreachable` instruction executed\n\n"
+    }
+  ]
+}

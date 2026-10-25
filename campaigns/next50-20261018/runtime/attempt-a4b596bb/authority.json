@@ -1,0 +1,135 @@
+{
+  "version": 1,
+  "roles": {
+    "intake": {
+      "read": [
+        "request"
+      ],
+      "write": [
+        "contract"
+      ],
+      "network": [],
+      "promote": false
+    },
+    "eval_writer": {
+      "read": [
+        "request",
+        "bare_signature",
+        "reference"
+      ],
+      "write": [
+        "eval_procedure"
+      ],
+      "network": [
+        "provider_proxy"
+      ],
+      "promote": false
+    },
+    "generator": {
+      "read": [
+        "request",
+        "typed_contract"
+      ],
+      "write": [
+        "candidate"
+      ],
+      "network": [
+        "provider_proxy"
+      ],
+      "promote": false
+    },
+    "repairer": {
+      "read": [
+        "candidate",
+        "permitted_failure"
+      ],
+      "write": [
+        "candidate"
+      ],
+      "network": [
+        "provider_proxy"
+      ],
+      "promote": false
+    },
+    "verifier": {
+      "read": [
+        "frozen_evals",
+        "candidate",
+        "reference"
+      ],
+      "write": [
+        "gate_receipt"
+      ],
+      "network": [],
+      "promote": false
+    },
+    "consumer": {
+      "read": [
+        "request",
+        "bare_signature",
+        "capability_interface"
+      ],
+      "write": [
+        "invocation_plan"
+      ],
+      "network": [
+        "provider_proxy"
+      ],
+      "promote": false
+    },
+    "supervisor": {
+      "read": [
+        "journals",
+        "receipts"
+      ],
+      "write": [
+        "attempts",
+        "journals",
+        "fences"
+      ],
+      "network": [
+        "docker_management"
+      ],
+      "promote": false
+    },
+    "publisher": {
+      "read": [
+        "gate_receipt",
+        "candidate",
+        "fence"
+      ],
+      "write": [
+        "publication"
+      ],
+      "network": [],
+      "promote": true
+    }
+  },
+  "transitions": {
+    "queued": [
+      "running",
+      "cancelled",
+      "blocked"
+    ],
+    "running": [
+      "passed",
+      "failed",
+      "timeout",
+      "cancelled",
+      "unknown"
+    ],
+    "unknown": [
+      "reconciled",
+      "publication_recovered"
+    ],
+    "reconciled": [],
+    "publication_recovered": [],
+    "passed": [],
+    "failed": [],
+    "timeout": [],
+    "cancelled": [],
+    "blocked": [
+      "queued"
+    ]
+  }
+}

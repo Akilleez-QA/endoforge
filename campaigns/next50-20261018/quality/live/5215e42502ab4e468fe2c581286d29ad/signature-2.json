@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "name": "classifyScore",
+  "inputs": [
+    {
+      "path": "s",
+      "type": "number",
+      "unit": "score",
+      "domain": [
+        0,
+        100
+      ]
+    }
+  ],
+  "output": {
+    "type": "number",
+    "unit": "score-class"
+  }
+}

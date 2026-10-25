@@ -1,0 +1,19 @@
+{
+  "requestMismatchPrepare": {
+    "rejected": true,
+    "reason": "job request/signature must exactly match the independent eval bundle"
+  },
+  "noJobCreated": true,
+  "existingWrongQuestionReverify": {
+    "rejected": true,
+    "reason": "normative request/signature binding mismatch"
+  },
+  "unrelatedChallenge": {
+    "rejected": true,
+    "reason": "evidence is not about the same function, inputs and units"
+  },
+  "relevantChallenge": "new-eval-version-required",
+  "sameContract": "reused",
+  "differentContract": "miss",
+  "limits": "Earlier wrong-question publication remains only in audit-owned adverse evidence, not production/catalog; it is rejected by current pipeline."
+}

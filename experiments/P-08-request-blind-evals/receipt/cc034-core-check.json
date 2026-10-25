@@ -1,0 +1,170 @@
+{
+ "at": "2026-10-18T09:00:31.767Z",
+ "label": "post-hoc, not precommitted",
+ "reference": "CoolProp 8.0.0 (ae81610e7d), R-404A dew line, sea level",
+ "tolF": 1,
+ "kernels": [
+  {
+   "arm": "A",
+   "fn": "satTempF",
+   "exports": [
+    "satTempF",
+    "satTempC"
+   ],
+   "verdict": "reject",
+   "worstDeltaF": 2.83,
+   "points": [
+    {
+     "psig": 0,
+     "kernelF": -52.68,
+     "coreDewF": -49.85,
+     "deltaF": -2.83
+    },
+    {
+     "psig": 15,
+     "kernelF": -22.71,
+     "coreDewF": -21.46,
+     "deltaF": -1.25
+    },
+    {
+     "psig": 32.6,
+     "kernelF": -0.34,
+     "coreDewF": -0.01,
+     "deltaF": -0.33
+    },
+    {
+     "psig": 85.4,
+     "kernelF": 40.95,
+     "coreDewF": 40.02,
+     "deltaF": 0.93
+    },
+    {
+     "psig": 147.4,
+     "kernelF": 71.67,
+     "coreDewF": 69.98,
+     "deltaF": 1.68
+    },
+    {
+     "psig": 236.8,
+     "kernelF": "refused",
+     "coreDewF": 100.62,
+     "deltaF": null
+    },
+    {
+     "psig": 312.1,
+     "kernelF": "refused",
+     "coreDewF": 120.52,
+     "deltaF": null
+    }
+   ]
+  },
+  {
+   "arm": "B",
+   "fn": "saturationTempR404aFromPsig",
+   "exports": [
+    "psigToPsia",
+    "saturationTempR404aFromPsig"
+   ],
+   "verdict": "reject",
+   "worstDeltaF": 8.73,
+   "points": [
+    {
+     "psig": 0,
+     "kernelF": -51,
+     "coreDewF": -49.85,
+     "deltaF": -1.15
+    },
+    {
+     "psig": 15,
+     "kernelF": -23.49,
+     "coreDewF": -21.46,
+     "deltaF": -2.03
+    },
+    {
+     "psig": 32.6,
+     "kernelF": -2.2,
+     "coreDewF": -0.01,
+     "deltaF": -2.19
+    },
+    {
+     "psig": 85.4,
+     "kernelF": 38.92,
+     "coreDewF": 40.02,
+     "deltaF": -1.1
+    },
+    {
+     "psig": 147.4,
+     "kernelF": 71.14,
+     "coreDewF": 69.98,
+     "deltaF": 1.15
+    },
+    {
+     "psig": 236.8,
+     "kernelF": 105.7,
+     "coreDewF": 100.62,
+     "deltaF": 5.08
+    },
+    {
+     "psig": 312.1,
+     "kernelF": 129.24,
+     "coreDewF": 120.52,
+     "deltaF": 8.73
+    }
+   ]
+  },
+  {
+   "arm": "E",
+   "fn": "saturationTempR404aFromPsig",
+   "exports": [
+    "psigToPsia",
+    "saturationTempR404aFromPsig"
+   ],
+   "verdict": "reject",
+   "worstDeltaF": 8.73,
+   "points": [
+    {
+     "psig": 0,
+     "kernelF": -51,
+     "coreDewF": -49.85,
+     "deltaF": -1.15
+    },
+    {
+     "psig": 15,
+     "kernelF": -23.49,
+     "coreDewF": -21.46,
+     "deltaF": -2.03
+    },
+    {
+     "psig": 32.6,
+     "kernelF": -2.2,
+     "coreDewF": -0.01,
+     "deltaF": -2.19
+    },
+    {
+     "psig": 85.4,
+     "kernelF": 38.92,
+     "coreDewF": 40.02,
+     "deltaF": -1.1
+    },
+    {
+     "psig": 147.4,
+     "kernelF": 71.14,
+     "coreDewF": 69.98,
+     "deltaF": 1.15
+    },
+    {
+     "psig": 236.8,
+     "kernelF": 105.7,
+     "coreDewF": 100.62,
+     "deltaF": 5.08
+    },
+    {
+     "psig": 312.1,
+     "kernelF": 129.24,
+     "coreDewF": 120.52,
+     "deltaF": 8.73
+    }
+   ]
+  }
+ ]
+}

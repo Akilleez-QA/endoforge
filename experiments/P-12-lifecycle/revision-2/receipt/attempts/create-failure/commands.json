@@ -1,0 +1,74 @@
+[
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "create",
+      "--name",
+      "endoforge-p12-7533e26ae90f44c296265561e175693d",
+      "--label",
+      "endoforge.probe=P12",
+      "--label",
+      "endoforge.owner=7533e26ae90f44c296265561e175693d",
+      "--pull=never",
+      "--network=none",
+      "--read-only",
+      "--user",
+      "1000:1000",
+      "--cap-drop=ALL",
+      "--security-opt=no-new-privileges",
+      "--cpus=1",
+      "--memory=128m",
+      "--memory-swap=128m",
+      "--pids-limit=32",
+      "--log-opt",
+      "max-size=1m",
+      "--log-opt",
+      "max-file=1",
+      "--tmpfs",
+      "/tmp:rw,nosuid,nodev,size=64m",
+      "--tmpfs",
+      "/out:rw,nosuid,nodev,size=8m,uid=1000,gid=1000",
+      "--mount",
+      "type=bind,src=/home/user/Work/endoforge/experiments/P-12-lifecycle/revision-2/receipt/attempts/create-failure/input.txt,dst=/input.txt,readonly",
+      "--entrypoint",
+      "/bin/sh",
+      "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+      "-c",
+      "cat /input.txt"
+    ],
+    "exit": 1,
+    "stdout": "",
+    "stderr": "Error response from daemon: No such image: sha256:0000000000000000000000000000000000000000000000000000000000000000\n",
+    "wallMs": 21.844328002771363
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "inspect",
+      "endoforge-p12-7533e26ae90f44c296265561e175693d"
+    ],
+    "exit": 1,
+    "stdout": "[]\n",
+    "stderr": "error: no such object: endoforge-p12-7533e26ae90f44c296265561e175693d\n",
+    "wallMs": 25.503004995698575
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "ps",
+      "-aq",
+      "--filter",
+      "name=^/endoforge-p12-7533e26ae90f44c296265561e175693d$"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "",
+    "wallMs": 21.07156199781457
+  }
+]

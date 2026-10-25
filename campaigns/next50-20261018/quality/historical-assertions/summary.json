@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "passedCheckerControls": true,
+  "positiveNegativeControlPairs": 10,
+  "modelCalls": 0,
+  "claudeCliInvocations": 0,
+  "requestPairs": 20,
+  "actualArtifacts": 40,
+  "binaryBindingAssertions": 72,
+  "typedSubassertions": 43,
+  "actualObservations": 158,
+  "outcomes": {
+    "incumbent": {
+      "passed": 70,
+      "failed": 10
+    },
+    "fast-path": {
+      "passed": 68,
+      "failed": 10
+    }
+  },
+  "sourceFiles": 132,
+  "sourceChanges": {},
+  "coverageRule": "No whole-clause coverage is implied. Explicit profiles and line hashes let independent auditor combine typed facts with numeric/prose/backend predicates. Binary-binding checks are schema qualification only.",
+  "limits": [
+    "No prose-source authenticity, relevance or standard applicability inferred.",
+    "Finite manually declared semantic-role aliases; checker does not invent role semantics from variable names.",
+    "Metadata precision/unit/trap attachment is distinct from numerical correctness/refusal behavior.",
+    "Power-vs-energy envelope and metric-label profiles surface interface/metadata limitations, not standalone proof of incorrect numeric conversions.",
+    "Declared integer may use floating ABI; runtime integral-value guards remain separate.",
+    "No generated-code execution or hosted model calls."
+  ]
+}

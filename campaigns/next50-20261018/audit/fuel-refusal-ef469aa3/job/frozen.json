@@ -1,0 +1,111 @@
+{
+  "version": 1,
+  "suite": {
+    "version": 1,
+    "request": {
+      "version": 1,
+      "id": "dev-affine-01",
+      "raw": "Convert a finite Celsius input c in [-273.15,1000] to Fahrenheit with absolute tolerance 1e-9 degF. Refuse other inputs naming c. Input c is required. Return a number labelled degF.",
+      "artifactClass": "closed-form",
+      "requiredFacts": [
+        {
+          "path": "c",
+          "unit": "degC",
+          "domain": [
+            -273.15,
+            1000
+          ],
+          "tolerance": 1e-9,
+          "plausible": [
+            {
+              "value": 0,
+              "result": 32
+            },
+            {
+              "value": 100,
+              "result": 212
+            }
+          ]
+        }
+      ],
+      "sources": [
+        "BIPM SI Brochure 9th edition, Celsius offset and temperature intervals"
+      ]
+    },
+    "signature": {
+      "version": 1,
+      "name": "celsiusToFahrenheit",
+      "inputs": [
+        {
+          "path": "c",
+          "type": "number",
+          "unit": "degC",
+          "domain": [
+            -273.15,
+            1000
+          ]
+        }
+      ],
+      "output": {
+        "type": "number",
+        "unit": "degF"
+      }
+    },
+    "writers": [
+      {
+        "family": "claude",
+        "viewHash": "60b2794ceb40f3cf1080226ececf459483ec192f85d26278f83331f790acdc90",
+        "outputHash": "8d664b25f00ffd30de2ec81c0c20480572dbe3cefdc7ce92ca021a23f8d58551"
+      },
+      {
+        "family": "codex",
+        "viewHash": "60b2794ceb40f3cf1080226ececf459483ec192f85d26278f83331f790acdc90",
+        "outputHash": "964fce0573b8bde075607f9d813c701cd035202b6dd93e34526b89e9e68e24f0"
+      }
+    ],
+    "procedures": [
+      {
+        "version": 1,
+        "id": "linear",
+        "kind": "affine",
+        "input": "c",
+        "domain": [
+          -273.15,
+          1000
+        ],
+        "count": 16,
+        "seed": 7919,
+        "slope": 1.8,
+        "offset": 32,
+        "tolerance": 1e-9,
+        "unit": "degF"
+      }
+    ],
+    "cases": [
+      {
+        "id": "nan",
+        "inputs": {
+          "c": "NaN"
+        },
+        "expectError": true,
+        "errorPath": "c",
+        "tolerance": 0,
+        "unit": "degF"
+      },
+      {
+        "id": "outside",
+        "inputs": {
+          "c": -300
+        },
+        "expectError": true,
+        "errorPath": "c",
+        "tolerance": 0,
+        "unit": "degF"
+      }
+    ]
+  },
+  "suiteHash": "87a154e90ef943b631444b1eea9979592387736058addf1de4e290340b041197",
+  "procedureHash": "e49a352b1d993ea1ad104ec4601e688bdd70d8673486853211dfeaad008aed24",
+  "casesHash": "ab2f40db4ebc9e7e840ed7a452f709c14f8956f4f391a6824d074036a73f4986",
+  "frozenAt": "2026-10-18T20:40:47.672Z"
+}

@@ -1,0 +1,117 @@
+{
+  "signature": {
+    "version": 1,
+    "name": "celsiusToFahrenheit",
+    "inputs": [
+      {
+        "path": "c",
+        "type": "number",
+        "unit": "degC",
+        "domain": [
+          -273.15,
+          1000
+        ]
+      }
+    ],
+    "output": {
+      "type": "number",
+      "unit": "degF"
+    }
+  },
+  "outputs": [
+    {
+      "caseId": "linear-0",
+      "value": -459.66999999999996,
+      "unit": "degF"
+    },
+    {
+      "caseId": "linear-1",
+      "value": 1832.0,
+      "unit": "degF"
+    },
+    {
+      "caseId": "linear-2",
+      "value": 239.5085328143044,
+      "unit": "degF"
+    },
+    {
+      "caseId": "linear-3",
+      "value": 827.522621267268,
+      "unit": "degF"
+    },
+    {
+      "caseId": "linear-4",
+      "value": -403.8852094562444,
+      "unit": "degF"
+    },
+    {
+      "caseId": "linear-5",
+      "value": 1374.739735979431,
+      "unit": "degF"
+    },
+    {
+      "caseId": "linear-6",
+      "value": -160.89894654733587,
+      "unit": "degF"
+    },
+    {
+      "caseId": "linear-7",
+      "value": 1245.7081869645117,
+      "unit": "degF"
+    },
+    {
+      "caseId": "linear-8",
+      "value": 1204.0469946760127,
+      "unit": "degF"
+    },
+    {
+      "caseId": "linear-9",
+      "value": 1042.1529811113164,
+      "unit": "degF"
+    },
+    {
+      "caseId": "linear-10",
+      "value": -407.1457946142787,
+      "unit": "degF"
+    },
+    {
+      "caseId": "linear-11",
+      "value": 723.7895590564215,
+      "unit": "degF"
+    },
+    {
+      "caseId": "linear-12",
+      "value": 1488.5582809532157,
+      "unit": "degF"
+    },
+    {
+      "caseId": "linear-13",
+      "value": 1293.7735422506673,
+      "unit": "degF"
+    },
+    {
+      "caseId": "linear-14",
+      "value": 406.5146832045215,
+      "unit": "degF"
+    },
+    {
+      "caseId": "linear-15",
+      "value": 293.99089735354073,
+      "unit": "degF"
+    },
+    {
+      "caseId": "nan",
+      "error": {
+        "path": "c",
+        "kind": "refusal"
+      }
+    },
+    {
+      "caseId": "outside",
+      "error": {
+        "path": "c",
+        "kind": "refusal"
+      }
+    }
+  ]
+}

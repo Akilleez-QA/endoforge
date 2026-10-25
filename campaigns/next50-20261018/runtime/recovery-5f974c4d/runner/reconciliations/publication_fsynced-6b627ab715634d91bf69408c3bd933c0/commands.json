@@ -1,0 +1,42 @@
+[
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "inspect",
+      "endoforge-v1-70efb16c131e4db5a2926ac7707f5c60"
+    ],
+    "exit": 1,
+    "stdout": "[]\n",
+    "stderr": "error: no such object: endoforge-v1-70efb16c131e4db5a2926ac7707f5c60\n"
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "ps",
+      "-aq",
+      "--filter",
+      "name=^/endoforge-v1-70efb16c131e4db5a2926ac7707f5c60$"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "ps",
+      "-aq",
+      "--filter",
+      "name=^/endoforge-v1-70efb16c131e4db5a2926ac7707f5c60$"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+]

@@ -1,0 +1,35 @@
+{
+  "host": "wasmtime-cli",
+  "version": "wasmtime 49.0.3 (f96eabaa1 2026-10-14)",
+  "n": 200,
+  "series": {
+    "bin-true": {
+      "n": 200,
+      "median": 1192543,
+      "p95": 1703836,
+      "min": 1013166,
+      "max": 2496005,
+      "mean": 1274858.125,
+      "lastStdout": ""
+    },
+    "wasmtime-run-wasm": {
+      "n": 200,
+      "median": 6010046,
+      "p95": 7774035,
+      "min": 4538078,
+      "max": 9032152,
+      "mean": 6200848.835,
+      "lastStdout": "240"
+    },
+    "wasmtime-run-cwasm": {
+      "n": 200,
+      "median": 6238867,
+      "p95": 8590100,
+      "min": 4573654,
+      "max": 10779109,
+      "mean": 6455684.535,
+      "lastStdout": "240"
+    }
+  },
+  "cwasmBytes": 19456
+}

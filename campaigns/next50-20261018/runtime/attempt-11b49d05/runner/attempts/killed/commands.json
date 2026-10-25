@@ -1,0 +1,74 @@
+[
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "create",
+      "--name",
+      "endoforge-v1-570734c6c26a48b08c08f928352dfbb0",
+      "--label",
+      "endoforge.runtime=v1",
+      "--label",
+      "endoforge.owner=570734c6c26a48b08c08f928352dfbb0",
+      "--pull=never",
+      "--network=none",
+      "--read-only",
+      "--user",
+      "1000:1000",
+      "--cap-drop=ALL",
+      "--security-opt=no-new-privileges",
+      "--cpus=1",
+      "--memory=512m",
+      "--memory-swap=512m",
+      "--pids-limit=32",
+      "--log-opt",
+      "max-size=1m",
+      "--log-opt",
+      "max-file=1",
+      "--tmpfs",
+      "/tmp:rw,nosuid,nodev,size=64m",
+      "--tmpfs",
+      "/out:rw,nosuid,nodev,size=8m,uid=1000,gid=1000",
+      "--mount",
+      "type=bind,src=/home/user/Work/endoforge/campaigns/next50-20261018/runtime/attempt-11b49d05/runner/attempts/killed/input.txt,dst=/input.txt,readonly",
+      "--entrypoint",
+      "/bin/sh",
+      "sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541",
+      "-c",
+      "sleep 30"
+    ],
+    "exit": 0,
+    "stdout": "728f328d202b88af4ae9161dec074c96759a4e5f045cdc9cc0abad0b56fb4992\n",
+    "stderr": "",
+    "wallMs": 157.51131800061557
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "start",
+      "endoforge-v1-570734c6c26a48b08c08f928352dfbb0"
+    ],
+    "exit": 0,
+    "stdout": "endoforge-v1-570734c6c26a48b08c08f928352dfbb0\n",
+    "stderr": "",
+    "wallMs": 170.3340849999222
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "inspect",
+      "--format",
+      "{{json .State}}",
+      "endoforge-v1-570734c6c26a48b08c08f928352dfbb0"
+    ],
+    "exit": 0,
+    "stdout": "{\"Status\":\"running\",\"Running\":true,\"Paused\":false,\"Restarting\":false,\"OOMKilled\":false,\"Dead\":false,\"Pid\":3969897,\"ExitCode\":0,\"Error\":\"\",\"StartedAt\":\"2026-10-18T20:34:31.015322013Z\",\"FinishedAt\":\"0001-01-01T00:00:00Z\"}\n",
+    "stderr": "",
+    "wallMs": 20.08452500012936
+  }
+]

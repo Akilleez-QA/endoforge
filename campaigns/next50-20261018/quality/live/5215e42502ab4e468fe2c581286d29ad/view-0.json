@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "request": {
+    "id": "dev-affine-01",
+    "raw": "Convert a finite Celsius input c in [-273.15,1000] to Fahrenheit with absolute tolerance 1e-9 degF. Refuse other inputs naming c. Input c is required. Return a number labelled degF."
+  },
+  "signature": {
+    "version": 1,
+    "name": "celsiusToFahrenheit",
+    "inputs": [
+      {
+        "path": "c",
+        "type": "number",
+        "unit": "degC",
+        "domain": [
+          -273.15,
+          1000
+        ]
+      }
+    ],
+    "output": {
+      "type": "number",
+      "unit": "degF"
+    }
+  },
+  "reference": null
+}

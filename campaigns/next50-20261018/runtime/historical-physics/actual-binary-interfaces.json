@@ -1,0 +1,819 @@
+[
+  {
+    "requestId": "CC-009",
+    "arm": "incumbent",
+    "path": "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-009/CC-009",
+    "signatures": {
+      "ammoniaLiquidDensity": {
+        "params": [
+          124
+        ],
+        "results": [
+          124
+        ]
+      },
+      "fillFraction": {
+        "params": [
+          127
+        ],
+        "results": [
+          124
+        ]
+      },
+      "evaporatorInventoryLb": {
+        "params": [
+          124,
+          124,
+          127,
+          124
+        ],
+        "results": [
+          124
+        ]
+      }
+    },
+    "glue": {
+      "id": "CC-009",
+      "assumption": "Assumes ammonia (R-717). A bottom-feed overfeed evaporator runs about 70% full of liquid at the 3:1 ratio. The -2 F temperature sets the liquid density, and the 5 inHg suction pressure is not used.",
+      "question": "Is the refrigerant ammonia, and is the 5 inHg suction pressure a vacuum reading? For ammonia, -2 F is about 15.7 psig.",
+      "notes": "This is an estimate for charge planning. Ammonia is toxic, so check the figure against the coil manufacturer's charge data.",
+      "exports": [
+        {
+          "name": "evaporatorInventoryLb",
+          "label": "Normal inventory of the evaporator",
+          "headline": true,
+          "args": [
+            {
+              "name": "volumeFt3",
+              "kind": "number",
+              "unit": "ft3",
+              "label": "Evaporator internal volume",
+              "range": ">= 0"
+            },
+            {
+              "name": "tempF",
+              "kind": "number",
+              "unit": "F",
+              "label": "Operating temperature",
+              "range": "-60..50 F fit range"
+            },
+            {
+              "name": "feedCode",
+              "kind": "code",
+              "unit": "code",
+              "label": "Evaporator feed type",
+              "codes": {
+                "0": "direct expansion",
+                "1": "top-feed overfeed",
+                "2": "bottom-feed overfeed",
+                "3": "flooded"
+              }
+            },
+            {
+              "name": "recircRatio",
+              "kind": "number",
+              "unit": "dimensionless",
+              "label": "Recirculation ratio (x:1)",
+              "range": ">= 1 for overfeed"
+            }
+          ],
+          "result": {
+            "kind": "number",
+            "unit": "lb",
+            "precision": 0
+          }
+        },
+        {
+          "name": "ammoniaLiquidDensity",
+          "label": "Liquid ammonia density at operating temperature",
+          "args": [
+            {
+              "name": "tempF",
+              "kind": "number",
+              "unit": "F",
+              "label": "Operating temperature",
+              "range": "-60..50 F fit range"
+            }
+          ],
+          "result": {
+            "kind": "number",
+            "unit": "lb/ft3",
+            "precision": 2
+          }
+        },
+        {
+          "name": "fillFraction",
+          "label": "Fraction of evaporator volume filled with liquid",
+          "args": [
+            {
+              "name": "feedCode",
+              "kind": "code",
+              "unit": "code",
+              "label": "Evaporator feed type",
+              "codes": {
+                "0": "direct expansion",
+                "1": "top-feed overfeed",
+                "2": "bottom-feed overfeed",
+                "3": "flooded"
+              }
+            }
+          ],
+          "result": {
+            "kind": "number",
+            "unit": "dimensionless",
+            "precision": 2
+          }
+        }
+      ],
+      "traps": [
+        {
+          "fn": "evaporatorInventoryLb",
+          "when": "volume is negative, or an overfeed recirculation ratio is below 1",
+          "message": "The volume must be zero or more, and an overfeed recirculation ratio must be at least 1:1. Supply the coil's internal volume in ft3 and its ratio."
+        },
+        {
+          "fn": "fillFraction",
+          "when": "feed code is not 0, 1, 2 or 3",
+          "message": "Unknown feed type. Use 0 for direct expansion, 1 for top-feed overfeed, 2 for bottom-feed overfeed or 3 for flooded."
+        }
+      ]
+    },
+    "sources": {
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-009/CC-009/glue.json": "bc8b602a6a0a47841e04cbdc30a43b5c12db079e8743ab73df35a8fd134ca09f",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-009/CC-009/kernel.wasm": "1bddab502f5e8c146157abef2b13ef6c4bf3a3f6b8b92c24573594288f47ec89",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-009/CC-009/CONTRACT.md": "4bdcaf4a8936cc3ef2450f30346b11c185ce04214a54b189d9116753c9060f16"
+    }
+  },
+  {
+    "requestId": "CC-009",
+    "arm": "fast-path",
+    "path": "tools/atomizer/work/baseline-20/runs/CC-009/atoms/direct/work/CC-009",
+    "signatures": {
+      "evap_inventory_lb": {
+        "params": [
+          124,
+          124,
+          124,
+          127
+        ],
+        "results": [
+          124
+        ]
+      }
+    },
+    "glue": {
+      "id": "CC-009",
+      "assumption": "Refrigerant is ammonia; liquid fraction is 0.50 for bottom feed and 0.25 for top feed regardless of recirculation ratio; liquid density 42.30 - 0.0209 x T(F) lb/ft3 (-40..40 F). Suction pressure is not used.",
+      "question": "Is the refrigerant ammonia, and is the 5 inHg figure really the suction pressure at -2 F?",
+      "exports": [
+        {
+          "name": "evap_inventory_lb",
+          "label": "normal refrigerant inventory of the evaporator",
+          "headline": true,
+          "args": [
+            {
+              "name": "volume_ft3",
+              "kind": "number",
+              "unit": "ft3",
+              "label": "evaporator internal volume",
+              "range": "> 0"
+            },
+            {
+              "name": "temp_F",
+              "kind": "number",
+              "unit": "F",
+              "label": "operating temperature",
+              "range": "-40..40 F"
+            },
+            {
+              "name": "recirc_ratio",
+              "kind": "number",
+              "unit": "dimensionless",
+              "label": "recirculation ratio",
+              "range": ">= 1"
+            },
+            {
+              "name": "feed_code",
+              "kind": "code",
+              "unit": "code",
+              "label": "feed type",
+              "codes": {
+                "1": "bottom feed",
+                "2": "top feed"
+              },
+              "range": "1 or 2"
+            }
+          ],
+          "result": {
+            "kind": "number",
+            "unit": "lb",
+            "precision": 1
+          }
+        }
+      ],
+      "traps": [
+        {
+          "fn": "evap_inventory_lb",
+          "when": "volume <= 0, temp outside -40..40 F, ratio < 1, or feed code not 1 or 2",
+          "message": "Inputs out of range: give volume > 0 ft3, temperature -40..40 F, recirculation ratio >= 1, feed 1 (bottom) or 2 (top)."
+        }
+      ]
+    },
+    "sources": {
+      "tools/atomizer/work/baseline-20/runs/CC-009/atoms/direct/work/CC-009/glue.json": "60efe0551ebcf2c312767f7c4f825ca3eba7c3150d24e6bbb64c440147af713a",
+      "tools/atomizer/work/baseline-20/runs/CC-009/atoms/direct/work/CC-009/kernel.wasm": "c93e991bb734fb29558a477a5c5f0ed7dcb3b7e0303c0ad0e2b1304c7c8f7c00",
+      "tools/atomizer/work/baseline-20/runs/CC-009/atoms/direct/work/CC-009/CONTRACT.md": "a3acf53291a2a7af3ed6fd97ff271f89dfa2834a8e148c0c1b163570aff958e1"
+    }
+  },
+  {
+    "requestId": "CC-013",
+    "arm": "incumbent",
+    "path": "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-013/CC-013",
+    "signatures": {
+      "dewPointF": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ]
+      }
+    },
+    "glue": {
+      "id": "CC-013",
+      "assumption": "RH is taken as relative to liquid water (the normal instrument and weather convention), and the result is the dew point, not the frost point. It is computed with the Magnus formula (a = 17.62, b = 243.12 C).",
+      "question": "Is your 50% RH reading relative to water or to ice, and do you want the dew point or the frost point?",
+      "notes": "Below 32 F, moisture actually deposits as frost. If RH is relative to ice, the frost point is higher than the dew point shown.",
+      "exports": [
+        {
+          "name": "dewPointF",
+          "label": "What is the dew point for this temperature and RH",
+          "headline": true,
+          "args": [
+            {
+              "name": "tempF",
+              "kind": "number",
+              "unit": "\u00b0F",
+              "label": "Dry-bulb air temperature",
+              "range": "-49..140 \u00b0F (Magnus fit range)"
+            },
+            {
+              "name": "rhPct",
+              "kind": "number",
+              "unit": "% RH",
+              "label": "Relative humidity",
+              "range": "greater than 0, up to 100"
+            }
+          ],
+          "result": {
+            "kind": "number",
+            "unit": "\u00b0F",
+            "precision": 1
+          }
+        }
+      ],
+      "traps": [
+        {
+          "fn": "dewPointF",
+          "when": "RH is 0 or below, or above 100",
+          "message": "Relative humidity must be greater than 0 and no more than 100 %. Enter the RH reading in percent."
+        },
+        {
+          "fn": "dewPointF",
+          "when": "temperature below -49 \u00b0F or above 140 \u00b0F",
+          "message": "The temperature is outside the -49 to 140 \u00b0F range where this formula is accurate. Enter a dry-bulb temperature inside that range."
+        }
+      ]
+    },
+    "sources": {
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-013/CC-013/glue.json": "bd916fe6f7aafedd1c91a2068ec83821a7c38722a55e335eee50efbff065fe30",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-013/CC-013/kernel.wasm": "cf7a28702c56aee011afc6721a2f6dd1a34758cae59e9ccb1a9c7ec5fdc101e2",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-013/CC-013/CONTRACT.md": "30fbfd85e5b7c191ca23237c382afd5d0847b3858ab566952d672337299ac64c"
+    }
+  },
+  {
+    "requestId": "CC-013",
+    "arm": "fast-path",
+    "path": "tools/atomizer/work/baseline-20/runs/CC-013/atoms/direct/work/CC-013",
+    "signatures": {
+      "dewpoint_f": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ]
+      }
+    },
+    "glue": {
+      "id": "CC-013",
+      "assumption": "Temperature is dry-bulb air in \u00b0F and RH is relative to liquid water (normal hygrometer reading), so the result is the dew point, not the frost point; Magnus formula, pressure-independent.",
+      "question": "Is the 50% RH reading from a standard hygrometer (relative to liquid water, not ice), with the answer wanted in \u00b0F?",
+      "notes": "Valid for dry-bulb -60..140 \u00b0F and RH above 0 up to 100%. At sub-freezing temperatures the frost point is slightly higher than this dew point.",
+      "exports": [
+        {
+          "name": "dewpoint_f",
+          "label": "Dew point at the given dry-bulb temperature and relative humidity",
+          "headline": true,
+          "args": [
+            {
+              "name": "temp_f",
+              "kind": "number",
+              "unit": "\u00b0F",
+              "label": "Dry-bulb air temperature",
+              "range": "-60..140"
+            },
+            {
+              "name": "rh_pct",
+              "kind": "number",
+              "unit": "%",
+              "label": "Relative humidity",
+              "range": "greater than 0, up to 100"
+            }
+          ],
+          "result": {
+            "kind": "number",
+            "unit": "\u00b0F",
+            "precision": 1
+          }
+        }
+      ],
+      "traps": [
+        {
+          "fn": "dewpoint_f",
+          "when": "temperature outside -60..140 \u00b0F, relative humidity <= 0 or > 100, or a non-finite value",
+          "message": "Refused: temperature must be -60 to 140 \u00b0F and relative humidity above 0 and at most 100 %; supply values in those ranges."
+        }
+      ]
+    },
+    "sources": {
+      "tools/atomizer/work/baseline-20/runs/CC-013/atoms/direct/work/CC-013/glue.json": "e9ab2e96b70d63876ca90e832cff3a0822bb4b70ea41c42ad3cb55523e8e5581",
+      "tools/atomizer/work/baseline-20/runs/CC-013/atoms/direct/work/CC-013/kernel.wasm": "9c26f943a33d7546854151521879d78efa454cedde1470bdf567a7b9b5f1f3ff",
+      "tools/atomizer/work/baseline-20/runs/CC-013/atoms/direct/work/CC-013/CONTRACT.md": "e459ce645ae5b8385a70815cab5ccce92855b1ba940aa35a4e0cc3359ca1db12"
+    }
+  },
+  {
+    "requestId": "C-007",
+    "arm": "incumbent",
+    "path": "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007",
+    "signatures": {
+      "classifySubcooling": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          127
+        ]
+      },
+      "subcoolingDeviation": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ]
+      }
+    },
+    "glue": {
+      "id": "C-007",
+      "assumption": "Target subcooling is assumed to be 10 \u00b0F (typical for a TXV/EEV system) with a \u00b15 \u00b0F tolerance, unless you enter the manufacturer's target.",
+      "question": "What target subcooling does the equipment's nameplate or manufacturer charging chart specify?",
+      "notes": "High subcooling can mean overcharge or a liquid-line restriction. Check the filter-drier temperature drop before removing refrigerant. Wear gloves and eye protection when connecting gauges.",
+      "exports": [
+        {
+          "name": "classifySubcooling",
+          "label": "Is my subcooling low, OK or high?",
+          "headline": true,
+          "args": [
+            {
+              "name": "measured",
+              "kind": "number",
+              "unit": "\u00b0F",
+              "label": "Measured subcooling (sub cooler delta)",
+              "range": "0..100"
+            },
+            {
+              "name": "target",
+              "kind": "number",
+              "unit": "\u00b0F",
+              "label": "Target subcooling from nameplate (10 if unknown)",
+              "range": "> 0 and <= 100"
+            }
+          ],
+          "result": {
+            "kind": "code",
+            "unit": "code",
+            "codes": {
+              "0": "Low: possible undercharge",
+              "1": "Within \u00b15 \u00b0F of target",
+              "2": "High: possible overcharge or restriction"
+            }
+          }
+        },
+        {
+          "name": "subcoolingDeviation",
+          "label": "How far is my subcooling from target?",
+          "args": [
+            {
+              "name": "measured",
+              "kind": "number",
+              "unit": "\u00b0F",
+              "label": "Measured subcooling (sub cooler delta)",
+              "range": "0..100"
+            },
+            {
+              "name": "target",
+              "kind": "number",
+              "unit": "\u00b0F",
+              "label": "Target subcooling from nameplate (10 if unknown)",
+              "range": "> 0 and <= 100"
+            }
+          ],
+          "result": {
+            "kind": "number",
+            "unit": "\u00b0F",
+            "precision": 1
+          }
+        }
+      ],
+      "traps": [
+        {
+          "fn": "classifySubcooling",
+          "when": "measured subcooling outside 0..100 \u00b0F or target not positive",
+          "message": "That subcooling reading isn't physically plausible. Enter a measured subcooling between 0 and 100 \u00b0F and a positive target from the nameplate (use 10 if unknown)."
+        },
+        {
+          "fn": "subcoolingDeviation",
+          "when": "measured subcooling outside 0..100 \u00b0F or target not positive",
+          "message": "That target or reading can't be used. Enter a measured subcooling between 0 and 100 \u00b0F and a target above 0 \u00b0F from the nameplate (use 10 if unknown)."
+        }
+      ]
+    },
+    "sources": {
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/glue.json": "e799e935023d1a4fa7c4e0cf6a5f3d7c4a684451b1d530ab76a632ceda15d2f4",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/kernel.wasm": "86aaed9febff7579f7ab9ba535b8f1d7675b3cb25f31613044927e52af2e9f12",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/CONTRACT.md": "9dad2dcb1dd014ad72de42bfaf44dc0d2cf607842a97ff72b2d51b0764c620b8"
+    }
+  },
+  {
+    "requestId": "C-007",
+    "arm": "fast-path",
+    "path": "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007",
+    "signatures": {
+      "subcool_class": {
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ]
+      },
+      "subcool_is_normal": {
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ]
+      }
+    },
+    "glue": {
+      "id": "C-007",
+      "assumption": "Assumes a TXV/EXV-metered system where normal subcooling is 8-12 \u00b0F, and that the reading is a subcooling difference in \u00b0F. Manufacturer targets override this window.",
+      "question": "Is the system metered by a TXV/EXV or a fixed orifice (piston), and does the manufacturer give a target subcooling?",
+      "notes": "Fixed-orifice systems are judged by superheat, so this check does not apply to them. 45 \u00b0F is far above the typical window.",
+      "exports": [
+        {
+          "name": "subcool_is_normal",
+          "label": "Is this subcooling normal?",
+          "headline": true,
+          "args": [
+            {
+              "name": "delta_f",
+              "kind": "number",
+              "unit": "\u00b0F",
+              "label": "Subcooling (saturation temp minus liquid-line temp)",
+              "range": "0..100"
+            }
+          ],
+          "result": {
+            "kind": "boolean",
+            "unit": "flag",
+            "labels": {
+              "true": "Normal (8-12 \u00b0F)",
+              "false": "Not normal for a TXV system (outside 8-12 \u00b0F)"
+            }
+          }
+        },
+        {
+          "name": "subcool_class",
+          "label": "How far is this subcooling from normal?",
+          "args": [
+            {
+              "name": "delta_f",
+              "kind": "number",
+              "unit": "\u00b0F",
+              "label": "Subcooling",
+              "range": "0..100"
+            }
+          ],
+          "result": {
+            "kind": "code",
+            "unit": "code",
+            "codes": {
+              "0": "low (below 5 \u00b0F)",
+              "1": "slightly low (5 to below 8 \u00b0F)",
+              "2": "normal (8-12 \u00b0F)",
+              "3": "high (above 12 to 20 \u00b0F)",
+              "4": "very high (above 20 \u00b0F)"
+            }
+          }
+        }
+      ],
+      "traps": [
+        {
+          "fn": "subcool_class",
+          "when": "input is NaN, infinite, negative or above 100 \u00b0F",
+          "message": "That is not a physically meaningful subcooling difference; recheck the readings and supply a value from 0 to 100 \u00b0F."
+        },
+        {
+          "fn": "subcool_is_normal",
+          "when": "input is NaN, infinite, negative or above 100 \u00b0F",
+          "message": "That is not a physically meaningful subcooling difference; recheck the readings and supply a value from 0 to 100 \u00b0F."
+        }
+      ]
+    },
+    "sources": {
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/glue.json": "7b0e8f8ece30d541c8d6febfcbdf98638cdd57e4dd2dfb386d081d033cacf7ac",
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/kernel.wasm": "ab71ebecb0ef7bb94a7db721dca73235f6982e665c8fe1b03e99b7f0cef7f048",
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/CONTRACT.md": "86e68705c53211cd7f6425f90705d912f5b6a8f05f68e8fe26ceeef67ff260f8"
+    }
+  },
+  {
+    "requestId": "CC-022",
+    "arm": "incumbent",
+    "path": "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-022/CC-022",
+    "signatures": {
+      "psiPerDegF": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ]
+      },
+      "claimTrue": {
+        "params": [
+          124,
+          124,
+          124
+        ],
+        "results": [
+          127
+        ]
+      }
+    },
+    "glue": {
+      "id": "CC-022",
+      "assumption": "No refrigerant or table was named, so this treats the gas as an ideal gas sealed in a rigid vessel, where the pressure change per degree F equals absolute pressure divided by absolute temperature; the claim counts as true only within 5 percent.",
+      "question": "Which refrigerant is in the system, and at roughly what saturation temperature (for example R-410A at a 40 F evaporator)?",
+      "notes": "There is no fixed psi-per-degree-F rule: the rate depends on the refrigerant and the temperature, so the general statement is false.",
+      "exports": [
+        {
+          "name": "claimTrue",
+          "label": "Is a 1 F temperature drop equal to the claimed psi pressure drop?",
+          "headline": true,
+          "args": [
+            {
+              "name": "claimed",
+              "kind": "number",
+              "unit": "psi/F",
+              "label": "Claimed pressure drop per 1 F",
+              "range": "> 0"
+            },
+            {
+              "name": "p",
+              "kind": "number",
+              "unit": "psia",
+              "label": "Absolute pressure of the gas",
+              "range": "> 0"
+            },
+            {
+              "name": "t",
+              "kind": "number",
+              "unit": "F",
+              "label": "Gas temperature",
+              "range": "> -459.67"
+            }
+          ],
+          "result": {
+            "kind": "boolean",
+            "unit": "flag",
+            "labels": {
+              "true": "True at these conditions",
+              "false": "False at these conditions"
+            }
+          }
+        },
+        {
+          "name": "psiPerDegF",
+          "label": "Actual pressure drop per 1 F temperature drop",
+          "args": [
+            {
+              "name": "p",
+              "kind": "number",
+              "unit": "psia",
+              "label": "Absolute pressure of the gas",
+              "range": "> 0"
+            },
+            {
+              "name": "t",
+              "kind": "number",
+              "unit": "F",
+              "label": "Gas temperature",
+              "range": "> -459.67"
+            }
+          ],
+          "result": {
+            "kind": "number",
+            "unit": "psi/F",
+            "precision": 3
+          }
+        }
+      ],
+      "traps": [
+        {
+          "fn": "psiPerDegF",
+          "when": "pressure is zero or negative, or temperature is at or below -459.67 F",
+          "message": "Pressure must be absolute (psia, above 0; add 14.7 to a gauge reading) and temperature must be above absolute zero. Supply both and try again."
+        },
+        {
+          "fn": "claimTrue",
+          "when": "the claimed rate is zero or negative",
+          "message": "The claimed pressure drop per degree must be a positive number of psi; supply the value being checked, such as 3.47."
+        }
+      ]
+    },
+    "sources": {
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-022/CC-022/glue.json": "e76bf5a91883c6a52dfda51b89e28e4cd784aac194b55094338f15eaa631d8cc",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-022/CC-022/kernel.wasm": "445d21eebf5534834ab07552dc8d828955e3af703d175e90bc957cc0cf65990e",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-022/CC-022/CONTRACT.md": "6dfc8a3c9d6b7de6c4dd3d012f676ca2667f7d17c74efca0cf2d0e91fc75b411"
+    }
+  },
+  {
+    "requestId": "CC-022",
+    "arm": "fast-path",
+    "path": "tools/atomizer/work/baseline-20/runs/CC-022/atoms/direct/work/CC-022",
+    "signatures": {
+      "slope_psi_per_F": {
+        "params": [
+          124,
+          124,
+          124,
+          124
+        ],
+        "results": [
+          124
+        ]
+      },
+      "claim_holds": {
+        "params": [
+          124,
+          124,
+          124,
+          124,
+          124,
+          124
+        ],
+        "results": [
+          127
+        ]
+      }
+    },
+    "glue": {
+      "id": "CC-022",
+      "assumption": "No refrigerant or pressure range was given, so the psi-per-\u00b0F slope is judged only between the two PT-chart points supplied; it varies by refrigerant and pressure, so 3.47 psi/\u00b0F cannot be a general constant.",
+      "question": "Which refrigerant, and what are the saturation pressures at two temperatures bracketing your working range (from your PT chart)?",
+      "exports": [
+        {
+          "name": "slope_psi_per_F",
+          "label": "Pressure change per \u00b0F of saturation temperature change between two chart points",
+          "args": [
+            {
+              "name": "p_hi",
+              "kind": "number",
+              "unit": "psi",
+              "label": "Pressure at the higher temperature",
+              "range": "finite, above p_lo"
+            },
+            {
+              "name": "p_lo",
+              "kind": "number",
+              "unit": "psi",
+              "label": "Pressure at the lower temperature",
+              "range": "finite"
+            },
+            {
+              "name": "t_hi",
+              "kind": "number",
+              "unit": "F",
+              "label": "Higher saturation temperature",
+              "range": "finite, above t_lo"
+            },
+            {
+              "name": "t_lo",
+              "kind": "number",
+              "unit": "F",
+              "label": "Lower saturation temperature",
+              "range": "finite"
+            }
+          ],
+          "result": {
+            "kind": "number",
+            "unit": "psi/F",
+            "precision": 3
+          }
+        },
+        {
+          "name": "claim_holds",
+          "label": "A 1 degree Fahrenheit temperature drop is equal to a 3.47 psi pressure drop: true or false",
+          "headline": true,
+          "args": [
+            {
+              "name": "claimed",
+              "kind": "number",
+              "unit": "psi/F",
+              "label": "Claimed psi per \u00b0F",
+              "range": "> 0"
+            },
+            {
+              "name": "p_hi",
+              "kind": "number",
+              "unit": "psi",
+              "label": "Pressure at the higher temperature",
+              "range": "finite, above p_lo"
+            },
+            {
+              "name": "p_lo",
+              "kind": "number",
+              "unit": "psi",
+              "label": "Pressure at the lower temperature",
+              "range": "finite"
+            },
+            {
+              "name": "t_hi",
+              "kind": "number",
+              "unit": "F",
+              "label": "Higher saturation temperature",
+              "range": "finite, above t_lo"
+            },
+            {
+              "name": "t_lo",
+              "kind": "number",
+              "unit": "F",
+              "label": "Lower saturation temperature",
+              "range": "finite"
+            },
+            {
+              "name": "tol",
+              "kind": "number",
+              "unit": "psi/F",
+              "label": "Agreement tolerance",
+              "range": ">= 0"
+            }
+          ],
+          "result": {
+            "kind": "boolean",
+            "unit": "flag",
+            "labels": {
+              "true": "True for this refrigerant and range",
+              "false": "False for this refrigerant and range"
+            }
+          }
+        }
+      ],
+      "traps": [
+        {
+          "fn": "slope_psi_per_F",
+          "when": "any input is NaN or infinite, t_hi <= t_lo, or p_hi <= p_lo",
+          "message": "Give two finite chart points with the higher temperature at the higher pressure; the span must be positive in both."
+        },
+        {
+          "fn": "claim_holds",
+          "when": "any input is NaN or infinite, t_hi <= t_lo, p_hi <= p_lo, claimed <= 0 or tol < 0",
+          "message": "Give two finite chart points with higher temperature at higher pressure, a positive claimed psi/F and a tolerance of zero or more."
+        }
+      ]
+    },
+    "sources": {
+      "tools/atomizer/work/baseline-20/runs/CC-022/atoms/direct/work/CC-022/glue.json": "3734f22deeef1cddabc5209457c7d8547e756332e1a0994b9766427c8ad68a28",
+      "tools/atomizer/work/baseline-20/runs/CC-022/atoms/direct/work/CC-022/kernel.wasm": "0118013dc8cbb58e2b76b7e99ede1c266e718ea1b8217225583950b7609436c4",
+      "tools/atomizer/work/baseline-20/runs/CC-022/atoms/direct/work/CC-022/CONTRACT.md": "72d77839605e15d6609a03ef4908d6d4143feab30343f64e4695f4326cdbba81"
+    }
+  }
+]

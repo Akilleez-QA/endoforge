@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "argv": [
+    "/home/user/Work/endoforge/experiments/P-01-kernel-instantiate/.tools/wasmtime",
+    "run",
+    "-W",
+    "fuel=100000",
+    "-W",
+    "max-memory-size=1048576",
+    "-W",
+    "trap-on-grow-failure=y",
+    "-W",
+    "timeout=100ms",
+    "--invoke",
+    "add",
+    "/home/user/Work/endoforge/campaigns/next50-20261018/runtime/bounds-69be47b1/numeric.wat",
+    "2.5",
+    "4"
+  ],
+  "exit": 0,
+  "stdout": "6.5\n",
+  "stderr": "warning: using `--invoke` with a function that takes arguments is experimental and may break in the future\nwarning: using `--invoke` with a function that returns values is experimental and may break in the future\n",
+  "wallTimeout": false,
+  "wallMs": 5.460806998598855
+}

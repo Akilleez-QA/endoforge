@@ -1,0 +1,197 @@
+{
+  "at": "2026-10-18T08:00:50.188Z",
+  "scoredAt": "step 7",
+  "n": 20,
+  "meanBrier": 0.21859000000000006,
+  "rows": [
+    {
+      "id": "F01",
+      "p": 0.77,
+      "outcome": 1,
+      "brier": 0.0529,
+      "event": "|clean(inc-low r1) - clean(inc-low r2)| <= 3 of 20 on the development set, median panel rule"
+    },
+    {
+      "id": "F02",
+      "p": 0.65,
+      "outcome": 1,
+      "brier": 0.1225,
+      "event": "mean clean of the two inc-low runs on the development set <= 5 of 20 (median rule)"
+    },
+    {
+      "id": "F03",
+      "p": 0.35,
+      "outcome": 0,
+      "brier": 0.1225,
+      "event": "E (all-new + D-02) minus A (incumbent) paired clean gain >= +6 of 20 on the working set (median rule)"
+    },
+    {
+      "id": "F04",
+      "p": 0.5,
+      "outcome": null,
+      "brier": null,
+      "event": "(stage corners carried forward; unobservable this loop) S main effect on clean (mean over the other factors) >= +0.20 (4 of 20)"
+    },
+    {
+      "id": "F05",
+      "p": 0.25,
+      "outcome": null,
+      "brier": null,
+      "event": "(stage corners carried forward; unobservable this loop) G main effect on clean >= +0.20"
+    },
+    {
+      "id": "F06",
+      "p": 0.4,
+      "outcome": null,
+      "brier": null,
+      "event": "(stage corners carried forward; unobservable this loop) |Q main effect on clean| >= 0.10"
+    },
+    {
+      "id": "F07",
+      "p": 0.25,
+      "outcome": null,
+      "brier": null,
+      "event": "(stage corners carried forward; unobservable this loop) |R main effect on clean| >= 0.10"
+    },
+    {
+      "id": "F08",
+      "p": 0.3,
+      "outcome": null,
+      "brier": null,
+      "event": "named cross-stage interaction (carried forward with corners C and D; unobservable this loop): |S x G interaction on clean| >= 0.15"
+    },
+    {
+      "id": "F09",
+      "p": 0.6,
+      "outcome": 0,
+      "brier": 0.36,
+      "event": "canary recall 3/3 on the first dry-run attempt"
+    },
+    {
+      "id": "F10",
+      "p": 0.7,
+      "outcome": 0,
+      "brier": 0.49,
+      "event": "inter-oracle within-one agreement >= 80 % (every pair) over the working-set artefacts"
+    },
+    {
+      "id": "F11",
+      "p": 0.7,
+      "outcome": null,
+      "brier": null,
+      "event": "(default-effort arm carried forward; unobservable this loop) clean(inc-default) within 3 of 20 of the inc-low mean"
+    },
+    {
+      "id": "F12",
+      "p": 0.8,
+      "outcome": 1,
+      "brier": 0.04,
+      "event": "incumbent G1-G7 pass rate >= 17 of 20 in each inc-low run on the development set"
+    },
+    {
+      "id": "F13",
+      "p": 0.6,
+      "outcome": 1,
+      "brier": 0.16,
+      "event": "E G1-G7 pass count on the working set >= incumbent count - 3"
+    },
+    {
+      "id": "F14",
+      "p": 0.75,
+      "outcome": 0,
+      "brier": 0.5625,
+      "event": "E tokens per request (spec + generation + persona + repair, no scoring) <= 3.0 x the incumbent's (worker + repairs + persona)"
+    },
+    {
+      "id": "F15",
+      "p": 0.55,
+      "outcome": 0,
+      "brier": 0.3025,
+      "event": "loop total <= 8,000,000 tokens (all providers, all kinds)"
+    },
+    {
+      "id": "F16",
+      "p": 0.92,
+      "outcome": 1,
+      "brier": 0.0064,
+      "event": "loop total <= 12,000,000 tokens"
+    },
+    {
+      "id": "F17",
+      "p": 0.4,
+      "outcome": 0,
+      "brier": 0.16,
+      "event": "sealed set: E clean count >= incumbent clean count + 2 (median rule)"
+    },
+    {
+      "id": "F18",
+      "p": 0.8,
+      "outcome": 1,
+      "brier": 0.04,
+      "event": ">= 80 % of artefacts the output persona rejects are also not clean under the median panel rule"
+    },
+    {
+      "id": "F19",
+      "p": 0.6,
+      "outcome": 1,
+      "brier": 0.16,
+      "event": "the deviation critic's top-ranked deviation is one of the seeds D-01..D-07 (possibly sharpened)"
+    },
+    {
+      "id": "F20",
+      "p": 0.5,
+      "outcome": 0,
+      "brier": 0.25,
+      "event": "G8 fails at least one screen artefact that the panel calls clean (median rule)"
+    },
+    {
+      "id": "F21",
+      "p": 0.6,
+      "outcome": 0,
+      "brier": 0.36,
+      "event": "median wall per request of E on the critical path (spec, generation, persona, repair) <= 1.5 x the incumbent's median run wall"
+    },
+    {
+      "id": "F22",
+      "p": 0.6,
+      "outcome": null,
+      "brier": null,
+      "event": "(carried forward; unobservable this loop) blind Sonnet generation vs Opus-low sequential generation given S-new within 10 points"
+    },
+    {
+      "id": "F23",
+      "p": 0.35,
+      "outcome": 0,
+      "brier": 0.1225,
+      "event": "D-02's own effect: E minus B paired clean gain >= +3 of 20 on the working set (median rule)"
+    },
+    {
+      "id": "F24",
+      "p": 0.6,
+      "outcome": 1,
+      "brier": 0.16,
+      "event": "the output persona names a change or rejects on >= 60 % of gated B artefacts (repair triggered)"
+    },
+    {
+      "id": "F25",
+      "p": 0.4,
+      "outcome": 0,
+      "brier": 0.16,
+      "event": "of the repaired artefacts, >= 50 % are accepted by both personas on the second review (repair resolved)"
+    },
+    {
+      "id": "F26",
+      "p": 0.5,
+      "outcome": 0,
+      "brier": 0.25,
+      "event": "B minus A paired clean gain >= +4 of 20 on the working set (median rule): the bundle without its deviation"
+    },
+    {
+      "id": "F27",
+      "p": 0.7,
+      "outcome": 0,
+      "brier": 0.49,
+      "event": "the three sealed oracles' criteria pass the executable-anchoring audit with a mean score >= 1.5 of 2 over the five audited sheets"
+    }
+  ]
+}

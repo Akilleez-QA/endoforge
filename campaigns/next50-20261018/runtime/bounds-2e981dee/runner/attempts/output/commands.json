@@ -1,0 +1,143 @@
+[
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "create",
+      "--name",
+      "endoforge-v1-8b84de67627841a7acdd67038c9ff4b2",
+      "--label",
+      "endoforge.runtime=v1",
+      "--label",
+      "endoforge.owner=8b84de67627841a7acdd67038c9ff4b2",
+      "--pull=never",
+      "--network=none",
+      "--read-only",
+      "--user",
+      "1000:1000",
+      "--cap-drop=ALL",
+      "--security-opt=no-new-privileges",
+      "--cpus=1",
+      "--memory=512m",
+      "--memory-swap=512m",
+      "--pids-limit=32",
+      "--log-opt",
+      "max-size=1m",
+      "--log-opt",
+      "max-file=1",
+      "--tmpfs",
+      "/tmp:rw,nosuid,nodev,size=64m",
+      "--tmpfs",
+      "/out:rw,nosuid,nodev,size=8m,uid=1000,gid=1000",
+      "--mount",
+      "type=bind,src=/home/user/Work/endoforge/campaigns/next50-20261018/runtime/bounds-2e981dee/runner/attempts/output/input.txt,dst=/input.txt,readonly",
+      "--entrypoint",
+      "/bin/sh",
+      "sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541",
+      "-c",
+      "dd if=/dev/zero of=/out/full bs=1M count=12; test $? -ne 0 && cat /input.txt"
+    ],
+    "exit": 0,
+    "stdout": "531f645aad005aa121d4cc3bb8e71c1ef81c0b45d06e5ad89f4e76376fbcd181\n",
+    "stderr": "",
+    "wallMs": 161.14986700267764
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "start",
+      "endoforge-v1-8b84de67627841a7acdd67038c9ff4b2"
+    ],
+    "exit": 0,
+    "stdout": "endoforge-v1-8b84de67627841a7acdd67038c9ff4b2\n",
+    "stderr": "",
+    "wallMs": 183.66528899787227
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "inspect",
+      "--format",
+      "{{json .State}}",
+      "endoforge-v1-8b84de67627841a7acdd67038c9ff4b2"
+    ],
+    "exit": 0,
+    "stdout": "{\"Status\":\"exited\",\"Running\":false,\"Paused\":false,\"Restarting\":false,\"OOMKilled\":false,\"Dead\":false,\"Pid\":0,\"ExitCode\":0,\"Error\":\"\",\"StartedAt\":\"2026-10-18T20:41:20.297181231Z\",\"FinishedAt\":\"2026-10-18T20:41:20.409206047Z\"}\n",
+    "stderr": "",
+    "wallMs": 77.24740800040308
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "inspect",
+      "endoforge-v1-8b84de67627841a7acdd67038c9ff4b2"
+    ],
+    "exit": 0,
+    "stdout": "[\n    {\n        \"Id\": \"531f645aad005aa121d4cc3bb8e71c1ef81c0b45d06e5ad89f4e76376fbcd181\",\n        \"Created\": \"2026-10-18T20:41:20.095390303Z\",\n        \"Path\": \"/bin/sh\",\n        \"Args\": [\n            \"-c\",\n            \"dd if=/dev/zero of=/out/full bs=1M count=12; test $? -ne 0 && cat /input.txt\"\n        ],\n        \"State\": {\n            \"Status\": \"exited\",\n            \"Running\": false,\n            \"Paused\": false,\n            \"Restarting\": false,\n            \"OOMKilled\": false,\n            \"Dead\": false,\n            \"Pid\": 0,\n            \"ExitCode\": 0,\n            \"Error\": \"\",\n            \"StartedAt\": \"2026-10-18T20:41:20.297181231Z\",\n            \"FinishedAt\": \"2026-10-18T20:41:20.409206047Z\"\n        },\n        \"Image\": \"sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541\",\n        \"ResolvConfPath\": \"/var/lib/docker/containers/531f645aad005aa121d4cc3bb8e71c1ef81c0b45d06e5ad89f4e76376fbcd181/resolv.conf\",\n        \"HostnamePath\": \"/var/lib/docker/containers/531f645aad005aa121d4cc3bb8e71c1ef81c0b45d06e5ad89f4e76376fbcd181/hostname\",\n        \"HostsPath\": \"/var/lib/docker/containers/531f645aad005aa121d4cc3bb8e71c1ef81c0b45d06e5ad89f4e76376fbcd181/hosts\",\n        \"LogPath\": \"/var/lib/docker/containers/531f645aad005aa121d4cc3bb8e71c1ef81c0b45d06e5ad89f4e76376fbcd181/531f645aad005aa121d4cc3bb8e71c1ef81c0b45d06e5ad89f4e76376fbcd181-json.log\",\n        \"Name\": \"/endoforge-v1-8b84de67627841a7acdd67038c9ff4b2\",\n        \"RestartCount\": 0,\n        \"Driver\": \"overlayfs\",\n        \"Platform\": \"linux\",\n        \"MountLabel\": \"\",\n        \"ProcessLabel\": \"\",\n        \"AppArmorProfile\": \"\",\n        \"ExecIDs\": null,\n        \"HostConfig\": {\n            \"Binds\": null,\n            \"ContainerIDFile\": \"\",\n            \"LogConfig\": {\n                \"Type\": \"json-file\",\n                \"Config\": {\n                    \"max-file\": \"1\",\n                    \"max-size\": \"1m\"\n                }\n            },\n            \"NetworkMode\": \"none\",\n            \"PortBindings\": {},\n            \"RestartPolicy\": {\n                \"Name\": \"no\",\n                \"MaximumRetryCount\": 0\n            },\n            \"AutoRemove\": false,\n            \"VolumeDriver\": \"\",\n            \"VolumesFrom\": null,\n            \"ConsoleSize\": [\n                0,\n                0\n            ],\n            \"CapAdd\": null,\n            \"CapDrop\": [\n                \"ALL\"\n            ],\n            \"CgroupnsMode\": \"private\",\n            \"Dns\": null,\n            \"DnsOptions\": [],\n            \"DnsSearch\": [],\n            \"ExtraHosts\": null,\n            \"GroupAdd\": null,\n            \"IpcMode\": \"private\",\n            \"Cgroup\": \"\",\n            \"Links\": null,\n            \"OomScoreAdj\": 0,\n            \"PidMode\": \"\",\n            \"Privileged\": false,\n            \"PublishAllPorts\": false,\n            \"ReadonlyRootfs\": true,\n            \"SecurityOpt\": [\n                \"no-new-privileges\"\n            ],\n            \"Tmpfs\": {\n                \"/out\": \"rw,nosuid,nodev,size=8m,uid=1000,gid=1000\",\n                \"/tmp\": \"rw,nosuid,nodev,size=64m\"\n            },\n            \"UTSMode\": \"\",\n            \"UsernsMode\": \"\",\n            \"ShmSize\": 67108864,\n            \"Runtime\": \"runc\",\n            \"Isolation\": \"\",\n            \"CpuShares\": 0,\n            \"Memory\": 536870912,\n            \"NanoCpus\": 1000000000,\n            \"CgroupParent\": \"\",\n            \"BlkioWeight\": 0,\n            \"BlkioWeightDevice\": [],\n            \"BlkioDeviceReadBps\": [],\n            \"BlkioDeviceWriteBps\": [],\n            \"BlkioDeviceReadIOps\": [],\n            \"BlkioDeviceWriteIOps\": [],\n            \"CpuPeriod\": 0,\n            \"CpuQuota\": 0,\n            \"CpuRealtimePeriod\": 0,\n            \"CpuRealtimeRuntime\": 0,\n            \"CpusetCpus\": \"\",\n            \"CpusetMems\": \"\",\n            \"Devices\": [],\n            \"DeviceCgroupRules\": null,\n            \"DeviceRequests\": null,\n            \"MemoryReservation\": 0,\n            \"MemorySwap\": 536870912,\n            \"MemorySwappiness\": null,\n            \"OomKillDisable\": null,\n            \"PidsLimit\": 32,\n            \"Ulimits\": null,\n            \"CpuCount\": 0,\n            \"CpuPercent\": 0,\n            \"IOMaximumIOps\": 0,\n            \"IOMaximumBandwidth\": 0,\n            \"Mounts\": [\n                {\n                    \"Type\": \"bind\",\n                    \"Source\": \"/home/user/Work/endoforge/campaigns/next50-20261018/runtime/bounds-2e981dee/runner/attempts/output/input.txt\",\n                    \"Target\": \"/input.txt\",\n                    \"ReadOnly\": true\n                }\n            ],\n            \"MaskedPaths\": [\n                \"/proc/acpi\",\n                \"/proc/asound\",\n                \"/proc/interrupts\",\n                \"/proc/kcore\",\n                \"/proc/keys\",\n                \"/proc/latency_stats\",\n                \"/proc/sched_debug\",\n                \"/proc/scsi\",\n                \"/proc/timer_list\",\n                \"/proc/timer_stats\",\n                \"/sys/devices/virtual/powercap\",\n                \"/sys/firmware\"\n            ],\n            \"ReadonlyPaths\": [\n                \"/proc/bus\",\n                \"/proc/fs\",\n                \"/proc/irq\",\n                \"/proc/sys\",\n                \"/proc/sysrq-trigger\"\n            ]\n        },\n        \"Storage\": {\n            \"RootFS\": {\n                \"Snapshot\": {\n                    \"Name\": \"overlayfs\"\n                }\n            }\n        },\n        \"Mounts\": [\n            {\n                \"Type\": \"bind\",\n                \"Source\": \"/home/user/Work/endoforge/campaigns/next50-20261018/runtime/bounds-2e981dee/runner/attempts/output/input.txt\",\n                \"Destination\": \"/input.txt\",\n                \"Mode\": \"\",\n                \"RW\": false,\n                \"Propagation\": \"rprivate\"\n            }\n        ],\n        \"Config\": {\n            \"Hostname\": \"531f645aad00\",\n            \"Domainname\": \"\",\n            \"User\": \"1000:1000\",\n            \"AttachStdin\": false,\n            \"AttachStdout\": true,\n            \"AttachStderr\": true,\n            \"Tty\": false,\n            \"OpenStdin\": false,\n            \"StdinOnce\": false,\n            \"Env\": [\n                \"PATH=/usr/local/bin:/usr/bin:/bin\",\n                \"NODE_VERSION=22.18.0\",\n                \"YARN_VERSION=1.22.22\",\n                \"HOME=/tmp\"\n            ],\n            \"Cmd\": [\n                \"-c\",\n                \"dd if=/dev/zero of=/out/full bs=1M count=12; test $? -ne 0 && cat /input.txt\"\n            ],\n            \"Image\": \"sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541\",\n            \"Volumes\": null,\n            \"WorkingDir\": \"/tmp\",\n            \"Entrypoint\": [\n                \"/bin/sh\"\n            ],\n            \"Labels\": {\n                \"endoforge.owner\": \"8b84de67627841a7acdd67038c9ff4b2\",\n                \"endoforge.runtime\": \"v1\"\n            }\n        },\n        \"NetworkSettings\": {\n            \"SandboxID\": \"\",\n            \"SandboxKey\": \"\",\n            \"Ports\": {},\n            \"Networks\": {\n                \"none\": {\n                    \"IPAMConfig\": null,\n                    \"Links\": null,\n                    \"Aliases\": null,\n                    \"DriverOpts\": null,\n                    \"GwPriority\": 0,\n                    \"NetworkID\": \"71b70e061c4cf3fb02a1b8daa6c619af2e2e0bb4e89e2841e16869b20eb456d5\",\n                    \"EndpointID\": \"\",\n                    \"Gateway\": \"\",\n                    \"IPAddress\": \"\",\n                    \"MacAddress\": \"\",\n                    \"IPPrefixLen\": 0,\n                    \"IPv6Gateway\": \"\",\n                    \"GlobalIPv6Address\": \"\",\n                    \"GlobalIPv6PrefixLen\": 0,\n                    \"DNSNames\": null\n                }\n            }\n        },\n        \"ImageManifestDescriptor\": {\n            \"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n            \"digest\": \"sha256:b4356e815af83cb01924298cc24739640ce70062772972751ab46ec155ce3131\",\n            \"size\": 1624,\n            \"platform\": {\n                \"architecture\": \"amd64\",\n                \"os\": \"linux\"\n            }\n        }\n    }\n]\n",
+    "stderr": "",
+    "wallMs": 20.714998005132657
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "inspect",
+      "--format",
+      "{{json .State}}",
+      "endoforge-v1-8b84de67627841a7acdd67038c9ff4b2"
+    ],
+    "exit": 0,
+    "stdout": "{\"Status\":\"exited\",\"Running\":false,\"Paused\":false,\"Restarting\":false,\"OOMKilled\":false,\"Dead\":false,\"Pid\":0,\"ExitCode\":0,\"Error\":\"\",\"StartedAt\":\"2026-10-18T20:41:20.297181231Z\",\"FinishedAt\":\"2026-10-18T20:41:20.409206047Z\"}\n",
+    "stderr": "",
+    "wallMs": 19.96368199615972
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "logs",
+      "endoforge-v1-8b84de67627841a7acdd67038c9ff4b2"
+    ],
+    "exit": 0,
+    "stdout": "ok\n",
+    "stderr": "dd: error writing '/out/full': No space left on device\n9+0 records in\n8+0 records out\n8388608 bytes (8.4 MB, 8.0 MiB) copied, 0.00284343 s, 3.0 GB/s\n",
+    "wallMs": 20.123789996432606
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "rm",
+      "endoforge-v1-8b84de67627841a7acdd67038c9ff4b2"
+    ],
+    "exit": 0,
+    "stdout": "endoforge-v1-8b84de67627841a7acdd67038c9ff4b2\n",
+    "stderr": "",
+    "wallMs": 83.35505200375337
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "ps",
+      "-aq",
+      "--filter",
+      "name=^/endoforge-v1-8b84de67627841a7acdd67038c9ff4b2$"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "",
+    "wallMs": 20.7031760000973
+  }
+]

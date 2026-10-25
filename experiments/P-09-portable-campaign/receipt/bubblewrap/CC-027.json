@@ -1,0 +1,234 @@
+{
+  "id": "CC-027",
+  "argv": [
+    "bwrap",
+    "--ro-bind",
+    "/usr",
+    "/usr",
+    "--ro-bind",
+    "/lib",
+    "/lib",
+    "--ro-bind",
+    "/lib64",
+    "/lib64",
+    "--ro-bind",
+    "/bin",
+    "/bin",
+    "--ro-bind",
+    "/sbin",
+    "/sbin",
+    "--ro-bind",
+    "/home/user/Work/endoforge/experiments/P-09-portable-campaign/work/node",
+    "/opt/node",
+    "--ro-bind",
+    "/home/user/Work/endoforge/experiments/P-09-portable-campaign/work/context/bundle",
+    "/bundle",
+    "--bind",
+    "/home/user/Work/endoforge/experiments/P-09-portable-campaign/work/bubblewrap",
+    "/out",
+    "--tmpfs",
+    "/tmp",
+    "--proc",
+    "/proc",
+    "--dev",
+    "/dev",
+    "--unshare-all",
+    "--die-with-parent",
+    "--new-session",
+    "--clearenv",
+    "--setenv",
+    "PATH",
+    "/opt:/usr/bin:/bin",
+    "--setenv",
+    "HOME",
+    "/tmp",
+    "--chdir",
+    "/tmp",
+    "--",
+    "/opt/node",
+    "/bundle/campaigns/x1-spec-study/factory/gate.mjs",
+    "run",
+    "/out/CC-027"
+  ],
+  "exit": 0,
+  "wallMs": 445.49953900423134,
+  "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 219,\n   \"wasmSha256\": \"fdac4f53f93cfdb169e1704054c552462ab5d7e1a2f8af22510983314482eaf5\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"subcooling\",\n    \"deviation\",\n    \"verdict\",\n    \"verdictDefault\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 11,\n   \"total\": 11\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.041457\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+  "stderr": "",
+  "result": {
+    "at": "2026-10-18T18:45:32.643Z",
+    "gates": {
+      "G1_frozen": {
+        "ok": true
+      },
+      "G2_compiles": {
+        "ok": true,
+        "wasmBytes": 219,
+        "wasmSha256": "fdac4f53f93cfdb169e1704054c552462ab5d7e1a2f8af22510983314482eaf5"
+      },
+      "G3_exports": {
+        "ok": true,
+        "exports": [
+          "subcooling",
+          "deviation",
+          "verdict",
+          "verdictDefault"
+        ]
+      },
+      "G4_tests": {
+        "ok": true,
+        "passed": 11,
+        "total": 11
+      },
+      "G6_bounded": {
+        "ok": true,
+        "maxMs": 0.041457
+      },
+      "G5_deterministic": {
+        "ok": true
+      },
+      "G7_glue": {
+        "ok": true
+      }
+    },
+    "tests": [
+      {
+        "name": "subcooling from sat and liquid temps",
+        "fn": "subcooling",
+        "args": [
+          105,
+          85
+        ],
+        "expect": 20,
+        "got": 20,
+        "ms": 0.03,
+        "pass": true
+      },
+      {
+        "name": "deviation positive",
+        "fn": "deviation",
+        "args": [
+          20,
+          10
+        ],
+        "expect": 10,
+        "got": 10,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "deviation negative",
+        "fn": "deviation",
+        "args": [
+          8,
+          10
+        ],
+        "expect": -2,
+        "got": -2,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "assumption: 20F vs default 10+/-3 is high",
+        "fn": "verdictDefault",
+        "args": [
+          20
+        ],
+        "expect": 2,
+        "got": 2,
+        "ms": 0.01,
+        "pass": true
+      },
+      {
+        "name": "default within",
+        "fn": "verdictDefault",
+        "args": [
+          10
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0.002,
+        "pass": true
+      },
+      {
+        "name": "boundary: exactly at tolerance edge is within",
+        "fn": "verdict",
+        "args": [
+          13,
+          10,
+          3
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0.007,
+        "pass": true
+      },
+      {
+        "name": "boundary: just over tolerance edge is high",
+        "fn": "verdict",
+        "args": [
+          13.01,
+          10,
+          3
+        ],
+        "expect": 2,
+        "got": 2,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "low side boundary within",
+        "fn": "verdict",
+        "args": [
+          7,
+          10,
+          3
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "below band is low",
+        "fn": "verdict",
+        "args": [
+          5,
+          10,
+          3
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "OEM target overrides default",
+        "fn": "verdict",
+        "args": [
+          20,
+          18,
+          3
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "negative tolerance traps",
+        "fn": "verdict",
+        "args": [
+          10,
+          10,
+          -1
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.041,
+        "pass": true
+      }
+    ],
+    "promotable": true
+  },
+  "wasmSha256": "fdac4f53f93cfdb169e1704054c552462ab5d7e1a2f8af22510983314482eaf5"
+}

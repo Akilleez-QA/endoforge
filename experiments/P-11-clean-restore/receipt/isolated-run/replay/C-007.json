@@ -1,0 +1,275 @@
+{
+  "id": "C-007",
+  "command": {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "--host",
+      "unix:///home/user/Work/endoforge/experiments/P-11-clean-restore/w3/docker.sock",
+      "run",
+      "--name",
+      "endoforge-p11-3727415-c-007",
+      "--rm",
+      "--pull=never",
+      "--network=none",
+      "--read-only",
+      "--user",
+      "1000:1000",
+      "--cap-drop=ALL",
+      "--security-opt=no-new-privileges",
+      "--cpus=1",
+      "--memory=512m",
+      "--memory-swap=512m",
+      "--pids-limit=64",
+      "--tmpfs",
+      "/tmp:rw,nosuid,nodev,size=64m",
+      "--mount",
+      "type=bind,src=/home/user/Work/endoforge/experiments/P-11-clean-restore/w3/restored/inputs/candidates,dst=/out",
+      "--entrypoint",
+      "/usr/local/bin/node",
+      "sha256:5407fa2b6f7fac21ef527ce0be5bfce9b3034cd5b8e9818435b8100389826e28",
+      "/bundle/campaigns/x1-spec-study/factory/gate.mjs",
+      "run",
+      "/out/C-007"
+    ],
+    "exit": 0,
+    "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 398,\n   \"wasmSha256\": \"4f9b17467028c661ec853ae5135218af0fefdf3fba94f98d0971bddfaf1f3bf3\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"classifySubcooling\",\n    \"isSubcoolingNormal\",\n    \"subcoolingDeviation\",\n    \"subcoolingCtoF\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 16,\n   \"total\": 16\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.046317\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+    "stderr": "",
+    "wallMs": 2044.3064959981712
+  },
+  "result": {
+    "at": "2026-10-18T19:01:41.350Z",
+    "gates": {
+      "G1_frozen": {
+        "ok": true
+      },
+      "G2_compiles": {
+        "ok": true,
+        "wasmBytes": 398,
+        "wasmSha256": "4f9b17467028c661ec853ae5135218af0fefdf3fba94f98d0971bddfaf1f3bf3"
+      },
+      "G3_exports": {
+        "ok": true,
+        "exports": [
+          "classifySubcooling",
+          "isSubcoolingNormal",
+          "subcoolingDeviation",
+          "subcoolingCtoF"
+        ]
+      },
+      "G4_tests": {
+        "ok": true,
+        "passed": 16,
+        "total": 16
+      },
+      "G6_bounded": {
+        "ok": true,
+        "maxMs": 0.046317
+      },
+      "G5_deterministic": {
+        "ok": true
+      },
+      "G7_glue": {
+        "ok": true
+      }
+    },
+    "tests": [
+      {
+        "name": "45F is high (the requester's reading)",
+        "fn": "classifySubcooling",
+        "args": [
+          45
+        ],
+        "expect": 2,
+        "got": 2,
+        "ms": 0.046,
+        "pass": true
+      },
+      {
+        "name": "12F is normal",
+        "fn": "classifySubcooling",
+        "args": [
+          12
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "3F is low",
+        "fn": "classifySubcooling",
+        "args": [
+          3
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "boundary: 5F lower edge is normal",
+        "fn": "classifySubcooling",
+        "args": [
+          5
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "boundary: 20F upper edge is normal",
+        "fn": "classifySubcooling",
+        "args": [
+          20
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0.002,
+        "pass": true
+      },
+      {
+        "name": "boundary: 20.01F is high",
+        "fn": "classifySubcooling",
+        "args": [
+          20.01
+        ],
+        "expect": 2,
+        "got": 2,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "boundary: 4.99F is low",
+        "fn": "classifySubcooling",
+        "args": [
+          4.99
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "isSubcoolingNormal 45 -> false",
+        "fn": "isSubcoolingNormal",
+        "args": [
+          45
+        ],
+        "expect": false,
+        "got": 0,
+        "ms": 0.007,
+        "pass": true
+      },
+      {
+        "name": "isSubcoolingNormal 12 -> true",
+        "fn": "isSubcoolingNormal",
+        "args": [
+          12
+        ],
+        "expect": true,
+        "got": 1,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "isSubcoolingNormal 20 -> true",
+        "fn": "isSubcoolingNormal",
+        "args": [
+          20
+        ],
+        "expect": true,
+        "got": 1,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "deviation 45 -> +25",
+        "fn": "subcoolingDeviation",
+        "args": [
+          45
+        ],
+        "expect": 25,
+        "got": 25,
+        "ms": 0.004,
+        "pass": true
+      },
+      {
+        "name": "deviation 12 -> 0",
+        "fn": "subcoolingDeviation",
+        "args": [
+          12
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "deviation 3 -> -2",
+        "fn": "subcoolingDeviation",
+        "args": [
+          3
+        ],
+        "expect": -2,
+        "got": -2,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "negative subcooling traps (classify)",
+        "fn": "classifySubcooling",
+        "args": [
+          -1
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.045,
+        "pass": true
+      },
+      {
+        "name": "negative subcooling traps (deviation)",
+        "fn": "subcoolingDeviation",
+        "args": [
+          -1
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.005,
+        "pass": true
+      },
+      {
+        "name": "assumption pin: 25 C difference is 45 F",
+        "fn": "subcoolingCtoF",
+        "args": [
+          25
+        ],
+        "expect": 45,
+        "got": 45,
+        "ms": 0.004,
+        "pass": true
+      }
+    ],
+    "promotable": true
+  },
+  "wasmSha256": "4f9b17467028c661ec853ae5135218af0fefdf3fba94f98d0971bddfaf1f3bf3",
+  "comparisons": {
+    "bubblewrap": {
+      "semanticMatch": true,
+      "wasmMatch": true,
+      "exitMatch": true
+    },
+    "docker": {
+      "semanticMatch": true,
+      "wasmMatch": true,
+      "exitMatch": true
+    },
+    "roundtrip": {
+      "semanticMatch": true,
+      "wasmMatch": true,
+      "exitMatch": true
+    }
+  }
+}

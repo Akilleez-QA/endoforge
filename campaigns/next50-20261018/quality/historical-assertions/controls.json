@@ -1,0 +1,438 @@
+{
+  "version": 1,
+  "passed": true,
+  "checks": [
+    {
+      "kind": "binding",
+      "positive": {
+        "version": 1,
+        "assertionId": "control-binding",
+        "requestId": "control",
+        "arm": "incumbent",
+        "kind": "binding",
+        "semanticRole": null,
+        "scope": "structural-subassertion",
+        "passed": true,
+        "export": "f",
+        "observed": {
+          "glueArity": 2,
+          "wasmArity": 2,
+          "params": [
+            124,
+            124
+          ],
+          "results": [
+            124
+          ],
+          "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+        },
+        "reason": "Declared numeric interface bound to actual WASM function"
+      },
+      "negative": {
+        "version": 1,
+        "assertionId": "control-binding",
+        "requestId": "control",
+        "arm": "incumbent",
+        "kind": "binding",
+        "semanticRole": null,
+        "scope": "structural-subassertion",
+        "passed": false,
+        "export": "f",
+        "observed": {
+          "glueArity": 1,
+          "wasmArity": 2,
+          "params": [
+            124,
+            124
+          ],
+          "results": [
+            124
+          ],
+          "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+        },
+        "reason": "Declared interface and actual WASM type differ"
+      }
+    },
+    {
+      "kind": "binding",
+      "positive": {
+        "version": 1,
+        "assertionId": "control-binding",
+        "requestId": "control",
+        "arm": "incumbent",
+        "kind": "binding",
+        "semanticRole": null,
+        "scope": "structural-subassertion",
+        "passed": true,
+        "export": "f",
+        "observed": {
+          "glueArity": 2,
+          "wasmArity": 2,
+          "params": [
+            124,
+            124
+          ],
+          "results": [
+            124
+          ],
+          "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+        },
+        "reason": "Declared numeric interface bound to actual WASM function"
+      },
+      "negative": {
+        "version": 1,
+        "assertionId": "control-binding",
+        "requestId": "control",
+        "arm": "incumbent",
+        "kind": "binding",
+        "semanticRole": null,
+        "scope": "structural-subassertion",
+        "passed": false,
+        "export": "f",
+        "observed": {
+          "glueArity": 2,
+          "wasmArity": 2,
+          "params": [
+            127,
+            124
+          ],
+          "results": [
+            124
+          ],
+          "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+        },
+        "reason": "Declared interface and actual WASM type differ"
+      }
+    },
+    {
+      "kind": "binding",
+      "positive": {
+        "version": 1,
+        "assertionId": "control-binding",
+        "requestId": "control",
+        "arm": "incumbent",
+        "kind": "binding",
+        "semanticRole": null,
+        "scope": "structural-subassertion",
+        "passed": true,
+        "export": "f",
+        "observed": {
+          "glueArity": 2,
+          "wasmArity": 2,
+          "params": [
+            124,
+            124
+          ],
+          "results": [
+            124
+          ],
+          "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+        },
+        "reason": "Declared numeric interface bound to actual WASM function"
+      },
+      "negative": {
+        "version": 1,
+        "assertionId": "control-binding",
+        "requestId": "control",
+        "arm": "incumbent",
+        "kind": "binding",
+        "semanticRole": null,
+        "scope": "structural-subassertion",
+        "passed": false,
+        "export": "f",
+        "observed": {
+          "glueArity": 2,
+          "wasmArity": 2,
+          "params": [
+            124,
+            124
+          ],
+          "results": [
+            127
+          ],
+          "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+        },
+        "reason": "Declared interface and actual WASM type differ"
+      }
+    },
+    {
+      "kind": "binding",
+      "positive": {
+        "version": 1,
+        "assertionId": "control-binding",
+        "requestId": "control",
+        "arm": "incumbent",
+        "kind": "binding",
+        "semanticRole": null,
+        "scope": "structural-subassertion",
+        "passed": true,
+        "export": "f",
+        "observed": {
+          "glueArity": 2,
+          "wasmArity": 2,
+          "params": [
+            124,
+            124
+          ],
+          "results": [
+            124
+          ],
+          "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+        },
+        "reason": "Declared numeric interface bound to actual WASM function"
+      },
+      "negative": {
+        "version": 1,
+        "assertionId": "control-binding",
+        "requestId": "control",
+        "arm": "incumbent",
+        "kind": "binding",
+        "semanticRole": null,
+        "scope": "structural-subassertion",
+        "passed": false,
+        "export": "f",
+        "observed": {
+          "glueArity": 2,
+          "wasmArity": 2,
+          "params": [
+            124,
+            124
+          ],
+          "results": [
+            124
+          ],
+          "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+        },
+        "reason": "Declared interface and actual WASM type differ"
+      }
+    },
+    {
+      "kind": "binding",
+      "positive": {
+        "version": 1,
+        "assertionId": "control-binding",
+        "requestId": "control",
+        "arm": "incumbent",
+        "kind": "binding",
+        "semanticRole": null,
+        "scope": "structural-subassertion",
+        "passed": true,
+        "export": "f",
+        "observed": {
+          "glueArity": 2,
+          "wasmArity": 2,
+          "params": [
+            124,
+            124
+          ],
+          "results": [
+            124
+          ],
+          "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+        },
+        "reason": "Declared numeric interface bound to actual WASM function"
+      },
+      "negative": {
+        "version": 1,
+        "assertionId": "control-binding",
+        "requestId": "control",
+        "arm": "incumbent",
+        "kind": "binding",
+        "semanticRole": null,
+        "scope": "structural-subassertion",
+        "passed": false,
+        "export": "f",
+        "observed": {
+          "glueArity": 2,
+          "wasmArity": 2,
+          "params": [
+            124,
+            124
+          ],
+          "results": [
+            124
+          ],
+          "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+        },
+        "reason": "Declared interface and actual WASM type differ"
+      }
+    },
+    {
+      "kind": "required-input",
+      "positive": {
+        "version": 1,
+        "assertionId": "control-required-input",
+        "requestId": "control",
+        "arm": "incumbent",
+        "kind": "required-input",
+        "semanticRole": null,
+        "scope": "structural-subassertion",
+        "passed": true,
+        "export": "f",
+        "observed": {
+          "argument": "flow",
+          "index": 0,
+          "kind": "number",
+          "unit": "kg/s",
+          "wasmType": 124
+        },
+        "reason": "Explicit argument path and declared quantity matched"
+      },
+      "negative": {
+        "version": 1,
+        "assertionId": "control-required-input",
+        "requestId": "control",
+        "arm": "incumbent",
+        "kind": "required-input",
+        "semanticRole": null,
+        "scope": "structural-subassertion",
+        "passed": false,
+        "reason": "Decision-relevant input path absent from this exported computation"
+      }
+    },
+    {
+      "kind": "argument-unit",
+      "positive": {
+        "version": 1,
+        "assertionId": "control-argument-unit",
+        "requestId": "control",
+        "arm": "incumbent",
+        "kind": "argument-unit",
+        "semanticRole": null,
+        "scope": "structural-subassertion",
+        "passed": true,
+        "export": "f",
+        "observed": {
+          "argument": "flow",
+          "index": 0,
+          "kind": "number",
+          "unit": "kg/s",
+          "wasmType": 124
+        },
+        "reason": "Explicit argument path and declared quantity matched"
+      },
+      "negative": {
+        "version": 1,
+        "assertionId": "control-argument-unit",
+        "requestId": "control",
+        "arm": "incumbent",
+        "kind": "argument-unit",
+        "semanticRole": null,
+        "scope": "structural-subassertion",
+        "passed": false,
+        "export": "f",
+        "observed": {
+          "argument": "flow",
+          "index": 0,
+          "kind": "number",
+          "unit": "kWh",
+          "wasmType": 124
+        },
+        "reason": "Input quantity or kind differs from explicit requirement"
+      }
+    },
+    {
+      "kind": "output-unit",
+      "positive": {
+        "version": 1,
+        "assertionId": "control-output-unit",
+        "requestId": "control",
+        "arm": "incumbent",
+        "kind": "output-unit",
+        "semanticRole": null,
+        "scope": "structural-subassertion",
+        "passed": true,
+        "export": "f",
+        "observed": {
+          "kind": "number",
+          "unit": "dimensionless",
+          "precision": 2
+        },
+        "reason": "Checks declared output quantity only; numeric correctness is a separate procedure"
+      },
+      "negative": {
+        "version": 1,
+        "assertionId": "control-output-unit",
+        "requestId": "control",
+        "arm": "incumbent",
+        "kind": "output-unit",
+        "semanticRole": null,
+        "scope": "structural-subassertion",
+        "passed": false,
+        "export": "f",
+        "observed": {
+          "kind": "number",
+          "unit": "kg",
+          "precision": 2
+        },
+        "reason": "Checks declared output quantity only; numeric correctness is a separate procedure"
+      }
+    },
+    {
+      "kind": "precision",
+      "positive": {
+        "version": 1,
+        "assertionId": "control-precision",
+        "requestId": "control",
+        "arm": "incumbent",
+        "kind": "precision",
+        "semanticRole": null,
+        "scope": "structural-subassertion",
+        "passed": true,
+        "export": "f",
+        "observed": 2,
+        "reason": "Checks declared rendering precision only; numeric accuracy remains separate"
+      },
+      "negative": {
+        "version": 1,
+        "assertionId": "control-precision",
+        "requestId": "control",
+        "arm": "incumbent",
+        "kind": "precision",
+        "semanticRole": null,
+        "scope": "structural-subassertion",
+        "passed": false,
+        "export": "f",
+        "observed": 0,
+        "reason": "Checks declared rendering precision only; numeric accuracy remains separate"
+      }
+    },
+    {
+      "kind": "trap-binding",
+      "positive": {
+        "version": 1,
+        "assertionId": "control-trap-binding",
+        "requestId": "control",
+        "arm": "incumbent",
+        "kind": "trap-binding",
+        "semanticRole": null,
+        "scope": "structural-subassertion",
+        "passed": true,
+        "export": "f",
+        "observed": [
+          {
+            "fn": "f",
+            "when": "load is zero",
+            "message": "Supply positive load"
+          }
+        ],
+        "reason": "Only checks nonempty refusal metadata attached to actual export; does not infer message semantics or actual trap behavior"
+      },
+      "negative": {
+        "version": 1,
+        "assertionId": "control-trap-binding",
+        "requestId": "control",
+        "arm": "incumbent",
+        "kind": "trap-binding",
+        "semanticRole": null,
+        "scope": "structural-subassertion",
+        "passed": false,
+        "export": "f",
+        "observed": [],
+        "reason": "Only checks nonempty refusal metadata attached to actual export; does not infer message semantics or actual trap behavior"
+      }
+    }
+  ],
+  "malformedWasmRejected": true,
+  "execution": "No WASM instantiation or calls; binary signatures inspected only."
+}

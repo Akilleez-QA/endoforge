@@ -1,0 +1,54 @@
+{
+  "scope": "deterministic independent targeted recheck; no models or full live qualification",
+  "hostCases": [
+    "host-validity-nan",
+    "host-validity-positive-infinity",
+    "host-validity-negative-infinity",
+    "host-validity-below-domain",
+    "host-validity-above-domain",
+    "host-validity-missing"
+  ],
+  "missingNaNGuard": {
+    "passed": false,
+    "failures": [
+      {
+        "code": "refusal-path",
+        "caseId": "host-validity-nan"
+      },
+      {
+        "code": "refusal-path",
+        "caseId": "host-validity-missing"
+      }
+    ],
+    "caseCount": 22,
+    "suiteHash": "74c19cbedbfade0200d177874965d6bbbc9a13ecf159c097c7364f27fa3401b6",
+    "referenceHash": null
+  },
+  "correctGuard": {
+    "passed": true,
+    "failures": [],
+    "caseCount": 22,
+    "suiteHash": "74c19cbedbfade0200d177874965d6bbbc9a13ecf159c097c7364f27fa3401b6",
+    "referenceHash": null
+  },
+  "correctChallenge": "new-eval-version-required",
+  "rejections": {
+    "caseId": "challenge must name the exact frozen claim",
+    "expect": "challenge must name the exact frozen claim",
+    "inputs": "challenge must name the exact frozen claim",
+    "unit": "challenge must name the exact frozen claim",
+    "tolerance": "challenge must name the exact frozen claim",
+    "referenceKey": "challenge must name the exact frozen claim"
+  },
+  "frozenUnchanged": true,
+  "extremeDegenerateDomain": {
+    "domain": [
+      1e+308,
+      1e+308
+    ],
+    "below": 1e+308,
+    "above": 1e+308,
+    "actuallyOutside": false
+  },
+  "passed": true
+}

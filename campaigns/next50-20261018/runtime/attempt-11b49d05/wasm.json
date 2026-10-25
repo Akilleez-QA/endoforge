@@ -1,0 +1,117 @@
+{
+  "good": {
+    "version": 1,
+    "argv": [
+      "/home/user/Work/endoforge/experiments/P-01-kernel-instantiate/.tools/wasmtime",
+      "run",
+      "-W",
+      "fuel=100000",
+      "-W",
+      "max-memory-size=1048576",
+      "-W",
+      "trap-on-grow-failure=y",
+      "-W",
+      "timeout=100ms",
+      "--invoke",
+      "run",
+      "/home/user/Work/endoforge/campaigns/next50-20261018/runtime/attempt-11b49d05/good.wat"
+    ],
+    "exit": 0,
+    "stdout": "7\n",
+    "stderr": "warning: using `--invoke` with a function that returns values is experimental and may break in the future\n",
+    "wallTimeout": false,
+    "wallMs": 5.0719079954433255
+  },
+  "loop": {
+    "version": 1,
+    "argv": [
+      "/home/user/Work/endoforge/experiments/P-01-kernel-instantiate/.tools/wasmtime",
+      "run",
+      "-W",
+      "fuel=100000",
+      "-W",
+      "max-memory-size=1048576",
+      "-W",
+      "trap-on-grow-failure=y",
+      "-W",
+      "timeout=100ms",
+      "--invoke",
+      "run",
+      "/home/user/Work/endoforge/campaigns/next50-20261018/runtime/attempt-11b49d05/loop.wat"
+    ],
+    "exit": 134,
+    "stdout": "",
+    "stderr": "Error: failed to run main module `/home/user/Work/endoforge/campaigns/next50-20261018/runtime/attempt-11b49d05/loop.wat`\n\nCaused by:\n    0: failed to invoke `run`\n    1: error while executing at wasm backtrace:\n    0:     0x20 - <unknown>!<wasm function 0>\n    2: wasm trap: all fuel consumed by WebAssembly\n\n",
+    "wallTimeout": false,
+    "wallMs": 4.116779993637465
+  },
+  "memory": {
+    "version": 1,
+    "argv": [
+      "/home/user/Work/endoforge/experiments/P-01-kernel-instantiate/.tools/wasmtime",
+      "run",
+      "-W",
+      "fuel=100000",
+      "-W",
+      "max-memory-size=1048576",
+      "-W",
+      "trap-on-grow-failure=y",
+      "-W",
+      "timeout=100ms",
+      "--invoke",
+      "run",
+      "/home/user/Work/endoforge/campaigns/next50-20261018/runtime/attempt-11b49d05/memory.wat"
+    ],
+    "exit": 1,
+    "stdout": "",
+    "stderr": "Error: failed to run main module `/home/user/Work/endoforge/campaigns/next50-20261018/runtime/attempt-11b49d05/memory.wat`\n\nCaused by:\n    0: failed to invoke `run`\n    1: error while executing at wasm backtrace:\n    0:     0x29 - <unknown>!<wasm function 0>\n    2: forcing trap when growing memory to 6619136 bytes\n\n",
+    "wallTimeout": false,
+    "wallMs": 3.8002340006642044
+  },
+  "trap": {
+    "version": 1,
+    "argv": [
+      "/home/user/Work/endoforge/experiments/P-01-kernel-instantiate/.tools/wasmtime",
+      "run",
+      "-W",
+      "fuel=100000",
+      "-W",
+      "max-memory-size=1048576",
+      "-W",
+      "trap-on-grow-failure=y",
+      "-W",
+      "timeout=100ms",
+      "--invoke",
+      "run",
+      "/home/user/Work/endoforge/campaigns/next50-20261018/runtime/attempt-11b49d05/trap.wat"
+    ],
+    "exit": 134,
+    "stdout": "",
+    "stderr": "Error: failed to run main module `/home/user/Work/endoforge/campaigns/next50-20261018/runtime/attempt-11b49d05/trap.wat`\n\nCaused by:\n    0: failed to invoke `run`\n    1: error while executing at wasm backtrace:\n    0:     0x20 - <unknown>!<wasm function 0>\n    2: wasm trap: wasm `unreachable` instruction executed\n\n",
+    "wallTimeout": false,
+    "wallMs": 4.307131996029057
+  },
+  "epoch": {
+    "version": 1,
+    "argv": [
+      "/home/user/Work/endoforge/experiments/P-01-kernel-instantiate/.tools/wasmtime",
+      "run",
+      "-W",
+      "fuel=1000000000000000",
+      "-W",
+      "max-memory-size=1048576",
+      "-W",
+      "trap-on-grow-failure=y",
+      "-W",
+      "timeout=10ms",
+      "--invoke",
+      "run",
+      "/home/user/Work/endoforge/campaigns/next50-20261018/runtime/attempt-11b49d05/loop.wat"
+    ],
+    "exit": 134,
+    "stdout": "",
+    "stderr": "Error: failed to run main module `/home/user/Work/endoforge/campaigns/next50-20261018/runtime/attempt-11b49d05/loop.wat`\n\nCaused by:\n    0: failed to invoke `run`\n    1: error while executing at wasm backtrace:\n    0:     0x20 - <unknown>!<wasm function 0>\n    2: wasm trap: interrupt\n\n",
+    "wallTimeout": false,
+    "wallMs": 15.165550001256634
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "manifest": "challenger",
+  "name": "the all-new bundle of the loop-1 charter (parallel stub -> evaluator || generator || contract-persona; properties as frozen tests; blind generation width 2 with compile self-check and Opus escalation; Sonnet-default routing; retrieval excluding test fingerprints; contract-stage personas; gate addition G8; no output persona stage)",
+  "stages": {
+    "S": { "level": "new", "what": "stub (interface, assumption, question, consequence tier; Sonnet low) -> contract-stage persona check (two personas; one fold-in revision of the stub) -> blind evaluator (contract, properties.md, 6-14 tests incl. property instances; Sonnet default); frozen by hash before any kernel is evaluated", "briefs": ["stub-v1", "persona-contract-v1", "personas-v1", "evaluator-v1"], "models": { "stub": "claude-sonnet-5-5 low", "contractPersona": "claude-sonnet-5-5 default", "evaluator": "claude-sonnet-5-5 default" } },
+    "G": { "level": "new", "what": "two independent blind candidates (request + stub + contract, tests withheld; Sonnet default), compile self-check (one fix on diagnostics), G1-G7 on each, first passing candidate selected; if none passes, one Opus-default escalation with gate feedback on the best failed candidate", "briefs": ["generator-blind-v1", "generator-compilefix-v1", "generator-escalation-v1"], "models": { "candidates": "claude-sonnet-5-5 default x2", "escalation": "claude-opus-5-5 default" }, "width": 2 },
+    "Q": { "level": "new", "what": "G1-G7 (byte-identical) plus G8: every range the glue states as a leading bound or interval is enforced by a trap (lib/gate8.mjs)", "gateAdditions": ["G8"] },
+    "R": { "level": "new", "what": "no output persona stage: promotion = gated; the contract-stage persona in S-new is the review (D-03: the review moves before the build; D-02: its change is folded in, not shipped as a to-do)" }
+  },
+  "retrieval": "fingerprint over the 19 loop-0 development artefacts only (lib/retrieval.mjs; Jaccard >= 0.2 and a shared domain term); the hit's request, interface, assumption and kernel are shown to the stub and the generator; working and sealed fingerprints are never indexed",
+  "promotion": "promoted = gated (G1-G7 and G8); a stub with serviceable:false is 'rejected' by design",
+  "screenCorners": "S x G generated (4 artefacts per request: old/old = incumbent run; new/new; new/old = sequential generator on the blind evaluator's spec; old/new = blind generator on the incumbent's contract with its tests withheld); Q and R applied as post-hoc filters, so all 16 corners are read from the 4 artefacts"
+}

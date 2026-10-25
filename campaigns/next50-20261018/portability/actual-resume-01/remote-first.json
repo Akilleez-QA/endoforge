@@ -1,0 +1,65 @@
+{
+  "passed": true,
+  "published": true,
+  "reused": false,
+  "publicationSha256": "d1dad4df9f974c01d2a3a11de0202ab7ad51b37ffc5e4c1013a8ef19ea5a5677",
+  "moduleSha256": "f3177f3d3b8c0ec2322067a2c5c3c127fb2d0ed6cffa0315c0aa2e1f7a64f81a",
+  "inputImmutable": true,
+  "completedStagesPreserved": [
+    "intake",
+    "paired-evals",
+    "freeze",
+    "generate",
+    "compile",
+    "bounded-evals",
+    "trusted-gates",
+    "publish"
+  ],
+  "cases": [
+    {
+      "id": "numeric37.5",
+      "passed": true,
+      "outcome": "value",
+      "value": 99.5
+    },
+    {
+      "id": "freezing",
+      "passed": true,
+      "outcome": "value",
+      "value": 32.0
+    },
+    {
+      "id": "invalid",
+      "passed": true,
+      "outcome": "refused"
+    },
+    {
+      "id": "nonfinite",
+      "passed": true,
+      "outcome": "refused"
+    }
+  ],
+  "resumedState": {
+    "artifactHash": "75bb9be879490d961d2b5510b32aa908fb9a42743fab65a117fbd6f569867d65",
+    "candidateHash": "75bb9be879490d961d2b5510b32aa908fb9a42743fab65a117fbd6f569867d65",
+    "completedStages": [
+      "intake",
+      "paired-evals",
+      "freeze",
+      "generate",
+      "compile",
+      "bounded-evals",
+      "trusted-gates",
+      "publish",
+      "portable-consumer"
+    ],
+    "frozenHash": "8abe905e136149e47bb426ad21f0944f103e2a88a0e2762193114c4687b235d9",
+    "generatorStarted": true,
+    "job": "dev-affine-01",
+    "pendingStages": [],
+    "stage": "portable-consumer-completed",
+    "version": 1,
+    "wasmHash": "f3177f3d3b8c0ec2322067a2c5c3c127fb2d0ed6cffa0315c0aa2e1f7a64f81a"
+  },
+  "attempt": "67868336c4c247cca38b1380a2333588.json"
+}

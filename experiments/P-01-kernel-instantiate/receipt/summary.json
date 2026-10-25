@@ -1,0 +1,334 @@
+{
+  "generatedAt": "2026-10-17T17:06:59.199Z",
+  "modules": {
+    "kernel-default-1p.wasm": {
+      "bytes": 1594,
+      "imports": [],
+      "exportCount": 21,
+      "initialPages": 1
+    },
+    "kernel-stub-16p.wasm": {
+      "bytes": 1594,
+      "imports": [],
+      "exportCount": 21,
+      "initialPages": 16
+    },
+    "kernel-stub-1p-assert.wasm": {
+      "bytes": 1594,
+      "imports": [],
+      "exportCount": 21,
+      "initialPages": 1
+    },
+    "kernel-stub-1p.wasm": {
+      "bytes": 1594,
+      "imports": [],
+      "exportCount": 21,
+      "initialPages": 1
+    }
+  },
+  "instantiateUs": {
+    "v8:kernel-stub-1p": {
+      "n": 2000,
+      "median": 18.565,
+      "p95": 34.785,
+      "min": 8.246,
+      "max": 10160.265,
+      "mean": 32.583
+    },
+    "wasmtime-crate:kernel-stub-1p": {
+      "n": 2000,
+      "median": 4.999,
+      "p95": 9.157,
+      "min": 2.815,
+      "max": 20.9,
+      "mean": 5.632
+    },
+    "wasmtime-crate-pooling:kernel-stub-1p": {
+      "n": 2000,
+      "median": 4.037,
+      "p95": 8.126,
+      "min": 0.561,
+      "max": 20.028,
+      "mean": 4.547
+    },
+    "v8:kernel-stub-16p": {
+      "n": 2000,
+      "median": 17.503,
+      "p95": 169.369,
+      "min": 7.855,
+      "max": 13090.147,
+      "mean": 104.587
+    },
+    "wasmtime-crate:kernel-stub-16p": {
+      "n": 2000,
+      "median": 4.799,
+      "p95": 8.717,
+      "min": 2.755,
+      "max": 47.709,
+      "mean": 5.312
+    },
+    "wasmtime-crate-pooling:kernel-stub-16p": {
+      "n": 2000,
+      "median": 4.278,
+      "p95": 8.806,
+      "min": 0.551,
+      "max": 46.577,
+      "mean": 4.924
+    }
+  },
+  "callNs": {
+    "v8:kernel-stub-1p": {
+      "n": 10000,
+      "median": 240,
+      "p95": 261,
+      "min": 200,
+      "max": 22803,
+      "mean": 247.1331
+    },
+    "wasmtime-crate:kernel-stub-1p": {
+      "n": 10000,
+      "median": 210,
+      "p95": 281,
+      "min": 190,
+      "max": 21189,
+      "mean": 217.5074
+    }
+  },
+  "residentBytesPerInstance": {
+    "v8:kernel-stub-1p:K=100": {
+      "n": 3,
+      "medianBytesPerInstance": 7864,
+      "repeats": [
+        7864,
+        7864,
+        7864
+      ],
+      "rssBeforeMedian": 54779904,
+      "rssAfterMedian": 55566336,
+      "medianArrayBuffersPerInstance": 44
+    },
+    "v8:kernel-stub-1p:K=1000": {
+      "n": 3,
+      "medianBytesPerInstance": 11796,
+      "repeats": [
+        11272,
+        11796,
+        12059
+      ],
+      "rssBeforeMedian": 54288384,
+      "rssAfterMedian": 66285568,
+      "medianArrayBuffersPerInstance": 44
+    },
+    "v8:kernel-stub-1p:K=5000": {
+      "n": 3,
+      "medianBytesPerInstance": 11325,
+      "repeats": [
+        11639,
+        11325,
+        11325
+      ],
+      "rssBeforeMedian": 53514240,
+      "rssAfterMedian": 110911488,
+      "medianArrayBuffersPerInstance": 44
+    },
+    "v8:kernel-stub-16p:K=100": {
+      "n": 3,
+      "medianBytesPerInstance": 10486,
+      "repeats": [
+        10486,
+        13107,
+        10486
+      ],
+      "rssBeforeMedian": 54005760,
+      "rssAfterMedian": 55087104,
+      "medianArrayBuffersPerInstance": 44
+    },
+    "v8:kernel-stub-16p:K=1000": {
+      "n": 3,
+      "medianBytesPerInstance": 10224,
+      "repeats": [
+        9699,
+        10224,
+        10224
+      ],
+      "rssBeforeMedian": 54558720,
+      "rssAfterMedian": 64655360,
+      "medianArrayBuffersPerInstance": 44
+    },
+    "v8:kernel-stub-16p:K=5000": {
+      "n": 3,
+      "medianBytesPerInstance": 10433,
+      "repeats": [
+        10433,
+        10486,
+        10328
+      ],
+      "rssBeforeMedian": 54034432,
+      "rssAfterMedian": 106405888,
+      "medianArrayBuffersPerInstance": 44
+    },
+    "wasmtime-crate:kernel-stub-1p:K=100": {
+      "n": 3,
+      "medianBytesPerInstance": 7987,
+      "repeats": [
+        7987,
+        8151,
+        7987
+      ],
+      "rssBeforeMedian": 15904768,
+      "rssAfterMedian": 16719872
+    },
+    "wasmtime-crate-pooling:kernel-stub-1p:K=100": {
+      "n": 3,
+      "medianBytesPerInstance": 8069,
+      "repeats": [
+        8069,
+        8069,
+        8069
+      ],
+      "rssBeforeMedian": 17088512,
+      "rssAfterMedian": 17895424
+    },
+    "wasmtime-crate:kernel-stub-1p:K=1000": {
+      "n": 3,
+      "medianBytesPerInstance": 9032,
+      "repeats": [
+        9032,
+        9028,
+        9101
+      ],
+      "rssBeforeMedian": 15654912,
+      "rssAfterMedian": 24756224
+    },
+    "wasmtime-crate-pooling:kernel-stub-1p:K=1000": {
+      "n": 3,
+      "medianBytesPerInstance": 8978,
+      "repeats": [
+        9044,
+        8978,
+        8974
+      ],
+      "rssBeforeMedian": 16982016,
+      "rssAfterMedian": 25960448
+    },
+    "wasmtime-crate:kernel-stub-1p:K=5000": {
+      "n": 3,
+      "medianBytesPerInstance": 9122,
+      "repeats": [
+        9121,
+        9122,
+        9136
+      ],
+      "rssBeforeMedian": 15798272,
+      "rssAfterMedian": 61407232
+    },
+    "wasmtime-crate-pooling:kernel-stub-1p:K=5000": {
+      "n": 3,
+      "medianBytesPerInstance": 9057,
+      "repeats": [
+        9057,
+        9057,
+        9057
+      ],
+      "rssBeforeMedian": 17014784,
+      "rssAfterMedian": 62300160
+    },
+    "wasmtime-crate:kernel-stub-16p:K=100": {
+      "n": 3,
+      "medianBytesPerInstance": 8438,
+      "repeats": [
+        8438,
+        8069,
+        8643
+      ],
+      "rssBeforeMedian": 15024128,
+      "rssAfterMedian": 15831040
+    },
+    "wasmtime-crate-pooling:kernel-stub-16p:K=100": {
+      "n": 3,
+      "medianBytesPerInstance": 8069,
+      "repeats": [
+        8724,
+        8028,
+        8069
+      ],
+      "rssBeforeMedian": 16117760,
+      "rssAfterMedian": 16924672
+    },
+    "wasmtime-crate:kernel-stub-16p:K=1000": {
+      "n": 3,
+      "medianBytesPerInstance": 9032,
+      "repeats": [
+        9044,
+        8970,
+        9032
+      ],
+      "rssBeforeMedian": 15466496,
+      "rssAfterMedian": 24436736
+    },
+    "wasmtime-crate-pooling:kernel-stub-16p:K=1000": {
+      "n": 3,
+      "medianBytesPerInstance": 8974,
+      "repeats": [
+        8983,
+        8974,
+        8901
+      ],
+      "rssBeforeMedian": 16773120,
+      "rssAfterMedian": 25673728
+    },
+    "wasmtime-crate:kernel-stub-16p:K=5000": {
+      "n": 3,
+      "medianBytesPerInstance": 9124,
+      "repeats": [
+        9134,
+        9124,
+        9107
+      ],
+      "rssBeforeMedian": 15917056,
+      "rssAfterMedian": 61452288
+    },
+    "wasmtime-crate-pooling:kernel-stub-16p:K=5000": {
+      "n": 3,
+      "medianBytesPerInstance": 9060,
+      "repeats": [
+        9073,
+        9058,
+        9060
+      ],
+      "rssBeforeMedian": 16850944,
+      "rssAfterMedian": 62197760
+    }
+  },
+  "cliColdMs": {
+    "bin-true": {
+      "n": 200,
+      "median": 1.193,
+      "p95": 1.704,
+      "min": 1.013,
+      "max": 2.496
+    },
+    "wasmtime-run-wasm": {
+      "n": 200,
+      "median": 6.01,
+      "p95": 7.774,
+      "min": 4.538,
+      "max": 9.032
+    },
+    "wasmtime-run-cwasm": {
+      "n": 200,
+      "median": 6.239,
+      "p95": 8.59,
+      "min": 4.574,
+      "max": 10.779
+    }
+  },
+  "notes": [],
+  "v8CompileNs": {
+    "kernel-stub-1p": 319771,
+    "kernel-stub-16p": 265499
+  },
+  "cwasmBytes": 19456,
+  "wasmtimeCompileNs:kernel-stub-1p": 2674651,
+  "wasmtimeCompileNs:kernel-stub-16p": 1983882
+}

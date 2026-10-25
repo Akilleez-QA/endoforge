@@ -1,0 +1,266 @@
+{
+  "label": "Recorded (probe)",
+  "precommitSha256": "55071876e2dbe0256b45c2f0cb705f92b92d0e79ac006791f8ce5359be55a1c9  PRECOMMIT.md",
+  "n": 20,
+  "warmups": 3,
+  "port": 48517,
+  "bundle": {
+    "shim.js": {
+      "bytes": 5363,
+      "gzipBytes": 2084
+    },
+    "core.js": {
+      "bytes": 14114,
+      "gzipBytes": 4677
+    },
+    "ts_rust.size.wasm": {
+      "bytes": 5214613,
+      "gzipBytes": 2225718
+    },
+    "kernel.wasm": {
+      "bytes": 41,
+      "gzipBytes": 61
+    },
+    "total": {
+      "bytes": 5234131,
+      "gzipBytes": 2232540
+    },
+    "concatGzipBytes": 2232561,
+    "speedWasmForReference": {
+      "bytes": 6518285,
+      "gzipBytes": 2667192
+    }
+  },
+  "overlay": {
+    "five": {
+      "files": 6,
+      "bytes": 11774,
+      "jsonBodyBytes": 12545
+    },
+    "fifty": {
+      "files": 51,
+      "bytes": 131497,
+      "jsonBodyBytes": 138384
+    }
+  },
+  "memoryMiB": {
+    "idle": {
+      "vmRss": 77.1,
+      "vmHwm": 77.1,
+      "rssAnon": 39.3,
+      "rssFile": 37.8,
+      "threads": 17
+    },
+    "afterFirstCheck": {
+      "vmRss": 153.8,
+      "vmHwm": 153.8,
+      "rssAnon": 110.1,
+      "rssFile": 43.7,
+      "threads": 17
+    },
+    "after_five": {
+      "vmRss": 173.8,
+      "vmHwm": 173.8,
+      "rssAnon": 127,
+      "rssFile": 46.9,
+      "threads": 17
+    },
+    "after_fifty": {
+      "vmRss": 182.9,
+      "vmHwm": 182.9,
+      "rssAnon": 135.5,
+      "rssFile": 47.4,
+      "threads": 17
+    },
+    "afterAll": {
+      "vmRss": 182.9,
+      "vmHwm": 182.9,
+      "rssAnon": 135.5,
+      "rssFile": 47.4,
+      "threads": 17
+    }
+  },
+  "workerdStartMs": 73.13388199999997,
+  "workerdFirstCheck": 166.76014999999995,
+  "latencyMs": {
+    "workerd_wall": {
+      "five": {
+        "n": 20,
+        "median": 59.68430400000011,
+        "p95": 72.9629010000001,
+        "min": 53.869425999999976,
+        "max": 82.78449499999988,
+        "mean": 61.752457550000045
+      },
+      "fifty": {
+        "n": 20,
+        "median": 107.38478600000008,
+        "p95": 134.1106960000002,
+        "min": 99.61265600000024,
+        "max": 137.82828800000016,
+        "mean": 112.82847394999996
+      }
+    },
+    "workerd_isolate": {
+      "five": {
+        "n": 20,
+        "median": 57,
+        "p95": 69,
+        "min": 52,
+        "max": 81,
+        "mean": 58.55
+      },
+      "fifty": {
+        "n": 20,
+        "median": 105,
+        "p95": 132,
+        "min": 97,
+        "max": 135,
+        "mean": 110.05
+      }
+    },
+    "node_wall": {
+      "five": {
+        "n": 20,
+        "median": 43.784905999999864,
+        "p95": 53.14065399999981,
+        "min": 38.759743999999955,
+        "max": 59.8534209999998,
+        "mean": 45.723156599999854
+      },
+      "fifty": {
+        "n": 20,
+        "median": 87.53268200000093,
+        "p95": 103.02617399999963,
+        "min": 84.28289899999982,
+        "max": 106.12511300000006,
+        "mean": 91.38114404999996
+      }
+    },
+    "native_single_wall": {
+      "five": {
+        "n": 20,
+        "median": 19.841349000000264,
+        "p95": 22.1407650000001,
+        "min": 17.922451000000365,
+        "max": 22.921222999999372,
+        "mean": 20.152557249999973
+      },
+      "fifty": {
+        "n": 20,
+        "median": 56.5753820000009,
+        "p95": 64.85972500000025,
+        "min": 44.62286100000165,
+        "max": 70.25780900000063,
+        "mean": 56.970336299999964
+      }
+    },
+    "native_default_wall": {
+      "five": {
+        "n": 20,
+        "median": 17.31346499999927,
+        "p95": 20.196948999999222,
+        "min": 13.556328000000576,
+        "max": 20.651873999999225,
+        "mean": 17.202302399999827
+      },
+      "fifty": {
+        "n": 20,
+        "median": 22.030226999999286,
+        "p95": 27.117886,
+        "min": 20.592051999999967,
+        "max": 31.848152999999,
+        "mean": 23.06561780000011
+      }
+    }
+  },
+  "ratios50": {
+    "workerd_over_native_single": 1.898,
+    "node_over_native_single": 1.547,
+    "workerd_over_node": 1.227,
+    "workerd_over_native_default": 4.874
+  },
+  "ratios5": {
+    "workerd_over_native_single": 3.008,
+    "node_over_native_single": 2.207
+  },
+  "diagnosticsAgreement": {
+    "five": {
+      "count": 1,
+      "workerd_eq_node": true,
+      "workerd_eq_native": true,
+      "native_single_eq_default": true,
+      "keys": [
+        "/proj/src/m03.ts:83:2322"
+      ]
+    },
+    "fifty": {
+      "count": 5,
+      "workerd_eq_node": true,
+      "workerd_eq_native": true,
+      "native_single_eq_default": true,
+      "keys": [
+        "/proj/src/m07.ts:82:2322",
+        "/proj/src/m19.ts:82:2322",
+        "/proj/src/m23.ts:82:2322",
+        "/proj/src/m38.ts:88:2322",
+        "/proj/src/m49.ts:67:2322"
+      ]
+    }
+  },
+  "limitEnforcement": {
+    "wasm": {
+      "probe": {
+        "kind": "wasm",
+        "mib": 256
+      },
+      "before": 76.2,
+      "response": {
+        "status": 200,
+        "body": "{\"ok\":true,\"kind\":\"wasm\",\"mib\":256,\"bytes\":268500992,\"ms\":121}"
+      },
+      "processAliveAfter": true,
+      "exitCode": null,
+      "after": {
+        "vmRss": 332.8,
+        "vmHwm": 332.8
+      },
+      "log": ""
+    },
+    "js": {
+      "probe": {
+        "kind": "js",
+        "mib": 200
+      },
+      "before": 74.5,
+      "fetchError": "fetch failed",
+      "processAliveAfter": false,
+      "exitCode": 1,
+      "after": null,
+      "log": "\n<--- Last few GCs --->\n\n[138869:0x73a37fd12000]      120 ms: Mark-Compact (reduce) 128.5 (129.1) -> 128.5 (129.1) MB, pooled: 0.0 MB, 0.37 / 0.00 ms (average mu = 0.064, current mu = 0.013) last resort; GC in old space requested\n[138869:0x73a37fd12000]      120 ms: Mark-Compact (reduce) 128.5 (129.1) -> 128.5 (129.1) MB, pooled: 0.0 MB, 0.34 / 0.00 ms (average mu = 0.043, current mu = 0.020) last resort; GC in old space requested\n\nworkerd/jsg/setup.c++:38: fatal: V8 fatal error; location = Reached heap limit; message = : allocation failed: JavaScript heap out of memory\n*** Received signal #6: Aborted\nstack: /usr/lib/libc.so.6@0x9a17b /usr/lib/libc.so.6@0x3e5cf /usr/lib/libc.so.6@0x25684 /home/user/Work/isolate-factory-lab/adapters/executors/workerd/node_modules/@cloudflare/workerd-linux-64/bin/workerd@0x39d6843 /home/user/Work/isolate-factory-lab/adapters/executors/workerd/node_modules/@cloudflare/workerd-linux-64/bin/workerd@0x3d231f6 /home/user/Work/isolate-factory-lab/adapters/executors/workerd/node_modules/@cloudflare/workerd-linux-64/bin/workerd@0x3d231af /home/user/Work/isolate-factory-lab/adapters/executors/workerd/node_modules/@cloudflare/workerd-linux-64/bin/workerd@0x3f24516 /home/user/Work/isolate-factory-lab/adapters/executors/workerd/node_modules/@cloudflare/workerd-linux-64/bin/workerd@0x3f23ad4 /home/user/Work/isolate-factory-lab/adapters/executors/workerd/node_modules/@cloudflare/workerd-linux-64/bin/workerd@0x3f3a0bc /home/user/Wo"
+    }
+  },
+  "nodeMemoryMiB": {
+    "beforeChecks": 106.8,
+    "after_five": 160.3,
+    "after_fifty": 186.2
+  },
+  "loadavg": {
+    "before": [
+      15.2,
+      13.52,
+      15.21
+    ],
+    "after": [
+      15.9,
+      13.75,
+      15.25
+    ]
+  },
+  "badSigns": {
+    "rssOver128MiB": true,
+    "hwmOver128MiB": true,
+    "wasmWorkerdOver3xNative": false,
+    "bundleGzipOver10MB": false
+  }
+}

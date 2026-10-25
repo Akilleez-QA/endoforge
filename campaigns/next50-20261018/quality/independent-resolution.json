@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "passed": true,
+  "resolved": {
+    "status": "resolved",
+    "selectedWriter": "a",
+    "value": -21.459726885720215,
+    "reference": {
+      "status": "ok",
+      "value": -21.459726885720215,
+      "unit": "degF",
+      "providerHash": "77ee9040bfef1ac51d50c429fbc9feb3078934e102d3521cbd490b2c7d7e0938",
+      "source": "/home/user/LOCAL LLM/refrigeration-ai-retained-review/packages/domain/src/calculators/pt-tables.generated.ts"
+    },
+    "evidenceHash": "0ce3a44c2c65a4a52475752ab74187e15cc6f591d2b4707fecd75664f0974053",
+    "requiresNewSuiteVersion": true
+  },
+  "unresolved": {
+    "status": "unresolved",
+    "reason": "independent reference unavailable",
+    "proposals": [
+      {
+        "writer": "a",
+        "value": -21.46
+      },
+      {
+        "writer": "b",
+        "value": 5
+      }
+    ]
+  },
+  "scope": "request-independent consuming reference; does not permit generator relaxation"
+}

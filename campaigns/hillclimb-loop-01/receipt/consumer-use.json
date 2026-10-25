@@ -1,0 +1,225 @@
+{
+  "at": "2026-10-18T07:59:17.647Z",
+  "n": 5,
+  "reported": 5,
+  "answered": 1,
+  "partly": 3,
+  "wouldUse": 2,
+  "assumptionAcceptable": 5,
+  "calls": 23,
+  "reports": [
+    {
+      "id": "CC-029",
+      "run": "E-Snew-Gnew-D02-CC-029",
+      "status": "promoted-pending-change",
+      "dir": "work/use/CC-029",
+      "briefSha256": "6eac5dda84186bb8e081c8fb25c914937f0a3ab6769060129739aa621312ed0a",
+      "wasmSha256": "6f07926087c699cc571c4a1b7aefc985d6ad853096677b6f016ba1ca96b5d4d5",
+      "report": {
+        "agent": {
+          "model": "claude-sonnet-5-5 (Agent tool, technician frame)",
+          "tokens": 107614,
+          "tool_uses": 24,
+          "duration_ms": 221769
+        },
+        "calls_count": 25,
+        "calls": [
+          {
+            "cmd": "node bin/try.mjs work/use/CC-029 whichBoilsMost 10 20",
+            "output": "-> 0 = First pressure boils most (lower boiling temperature); assumption defaults to R-410A"
+          },
+          {
+            "cmd": "node bin/try.mjs work/use/CC-029 firstBoilingTemperature 10 0 / secondBoilingTemperature 20 0 (and the same for R-404A, R-22, R-134a)",
+            "output": "R-410A -42.4 F vs -28.0 F; R-404A -30.7 vs -16.4; R-22 -20.2 vs -5.1; R-134a 6.7 vs 22.2"
+          },
+          {
+            "cmd": "node bin/try.mjs work/use/CC-029 firstBoilingTemperature 118 0 / 68.5 1 / 35 2",
+            "output": "40.0 F, 40.0 F, 40.2 F (match the technician's chart)"
+          },
+          {
+            "cmd": "node bin/try.mjs work/use/CC-029 whichBoilsMost -20 20 0 / 10 1500 0 / 10 20 9 / abc 20 0",
+            "output": "refused with one catch-all message naming range and code list"
+          },
+          {
+            "cmd": "node bin/try.mjs work/use/CC-029 firstBoilingTemperature 600 2",
+            "output": "218.0 F, not refused (past the critical point)"
+          }
+        ],
+        "answered_my_question": "yes",
+        "would_use_on_the_job": "yes",
+        "assumption_acceptable": "yes",
+        "what_i_would_change": "Print both boiling temperatures and the winning psig value on the whichBoilsMost line (the note promises it), make the assumption line name the refrigerant I actually entered instead of 'defaulting to R-410A', say which input was refused, and refuse above each gas's critical pressure (218 F for R-134a at 600 psig is nonsense).",
+        "notes": "I got what I needed: 10 psig boils harder than 20 on every gas I tried (410A -42.4 F vs -28.0 F, 404A -30.7 vs -16.4, 22 -20.2 vs -5.1, 134a 6.7 vs 22.2), and its 40 F spots at 118 psig on 410A, 68.5 on 22 and 35 on 134a match my chart. The headline only says 'first pressure' with no temperatures even though its own note says it shows both, so I needed two more calls for the numbers, and it keeps saying it defaulted to R-410A even when I typed in 404A or 22 (the numbers show it really used my gas). It refused -20 psig, 1500 psig, gas code 9 and a typo'd pressure, though with one catch-all message that doesn't say which input was bad, and it let 600 psig on 134a through and answered 218 F, past the critical point, so I would not trust it at the far top end."
+      }
+    },
+    {
+      "id": "CC-020",
+      "run": "E-Snew-Gnew-D02-CC-020",
+      "status": "promoted-pending-change",
+      "dir": "work/use/CC-020",
+      "briefSha256": "d0de258f0462be284155bbdb4b8e4da14c33e9c7352d1611eef37338d49a3bea",
+      "wasmSha256": "b495f86a6738957dfbd13338ecac44c132d42f17a2aa16303a0e5ea63982b0bf",
+      "report": {
+        "agent": {
+          "model": "claude-sonnet-5-5 (Agent tool, technician frame)",
+          "tokens": 92034,
+          "tool_uses": 15,
+          "duration_ms": 162124
+        },
+        "calls_count": 15,
+        "calls": [
+          {
+            "cmd": "node bin/try.mjs work/use/CC-020",
+            "output": "evaporatorModelCapacityTr() -> TR [headline]: Evaporator capacity by manufacturer model number (refuses: no capacity data available)"
+          },
+          {
+            "cmd": "node bin/try.mjs work/use/CC-020 evaporatorModelCapacityTr \"RALTG-3040\"",
+            "output": "refused: the capacity of the RALTG-3040 cannot be read from its model number and no rating data is available. Supply the nameplate capacity (Btu/h or TR), refrigerant, SST (F) and TD (F)."
+          },
+          {
+            "cmd": "(twelve further forms: positional numbers, key=value, flags, JSON, another make, a bare 54000, negative capacity, 36,000 TR, SST 140 F, no argument)",
+            "output": "the same refusal every time"
+          }
+        ],
+        "answered_my_question": "no",
+        "would_use_on_the_job": "no",
+        "assumption_acceptable": "yes",
+        "what_i_would_change": "Accept the nameplate it asks for and return TR (Btu/h / 12,000) with the refrigerant/SST/TD basis stated, echo the model I actually typed, and name bad inputs (negative capacity, 36,000 TR, SST 140 F) instead of the same canned refusal every time.",
+        "notes": "I asked how many TR a Frigid Coil RALTG-3040 is and never got a number: it won't read TR off the model digits, which is the right call, and it asks for nameplate capacity, refrigerant, SST and TD. But I handed it test figures of exactly that kind in positional, free-text, key=value, flag and JSON form and got the same canned refusal every time, still naming the RALTG-3040 when I typed a Bohn, an Evapco, a bare 54000, or nothing at all, so there is no way to give it my nameplate. It also never called my bad entries (negative Btu/h, 36,000 TR, SST 140 F) bad, so I can't tell its refusals mean anything; with the tag in my hand I'll just divide Btu/h by 12,000 myself."
+      }
+    },
+    {
+      "id": "C-022",
+      "run": "E-Snew-Gnew-D02-C-022",
+      "status": "promoted-pending-change",
+      "dir": "work/use/C-022",
+      "briefSha256": "e2a66aced2890219ddcabd9bd33e06a01f88d8452ce5ddf2b5e114c7d470689f",
+      "wasmSha256": "e9c8a297e6319e2d8a89fec09001bb29ff7eb16fabba258a46fcfcc2cb87f78f",
+      "report": {
+        "agent": {
+          "model": "claude-sonnet-5-5 (Agent tool, technician frame)",
+          "tokens": 124005,
+          "tool_uses": 19,
+          "duration_ms": 320688
+        },
+        "calls_count": 18,
+        "calls": [
+          {
+            "cmd": "node bin/try.mjs work/use/C-022 nonCondensableExcessPsi 150 80 2 14.7 0",
+            "output": "6.4 psi (ammonia); assumption, note and question printed"
+          },
+          {
+            "cmd": "nonCondensableExcessPsi 130 92 6 12.2 1 / 130 92 6 14.7 1 / 135 100 4 14.7 1",
+            "output": "7.5 / 10.0 / 2.3 psi (R-134a; assumption line still says ammonia)"
+          },
+          {
+            "cmd": "nonCondensableExcessPsi 120 90 4 14.7 0 / 150 27 2 14.7 0 / 150 80 2 29.92 0 / 150 80 2 1013 0",
+            "output": "-58.0 / 106.2 / 21.6 / 1004.7 psi returned as plain answers (impossible or absurd inputs not flagged)"
+          },
+          {
+            "cmd": "nonCondensableExcessPsi 150 80 2 14.7 2 / 150 125 2 14.7 0 / 150 80 -3 14.7 0 / 150 80 (missing args)",
+            "output": "refused with one generic list of limits, the failing input not named"
+          }
+        ],
+        "answered_my_question": "partly",
+        "would_use_on_the_job": "yes",
+        "assumption_acceptable": "yes",
+        "what_i_would_change": "Flag or refuse impossible and absurd results (-58 psi, 106 psi, a barometer typed as 29.92 or 1013) and name the failing input in every refusal; print 'subcooling assumed 0 F, upper bound' on the answer line as its own note promises; make the assumption and purge advice follow the refrigerant chosen (it says ammonia on R-134a); allow liquid above 120 F for hot-site chillers; and add a purge limit plus a trend/log so it can actually track.",
+        "notes": "For one reading it gave me the right number: 6.4, 7.5, 9.2, 2.3 and 6.3 psi all agreed with my P/T chart to about a tenth, and Denver's 12.2 psia versus sea level moved the answer exactly the 2.5 psi it should. But I asked for a tracker and this is a one-shot calculator with no trend, no purge limit and no log, and it printed -58.0, 106.2, 21.6 (barometer typed as 29.92) and 1004.7 psi (1013 mbar) as plain answers, showed blank subcooling as a bare '0 F' with no 'upper bound' on the answer line, and refused with the same generic list of limits instead of naming the bad input. The R-134a answers still say the refrigerant is ammonia and carry ammonia purge advice, and it refused my 128 F liquid on a hot-roof chiller, so I would use it as a careful spot check on an ammonia plant, not as the tracker."
+      }
+    },
+    {
+      "id": "CC-034",
+      "run": "E-Snew-Gnew-D02-CC-034",
+      "status": "promoted-with-assumption",
+      "dir": "work/use/CC-034",
+      "briefSha256": "33285db096ab74b7303c637dc4d623dc7c3b98d6316d0bac27ca5a4c923e4257",
+      "wasmSha256": "b0db73d9de2dd8ee2a175ab4d4c7f7ae26201d7d0b2e3d56130180061612d6a3",
+      "report": {
+        "agent": {
+          "model": "claude-sonnet-5-5 (Agent tool, technician frame)",
+          "tokens": 147432,
+          "tool_uses": 26,
+          "duration_ms": 514220,
+          "note": "the agent checked a published R404A P-T table through a web fetch (a technician's chart; no file in the calculator folder was read or written)"
+        },
+        "calls_count": 19,
+        "calls": [
+          {
+            "cmd": "node bin/try.mjs work/use/CC-034 saturationTempR404aFromPsig 15 0 0",
+            "output": "-23.5 F dew point (sea level); psigToPsia 15 0 -> 29.7 psia; bubble basis -> -25.0 F"
+          },
+          {
+            "cmd": "saturationTempR404aFromPsig 15 5280 0 / psigToPsia 15 5280",
+            "output": "-27.4 F / 27.1 psia (altitude correction goes the right way)"
+          },
+          {
+            "cmd": "saturationTempR404aFromPsig 0|4.3|16|32.6|85.4|147.4 0 0; 236.8 0 1; 312.1 1000 1; -10 0 0",
+            "output": "-51.0 / -41.5 / -22.1 / -2.2 / 38.9 / 71.1 / 105.4 / 128.8 / -86.6 F (against the published table: about 2 F cold at 15 psig, 5-9 F hot at 237-312 psig)"
+          },
+          {
+            "cmd": "saturationTempR404aFromPsig -20 0 0 / 15 0 2 / 700 0 1 / 15 / abc 0 0",
+            "output": "refused with one message listing all three ranges"
+          }
+        ],
+        "answered_my_question": "partly",
+        "would_use_on_the_job": "no",
+        "assumption_acceptable": "yes",
+        "what_i_would_change": "Fit the curve to the published R404A PT table (15 psig dew should read about -21.5 F, and it runs 5 to 9 F high at 237 to 312 psig), show the psia and the chart rows it interpolated in the answer itself, default to sea level and dew point when I give only a pressure, and print assumption text that matches what I typed.",
+        "notes": "For 15 psig at sea level it gave -23.5 F dew (-25.0 F bubble), but the breakdown stops at the gauge-to-absolute step (29.7 psia), so the 29.7-psia-to-temperature part is a black box, and typing just 15 got refused with no hint that elevation and basis were missing. The published R404A PT table I checked online has 15 psig at about -21.5 F dew and -22.6 F bubble, so this reads about 2 F cold at 15 psig and 5 to 9 F hot at 237 to 312 psig, which is too far off to hang superheat or subcooling on. The refusals (-20 psig, 700 psig, bad basis) work but list all three ranges instead of naming the bad one, and the 5280 ft correction goes the right way (27.1 psia, -27.4 F), but the canned assumption text keeps saying sea level, dew point and 15 psig no matter what I typed."
+      }
+    },
+    {
+      "id": "CC-024",
+      "run": "E-Snew-Gnew-D02-CC-024",
+      "status": "promoted-pending-change",
+      "dir": "work/use/CC-024",
+      "briefSha256": "3d9764b27f0d9b18b0225333ecb40a6c0f855082aedc158368cc4e09e34b240a",
+      "wasmSha256": "b1c859a0b8004ab7427ca2970980aba18b64f20e6be383692125612cc5897082",
+      "report": {
+        "agent": {
+          "model": "claude-sonnet-5-5 (Agent tool, technician frame)",
+          "tokens": 136889,
+          "tool_uses": 21,
+          "duration_ms": 437882
+        },
+        "calls_count": 21,
+        "calls": [
+          {
+            "cmd": "node bin/try.mjs work/use/CC-024 closestRefrigerantToReading 32 55.9 56",
+            "output": "4 = R-404A (cross-check); assumption refuses a default refrigerant"
+          },
+          {
+            "cmd": "suctionSuperheat 0 32 55.9",
+            "output": "refused: refrigerant not confirmed (two-reason text)"
+          },
+          {
+            "cmd": "suctionSuperheat 1|2|3|4 32 55.9",
+            "output": "R-410A 70.3 F, R-22 46.5 F, R-134a 18.9 F, R-404A 59.5 F"
+          },
+          {
+            "cmd": "suctionSuperheat 1 118 52 / 2 68.5 55 / 4 50 30 / 4 85 50 / 4 16 -5",
+            "output": "12.3 / 15.0 / 17.7 / 13.9 / 16.9 F (410A and R-22 checks match the technician's chart; 404A column doubted)"
+          },
+          {
+            "cmd": "suctionSuperheat 1 118 30 / 1 266 55.9",
+            "output": "-9.7 F / -32.1 F returned without a warning"
+          },
+          {
+            "cmd": "closestRefrigerantToReading 32 55.9 2.8",
+            "output": "3 = R-134a with no sign that nothing fits"
+          },
+          {
+            "cmd": "suctionSuperheat 7 32 55.9 / 2 -20 10 / 4 32 55.9F / 4 32 / 404A 32 55.9",
+            "output": "refused with the same two-reason text, naming 'refrigerant not confirmed' even when the pressure or a typo was the problem"
+          }
+        ],
+        "answered_my_question": "partly",
+        "would_use_on_the_job": "no",
+        "assumption_acceptable": "yes",
+        "what_i_would_change": "Warn or refuse on impossible results (it printed -32.1 F superheat without a word), name the input behind a refusal, and recheck the R-404A column (59.5 F against the 56 F on my gauge).",
+        "notes": "It was right to refuse to guess the refrigerant and to show what my 32 psig and 55.9 F reads on each one (410A 70.3, 404A 59.5, 22 46.5, 134a 18.9), and on a 410A house job and an R-22 check it matched my chart, but I only got a superheat to compare, not an answer: the 266 psig, the 105.7 line and the 2.8 goal were never used, so no subcooling and no word on what 56 against 2.8 means. I don't trust its 404A column yet, since 59.5 doesn't match the 56 on my gauge and it puts 404A at about 36 F at 85 psig where my chart says nearer 40, and its stock assumption text is off too (it says 32 psig is about 17 F on R-22 when its own R-22 answer works out to about 9 F). Worst for the field, it printed -32.1 F superheat without a word when I put my head pressure in the suction slot, and every refusal is the same two-reason text, so it said the refrigerant wasn't confirmed when I'd entered R-22 and my pressure was the problem, and said to re-read my gauge when my readings were fine."
+      }
+    }
+  ]
+}

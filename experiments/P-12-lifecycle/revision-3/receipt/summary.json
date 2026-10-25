@@ -1,0 +1,77 @@
+{
+  "label": "Recorded (probe)",
+  "passed": true,
+  "hardkillRecovery": {
+    "attempt": "hardkill",
+    "job": "retry-job",
+    "outcome": "interrupted_reconciled",
+    "published": false,
+    "terminalState": {
+      "Status": "exited",
+      "Running": false,
+      "Paused": false,
+      "Restarting": false,
+      "OOMKilled": false,
+      "Dead": false,
+      "Pid": 0,
+      "ExitCode": 137,
+      "Error": "",
+      "StartedAt": "2026-10-18T19:03:55.257205604Z",
+      "FinishedAt": "2026-10-18T19:03:55.484165038Z"
+    },
+    "cleanupVerified": true,
+    "receipt": "/home/user/Work/endoforge/experiments/P-12-lifecycle/revision-3/receipt/reconciliations/hardkill-129ae87b31ca46fb87df55151c779068"
+  },
+  "freshRetry": {
+    "attempt": "retry-new",
+    "job": "retry-job",
+    "containerName": "endoforge-p12-cb8b2bab6d73419c86a32537d18f2581",
+    "image": "sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541",
+    "outcome": "passed",
+    "published": true,
+    "inputSha256": "dbaf7474156488138270f1702761bf71cbf7d900db6e073558c544ef18812878",
+    "containerId": "d3fbbd0a07cb491e84e03855fa1f03c2f0eeca68be6f7efdaf5d650ad7e9a9b9",
+    "terminalState": {
+      "Status": "exited",
+      "Running": false,
+      "Paused": false,
+      "Restarting": false,
+      "OOMKilled": false,
+      "Dead": false,
+      "Pid": 0,
+      "ExitCode": 0,
+      "Error": "",
+      "StartedAt": "2026-10-18T19:03:55.957420815Z",
+      "FinishedAt": "2026-10-18T19:03:56.058774676Z"
+    },
+    "artifactSha256": "dbaf7474156488138270f1702761bf71cbf7d900db6e073558c544ef18812878",
+    "cleanupVerified": true,
+    "signals": [],
+    "wallMs": 625.3854799942928
+  },
+  "publicationRecovery": {
+    "attempt": "linked-crash",
+    "job": "linked-job",
+    "outcome": "publication_recovered",
+    "published": true,
+    "cleanupVerified": true,
+    "artifactSha256": "dbaf7474156488138270f1702761bf71cbf7d900db6e073558c544ef18812878",
+    "receipt": "/home/user/Work/endoforge/experiments/P-12-lifecycle/revision-3/receipt/reconciliations/linked-crash-fb25e97de4a845339ca953a9e4fc2674"
+  },
+  "repeatRecovery": {
+    "attempt": "linked-crash",
+    "job": "linked-job",
+    "outcome": "publication_recovered",
+    "published": true,
+    "cleanupVerified": true,
+    "artifactSha256": "dbaf7474156488138270f1702761bf71cbf7d900db6e073558c544ef18812878",
+    "receipt": "/home/user/Work/endoforge/experiments/P-12-lifecycle/revision-3/receipt/reconciliations/linked-crash-3e83e7ae759046779c07ec654db27b77"
+  },
+  "malformedJournalRejected": true,
+  "remainingContainers": "",
+  "publications": {
+    "retry-job.txt": "dbaf7474156488138270f1702761bf71cbf7d900db6e073558c544ef18812878",
+    "linked-job.txt": "dbaf7474156488138270f1702761bf71cbf7d900db6e073558c544ef18812878"
+  },
+  "elapsedSeconds": 2.194342852002592
+}

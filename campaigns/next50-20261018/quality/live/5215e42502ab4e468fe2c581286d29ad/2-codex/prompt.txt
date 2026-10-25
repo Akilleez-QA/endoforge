@@ -1,0 +1,28 @@
+Write independent executable evals from ONLY the attached raw request and bare signature. No generator code or contract exists. Output only JSON object {"procedure":{...},"cases":[...]}. Procedure fields required: version:1,id:string,kind:"affine" or "threshold",input:argument path,domain:[min,max],seed:7919,count:16,tolerance:number,unit:output unit. For affine include slope,offset; threshold include threshold,below,above. Each explicit case: {id,inputs:{argument:value},expect:number,tolerance,unit} or {id,inputs:{argument:value},expectError:true,errorPath:argument,tolerance:0,unit}. Include finite out-of-range, string "NaN", "Infinity", "-Infinity" refusal cases, missing-input refusal {}, and threshold boundary if applicable. Cases must not reuse procedure case IDs. No markdown, explanation or extra fields.
+{
+  "version": 1,
+  "request": {
+    "id": "dev-threshold-03",
+    "raw": "Classify finite score s in [0,100] as numeric 0 when s < 60 and numeric 1 when s >= 60, absolute tolerance 0 score-class. Refuse other values naming s. Require s; return number labelled score-class."
+  },
+  "signature": {
+    "version": 1,
+    "name": "classifyScore",
+    "inputs": [
+      {
+        "path": "s",
+        "type": "number",
+        "unit": "score",
+        "domain": [
+          0,
+          100
+        ]
+      }
+    ],
+    "output": {
+      "type": "number",
+      "unit": "score-class"
+    }
+  },
+  "reference": null
+}

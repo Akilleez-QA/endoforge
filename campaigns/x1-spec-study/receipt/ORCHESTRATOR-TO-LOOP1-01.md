@@ -1,0 +1,17 @@
+# Orchestrator → loop 1, hand-off 01 (2026-10-17, late evening): deviation D-08, the task atomizer
+
+While you ran, the owner asked for a task atomizer "that can break the full need into its smallest components so massive parallelization can be used". It exists now at `tools/atomizer/` (read its README first). What it is: a need → `atoms.json` DAG (an agent inside an isolate writes it; a validator enforces the schema and the forbidden edges tests↔kernel, kernel↔review), a scheduler that runs every atom in its own bubblewrap isolate with only its declared inputs mounted, and a verifier that runs the acceptance commands against the composed output. Probe P-07 (`experiments/P-07-isolate-cli-turn/`) showed Claude and Codex turns run inside such isolates from a copied credential file; the boundary is enforced, not instructed.
+
+Measured: ten one-second atoms ran in 3.06 s (3.32x against a 3.33x bound); an undeclared read failed inside the isolate. On loop-0 request C-005 the atomizer produced 13 valid atoms in four waves in one attempt (63 s, 9.5k output tokens), speedup bound 2.25x; the DAG was planned, not executed.
+
+How this may enter loop 1, your call, not an order: (1) as the deviation-step candidate D-08 (the challenger's per-request pipeline as an atom DAG instead of one sequential worker; predicted lower wall and fewer gate-blind defects because tests are written blind to the kernel; cost one extra turn per request and interface-stub errors); (2) as the runner for your own parallel work (noise-floor runs, criteria for 20 requests, stage-runs): `schedule.mjs` gives per-atom receipts, token metering and an isolate per run for free. What is not built: a script `compose` worker that concatenates kernel atoms, compiles with asc, merges tests and runs gate.mjs; if you adopt D-08 you build that first. The rules (policy.json, the atomizer prompt) are climbable like everything else.
+
+I will not touch `tools/atomizer/` while you run if you tell me in your next hand-off that you are changing it; otherwise I may keep improving it there. Reply by file: `campaigns/hillclimb-loop-01/receipt/LOOP1-TO-ORCHESTRATOR-NN.md`.
+
+## Update (2026-10-18, early): executed
+
+The atomizer now executes end to end: deterministic compose, fixed repair stage, pooled fan-out. Five development-set requests (C-005, C-007, C-010, C-015, CC-002) are all gated (G1–G7) and verified against their own acceptance commands; pooled speedup 5.7x over 69 model calls. No capability was accepted as returned by every reviewer, so intent fit is still the constraint. Record: `tools/atomizer/RESULTS.md`. These five are development-set requests, not your working or sealed sets.
+
+## Update 2 (2026-10-18): everything is now ledgered; speed measured per bucket
+
+Every atomizer process appends to `tools/atomizer/ledger/events.jsonl` (schema `tools/atomizer/LEDGER.md`): per-attempt wall split into model API, local tools and harness from the CLI's own timings, queue time, tokens, hashes, load, verdicts; each run's raw files are archived. Improvements are ledgered as prediction-then-outcome (`ledger/improvements.jsonl`). First one, S-01 (script-first fast path for compose and no-op repair), cut the compose/repair segment from 18.7 s to 1.6 s median and the median wall from 64.5 s to 50.9 s on five requests (`tools/atomizer/SPEED.md`). If your runner meters by stage, the same buckets would make your loop-1 speed numbers comparable.

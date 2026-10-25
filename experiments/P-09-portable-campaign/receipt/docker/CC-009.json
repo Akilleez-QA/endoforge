@@ -1,0 +1,217 @@
+{
+  "id": "CC-009",
+  "argv": [
+    "sudo",
+    "-n",
+    "docker",
+    "run",
+    "--rm",
+    "--pull=never",
+    "--network=none",
+    "--read-only",
+    "--user",
+    "1000:1000",
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges",
+    "--cpus=1",
+    "--memory=512m",
+    "--memory-swap=512m",
+    "--pids-limit=64",
+    "--tmpfs",
+    "/tmp:rw,nosuid,nodev,size=64m",
+    "--mount",
+    "type=bind,src=/home/user/Work/endoforge/experiments/P-09-portable-campaign/work/docker,dst=/out",
+    "--entrypoint",
+    "/usr/local/bin/node",
+    "endoforge-p09:probe",
+    "/bundle/campaigns/x1-spec-study/factory/gate.mjs",
+    "run",
+    "/out/CC-009"
+  ],
+  "exit": 0,
+  "wallMs": 1682.9357649985468,
+  "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 7929,\n   \"wasmSha256\": \"60c56cd9114be8ed2fdcef40759ce04efd4857986761a6a0cffc28fb0ec5bbb2\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"inHgVacToPsia\",\n    \"nh3SatLiquidDensityLbFt3\",\n    \"nh3SatVaporDensityLbFt3\",\n    \"nh3SatTempF\",\n    \"evapInventoryLb\",\n    \"nh3EvapInventoryLb\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 11,\n   \"total\": 11\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.042189\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+  "stderr": "",
+  "result": {
+    "at": "2026-10-18T18:45:47.358Z",
+    "gates": {
+      "G1_frozen": {
+        "ok": true
+      },
+      "G2_compiles": {
+        "ok": true,
+        "wasmBytes": 7929,
+        "wasmSha256": "60c56cd9114be8ed2fdcef40759ce04efd4857986761a6a0cffc28fb0ec5bbb2"
+      },
+      "G3_exports": {
+        "ok": true,
+        "exports": [
+          "inHgVacToPsia",
+          "nh3SatLiquidDensityLbFt3",
+          "nh3SatVaporDensityLbFt3",
+          "nh3SatTempF",
+          "evapInventoryLb",
+          "nh3EvapInventoryLb"
+        ]
+      },
+      "G4_tests": {
+        "ok": true,
+        "passed": 11,
+        "total": 11
+      },
+      "G6_bounded": {
+        "ok": true,
+        "maxMs": 0.042189
+      },
+      "G5_deterministic": {
+        "ok": true
+      },
+      "G7_glue": {
+        "ok": true
+      }
+    },
+    "tests": [
+      {
+        "name": "general inventory formula",
+        "fn": "evapInventoryLb",
+        "args": [
+          16,
+          0.8,
+          41.43,
+          0.1047
+        ],
+        "expect": 530.6,
+        "got": 530.63904,
+        "ms": 0.042,
+        "pass": true
+      },
+      {
+        "name": "headline ammonia bottom-feed -2F (pins A1-A3)",
+        "fn": "nh3EvapInventoryLb",
+        "args": [
+          16,
+          1,
+          -2
+        ],
+        "expect": 530.6,
+        "got": 530.6309551952558,
+        "ms": 0.038,
+        "pass": true
+      },
+      {
+        "name": "top-feed alternative",
+        "fn": "nh3EvapInventoryLb",
+        "args": [
+          16,
+          2,
+          -2
+        ],
+        "expect": 200,
+        "got": 200.033143183395,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "boundary zero volume",
+        "fn": "evapInventoryLb",
+        "args": [
+          0,
+          0.8,
+          41.43,
+          0.1047
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "boundary fraction 1.0 all liquid",
+        "fn": "evapInventoryLb",
+        "args": [
+          10,
+          1,
+          41.43,
+          0.1
+        ],
+        "expect": 414.3,
+        "got": 414.3,
+        "ms": 0.002,
+        "pass": true
+      },
+      {
+        "name": "invalid feed code traps",
+        "fn": "nh3EvapInventoryLb",
+        "args": [
+          16,
+          0,
+          -2
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.042,
+        "pass": true
+      },
+      {
+        "name": "negative volume traps",
+        "fn": "evapInventoryLb",
+        "args": [
+          -1,
+          0.8,
+          41.43,
+          0.1
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.003,
+        "pass": true
+      },
+      {
+        "name": "nh3 liquid density at 0F",
+        "fn": "nh3SatLiquidDensityLbFt3",
+        "args": [
+          0
+        ],
+        "expect": 41.34,
+        "got": 41.34,
+        "ms": 0.005,
+        "pass": true
+      },
+      {
+        "name": "5 inHg vacuum to psia",
+        "fn": "inHgVacToPsia",
+        "args": [
+          5
+        ],
+        "expect": 12.24,
+        "got": 12.24,
+        "ms": 0.002,
+        "pass": true
+      },
+      {
+        "name": "nh3 sat temp at 1 atm",
+        "fn": "nh3SatTempF",
+        "args": [
+          14.696
+        ],
+        "expect": -28,
+        "got": -27.89856032733226,
+        "ms": 0.016,
+        "pass": true
+      },
+      {
+        "name": "nh3 sat temp at 5 inHg vac",
+        "fn": "nh3SatTempF",
+        "args": [
+          12.24
+        ],
+        "expect": -34,
+        "got": -34.397515512670324,
+        "ms": 0,
+        "pass": true
+      }
+    ],
+    "promotable": true
+  },
+  "wasmSha256": "60c56cd9114be8ed2fdcef40759ce04efd4857986761a6a0cffc28fb0ec5bbb2"
+}

@@ -1,0 +1,217 @@
+=== FILE: CONTRACT.md ===
+# Acceptance contract for C-022
+
+Written with the timer running. Do not record times here; the kit records them. Do not consult the requester during the timed interval.
+
+## 1. Observable
+
+The author receives the signed difference, in psi, between measured condenser pressure and the selected refrigerant’s saturation pressure at liquid temperature plus subcooling.
+
+## 2. Authoritative inputs
+
+| Input | Source | Wins on conflict? |
+|---|---|---|
+| Export signature, units, ranges and refrigerant codes | Supplied stub | Yes |
+| Pressure, liquid temperature, subcooling, atmosphere and refrigerant | Explicit call arguments | Override assumed operating values |
+| Saturation pressure | Published R-717 or R-134a saturation tables or an accepted thermodynamic correlation | Overrides undocumented approximations |
+| Original workbook | Named but unavailable | Cannot establish additional formulas or thresholds |
+| Operating interpretation and safety limitations | Stub assumption and notes | Required interpretation |
+
+## 3. Required behaviours and acceptance tests
+
+Let `f` denote `nonCondensableExcessPsi`, with arguments in stub order.
+
+| # | Behaviour | Acceptance test (input → expected) | Universal gate / domain invariant / residual |
+|---|---|---|---|
+| 1 | Use signed absolute-pressure subtraction: `f = head + atmosphere − Psat(liquid + subcooling, refrigerant)` | `[150,68,0,14.7,0] → 40.3 ± 0.8 psi` | domain invariant |
+| 2 | Preserve pressure sensitivity and residual scaling | `[190.3,68,0,14.7,0] → 80.6 ± 0.8 psi` | domain invariant |
+| 3 | Apply local atmosphere with positive sign | `[150,68,0,15.7,0] → 41.3 ± 0.8 psi` | domain invariant |
+| 4 | Add subcooling to liquid temperature before evaluating saturation | `[150,58,10,14.7,0] → 40.3 ± 0.8 psi` | domain invariant |
+| 5 | Honor refrigerant selection | `[150,68,0,14.7,1] → 81.8 ± 0.8 psi` | residual |
+| 6 | Preserve negative differences without clamping | `[100,68,0,14.7,0] → −9.7 ± 0.8 psi` | domain invariant |
+| 7 | Accept inclusive liquid-temperature boundary and unrestricted nonnegative subcooling | `[150,−40,108,14.7,0] → 40.3 ± 0.8 psi` | domain invariant |
+| 8 | Reject pressure outside its stated range | `[−14.7,68,0,14.7,0] → trap` | universal gate |
+| 9 | Reject liquid temperature below its stated range | `[150,−40.1,0,14.7,0] → trap` | universal gate |
+| 10 | Reject liquid temperature above its stated range | `[150,120.1,0,14.7,0] → trap` | universal gate |
+| 11 | Reject negative subcooling | `[150,68,−0.1,14.7,0] → trap` | universal gate |
+| 12 | Reject nonpositive atmospheric pressure | `[150,68,0,0,0] → trap` | universal gate |
+| 13 | Reject unsupported refrigerant codes | `[150,68,0,14.7,2] → trap` | universal gate |
+| 14 | Reject fractional refrigerant codes | `[150,68,0,14.7,0.5] → trap` | universal gate |
+
+The assumption is pinned: code 0 means ammonia, and supplied zero subcooling means saturation temperature equals measured liquid temperature. The operating premise is idle or steady state. When actual subcooling is unknown, this treatment understates saturation pressure and overstates excess pressure: the result is an upper bound, not a conservative estimate. Explicit nonzero subcooling and code 1 must still be honored.
+
+## 4. Failure meaning
+
+A wrong answer includes the wrong refrigerant, reversed subcooling correction, gauge/absolute confusion, clamping negative differences, or silently substituting defaults. A refusal is a trapped call; it is required for invalid arguments and is a failure for tested valid arguments. Asking the requester means seeking the missing physical information using the question below; it cannot replace a numeric answer for valid supplied arguments.
+
+When operating facts are unknown, the requester should receive the stated upper-bound interpretation and clarification question rather than an invented measurement. Do not purge on this number alone; confirm subcooling or saturation temperature and follow the site purge procedure. Ammonia is toxic and flammable; purge only through an approved purger or water-purge arrangement.
+
+## 5. Permitted effects
+
+None.
+
+## 6. Composition
+
+A refrigerant-property library supplies saturation pressure; unit conversion and arithmetic supply temperature correction and gauge/absolute conversion. Argument validation enforces the stub domain. No existing Field OS capability was identified. Workbook ingestion, logging, alerts and purge control are outside this export.
+
+## Open
+
+What is the condenser outlet liquid subcooling in F (or the true saturation temperature at the condenser, from a thermometer well in the condensing zone), and which refrigerant is in the system per the nameplate?
+
+The numeric export is determined when its arguments are supplied. Applying it to the actual plant remains underdetermined until these operating facts are established.
+=== END FILE ===
+=== FILE: properties.md ===
+# Verification procedure
+
+Use the arguments in the stub’s order. Validate their ranges and refrigerant code before calculation. Compute saturation temperature as `liquidTemp + subcooling`, evaluate saturation pressure for the selected refrigerant in psia, and return `condensingPressure + atmosphericPressure − saturationPressure` in psi.
+
+Reference sources:
+
+- [Parker Refrigerating Specialties Catalog C-12, Temperature–Pressure Chart](https://www.parker.com/content/dam/Parker-com/Literature/Refrigerating-Specialties-Division/Literature/Catalogs/Catalog-C12.pdf): at 20°C, R-717 saturation pressure is approximately 7.56 barg, corresponding to approximately 109.7 psig at standard atmosphere.
+- [Carrier R-134a Temperature–Pressure Chart](https://www.transcentral.carrier.com/CPGTechPubs/toolbox/temp-pressure-chart_r134a.html): at 68°F, R-134a saturation pressure is 68.2 psig.
+- Unit definitions: `F = 1.8 × C + 32`; therefore 20°C is 68°F. Gauge pressure equals absolute pressure minus local atmospheric pressure.
+- Dalton’s partial-pressure relation motivates subtracting the refrigerant saturation pressure from total absolute pressure under the stated equilibrium assumption. Negative calculated residuals remain signed diagnostic differences.
+
+All numeric rows allow 0.8 psi absolute error for chart rounding, interpolation, accepted correlation differences and the one-decimal output. This does not represent uncertainty in a plant measurement.
+
+## Reference and assumption
+
+`ammonia_zero_subcooling_assumption` uses code 0 and zero subcooling at 68°F. From the Parker reference, `150 − 109.7 = 40.3 psi`. This pins the ammonia assumption without allowing the implementation to ignore explicit arguments.
+
+`r134a_reference` uses the same physical inputs with code 1. From Carrier, `150 − 68.2 = 81.8 psi`. The substantial difference detects an implementation hardcoded to ammonia.
+
+## Monotonicity and affine scaling
+
+Holding temperature, subcooling, atmosphere and refrigerant fixed, increasing head pressure by Δ must increase the output by Δ.
+
+`ammonia_zero_subcooling_assumption` and `head_pressure_residual_doubling` increase head pressure from 150 to 190.3 psig. Expected excess increases from 40.3 to 80.6 psi. This also instantiates residual scaling: doubling the head-pressure displacement above the saturation gauge pressure doubles the excess. Scaling every numerical input is not a physical symmetry.
+
+`local_atmosphere_positive_shift` increases atmosphere from 14.7 to 15.7 psia with the same gauge head pressure. Excess increases from 40.3 to 41.3 psi.
+
+## Temperature decomposition identity
+
+Equal sums of liquid temperature and subcooling must produce equal saturation pressure and excess, with all other arguments fixed.
+
+The rows `ammonia_zero_subcooling_assumption`, `subcooling_temperature_identity` and `inclusive_liquid_lower_boundary` respectively use `(68,0)`, `(58,10)` and `(−40,108)` °F. Each sum is 68°F and each expected result is 40.3 psi. These cases detect subtracting subcooling, ignoring it, or imposing an unstated upper limit on subcooling.
+
+## Inverse round-trip and dimensional identity
+
+The arithmetic inverse is `head = excess + Psat_abs − atmosphere`; every pressure term has units of psi. No second export is assumed.
+
+At 68°F for ammonia and atmosphere 14.7 psia, use saturation gauge pressure approximately 109.7 psig. The reference row reconstructs `40.3 + 109.7 = 150 psig`; the pressure-scaling row reconstructs `80.6 + 109.7 = 190.3 psig`. Thus the same executable rows check both forward values used in the inverse round-trip.
+
+## Signed residual
+
+`negative_excess_is_not_clamped` lowers head pressure to 100 psig at the reference temperature. The expected arithmetic difference is `100 − 109.7 = −9.7 psi`. A physical interpretation must not silently replace this observable with zero.
+
+## Boundaries and guards
+
+`inclusive_liquid_lower_boundary` accepts liquid temperature exactly −40°F and computes at a valid corrected saturation temperature of 68°F. Zero subcooling is also an accepted boundary in the reference rows.
+
+The following rows must trap rather than return a number or clamp inputs:
+
+- `reject_head_lower_boundary`: −14.7 psig violates the strict pressure lower bound.
+- `reject_liquid_below_range`: −40.1°F violates the inclusive liquid lower bound.
+- `reject_liquid_above_range`: 120.1°F violates the inclusive liquid upper bound.
+- `reject_negative_subcooling`: −0.1°F violates nonnegative subcooling.
+- `reject_zero_atmosphere`: 0 psia violates strictly positive atmosphere.
+- `reject_unknown_refrigerant`: code 2 is unsupported.
+- `reject_fractional_refrigerant`: code 0.5 is not an integer member of `{0,1}`.
+
+Liquid-temperature bounds apply to the supplied liquid temperature, not automatically to its sum with subcooling. The stub states no numerical upper bound on subcooling. These tests require no correlation extrapolation beyond a valid saturation state.
+=== END FILE ===
+=== FILE: tests.json ===
+[
+  {
+    "name": "ammonia_zero_subcooling_assumption",
+    "fn": "nonCondensableExcessPsi",
+    "args": [150, 68, 0, 14.7, 0],
+    "expect": 40.3,
+    "tol": 0.8
+  },
+  {
+    "name": "head_pressure_residual_doubling",
+    "fn": "nonCondensableExcessPsi",
+    "args": [190.3, 68, 0, 14.7, 0],
+    "expect": 80.6,
+    "tol": 0.8
+  },
+  {
+    "name": "local_atmosphere_positive_shift",
+    "fn": "nonCondensableExcessPsi",
+    "args": [150, 68, 0, 15.7, 0],
+    "expect": 41.3,
+    "tol": 0.8
+  },
+  {
+    "name": "subcooling_temperature_identity",
+    "fn": "nonCondensableExcessPsi",
+    "args": [150, 58, 10, 14.7, 0],
+    "expect": 40.3,
+    "tol": 0.8
+  },
+  {
+    "name": "r134a_reference",
+    "fn": "nonCondensableExcessPsi",
+    "args": [150, 68, 0, 14.7, 1],
+    "expect": 81.8,
+    "tol": 0.8
+  },
+  {
+    "name": "negative_excess_is_not_clamped",
+    "fn": "nonCondensableExcessPsi",
+    "args": [100, 68, 0, 14.7, 0],
+    "expect": -9.7,
+    "tol": 0.8
+  },
+  {
+    "name": "inclusive_liquid_lower_boundary",
+    "fn": "nonCondensableExcessPsi",
+    "args": [150, -40, 108, 14.7, 0],
+    "expect": 40.3,
+    "tol": 0.8
+  },
+  {
+    "name": "reject_head_lower_boundary",
+    "fn": "nonCondensableExcessPsi",
+    "args": [-14.7, 68, 0, 14.7, 0],
+    "expectError": true
+  },
+  {
+    "name": "reject_liquid_below_range",
+    "fn": "nonCondensableExcessPsi",
+    "args": [150, -40.1, 0, 14.7, 0],
+    "expectError": true
+  },
+  {
+    "name": "reject_liquid_above_range",
+    "fn": "nonCondensableExcessPsi",
+    "args": [150, 120.1, 0, 14.7, 0],
+    "expectError": true
+  },
+  {
+    "name": "reject_negative_subcooling",
+    "fn": "nonCondensableExcessPsi",
+    "args": [150, 68, -0.1, 14.7, 0],
+    "expectError": true
+  },
+  {
+    "name": "reject_zero_atmosphere",
+    "fn": "nonCondensableExcessPsi",
+    "args": [150, 68, 0, 0, 0],
+    "expectError": true
+  },
+  {
+    "name": "reject_unknown_refrigerant",
+    "fn": "nonCondensableExcessPsi",
+    "args": [150, 68, 0, 14.7, 2],
+    "expectError": true
+  },
+  {
+    "name": "reject_fractional_refrigerant",
+    "fn": "nonCondensableExcessPsi",
+    "args": [150, 68, 0, 14.7, 0.5],
+    "expectError": true
+  }
+]
+=== END FILE ===

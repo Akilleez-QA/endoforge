@@ -1,0 +1,157 @@
+{
+  "schema": "endoforge.portability-qualification.v1",
+  "checkpoint_controls": {
+    "schema": "endoforge.portability-test.v1",
+    "passed": true,
+    "checks": [
+      "roundtrip",
+      "source-immutable",
+      "wrong-key",
+      "ciphertext-tamper",
+      "existing-destination",
+      "existing-archive",
+      "credential-file",
+      "credential-content",
+      "symlink",
+      "hardlink",
+      "traversal",
+      "absolute",
+      "archive-symlink",
+      "duplicate",
+      "unknown-version"
+    ],
+    "count": 15
+  },
+  "toolchain": {
+    "schema": "endoforge.toolchain.v1",
+    "platform": "linux-x86_64-glibc",
+    "node": "v22.18.0",
+    "npm": "12.0.2",
+    "assemblyscript": "0.28.20",
+    "wasmtime": "wasmtime 49.0.3 (f96eabaa1 2026-10-14)",
+    "assumptions": [
+      "Python 3 standard library",
+      "Linux x86_64 with compatible glibc",
+      "/usr/bin/env and shared libraries",
+      "Pinned local Wasmtime executable compatible with system shared libraries"
+    ]
+  },
+  "local_replay": {
+    "passed": true,
+    "candidates": 19,
+    "tests": 242
+  },
+  "second_host_bootstrap": {
+    "remote": "/tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b",
+    "host": "fieldops",
+    "archive_sha256": "ed356d5f278ca3e8b5c8af3b70b2ce454ceff444c13c6e78fae896e52f7982f3",
+    "state": "offline-replay-passed",
+    "source_machine": "8a6f803cf97db99e3b840de2b4392a814664c0d2904944fb753deacd2d062ebd",
+    "destination_machine": "131b04865c7ae11b8aa180da9e7cb7dbb4eaec95db2b4d40a5ca75c4f15dd7c5",
+    "candidates": 19,
+    "tests": 242,
+    "network": "bubblewrap --unshare-all, npm --offline",
+    "no_existing_checkout_or_cache": true
+  },
+  "N39": "passed actual82-file encrypted recoverable campaign checkpoint; authenticated wrongkey/corruption controls pass",
+  "N40": "passed actual current live campaign pending offline portable-consumer stage on different physical host;4/4 matching outcomes and exact publication; second resume idempotent",
+  "N41": "passed standalone content-pinned bootstrap/offline replay on both hosts",
+  "wasmtime_smoke": {
+    "local": true,
+    "fieldops": true
+  },
+  "actualResume": {
+    "schema": "endoforge.actual-cross-host-resume.v1",
+    "state": "passed",
+    "host": "fieldops",
+    "remote": "/tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b",
+    "identityCustody": "/home/user/.local/share/endoforge/checkpoint-identities/next50-20261018-actual01.agekey",
+    "modelAuthentication": "not required: only pending offline stage resumes",
+    "pack": {
+      "schema": "endoforge.checkpoint.v1",
+      "files": 82,
+      "archive_sha256": "e62c7eec59491721977e0da23782b522906014c20aa4da38ad4a02ac4a8aaefb",
+      "plaintext_bytes": 633147
+    },
+    "localRestore": {
+      "schema": "endoforge.checkpoint.v1",
+      "files": 82,
+      "archive_sha256": "e62c7eec59491721977e0da23782b522906014c20aa4da38ad4a02ac4a8aaefb"
+    },
+    "sourceMachineSha256": "8a6f803cf97db99e3b840de2b4392a814664c0d2904944fb753deacd2d062ebd",
+    "destinationMachineSha256": "131b04865c7ae11b8aa180da9e7cb7dbb4eaec95db2b4d40a5ca75c4f15dd7c5",
+    "remoteRestore": {
+      "schema": "endoforge.checkpoint.v1",
+      "files": 82,
+      "archive_sha256": "e62c7eec59491721977e0da23782b522906014c20aa4da38ad4a02ac4a8aaefb"
+    },
+    "passed": true,
+    "sourceImmutable": true,
+    "checkpointArchiveSha256": "e62c7eec59491721977e0da23782b522906014c20aa4da38ad4a02ac4a8aaefb",
+    "matchingPublicationSha256": "d1dad4df9f974c01d2a3a11de0202ab7ad51b37ffc5e4c1013a8ef19ea5a5677",
+    "matchingModuleSha256": "f3177f3d3b8c0ec2322067a2c5c3c127fb2d0ed6cffa0315c0aa2e1f7a64f81a",
+    "onePublication": true,
+    "secondResumeIdempotent": true,
+    "remoteOwnedStagingRemoved": true,
+    "completedStagesPreserved": [
+      "intake",
+      "paired-evals",
+      "freeze",
+      "generate",
+      "compile",
+      "bounded-evals",
+      "trusted-gates",
+      "publish"
+    ],
+    "resumedState": {
+      "artifactHash": "75bb9be879490d961d2b5510b32aa908fb9a42743fab65a117fbd6f569867d65",
+      "candidateHash": "75bb9be879490d961d2b5510b32aa908fb9a42743fab65a117fbd6f569867d65",
+      "completedStages": [
+        "intake",
+        "paired-evals",
+        "freeze",
+        "generate",
+        "compile",
+        "bounded-evals",
+        "trusted-gates",
+        "publish",
+        "portable-consumer"
+      ],
+      "frozenHash": "8abe905e136149e47bb426ad21f0944f103e2a88a0e2762193114c4687b235d9",
+      "generatorStarted": true,
+      "job": "dev-affine-01",
+      "pendingStages": [],
+      "stage": "portable-consumer-completed",
+      "version": 1,
+      "wasmHash": "f3177f3d3b8c0ec2322067a2c5c3c127fb2d0ed6cffa0315c0aa2e1f7a64f81a"
+    }
+  },
+  "actualCheckpointControls": {
+    "passed": true,
+    "scope": "actual live checkpoint authentication controls",
+    "archiveUnchanged": true,
+    "archiveSha256": "e62c7eec59491721977e0da23782b522906014c20aa4da38ad4a02ac4a8aaefb",
+    "controls": [
+      {
+        "control": "actual-wrongkey",
+        "rejected": true,
+        "destinationCreated": false,
+        "error": "checkpoint decryption/authentication failed"
+      },
+      {
+        "control": "actual-corrupt",
+        "rejected": true,
+        "destinationCreated": false,
+        "error": "checkpoint decryption/authentication failed"
+      }
+    ],
+    "identityPermissions": "0o600"
+  },
+  "remoteStaging": "all owned paths removed after receipts returned",
+  "limits": [
+    "Linux x86_64 to compatible Linux x86_64 only",
+    "remote stage uses no model authentication because all model stages already complete",
+    "pending deterministic consumer stage resumed; Docker/model stages did not rerun remotely",
+    "reference fixture retained as provenance but unrelated refrigeration rules were not applied to Celsius/Fahrenheit request"
+  ]
+}

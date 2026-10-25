@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "passed": true,
+  "sensitive": [
+    {
+      "path": "c",
+      "outcome": "underdetermined",
+      "reason": "decision-changing missing input",
+      "delta": 180
+    }
+  ],
+  "harmless": [
+    {
+      "path": "c",
+      "outcome": "stable-default",
+      "delta": 0,
+      "tolerance": 1e-9,
+      "evidenceHash": "a14b10abddc494a06e770fd9e8ff06e581a638762650d7d73cb7a1835f504e60"
+    }
+  ],
+  "required": [
+    {
+      "path": "c",
+      "outcome": "required-input",
+      "decisionStable": false,
+      "evidenceHash": "a25aa6c5d14058b971d838d7ac715306a09c30b0fdb6e7f53b502eb478917cb0"
+    }
+  ],
+  "limits": "Paired results are supplied evidence; upstream independent reference supplies their truth."
+}

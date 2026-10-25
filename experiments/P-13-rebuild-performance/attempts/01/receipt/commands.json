@@ -1,0 +1,31 @@
+[
+  {
+    "argv": [
+      "git",
+      "-C",
+      "/home/user/Work/endoforge",
+      "rev-parse",
+      "HEAD"
+    ],
+    "exit": 0,
+    "stdout": "226f8bb9ac8c0d5e7f09a006aef02a874322fcf3\n",
+    "stderr": "",
+    "wallMs": 2.170384999772068
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "build",
+      "--no-cache",
+      "-t",
+      "endoforge-p13:rebuild",
+      "/home/user/Work/endoforge/experiments/P-13-rebuild-performance/work/context"
+    ],
+    "exit": 1,
+    "stdout": "",
+    "stderr": "#0 building with \"default\" instance using docker driver\n\n#1 [internal] load build definition from Dockerfile\n#1 transferring dockerfile: 361B done\n#1 DONE 0.1s\n\n#2 [internal] load metadata for docker.io/library/node@sha256:752ea8a2f758c34002a0461bd9f1cee4f9a3c36d48494586f60ffce1fc708e0e\n#2 DONE 1.2s\n\n#3 [internal] load .dockerignore\n#3 transferring context: 2B done\n#3 DONE 0.0s\n\n#4 [internal] load build context\n#4 DONE 0.0s\n\n#5 [1/6] FROM docker.io/library/node@sha256:752ea8a2f758c34002a0461bd9f1cee4f9a3c36d48494586f60ffce1fc708e0e\n#5 resolve docker.io/library/node@sha256:752ea8a2f758c34002a0461bd9f1cee4f9a3c36d48494586f60ffce1fc708e0e 0.1s done\n#5 DONE 0.1s\n\n#5 [1/6] FROM docker.io/library/node@sha256:752ea8a2f758c34002a0461bd9f1cee4f9a3c36d48494586f60ffce1fc708e0e\n#5 CACHED\n\n#4 [internal] load build context\n#4 transferring context: 18.80kB 0.0s done\n#4 DONE 0.1s\n\n#6 [2/6] WORKDIR /bundle/experiments/P-02-compiler-in-isolate\n#6 DONE 0.2s\n\n#7 [3/6] COPY package.json package-lock.json ./\n#7 DONE 0.2s\n\n#8 [4/6] RUN npm ci --ignore-scripts --no-audit --no-fund\n#8 ERROR: process \"/bin/sh -c npm ci --ignore-scripts --no-audit --no-fund\" did not complete successfully: failed to create endpoint f0zylbelba73bxgcrsdmq4z4m on network bridge: adding interface vethe283ea6 to bridge docker0 failed: Device does not exist\n------\n > [4/6] RUN npm ci --ignore-scripts --no-audit --no-fund:\n------\nDockerfile:4\n--------------------\n   2 |     WORKDIR /bundle/experiments/P-02-compiler-in-isolate\n   3 |     COPY package.json package-lock.json ./\n   4 | >>> RUN npm ci --ignore-scripts --no-audit --no-fund\n   5 |     COPY gate.mjs glue.schema.json /bundle/campaigns/x1-spec-study/factory/\n   6 |     ENV HOME=/tmp\n--------------------\nERROR: failed to build: failed to solve: process \"/bin/sh -c npm ci --ignore-scripts --no-audit --no-fund\" did not complete successfully: failed to create endpoint f0zylbelba73bxgcrsdmq4z4m on network bridge: adding interface vethe283ea6 to bridge docker0 failed: Device does not exist\n",
+    "wallMs": 2536.251255995012
+  }
+]

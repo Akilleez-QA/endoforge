@@ -1,0 +1,47 @@
+{
+  "scope": {
+    "Description": "endoforge-model-journal:a8c8f0a87ba24b3b83ba6ec01cb603e4",
+    "LoadState": "loaded",
+    "ActiveState": "active",
+    "ControlGroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/endoforge-worker-a8c8f0a87ba24b3b83ba6ec01cb603e4.scope"
+  },
+  "members": [
+    {
+      "pid": 313613,
+      "starttime": "5625625",
+      "bootId": "7825b838-79a4-4963-8969-3a87477e4ce4",
+      "state": "S"
+    },
+    {
+      "pid": 313616,
+      "starttime": "5625627",
+      "bootId": "7825b838-79a4-4963-8969-3a87477e4ce4",
+      "state": "S"
+    },
+    {
+      "pid": 313617,
+      "starttime": "5625627",
+      "bootId": "7825b838-79a4-4963-8969-3a87477e4ce4",
+      "state": "S"
+    },
+    {
+      "pid": 313618,
+      "starttime": "5625627",
+      "bootId": "7825b838-79a4-4963-8969-3a87477e4ce4",
+      "state": "S"
+    }
+  ],
+  "controller": {
+    "pid": 313609,
+    "starttime": "5625614",
+    "bootId": "7825b838-79a4-4963-8969-3a87477e4ce4",
+    "state": "S"
+  },
+  "foreign": {
+    "Description": "[systemd-run] /usr/bin/sleep 25",
+    "LoadState": "loaded",
+    "ActiveState": "active",
+    "ControlGroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/endoforge-runtime-foreign-bc05ade6a18d4df289a1705cf34cbb02.scope"
+  },
+  "liveControllerFenceDenied": true
+}

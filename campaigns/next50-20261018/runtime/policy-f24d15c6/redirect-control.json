@@ -1,0 +1,23 @@
+{
+  "upstreamInjection": "global DNS and connection numerically redirected to local testTLS server only in trusted proxy",
+  "result": {
+    "stdout": "",
+    "stderr": "  % Total    % Received % Xferd  Average Speed  Time    Time    Time   Current\n                                 Dload  Upload  Total   Spent   Left   Speed\n\r  0      0   0      0   0      0      0      0                              0\r  0      0   0      0   0      0      0      0                              0\r  0      0   0      0   0      0      0      0                              0\n2026/10/18 20:40:08 socat[4] E write(5, 0x564a32cfb000, 24): Broken pipe\n\r  0      0   0      0   0      0      0      0                              0curl: (22) The requested URL returned error: 403\n",
+    "version": 1,
+    "exit": 22,
+    "outcome": "worker_failed",
+    "wallMs": 27.092161995824426,
+    "outputLimit": 1048576
+  },
+  "events": [
+    {
+      "host": "redirect.test",
+      "decision": "allowed",
+      "ip": "93.184.216.34"
+    },
+    {
+      "decision": "denied",
+      "reason": "destination denied"
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "at": "2026-10-18T07:35:00Z",
+  "rule": "PRECOMMIT.md section 4 (re-check after step 3)",
+  "measured": {
+    "spentTokens": 4460466,
+    "incumbentRunMeanTokens": 18173,
+    "scoringPerArtefactAllOracles": 12649,
+    "incumbentWallMedian_s": 45.929500000000004
+  },
+  "smokeEstimates": {
+    "S-new": 25600,
+    "G-new": 30000,
+    "persona": 6000,
+    "D02repairWhenTriggered": 45000,
+    "repairRate": 0.7
+  },
+  "projection": {
+    "screen": 2984400,
+    "sealed": 2984400,
+    "misc": 300000,
+    "total": 10729266
+  },
+  "thresholds": {
+    "reduceSealedAbove": 11500000,
+    "addCornerCBelow": 9000000,
+    "hardStop": 12000000,
+    "target": 8000000
+  },
+  "decision": "screen = A, B, E on all 20 working requests; sealed = A, B, E on all 20 sealed requests; corner C not added; target of 8M already missed (Codex web-search waste and the critic, recorded)",
+  "noiseFloor": {
+    "cleanR1": 4,
+    "cleanR2": 3,
+    "absDelta": 1,
+    "F01met": true,
+    "resizeTriggered": false
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "request": {
+    "id": "dev-length-02",
+    "raw": "Convert finite distance m in [0,1000000] metres to kilometres, absolute tolerance 1e-9 km. Refuse other values naming m. Require m; return number labelled km."
+  },
+  "signature": {
+    "version": 1,
+    "name": "metresToKilometres",
+    "inputs": [
+      {
+        "path": "m",
+        "type": "number",
+        "unit": "m",
+        "domain": [
+          0,
+          1000000
+        ]
+      }
+    ],
+    "output": {
+      "type": "number",
+      "unit": "km"
+    }
+  },
+  "reference": null
+}

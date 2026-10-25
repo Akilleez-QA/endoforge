@@ -1,0 +1,174 @@
+"""Independent physical arithmetic/condition replay, bounded frozen historical WASM.
+
+No historical model outputs are reference truth. Explicit supplied coefficients,
+point pairs and physical inequalities are distinguished from unresolved tables.
+"""
+import collections,hashlib,json,math,time
+from pathlib import Path
+from tools.factory_runtime import wasm
+R=Path(__file__).resolve().parents[2];O=R/'campaigns/next50-20261018/runtime/historical-physics';H=R/'campaigns/hillclimb-loop-01';F=R/'tools/atomizer/work/baseline-20/runs'
+IDS=['CC-009','CC-013','C-007','CC-022'];ARMS=['incumbent','fast-path']
+def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
+def save(name,value):(O/name).write_text(json.dumps(value,indent=2,allow_nan=False)+'\n')
+def directory(arm,id):return H/'work/runs/s3'/('inc-low-r1-'+id)/id if arm=='incumbent' else F/id/'atoms/direct/work'/id
+
+def parse(raw):
+ if raw['exit']!=0:return None
+ try:value=float(raw['stdout'].strip().splitlines()[-1]);return value if math.isfinite(value) else None
+ except (ValueError,IndexError):return None
+
+def judge(raw,kind,expected=None,tolerance=0,unit=None,expected_unit=None):
+ value=parse(raw);semantic_refusal=raw['exit']!=0 and 'wasm trap: wasm `unreachable` instruction executed' in raw['stderr'] and not raw.get('wallTimeout')
+ if kind=='refusal':return semantic_refusal
+ if unit is not None and unit not in {'F':'degF','degF':'degF','°F':'degF','lb':'lb','psi/F':'psi/degF','psi/degF':'psi/degF','psi':'psi'}.keys():return False
+ canonical={'F':'degF','degF':'degF','°F':'degF','lb':'lb','psi/F':'psi/degF','psi/degF':'psi/degF','psi':'psi'}
+ if expected_unit and canonical.get(unit,unit)!=canonical.get(expected_unit,expected_unit):return False
+ if value is None:return False
+ if kind=='range':return expected[0]-tolerance<=value<=expected[1]+tolerance
+ if kind=='below':return value<expected
+ return abs(value-expected)<=tolerance
+
+def main():
+ O.mkdir(parents=True,exist_ok=False)
+ cases=[];maps=[];source={};missing=[]
+ def criteria(id,family,line):
+  path=H/'work/oracle'/family/'criteria'/(id+'.md');text=path.read_text().splitlines()[line-1];source[str(path.relative_to(R))]=sha(path)
+  return {'requestId':id,'family':family,'criteriaPath':str(path.relative_to(R)),'criteriaSha256':sha(path),'sourceLine':line,'sourceLineSha256':hashlib.sha256(text.encode()).hexdigest(),'clause':text}
+ def add(id,key,kind,expected,tol,inc,fast,units,condition,refs):
+  case={'id':id+':physics:'+key,'requestId':id,'kind':kind,'expected':expected,'tolerance':tol,'routes':{'incumbent':inc,'fast-path':fast},'expectedUnit':units,'referencePolicy':condition};cases.append(case)
+  for family,line,coverage in refs:
+   maps.append(dict(criteria(id,family,line),assertion=case['id'],coverage=coverage,referencePolicy=condition))
+  return case['id']
+ def gap(id,key,reason,refs,classification='interface-not-expressible'):
+  item={'id':id+':physics:'+key,'requestId':id,'outcome':classification,'passed':False,'reason':reason};missing.append(item)
+  for family,line in refs:maps.append(dict(criteria(id,family,line),assertion=item['id'],coverage='explicit-unresolved-remainder' if classification=='reference-unresolved' else 'definitive-missing-semantic-interface',reason=reason))
+ # Supplied density only: this checks conservation, not an NH3 table's accuracy.
+ for feed,inc_code,fast_code in [('bottom',2,1),('top',1,2)]:
+  add('CC-009','mass-upper-bound-'+feed,'range',[0,16*42.9],1e-9,['evaporatorInventoryLb',[16,-35,inc_code,3]],['evap_inventory_lb',[16,-35,3,fast_code]],'lb','Conditional on caller-supplied rhoL42.9lb/ft3 at this state: any physical mixture mass <=V*rhoL; no claim that historical property table is validated',[('oracle-opus',15,'complete-upper-bound-condition-at-supplied-state')])
+ for arm in ARMS:
+  # relation procedure below executes both feed cases, not just label inspection
+  pass
+ add('CC-009','zero-volume-refusal','refusal',None,0,['evaporatorInventoryLb',[0,-2,2,3]],['evap_inventory_lb',[0,-2,3,1]],'lb','Historical requested volume<=0 refusal; unlike the model-derived acceptance contract zero must refuse',[('oracle-sonnet',12,'volume-subcondition-only')])
+ add('CC-009','negative-volume-refusal','refusal',None,0,['evaporatorInventoryLb',[-1,-2,2,3]],['evap_inventory_lb',[-1,-2,3,1]],'lb','Explicit volume<=0 domain; no property lookup involved',[('oracle-sonnet',12,'volume-subcondition-only')])
+ add('CC-009','subunit-overfeed-ratio','refusal',None,0,['evaporatorInventoryLb',[16,-2,2,.5]],['evap_inventory_lb',[16,-2,.5,1]],'lb','Subunit overfeed ratio violates given ratio domain; does not establish source of liquid holdup',[('oracle-opus',16,'below-one-subcondition-only')])
+ gap('CC-009','actual-liquid-fraction-density','Neither frozen arm accepts measured liquid fraction, liquid density or vapor density; do not pass those values into circulation-ratio/feed slots. Conditional reference arithmetic is167.2lb at f.25 and332.8lb at f.5, but candidate has no lawful invocation for those supplied inputs.',[('oracle-codex',9),('oracle-codex',10),('oracle-opus',14)])
+ gap('CC-009','nh3-property-reference','Historical NH3 pressure/temperature assertions disagree and no independently qualified NH3 property provider is supplied here. No table value is adopted as authority.',[('oracle-sonnet',11),('oracle-opus',13)],'reference-unresolved')
+ # Explicit given water-Magnus coefficients; no ice-reference substitution.
+ def water(temp,rh):
+  tc=(temp-32)*5/9;g=math.log(rh/100)+17.625*tc/(243.04+tc);return 243.04*g/(17.625-g)*9/5+32
+ add('CC-013','zeroF-water50','numeric',water(0,50),.5,['dewPointF',[0,50]],['dewpoint_f',[0,50]],'degF','Explicit water-Magnus coefficients17.625/243.04 supplied by codex criterion; arithmetic reference only',[('oracle-sonnet',10,'complete-numeric-condition')])
+ for temp in [-40,-20,0,20,40]:
+  for rh in [1,25,75,99]:
+   add('CC-013',f'dew-below-{temp}-{rh}','below',temp,0,['dewPointF',[temp,rh]],['dewpoint_f',[temp,rh]],'degF','Physical water-dew inequality for RH<100, deterministic declared sample grid; not a proof over all floats',[('oracle-sonnet',11,'procedural-condition-grid')])
+ for rh in [-1,101,'nan','inf']:
+  add('CC-013','rh-refusal-'+str(rh),'refusal',None,0,['dewPointF',[-10,rh]],['dewpoint_f',[-10,rh]],'degF','Ordinary0–100% calculator RH domain; these are new cases beyond prior RH0/120 replay',[('oracle-sonnet',12,'RH-domain-procedure'),('oracle-opus',13,'ordinary-0to100-subcondition-only')])
+ add('CC-013','below-water-validity-range','refusal',None,0,['dewPointF',[-50,50]],['dewpoint_f',[-50,50]],'degF','Explicit historical criterion requires another validated correlation OR flag at-50F. Both frozen sources implement water Magnus; absent a replacement, refusal is required.',[('oracle-opus',12,'complete-range-condition-for-these-water-formula-artifacts')])
+ gap('CC-013','same-vapor-pressure-ice-output','The paired ABI has only a water-dew scalar with T/RH and no input RH-phase basis or independent frost output. Ice/water inversion at a shared vapor pressure needs a qualified saturation-reference adapter; do not inherit historical approximations as physical truth.',[('oracle-opus',10),('oracle-opus',11),('oracle-codex',9)],'reference-unresolved')
+ # Defined ideal-gas process, unlike an assumed universal refrigerant conversion.
+ p_after=100*(69+459.67)/(70+459.67);drop=100-p_after
+ add('CC-022','defined-rigid-ideal-gas','numeric',drop,.002,['psiPerDegF',[100,70]],['slope_psi_per_F',[100,p_after,70,69]],'psi/degF','Caller explicitly supplies rigid sealed ideal-gas process: Pabs/Tabsolute constant,529.67R initially; over one degreeF rate equals drop numerically',[('oracle-codex',9,'complete-defined-process-numeric-subcondition')])
+ for label,ph,pl,th,tl,expect,tol,refs in [('r22-supplied',76,68.5,45,40,1.5,.15,[('oracle-sonnet',8,'supplied-point-arithmetic-only'),('oracle-opus',14,'supplied-point-arithmetic-only')]),('r410-low-supplied',130,118,45,40,2.4,.24,[('oracle-sonnet',9,'supplied-point-arithmetic-only'),('oracle-opus',12,'supplied-point-arithmetic-only')]),('r410-high-supplied',340,317,105,100,4.6,.46,[('oracle-opus',13,'supplied-point-arithmetic-only')])]:
+  add('CC-022',label,'numeric',expect,tol,None,['slope_psi_per_F',[ph,pl,th,tl]],'psi/degF','Conditional on explicitly supplied P/T points; validates subtraction/division and units, NOT fluid/dew/bubble lookup truth',refs)
+ gap('CC-022','steam-and-refrigerant-tables','No qualified steam/R22/R410 pressure provider is bound to these artifacts; the fast-path accepts caller-supplied points but performs no property lookup, while incumbent models ideal gas. Arithmetic success cannot validate those property statements.',[('oracle-sonnet',7),('oracle-sonnet',8),('oracle-sonnet',9),('oracle-opus',12),('oracle-opus',13),('oracle-opus',14),('oracle-opus',15),('oracle-codex',8)],'reference-unresolved')
+ # C007 cannot be relabelled a heat-duty/endpoint kernel just because one helper subtracts.
+ gap('C-007','temperature-endpoints','Neither paired capability accepts inlet/outlet or verified saturation/liquid temperature as the requested semantic inputs and returns the requested temperature-drop output. Do not reinterpret measured-target deviation arguments as temperature endpoints.',[('oracle-sonnet',7),('oracle-sonnet',9),('oracle-codex',7),('oracle-codex',8)])
+ gap('C-007','interval-conversion','Neither paired capability exports a Fahrenheit-interval→Celsius-interval conversion; required45*5/9=25degC cannot be requested through the declared ABI.',[('oracle-codex',9)])
+ gap('C-007','heat-duty','Neither paired capability accepts supplied massflow1000lb/h and cp.35Btu/lb/degF to return15750Btu/h. A status code is not a heat-duty output.',[('oracle-opus',13)])
+ gap('C-007','coupled-physics','Neither paired interface can receive leaving-liquid and subcooler-suction-saturation temperatures together, or inlet and condensing-saturation temperatures, to evaluate the explicit impossibility conditions.',[('oracle-sonnet',8),('oracle-opus',14),('oracle-opus',15)])
+ # Complete40artifact identity inventory, narrow8artifact execution subset.
+ artifact_ids=json.loads((H/'receipt/freeze.json').read_text())['development'];inventory=[]
+ for id in artifact_ids:
+  for arm in ARMS:
+   d=directory(arm,id);entry={'requestId':id,'arm':arm,'selected':id in IDS,'files':{}}
+   for name in ['kernel.wasm','kernel.ts','glue.json','CONTRACT.md']:
+    file=d/name
+    if file.exists():entry['files'][name]={'path':str(file.relative_to(R)),'sha256':sha(file)};source[str(file.relative_to(R))]=sha(file)
+   inventory.append(entry)
+ save('precommit.json',{'version':1,'beforeFirstInvocationUnix':time.time(),'modelCalls':0,'selectedRequestIds':IDS,'artifactCount':40,'cases':cases,'missingConditions':missing,'referencePolicy':'Explicit supplied physical inputs and inequalities only; unresolved property truth remains unresolved; no keyword coverage inflation','sourceHashes':source,'implementationSha256':sha(__file__)})
+ rows=[]
+ for case in cases:
+  for arm in ARMS:
+   d=directory(arm,case['requestId']);route=case['routes'][arm]
+   if route is None:row={'passed':False,'outcome':'interface-not-expressible','reason':'No export with this physical process/point-pair interface'}
+   else:
+    glue=json.loads((d/'glue.json').read_text());export=next((x for x in glue.get('exports',[]) if x['name']==route[0]),None);unit=export.get('result',{}).get('unit') if export else None
+    # Internal exported helper may omit glue; explicit source ABI still pins its unit.
+    if unit is None:unit=case['expectedUnit']
+    raw=wasm.run(d/'kernel.wasm',export=route[0],args=route[1],fuel=100000,memory=1048576,epoch='100ms',wall=2)
+    ok=judge(raw,case['kind'],case['expected'],case['tolerance'],unit,case['expectedUnit']);row={'passed':ok,'outcome':'passed' if ok else 'criterion-failed','observed':parse(raw),'declaredUnit':unit,'raw':raw}
+   rows.append(dict(row,assertion=case['id'],requestId=case['requestId'],arm=arm))
+ # Feed-order relation uses correctly mapped codes from immutable ABI, no numeric fractions inherited.
+ for arm in ARMS:
+  d=directory(arm,'CC-009');fn='evaporatorInventoryLb' if arm=='incumbent' else 'evap_inventory_lb';args=([16,-2,1,3],[16,-2,2,3]) if arm=='incumbent' else ([16,-2,3,2],[16,-2,3,1]);raws=[wasm.run(d/'kernel.wasm',export=fn,args=a) for a in args];values=[parse(r) for r in raws];ok=all(v is not None for v in values) and values[0]<values[1];rows.append({'assertion':'CC-009:physics:top-less-than-bottom','requestId':'CC-009','arm':arm,'passed':ok,'outcome':'passed'if ok else'criterion-failed','values':values,'raw':raws})
+ maps.append(dict(criteria('CC-009','oracle-sonnet',10),assertion='CC-009:physics:top-less-than-bottom',coverage='complete-comparative-condition'))
+ # Strong checker controls: numeric wrong value/unit, nonfinite and fuel failure cannot be refusal.
+ controls=[]
+ fixtures={'good':'(module (func (export "run") (result f64) f64.const 45))','wrong':'(module (func (export "run") (result f64) f64.const 77))','refusal':'(module (func (export "run") unreachable))','loop':'(module (func (export "run") (loop br 0)))','nonfinite':'(module (func (export "run") (result f64) f64.const inf))'}
+ for name,text in fixtures.items():
+  file=O/(name+'.wat');file.write_text(text);raw=wasm.run(file);want=name=='refusal';kind='refusal'if name in ['refusal','loop']else'numeric';expected=45;accepted=judge(raw,kind,expected,0,'degF','degF');desired=name in ['good','refusal'];assert accepted==desired;controls.append({'fixture':name,'expectedAccepted':desired,'accepted':accepted,'raw':raw})
+ good=controls[0]['raw'];assert not judge(good,'numeric',45,0,'kg','degF');controls.append({'fixture':'wrong-unit','accepted':False,'expectedAccepted':False})
+ assert all(sha(R/path)==value for path,value in source.items()),'sourcechanged'
+ save('artifact-inventory.json',inventory);save('assertions.json',cases);save('observations.json',rows);save('clause-mappings.json',maps);save('unresolved-conditions.json',missing);save('checker-controls.json',controls);save('source-manifest.json',source)
+ summary={'version':1,'modelCalls':0,'selectedRequestIds':IDS,'frozenArtifactsInventoried':len(inventory),'selectedActualArtifacts':8,'numericOrDomainProcedures':len(cases)+1,'actualArmObservations':len(rows),'armOutcomes':{arm:dict(collections.Counter(r['outcome'] for r in rows if r['arm']==arm))for arm in ARMS},'mappedSourceClauses':len({(m['criteriaPath'],m['sourceLine'])for m in maps}),'mappingCount':len(maps),'unresolvedConditions':len(missing),'checkerControlsPassed':len(controls),'sourceUnchanged':True,'scope':'Additional literal physical/domain/numeric subconditions only; conditional P-T arithmetic does not validate property/reference truth, and unresolved remainder stays visible'}
+ save('summary.json',summary);print(json.dumps(summary))
+def standard_supplement():
+ # Conditional supplied arithmetic only: deliberately do not adjudicate standards.
+ source={};lfl=.038;cases=[];rows=[];maps=[]
+ def add(key,area,height,code,expected,condition,clauses,kind='numeric'):
+  cases.append({'id':'C-006:physics:'+key,'area':area,'height':height,'heightCode':code,'expected':expected,'tolerance':.0034 if kind=='numeric' else 0,'kind':kind,'condition':condition,'clauses':clauses})
+ raw=lambda area,height:2.5*lfl**1.25*height*math.sqrt(area)
+ add('wall-supplied-formula',20,1.8,2,raw(20,1.8),'Explicit raw formula and LFL supplied; no determination of applicable equipment/standard',[('oracle-sonnet',13),('oracle-opus',15)])
+ add('floor-raw-formula-branch',20,.6,0,raw(20,.6),'Raw formula branch only; conflicts with separately supplied minimum-threshold branch',[('oracle-sonnet',14)])
+ add('floor-minimum-branch',20,.6,0,.152,'Conditional explicit max(m1,raw) with m1=.152; not a ruling that this standard applies',[('oracle-opus',16)])
+ add('ceiling-explicit-cap-branch',3000,2.2,3,4.94,'Conditional explicit min(m3,raw) with m3=4.94; not legal applicability',[('oracle-opus',17)])
+ for area in [0,-1,'nan']:
+  add('invalid-area-'+str(area),area,1.8,2,None,'Explicit area>0 finite-domain requirement; no charge limit authority',[('oracle-sonnet',16)],'refusal')
+ for arm in ARMS:
+  d=directory(arm,'C-006')
+  for name in ['kernel.ts','kernel.wasm','glue.json','CONTRACT.md']:
+   file=d/name
+   if file.exists():source[str(file.relative_to(R))]=sha(file)
+ for family in ['oracle-sonnet','oracle-opus','oracle-codex']:
+  file=H/'work/oracle'/family/'criteria/C-006.md';source[str(file.relative_to(R))]=sha(file)
+ save('standard-supplement-precommit.json',{'version':1,'beforeFirstSupplementInvocationUnix':time.time(),'modelCalls':0,'cases':cases,'sourceHashes':source,'implementationSha256':sha(__file__),'rule':'Conditional arithmetic only. Conflicting floor rules retained as branches; no legal/compliance/property applicability ruling.'})
+ for case in cases:
+  for arm in ARMS:
+   fn='maxChargeR290Kg' if arm=='incumbent' else 'max_charge_kg';args=[case['area'],case['heightCode']if arm=='incumbent'else case['height']];d=directory(arm,'C-006');glue=json.loads((d/'glue.json').read_text());unit=next(e['result']['unit']for e in glue['exports']if e['name']==fn)
+   raw_run=wasm.run(d/'kernel.wasm',export=fn,args=args);ok=judge(raw_run,case['kind'],case['expected'],case['tolerance']) and unit=='kg';rows.append({'assertion':case['id'],'arm':arm,'passed':ok,'outcome':'passed' if ok else 'conditional-arithmetic-failed','observed':parse(raw_run),'declaredUnit':unit,'raw':raw_run})
+  for family,line in case['clauses']:
+   file=H/'work/oracle'/family/'criteria/C-006.md';text=file.read_text().splitlines()[line-1];maps.append({'requestId':'C-006','family':family,'criteriaPath':str(file.relative_to(R)),'criteriaSha256':sha(file),'sourceLine':line,'sourceLineSha256':hashlib.sha256(text.encode()).hexdigest(),'clause':text,'assertion':case['id'],'coverage':'conditional-raw-arithmetic-or-domain-only','authorityUnresolved':True,'condition':case['condition']})
+ assert all(sha(R/path)==value for path,value in source.items())
+ save('standard-supplement-cases.json',cases);save('standard-supplement-observations.json',rows);save('standard-supplement-mappings.json',maps)
+ summary={'version':1,'modelCalls':0,'procedures':len(cases),'actualArmObservations':len(rows),'outcomes':{arm:dict(collections.Counter(r['outcome']for r in rows if r['arm']==arm))for arm in ARMS},'uniqueClauses':len({(m['criteriaPath'],m['sourceLine'])for m in maps}),'conflictingBranchesRetained':['sonnetfloor-raw .113','opusfloor-minimum .152'],'normativeApplicability':'unresolved; no standard/edition/jurisdiction inferred','sourceUnchanged':True}
+ save('standard-supplement-summary.json',summary);print(json.dumps(summary))
+
+def failure_witnesses():
+ import subprocess
+ observations=json.loads((O/'observations.json').read_text());mappings=json.loads((O/'clause-mappings.json').read_text());supplement=json.loads((O/'standard-supplement-observations.json').read_text());suppmaps=json.loads((O/'standard-supplement-mappings.json').read_text())
+ selections=[{'requestId':id,'arm':arm,'path':str(directory(arm,id).relative_to(R))}for id in IDS for arm in ARMS]
+ program="import fs from 'node:fs';import {loadHistoricalArtifact} from './tools/factory_quality/historical_assertions.mjs';const x=JSON.parse(fs.readFileSync(0,'utf8'));console.log(JSON.stringify(x.map(r=>{let a=loadHistoricalArtifact(process.cwd(),r.path);return {...r,signatures:a.signatures,glue:a.glue,sources:a.sources}})));"
+ raw=subprocess.check_output(['node','--input-type=module','-e',program],input=json.dumps(selections),cwd=R,text=True);abi=json.loads(raw);save('actual-binary-interfaces.json',abi)
+ witnesses=[]
+ for row in observations+supplement:
+  if row['outcome']not in ['criterion-failed','conditional-arithmetic-failed','interface-not-expressible']:continue
+  linked=[m for m in mappings+suppmaps if m['assertion']==row['assertion']]
+  for m in linked:
+   witnesses.append({'version':1,'requestId':m['requestId'],'family':m['family'],'criteriaPath':m['criteriaPath'],'criteriaSha256':m['criteriaSha256'],'sourceLine':m['sourceLine'],'sourceLineSha256':m['sourceLineSha256'],'arm':row['arm'],'assertion':row['assertion'],'necessaryPredicate':m.get('condition',m.get('referencePolicy',m.get('coverage'))),'predicatePassed':False,'fullMixedClauseFalseUnderDeclaredScope':True,'scope':'Direct documented artifact interface under explicitly supplied conditional values; no outside composition, legal applicability, or property-table truth inferred','evidence':'standard-supplement-observations.json'if row in supplement else'observations.json','outcome':row['outcome'],'observed':row.get('observed'),'conditionalAuthorityOnly':m.get('authorityUnresolved',False)})
+ # Necessary semantic input/output absence is a false witness, never evidence of
+ # successful physics. No invalid positional remapping is attempted.
+ for missing in json.loads((O/'unresolved-conditions.json').read_text()):
+  if missing['outcome']!='interface-not-expressible':continue
+  linked=[m for m in mappings if m['assertion']==missing['id']]
+  for arm in ARMS:
+   source=next(a for a in abi if a['requestId']==missing['requestId']and a['arm']==arm)
+   for m in linked:
+    witnesses.append({'version':1,'requestId':m['requestId'],'family':m['family'],'criteriaPath':m['criteriaPath'],'criteriaSha256':m['criteriaSha256'],'sourceLine':m['sourceLine'],'sourceLineSha256':m['sourceLineSha256'],'arm':arm,'assertion':missing['id'],'necessaryPredicate':missing['reason'],'predicatePassed':False,'fullMixedClauseFalseUnderDeclaredScope':True,'scope':'Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point','evidence':'actual-binary-interfaces.json','binarySignatures':source['signatures'],'documentedExports':source['glue']['exports'],'sourceHashes':source['sources'],'outcome':'required-semantic-interface-absent'})
+ save('necessary-failure-witnesses.json',witnesses)
+ save('coverage-clarification.json',{'version':1,'modelCalls':0,'initialActualInvokedArtifacts':len({(r['requestId'],r['arm'])for r in observations if 'raw'in r}),'combinedActualInvokedArtifacts':len({(r['requestId'],r['arm'])for r in observations if 'raw'in r}|{('C-006',r['arm'])for r in supplement}),'selectedArtifactPairs':5,'frozenArtifactsInventoried':40,'combinedObservations':len(observations)+len(supplement),'necessaryFalseWitnessRows':len(witnesses),'uniqueFalseArmClauses':len({(w['criteriaPath'],w['sourceLine'],w['arm'])for w in witnesses}),'referenceRemaindersNotResolved':True,'distinction':'A failed necessary predicate falsifies a mixed clause in direct-ABI scope. Passing arithmetic remains partial where reference, labels or applicability remain untested.'})
+ print(json.dumps({'necessaryFalseWitnessRows':len(witnesses),'uniqueFalseArmClauses':len({(w['criteriaPath'],w['sourceLine'],w['arm'])for w in witnesses})}))
+
+if __name__=='__main__':
+ import sys
+ if '--standard-supplement' in sys.argv:standard_supplement()
+ elif '--failure-witnesses' in sys.argv:failure_witnesses()
+ else:main()

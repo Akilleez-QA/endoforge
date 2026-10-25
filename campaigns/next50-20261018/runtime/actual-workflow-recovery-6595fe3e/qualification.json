@@ -1,0 +1,69 @@
+{
+  "version": 1,
+  "passed": true,
+  "modelCalls": 0,
+  "actualLiveGeneratedCandidate": true,
+  "immutableSourceHashes": {
+    "request.json": "df4cc1795aa4031b13f769e463f621528f4d56a0c4c90e14ff769f7601106082",
+    "signature.json": "d055120178477b69a154d5ea026ec62463472cc82935dd853dead7ead492bcb2",
+    "eval-bundle.json": "59c80ffb687c5a0edc7fdae37f946d4152641acc024a07a028795db5eba95351",
+    "frozen.json": "8abe905e136149e47bb426ad21f0944f103e2a88a0e2762193114c4687b235d9",
+    "frozen-files.json": "fe0385878d914e632cbf83508e1a5b610b3b0ec931a5a83400f0deefcca3a73b",
+    "capability.json": "75bb9be879490d961d2b5510b32aa908fb9a42743fab65a117fbd6f569867d65"
+  },
+  "sourceAndCloneUnchanged": true,
+  "wasmSha256": "f3177f3d3b8c0ec2322067a2c5c3c127fb2d0ed6cffa0315c0aa2e1f7a64f81a",
+  "knownPublication": "75bb9be879490d961d2b5510b32aa908fb9a42743fab65a117fbd6f569867d65",
+  "publicationCount": 1,
+  "firstResume": {
+    "attempt": "verify-resumed",
+    "job": "dev-affine-01",
+    "containerName": "endoforge-v1-b3c54fe2f6054846af8e6609b5a8098f",
+    "image": "sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541",
+    "outcome": "passed",
+    "published": true,
+    "inputSha256": "75bb9be879490d961d2b5510b32aa908fb9a42743fab65a117fbd6f569867d65",
+    "containerId": "159885fb55de7de0b7f508d11ecede15dce73e10c4d084ea4f18f9f4067167e0",
+    "terminalState": {
+      "Status": "exited",
+      "Running": false,
+      "Paused": false,
+      "Restarting": false,
+      "OOMKilled": false,
+      "Dead": false,
+      "Pid": 0,
+      "ExitCode": 0,
+      "Error": "",
+      "StartedAt": "2026-10-18T22:50:14.198073534Z",
+      "FinishedAt": "2026-10-18T22:50:15.039666784Z"
+    },
+    "artifactSha256": "75bb9be879490d961d2b5510b32aa908fb9a42743fab65a117fbd6f569867d65",
+    "cleanupVerified": true,
+    "signals": [],
+    "wallMs": 1510.8160579984542,
+    "version": 1,
+    "parent": null,
+    "stage": "verification",
+    "usage": {
+      "wallMs": 1510.8160579984542,
+      "tokens": null
+    },
+    "generation": "012737565f5f41ca951a48a2479978a9"
+  },
+  "secondResume": {
+    "outcome": "known-publication-reused",
+    "published": true,
+    "artifactSha256": "75bb9be879490d961d2b5510b32aa908fb9a42743fab65a117fbd6f569867d65",
+    "newAttemptCreated": false
+  },
+  "attemptCountStable": 3,
+  "repeatReconcile": {
+    "attempt": "compile-interrupted",
+    "job": "dev-affine-01",
+    "outcome": "interrupted_reconciled",
+    "published": false,
+    "cleanupVerified": true,
+    "receipt": "/home/user/Work/endoforge/campaigns/next50-20261018/runtime/actual-workflow-recovery-6595fe3e/runtime/reconciliations/compile-interrupted-84961656e1d54a10a9f5ef8e00f218b9"
+  },
+  "scope": "actual compile-stage controller crash and full verify/publish recovery; no new model generation and no all-boundary generalization"
+}

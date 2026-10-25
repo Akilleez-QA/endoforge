@@ -1,0 +1,118 @@
+[
+  {
+    "id": "C-006:physics:wall-supplied-formula",
+    "area": 20,
+    "height": 1.8,
+    "heightCode": 2,
+    "expected": 0.3376424223562904,
+    "tolerance": 0.0034,
+    "kind": "numeric",
+    "condition": "Explicit raw formula and LFL supplied; no determination of applicable equipment/standard",
+    "clauses": [
+      [
+        "oracle-sonnet",
+        13
+      ],
+      [
+        "oracle-opus",
+        15
+      ]
+    ]
+  },
+  {
+    "id": "C-006:physics:floor-raw-formula-branch",
+    "area": 20,
+    "height": 0.6,
+    "heightCode": 0,
+    "expected": 0.11254747411876347,
+    "tolerance": 0.0034,
+    "kind": "numeric",
+    "condition": "Raw formula branch only; conflicts with separately supplied minimum-threshold branch",
+    "clauses": [
+      [
+        "oracle-sonnet",
+        14
+      ]
+    ]
+  },
+  {
+    "id": "C-006:physics:floor-minimum-branch",
+    "area": 20,
+    "height": 0.6,
+    "heightCode": 0,
+    "expected": 0.152,
+    "tolerance": 0.0034,
+    "kind": "numeric",
+    "condition": "Conditional explicit max(m1,raw) with m1=.152; not a ruling that this standard applies",
+    "clauses": [
+      [
+        "oracle-opus",
+        16
+      ]
+    ]
+  },
+  {
+    "id": "C-006:physics:ceiling-explicit-cap-branch",
+    "area": 3000,
+    "height": 2.2,
+    "heightCode": 3,
+    "expected": 4.94,
+    "tolerance": 0.0034,
+    "kind": "numeric",
+    "condition": "Conditional explicit min(m3,raw) with m3=4.94; not legal applicability",
+    "clauses": [
+      [
+        "oracle-opus",
+        17
+      ]
+    ]
+  },
+  {
+    "id": "C-006:physics:invalid-area-0",
+    "area": 0,
+    "height": 1.8,
+    "heightCode": 2,
+    "expected": null,
+    "tolerance": 0,
+    "kind": "refusal",
+    "condition": "Explicit area>0 finite-domain requirement; no charge limit authority",
+    "clauses": [
+      [
+        "oracle-sonnet",
+        16
+      ]
+    ]
+  },
+  {
+    "id": "C-006:physics:invalid-area--1",
+    "area": -1,
+    "height": 1.8,
+    "heightCode": 2,
+    "expected": null,
+    "tolerance": 0,
+    "kind": "refusal",
+    "condition": "Explicit area>0 finite-domain requirement; no charge limit authority",
+    "clauses": [
+      [
+        "oracle-sonnet",
+        16
+      ]
+    ]
+  },
+  {
+    "id": "C-006:physics:invalid-area-nan",
+    "area": "nan",
+    "height": 1.8,
+    "heightCode": 2,
+    "expected": null,
+    "tolerance": 0,
+    "kind": "refusal",
+    "condition": "Explicit area>0 finite-domain requirement; no charge limit authority",
+    "clauses": [
+      [
+        "oracle-sonnet",
+        16
+      ]
+    ]
+  }
+]

@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "modelCalls": 0,
+  "credentialsCopied": false,
+  "rootCause": "fork-per-connection bridge listener exits at TasksMax64 while idle Codex has about50threads",
+  "fix": "bounded no-fork asyncio bridge and readiness check",
+  "revertedMitigations": [
+    "CPU affinity",
+    "runtime threadpool environment tuning"
+  ],
+  "policyWeakened": false,
+  "currentFamily": "Codex",
+  "ClaudeCodeCLI": "prohibited",
+  "packets": [
+    "transport-8a40346d",
+    "transport-capacity-554b5ea1",
+    "policy-c15c2d33",
+    "bounds-c52ad45b"
+  ],
+  "limits": [
+    "No authenticated model turn",
+    "No model-stage crash resumption",
+    "Resource-limit spawn refusals preserved"
+  ]
+}

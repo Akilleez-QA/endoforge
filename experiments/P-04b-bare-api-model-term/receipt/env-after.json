@@ -1,0 +1,65 @@
+{
+  "label": "after",
+  "at": "2026-10-17T18:39:31.693Z",
+  "kernel": "7.2.5-3-omarchy",
+  "cpu": "AMD Ryzen 9 7950X 16-Core Processor",
+  "cpus": 32,
+  "loadavg": [
+    3.66,
+    6.13,
+    18.34
+  ],
+  "mem_total_bytes": 134682697728,
+  "mem_free_bytes": 101658914816,
+  "node": "v26.8.1",
+  "claude_cli": "2.1.299 (Claude Code)",
+  "git_commit": "ce2e90167b674f3e86166c45bc78f1e2dcd1370f",
+  "tctl": "Tctl:         +64.2°C",
+  "asc_version": "0.28.20",
+  "probe_cwd": "/tmp/claude-1000/p04b-empty-cwd",
+  "cwd_listing": [],
+  "child_env_claude_effort": "removed",
+  "api_key_assertion": {
+    "at": "2026-10-17T17:54:48.895Z",
+    "checked": [
+      "ANTHROPIC_API_KEY",
+      "ANTHROPIC_AUTH_TOKEN"
+    ],
+    "present": [],
+    "rule": "refuse to run if any is set (subscription-only decision, PRECOMMIT amendment 2)"
+  },
+  "resume": true,
+  "host_claude_effort": "medium",
+  "common_flags": [
+    "--no-session-persistence",
+    "--tools",
+    "",
+    "--strict-mcp-config",
+    "--mcp-config",
+    "{\"mcpServers\":{}}",
+    "--disable-slash-commands",
+    "--no-chrome",
+    "--setting-sources",
+    "",
+    "--max-budget-usd",
+    "2"
+  ],
+  "hashes": {
+    "run.mjs": "939d3198ceca1015d106a9d2db540c5c7915566376f92c87b1789e7c45ca1418",
+    "PRECOMMIT.md": "b7f236d2ff769638861bb9c20ec053b696a78326384bfad2550fdd11416328c4",
+    "prompt.txt": "8b015a52007a2d67ea6fa58408c9bf4d0167e39d4ceb6bdd1782a47490098279",
+    "prompt-variant.txt": "559eb751ecc7bf7deb83a3c08728bb6b4d2e79e68d723492404789b72ffb5283"
+  },
+  "arms": [
+    "S1-lean",
+    "S2-lean-low",
+    "S3-lean-sonnet",
+    "S4-lean-sysprompt"
+  ],
+  "phases": [
+    "A",
+    "B",
+    "C",
+    "D"
+  ]
+}

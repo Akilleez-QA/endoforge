@@ -1,0 +1,1 @@
+Return ONLY AssemblyScript source text (no Markdown or explanation) implementing the complete request below. No tools, libraries, imports, other exports or test data. Use unreachable() for refusal, not assert (asserts may compile away). The evaluator is independently generated and unavailable to you.

@@ -1,0 +1,148 @@
+{
+  "passed": true,
+  "scope": "synthetic transport controls only; not N40",
+  "checks": [
+    "wrongkey over SSH stdin fails before extraction",
+    "tampered ciphertext fails before extraction",
+    "correct identity over SSH stdin restores",
+    "own preflight paths cleaned"
+  ],
+  "commands": [
+    {
+      "argv": [
+        "age-keygen",
+        "-o",
+        "/tmp/endoforge-encrypted-preflight-zc5chvos/identity"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "Public key: age1qxjxkus0dwyt02aak36rtg9dc4luzvcwglyg76w284f07m3g23eqc0lcxz\n"
+    },
+    {
+      "argv": [
+        "age-keygen",
+        "-o",
+        "/tmp/endoforge-encrypted-preflight-zc5chvos/wrong"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "Public key: age1800tunhn9mwkf5h93qy94pycrjphwhucg8thghcky9zpyusl8pwqg9ed95\n"
+    },
+    {
+      "argv": [
+        "age-keygen",
+        "-y",
+        "/tmp/endoforge-encrypted-preflight-zc5chvos/identity"
+      ],
+      "exit": 0,
+      "stdout": "age1qxjxkus0dwyt02aak36rtg9dc4luzvcwglyg76w284f07m3g23eqc0lcxz\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "scp",
+        "-q",
+        "/tmp/endoforge-encrypted-preflight-zc5chvos/fixture.age",
+        "fieldops:/tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b/preflight-e118e040d73c4bcab23413b61bc5cf5a.age"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "scp",
+        "-q",
+        "/tmp/endoforge-encrypted-preflight-zc5chvos/corrupt.age",
+        "fieldops:/tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b/preflight-e118e040d73c4bcab23413b61bc5cf5a-corrupt.age"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "ssh",
+        "-o",
+        "BatchMode=yes",
+        "fieldops",
+        "bwrap --ro-bind /usr /usr --ro-bind /lib /lib --ro-bind /lib64 /lib64 --ro-bind /bin /bin --bind /tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b /work --unshare-all --proc /proc --dev /dev --tmpfs /tmp --setenv PATH /work:/usr/bin:/bin -- /usr/bin/python3 /work/checkpoint.py unpack /work/preflight-e118e040d73c4bcab23413b61bc5cf5a.age /work/preflight-e118e040d73c4bcab23413b61bc5cf5a-wrongkey --identity -"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"/work/checkpoint.py\", line 99, in <module>\n    if __name__=='__main__': main()\n                             ~~~~^^\n  File \"/work/checkpoint.py\", line 98, in main\n    print(json.dumps(pack(a.source,a.archive,a.recipient) if a.cmd=='pack' else unpack(a.archive,a.destination,a.identity)))\n                                                                                ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/work/checkpoint.py\", line 65, in unpack\n    if cp.returncode: raise ValueError('checkpoint decryption/authentication failed')\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: checkpoint decryption/authentication failed\n"
+    },
+    {
+      "argv": [
+        "ssh",
+        "-o",
+        "BatchMode=yes",
+        "fieldops",
+        "test ! -e /tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b/preflight-e118e040d73c4bcab23413b61bc5cf5a-wrongkey"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "ssh",
+        "-o",
+        "BatchMode=yes",
+        "fieldops",
+        "bwrap --ro-bind /usr /usr --ro-bind /lib /lib --ro-bind /lib64 /lib64 --ro-bind /bin /bin --bind /tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b /work --unshare-all --proc /proc --dev /dev --tmpfs /tmp --setenv PATH /work:/usr/bin:/bin -- /usr/bin/python3 /work/checkpoint.py unpack /work/preflight-e118e040d73c4bcab23413b61bc5cf5a-corrupt.age /work/preflight-e118e040d73c4bcab23413b61bc5cf5a-corrupt --identity -"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "Traceback (most recent call last):\n  File \"/work/checkpoint.py\", line 99, in <module>\n    if __name__=='__main__': main()\n                             ~~~~^^\n  File \"/work/checkpoint.py\", line 98, in main\n    print(json.dumps(pack(a.source,a.archive,a.recipient) if a.cmd=='pack' else unpack(a.archive,a.destination,a.identity)))\n                                                                                ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/work/checkpoint.py\", line 65, in unpack\n    if cp.returncode: raise ValueError('checkpoint decryption/authentication failed')\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nValueError: checkpoint decryption/authentication failed\n"
+    },
+    {
+      "argv": [
+        "ssh",
+        "-o",
+        "BatchMode=yes",
+        "fieldops",
+        "test ! -e /tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b/preflight-e118e040d73c4bcab23413b61bc5cf5a-corrupt"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "ssh",
+        "-o",
+        "BatchMode=yes",
+        "fieldops",
+        "bwrap --ro-bind /usr /usr --ro-bind /lib /lib --ro-bind /lib64 /lib64 --ro-bind /bin /bin --bind /tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b /work --unshare-all --proc /proc --dev /dev --tmpfs /tmp --setenv PATH /work:/usr/bin:/bin -- /usr/bin/python3 /work/checkpoint.py unpack /work/preflight-e118e040d73c4bcab23413b61bc5cf5a.age /work/preflight-e118e040d73c4bcab23413b61bc5cf5a-good --identity -"
+      ],
+      "exit": 0,
+      "stdout": "{\"schema\": \"endoforge.checkpoint.v1\", \"files\": 1, \"archive_sha256\": \"2dedd243e569d967d6b462bd740932dfdec5395521d918ac079e17d8da2a3e70\"}\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "ssh",
+        "-o",
+        "BatchMode=yes",
+        "fieldops",
+        "sha256sum /tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b/preflight-e118e040d73c4bcab23413b61bc5cf5a-good/fixture.txt"
+      ],
+      "exit": 0,
+      "stdout": "f9ad0429c52e9b2257448e9e6086da7bff674aba20bf825e110c1e9a9de73f09  /tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b/preflight-e118e040d73c4bcab23413b61bc5cf5a-good/fixture.txt\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "ssh",
+        "-o",
+        "BatchMode=yes",
+        "fieldops",
+        "rm -rf -- /tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b/preflight-e118e040d73c4bcab23413b61bc5cf5a.age /tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b/preflight-e118e040d73c4bcab23413b61bc5cf5a-corrupt.age /tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b/preflight-e118e040d73c4bcab23413b61bc5cf5a-good"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ]
+}

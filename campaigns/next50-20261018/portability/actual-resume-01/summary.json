@@ -1,0 +1,66 @@
+{
+  "schema": "endoforge.actual-cross-host-resume.v1",
+  "state": "passed",
+  "host": "fieldops",
+  "remote": "/tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b",
+  "identityCustody": "/home/user/.local/share/endoforge/checkpoint-identities/next50-20261018-actual01.agekey",
+  "modelAuthentication": "not required: only pending offline stage resumes",
+  "pack": {
+    "schema": "endoforge.checkpoint.v1",
+    "files": 82,
+    "archive_sha256": "e62c7eec59491721977e0da23782b522906014c20aa4da38ad4a02ac4a8aaefb",
+    "plaintext_bytes": 633147
+  },
+  "localRestore": {
+    "schema": "endoforge.checkpoint.v1",
+    "files": 82,
+    "archive_sha256": "e62c7eec59491721977e0da23782b522906014c20aa4da38ad4a02ac4a8aaefb"
+  },
+  "sourceMachineSha256": "8a6f803cf97db99e3b840de2b4392a814664c0d2904944fb753deacd2d062ebd",
+  "destinationMachineSha256": "131b04865c7ae11b8aa180da9e7cb7dbb4eaec95db2b4d40a5ca75c4f15dd7c5",
+  "remoteRestore": {
+    "schema": "endoforge.checkpoint.v1",
+    "files": 82,
+    "archive_sha256": "e62c7eec59491721977e0da23782b522906014c20aa4da38ad4a02ac4a8aaefb"
+  },
+  "passed": true,
+  "sourceImmutable": true,
+  "checkpointArchiveSha256": "e62c7eec59491721977e0da23782b522906014c20aa4da38ad4a02ac4a8aaefb",
+  "matchingPublicationSha256": "d1dad4df9f974c01d2a3a11de0202ab7ad51b37ffc5e4c1013a8ef19ea5a5677",
+  "matchingModuleSha256": "f3177f3d3b8c0ec2322067a2c5c3c127fb2d0ed6cffa0315c0aa2e1f7a64f81a",
+  "onePublication": true,
+  "secondResumeIdempotent": true,
+  "remoteOwnedStagingRemoved": true,
+  "completedStagesPreserved": [
+    "intake",
+    "paired-evals",
+    "freeze",
+    "generate",
+    "compile",
+    "bounded-evals",
+    "trusted-gates",
+    "publish"
+  ],
+  "resumedState": {
+    "artifactHash": "75bb9be879490d961d2b5510b32aa908fb9a42743fab65a117fbd6f569867d65",
+    "candidateHash": "75bb9be879490d961d2b5510b32aa908fb9a42743fab65a117fbd6f569867d65",
+    "completedStages": [
+      "intake",
+      "paired-evals",
+      "freeze",
+      "generate",
+      "compile",
+      "bounded-evals",
+      "trusted-gates",
+      "publish",
+      "portable-consumer"
+    ],
+    "frozenHash": "8abe905e136149e47bb426ad21f0944f103e2a88a0e2762193114c4687b235d9",
+    "generatorStarted": true,
+    "job": "dev-affine-01",
+    "pendingStages": [],
+    "stage": "portable-consumer-completed",
+    "version": 1,
+    "wasmHash": "f3177f3d3b8c0ec2322067a2c5c3c127fb2d0ed6cffa0315c0aa2e1f7a64f81a"
+  }
+}

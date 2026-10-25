@@ -1,0 +1,138 @@
+{
+  "version": 1,
+  "beforeFirstSupplementInvocationUnix": 1792364584.4794748,
+  "modelCalls": 0,
+  "cases": [
+    {
+      "id": "C-006:physics:wall-supplied-formula",
+      "area": 20,
+      "height": 1.8,
+      "heightCode": 2,
+      "expected": 0.3376424223562904,
+      "tolerance": 0.0034,
+      "kind": "numeric",
+      "condition": "Explicit raw formula and LFL supplied; no determination of applicable equipment/standard",
+      "clauses": [
+        [
+          "oracle-sonnet",
+          13
+        ],
+        [
+          "oracle-opus",
+          15
+        ]
+      ]
+    },
+    {
+      "id": "C-006:physics:floor-raw-formula-branch",
+      "area": 20,
+      "height": 0.6,
+      "heightCode": 0,
+      "expected": 0.11254747411876347,
+      "tolerance": 0.0034,
+      "kind": "numeric",
+      "condition": "Raw formula branch only; conflicts with separately supplied minimum-threshold branch",
+      "clauses": [
+        [
+          "oracle-sonnet",
+          14
+        ]
+      ]
+    },
+    {
+      "id": "C-006:physics:floor-minimum-branch",
+      "area": 20,
+      "height": 0.6,
+      "heightCode": 0,
+      "expected": 0.152,
+      "tolerance": 0.0034,
+      "kind": "numeric",
+      "condition": "Conditional explicit max(m1,raw) with m1=.152; not a ruling that this standard applies",
+      "clauses": [
+        [
+          "oracle-opus",
+          16
+        ]
+      ]
+    },
+    {
+      "id": "C-006:physics:ceiling-explicit-cap-branch",
+      "area": 3000,
+      "height": 2.2,
+      "heightCode": 3,
+      "expected": 4.94,
+      "tolerance": 0.0034,
+      "kind": "numeric",
+      "condition": "Conditional explicit min(m3,raw) with m3=4.94; not legal applicability",
+      "clauses": [
+        [
+          "oracle-opus",
+          17
+        ]
+      ]
+    },
+    {
+      "id": "C-006:physics:invalid-area-0",
+      "area": 0,
+      "height": 1.8,
+      "heightCode": 2,
+      "expected": null,
+      "tolerance": 0,
+      "kind": "refusal",
+      "condition": "Explicit area>0 finite-domain requirement; no charge limit authority",
+      "clauses": [
+        [
+          "oracle-sonnet",
+          16
+        ]
+      ]
+    },
+    {
+      "id": "C-006:physics:invalid-area--1",
+      "area": -1,
+      "height": 1.8,
+      "heightCode": 2,
+      "expected": null,
+      "tolerance": 0,
+      "kind": "refusal",
+      "condition": "Explicit area>0 finite-domain requirement; no charge limit authority",
+      "clauses": [
+        [
+          "oracle-sonnet",
+          16
+        ]
+      ]
+    },
+    {
+      "id": "C-006:physics:invalid-area-nan",
+      "area": "nan",
+      "height": 1.8,
+      "heightCode": 2,
+      "expected": null,
+      "tolerance": 0,
+      "kind": "refusal",
+      "condition": "Explicit area>0 finite-domain requirement; no charge limit authority",
+      "clauses": [
+        [
+          "oracle-sonnet",
+          16
+        ]
+      ]
+    }
+  ],
+  "sourceHashes": {
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-006/C-006/kernel.ts": "8e03a0832ad93b7f364be20a1f50d77dea9221d018c7aabd9a056696564464e6",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-006/C-006/kernel.wasm": "2be406eecf54cba2d9b739b38ecf23b794499e26bd5ba0ef905f496072e00cc2",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-006/C-006/glue.json": "87f7d06d193bc783960d1616da5ddf2f36a2913627a99aaf3f6f31aab7faaad4",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-006/C-006/CONTRACT.md": "a37979f0f1d83e1cc404770e7281c1ebad18132ac0a84880d7bb67a8fa2ca22f",
+    "tools/atomizer/work/baseline-20/runs/C-006/atoms/direct/work/C-006/kernel.ts": "c94203f89b979f2b45acb16ab910dd39719269c844bfb1dbe4a71a166e3c6efe",
+    "tools/atomizer/work/baseline-20/runs/C-006/atoms/direct/work/C-006/kernel.wasm": "d288c847bb2f24adf437510627bd08a3cc159a82fc9bbcad83346f6947a15983",
+    "tools/atomizer/work/baseline-20/runs/C-006/atoms/direct/work/C-006/glue.json": "6ad1688254d1fb7711e3625df58604040aec291b1752dc8c875812da22595307",
+    "tools/atomizer/work/baseline-20/runs/C-006/atoms/direct/work/C-006/CONTRACT.md": "015af729c5c5f3748c4f5a1c58134a788c7e13a429aa73c32e4574e79997343e",
+    "campaigns/hillclimb-loop-01/work/oracle/oracle-sonnet/criteria/C-006.md": "872379179c368a5b6d688ce3e837ddb0e750f77c226a10250835206b008d518c",
+    "campaigns/hillclimb-loop-01/work/oracle/oracle-opus/criteria/C-006.md": "6f885d829c973ff903464eebfd762310d2ac264eb8c3828d5b78934db7e41194",
+    "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/C-006.md": "7947ea4c7609d251b446c5008e7a78ceddf8e399d269c66c25a565d50b6c9689"
+  },
+  "implementationSha256": "9da1ad6d00ba3894045ee87c591ba4f6cd07c6dab737755b351383945cfc938e",
+  "rule": "Conditional arithmetic only. Conflicting floor rules retained as branches; no legal/compliance/property applicability ruling."
+}

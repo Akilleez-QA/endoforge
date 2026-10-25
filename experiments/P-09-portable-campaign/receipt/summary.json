@@ -1,0 +1,226 @@
+{
+  "label": "Recorded (probe)",
+  "passed": true,
+  "candidates": 19,
+  "comparisons": [
+    {
+      "id": "C-005",
+      "matches": true,
+      "promotable": true,
+      "priorPromotable": true,
+      "exitMatches": true
+    },
+    {
+      "id": "C-006",
+      "matches": true,
+      "promotable": true,
+      "priorPromotable": true,
+      "exitMatches": true
+    },
+    {
+      "id": "C-007",
+      "matches": true,
+      "promotable": true,
+      "priorPromotable": true,
+      "exitMatches": true
+    },
+    {
+      "id": "C-010",
+      "matches": true,
+      "promotable": true,
+      "priorPromotable": true,
+      "exitMatches": true
+    },
+    {
+      "id": "C-012",
+      "matches": true,
+      "promotable": true,
+      "priorPromotable": true,
+      "exitMatches": true
+    },
+    {
+      "id": "C-015",
+      "matches": true,
+      "promotable": true,
+      "priorPromotable": true,
+      "exitMatches": true
+    },
+    {
+      "id": "C-016",
+      "matches": true,
+      "promotable": true,
+      "priorPromotable": true,
+      "exitMatches": true
+    },
+    {
+      "id": "C-019",
+      "matches": true,
+      "promotable": true,
+      "priorPromotable": true,
+      "exitMatches": true
+    },
+    {
+      "id": "CC-002",
+      "matches": true,
+      "promotable": true,
+      "priorPromotable": true,
+      "exitMatches": true
+    },
+    {
+      "id": "CC-007",
+      "matches": true,
+      "promotable": true,
+      "priorPromotable": true,
+      "exitMatches": true
+    },
+    {
+      "id": "CC-009",
+      "matches": true,
+      "promotable": true,
+      "priorPromotable": true,
+      "exitMatches": true
+    },
+    {
+      "id": "CC-011",
+      "matches": true,
+      "promotable": true,
+      "priorPromotable": true,
+      "exitMatches": true
+    },
+    {
+      "id": "CC-013",
+      "matches": true,
+      "promotable": true,
+      "priorPromotable": true,
+      "exitMatches": true
+    },
+    {
+      "id": "CC-014",
+      "matches": true,
+      "promotable": true,
+      "priorPromotable": true,
+      "exitMatches": true
+    },
+    {
+      "id": "CC-022",
+      "matches": true,
+      "promotable": true,
+      "priorPromotable": true,
+      "exitMatches": true
+    },
+    {
+      "id": "CC-025",
+      "matches": true,
+      "promotable": true,
+      "priorPromotable": true,
+      "exitMatches": true
+    },
+    {
+      "id": "CC-026",
+      "matches": true,
+      "promotable": true,
+      "priorPromotable": true,
+      "exitMatches": true
+    },
+    {
+      "id": "CC-027",
+      "matches": true,
+      "promotable": true,
+      "priorPromotable": true,
+      "exitMatches": true
+    },
+    {
+      "id": "CC-036",
+      "matches": true,
+      "promotable": true,
+      "priorPromotable": true,
+      "exitMatches": true
+    }
+  ],
+  "boundary": [
+    {
+      "role": "generator",
+      "checks": {
+        "requestReadable": true,
+        "contractReadable": true,
+        "testsHidden": true,
+        "kernelHidden": true,
+        "peerHidden": true,
+        "hostHomeHidden": true,
+        "hostCanaryHidden": true,
+        "dockerSocketHidden": true,
+        "inputReadOnly": true,
+        "gatesReadOnly": true,
+        "nonRoot": true,
+        "scratchWritable": true
+      },
+      "ok": true
+    },
+    {
+      "role": "evaluator",
+      "checks": {
+        "requestReadable": true,
+        "contractReadable": true,
+        "testsHidden": true,
+        "kernelHidden": true,
+        "peerHidden": true,
+        "hostHomeHidden": true,
+        "hostCanaryHidden": true,
+        "dockerSocketHidden": true,
+        "inputReadOnly": true,
+        "gatesReadOnly": true,
+        "nonRoot": true,
+        "scratchWritable": true
+      },
+      "ok": true
+    }
+  ],
+  "sourceUnchanged": true,
+  "receiptComplete": true,
+  "imageRoundtrip": true,
+  "inputsRoundtrip": true,
+  "imageArchiveSha256": "d5f69702b5d8e1dd59d1914c7922a75f79980f9c136bb9f83b59b2da6c1bb70a",
+  "imageArchiveBytes": 104060928,
+  "inputArchiveSha256": "95800d52a5e30ab6f6522ac09ea7d1906d1a90212ae2f72afaa7ddf6b2b89c08",
+  "inputArchiveBytes": 61403,
+  "startup": {
+    "docker": {
+      "n": 10,
+      "medianMs": 449.8776155014639,
+      "p95Ms": 522.9611350005143,
+      "minMs": 434.91182499565184,
+      "maxMs": 522.9611350005143
+    },
+    "bubblewrap": {
+      "n": 10,
+      "medianMs": 3.314562996820314,
+      "p95Ms": 3.8661920043523423,
+      "minMs": 3.109069002675824,
+      "maxMs": 3.8661920043523423
+    }
+  },
+  "replay": {
+    "bubblewrap": {
+      "n": 19,
+      "medianMs": 488.8692250024178,
+      "p95Ms": 554.6661510015838,
+      "minMs": 443.4058909973828,
+      "maxMs": 554.6661510015838
+    },
+    "docker": {
+      "n": 19,
+      "medianMs": 1376.3216360021033,
+      "p95Ms": 1743.9609139983077,
+      "minMs": 1067.6850649979315,
+      "maxMs": 1743.9609139983077
+    },
+    "roundtrip": {
+      "n": 19,
+      "medianMs": 1542.0611849986017,
+      "p95Ms": 2709.0924110016203,
+      "minMs": 1096.7622640018817,
+      "maxMs": 2709.0924110016203
+    }
+  },
+  "elapsedSeconds": 80.61141224000312
+}

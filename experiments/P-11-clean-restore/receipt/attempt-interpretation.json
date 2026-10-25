@@ -1,0 +1,5 @@
+{
+  "initial": {"parityPassed": true, "fullyPrivateRuntime": false, "reason": "Docker automatically connected to system containerd; do not use as full daemon isolation evidence."},
+  "private-run": {"qualified": false, "reason": "Daemon failed before load because callback Unix socket path was too long. Both owned daemons cleaned."},
+  "isolated-run": {"authoritativeAttempt": true, "reason": "Short private paths, explicitly separate containerd, dedicated namespace and Docker network namespace."}
+}

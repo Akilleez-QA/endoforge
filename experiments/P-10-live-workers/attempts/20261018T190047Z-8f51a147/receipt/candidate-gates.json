@@ -1,0 +1,16 @@
+{
+  "label": "candidate-gates",
+  "command": [
+    "/home/user/.local/share/mise/installs/node/26.8.1/bin/node",
+    "/home/user/Work/endoforge/campaigns/x1-spec-study/factory/gate.mjs",
+    "run",
+    "/home/user/Work/endoforge/experiments/P-10-live-workers/attempts/20261018T190047Z-8f51a147/work/candidate"
+  ],
+  "startedUnix": 1792350062.379943,
+  "wallMs": 492,
+  "exit": 1,
+  "timeout": false,
+  "stdout": "{\n \"promotable\": false,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 148,\n   \"wasmSha256\": \"d86902c5f835e64eb3e5aad5752627dcf6cc4fb9162bc71a754dda25e88be1f5\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"celsiusToFahrenheit\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 11,\n   \"total\": 11\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.055204\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": false,\n   \"why\": \"glue.id P10 is not the folder name candidate\"\n  }\n }\n}\n",
+  "stderr": "",
+  "precommitSha256": "f25af79ef6a6ecfb61927181ffa52c50608478321bf2a88c38c34e827d036b87"
+}

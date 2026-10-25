@@ -1,0 +1,104 @@
+{
+  "id": "S4-lean-sysprompt-B-3",
+  "arm": "S4-lean-sysprompt",
+  "at": "2026-10-17T18:35:14.114Z",
+  "argv": [
+    "-p",
+    "--output-format",
+    "json",
+    "--no-session-persistence",
+    "--tools",
+    "",
+    "--strict-mcp-config",
+    "--mcp-config",
+    "{\"mcpServers\":{}}",
+    "--disable-slash-commands",
+    "--no-chrome",
+    "--setting-sources",
+    "",
+    "--max-budget-usd",
+    "2",
+    "--system-prompt",
+    "You write AssemblyScript. Output only code."
+  ],
+  "cwd": "/tmp/claude-1000/p04b-empty-cwd",
+  "prompt_sha256": "559eb751ecc7bf7deb83a3c08728bb6b4d2e79e68d723492404789b72ffb5283",
+  "prompt_bytes": 10500,
+  "exit_code": 0,
+  "is_error": false,
+  "subtype": "success",
+  "terminal_reason": "completed",
+  "stop_reason": "end_turn",
+  "model_ids": [
+    "claude-opus-5-5"
+  ],
+  "model_usage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 9827,
+      "cacheReadInputTokens": 4576,
+      "cacheCreationInputTokens": 525,
+      "webSearchRequests": 0,
+      "costUSD": 0.20166320000000004,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 6117,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "wall_ms": 92427.6,
+  "duration_ms": 91100,
+  "duration_api_ms": 87964,
+  "num_turns": 1,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 525,
+    "cache_read_input_tokens": 4576,
+    "output_tokens": 9827,
+    "output_tokens_details": {
+      "thinking_tokens": 6117
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 525,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 9827,
+        "cache_read_input_tokens": 4576,
+        "cache_creation_input_tokens": 525,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 525
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "thinking_tokens": 6117,
+  "visible_tokens": 3710,
+  "context_size_tokens": 5103,
+  "total_cost_usd_list": 0.20166320000000004,
+  "tok_s_wall": 106.32,
+  "tok_s_api": 111.72,
+  "result_chars": 7144,
+  "result_head": "@external(\"host\", \"host_record_count\") declare function host_record_count(set: u32): i32;\n@external(\"host\", \"host_record_field_i64\") declare function host_recor",
+  "stderr_head": "",
+  "asc_gate": {
+    "status": "fail",
+    "lines": 153,
+    "first_error": "ERROR TS2315: Type 'kernels/S4-lean-sysprompt-B-3/load' is not generic.",
+    "error_count": 3
+  }
+}

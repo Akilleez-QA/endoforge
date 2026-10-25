@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "id": "dev-threshold-03",
+  "raw": "Classify finite score s in [0,100] as numeric 0 when s < 60 and numeric 1 when s >= 60, absolute tolerance 0 score-class. Refuse other values naming s. Require s; return number labelled score-class.",
+  "artifactClass": "closed-form",
+  "requiredFacts": [
+    {
+      "path": "s",
+      "unit": "score",
+      "domain": [
+        0,
+        100
+      ],
+      "tolerance": 1e-09
+    }
+  ],
+  "sources": [
+    "explicit raw development request"
+  ]
+}

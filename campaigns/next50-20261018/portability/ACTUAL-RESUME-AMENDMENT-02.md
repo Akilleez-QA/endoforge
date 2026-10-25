@@ -1,0 +1,1 @@
+Before actual execution, make publication temporary-write/fsync/hardlink/fsync-dir to avoid a partial final receipt after crash. Include explicit resumed campaign stage state in that trusted publication, without mutating immutable checkpoint inputs.

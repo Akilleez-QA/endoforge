@@ -1,0 +1,197 @@
+{
+  "passed": true,
+  "candidates": 19,
+  "tests": 242,
+  "rows": [
+    {
+      "id": "C-005",
+      "exit": 0,
+      "sha256": "bc5bd05968a22f7a45b71141313077f488d8c11084461a13e8ad8de48d891c98",
+      "test_count": 12,
+      "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 920,\n   \"wasmSha256\": \"bc5bd05968a22f7a45b71141313077f488d8c11084461a13e8ad8de48d891c98\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"tubeInnerVolumeMlPerMeter\",\n    \"liquidLineHoldupGrams\",\n    \"suctionLineHoldupGrams\",\n    \"lineSetHoldupGrams\",\n    \"additionalChargeGrams\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 12,\n   \"total\": 12\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.067676\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+      "stderr": "",
+      "wall_ms": 766.0836879986164,
+      "match": true
+    },
+    {
+      "id": "C-006",
+      "exit": 0,
+      "sha256": "3975e5ca20a69703d7ccee8ba257e31ce47b8d3f2524fd848d4c0df096816bbb",
+      "test_count": 15,
+      "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 6843,\n   \"wasmSha256\": \"3975e5ca20a69703d7ccee8ba257e31ce47b8d3f2524fd848d4c0df096816bbb\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"maxChargeR290\",\n    \"minRoomAreaR290\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 15,\n   \"total\": 15\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.070051\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+      "stderr": "",
+      "wall_ms": 743.4336790011002,
+      "match": true
+    },
+    {
+      "id": "C-007",
+      "exit": 0,
+      "sha256": "4f9b17467028c661ec853ae5135218af0fefdf3fba94f98d0971bddfaf1f3bf3",
+      "test_count": 16,
+      "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 398,\n   \"wasmSha256\": \"4f9b17467028c661ec853ae5135218af0fefdf3fba94f98d0971bddfaf1f3bf3\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"classifySubcooling\",\n    \"isSubcoolingNormal\",\n    \"subcoolingDeviation\",\n    \"subcoolingCtoF\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 16,\n   \"total\": 16\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.065301\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+      "stderr": "",
+      "wall_ms": 706.6821799999161,
+      "match": true
+    },
+    {
+      "id": "C-010",
+      "exit": 0,
+      "sha256": "911ee504eaadba9f1b695765324066747a5f5842851fd0526246cd869f2d536f",
+      "test_count": 16,
+      "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 970,\n   \"wasmSha256\": \"911ee504eaadba9f1b695765324066747a5f5842851fd0526246cd869f2d536f\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"dayStart\",\n    \"dayStartTz\",\n    \"rollDate\",\n    \"rollDateTz\",\n    \"dayOffset\",\n    \"dayOffsetTz\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 16,\n   \"total\": 16\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.066489\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+      "stderr": "",
+      "wall_ms": 755.0252339988219,
+      "match": true
+    },
+    {
+      "id": "C-012",
+      "exit": 0,
+      "sha256": "5c66947677c7d4dcdcddf5c5a009fd4f7cfad0c97707f346ba54ed4c82c8debc",
+      "test_count": 14,
+      "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 208,\n   \"wasmSha256\": \"5c66947677c7d4dcdcddf5c5a009fd4f7cfad0c97707f346ba54ed4c82c8debc\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"genericId\",\n    \"isNeutralized\",\n    \"mappingConsistent\",\n    \"inScope\",\n    \"replacementsExpected\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 14,\n   \"total\": 14\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.058178\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+      "stderr": "",
+      "wall_ms": 641.2124120015505,
+      "match": true
+    },
+    {
+      "id": "C-015",
+      "exit": 0,
+      "sha256": "f2b1c0da9031adf8a14e482fe9ee6df343fbefc918bcd644a0e6da65a7fa1666",
+      "test_count": 11,
+      "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 117,\n   \"wasmSha256\": \"f2b1c0da9031adf8a14e482fe9ee6df343fbefc918bcd644a0e6da65a7fa1666\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"decide\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 11,\n   \"total\": 11\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.124666\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+      "stderr": "",
+      "wall_ms": 641.2800879988936,
+      "match": true
+    },
+    {
+      "id": "C-016",
+      "exit": 0,
+      "sha256": "ec5b2f16466e802a5d6f5ee398e1f785413e0f84a49fc73d0e5d4d35fb63ee1a",
+      "test_count": 14,
+      "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 364,\n   \"wasmSha256\": \"ec5b2f16466e802a5d6f5ee398e1f785413e0f84a49fc73d0e5d4d35fb63ee1a\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"displayStatus\",\n    \"nameToShow\",\n    \"labelAllowed\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 14,\n   \"total\": 14\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.070051\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+      "stderr": "",
+      "wall_ms": 714.8400810001476,
+      "match": true
+    },
+    {
+      "id": "C-019",
+      "exit": 0,
+      "sha256": "12ec1da2a231da757776b0acfa465162d5592520bb1ba1c622d659268c8778a8",
+      "test_count": 16,
+      "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 663,\n   \"wasmSha256\": \"12ec1da2a231da757776b0acfa465162d5592520bb1ba1c622d659268c8778a8\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"isOverCapacity\",\n    \"isOverCapacityDefault\",\n    \"isNh3LevelAdequate\",\n    \"reactionCode\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 16,\n   \"total\": 16\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.067676\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+      "stderr": "",
+      "wall_ms": 723.7186670008668,
+      "match": true
+    },
+    {
+      "id": "CC-002",
+      "exit": 0,
+      "sha256": "4b533b3561901f1c4e1e378011b2ba485cc34d954784c60039963847bfe459d2",
+      "test_count": 9,
+      "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 5077,\n   \"wasmSha256\": \"4b533b3561901f1c4e1e378011b2ba485cc34d954784c60039963847bfe459d2\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"dewPointC\",\n    \"dewPointF\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 9,\n   \"total\": 9\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.093796\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+      "stderr": "",
+      "wall_ms": 748.6043520002568,
+      "match": true
+    },
+    {
+      "id": "CC-007",
+      "exit": 0,
+      "sha256": "93c451be05fdca001e9655d6d275b2b51cb973df1ba0e4bdecf20b896f9be26a",
+      "test_count": 11,
+      "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 343,\n   \"wasmSha256\": \"93c451be05fdca001e9655d6d275b2b51cb973df1ba0e4bdecf20b896f9be26a\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"recirculationRatio\",\n    \"recirculationRatioFromLoad\",\n    \"recirculationRatioFromQuality\",\n    \"recirculationRatioFromCompressorModel\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 11,\n   \"total\": 11\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.067675\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+      "stderr": "",
+      "wall_ms": 703.3898190002219,
+      "match": true
+    },
+    {
+      "id": "CC-009",
+      "exit": 0,
+      "sha256": "60c56cd9114be8ed2fdcef40759ce04efd4857986761a6a0cffc28fb0ec5bbb2",
+      "test_count": 11,
+      "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 7929,\n   \"wasmSha256\": \"60c56cd9114be8ed2fdcef40759ce04efd4857986761a6a0cffc28fb0ec5bbb2\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"inHgVacToPsia\",\n    \"nh3SatLiquidDensityLbFt3\",\n    \"nh3SatVaporDensityLbFt3\",\n    \"nh3SatTempF\",\n    \"evapInventoryLb\",\n    \"nh3EvapInventoryLb\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 11,\n   \"total\": 11\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.071238\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+      "stderr": "",
+      "wall_ms": 773.7453050012846,
+      "match": true
+    },
+    {
+      "id": "CC-011",
+      "exit": 0,
+      "sha256": "e8329e9444b9d49b8426d9a9024ed6712e6e02a59c698d9db39717fde8677bd4",
+      "test_count": 16,
+      "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 431,\n   \"wasmSha256\": \"e8329e9444b9d49b8426d9a9024ed6712e6e02a59c698d9db39717fde8677bd4\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"perPoundFromTotal\",\n    \"quoteTotalFromPerPound\",\n    \"quoteBand\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 16,\n   \"total\": 16\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.068863\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+      "stderr": "",
+      "wall_ms": 730.800878998707,
+      "match": true
+    },
+    {
+      "id": "CC-013",
+      "exit": 0,
+      "sha256": "54cc7d6c627e8004a255fa74170eb0486649be60f45501a6cfd1cff1404cce7b",
+      "test_count": 11,
+      "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 7920,\n   \"wasmSha256\": \"54cc7d6c627e8004a255fa74170eb0486649be60f45501a6cfd1cff1404cce7b\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"dewPointF\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 11,\n   \"total\": 11\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.11398\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+      "stderr": "",
+      "wall_ms": 782.5027880007838,
+      "match": true
+    },
+    {
+      "id": "CC-014",
+      "exit": 0,
+      "sha256": "0fee55c736fe13068287c5460da9d1732b979de78ebee332cdfb9b5987c6636a",
+      "test_count": 11,
+      "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 511,\n   \"wasmSha256\": \"0fee55c736fe13068287c5460da9d1732b979de78ebee332cdfb9b5987c6636a\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"liquidOutFraction\",\n    \"vaporFractionOfFeed\",\n    \"liquidOutPerEvaporated\",\n    \"liquidOutFromFeed\",\n    \"liquidOutFromLoad\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 11,\n   \"total\": 11\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.060552\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+      "stderr": "",
+      "wall_ms": 732.1437110003899,
+      "match": true
+    },
+    {
+      "id": "CC-022",
+      "exit": 0,
+      "sha256": "ad6fdb263dd8e65ba67d5aac50d211f75516504e8dc62c4d0de59d89a8fe202c",
+      "test_count": 16,
+      "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 8496,\n   \"wasmSha256\": \"ad6fdb263dd8e65ba67d5aac50d211f75516504e8dc62c4d0de59d89a8fe202c\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"satPressurePsig\",\n    \"psiPerDegF\",\n    \"claimHolds\",\n    \"claimHoldsEverywhere\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 16,\n   \"total\": 16\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.142476\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+      "stderr": "",
+      "wall_ms": 819.7529549997853,
+      "match": true
+    },
+    {
+      "id": "CC-025",
+      "exit": 0,
+      "sha256": "b1be039cf02e418c0e7532b8966f7643f0e61faad23576d7bab329d105ad5189",
+      "test_count": 11,
+      "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 293,\n   \"wasmSha256\": \"b1be039cf02e418c0e7532b8966f7643f0e61faad23576d7bab329d105ad5189\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"kwToHp\",\n    \"hpToKw\",\n    \"kwToHpWithEfficiency\",\n    \"roundTrip\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 11,\n   \"total\": 11\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.059364\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+      "stderr": "",
+      "wall_ms": 649.0699320002022,
+      "match": true
+    },
+    {
+      "id": "CC-026",
+      "exit": 0,
+      "sha256": "9592a6407d05cea92b04caa05d4b9c27d302a67e3883959bcb465b9273d2e12a",
+      "test_count": 12,
+      "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 9633,\n   \"wasmSha256\": \"9592a6407d05cea92b04caa05d4b9c27d302a67e3883959bcb465b9273d2e12a\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"aboveCritical\",\n    \"dischargePsig\",\n    \"dewTempF\",\n    \"dischargeSuperheatF\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 12,\n   \"total\": 12\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.128228\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+      "stderr": "",
+      "wall_ms": 821.930453999812,
+      "match": true
+    },
+    {
+      "id": "CC-027",
+      "exit": 0,
+      "sha256": "fdac4f53f93cfdb169e1704054c552462ab5d7e1a2f8af22510983314482eaf5",
+      "test_count": 11,
+      "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 219,\n   \"wasmSha256\": \"fdac4f53f93cfdb169e1704054c552462ab5d7e1a2f8af22510983314482eaf5\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"subcooling\",\n    \"deviation\",\n    \"verdict\",\n    \"verdictDefault\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 11,\n   \"total\": 11\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.049866\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+      "stderr": "",
+      "wall_ms": 665.9069509987603,
+      "match": true
+    },
+    {
+      "id": "CC-036",
+      "exit": 0,
+      "sha256": "c32c136e95c0c9397844fbeb29e4ffe89cc06edec1917101e4da759668c6b02e",
+      "test_count": 9,
+      "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 247,\n   \"wasmSha256\": \"c32c136e95c0c9397844fbeb29e4ffe89cc06edec1917101e4da759668c6b02e\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"kwToHp\",\n    \"hpToKw\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 9,\n   \"total\": 9\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.073613\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+      "stderr": "",
+      "wall_ms": 645.9141070008627,
+      "match": true
+    }
+  ]
+}

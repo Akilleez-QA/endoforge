@@ -1,0 +1,58 @@
+[
+  {
+    "id": "CC-009:physics:actual-liquid-fraction-density",
+    "requestId": "CC-009",
+    "outcome": "interface-not-expressible",
+    "passed": false,
+    "reason": "Neither frozen arm accepts measured liquid fraction, liquid density or vapor density; do not pass those values into circulation-ratio/feed slots. Conditional reference arithmetic is167.2lb at f.25 and332.8lb at f.5, but candidate has no lawful invocation for those supplied inputs."
+  },
+  {
+    "id": "CC-009:physics:nh3-property-reference",
+    "requestId": "CC-009",
+    "outcome": "reference-unresolved",
+    "passed": false,
+    "reason": "Historical NH3 pressure/temperature assertions disagree and no independently qualified NH3 property provider is supplied here. No table value is adopted as authority."
+  },
+  {
+    "id": "CC-013:physics:same-vapor-pressure-ice-output",
+    "requestId": "CC-013",
+    "outcome": "reference-unresolved",
+    "passed": false,
+    "reason": "The paired ABI has only a water-dew scalar with T/RH and no input RH-phase basis or independent frost output. Ice/water inversion at a shared vapor pressure needs a qualified saturation-reference adapter; do not inherit historical approximations as physical truth."
+  },
+  {
+    "id": "CC-022:physics:steam-and-refrigerant-tables",
+    "requestId": "CC-022",
+    "outcome": "reference-unresolved",
+    "passed": false,
+    "reason": "No qualified steam/R22/R410 pressure provider is bound to these artifacts; the fast-path accepts caller-supplied points but performs no property lookup, while incumbent models ideal gas. Arithmetic success cannot validate those property statements."
+  },
+  {
+    "id": "C-007:physics:temperature-endpoints",
+    "requestId": "C-007",
+    "outcome": "interface-not-expressible",
+    "passed": false,
+    "reason": "Neither paired capability accepts inlet/outlet or verified saturation/liquid temperature as the requested semantic inputs and returns the requested temperature-drop output. Do not reinterpret measured-target deviation arguments as temperature endpoints."
+  },
+  {
+    "id": "C-007:physics:interval-conversion",
+    "requestId": "C-007",
+    "outcome": "interface-not-expressible",
+    "passed": false,
+    "reason": "Neither paired capability exports a Fahrenheit-interval\u2192Celsius-interval conversion; required45*5/9=25degC cannot be requested through the declared ABI."
+  },
+  {
+    "id": "C-007:physics:heat-duty",
+    "requestId": "C-007",
+    "outcome": "interface-not-expressible",
+    "passed": false,
+    "reason": "Neither paired capability accepts supplied massflow1000lb/h and cp.35Btu/lb/degF to return15750Btu/h. A status code is not a heat-duty output."
+  },
+  {
+    "id": "C-007:physics:coupled-physics",
+    "requestId": "C-007",
+    "outcome": "interface-not-expressible",
+    "passed": false,
+    "reason": "Neither paired interface can receive leaving-liquid and subcooler-suction-saturation temperatures together, or inlet and condensing-saturation temperatures, to evaluate the explicit impossibility conditions."
+  }
+]

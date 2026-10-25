@@ -1,0 +1,74 @@
+[
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "create",
+      "--name",
+      "endoforge-v1-19f08e360a4c48f4b8510cc91adffaf6",
+      "--label",
+      "endoforge.runtime=v1",
+      "--label",
+      "endoforge.owner=19f08e360a4c48f4b8510cc91adffaf6",
+      "--pull=never",
+      "--network=none",
+      "--read-only",
+      "--user",
+      "1000:1000",
+      "--cap-drop=ALL",
+      "--security-opt=no-new-privileges",
+      "--cpus=1",
+      "--memory=512m",
+      "--memory-swap=512m",
+      "--pids-limit=32",
+      "--log-opt",
+      "max-size=1m",
+      "--log-opt",
+      "max-file=1",
+      "--tmpfs",
+      "/tmp:rw,nosuid,nodev,size=64m",
+      "--tmpfs",
+      "/out:rw,nosuid,nodev,size=8m,uid=1000,gid=1000",
+      "--mount",
+      "type=bind,src=/home/user/Work/endoforge/campaigns/next50-20261018/runtime/actual-workflow-recovery-6595fe3e/runtime/attempts/compile-interrupted/input.txt,dst=/input.txt,readonly",
+      "--entrypoint",
+      "/bin/sh",
+      "sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541",
+      "-c",
+      "printf 'PARTIAL_UNTRUSTED_OUTPUT\\n'; touch /tmp/compile-ready; sleep 90; exec /usr/local/bin/node -e 'const fs=require('\"'\"'fs'\"'\"'),cp=require('\"'\"'child_process'\"'\"'),p=JSON.parse(fs.readFileSync('\"'\"'/input.txt'\"'\"','\"'\"'utf8'\"'\"'));\nif(p.version!==1||!/^[-A-Za-z0-9_]{1,80}$/.test(p.job))throw Error('\"'\"'payload'\"'\"');\nconst names=['\"'\"'CONTRACT.md'\"'\"','\"'\"'tests.json'\"'\"','\"'\"'frozen.sha256'\"'\"','\"'\"'kernel.ts'\"'\"','\"'\"'glue.json'\"'\"'];\nif(Object.keys(p.files).sort().join()!=names.sort().join())throw Error('\"'\"'file set'\"'\"');\nconst d='\"'\"'/tmp/'\"'\"'+p.job;fs.mkdirSync(d);for(const n of names){if(typeof p.files[n]!=='\"'\"'string'\"'\"')throw Error('\"'\"'file content'\"'\"');fs.writeFileSync(d+'\"'\"'/'\"'\"'+n,p.files[n]);}\ncp.execFileSync('\"'\"'/usr/local/bin/node'\"'\"',['\"'\"'/bundle/experiments/P-02-compiler-in-isolate/node_modules/assemblyscript/bin/asc.js'\"'\"',d+'\"'\"'/kernel.ts'\"'\"','\"'\"'--runtime'\"'\"','\"'\"'stub'\"'\"','\"'\"'-O3'\"'\"','\"'\"'--noAssert'\"'\"','\"'\"'-o'\"'\"',d+'\"'\"'/kernel.wasm'\"'\"'],{timeout:60000,stdio:['\"'\"'ignore'\"'\"','\"'\"'pipe'\"'\"','\"'\"'pipe'\"'\"']});\nconst b=fs.readFileSync(d+'\"'\"'/kernel.wasm'\"'\"'),m=new WebAssembly.Module(b);if(WebAssembly.Module.imports(m).length)throw Error('\"'\"'imports denied'\"'\"');\nprocess.stdout.write(b.toString('\"'\"'base64'\"'\"')+'\"'\"'\\n'\"'\"');'"
+    ],
+    "exit": 0,
+    "stdout": "9a3241e0eaebde03935c10554942d643656257360dbe503e26bc82b1e5af69c1\n",
+    "stderr": "",
+    "wallMs": 172.7395109992358
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "start",
+      "endoforge-v1-19f08e360a4c48f4b8510cc91adffaf6"
+    ],
+    "exit": 0,
+    "stdout": "endoforge-v1-19f08e360a4c48f4b8510cc91adffaf6\n",
+    "stderr": "",
+    "wallMs": 183.9956030016765
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "inspect",
+      "--format",
+      "{{json .State}}",
+      "endoforge-v1-19f08e360a4c48f4b8510cc91adffaf6"
+    ],
+    "exit": 0,
+    "stdout": "{\"Status\":\"running\",\"Running\":true,\"Paused\":false,\"Restarting\":false,\"OOMKilled\":false,\"Dead\":false,\"Pid\":362338,\"ExitCode\":0,\"Error\":\"\",\"StartedAt\":\"2026-10-18T22:50:09.560458693Z\",\"FinishedAt\":\"0001-01-01T00:00:00Z\"}\n",
+    "stderr": "",
+    "wallMs": 24.600755001301877
+  }
+]

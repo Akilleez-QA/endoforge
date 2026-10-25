@@ -1,0 +1,126 @@
+[
+  {
+    "argv": [
+      "age-keygen",
+      "-o",
+      "/home/user/.local/share/endoforge/checkpoint-identities/next50-20261018-actual01.agekey"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "Public key: age1du88umwu9zapmusjc0wa7y5xjv89cymrjhy6j5m6sk2jahcacuds9xa5a8\n",
+    "wallMs": 2.1763559998362325
+  },
+  {
+    "argv": [
+      "age-keygen",
+      "-y",
+      "/home/user/.local/share/endoforge/checkpoint-identities/next50-20261018-actual01.agekey"
+    ],
+    "exit": 0,
+    "stdout": "age1du88umwu9zapmusjc0wa7y5xjv89cymrjhy6j5m6sk2jahcacuds9xa5a8\n",
+    "stderr": "",
+    "wallMs": 1.7745959994499572
+  },
+  {
+    "argv": [
+      "ssh",
+      "-o",
+      "BatchMode=yes",
+      "fieldops",
+      "sha256sum /etc/machine-id"
+    ],
+    "exit": 0,
+    "stdout": "131b04865c7ae11b8aa180da9e7cb7dbb4eaec95db2b4d40a5ca75c4f15dd7c5  /etc/machine-id\n",
+    "stderr": "",
+    "wallMs": 178.48641599994153
+  },
+  {
+    "argv": [
+      "scp",
+      "-q",
+      "/home/user/Work/endoforge/campaigns/next50-20261018/portability/actual-resume-01/campaign.age",
+      "fieldops:/tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b/campaign-b3cfa23b032c40f0a77f337e506c1355.age"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "",
+    "wallMs": 391.7612669974915
+  },
+  {
+    "argv": [
+      "scp",
+      "-q",
+      "/home/user/Work/endoforge/tools/factory_portability/resume_stage.py",
+      "fieldops:/tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b/resume_stage.py"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "",
+    "wallMs": 235.5204209961812
+  },
+  {
+    "argv": [
+      "ssh",
+      "-o",
+      "BatchMode=yes",
+      "fieldops",
+      "bwrap --ro-bind /usr /usr --ro-bind /lib /lib --ro-bind /lib64 /lib64 --ro-bind /bin /bin --bind /tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b /work --unshare-all --new-session --die-with-parent --proc /proc --dev /dev --tmpfs /tmp --setenv PATH /work:/usr/bin:/bin --chdir /work -- /usr/bin/python3 /work/checkpoint.py unpack /work/campaign-b3cfa23b032c40f0a77f337e506c1355.age /work/checkpoint-b3cfa23b032c40f0a77f337e506c1355 --identity -"
+    ],
+    "exit": 0,
+    "stdout": "{\"schema\": \"endoforge.checkpoint.v1\", \"files\": 82, \"archive_sha256\": \"e62c7eec59491721977e0da23782b522906014c20aa4da38ad4a02ac4a8aaefb\"}\n",
+    "stderr": "",
+    "wallMs": 369.58310199406696
+  },
+  {
+    "argv": [
+      "ssh",
+      "-o",
+      "BatchMode=yes",
+      "fieldops",
+      "bwrap --ro-bind /usr /usr --ro-bind /lib /lib --ro-bind /lib64 /lib64 --ro-bind /bin /bin --bind /tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b /work --unshare-all --new-session --die-with-parent --proc /proc --dev /dev --tmpfs /tmp --setenv PATH /work:/usr/bin:/bin --chdir /work -- /usr/bin/python3 /work/resume_stage.py /work/checkpoint-b3cfa23b032c40f0a77f337e506c1355 /work/bundle /work/resume-b3cfa23b032c40f0a77f337e506c1355"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"passed\": true,\n  \"published\": true,\n  \"reused\": false,\n  \"publicationSha256\": \"d1dad4df9f974c01d2a3a11de0202ab7ad51b37ffc5e4c1013a8ef19ea5a5677\",\n  \"moduleSha256\": \"f3177f3d3b8c0ec2322067a2c5c3c127fb2d0ed6cffa0315c0aa2e1f7a64f81a\",\n  \"inputImmutable\": true,\n  \"completedStagesPreserved\": [\n    \"intake\",\n    \"paired-evals\",\n    \"freeze\",\n    \"generate\",\n    \"compile\",\n    \"bounded-evals\",\n    \"trusted-gates\",\n    \"publish\"\n  ],\n  \"cases\": [\n    {\n      \"id\": \"numeric37.5\",\n      \"passed\": true,\n      \"outcome\": \"value\",\n      \"value\": 99.5\n    },\n    {\n      \"id\": \"freezing\",\n      \"passed\": true,\n      \"outcome\": \"value\",\n      \"value\": 32.0\n    },\n    {\n      \"id\": \"invalid\",\n      \"passed\": true,\n      \"outcome\": \"refused\"\n    },\n    {\n      \"id\": \"nonfinite\",\n      \"passed\": true,\n      \"outcome\": \"refused\"\n    }\n  ],\n  \"resumedState\": {\n    \"artifactHash\": \"75bb9be879490d961d2b5510b32aa908fb9a42743fab65a117fbd6f569867d65\",\n    \"candidateHash\": \"75bb9be879490d961d2b5510b32aa908fb9a42743fab65a117fbd6f569867d65\",\n    \"completedStages\": [\n      \"intake\",\n      \"paired-evals\",\n      \"freeze\",\n      \"generate\",\n      \"compile\",\n      \"bounded-evals\",\n      \"trusted-gates\",\n      \"publish\",\n      \"portable-consumer\"\n    ],\n    \"frozenHash\": \"8abe905e136149e47bb426ad21f0944f103e2a88a0e2762193114c4687b235d9\",\n    \"generatorStarted\": true,\n    \"job\": \"dev-affine-01\",\n    \"pendingStages\": [],\n    \"stage\": \"portable-consumer-completed\",\n    \"version\": 1,\n    \"wasmHash\": \"f3177f3d3b8c0ec2322067a2c5c3c127fb2d0ed6cffa0315c0aa2e1f7a64f81a\"\n  },\n  \"attempt\": \"67868336c4c247cca38b1380a2333588.json\"\n}\n",
+    "stderr": "",
+    "wallMs": 219.76664000249002
+  },
+  {
+    "argv": [
+      "ssh",
+      "-o",
+      "BatchMode=yes",
+      "fieldops",
+      "bwrap --ro-bind /usr /usr --ro-bind /lib /lib --ro-bind /lib64 /lib64 --ro-bind /bin /bin --bind /tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b /work --unshare-all --new-session --die-with-parent --proc /proc --dev /dev --tmpfs /tmp --setenv PATH /work:/usr/bin:/bin --chdir /work -- /usr/bin/python3 /work/resume_stage.py /work/checkpoint-b3cfa23b032c40f0a77f337e506c1355 /work/bundle /work/resume-b3cfa23b032c40f0a77f337e506c1355"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"passed\": true,\n  \"published\": false,\n  \"reused\": true,\n  \"publicationSha256\": \"d1dad4df9f974c01d2a3a11de0202ab7ad51b37ffc5e4c1013a8ef19ea5a5677\",\n  \"moduleSha256\": \"f3177f3d3b8c0ec2322067a2c5c3c127fb2d0ed6cffa0315c0aa2e1f7a64f81a\",\n  \"inputImmutable\": true,\n  \"completedStagesPreserved\": [\n    \"intake\",\n    \"paired-evals\",\n    \"freeze\",\n    \"generate\",\n    \"compile\",\n    \"bounded-evals\",\n    \"trusted-gates\",\n    \"publish\"\n  ],\n  \"cases\": [\n    {\n      \"id\": \"numeric37.5\",\n      \"passed\": true,\n      \"outcome\": \"value\",\n      \"value\": 99.5\n    },\n    {\n      \"id\": \"freezing\",\n      \"passed\": true,\n      \"outcome\": \"value\",\n      \"value\": 32.0\n    },\n    {\n      \"id\": \"invalid\",\n      \"passed\": true,\n      \"outcome\": \"refused\"\n    },\n    {\n      \"id\": \"nonfinite\",\n      \"passed\": true,\n      \"outcome\": \"refused\"\n    }\n  ],\n  \"resumedState\": {\n    \"artifactHash\": \"75bb9be879490d961d2b5510b32aa908fb9a42743fab65a117fbd6f569867d65\",\n    \"candidateHash\": \"75bb9be879490d961d2b5510b32aa908fb9a42743fab65a117fbd6f569867d65\",\n    \"completedStages\": [\n      \"intake\",\n      \"paired-evals\",\n      \"freeze\",\n      \"generate\",\n      \"compile\",\n      \"bounded-evals\",\n      \"trusted-gates\",\n      \"publish\",\n      \"portable-consumer\"\n    ],\n    \"frozenHash\": \"8abe905e136149e47bb426ad21f0944f103e2a88a0e2762193114c4687b235d9\",\n    \"generatorStarted\": true,\n    \"job\": \"dev-affine-01\",\n    \"pendingStages\": [],\n    \"stage\": \"portable-consumer-completed\",\n    \"version\": 1,\n    \"wasmHash\": \"f3177f3d3b8c0ec2322067a2c5c3c127fb2d0ed6cffa0315c0aa2e1f7a64f81a\"\n  },\n  \"attempt\": \"2f928426ceeb447a9f6509a83e3f4867.json\"\n}\n",
+    "stderr": "",
+    "wallMs": 219.83335300319595
+  },
+  {
+    "argv": [
+      "scp",
+      "-q",
+      "-r",
+      "fieldops:/tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b/resume-b3cfa23b032c40f0a77f337e506c1355",
+      "/home/user/Work/endoforge/campaigns/next50-20261018/portability/actual-resume-01/remote-output"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "",
+    "wallMs": 290.25551000086125
+  },
+  {
+    "argv": [
+      "ssh",
+      "-o",
+      "BatchMode=yes",
+      "fieldops",
+      "rm -rf -- /tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b && test ! -e /tmp/endoforge-next50-7b6942bdbbca48f1a7a1f13a7430fa5b"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "",
+    "wallMs": 239.47729700012133
+  }
+]

@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "scope": "small synthetic operational campaign; no real refrigeration utility inference",
+  "families": [
+    "codex",
+    "qwen"
+  ],
+  "developmentPacket": "three declared Celsius/metres/threshold requests",
+  "arms": {
+    "incumbent": "tools.factory_campaign.pipeline.maker_prompt unchanged explicit-request prompt",
+    "candidateAppend": "Before final source, silently check finite values, both exact domain endpoints, absent input representation and required named argument. Keep explicit refusals as unreachable(). Make no defaults. Return only source."
+  },
+  "promptSourceSha256": "1a178c953bc0e1a3396d934d1aaf1ffa6a9ce5665ef11cd17e855a0c32aac041",
+  "metric": "all assigned requests machine-completed-valid; unsupported and underdetermined separate counted strata",
+  "aaRepeats": 2,
+  "pairedDevelopmentBlocks": 3,
+  "holdoutRequests": 2,
+  "holdoutRunsPerArm": 1,
+  "seeds": 7919,
+  "retryLimit": 1,
+  "callWallSeconds": 180,
+  "repairBudgetPerRequest": 1,
+  "adoptionRule": "adopt only strict completion improvement on both development and holdout, zero guardrail regressions; otherwise no-evidence or reject",
+  "uncertainty": "descriptive matched counts and exact paired sign-test; tiny N does not establish broad advantage",
+  "forecast": {
+    "incumbentDevelopmentCompleted": 3,
+    "candidateDevelopmentCompleted": 3,
+    "expectedPairedImprovement": 0,
+    "expectedDecision": "no-evidence"
+  },
+  "powerRule": "no expansion from this small run; no posthoc changes to arms, thresholds or holdout",
+  "incumbentPreserved": true
+}

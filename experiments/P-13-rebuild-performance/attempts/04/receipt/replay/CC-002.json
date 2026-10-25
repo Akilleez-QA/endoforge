@@ -1,0 +1,186 @@
+{
+  "execution": {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "run",
+      "--rm",
+      "--name",
+      "endoforge-p13-gate-cc-002-3739593",
+      "--pull=never",
+      "--network=none",
+      "--read-only",
+      "--user",
+      "1000:1000",
+      "--cap-drop=ALL",
+      "--security-opt=no-new-privileges",
+      "--cpus=1",
+      "--memory=512m",
+      "--memory-swap=512m",
+      "--pids-limit=64",
+      "--tmpfs",
+      "/tmp:rw,nosuid,nodev,size=64m",
+      "--mount",
+      "type=bind,src=/home/user/Work/endoforge/experiments/P-13-rebuild-performance/attempts/04/work/replay/CC-002,dst=/out/CC-002",
+      "--entrypoint",
+      "/usr/local/bin/node",
+      "sha256:d55f6101f61e7f3b52ea2e3490ceb2e8ce2e4fc19c45f9b7fbf205737c68499e",
+      "/bundle/campaigns/x1-spec-study/factory/gate.mjs",
+      "run",
+      "/out/CC-002"
+    ],
+    "exit": 0,
+    "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 5077,\n   \"wasmSha256\": \"4b533b3561901f1c4e1e378011b2ba485cc34d954784c60039963847bfe459d2\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"dewPointC\",\n    \"dewPointF\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 9,\n   \"total\": 9\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.07943\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+    "stderr": "",
+    "timeout": false,
+    "wallMs": 1584.6909829997458
+  },
+  "result": {
+    "at": "2026-10-18T19:04:43.608Z",
+    "gates": {
+      "G1_frozen": {
+        "ok": true
+      },
+      "G2_compiles": {
+        "ok": true,
+        "wasmBytes": 5077,
+        "wasmSha256": "4b533b3561901f1c4e1e378011b2ba485cc34d954784c60039963847bfe459d2"
+      },
+      "G3_exports": {
+        "ok": true,
+        "exports": [
+          "dewPointC",
+          "dewPointF"
+        ]
+      },
+      "G4_tests": {
+        "ok": true,
+        "passed": 9,
+        "total": 9
+      },
+      "G6_bounded": {
+        "ok": true,
+        "maxMs": 0.07943
+      },
+      "G5_deterministic": {
+        "ok": true
+      },
+      "G7_glue": {
+        "ok": true
+      }
+    },
+    "tests": [
+      {
+        "name": "stated case 60F 60%RH",
+        "fn": "dewPointF",
+        "args": [
+          60,
+          60
+        ],
+        "expect": 46.1,
+        "got": 46.075167786166055,
+        "ms": 0.079,
+        "pass": true
+      },
+      {
+        "name": "metric 20C 50%RH",
+        "fn": "dewPointC",
+        "args": [
+          20,
+          50
+        ],
+        "expect": 9.3,
+        "got": 9.261106630534236,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "assumption pin: saturation returns dry bulb",
+        "fn": "dewPointF",
+        "args": [
+          60,
+          100
+        ],
+        "expect": 60,
+        "got": 60,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "hot dry 95F 20%RH below dry bulb",
+        "fn": "dewPointF",
+        "args": [
+          95,
+          20
+        ],
+        "expect": 47.7,
+        "got": 47.66285172158797,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "very dry 60F 1%RH",
+        "fn": "dewPointF",
+        "args": [
+          60,
+          1
+        ],
+        "expect": -41.3,
+        "got": -41.25565556149286,
+        "ms": 0.002,
+        "pass": true
+      },
+      {
+        "name": "boundary: freezing dry bulb 32F 60%RH",
+        "fn": "dewPointF",
+        "args": [
+          32,
+          60
+        ],
+        "expect": 19.7,
+        "got": 19.677875167298257,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "refusal: RH 0",
+        "fn": "dewPointF",
+        "args": [
+          60,
+          0
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.042,
+        "pass": true
+      },
+      {
+        "name": "refusal: RH 101",
+        "fn": "dewPointF",
+        "args": [
+          60,
+          101
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.003,
+        "pass": true
+      },
+      {
+        "name": "refusal: RH negative",
+        "fn": "dewPointC",
+        "args": [
+          20,
+          -5
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.003,
+        "pass": true
+      }
+    ],
+    "promotable": true
+  },
+  "match": true
+}

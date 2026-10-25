@@ -1,0 +1,56 @@
+{
+ "order": [
+  "iface",
+  "contract",
+  "k-day",
+  "k-sample",
+  "k-count",
+  "t-date",
+  "t-count",
+  "g-day",
+  "g-sample",
+  "g-count",
+  "compose",
+  "r-tech",
+  "r-demo",
+  "r-codex"
+ ],
+ "waves": {
+  "0": [
+   "iface"
+  ],
+  "1": [
+   "contract"
+  ],
+  "2": [
+   "k-day",
+   "k-sample",
+   "k-count",
+   "t-date",
+   "t-count",
+   "g-day",
+   "g-sample",
+   "g-count"
+  ],
+  "3": [
+   "compose"
+  ],
+  "4": [
+   "r-tech",
+   "r-demo",
+   "r-codex"
+  ]
+ },
+ "total": 21,
+ "critical": 9,
+ "criticalPath": [
+  "iface",
+  "contract",
+  "k-sample",
+  "compose",
+  "r-tech"
+ ],
+ "speedupBound": 2.33,
+ "serialFraction": 0.43,
+ "width": 8
+}

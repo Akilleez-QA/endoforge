@@ -1,0 +1,216 @@
+{
+  "id": "CC-013",
+  "argv": [
+    "sudo",
+    "-n",
+    "docker",
+    "run",
+    "--rm",
+    "--pull=never",
+    "--network=none",
+    "--read-only",
+    "--user",
+    "1000:1000",
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges",
+    "--cpus=1",
+    "--memory=512m",
+    "--memory-swap=512m",
+    "--pids-limit=64",
+    "--tmpfs",
+    "/tmp:rw,nosuid,nodev,size=64m",
+    "--mount",
+    "type=bind,src=/home/user/Work/endoforge/experiments/P-09-portable-campaign/work/roundtrip,dst=/out",
+    "--entrypoint",
+    "/usr/local/bin/node",
+    "endoforge-p09:roundtrip",
+    "/bundle/campaigns/x1-spec-study/factory/gate.mjs",
+    "run",
+    "/out/CC-013"
+  ],
+  "exit": 0,
+  "wallMs": 1755.8150379991275,
+  "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 7920,\n   \"wasmSha256\": \"54cc7d6c627e8004a255fa74170eb0486649be60f45501a6cfd1cff1404cce7b\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"dewPointF\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 11,\n   \"total\": 11\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.13403\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+  "stderr": "",
+  "result": {
+    "at": "2026-10-18T18:46:21.251Z",
+    "gates": {
+      "G1_frozen": {
+        "ok": true
+      },
+      "G2_compiles": {
+        "ok": true,
+        "wasmBytes": 7920,
+        "wasmSha256": "54cc7d6c627e8004a255fa74170eb0486649be60f45501a6cfd1cff1404cce7b"
+      },
+      "G3_exports": {
+        "ok": true,
+        "exports": [
+          "dewPointF"
+        ]
+      },
+      "G4_tests": {
+        "ok": true,
+        "passed": 11,
+        "total": 11
+      },
+      "G6_bounded": {
+        "ok": true,
+        "maxMs": 0.13403
+      },
+      "G5_deterministic": {
+        "ok": true
+      },
+      "G7_glue": {
+        "ok": true
+      }
+    },
+    "tests": [
+      {
+        "name": "request: -10F 50%RH ASHRAE basis",
+        "fn": "dewPointF",
+        "args": [
+          -10,
+          50,
+          0
+        ],
+        "expect": -22.3,
+        "got": -22.312382272326538,
+        "ms": 0.134,
+        "pass": true
+      },
+      {
+        "name": "boundary: RH 100 gives dry bulb",
+        "fn": "dewPointF",
+        "args": [
+          -10,
+          100,
+          0
+        ],
+        "expect": -10,
+        "got": -10.000000000000071,
+        "ms": 0.004,
+        "pass": true
+      },
+      {
+        "name": "RH 20 is well below dry bulb",
+        "fn": "dewPointF",
+        "args": [
+          -10,
+          20,
+          0
+        ],
+        "expect": -37.6,
+        "got": -37.58947576388613,
+        "ms": 0.003,
+        "pass": true
+      },
+      {
+        "name": "assumption pin: over-water RH, water dew point",
+        "fn": "dewPointF",
+        "args": [
+          -10,
+          50,
+          1
+        ],
+        "expect": -23.6,
+        "got": -23.601104000590396,
+        "ms": 0.004,
+        "pass": true
+      },
+      {
+        "name": "assumption pin: over-water RH, frost point",
+        "fn": "dewPointF",
+        "args": [
+          -10,
+          50,
+          2
+        ],
+        "expect": -18.3,
+        "got": -18.319579696309255,
+        "ms": 0.006,
+        "pass": true
+      },
+      {
+        "name": "above freezing basis 0",
+        "fn": "dewPointF",
+        "args": [
+          70,
+          50,
+          0
+        ],
+        "expect": 50.5,
+        "got": 50.528323098233415,
+        "ms": 0.007,
+        "pass": true
+      },
+      {
+        "name": "above freezing basis 1 agrees",
+        "fn": "dewPointF",
+        "args": [
+          70,
+          50,
+          1
+        ],
+        "expect": 50.5,
+        "got": 50.528323098233415,
+        "ms": 0.003,
+        "pass": true
+      },
+      {
+        "name": "boundary: 32F dry bulb",
+        "fn": "dewPointF",
+        "args": [
+          32,
+          50,
+          0
+        ],
+        "expect": 17.3,
+        "got": 17.307469628755804,
+        "ms": 0.004,
+        "pass": true
+      },
+      {
+        "name": "RH 0 traps",
+        "fn": "dewPointF",
+        "args": [
+          -10,
+          0,
+          0
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.071,
+        "pass": true
+      },
+      {
+        "name": "RH 150 traps",
+        "fn": "dewPointF",
+        "args": [
+          -10,
+          150,
+          0
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.004,
+        "pass": true
+      },
+      {
+        "name": "unknown basis traps",
+        "fn": "dewPointF",
+        "args": [
+          -10,
+          50,
+          7
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.003,
+        "pass": true
+      }
+    ],
+    "promotable": true
+  },
+  "wasmSha256": "54cc7d6c627e8004a255fa74170eb0486649be60f45501a6cfd1cff1404cce7b"
+}

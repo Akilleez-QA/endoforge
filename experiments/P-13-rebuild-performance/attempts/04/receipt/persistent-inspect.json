@@ -1,0 +1,238 @@
+{
+  "Id": "bb020b2e758875f01f7acd44a6b047f675d364007bf99201e00455922457362c",
+  "Created": "2026-10-18T19:04:59.471382491Z",
+  "Path": "/usr/local/bin/node",
+  "Args": [
+    "-e",
+    "setInterval(()=>{},1000)"
+  ],
+  "State": {
+    "Status": "running",
+    "Running": true,
+    "Paused": false,
+    "Restarting": false,
+    "OOMKilled": false,
+    "Dead": false,
+    "Pid": 3743495,
+    "ExitCode": 0,
+    "Error": "",
+    "StartedAt": "2026-10-18T19:04:59.736667406Z",
+    "FinishedAt": "0001-01-01T00:00:00Z"
+  },
+  "Image": "sha256:d55f6101f61e7f3b52ea2e3490ceb2e8ce2e4fc19c45f9b7fbf205737c68499e",
+  "ResolvConfPath": "/var/lib/docker/containers/bb020b2e758875f01f7acd44a6b047f675d364007bf99201e00455922457362c/resolv.conf",
+  "HostnamePath": "/var/lib/docker/containers/bb020b2e758875f01f7acd44a6b047f675d364007bf99201e00455922457362c/hostname",
+  "HostsPath": "/var/lib/docker/containers/bb020b2e758875f01f7acd44a6b047f675d364007bf99201e00455922457362c/hosts",
+  "LogPath": "/var/lib/docker/containers/bb020b2e758875f01f7acd44a6b047f675d364007bf99201e00455922457362c/bb020b2e758875f01f7acd44a6b047f675d364007bf99201e00455922457362c-json.log",
+  "Name": "/endoforge-p13-persistent-3739593",
+  "RestartCount": 0,
+  "Driver": "overlayfs",
+  "Platform": "linux",
+  "MountLabel": "",
+  "ProcessLabel": "",
+  "AppArmorProfile": "",
+  "ExecIDs": null,
+  "HostConfig": {
+    "Binds": null,
+    "ContainerIDFile": "",
+    "LogConfig": {
+      "Type": "json-file",
+      "Config": {
+        "max-file": "5",
+        "max-size": "10m"
+      }
+    },
+    "NetworkMode": "none",
+    "PortBindings": {},
+    "RestartPolicy": {
+      "Name": "no",
+      "MaximumRetryCount": 0
+    },
+    "AutoRemove": false,
+    "VolumeDriver": "",
+    "VolumesFrom": null,
+    "ConsoleSize": [
+      0,
+      0
+    ],
+    "CapAdd": null,
+    "CapDrop": [
+      "ALL"
+    ],
+    "CgroupnsMode": "private",
+    "Dns": null,
+    "DnsOptions": [],
+    "DnsSearch": [],
+    "ExtraHosts": null,
+    "GroupAdd": null,
+    "IpcMode": "private",
+    "Cgroup": "",
+    "Links": null,
+    "OomScoreAdj": 0,
+    "PidMode": "",
+    "Privileged": false,
+    "PublishAllPorts": false,
+    "ReadonlyRootfs": true,
+    "SecurityOpt": [
+      "no-new-privileges"
+    ],
+    "Tmpfs": {
+      "/tmp": "rw,nosuid,nodev,size=64m"
+    },
+    "UTSMode": "",
+    "UsernsMode": "",
+    "ShmSize": 67108864,
+    "Runtime": "runc",
+    "Isolation": "",
+    "CpuShares": 0,
+    "Memory": 536870912,
+    "NanoCpus": 1000000000,
+    "CgroupParent": "",
+    "BlkioWeight": 0,
+    "BlkioWeightDevice": [],
+    "BlkioDeviceReadBps": [],
+    "BlkioDeviceWriteBps": [],
+    "BlkioDeviceReadIOps": [],
+    "BlkioDeviceWriteIOps": [],
+    "CpuPeriod": 0,
+    "CpuQuota": 0,
+    "CpuRealtimePeriod": 0,
+    "CpuRealtimeRuntime": 0,
+    "CpusetCpus": "",
+    "CpusetMems": "",
+    "Devices": [],
+    "DeviceCgroupRules": null,
+    "DeviceRequests": null,
+    "MemoryReservation": 0,
+    "MemorySwap": 536870912,
+    "MemorySwappiness": null,
+    "OomKillDisable": null,
+    "PidsLimit": 64,
+    "Ulimits": null,
+    "CpuCount": 0,
+    "CpuPercent": 0,
+    "IOMaximumIOps": 0,
+    "IOMaximumBandwidth": 0,
+    "Mounts": [
+      {
+        "Type": "bind",
+        "Source": "/home/user/Work/endoforge/experiments/P-13-rebuild-performance/attempts/04/work/replay/CC-036",
+        "Target": "/data",
+        "ReadOnly": true
+      },
+      {
+        "Type": "bind",
+        "Source": "/home/user/Work/endoforge/experiments/P-13-rebuild-performance/workload.mjs",
+        "Target": "/workload.mjs",
+        "ReadOnly": true
+      }
+    ],
+    "MaskedPaths": [
+      "/proc/acpi",
+      "/proc/asound",
+      "/proc/interrupts",
+      "/proc/kcore",
+      "/proc/keys",
+      "/proc/latency_stats",
+      "/proc/sched_debug",
+      "/proc/scsi",
+      "/proc/timer_list",
+      "/proc/timer_stats",
+      "/sys/devices/virtual/powercap",
+      "/sys/firmware"
+    ],
+    "ReadonlyPaths": [
+      "/proc/bus",
+      "/proc/fs",
+      "/proc/irq",
+      "/proc/sys",
+      "/proc/sysrq-trigger"
+    ]
+  },
+  "Storage": {
+    "RootFS": {
+      "Snapshot": {
+        "Name": "overlayfs"
+      }
+    }
+  },
+  "Mounts": [
+    {
+      "Type": "bind",
+      "Source": "/home/user/Work/endoforge/experiments/P-13-rebuild-performance/attempts/04/work/replay/CC-036",
+      "Destination": "/data",
+      "Mode": "",
+      "RW": false,
+      "Propagation": "rprivate"
+    },
+    {
+      "Type": "bind",
+      "Source": "/home/user/Work/endoforge/experiments/P-13-rebuild-performance/workload.mjs",
+      "Destination": "/workload.mjs",
+      "Mode": "",
+      "RW": false,
+      "Propagation": "rprivate"
+    }
+  ],
+  "Config": {
+    "Hostname": "bb020b2e7588",
+    "Domainname": "",
+    "User": "1000:1000",
+    "AttachStdin": false,
+    "AttachStdout": false,
+    "AttachStderr": false,
+    "Tty": false,
+    "OpenStdin": false,
+    "StdinOnce": false,
+    "Env": [
+      "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "NODE_VERSION=22.18.0",
+      "YARN_VERSION=1.22.22",
+      "HOME=/tmp"
+    ],
+    "Cmd": [
+      "-e",
+      "setInterval(()=>{},1000)"
+    ],
+    "Image": "endoforge-p13:rebuild",
+    "Volumes": null,
+    "WorkingDir": "/tmp",
+    "Entrypoint": [
+      "/usr/local/bin/node"
+    ],
+    "Labels": {}
+  },
+  "NetworkSettings": {
+    "SandboxID": "2c9888c16049e1f6e5a2105f465294a5d80b12017a412308dc4f1dcf32a00141",
+    "SandboxKey": "/var/run/docker/netns/2c9888c16049",
+    "Ports": {},
+    "Networks": {
+      "none": {
+        "IPAMConfig": null,
+        "Links": null,
+        "Aliases": null,
+        "DriverOpts": null,
+        "GwPriority": 0,
+        "NetworkID": "71b70e061c4cf3fb02a1b8daa6c619af2e2e0bb4e89e2841e16869b20eb456d5",
+        "EndpointID": "00c7e636798c0babbee80bf9fa1cd46a2036bf8a044e0995097062ae3276516b",
+        "Gateway": "",
+        "IPAddress": "",
+        "MacAddress": "",
+        "IPPrefixLen": 0,
+        "IPv6Gateway": "",
+        "GlobalIPv6Address": "",
+        "GlobalIPv6PrefixLen": 0,
+        "DNSNames": null
+      }
+    }
+  },
+  "ImageManifestDescriptor": {
+    "mediaType": "application/vnd.oci.image.manifest.v1+json",
+    "digest": "sha256:ee41af99c0271e55923db31f3d8c0c218927504659882317e4c98e2d7b4df5b4",
+    "size": 2001,
+    "platform": {
+      "architecture": "amd64",
+      "os": "linux"
+    }
+  }
+}

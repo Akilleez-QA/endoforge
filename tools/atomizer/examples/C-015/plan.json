@@ -1,0 +1,49 @@
+{
+ "order": [
+  "iface",
+  "contract",
+  "kernel-decision",
+  "kernel-allowed",
+  "tests-decision",
+  "tests-allowed",
+  "tests-traps",
+  "glue-decision",
+  "glue-allowed",
+  "compose",
+  "review-codex",
+  "review-tech"
+ ],
+ "waves": {
+  "0": [
+   "iface",
+   "contract"
+  ],
+  "1": [
+   "kernel-decision",
+   "kernel-allowed",
+   "tests-decision",
+   "tests-allowed",
+   "tests-traps",
+   "glue-decision",
+   "glue-allowed"
+  ],
+  "2": [
+   "compose"
+  ],
+  "3": [
+   "review-codex",
+   "review-tech"
+  ]
+ },
+ "total": 20,
+ "critical": 9,
+ "criticalPath": [
+  "contract",
+  "kernel-decision",
+  "compose",
+  "review-codex"
+ ],
+ "speedupBound": 2.22,
+ "serialFraction": 0.45,
+ "width": 7
+}

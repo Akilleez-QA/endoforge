@@ -1,0 +1,258 @@
+{
+  "probe": "P-04-model-term",
+  "at": "2026-10-17T17:28:36.259Z",
+  "model_ids": [
+    "claude-opus-5-5"
+  ],
+  "cli": "2.1.299 (Claude Code)",
+  "counts": {
+    "A": {
+      "runs": 5,
+      "errors": 1
+    },
+    "B": {
+      "runs": 3,
+      "errors": 0
+    },
+    "C": {
+      "runs": 4,
+      "errors": 0
+    },
+    "D": {
+      "runs": 3,
+      "errors": 1
+    }
+  },
+  "A_sequential": {
+    "wall_ms": {
+      "n": 4,
+      "min": 73277.2,
+      "median": 76118.7,
+      "p95": 117394.5,
+      "max": 117394.5
+    },
+    "output_tokens": {
+      "n": 4,
+      "min": 7818,
+      "median": 7829,
+      "p95": 12951,
+      "max": 12951
+    },
+    "tok_s_wall": {
+      "n": 4,
+      "min": 95.27,
+      "median": 102.85,
+      "p95": 110.32,
+      "max": 110.32
+    },
+    "tok_s_api": {
+      "n": 4,
+      "min": 102.26,
+      "median": 110.15,
+      "p95": 115.77,
+      "max": 115.77
+    },
+    "input_tokens": {
+      "n": 4,
+      "min": 2,
+      "median": 2,
+      "p95": 2,
+      "max": 2
+    },
+    "cache_read": {
+      "n": 4,
+      "min": 453290,
+      "median": 453290,
+      "p95": 468183,
+      "max": 468183
+    },
+    "cache_creation": {
+      "n": 4,
+      "min": 3150,
+      "median": 3156,
+      "p95": 18045,
+      "max": 18045
+    },
+    "cost_usd": {
+      "n": 4,
+      "min": 0.2752046,
+      "median": 0.27887259999999997,
+      "p95": 0.49404600000000004,
+      "max": 0.49404600000000004
+    },
+    "input_gap_vs_prompt_est": {
+      "n": 4,
+      "min": 468697,
+      "median": 468737,
+      "p95": 468743,
+      "max": 468743
+    }
+  },
+  "B_variant": {
+    "wall_ms": {
+      "n": 3,
+      "min": 93946.4,
+      "median": 97125,
+      "p95": 118619.6,
+      "max": 118619.6
+    },
+    "cache_read": {
+      "n": 3,
+      "min": 0,
+      "median": 453290,
+      "p95": 468214,
+      "max": 468214
+    },
+    "cache_creation": {
+      "n": 3,
+      "min": 3155,
+      "median": 18075,
+      "p95": 35035,
+      "max": 35035
+    },
+    "output_tokens": {
+      "n": 3,
+      "min": 8962,
+      "median": 8971,
+      "p95": 12668,
+      "max": 12668
+    },
+    "tok_s_wall": {
+      "n": 3,
+      "min": 92.27,
+      "median": 95.49,
+      "p95": 106.8,
+      "max": 106.8
+    }
+  },
+  "C_parallel4": {
+    "batch_wall_ms": 124129.9,
+    "per_child_wall_ms": [
+      99292.5,
+      123018.8,
+      107183.2,
+      91544.6
+    ],
+    "per_child_output_tokens": [
+      10838,
+      12635,
+      11028,
+      9805
+    ],
+    "errors": 0,
+    "aggregate_tok_s_wall": 356.93
+  },
+  "D_stream": {
+    "ttft_first_text_delta_ms": {
+      "n": 2,
+      "min": 44902.26602,
+      "median": 44902.26602,
+      "p95": 51115.959901,
+      "max": 51115.959901
+    },
+    "first_event_ms": {
+      "n": 2,
+      "min": 2141.561233,
+      "median": 2141.561233,
+      "p95": 2820.690468,
+      "max": 2820.690468
+    },
+    "wall_ms": {
+      "n": 2,
+      "min": 71715.3,
+      "median": 71715.3,
+      "p95": 78249.6,
+      "max": 78249.6
+    },
+    "decode_tok_s_after_first_token": {
+      "n": 2,
+      "min": 269.46,
+      "median": 269.46,
+      "p95": 314.3,
+      "max": 314.3
+    },
+    "cache_read": {
+      "n": 2,
+      "min": 468183,
+      "median": 468183,
+      "p95": 468183,
+      "max": 468183
+    }
+  },
+  "asc_gate": {
+    "A-seq-1": "not checked",
+    "A-seq-2": "pass",
+    "A-seq-3": "pass",
+    "A-seq-4": "pass",
+    "A-seq-5": "pass",
+    "B-variant-1": "pass",
+    "B-variant-2": "pass",
+    "B-variant-3": "pass",
+    "C-par-1": "pass",
+    "C-par-2": "pass",
+    "C-par-3": "pass",
+    "C-par-4": "pass",
+    "D-stream-1": "not checked",
+    "D-stream-2": "pass",
+    "D-stream-3": "pass"
+  },
+  "errors": [
+    {
+      "id": "A-seq-1",
+      "result_head": "",
+      "exit_code": 1
+    },
+    {
+      "id": "D-stream-1",
+      "result_head": "",
+      "exit_code": 1
+    }
+  ],
+  "load_before": [
+    12.08,
+    13.27,
+    14.91
+  ],
+  "load_after": [
+    24.24,
+    35.75,
+    31.07
+  ],
+  "json_fields_seen": [
+    "duration_api_ms",
+    "stop_reason",
+    "session_id",
+    "total_cost_usd",
+    "usage",
+    "modelUsage",
+    "permission_denials",
+    "terminal_reason",
+    "fast_mode_state",
+    "fast_mode_disabled_reason",
+    "subagent_stats",
+    "safety_stops",
+    "is_error",
+    "num_turns",
+    "subtype",
+    "errors",
+    "type",
+    "duration_ms",
+    "uuid",
+    "queued_turn_count",
+    "result_index"
+  ],
+  "usage_fields_seen": [
+    "output_tokens_details",
+    "input_tokens",
+    "cache_creation_input_tokens",
+    "cache_read_input_tokens",
+    "output_tokens",
+    "server_tool_use",
+    "service_tier",
+    "cache_creation",
+    "inference_geo",
+    "iterations",
+    "speed",
+    "fallback_credit"
+  ]
+}

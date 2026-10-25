@@ -1,0 +1,168 @@
+@external("host", "host_record_count") declare function host_record_count(set: u32): i32;
+@external("host", "host_record_field_i64") declare function host_record_field_i64(set: u32, idx: i32, field: i32): i64;
+@external("host", "host_record_field_f64") declare function host_record_field_f64(set: u32, idx: i32, field: i32): f64;
+@external("host", "host_record_field_str") declare function host_record_field_str(set: u32, idx: i32, field: i32, dst: usize, cap: i32): i32;
+@external("host", "host_field_kind") declare function host_field_kind(set: u32, field: i32): i32;
+@external("host", "out_begin") declare function out_begin(): void;
+@external("host", "out_set_i64") declare function out_set_i64(field: i32, v: i64): void;
+@external("host", "out_set_f64") declare function out_set_f64(field: i32, v: f64): void;
+@external("host", "out_set_str") declare function out_set_str(field: i32, ptr: usize, len: i32): void;
+@external("host", "out_commit") declare function out_commit(): void;
+
+const SLOTS: i32 = 32768;
+const MASK: i32 = SLOTS - 1;
+const GOLD: u64 = 0x9E3779B97F4A7C15;
+const LB_KG: f64 = 0.45359237;
+const PSI_KPA: f64 = 6.894757293168;
+const KEYS = memory.data(32768 * 8);
+const AIDX = memory.data(32768 * 4);
+const BEST = memory.data(32768 * 4);
+const SCR = memory.data(64);
+const OUT = memory.data(128);
+let BAD: bool = false;
+let TS: i32 = 0;
+let TL: i32 = 0;
+
+// Open-addressing index on asset_id; returns the slot holding id or the first empty slot.
+function slotFor(id: i64): i32 {
+  let h = <i32>((<u64>id * GOLD) >> 49) & MASK;
+  for (let n = 0; n < SLOTS; n++) {
+    if (load<i32>(AIDX + (<usize>h << 2)) == 0 || load<i64>(KEYS + (<usize>h << 3)) == id) return h;
+    h = (h + 1) & MASK;
+  }
+  return -1;
+}
+
+function isWs(c: i32): bool {
+  return c == 32 || (c >= 9 && c <= 13);
+}
+
+function readUnit(r: i32, field: i32): bool {
+  let n = host_record_field_str(0, r, field, SCR, 64);
+  if (n < 0) return false;
+  let s = 0;
+  let e = n;
+  while (s < e && isWs(<i32>load<u8>(SCR + <usize>s))) s++;
+  while (e > s && isWs(<i32>load<u8>(SCR + <usize>(e - 1)))) e--;
+  TS = s;
+  TL = e - s;
+  return true;
+}
+
+function unitIs(lit: string): bool {
+  if (TL != lit.length) return false;
+  for (let i = 0; i < TL; i++) {
+    let c = <i32>load<u8>(SCR + <usize>(TS + i));
+    if (c >= 65 && c <= 90) c += 32;
+    if (c != lit.charCodeAt(i)) return false;
+  }
+  return true;
+}
+
+function chargeKg(r: i32): f64 {
+  let m = host_record_field_f64(0, r, 2);
+  if (!isFinite(m) || m < 0 || !readUnit(r, 3)) { BAD = true; return NaN; }
+  if (unitIs("kg")) return m;
+  if (unitIs("lb")) return m * LB_KG;
+  BAD = true;
+  return NaN;
+}
+
+function pressKpa(r: i32): f64 {
+  let p = host_record_field_f64(0, r, 4);
+  if (!isFinite(p) || !readUnit(r, 5)) { BAD = true; return NaN; }
+  if (unitIs("kpa")) return p;
+  if (unitIs("bar")) return p * 100.0;
+  if (unitIs("psi")) return p * PSI_KPA;
+  BAD = true;
+  return NaN;
+}
+
+function putStr(field: i32, s: string): void {
+  let n = s.length < 80 ? s.length : 80;
+  for (let i = 0; i < n; i++) store<u8>(OUT + <usize>i, <u8>s.charCodeAt(i));
+  out_set_str(field, OUT, n);
+}
+
+function emit(id: i64, ts: i64, ch: f64, rc: f64, pk: f64, rp: f64, cls: string, det: string): void {
+  out_begin();
+  out_set_i64(0, id);
+  out_set_i64(1, ts);
+  out_set_f64(2, ch);
+  out_set_f64(3, rc);
+  out_set_f64(4, ch - rc);
+  out_set_f64(5, pk);
+  out_set_f64(6, rp);
+  putStr(7, cls);
+  putStr(8, det);
+  out_commit();
+}
+
+function kind(set: u32, f: i32, k: i32): bool {
+  return host_field_kind(set, f) == k;
+}
+
+export function run(abs_tol_kg: f64, rel_tol: f64, max_age_days: i64, as_of_ts: i64): i32 {
+  memory.fill(AIDX, 0, <usize>SLOTS * 4);
+  memory.fill(BEST, 0, <usize>SLOTS * 4);
+  let ok0 = kind(0, 0, 0) && kind(0, 1, 0) && kind(0, 2, 1) && kind(0, 3, 2) && kind(0, 4, 1) && kind(0, 5, 2) && kind(0, 6, 2);
+  let ok1 = kind(1, 0, 0) && kind(1, 1, 1) && kind(1, 2, 1) && kind(1, 3, 2) && kind(1, 4, 2) && kind(1, 5, 1);
+  let na = host_record_count(1);
+  let nr = host_record_count(0);
+  for (let i = 0; i < na; i++) {
+    let h = slotFor(host_record_field_i64(1, i, 0));
+    if (h >= 0 && load<i32>(AIDX + (<usize>h << 2)) == 0) {
+      store<i64>(KEYS + (<usize>h << 3), host_record_field_i64(1, i, 0));
+      store<i32>(AIDX + (<usize>h << 2), i + 1);
+    }
+  }
+  // Newest reading per asset; ties keep the lowest record index.
+  for (let r = 0; r < nr; r++) {
+    let h = slotFor(host_record_field_i64(0, r, 0));
+    if (h < 0 || load<i32>(AIDX + (<usize>h << 2)) == 0) continue;
+    let b = load<i32>(BEST + (<usize>h << 2));
+    if (b == 0 || host_record_field_i64(0, r, 1) > host_record_field_i64(0, b - 1, 1)) store<i32>(BEST + (<usize>h << 2), r + 1);
+  }
+  let count = 0;
+  for (let i = 0; i < na; i++) {
+    let id = host_record_field_i64(1, i, 0);
+    let rc = host_record_field_f64(1, i, 1);
+    let rp = host_record_field_f64(1, i, 2);
+    let tp = host_record_field_f64(1, i, 5);
+    let h = slotFor(id);
+    let b = h >= 0 ? load<i32>(BEST + (<usize>h << 2)) : 0;
+    BAD = !ok0 || !ok1 || !isFinite(rc) || !isFinite(rp) || !isFinite(tp) || rc < 0;
+    let ts: i64 = -1;
+    let ch: f64 = NaN;
+    let pk: f64 = NaN;
+    if (b > 0) {
+      ts = host_record_field_i64(0, b - 1, 1);
+      ch = chargeKg(b - 1);
+      pk = pressKpa(b - 1);
+    }
+    let tol = max(abs_tol_kg, tp / 100.0 * rc);
+    let cls = "OK";
+    let det = "within tolerance";
+    if (BAD) { cls = "MALFORMED"; det = "bad unit, negative, non-finite, or absent field"; }
+    else if (b == 0) { cls = "NO_READING"; det = "no reading for asset"; }
+    else if (as_of_ts - ts > max_age_days * 86400) { cls = "STALE"; det = "newest reading older than max age"; }
+    else if (ch - rc < -tol) { cls = "UNDERCHARGE"; det = "charge below rated beyond tolerance"; }
+    else if (ch - rc > tol) { cls = "OVERCHARGE"; det = "charge above rated beyond tolerance"; }
+    else if (pk - rp > rel_tol * rp) { cls = "PRESSURE_HIGH"; det = "pressure above rated beyond rel_tol"; }
+    else if (rp - pk > rel_tol * rp) { cls = "PRESSURE_LOW"; det = "pressure below rated beyond rel_tol"; }
+    emit(id, ts, ch, rc, pk, rp, cls, det);
+    count++;
+  }
+  for (let r = 0; r < nr; r++) {
+    let id = host_record_field_i64(0, r, 0);
+    let h = slotFor(id);
+    if (h >= 0 && load<i32>(AIDX + (<usize>h << 2)) != 0) continue;
+    BAD = !ok0;
+    let ch = chargeKg(r);
+    let pk = pressKpa(r);
+    if (BAD) emit(id, host_record_field_i64(0, r, 1), ch, NaN, pk, NaN, "MALFORMED", "orphan reading with malformed fields");
+    else emit(id, host_record_field_i64(0, r, 1), ch, NaN, pk, NaN, "ORPHAN_READING", "asset_id not in register");
+    count++;
+  }
+  return count;
+}

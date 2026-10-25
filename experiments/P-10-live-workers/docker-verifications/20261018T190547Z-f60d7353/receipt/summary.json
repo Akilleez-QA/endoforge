@@ -1,0 +1,35 @@
+{
+  "label": "Recorded (probe)",
+  "precommitSha256": "230e9c6c1cd6e0c8a72df171094b02ece48289c9084ad96fd50c00ead36ea1fa",
+  "passed": true,
+  "sourceUnchanged": true,
+  "positiveFrozenInputsUnchanged": true,
+  "imageId": "sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541",
+  "bundledGateMatchesHost": true,
+  "allGatesPassed": true,
+  "evaluatorTestCount": 11,
+  "oracleCount": 119,
+  "hostDockerWasmIdentical": true,
+  "wasmSha256": "d86902c5f835e64eb3e5aad5752627dcf6cc4fb9162bc71a754dda25e88be1f5",
+  "negativeCompiledRejectedAtG4": true,
+  "negativePublished": false,
+  "publishedManifest": {
+    "CONTRACT.md": "a2d7519870f0574c7d114704d66daf24b533884b5c629c4e54f440987e2561bc",
+    "frozen.sha256": "1a789c6b7ffc6cd880003d3484af7a46e3d10d30d510d7668d7c4d2992162ae4",
+    "glue.json": "41117cf4204d5a0e2d73bbeb9e3d320254c03151364369ff9901107551c16604",
+    "kernel.ts": "51f00cd0b9eee01900257490a38036dd3ed184123af6cb8c56a12e662c0b2762",
+    "kernel.wasm": "d86902c5f835e64eb3e5aad5752627dcf6cc4fb9162bc71a754dda25e88be1f5",
+    "kernel.wat": "a9955923786786bfaad8ce0500ef72238fdaa26bbf8260e2675e08536d697537",
+    "result.json": "7bebd2435cbe8b8d5b1dd87de35c11e3588e788845302d65c6a60deec45207b4",
+    "tests.json": "74d0d4cc3e2a980289a3c0a7e5d1f102d02a7f4490a64b73c4d3710a593e1bee"
+  },
+  "additionalModelCalls": 0,
+  "credentialsCopied": false,
+  "elapsedSeconds": 2.7230360269968514,
+  "limits": [
+    "offline Docker verifier of live host-worker outputs",
+    "original live orchestration failed and remains failed",
+    "no Docker-authenticated agent claim",
+    "no nested bwrap or recovery claim"
+  ]
+}

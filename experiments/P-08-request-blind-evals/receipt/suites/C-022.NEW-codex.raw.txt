@@ -1,0 +1,83 @@
+{
+  "requiredInputs": [
+    {
+      "fact": "Measured condensing gauge pressure.",
+      "unit": "psig",
+      "argName": "condensingPressure"
+    },
+    {
+      "fact": "Measured temperature and confirmation that it is refrigerant liquid temperature; the request also mentions outlet or ambient temperature, which are not interchangeable.",
+      "unit": "F",
+      "argName": "liquidTemp"
+    },
+    {
+      "fact": "Subcooling and confirmation that adding it to liquid temperature gives the refrigerant saturation temperature applicable to the pressure measurement.",
+      "unit": "F",
+      "argName": "subcooling"
+    },
+    {
+      "fact": "Local atmospheric absolute pressure corresponding to the gauge pressure reference.",
+      "unit": "psia",
+      "argName": "atmosphericPressure"
+    },
+    {
+      "fact": "Refrigerant identity, composition where applicable, and the supported code identifying it.",
+      "unit": "code",
+      "argName": "refrigerant"
+    },
+    {
+      "fact": "The refrigerant saturation table, its pressure reference, valid temperature range, and interpolation convention.",
+      "unit": "pressure versus temperature",
+      "argName": null
+    },
+    {
+      "fact": "For a refrigerant blend, the applicable saturation convention, including bubble point versus dew point.",
+      "unit": "convention",
+      "argName": null
+    },
+    {
+      "fact": "Confirmation that pressure and temperature represent the same operating condition and that equilibrium saturation pressure is an appropriate basis for inferring non-condensables.",
+      "unit": "operating assumption",
+      "argName": null
+    },
+    {
+      "fact": "Whether excess means a signed pressure residual or a nonnegative inferred non-condensable partial pressure, and how negative residuals must be handled.",
+      "unit": "psi",
+      "argName": null
+    }
+  ],
+  "cases": [
+    {
+      "name": "Refuse negative absolute condensing pressure: -20 psig + 14.7 psia = -5.3 psia",
+      "fn": "nonCondensableExcessPsi",
+      "args": [-20, 80, 0, 14.7, 0],
+      "refuse": true
+    },
+    {
+      "name": "Refuse liquid temperature below absolute zero: -500 F + 459.67 = -40.33 degrees Rankine",
+      "fn": "nonCondensableExcessPsi",
+      "args": [100, -500, 0, 14.7, 0],
+      "refuse": true
+    },
+    {
+      "name": "Refuse negative atmospheric absolute pressure: -1 psia < 0 psia",
+      "fn": "nonCondensableExcessPsi",
+      "args": [100, 80, 0, -1, 0],
+      "refuse": true
+    }
+  ],
+  "properties": [
+    {
+      "name": "Negative absolute condensing pressure cannot describe a physical state: gauge pressure plus atmospheric pressure is always below zero in this range",
+      "fn": "nonCondensableExcessPsi",
+      "ranges": [[-100, -30], [40, 100], [0, 10], [10, 20], [0, 0]],
+      "check": "out === null"
+    },
+    {
+      "name": "Liquid temperatures strictly below -459.67 F cannot describe a physical state",
+      "fn": "nonCondensableExcessPsi",
+      "ranges": [[50, 200], [-600, -500], [0, 10], [10, 20], [0, 0]],
+      "check": "out === null"
+    }
+  ]
+}

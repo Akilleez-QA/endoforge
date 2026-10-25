@@ -1,0 +1,130 @@
+{
+  "runId": "hc-01",
+  "rater": "oracle-sonnet",
+  "formSha256": "db3b12b870a27b1a05a060f63df1b6189f33266320073c4c50817d258384d4b1",
+  "at": "2026-10-18T03:02:18.624Z",
+  "graded": 10,
+  "exactAgreement": "9/10",
+  "within1": "10/10",
+  "falseAccept": "0/9",
+  "falseAcceptNote": "persona promoted (clean or with-change) but owner not-usable",
+  "falseReject": "0/1",
+  "canaryRecall": [
+    {
+      "id": "CC-011",
+      "ownerCaught": true
+    }
+  ],
+  "rows": [
+    {
+      "item": 1,
+      "id": "CC-007",
+      "persona": "with-change",
+      "owner": "usable-with-change",
+      "q1": "partly",
+      "q2": "yes",
+      "q3": "yes",
+      "q5": "ask for pump flow (gpm) and evaporator load (tons) with the refrigerant, in field units, instead of kg/s, kw, kj/kg or outlet vapor quality, which i cannot read on the job.",
+      "q6": "yes"
+    },
+    {
+      "item": 2,
+      "id": "CC-036",
+      "persona": "clean",
+      "owner": "clean",
+      "q1": "yes",
+      "q2": "yes",
+      "q3": "no",
+      "q5": "n/a",
+      "q6": "no"
+    },
+    {
+      "item": 3,
+      "id": "CC-014",
+      "persona": "clean",
+      "owner": "clean",
+      "q1": "yes",
+      "q2": "yes",
+      "q3": "yes",
+      "q5": "n/a",
+      "q6": "yes"
+    },
+    {
+      "item": 4,
+      "id": "CC-009",
+      "persona": "with-change",
+      "owner": "usable-with-change",
+      "q1": "yes",
+      "q2": "unsure",
+      "q3": "yes",
+      "q5": "show where the 0.80 bottom-feed fill comes from (iiar table or oem) next to the 530.6 lb, since the whole figure rests on it.",
+      "q6": "yes"
+    },
+    {
+      "item": 5,
+      "id": "CC-027",
+      "persona": "with-change",
+      "owner": "usable-with-change",
+      "q1": "partly",
+      "q2": "yes",
+      "q3": "yes",
+      "q5": "ask which stage the 20 f was read in; 2-stage units usually read higher subcooling in low stage, so compare it to the chart target for the charging stage before calling 20 f high.",
+      "q6": "yes"
+    },
+    {
+      "item": 6,
+      "id": "C-016",
+      "persona": "with-change",
+      "owner": "usable-with-change",
+      "q1": "yes",
+      "q2": "unsure",
+      "q3": "yes",
+      "q5": "when no expected confirmer is recorded, show 'unassigned' instead of naming the owner, so the label never states an expectation the record does not hold.",
+      "q6": "yes"
+    },
+    {
+      "item": 7,
+      "id": "CC-025",
+      "persona": "clean",
+      "owner": "clean",
+      "q1": "yes",
+      "q2": "yes",
+      "q3": "yes",
+      "q5": "n/a",
+      "q6": "yes"
+    },
+    {
+      "item": 8,
+      "id": "CC-011",
+      "persona": "not-usable",
+      "owner": "not-usable",
+      "q1": "no",
+      "q2": "no",
+      "q3": "yes",
+      "q5": "it gives no price: it only divides a quote i do not have, and i asked what 15 lb of r-22 costs, not to check a quote.",
+      "q6": "yes"
+    },
+    {
+      "item": 9,
+      "id": "CC-013",
+      "persona": "with-change",
+      "owner": "clean",
+      "q1": "yes",
+      "q2": "yes",
+      "q3": "yes",
+      "q5": "n/a",
+      "q6": "no"
+    },
+    {
+      "item": 10,
+      "id": "C-006",
+      "persona": "with-change",
+      "owner": "usable-with-change",
+      "q1": "partly",
+      "q2": "unsure",
+      "q3": "yes",
+      "q5": "ask the equipment class before giving any figure, instead of leading with 494 g for an unspecified 'system' (household and older units at 150 g, and room-area-limited comfort cooling, can be far lower).",
+      "q6": "yes"
+    }
+  ]
+}

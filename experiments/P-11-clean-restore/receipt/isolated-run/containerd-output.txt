@@ -1,0 +1,164 @@
+time="2026-10-18T15:01:30-04:00" level=warning msg="Configuration migrated from version 3, use `containerd config migrate` to avoid migration" t="3.958µs"
+time="2026-10-18T15:01:30.398070276-04:00" level=info msg="starting containerd" revision=b7a25261e029d68978bbf290df0a62fc819b3c51.m version=v2.4.2
+time="2026-10-18T15:01:30.398127484-04:00" level=info msg="loading plugin" id=io.containerd.content.v1.content type=io.containerd.content.v1
+time="2026-10-18T15:01:30.398253151-04:00" level=info msg="loading plugin" id=io.containerd.image-verifier.v1.bindir type=io.containerd.image-verifier.v1
+time="2026-10-18T15:01:30.398261297-04:00" level=info msg="loading plugin" id=io.containerd.internal.v1.opt type=io.containerd.internal.v1
+time="2026-10-18T15:01:30.398275553-04:00" level=info msg="loading plugin" id=io.containerd.warning.v1.deprecations type=io.containerd.warning.v1
+time="2026-10-18T15:01:30.398287526-04:00" level=info msg="loading plugin" id=io.containerd.event.v1.exchange type=io.containerd.event.v1
+time="2026-10-18T15:01:30.398298256-04:00" level=info msg="loading plugin" id=io.containerd.mount-handler.v1.erofs type=io.containerd.mount-handler.v1
+time="2026-10-18T15:01:30.398305470-04:00" level=info msg="loading plugin" id=io.containerd.snapshotter.v1.blockfile type=io.containerd.snapshotter.v1
+time="2026-10-18T15:01:30.398339494-04:00" level=info msg="skip loading plugin" error="no scratch file generator: skip plugin" id=io.containerd.snapshotter.v1.blockfile type=io.containerd.snapshotter.v1
+time="2026-10-18T15:01:30.398348250-04:00" level=info msg="loading plugin" id=io.containerd.snapshotter.v1.btrfs type=io.containerd.snapshotter.v1
+time="2026-10-18T15:01:30.398610485-04:00" level=info msg="loading plugin" id=io.containerd.snapshotter.v1.devmapper type=io.containerd.snapshotter.v1
+time="2026-10-18T15:01:30.398619652-04:00" level=info msg="skip loading plugin" error="devmapper not configured: skip plugin" id=io.containerd.snapshotter.v1.devmapper type=io.containerd.snapshotter.v1
+time="2026-10-18T15:01:30.398624441-04:00" level=info msg="loading plugin" id=io.containerd.snapshotter.v1.native type=io.containerd.snapshotter.v1
+time="2026-10-18T15:01:30.398664607-04:00" level=info msg="loading plugin" id=io.containerd.snapshotter.v1.overlayfs type=io.containerd.snapshotter.v1
+time="2026-10-18T15:01:30.398767912-04:00" level=info msg="loading plugin" id=io.containerd.snapshotter.v1.zfs type=io.containerd.snapshotter.v1
+time="2026-10-18T15:01:30.398789262-04:00" level=info msg="skip loading plugin" error="lstat /home/user/Work/endoforge/experiments/P-11-clean-restore/w3/c-root/io.containerd.snapshotter.v1.zfs: no such file or directory: skip plugin" id=io.containerd.snapshotter.v1.zfs type=io.containerd.snapshotter.v1
+time="2026-10-18T15:01:30.398795173-04:00" level=info msg="loading plugin" id=io.containerd.monitor.task.v1.cgroups type=io.containerd.monitor.task.v1
+time="2026-10-18T15:01:30.398865175-04:00" level=info msg="loading plugin" id=io.containerd.snapshotter.v1.erofs type=io.containerd.snapshotter.v1
+time="2026-10-18T15:01:30.398950115-04:00" level=info msg="skip loading plugin" error="EROFS unsupported, please `modprobe erofs`: skip plugin" id=io.containerd.snapshotter.v1.erofs type=io.containerd.snapshotter.v1
+time="2026-10-18T15:01:30.398957028-04:00" level=info msg="loading plugin" id=io.containerd.metadata.v1.bolt type=io.containerd.metadata.v1
+time="2026-10-18T15:01:30.398978398-04:00" level=info msg="metadata content store policy set" policy=shared
+time="2026-10-18T15:01:30.422088000-04:00" level=info msg="loading plugin" id=io.containerd.gc.v1.scheduler type=io.containerd.gc.v1
+time="2026-10-18T15:01:30.422118067-04:00" level=info msg="loading plugin" id=io.containerd.server.v1.metrics type=io.containerd.server.v1
+time="2026-10-18T15:01:30.422125441-04:00" level=info msg="skip loading plugin" error="skip plugin" id=io.containerd.server.v1.metrics type=io.containerd.server.v1
+time="2026-10-18T15:01:30.422130310-04:00" level=info msg="loading plugin" id=io.containerd.tracing.processor.v1.otlp type=io.containerd.tracing.processor.v1
+time="2026-10-18T15:01:30.422142653-04:00" level=info msg="skip loading plugin" error="skip plugin: tracing endpoint not configured" id=io.containerd.tracing.processor.v1.otlp type=io.containerd.tracing.processor.v1
+time="2026-10-18T15:01:30.422149807-04:00" level=info msg="loading plugin" id=io.containerd.internal.v1.tracing type=io.containerd.internal.v1
+time="2026-10-18T15:01:30.422155838-04:00" level=info msg="skip loading plugin" error="skip plugin: tracing endpoint not configured" id=io.containerd.internal.v1.tracing type=io.containerd.internal.v1
+time="2026-10-18T15:01:30.422160046-04:00" level=info msg="loading plugin" id=io.containerd.nri.v1.nri type=io.containerd.nri.v1
+time="2026-10-18T15:01:30.422203799-04:00" level=info msg="built-in NRI default validator is disabled"
+time="2026-10-18T15:01:30.422208618-04:00" level=info msg="runtime interface created"
+time="2026-10-18T15:01:30.422211884-04:00" level=info msg="created NRI interface"
+time="2026-10-18T15:01:30.422216202-04:00" level=info msg="loading plugin" id=io.containerd.ttrpc.v1.otelttrpc type=io.containerd.ttrpc.v1
+time="2026-10-18T15:01:30.422221582-04:00" level=info msg="loading plugin" id=io.containerd.service.v1.containers-service type=io.containerd.service.v1
+time="2026-10-18T15:01:30.422227824-04:00" level=info msg="loading plugin" id=io.containerd.service.v1.content-service type=io.containerd.service.v1
+time="2026-10-18T15:01:30.422232523-04:00" level=info msg="loading plugin" id=io.containerd.differ.v1.erofs type=io.containerd.differ.v1
+time="2026-10-18T15:01:30.422252190-04:00" level=info msg="skip loading plugin" error="failed to check mkfs.erofs availability: failed to run mkfs.erofs --help: exec: \"mkfs.erofs\": executable file not found in $PATH: skip plugin" id=io.containerd.differ.v1.erofs type=io.containerd.differ.v1
+time="2026-10-18T15:01:30.422257119-04:00" level=info msg="loading plugin" id=io.containerd.mount-manager.v1.bolt type=io.containerd.mount-manager.v1
+time="2026-10-18T15:01:30.427919754-04:00" level=info msg="loading plugin" id=io.containerd.differ.v1.walking type=io.containerd.differ.v1
+time="2026-10-18T15:01:30.427935874-04:00" level=info msg="loading plugin" id=io.containerd.service.v1.diff-service type=io.containerd.service.v1
+time="2026-10-18T15:01:30.427944520-04:00" level=info msg="loading plugin" id=io.containerd.service.v1.images-service type=io.containerd.service.v1
+time="2026-10-18T15:01:30.427952926-04:00" level=info msg="loading plugin" id=io.containerd.service.v1.introspection-service type=io.containerd.service.v1
+time="2026-10-18T15:01:30.427960370-04:00" level=info msg="loading plugin" id=io.containerd.service.v1.namespaces-service type=io.containerd.service.v1
+time="2026-10-18T15:01:30.427967373-04:00" level=info msg="loading plugin" id=io.containerd.service.v1.snapshots-service type=io.containerd.service.v1
+time="2026-10-18T15:01:30.427974056-04:00" level=info msg="loading plugin" id=io.containerd.shim.v1.manager type=io.containerd.shim.v1
+time="2026-10-18T15:01:30.427982111-04:00" level=info msg="loading plugin" id=io.containerd.runtime.v2.task type=io.containerd.runtime.v2
+time="2026-10-18T15:01:30.428046162-04:00" level=info msg="loading plugin" id=io.containerd.service.v1.tasks-service type=io.containerd.service.v1
+time="2026-10-18T15:01:30.428060629-04:00" level=info msg="loading plugin" id=io.containerd.grpc.v1.containers type=io.containerd.grpc.v1
+time="2026-10-18T15:01:30.428081068-04:00" level=info msg="loading plugin" id=io.containerd.grpc.v1.content type=io.containerd.grpc.v1
+time="2026-10-18T15:01:30.428089033-04:00" level=info msg="loading plugin" id=io.containerd.grpc.v1.diff type=io.containerd.grpc.v1
+time="2026-10-18T15:01:30.428098330-04:00" level=info msg="loading plugin" id=io.containerd.grpc.v1.events type=io.containerd.grpc.v1
+time="2026-10-18T15:01:30.428104281-04:00" level=info msg="loading plugin" id=io.containerd.grpc.v1.images type=io.containerd.grpc.v1
+time="2026-10-18T15:01:30.428112898-04:00" level=info msg="loading plugin" id=io.containerd.grpc.v1.introspection type=io.containerd.grpc.v1
+time="2026-10-18T15:01:30.428123949-04:00" level=info msg="loading plugin" id=io.containerd.lease.v1.manager type=io.containerd.lease.v1
+time="2026-10-18T15:01:30.428132585-04:00" level=info msg="loading plugin" id=io.containerd.grpc.v1.leases type=io.containerd.grpc.v1
+time="2026-10-18T15:01:30.428139608-04:00" level=info msg="loading plugin" id=io.containerd.grpc.v1.mounts type=io.containerd.grpc.v1
+time="2026-10-18T15:01:30.428145830-04:00" level=info msg="loading plugin" id=io.containerd.grpc.v1.namespaces type=io.containerd.grpc.v1
+time="2026-10-18T15:01:30.428153254-04:00" level=info msg="loading plugin" id=io.containerd.sandbox.store.v1.local type=io.containerd.sandbox.store.v1
+time="2026-10-18T15:01:30.428159516-04:00" level=info msg="loading plugin" id=io.containerd.transfer.v1.local type=io.containerd.transfer.v1
+time="2026-10-18T15:01:30.428179032-04:00" level=info msg="loading plugin" id=io.containerd.podsandbox.controller.v1.podsandbox type=io.containerd.podsandbox.controller.v1
+time="2026-10-18T15:01:30.428206083-04:00" level=warning msg="failed to load plugin" error="unable to load CRI runtime service plugin dependency: no plugins registered for io.containerd.cri.v1.runtime: plugin: not found" id=io.containerd.podsandbox.controller.v1.podsandbox type=io.containerd.podsandbox.controller.v1
+time="2026-10-18T15:01:30.428213598-04:00" level=info msg="loading plugin" id=io.containerd.sandbox.controller.v1.shim type=io.containerd.sandbox.controller.v1
+time="2026-10-18T15:01:30.428289761-04:00" level=info msg="loading plugin" id=io.containerd.grpc.v1.sandbox-controllers type=io.containerd.grpc.v1
+time="2026-10-18T15:01:30.428300762-04:00" level=info msg="loading plugin" id=io.containerd.grpc.v1.sandboxes type=io.containerd.grpc.v1
+time="2026-10-18T15:01:30.428306994-04:00" level=info msg="loading plugin" id=io.containerd.grpc.v1.snapshots type=io.containerd.grpc.v1
+time="2026-10-18T15:01:30.428312504-04:00" level=info msg="loading plugin" id=io.containerd.streaming.v1.manager type=io.containerd.streaming.v1
+time="2026-10-18T15:01:30.428319327-04:00" level=info msg="loading plugin" id=io.containerd.grpc.v1.streaming type=io.containerd.grpc.v1
+time="2026-10-18T15:01:30.428325478-04:00" level=info msg="loading plugin" id=io.containerd.grpc.v1.tasks type=io.containerd.grpc.v1
+time="2026-10-18T15:01:30.428331129-04:00" level=info msg="loading plugin" id=io.containerd.grpc.v1.transfer type=io.containerd.grpc.v1
+time="2026-10-18T15:01:30.428337692-04:00" level=info msg="loading plugin" id=io.containerd.grpc.v1.version type=io.containerd.grpc.v1
+time="2026-10-18T15:01:30.428343472-04:00" level=info msg="loading plugin" id=io.containerd.grpc.v1.healthcheck type=io.containerd.grpc.v1
+time="2026-10-18T15:01:30.428349464-04:00" level=info msg="loading plugin" id=io.containerd.grpc.v1.cri type=io.containerd.grpc.v1
+time="2026-10-18T15:01:30.428360745-04:00" level=warning msg="failed to load plugin" error="unable to load CRI runtime service plugin dependency: no plugins registered for io.containerd.cri.v1.runtime: plugin: not found" id=io.containerd.grpc.v1.cri type=io.containerd.grpc.v1
+time="2026-10-18T15:01:30.428366346-04:00" level=info msg="loading plugin" id=io.containerd.server.v1.ttrpc type=io.containerd.server.v1
+time="2026-10-18T15:01:30.428409848-04:00" level=info msg="loading plugin" id=io.containerd.monitor.container.v1.restart type=io.containerd.monitor.container.v1
+time="2026-10-18T15:01:30.428442629-04:00" level=info msg="loading plugin" id=io.containerd.metrics.v1.grpc-prometheus type=io.containerd.metrics.v1
+time="2026-10-18T15:01:30.428463429-04:00" level=info msg="loading plugin" id=io.containerd.metrics.v1.grpc-otel type=io.containerd.metrics.v1
+time="2026-10-18T15:01:30.428475341-04:00" level=info msg="loading plugin" id=io.containerd.server.v1.grpc type=io.containerd.server.v1
+time="2026-10-18T15:01:30.430287797-04:00" level=info msg="loading plugin" id=io.containerd.server.v1.grpc-tcp type=io.containerd.server.v1
+time="2026-10-18T15:01:30.430305481-04:00" level=info msg="skip loading plugin" error="skip plugin" id=io.containerd.server.v1.grpc-tcp type=io.containerd.server.v1
+time="2026-10-18T15:01:30.430314928-04:00" level=info msg="loading plugin" id=io.containerd.http.v1.pprof type=io.containerd.http.v1
+time="2026-10-18T15:01:30.430360835-04:00" level=info msg="loading plugin" id=io.containerd.server.v1.debug type=io.containerd.server.v1
+time="2026-10-18T15:01:30.430366636-04:00" level=info msg="skip loading plugin" error="skip plugin" id=io.containerd.server.v1.debug type=io.containerd.server.v1
+time="2026-10-18T15:01:30.430467596-04:00" level=info msg=serving... address=/home/user/Work/endoforge/experiments/P-11-clean-restore/w3/c.sock.ttrpc
+time="2026-10-18T15:01:30.430481763-04:00" level=info msg="starting GRPC server" address=/home/user/Work/endoforge/experiments/P-11-clean-restore/w3/c.sock gid=0 uid=0
+time="2026-10-18T15:01:30.430516649-04:00" level=info msg=serving... address=/home/user/Work/endoforge/experiments/P-11-clean-restore/w3/c.sock
+time="2026-10-18T15:01:30.430526097-04:00" level=info msg="containerd successfully booted in 0.032978s"
+time="2026-10-18T15:01:36.336586772-04:00" level=info msg="connecting to shim 4df8657b9523fc1c241c67677c76d9398d9e86b249ecf31d69d54575090c4a0a" address="unix:///run/containerd/s/a064e7c1ba63db3f4d65b4b283d5dcdec95e56fbdfd498be73cc9f45adca7997" namespace=p11 protocol=ttrpc version=3
+time="2026-10-18T15:01:37.710978355-04:00" level=info msg="shim disconnected" id=4df8657b9523fc1c241c67677c76d9398d9e86b249ecf31d69d54575090c4a0a namespace=p11
+time="2026-10-18T15:01:37.711013632-04:00" level=info msg="cleaning up after shim disconnected" id=4df8657b9523fc1c241c67677c76d9398d9e86b249ecf31d69d54575090c4a0a namespace=p11
+time="2026-10-18T15:01:37.711021356-04:00" level=info msg="cleaning up dead shim" id=4df8657b9523fc1c241c67677c76d9398d9e86b249ecf31d69d54575090c4a0a namespace=p11
+time="2026-10-18T15:01:38.740569013-04:00" level=info msg="connecting to shim 007c630831217a00bc85a388ca5867d732e670c8c75f49bf228bc2d009a42f39" address="unix:///run/containerd/s/9cb76e28dbbae5cefbf37a9ec25c4974e5bb2bdceeeda94dd7a2cb0256160285" namespace=p11 protocol=ttrpc version=3
+time="2026-10-18T15:01:40.176176927-04:00" level=info msg="shim disconnected" id=007c630831217a00bc85a388ca5867d732e670c8c75f49bf228bc2d009a42f39 namespace=p11
+time="2026-10-18T15:01:40.176211592-04:00" level=info msg="cleaning up after shim disconnected" id=007c630831217a00bc85a388ca5867d732e670c8c75f49bf228bc2d009a42f39 namespace=p11
+time="2026-10-18T15:01:40.176220189-04:00" level=info msg="cleaning up dead shim" id=007c630831217a00bc85a388ca5867d732e670c8c75f49bf228bc2d009a42f39 namespace=p11
+time="2026-10-18T15:01:41.184279864-04:00" level=info msg="connecting to shim 01abd5e4556cd21e103f314041abfc65b2ef628c02486dda451249c2d18ce13f" address="unix:///run/containerd/s/f23da5022c4bcd9f29700d6d45569fc498e60fdce3aff9e39b4eef560cebeb68" namespace=p11 protocol=ttrpc version=3
+time="2026-10-18T15:01:42.215014270-04:00" level=info msg="shim disconnected" id=01abd5e4556cd21e103f314041abfc65b2ef628c02486dda451249c2d18ce13f namespace=p11
+time="2026-10-18T15:01:42.215044588-04:00" level=info msg="cleaning up after shim disconnected" id=01abd5e4556cd21e103f314041abfc65b2ef628c02486dda451249c2d18ce13f namespace=p11
+time="2026-10-18T15:01:42.215051521-04:00" level=info msg="cleaning up dead shim" id=01abd5e4556cd21e103f314041abfc65b2ef628c02486dda451249c2d18ce13f namespace=p11
+time="2026-10-18T15:01:43.247253398-04:00" level=info msg="connecting to shim 1979f5c8dad5519b3cf7e0b433e0fd7acadd0c4cc71cb39a596133c6654e6cc9" address="unix:///run/containerd/s/b855c53bc9d23778bafd3e65e757516c51b7478ea6ef9557279d9734b80c89b8" namespace=p11 protocol=ttrpc version=3
+time="2026-10-18T15:01:44.506961289-04:00" level=info msg="shim disconnected" id=1979f5c8dad5519b3cf7e0b433e0fd7acadd0c4cc71cb39a596133c6654e6cc9 namespace=p11
+time="2026-10-18T15:01:44.507002657-04:00" level=info msg="cleaning up after shim disconnected" id=1979f5c8dad5519b3cf7e0b433e0fd7acadd0c4cc71cb39a596133c6654e6cc9 namespace=p11
+time="2026-10-18T15:01:44.507016643-04:00" level=info msg="cleaning up dead shim" id=1979f5c8dad5519b3cf7e0b433e0fd7acadd0c4cc71cb39a596133c6654e6cc9 namespace=p11
+time="2026-10-18T15:01:45.544383638-04:00" level=info msg="connecting to shim bdee85bb1f560499f8b294d1d8aae2617cc4dafd03e2ebd636c3b7ae746a9ac7" address="unix:///run/containerd/s/9ab06e1d2d1b9801d4c497d3e0e1ed902606230e21329a89b1e5458b14d5181a" namespace=p11 protocol=ttrpc version=3
+time="2026-10-18T15:01:46.445246396-04:00" level=info msg="shim disconnected" id=bdee85bb1f560499f8b294d1d8aae2617cc4dafd03e2ebd636c3b7ae746a9ac7 namespace=p11
+time="2026-10-18T15:01:46.445283245-04:00" level=info msg="cleaning up after shim disconnected" id=bdee85bb1f560499f8b294d1d8aae2617cc4dafd03e2ebd636c3b7ae746a9ac7 namespace=p11
+time="2026-10-18T15:01:46.445320415-04:00" level=info msg="cleaning up dead shim" id=bdee85bb1f560499f8b294d1d8aae2617cc4dafd03e2ebd636c3b7ae746a9ac7 namespace=p11
+time="2026-10-18T15:01:47.587041781-04:00" level=info msg="connecting to shim ad6b3d89c8962a4cbb7de1c2e63eb4c072d6116da37885b958c1a0e3ab3d7b85" address="unix:///run/containerd/s/6bdd15e95baf74514ebe87cff97efbf533da373826561ed0d9e11b37ac3fe6a8" namespace=p11 protocol=ttrpc version=3
+time="2026-10-18T15:01:48.545843627-04:00" level=info msg="shim disconnected" id=ad6b3d89c8962a4cbb7de1c2e63eb4c072d6116da37885b958c1a0e3ab3d7b85 namespace=p11
+time="2026-10-18T15:01:48.545863294-04:00" level=info msg="cleaning up after shim disconnected" id=ad6b3d89c8962a4cbb7de1c2e63eb4c072d6116da37885b958c1a0e3ab3d7b85 namespace=p11
+time="2026-10-18T15:01:48.545869386-04:00" level=info msg="cleaning up dead shim" id=ad6b3d89c8962a4cbb7de1c2e63eb4c072d6116da37885b958c1a0e3ab3d7b85 namespace=p11
+time="2026-10-18T15:01:49.563187829-04:00" level=info msg="connecting to shim c45ca5ebde0e72ac67cd34f7c05097c3a1f52aa0c6c3780959946b7da2312374" address="unix:///run/containerd/s/3d9d9c49961477a3dc326ee47f55ad4ff8cc99d8558ec9d86c65ce5adb767de0" namespace=p11 protocol=ttrpc version=3
+time="2026-10-18T15:01:50.875305191-04:00" level=info msg="shim disconnected" id=c45ca5ebde0e72ac67cd34f7c05097c3a1f52aa0c6c3780959946b7da2312374 namespace=p11
+time="2026-10-18T15:01:50.875325509-04:00" level=info msg="cleaning up after shim disconnected" id=c45ca5ebde0e72ac67cd34f7c05097c3a1f52aa0c6c3780959946b7da2312374 namespace=p11
+time="2026-10-18T15:01:50.875331330-04:00" level=info msg="cleaning up dead shim" id=c45ca5ebde0e72ac67cd34f7c05097c3a1f52aa0c6c3780959946b7da2312374 namespace=p11
+time="2026-10-18T15:01:51.896347906-04:00" level=info msg="connecting to shim 7db866e5cb7aeb1fd39b98e92b482ea1361f9529edb20649a4c635141a108007" address="unix:///run/containerd/s/0fb54d1876b02a1ec052839c3ff5839b99c989d80115299b81931389ce15e9bf" namespace=p11 protocol=ttrpc version=3
+time="2026-10-18T15:01:53.178555239-04:00" level=info msg="shim disconnected" id=7db866e5cb7aeb1fd39b98e92b482ea1361f9529edb20649a4c635141a108007 namespace=p11
+time="2026-10-18T15:01:53.178590365-04:00" level=info msg="cleaning up after shim disconnected" id=7db866e5cb7aeb1fd39b98e92b482ea1361f9529edb20649a4c635141a108007 namespace=p11
+time="2026-10-18T15:01:53.178601126-04:00" level=info msg="cleaning up dead shim" id=7db866e5cb7aeb1fd39b98e92b482ea1361f9529edb20649a4c635141a108007 namespace=p11
+time="2026-10-18T15:01:54.178786712-04:00" level=info msg="connecting to shim 6d83d45bff0bb235fb4fd539ace31221b78f1463541d93df3522d49a17b6a43c" address="unix:///run/containerd/s/1c62a49fa10e5a96f1a2353684b6bcf764e3a572997d61d91ab48695100a4f50" namespace=p11 protocol=ttrpc version=3
+time="2026-10-18T15:01:55.518810186-04:00" level=info msg="shim disconnected" id=6d83d45bff0bb235fb4fd539ace31221b78f1463541d93df3522d49a17b6a43c namespace=p11
+time="2026-10-18T15:01:55.518843669-04:00" level=info msg="cleaning up after shim disconnected" id=6d83d45bff0bb235fb4fd539ace31221b78f1463541d93df3522d49a17b6a43c namespace=p11
+time="2026-10-18T15:01:55.518851744-04:00" level=info msg="cleaning up dead shim" id=6d83d45bff0bb235fb4fd539ace31221b78f1463541d93df3522d49a17b6a43c namespace=p11
+time="2026-10-18T15:01:56.545177063-04:00" level=info msg="connecting to shim 5ce3566b221cb95dd119e6ab5e20258d6bd1a65ff2c7170981a9960b5e2316d1" address="unix:///run/containerd/s/1e3eb6f837bb810af13cb81cc905bb2ae56ea9e937d105807ad1cc57152b4194" namespace=p11 protocol=ttrpc version=3
+time="2026-10-18T15:01:57.643082542-04:00" level=info msg="shim disconnected" id=5ce3566b221cb95dd119e6ab5e20258d6bd1a65ff2c7170981a9960b5e2316d1 namespace=p11
+time="2026-10-18T15:01:57.643112899-04:00" level=info msg="cleaning up after shim disconnected" id=5ce3566b221cb95dd119e6ab5e20258d6bd1a65ff2c7170981a9960b5e2316d1 namespace=p11
+time="2026-10-18T15:01:57.643120784-04:00" level=info msg="cleaning up dead shim" id=5ce3566b221cb95dd119e6ab5e20258d6bd1a65ff2c7170981a9960b5e2316d1 namespace=p11
+time="2026-10-18T15:01:58.650966440-04:00" level=info msg="connecting to shim 4674e75c2fcd669bca497196a97b50391a191f2a6ccd93679b3836b09df3d3b8" address="unix:///run/containerd/s/d4cb5a506f0fe07386d7472713dba1e06aa37118c8a31f5de3748b29acce2ce5" namespace=p11 protocol=ttrpc version=3
+time="2026-10-18T15:02:00.213966588-04:00" level=info msg="shim disconnected" id=4674e75c2fcd669bca497196a97b50391a191f2a6ccd93679b3836b09df3d3b8 namespace=p11
+time="2026-10-18T15:02:00.214002075-04:00" level=info msg="cleaning up after shim disconnected" id=4674e75c2fcd669bca497196a97b50391a191f2a6ccd93679b3836b09df3d3b8 namespace=p11
+time="2026-10-18T15:02:00.214009709-04:00" level=info msg="cleaning up dead shim" id=4674e75c2fcd669bca497196a97b50391a191f2a6ccd93679b3836b09df3d3b8 namespace=p11
+time="2026-10-18T15:02:01.227625648-04:00" level=info msg="connecting to shim 6513e0e641143f9f2a5445260f017b8dba0de7d8ff21cda83d9dd0915bb68c94" address="unix:///run/containerd/s/8c0a6e878fce728b52ad6ef06f96d7458513f2f5fc793706f5e7312132e6e6ea" namespace=p11 protocol=ttrpc version=3
+time="2026-10-18T15:02:02.439023989-04:00" level=info msg="shim disconnected" id=6513e0e641143f9f2a5445260f017b8dba0de7d8ff21cda83d9dd0915bb68c94 namespace=p11
+time="2026-10-18T15:02:02.439061570-04:00" level=info msg="cleaning up after shim disconnected" id=6513e0e641143f9f2a5445260f017b8dba0de7d8ff21cda83d9dd0915bb68c94 namespace=p11
+time="2026-10-18T15:02:02.439070446-04:00" level=info msg="cleaning up dead shim" id=6513e0e641143f9f2a5445260f017b8dba0de7d8ff21cda83d9dd0915bb68c94 namespace=p11
+time="2026-10-18T15:02:03.442604797-04:00" level=info msg="connecting to shim 996b20e818302c04da08fe61121a5125ec4ee35bdec53d13dc3b85ecc8d47e29" address="unix:///run/containerd/s/0b46a38ac7dcbeb5dd3d630a9a9b88b6895754239c6ae1132f3c0ec7eaedae05" namespace=p11 protocol=ttrpc version=3
+time="2026-10-18T15:02:05.070212718-04:00" level=info msg="shim disconnected" id=996b20e818302c04da08fe61121a5125ec4ee35bdec53d13dc3b85ecc8d47e29 namespace=p11
+time="2026-10-18T15:02:05.070235130-04:00" level=info msg="cleaning up after shim disconnected" id=996b20e818302c04da08fe61121a5125ec4ee35bdec53d13dc3b85ecc8d47e29 namespace=p11
+time="2026-10-18T15:02:05.070240911-04:00" level=info msg="cleaning up dead shim" id=996b20e818302c04da08fe61121a5125ec4ee35bdec53d13dc3b85ecc8d47e29 namespace=p11
+time="2026-10-18T15:02:06.079399739-04:00" level=info msg="connecting to shim ccc20c600ab90cad6c33e918f3cd7876eb7ccbec36e0f7ace2d1ce806f8ecfda" address="unix:///run/containerd/s/9b4a2d2d03d0b97c50f4104c412f6fae2fd7f79784a83b9f0c84810768797639" namespace=p11 protocol=ttrpc version=3
+time="2026-10-18T15:02:07.303868020-04:00" level=info msg="shim disconnected" id=ccc20c600ab90cad6c33e918f3cd7876eb7ccbec36e0f7ace2d1ce806f8ecfda namespace=p11
+time="2026-10-18T15:02:07.303894029-04:00" level=info msg="cleaning up after shim disconnected" id=ccc20c600ab90cad6c33e918f3cd7876eb7ccbec36e0f7ace2d1ce806f8ecfda namespace=p11
+time="2026-10-18T15:02:07.303899770-04:00" level=info msg="cleaning up dead shim" id=ccc20c600ab90cad6c33e918f3cd7876eb7ccbec36e0f7ace2d1ce806f8ecfda namespace=p11
+time="2026-10-18T15:02:08.321781892-04:00" level=info msg="connecting to shim 60d2f12d68a0d0aa3dcece8bdd497f02913cad46029c146fcea1b66994bf4420" address="unix:///run/containerd/s/ecd137d986cd2b1a62c76eb6c315900373daf517f5a17741415c6eda1d0224f8" namespace=p11 protocol=ttrpc version=3
+time="2026-10-18T15:02:09.802367936-04:00" level=info msg="shim disconnected" id=60d2f12d68a0d0aa3dcece8bdd497f02913cad46029c146fcea1b66994bf4420 namespace=p11
+time="2026-10-18T15:02:09.802403493-04:00" level=info msg="cleaning up after shim disconnected" id=60d2f12d68a0d0aa3dcece8bdd497f02913cad46029c146fcea1b66994bf4420 namespace=p11
+time="2026-10-18T15:02:09.802411608-04:00" level=info msg="cleaning up dead shim" id=60d2f12d68a0d0aa3dcece8bdd497f02913cad46029c146fcea1b66994bf4420 namespace=p11
+time="2026-10-18T15:02:10.797984159-04:00" level=info msg="connecting to shim f7028f19d966f73977b2135360243844d9279ba69de69a027bdebc5292085791" address="unix:///run/containerd/s/7d0eba41c9b46bb294b5eeb270553854172a08024306d996017d9461a29fa411" namespace=p11 protocol=ttrpc version=3
+time="2026-10-18T15:02:11.684580529-04:00" level=info msg="shim disconnected" id=f7028f19d966f73977b2135360243844d9279ba69de69a027bdebc5292085791 namespace=p11
+time="2026-10-18T15:02:11.684602120-04:00" level=info msg="cleaning up after shim disconnected" id=f7028f19d966f73977b2135360243844d9279ba69de69a027bdebc5292085791 namespace=p11
+time="2026-10-18T15:02:11.684610516-04:00" level=info msg="cleaning up dead shim" id=f7028f19d966f73977b2135360243844d9279ba69de69a027bdebc5292085791 namespace=p11
+time="2026-10-18T15:02:12.779160623-04:00" level=info msg="connecting to shim 093a0311c712beeb259e67b9a0e0d2429a0c9b0eb6d0b1b1de2d66250989617e" address="unix:///run/containerd/s/4e86bfbe876d7d6b2ba4b88104c794f91334290ea282ca38cbea984a2e34689f" namespace=p11 protocol=ttrpc version=3
+time="2026-10-18T15:02:14.392765353-04:00" level=info msg="shim disconnected" id=093a0311c712beeb259e67b9a0e0d2429a0c9b0eb6d0b1b1de2d66250989617e namespace=p11
+time="2026-10-18T15:02:14.392790511-04:00" level=info msg="cleaning up after shim disconnected" id=093a0311c712beeb259e67b9a0e0d2429a0c9b0eb6d0b1b1de2d66250989617e namespace=p11
+time="2026-10-18T15:02:14.392797815-04:00" level=info msg="cleaning up dead shim" id=093a0311c712beeb259e67b9a0e0d2429a0c9b0eb6d0b1b1de2d66250989617e namespace=p11
+time="2026-10-18T15:02:15.436590448-04:00" level=info msg="connecting to shim 2728604657c4d4031ec99a282c714fe40e62e0800dc0aa4cf00504598d0de045" address="unix:///run/containerd/s/f7f95e146cb2efd3e8e8844c0aed69e334c41caf0762b8b1a9631d40f027b558" namespace=p11 protocol=ttrpc version=3
+time="2026-10-18T15:02:16.343551112-04:00" level=info msg="shim disconnected" id=2728604657c4d4031ec99a282c714fe40e62e0800dc0aa4cf00504598d0de045 namespace=p11
+time="2026-10-18T15:02:16.343583603-04:00" level=info msg="cleaning up after shim disconnected" id=2728604657c4d4031ec99a282c714fe40e62e0800dc0aa4cf00504598d0de045 namespace=p11
+time="2026-10-18T15:02:16.343605996-04:00" level=info msg="cleaning up dead shim" id=2728604657c4d4031ec99a282c714fe40e62e0800dc0aa4cf00504598d0de045 namespace=p11
+time="2026-10-18T15:02:17.395721213-04:00" level=info msg="connecting to shim 32d1385af29a4693490f0dcbbf9003b2fb7cb7a723caac9fa3cb76659365b778" address="unix:///run/containerd/s/63f67b6aa12f1d183c4cbf72fc4e5f9567b8bea563fdd7de9de0e5445bebdf79" namespace=p11 protocol=ttrpc version=3
+time="2026-10-18T15:02:18.326041584-04:00" level=info msg="shim disconnected" id=32d1385af29a4693490f0dcbbf9003b2fb7cb7a723caac9fa3cb76659365b778 namespace=p11
+time="2026-10-18T15:02:18.326060751-04:00" level=info msg="cleaning up after shim disconnected" id=32d1385af29a4693490f0dcbbf9003b2fb7cb7a723caac9fa3cb76659365b778 namespace=p11
+time="2026-10-18T15:02:18.326066161-04:00" level=info msg="cleaning up dead shim" id=32d1385af29a4693490f0dcbbf9003b2fb7cb7a723caac9fa3cb76659365b778 namespace=p11

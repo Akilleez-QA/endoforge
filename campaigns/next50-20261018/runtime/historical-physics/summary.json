@@ -1,0 +1,31 @@
+{
+  "version": 1,
+  "modelCalls": 0,
+  "selectedRequestIds": [
+    "CC-009",
+    "CC-013",
+    "C-007",
+    "CC-022"
+  ],
+  "frozenArtifactsInventoried": 40,
+  "selectedActualArtifacts": 8,
+  "numericOrDomainProcedures": 36,
+  "actualArmObservations": 72,
+  "armOutcomes": {
+    "incumbent": {
+      "passed": 32,
+      "criterion-failed": 1,
+      "interface-not-expressible": 3
+    },
+    "fast-path": {
+      "passed": 35,
+      "criterion-failed": 1
+    }
+  },
+  "mappedSourceClauses": 35,
+  "mappingCount": 67,
+  "unresolvedConditions": 8,
+  "checkerControlsPassed": 6,
+  "sourceUnchanged": true,
+  "scope": "Additional literal physical/domain/numeric subconditions only; conditional P-T arithmetic does not validate property/reference truth, and unresolved remainder stays visible"
+}

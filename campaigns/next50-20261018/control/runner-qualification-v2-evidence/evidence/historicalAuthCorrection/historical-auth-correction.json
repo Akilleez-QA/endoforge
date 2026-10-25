@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "kind": "source-backed-correction",
+  "createdUnix": 1792364783.5279489,
+  "historicalAttempts": 2,
+  "reportedTokens": 2673,
+  "attempts": [
+    {
+      "path": "egress-6efdcdc2/subscription-model.json",
+      "exit": 0,
+      "passed": true,
+      "isError": false,
+      "reportedTokens": 2673
+    },
+    {
+      "path": "egress-5d54d8f2/subscription-model.json",
+      "exit": 1,
+      "passed": false,
+      "isError": true,
+      "reportedTokens": 0
+    }
+  ],
+  "correction": "one passed and one failed pre-prohibition attempt; earlier two-success summary false",
+  "rootCauseOfReportError": "output-directory completion treated as model success without checking model-verdict",
+  "rawReceiptsChanged": false,
+  "ClaudeInvocations": 0
+}

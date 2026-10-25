@@ -1,0 +1,69 @@
+{
+  "at": "2026-10-18T04:15:23.271Z",
+  "auditor": "claude-opus-5-5",
+  "callId": "audit-na-CC-006+C-011+CC-024+CC-035+CC-021-0-criteria-audit-0001-mvdbamku",
+  "picks": [
+    {
+      "sheet": 1,
+      "oracle": "oracle-sonnet",
+      "id": "CC-006"
+    },
+    {
+      "sheet": 2,
+      "oracle": "oracle-sonnet",
+      "id": "C-011"
+    },
+    {
+      "sheet": 3,
+      "oracle": "oracle-opus",
+      "id": "CC-024"
+    },
+    {
+      "sheet": 4,
+      "oracle": "oracle-opus",
+      "id": "CC-035"
+    },
+    {
+      "sheet": 5,
+      "oracle": "oracle-codex",
+      "id": "CC-021"
+    }
+  ],
+  "result": [
+    {
+      "sheet": "Sheet 1 (oracle-sonnet, CC-006)",
+      "score": 2,
+      "checks_total": 5,
+      "checks_runnable": 5,
+      "fix": "Cite the source for the three-phase current relation (I = P / (√3·V·PF·η)) on checks 1–3, as check 4 already does with NEC 430.250, so every check carries an explicit reference."
+    },
+    {
+      "sheet": "Sheet 2 (oracle-sonnet, C-011)",
+      "score": 1,
+      "checks_total": 4,
+      "checks_runnable": 3,
+      "fix": "Replace check 1's 'many messages' and 'for example 80%' with a concrete input (e.g. 200 sends across 3 channels) and a pass threshold (≤ 50 req/s global, sleep ≥ Retry-After on 429), and cite the Discord developer rate-limit docs with an access date."
+    },
+    {
+      "sheet": "Sheet 3 (oracle-opus, CC-024)",
+      "score": 1,
+      "checks_total": 4,
+      "checks_runnable": 3,
+      "fix": "Name the P-T source for every saturation value (e.g. CoolProp/REFPROP version or a named manufacturer P-T chart) and give the edge check a concrete above-critical input, such as R-410A at 720 psig, with refusal as the expected result."
+    },
+    {
+      "sheet": "Sheet 4 (oracle-opus, CC-035)",
+      "score": 1,
+      "checks_total": 5,
+      "checks_runnable": 4,
+      "fix": "Make phase check (d) runnable by giving a concrete refrigerant and head pressure with a sourced saturation temperature (e.g. R-410A, 400 psig, about 118 °F) and stating that 115 °F leaving must be reported as condensed/subcooled."
+    },
+    {
+      "sheet": "Sheet 5 (oracle-codex, CC-021)",
+      "score": 2,
+      "checks_total": 3,
+      "checks_runnable": 3,
+      "fix": "Add one equilibrium-solubility check anchored to a cited NH3–water table (e.g. Perry's, 20 °C at 1 bar NH3 partial pressure, with a tolerance), since the current numeric checks only test the mass balance."
+    }
+  ]
+}

@@ -1,0 +1,679 @@
+{
+  "label": "Recorded (probe)",
+  "tag": "run1",
+  "precommitSha256": "7cbea8fdb2b0ac37bdca3ad6dc115037c15e95ae1bba1b480b070e3002e75815  PRECOMMIT.md",
+  "contractSha256": "c5325111b41206da13cfb6bc27fd059d16b5be8c47c2beb7409727fe8fe76674  CONTRACT.md",
+  "modules": {
+    "as": {
+      "bytes": 316,
+      "sha256": "06430dfcf2a3088bfaf45981b0e68c240d1f04155e44bd177749b51543014355"
+    },
+    "rs": {
+      "bytes": 333,
+      "sha256": "fd0b7674980d82bca009b417d444f4a004fe1d9bb5c1b58c3d968eff3e99baa1"
+    },
+    "rsFaulty": {
+      "bytes": 237,
+      "sha256": "7a9c754cc14ffc7b4150471bed242401595e7b0511814193d442095be26b0755"
+    }
+  },
+  "domain": {
+    "valueRange": [
+      -1048576,
+      1048576
+    ],
+    "combos": 32,
+    "inputs": 67108864
+  },
+  "equivalence": {
+    "pair": [
+      "convert.as.wasm",
+      "convert.rs.wasm"
+    ],
+    "inputs": 67108864,
+    "disagreements": 0,
+    "wallMs": 714.307176,
+    "callsPerSecondBothModules": 187899174,
+    "perCombo": []
+  },
+  "oracleSample": {
+    "valuesPerCombo": 200021,
+    "results": {
+      "convert.as.wasm": {
+        "checked": 6400672,
+        "wrong": 0,
+        "first": []
+      },
+      "convert.rs.wasm": {
+        "checked": 6400672,
+        "wrong": 0,
+        "first": []
+      }
+    }
+  },
+  "invalidCodes": {
+    "convert.as.wasm": {
+      "checked": 4653056,
+      "wrong": 0,
+      "first": []
+    },
+    "convert.rs.wasm": {
+      "checked": 4653056,
+      "wrong": 0,
+      "first": []
+    }
+  },
+  "throughput": {
+    "as": {
+      "module": "convert.as.wasm",
+      "passes": 3,
+      "wallMsEach": [
+        379.618553,
+        409.7573920000002,
+        413.13630299999977
+      ],
+      "medianWallMs": 409.7573920000002,
+      "callsPerSecond": 163777067,
+      "checksum": -730059375
+    },
+    "rs": {
+      "module": "convert.rs.wasm",
+      "passes": 3,
+      "wallMsEach": [
+        651.3213190000001,
+        625.5410310000002,
+        578.0458059999996
+      ],
+      "medianWallMs": 625.5410310000002,
+      "callsPerSecond": 107281314,
+      "checksum": -730059375
+    }
+  },
+  "seededFault": {
+    "pair": [
+      "convert.rs-faulty.wasm",
+      "convert.rs.wasm"
+    ],
+    "inputs": 67108864,
+    "exposingInputs": 26177139,
+    "fractionOfDomain": 0.3901,
+    "wallMs": 1237.668302,
+    "firstExposing": {
+      "from": 0,
+      "to": 1,
+      "basis": 0,
+      "value": -1048575,
+      "convert.rs-faulty.wasm": -152082,
+      "convert.rs.wasm": -152083,
+      "oracle": -152083
+    },
+    "perCombo": [
+      {
+        "from": 0,
+        "to": 0,
+        "basis": 0,
+        "disagreements": 0,
+        "first": []
+      },
+      {
+        "from": 0,
+        "to": 0,
+        "basis": 1,
+        "disagreements": 0,
+        "first": []
+      },
+      {
+        "from": 0,
+        "to": 1,
+        "basis": 0,
+        "disagreements": 1048604,
+        "first": [
+          {
+            "value": -1048575,
+            "convert.rs-faulty.wasm": -152082,
+            "convert.rs.wasm": -152083,
+            "oracle": -152083
+          },
+          {
+            "value": -1048574,
+            "convert.rs-faulty.wasm": -152082,
+            "convert.rs.wasm": -152083,
+            "oracle": -152083
+          }
+        ]
+      },
+      {
+        "from": 0,
+        "to": 1,
+        "basis": 1,
+        "disagreements": 1048606,
+        "first": [
+          {
+            "value": -1048574,
+            "convert.rs-faulty.wasm": -137386,
+            "convert.rs.wasm": -137387,
+            "oracle": -137387
+          },
+          {
+            "value": -1048573,
+            "convert.rs-faulty.wasm": -137386,
+            "convert.rs.wasm": -137387,
+            "oracle": -137387
+          }
+        ]
+      },
+      {
+        "from": 0,
+        "to": 2,
+        "basis": 0,
+        "disagreements": 1038067,
+        "first": [
+          {
+            "value": -1048576,
+            "convert.rs-faulty.wasm": -10485,
+            "convert.rs.wasm": -10486,
+            "oracle": -10486
+          },
+          {
+            "value": -1048575,
+            "convert.rs-faulty.wasm": -10485,
+            "convert.rs.wasm": -10486,
+            "oracle": -10486
+          }
+        ]
+      },
+      {
+        "from": 0,
+        "to": 2,
+        "basis": 1,
+        "disagreements": 1038065,
+        "first": [
+          {
+            "value": -1048576,
+            "convert.rs-faulty.wasm": -9472,
+            "convert.rs.wasm": -9473,
+            "oracle": -9473
+          },
+          {
+            "value": -1048524,
+            "convert.rs-faulty.wasm": -9471,
+            "convert.rs.wasm": -9472,
+            "oracle": -9472
+          }
+        ]
+      },
+      {
+        "from": 0,
+        "to": 3,
+        "basis": 0,
+        "disagreements": 1048578,
+        "first": [
+          {
+            "value": -1048575,
+            "convert.rs-faulty.wasm": -309643,
+            "convert.rs.wasm": -309644,
+            "oracle": -309644
+          },
+          {
+            "value": -1048574,
+            "convert.rs-faulty.wasm": -309643,
+            "convert.rs.wasm": -309644,
+            "oracle": -309644
+          }
+        ]
+      },
+      {
+        "from": 0,
+        "to": 3,
+        "basis": 1,
+        "disagreements": 1048569,
+        "first": [
+          {
+            "value": -1048575,
+            "convert.rs-faulty.wasm": -279722,
+            "convert.rs.wasm": -279723,
+            "oracle": -279723
+          },
+          {
+            "value": -1048572,
+            "convert.rs-faulty.wasm": -279721,
+            "convert.rs.wasm": -279722,
+            "oracle": -279722
+          }
+        ]
+      },
+      {
+        "from": 1,
+        "to": 0,
+        "basis": 0,
+        "disagreements": 1048521,
+        "first": [
+          {
+            "value": -1048576,
+            "convert.rs-faulty.wasm": -7229676,
+            "convert.rs.wasm": -7229677,
+            "oracle": -7229677
+          },
+          {
+            "value": -1048575,
+            "convert.rs-faulty.wasm": -7229669,
+            "convert.rs.wasm": -7229670,
+            "oracle": -7229670
+          }
+        ]
+      },
+      {
+        "from": 1,
+        "to": 0,
+        "basis": 1,
+        "disagreements": 1048574,
+        "first": [
+          {
+            "value": -1048576,
+            "convert.rs-faulty.wasm": -7128351,
+            "convert.rs.wasm": -7128352,
+            "oracle": -7128352
+          },
+          {
+            "value": -1048575,
+            "convert.rs-faulty.wasm": -7128344,
+            "convert.rs.wasm": -7128345,
+            "oracle": -7128345
+          }
+        ]
+      },
+      {
+        "from": 1,
+        "to": 1,
+        "basis": 0,
+        "disagreements": 0,
+        "first": []
+      },
+      {
+        "from": 1,
+        "to": 1,
+        "basis": 1,
+        "disagreements": 1063271,
+        "first": [
+          {
+            "value": -14695,
+            "convert.rs-faulty.wasm": 0,
+            "convert.rs.wasm": 1,
+            "oracle": 1
+          },
+          {
+            "value": -14694,
+            "convert.rs-faulty.wasm": 1,
+            "convert.rs.wasm": 2,
+            "oracle": 2
+          }
+        ]
+      },
+      {
+        "from": 1,
+        "to": 2,
+        "basis": 0,
+        "disagreements": 1048583,
+        "first": [
+          {
+            "value": -1048576,
+            "convert.rs-faulty.wasm": -72296,
+            "convert.rs.wasm": -72297,
+            "oracle": -72297
+          },
+          {
+            "value": -1048575,
+            "convert.rs-faulty.wasm": -72296,
+            "convert.rs.wasm": -72297,
+            "oracle": -72297
+          }
+        ]
+      },
+      {
+        "from": 1,
+        "to": 2,
+        "basis": 1,
+        "disagreements": 1048583,
+        "first": [
+          {
+            "value": -1048576,
+            "convert.rs-faulty.wasm": -71283,
+            "convert.rs.wasm": -71284,
+            "oracle": -71284
+          },
+          {
+            "value": -1048568,
+            "convert.rs-faulty.wasm": -71282,
+            "convert.rs.wasm": -71283,
+            "oracle": -71283
+          }
+        ]
+      },
+      {
+        "from": 1,
+        "to": 3,
+        "basis": 0,
+        "disagreements": 1048578,
+        "first": [
+          {
+            "value": -1048573,
+            "convert.rs-faulty.wasm": -2134915,
+            "convert.rs.wasm": -2134916,
+            "oracle": -2134916
+          },
+          {
+            "value": -1048572,
+            "convert.rs-faulty.wasm": -2134913,
+            "convert.rs.wasm": -2134914,
+            "oracle": -2134914
+          }
+        ]
+      },
+      {
+        "from": 1,
+        "to": 3,
+        "basis": 1,
+        "disagreements": 1048574,
+        "first": [
+          {
+            "value": -1048576,
+            "convert.rs-faulty.wasm": -2105000,
+            "convert.rs.wasm": -2105001,
+            "oracle": -2105001
+          },
+          {
+            "value": -1048575,
+            "convert.rs-faulty.wasm": -2104998,
+            "convert.rs.wasm": -2104999,
+            "oracle": -2104999
+          }
+        ]
+      },
+      {
+        "from": 2,
+        "to": 0,
+        "basis": 0,
+        "disagreements": 0,
+        "first": []
+      },
+      {
+        "from": 2,
+        "to": 0,
+        "basis": 1,
+        "disagreements": 0,
+        "first": []
+      },
+      {
+        "from": 2,
+        "to": 1,
+        "basis": 0,
+        "disagreements": 1048579,
+        "first": [
+          {
+            "value": -1048576,
+            "convert.rs-faulty.wasm": -15208309,
+            "convert.rs.wasm": -15208310,
+            "oracle": -15208310
+          },
+          {
+            "value": -1048574,
+            "convert.rs-faulty.wasm": -15208280,
+            "convert.rs.wasm": -15208281,
+            "oracle": -15208281
+          }
+        ]
+      },
+      {
+        "from": 2,
+        "to": 1,
+        "basis": 1,
+        "disagreements": 1048577,
+        "first": [
+          {
+            "value": -1048576,
+            "convert.rs-faulty.wasm": -15193613,
+            "convert.rs.wasm": -15193614,
+            "oracle": -15193614
+          },
+          {
+            "value": -1048574,
+            "convert.rs-faulty.wasm": -15193584,
+            "convert.rs.wasm": -15193585,
+            "oracle": -15193585
+          }
+        ]
+      },
+      {
+        "from": 2,
+        "to": 2,
+        "basis": 0,
+        "disagreements": 0,
+        "first": []
+      },
+      {
+        "from": 2,
+        "to": 2,
+        "basis": 1,
+        "disagreements": 1047563,
+        "first": [
+          {
+            "value": -1048576,
+            "convert.rs-faulty.wasm": -1047562,
+            "convert.rs.wasm": -1047563,
+            "oracle": -1047563
+          },
+          {
+            "value": -1048575,
+            "convert.rs-faulty.wasm": -1047561,
+            "convert.rs.wasm": -1047562,
+            "oracle": -1047562
+          }
+        ]
+      },
+      {
+        "from": 2,
+        "to": 3,
+        "basis": 0,
+        "disagreements": 1048578,
+        "first": [
+          {
+            "value": -1048575,
+            "convert.rs-faulty.wasm": -30964398,
+            "convert.rs.wasm": -30964399,
+            "oracle": -30964399
+          },
+          {
+            "value": -1048573,
+            "convert.rs-faulty.wasm": -30964339,
+            "convert.rs.wasm": -30964340,
+            "oracle": -30964340
+          }
+        ]
+      },
+      {
+        "from": 2,
+        "to": 3,
+        "basis": 1,
+        "disagreements": 1048577,
+        "first": [
+          {
+            "value": -1048575,
+            "convert.rs-faulty.wasm": -30934477,
+            "convert.rs.wasm": -30934478,
+            "oracle": -30934478
+          },
+          {
+            "value": -1048573,
+            "convert.rs-faulty.wasm": -30934418,
+            "convert.rs.wasm": -30934419,
+            "oracle": -30934419
+          }
+        ]
+      },
+      {
+        "from": 3,
+        "to": 0,
+        "basis": 0,
+        "disagreements": 1048574,
+        "first": [
+          {
+            "value": -1048575,
+            "convert.rs-faulty.wasm": -3550882,
+            "convert.rs.wasm": -3550883,
+            "oracle": -3550883
+          },
+          {
+            "value": -1048572,
+            "convert.rs-faulty.wasm": -3550872,
+            "convert.rs.wasm": -3550873,
+            "oracle": -3550873
+          }
+        ]
+      },
+      {
+        "from": 3,
+        "to": 0,
+        "basis": 1,
+        "disagreements": 1048583,
+        "first": [
+          {
+            "value": -1048575,
+            "convert.rs-faulty.wasm": -3449557,
+            "convert.rs.wasm": -3449558,
+            "oracle": -3449558
+          },
+          {
+            "value": -1048572,
+            "convert.rs-faulty.wasm": -3449547,
+            "convert.rs.wasm": -3449548,
+            "oracle": -3449548
+          }
+        ]
+      },
+      {
+        "from": 3,
+        "to": 1,
+        "basis": 0,
+        "disagreements": 1048569,
+        "first": [
+          {
+            "value": -1048576,
+            "convert.rs-faulty.wasm": -515012,
+            "convert.rs.wasm": -515013,
+            "oracle": -515013
+          },
+          {
+            "value": -1048574,
+            "convert.rs-faulty.wasm": -515011,
+            "convert.rs.wasm": -515012,
+            "oracle": -515012
+          }
+        ]
+      },
+      {
+        "from": 3,
+        "to": 1,
+        "basis": 1,
+        "disagreements": 1048571,
+        "first": [
+          {
+            "value": -1048576,
+            "convert.rs-faulty.wasm": -500316,
+            "convert.rs.wasm": -500317,
+            "oracle": -500317
+          },
+          {
+            "value": -1048574,
+            "convert.rs-faulty.wasm": -500315,
+            "convert.rs.wasm": -500316,
+            "oracle": -500316
+          }
+        ]
+      },
+      {
+        "from": 3,
+        "to": 2,
+        "basis": 0,
+        "disagreements": 1048571,
+        "first": [
+          {
+            "value": -1048576,
+            "convert.rs-faulty.wasm": -35508,
+            "convert.rs.wasm": -35509,
+            "oracle": -35509
+          },
+          {
+            "value": -1048575,
+            "convert.rs-faulty.wasm": -35508,
+            "convert.rs.wasm": -35509,
+            "oracle": -35509
+          }
+        ]
+      },
+      {
+        "from": 3,
+        "to": 2,
+        "basis": 1,
+        "disagreements": 1048569,
+        "first": [
+          {
+            "value": -1048576,
+            "convert.rs-faulty.wasm": -34495,
+            "convert.rs.wasm": -34496,
+            "oracle": -34496
+          },
+          {
+            "value": -1048575,
+            "convert.rs-faulty.wasm": -34495,
+            "convert.rs.wasm": -34496,
+            "oracle": -34496
+          }
+        ]
+      },
+      {
+        "from": 3,
+        "to": 3,
+        "basis": 0,
+        "disagreements": 0,
+        "first": []
+      },
+      {
+        "from": 3,
+        "to": 3,
+        "basis": 1,
+        "disagreements": 1018655,
+        "first": [
+          {
+            "value": -1048576,
+            "convert.rs-faulty.wasm": -1018654,
+            "convert.rs.wasm": -1018655,
+            "oracle": -1018655
+          },
+          {
+            "value": -1048575,
+            "convert.rs-faulty.wasm": -1018653,
+            "convert.rs.wasm": -1018654,
+            "oracle": -1018654
+          }
+        ]
+      }
+    ]
+  },
+  "derivedFullI32": {
+    "inputs": 137438953472,
+    "note": "Derived from measured pairwise calls/s; not run",
+    "hoursAtMeasuredPairwiseRate": 0.41
+  },
+  "loadavg": {
+    "before": [
+      18.46,
+      14.65,
+      15.16
+    ],
+    "after": [
+      18.51,
+      14.72,
+      15.18
+    ]
+  }
+}

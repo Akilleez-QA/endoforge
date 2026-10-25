@@ -1,0 +1,22 @@
+{
+  "schema": "endoforge.portability-test.v1",
+  "passed": true,
+  "checks": [
+    "roundtrip",
+    "source-immutable",
+    "wrong-key",
+    "ciphertext-tamper",
+    "existing-destination",
+    "existing-archive",
+    "credential-file",
+    "credential-content",
+    "symlink",
+    "hardlink",
+    "traversal",
+    "absolute",
+    "archive-symlink",
+    "duplicate",
+    "unknown-version"
+  ],
+  "count": 15
+}

@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "family": "local-qwen",
+  "model": "deterministic-http-fixture",
+  "stage": "local-fixture",
+  "outcome": "passed",
+  "tokens": 2,
+  "usage": {
+    "prompt_tokens": 1,
+    "completion_tokens": 1,
+    "total_tokens": 2
+  },
+  "wallMs": 153.71827699709684,
+  "promptSha256": "5f73c997cc48cdf7c9492d75307aa4948e188cfa0e2c813589ce17c490614735",
+  "proxyEvents": [
+    {
+      "decision": "allowed",
+      "route": "qwen.endoforge.invalid",
+      "maxTokens": 8,
+      "backend": "exact fixed loopback chat endpoint",
+      "responseBytes": 166
+    }
+  ],
+  "providerRoute": "exact local chat gateway; no general host/LAN egress",
+  "paidProvider": false
+}

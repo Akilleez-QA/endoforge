@@ -1,0 +1,678 @@
+{
+  "at": "2026-10-18T07:24:49.614Z",
+  "runs": 40,
+  "scoredArtefacts": 40,
+  "arms": {
+    "inc-low-r1": {
+      "n": 20,
+      "gated": 20,
+      "promoted": 17,
+      "clean": 4,
+      "cleanStrict": 0,
+      "cleanLenient": 4,
+      "cleanCI": {
+        "k": 4,
+        "n": 20,
+        "point": 0.2,
+        "lower": 0.05733399705003274,
+        "upper": 0.4366140029966684,
+        "conf": 0.95
+      },
+      "pendingChange": 17,
+      "personaRejected": 3,
+      "rounds": {
+        "one": 20,
+        "more": 0
+      },
+      "wall": {
+        "median": 45.929500000000004,
+        "p95": 63.540400000000005
+      },
+      "tokens": {
+        "median": 18059.5,
+        "mean": 18205.9,
+        "sum": 364118
+      },
+      "byRequest": {
+        "CC-002": {
+          "status": "promoted-pending-change",
+          "clean": true,
+          "panel": "clean",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "clean"
+          },
+          "wall_s": 42.2,
+          "tokens": 16968
+        },
+        "CC-022": {
+          "status": "gated-rejected-by-persona",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 59.3,
+          "tokens": 19393
+        },
+        "C-010": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 49.3,
+          "tokens": 18183
+        },
+        "C-016": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 45,
+          "tokens": 18290
+        },
+        "CC-036": {
+          "status": "promoted-pending-change",
+          "clean": true,
+          "panel": "clean",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "clean"
+          },
+          "wall_s": 38.2,
+          "tokens": 16583
+        },
+        "CC-027": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 63.3,
+          "tokens": 19431
+        },
+        "C-015": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 45,
+          "tokens": 17669
+        },
+        "CC-026": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 59.6,
+          "tokens": 18758
+        },
+        "C-012": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 41.6,
+          "tokens": 16933
+        },
+        "CC-014": {
+          "status": "promoted-pending-change",
+          "clean": true,
+          "panel": "clean",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "clean"
+          },
+          "wall_s": 46.7,
+          "tokens": 18727
+        },
+        "CC-025": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "clean",
+            "oracle-codex": "usable-with-change"
+          },
+          "wall_s": 43.3,
+          "tokens": 17103
+        },
+        "C-006": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 68.4,
+          "tokens": 20672
+        },
+        "CC-011": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 44.3,
+          "tokens": 17936
+        },
+        "CC-013": {
+          "status": "promoted-pending-change",
+          "clean": true,
+          "panel": "clean",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "clean"
+          },
+          "wall_s": 46.5,
+          "tokens": 17666
+        },
+        "CC-009": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 53,
+          "tokens": 19740
+        },
+        "CC-001": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 45.4,
+          "tokens": 16981
+        },
+        "C-005": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 53.6,
+          "tokens": 19121
+        },
+        "C-007": {
+          "status": "gated-rejected-by-persona",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 48,
+          "tokens": 18520
+        },
+        "CC-007": {
+          "status": "gated-rejected-by-persona",
+          "clean": false,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 44,
+          "tokens": 17743
+        },
+        "C-019": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 44.6,
+          "tokens": 17701
+        }
+      }
+    },
+    "inc-low-r2": {
+      "n": 20,
+      "gated": 20,
+      "promoted": 17,
+      "clean": 3,
+      "cleanStrict": 0,
+      "cleanLenient": 5,
+      "cleanCI": {
+        "k": 3,
+        "n": 20,
+        "point": 0.15,
+        "lower": 0.03207093718546383,
+        "upper": 0.37892682654531373,
+        "conf": 0.95
+      },
+      "pendingChange": 15,
+      "personaRejected": 3,
+      "rounds": {
+        "one": 20,
+        "more": 0
+      },
+      "wall": {
+        "median": 46.6285,
+        "p95": 59.555200000000006
+      },
+      "tokens": {
+        "median": 17878.5,
+        "mean": 18139.3,
+        "sum": 362786
+      },
+      "byRequest": {
+        "CC-002": {
+          "status": "promoted-pending-change",
+          "clean": true,
+          "panel": "clean",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "clean"
+          },
+          "wall_s": 46.8,
+          "tokens": 17446
+        },
+        "CC-022": {
+          "status": "gated-rejected-by-persona",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 59.2,
+          "tokens": 20059
+        },
+        "C-010": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 55,
+          "tokens": 19632
+        },
+        "C-016": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 45.6,
+          "tokens": 17991
+        },
+        "CC-036": {
+          "status": "promoted-with-assumption",
+          "clean": true,
+          "panel": "clean",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "clean"
+          },
+          "wall_s": 44.7,
+          "tokens": 16663
+        },
+        "CC-027": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 58.6,
+          "tokens": 18879
+        },
+        "C-015": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 38,
+          "tokens": 16927
+        },
+        "CC-026": {
+          "status": "gated-rejected-by-persona",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 62.8,
+          "tokens": 19425
+        },
+        "C-012": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 40.4,
+          "tokens": 16787
+        },
+        "CC-014": {
+          "status": "promoted-with-assumption",
+          "clean": false,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "clean"
+          },
+          "wall_s": 43.4,
+          "tokens": 17766
+        },
+        "CC-025": {
+          "status": "promoted-pending-change",
+          "clean": true,
+          "panel": "clean",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "clean",
+            "oracle-codex": "clean"
+          },
+          "wall_s": 38.2,
+          "tokens": 16810
+        },
+        "C-006": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 59.4,
+          "tokens": 19525
+        },
+        "CC-011": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "usable-with-change"
+          },
+          "wall_s": 38.9,
+          "tokens": 16838
+        },
+        "CC-009": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 52.9,
+          "tokens": 19786
+        },
+        "CC-013": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "clean",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 47.3,
+          "tokens": 17496
+        },
+        "CC-001": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 46.5,
+          "tokens": 17243
+        },
+        "C-005": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 53.1,
+          "tokens": 19724
+        },
+        "C-007": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 49.9,
+          "tokens": 18431
+        },
+        "CC-007": {
+          "status": "gated-rejected-by-persona",
+          "clean": false,
+          "panel": "usable-with-change",
+          "verdicts": {
+            "oracle-sonnet": "usable-with-change",
+            "oracle-opus": "usable-with-change",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 46,
+          "tokens": 18160
+        },
+        "C-019": {
+          "status": "promoted-pending-change",
+          "clean": false,
+          "panel": "not-usable",
+          "verdicts": {
+            "oracle-sonnet": "not-usable",
+            "oracle-opus": "not-usable",
+            "oracle-codex": "not-usable"
+          },
+          "wall_s": 41.4,
+          "tokens": 17198
+        }
+      }
+    },
+    "inc-default-r1": {
+      "n": 0,
+      "gated": 0,
+      "promoted": 0,
+      "clean": 0,
+      "cleanStrict": 0,
+      "cleanLenient": 0,
+      "cleanCI": null,
+      "pendingChange": 0,
+      "personaRejected": 0,
+      "rounds": {
+        "one": 0,
+        "more": 0
+      },
+      "wall": {
+        "median": null,
+        "p95": null
+      },
+      "tokens": {
+        "median": null,
+        "mean": null,
+        "sum": 0
+      },
+      "byRequest": {}
+    }
+  },
+  "aaReplicate": {
+    "clean": {
+      "n": 20,
+      "agree": 17,
+      "delta": -1
+    },
+    "gated": {
+      "n": 20,
+      "agree": 20,
+      "delta": 0
+    },
+    "promoted": {
+      "n": 20,
+      "agree": 18,
+      "delta": 0
+    },
+    "cleanStrict": {
+      "n": 20,
+      "agree": 20,
+      "delta": 0
+    },
+    "cleanLenient": {
+      "n": 20,
+      "agree": 19,
+      "delta": 1
+    }
+  },
+  "effortArm": {
+    "cleanDelta_defaultMinusLowMean": -3.5,
+    "pairedLogWall_defaultVsLowR1": null,
+    "tokensRatio_defaultOverLow": 0
+  },
+  "oracleAgreement": {
+    "oracle-sonnet|oracle-opus": {
+      "n": 40,
+      "exact": 23,
+      "within1": 38,
+      "kappa3": 0.3089430894308942,
+      "cleanAgree": 31,
+      "kappaClean": -0.08433734939759016
+    },
+    "oracle-sonnet|oracle-codex": {
+      "n": 40,
+      "exact": 22,
+      "within1": 39,
+      "kappa3": 0.3370165745856355,
+      "cleanAgree": 37,
+      "kappaClean": 0.7540983606557378
+    },
+    "oracle-opus|oracle-codex": {
+      "n": 40,
+      "exact": 25,
+      "within1": 39,
+      "kappa3": 0.2822966507177034,
+      "cleanAgree": 32,
+      "kappaClean": 0.1304347826086958
+    }
+  },
+  "perOracle": {
+    "oracle-sonnet": {
+      "n": 40,
+      "clean": 7,
+      "withChange": 19,
+      "notUsable": 14
+    },
+    "oracle-opus": {
+      "n": 40,
+      "clean": 2,
+      "withChange": 14,
+      "notUsable": 24
+    },
+    "oracle-codex": {
+      "n": 40,
+      "clean": 8,
+      "withChange": 2,
+      "notUsable": 30
+    }
+  },
+  "stageTokens": {
+    "worker": {
+      "meanPerRunWithStage": 11114,
+      "runs": 40,
+      "meanOverAllRuns": 11114
+    },
+    "persona": {
+      "meanPerRunWithStage": 7059,
+      "runs": 40,
+      "meanOverAllRuns": 7059
+    }
+  },
+  "scoring": {
+    "tokens": 505951,
+    "perArtefactAllOracles": 12649
+  },
+  "prediction": {
+    "F01": "A/A |delta clean| <= 3 of 20",
+    "observed": 1,
+    "met": true,
+    "resize": false
+  }
+}

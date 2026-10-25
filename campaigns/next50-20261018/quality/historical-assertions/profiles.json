@@ -1,0 +1,2819 @@
+[
+  {
+    "version": 1,
+    "id": "C-019:binary-binding:incumbent:overCapacity",
+    "requestId": "C-019",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "overCapacity"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-019:binary-binding:incumbent:levelAdequate",
+    "requestId": "C-019",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "levelAdequate"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-019:binary-binding:fast-path:over_capacity",
+    "requestId": "C-019",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "over_capacity"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-019:binary-binding:fast-path:condenser_level_adequate",
+    "requestId": "C-019",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "condenser_level_adequate"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-027:binary-binding:incumbent:subcoolStatus",
+    "requestId": "CC-027",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "subcoolStatus"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-027:binary-binding:incumbent:subcoolStatusVsTarget",
+    "requestId": "CC-027",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "subcoolStatusVsTarget"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-027:binary-binding:incumbent:subcoolExcess",
+    "requestId": "CC-027",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "subcoolExcess"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-027:binary-binding:fast-path:subcooling_f",
+    "requestId": "CC-027",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "subcooling_f"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-027:binary-binding:fast-path:excess_subcool_f",
+    "requestId": "CC-027",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "excess_subcool_f"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-026:binary-binding:incumbent:dischargePressure",
+    "requestId": "CC-026",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "dischargePressure"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-026:binary-binding:incumbent:dewPressure",
+    "requestId": "CC-026",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "dewPressure"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-026:binary-binding:fast-path:dischargePressurePsig",
+    "requestId": "CC-026",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "dischargePressurePsig"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-026:binary-binding:fast-path:dewPressurePsig",
+    "requestId": "CC-026",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "dewPressurePsig"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-007:binary-binding:incumbent:classifySubcooling",
+    "requestId": "C-007",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "classifySubcooling"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-007:binary-binding:incumbent:subcoolingDeviation",
+    "requestId": "C-007",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "subcoolingDeviation"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-007:binary-binding:fast-path:subcool_is_normal",
+    "requestId": "C-007",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "subcool_is_normal"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-007:binary-binding:fast-path:subcool_class",
+    "requestId": "C-007",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "subcool_class"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-007:binary-binding:incumbent:recirculationRatio",
+    "requestId": "CC-007",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "recirculationRatio"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-007:binary-binding:incumbent:pumpedFlow",
+    "requestId": "CC-007",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "pumpedFlow"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-007:binary-binding:fast-path:recirc_ratio",
+    "requestId": "CC-007",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "recirc_ratio"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-007:binary-binding:fast-path:recirc_ratio_from_exit_quality",
+    "requestId": "CC-007",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "recirc_ratio_from_exit_quality"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-010:binary-binding:incumbent:sampleDateMs",
+    "requestId": "C-010",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "sampleDateMs"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-010:binary-binding:incumbent:anchorDayMs",
+    "requestId": "C-010",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "anchorDayMs"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-010:binary-binding:fast-path:sampleDateMs",
+    "requestId": "C-010",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "sampleDateMs"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-010:binary-binding:fast-path:anchorDay",
+    "requestId": "C-010",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "anchorDay"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-010:binary-binding:fast-path:daysAgo",
+    "requestId": "C-010",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "daysAgo"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-010:binary-binding:fast-path:isFutureDate",
+    "requestId": "C-010",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "isFutureDate"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-001:binary-binding:incumbent:superheatTargetK",
+    "requestId": "CC-001",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "superheatTargetK"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-001:binary-binding:fast-path:superheat_target_k",
+    "requestId": "CC-001",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "superheat_target_k"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-022:binary-binding:incumbent:claimTrue",
+    "requestId": "CC-022",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "claimTrue"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-022:binary-binding:incumbent:psiPerDegF",
+    "requestId": "CC-022",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "psiPerDegF"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-022:binary-binding:fast-path:slope_psi_per_F",
+    "requestId": "CC-022",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "slope_psi_per_F"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-022:binary-binding:fast-path:claim_holds",
+    "requestId": "CC-022",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "claim_holds"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-015:binary-binding:incumbent:approvalDecision",
+    "requestId": "C-015",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "approvalDecision"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-015:binary-binding:fast-path:approvalAllowed",
+    "requestId": "C-015",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "approvalAllowed"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-016:binary-binding:incumbent:uiStatus",
+    "requestId": "C-016",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "uiStatus"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-016:binary-binding:incumbent:namedConfirmer",
+    "requestId": "C-016",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "namedConfirmer"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-016:binary-binding:fast-path:display_state",
+    "requestId": "C-016",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "display_state"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-009:binary-binding:incumbent:evaporatorInventoryLb",
+    "requestId": "CC-009",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "evaporatorInventoryLb"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-009:binary-binding:incumbent:ammoniaLiquidDensity",
+    "requestId": "CC-009",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "ammoniaLiquidDensity"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-009:binary-binding:incumbent:fillFraction",
+    "requestId": "CC-009",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "fillFraction"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-009:binary-binding:fast-path:evap_inventory_lb",
+    "requestId": "CC-009",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "evap_inventory_lb"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-002:binary-binding:incumbent:dewPointF",
+    "requestId": "CC-002",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "dewPointF"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-002:binary-binding:fast-path:dew_point_f",
+    "requestId": "CC-002",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "dew_point_f"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-013:binary-binding:incumbent:dewPointF",
+    "requestId": "CC-013",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "dewPointF"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-013:binary-binding:fast-path:dewpoint_f",
+    "requestId": "CC-013",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "dewpoint_f"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-036:binary-binding:incumbent:kwToHp",
+    "requestId": "CC-036",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "kwToHp"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-036:binary-binding:incumbent:kwToHpKind",
+    "requestId": "CC-036",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "kwToHpKind"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-036:binary-binding:fast-path:kw_to_hp",
+    "requestId": "CC-036",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "kw_to_hp"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-036:binary-binding:fast-path:kw_to_metric_hp",
+    "requestId": "CC-036",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "kw_to_metric_hp"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-006:binary-binding:incumbent:maxChargeR290Kg",
+    "requestId": "C-006",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "maxChargeR290Kg"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-006:binary-binding:fast-path:max_charge_kg",
+    "requestId": "C-006",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "max_charge_kg"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-006:binary-binding:fast-path:min_room_area_m2",
+    "requestId": "C-006",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "min_room_area_m2"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-025:binary-binding:incumbent:kwToHp",
+    "requestId": "CC-025",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "kwToHp"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-025:binary-binding:incumbent:kwToShaftHp",
+    "requestId": "CC-025",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "kwToShaftHp"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-025:binary-binding:fast-path:kw_to_hp",
+    "requestId": "CC-025",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "kw_to_hp"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-025:binary-binding:fast-path:kw_input_to_shaft_hp",
+    "requestId": "CC-025",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "kw_input_to_shaft_hp"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-012:binary-binding:incumbent:neutralize",
+    "requestId": "C-012",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "neutralize"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-012:binary-binding:incumbent:identifierNumber",
+    "requestId": "C-012",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "identifierNumber"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-012:binary-binding:fast-path:generic_id_length",
+    "requestId": "C-012",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "generic_id_length"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-012:binary-binding:fast-path:generic_id_letter",
+    "requestId": "C-012",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "generic_id_letter"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-005:binary-binding:incumbent:additionalChargeG",
+    "requestId": "C-005",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "additionalChargeG"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-005:binary-binding:incumbent:belowMinimumLength",
+    "requestId": "C-005",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "belowMinimumLength"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-005:binary-binding:fast-path:addChargeG",
+    "requestId": "C-005",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "addChargeG"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-011:binary-binding:incumbent:r22Cost",
+    "requestId": "CC-011",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "r22Cost"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-011:binary-binding:fast-path:refrigerantCost",
+    "requestId": "CC-011",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "refrigerantCost"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-014:binary-binding:incumbent:liquidOutFraction",
+    "requestId": "CC-014",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "liquidOutFraction"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-014:binary-binding:incumbent:liquidOutFlow",
+    "requestId": "CC-014",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "liquidOutFlow"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-014:binary-binding:incumbent:liquidFeedFlow",
+    "requestId": "CC-014",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "incumbent": {
+        "export": "liquidFeedFlow"
+      }
+    },
+    "onlyArm": "incumbent",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-014:binary-binding:fast-path:liquid_out_per_evap",
+    "requestId": "CC-014",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "liquid_out_per_evap"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-014:binary-binding:fast-path:liquid_out_flow",
+    "requestId": "CC-014",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "liquid_out_flow"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-014:binary-binding:fast-path:exit_quality",
+    "requestId": "CC-014",
+    "kind": "binding",
+    "scope": "binary-schema-qualification-only",
+    "rationale": "Proves this observed glue schema names an actual numeric WASM export with matching arity; not a request semantic success.",
+    "routes": {
+      "fast-path": {
+        "export": "exit_quality"
+      }
+    },
+    "onlyArm": "fast-path",
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-007:typed-pumped-mass-flow",
+    "requestId": "CC-007",
+    "kind": "required-input",
+    "semanticRole": "liquid-supply-mass-flow",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "recirculationRatio",
+        "names": [
+          "pumped"
+        ],
+        "units": [
+          "mass flow (same unit as evaporated)"
+        ]
+      },
+      "fast-path": {
+        "export": "recirc_ratio",
+        "names": [
+          "pumped_flow"
+        ],
+        "units": [
+          "kg/s"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-007.md",
+        "sourceLine": 3,
+        "fileSha256": "51f7a2766664c33f64b5b2697489023092812f2d7f02326537c22a65fe39eac6",
+        "lineSha256": "69de7baf2308d8edaeec3dc50f26af6dfccce75073bcebcfcb448652467f517d",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-007:typed-evaporated-mass-flow",
+    "requestId": "CC-007",
+    "kind": "required-input",
+    "semanticRole": "evaporation-mass-flow",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "recirculationRatio",
+        "names": [
+          "evaporated"
+        ],
+        "units": [
+          "mass flow (same unit as pumped)"
+        ]
+      },
+      "fast-path": {
+        "export": "recirc_ratio",
+        "names": [
+          "evaporated_flow"
+        ],
+        "units": [
+          "kg/s"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-007.md",
+        "sourceLine": 3,
+        "fileSha256": "51f7a2766664c33f64b5b2697489023092812f2d7f02326537c22a65fe39eac6",
+        "lineSha256": "69de7baf2308d8edaeec3dc50f26af6dfccce75073bcebcfcb448652467f517d",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-007:typed-ratio-unit",
+    "requestId": "CC-007",
+    "kind": "output-unit",
+    "semanticRole": null,
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "recirculationRatio",
+        "units": [
+          "dimensionless",
+          "ratio N:1"
+        ]
+      },
+      "fast-path": {
+        "export": "recirc_ratio",
+        "units": [
+          "dimensionless",
+          "ratio N:1"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-007.md",
+        "sourceLine": 2,
+        "fileSha256": "51f7a2766664c33f64b5b2697489023092812f2d7f02326537c22a65fe39eac6",
+        "lineSha256": "0f66bee9387080eda05b83daf96828966432e6c6c22b12f10e244160780ac472",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-007.md",
+        "sourceLine": 7,
+        "fileSha256": "51f7a2766664c33f64b5b2697489023092812f2d7f02326537c22a65fe39eac6",
+        "lineSha256": "ba893ba634021e3dec4af8582b111fe95edd4b846d83357fdab58b6dfd3bff6b",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-014:typed-absolute-flow-basis",
+    "requestId": "CC-014",
+    "kind": "required-input",
+    "semanticRole": "evaporation-mass-flow",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "liquidOutFlow",
+        "names": [
+          "evaporated"
+        ],
+        "units": [
+          "mass flow (any unit, e.g. lb/h)"
+        ]
+      },
+      "fast-path": {
+        "export": "liquid_out_flow",
+        "names": [
+          "evap"
+        ],
+        "units": [
+          "kg/s"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-014.md",
+        "sourceLine": 2,
+        "fileSha256": "babf5ae505a74d0a23c3d8f14539d1dce8b30489121f283db1b29c273a31fc9d",
+        "lineSha256": "23ef6e6028ac0e40ec1c3319bb8490da97ed96742903fbded97966d1e17bcd1d",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-014.md",
+        "sourceLine": 3,
+        "fileSha256": "babf5ae505a74d0a23c3d8f14539d1dce8b30489121f283db1b29c273a31fc9d",
+        "lineSha256": "466b9d0a70f5e3fa9938a0bb569762563f01de3394af11c2a2f472208af005c6",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-014.md",
+        "sourceLine": 8,
+        "fileSha256": "babf5ae505a74d0a23c3d8f14539d1dce8b30489121f283db1b29c273a31fc9d",
+        "lineSha256": "b823690cf0b49adfb74cdb004910f7bb7040d6adb88281c0dac57bf7448b05cc",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-014:typed-ratio-input",
+    "requestId": "CC-014",
+    "kind": "required-input",
+    "semanticRole": "feed-to-evaporation-ratio",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "liquidOutFlow",
+        "names": [
+          "n"
+        ],
+        "units": [
+          "dimensionless"
+        ]
+      },
+      "fast-path": {
+        "export": "liquid_out_flow",
+        "names": [
+          "n"
+        ],
+        "units": [
+          "dimensionless"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-014.md",
+        "sourceLine": 3,
+        "fileSha256": "babf5ae505a74d0a23c3d8f14539d1dce8b30489121f283db1b29c273a31fc9d",
+        "lineSha256": "466b9d0a70f5e3fa9938a0bb569762563f01de3394af11c2a2f472208af005c6",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-014.md",
+        "sourceLine": 5,
+        "fileSha256": "babf5ae505a74d0a23c3d8f14539d1dce8b30489121f283db1b29c273a31fc9d",
+        "lineSha256": "f26610d1b6adf1417eca26893509aaf9a44a4e77ecdfc95a22575670a049c1a5",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "C-007:typed-equipment-target",
+    "requestId": "C-007",
+    "kind": "required-input",
+    "semanticRole": "equipment-subcooling-target",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "classifySubcooling",
+        "names": [
+          "target"
+        ],
+        "units": [
+          "F",
+          "°F"
+        ]
+      },
+      "fast-path": {
+        "export": "subcool_class",
+        "names": [
+          "target",
+          "target_f",
+          "targetF"
+        ],
+        "units": [
+          "F",
+          "°F"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/C-007.md",
+        "sourceLine": 3,
+        "fileSha256": "76004bb8e44c2da116cc72cd5617018185327c2bfcf7e31cdb3e0ea66bf10c14",
+        "lineSha256": "481ee1ff067199bdc7fcde85b00e79afb8a6dc8893fefe2e2cce6201568688c7",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-027:typed-equipment-target",
+    "requestId": "CC-027",
+    "kind": "required-input",
+    "semanticRole": "equipment-subcooling-target",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "subcoolExcess",
+        "names": [
+          "targetF"
+        ],
+        "units": [
+          "F",
+          "°F"
+        ]
+      },
+      "fast-path": {
+        "export": "excess_subcool_f",
+        "names": [
+          "target_f"
+        ],
+        "units": [
+          "F",
+          "°F"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-027.md",
+        "sourceLine": 3,
+        "fileSha256": "c4f3e778d38b5181c37d5ba905d56e046ebf9e5f0dadd62ce91735ac44e2135d",
+        "lineSha256": "3f50bd3c4fc1ca0f6b6e4cf46455f93c6ede8babb32f171128d97d23a7746086",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-026:typed-independent-pressure",
+    "requestId": "CC-026",
+    "kind": "required-input",
+    "semanticRole": "independent-measured-discharge-pressure",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "dischargePressure",
+        "names": [
+          "measuredPressure",
+          "pressurePsig",
+          "measuredPsig",
+          "measuredPressurePsig"
+        ],
+        "units": [
+          "psig"
+        ]
+      },
+      "fast-path": {
+        "export": "dischargePressurePsig",
+        "names": [
+          "measuredPressure",
+          "pressurePsig",
+          "measuredPsig",
+          "measuredPressurePsig"
+        ],
+        "units": [
+          "psig"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-026.md",
+        "sourceLine": 3,
+        "fileSha256": "ba1d5eaebf00f8aee400bea4cc70c55a154e2651f54278241288d3d6184c0ff5",
+        "lineSha256": "25367ac38046b7d76d40155210a20d9468f0bd9e0d12a0289e09fc389388538c",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-026.md",
+        "sourceLine": 5,
+        "fileSha256": "ba1d5eaebf00f8aee400bea4cc70c55a154e2651f54278241288d3d6184c0ff5",
+        "lineSha256": "e448e185319f0ab307fd2a4c41c66cc90bd9b286f987aa27e67149b1f57dff34",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-026.md",
+        "sourceLine": 8,
+        "fileSha256": "ba1d5eaebf00f8aee400bea4cc70c55a154e2651f54278241288d3d6184c0ff5",
+        "lineSha256": "e5dd96c5fca60ddb093dc9b95cf78c3e0cc4a8f5674657f0aac2e1e15f3d1117",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-026.md",
+        "sourceLine": 9,
+        "fileSha256": "ba1d5eaebf00f8aee400bea4cc70c55a154e2651f54278241288d3d6184c0ff5",
+        "lineSha256": "74dfecff8bb541c695b76a452d7e19ba59ae14c73c0595cd8de7b304310ce50a",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-026:typed-output-pressure-unit",
+    "requestId": "CC-026",
+    "kind": "output-unit",
+    "semanticRole": null,
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "dischargePressure",
+        "units": [
+          "psig"
+        ]
+      },
+      "fast-path": {
+        "export": "dischargePressurePsig",
+        "units": [
+          "psig"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-026.md",
+        "sourceLine": 2,
+        "fileSha256": "ba1d5eaebf00f8aee400bea4cc70c55a154e2651f54278241288d3d6184c0ff5",
+        "lineSha256": "69d05612455be31bb8ddae3f69fed13cda2d5c575e7a2d7d5706cd8d67625dc6",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-009:typed-actual-liquid-fraction",
+    "requestId": "CC-009",
+    "kind": "required-input",
+    "semanticRole": "actual-liquid-fraction",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "evaporatorInventoryLb",
+        "names": [
+          "actualLiquidFraction",
+          "liquidFraction",
+          "liquid_fraction",
+          "actual_fraction",
+          "liquid_fraction_volume"
+        ],
+        "units": [
+          "fraction",
+          "dimensionless",
+          "%"
+        ]
+      },
+      "fast-path": {
+        "export": "evap_inventory_lb",
+        "names": [
+          "actualLiquidFraction",
+          "liquidFraction",
+          "liquid_fraction",
+          "actual_fraction",
+          "liquid_fraction_volume"
+        ],
+        "units": [
+          "fraction",
+          "dimensionless",
+          "%"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-009.md",
+        "sourceLine": 3,
+        "fileSha256": "86f22693a5f9b040458afb0c443a36074d7c989a27c8c19dc028a656b149b313",
+        "lineSha256": "481277dd06c33c93b48d7245bad6700af61cec4ddd875025d2f96173ca40d9ff",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-009.md",
+        "sourceLine": 9,
+        "fileSha256": "86f22693a5f9b040458afb0c443a36074d7c989a27c8c19dc028a656b149b313",
+        "lineSha256": "c508b4666d3c3226c466977696ee3e31c98061dccbf601c4c64a8fc9e2b3b4d0",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-009.md",
+        "sourceLine": 10,
+        "fileSha256": "86f22693a5f9b040458afb0c443a36074d7c989a27c8c19dc028a656b149b313",
+        "lineSha256": "7aaf185288f797913bce2a0dc520ebfd6e177f872fc6b382e87284375337bb01",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-009:typed-supplied-liquid-density",
+    "requestId": "CC-009",
+    "kind": "required-input",
+    "semanticRole": "supplied-liquid-density",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "evaporatorInventoryLb",
+        "names": [
+          "liquidDensity",
+          "rhoLiquid",
+          "rhoL",
+          "rho_liquid",
+          "liquid_density"
+        ],
+        "units": [
+          "lb/ft3",
+          "lb/ft³"
+        ]
+      },
+      "fast-path": {
+        "export": "evap_inventory_lb",
+        "names": [
+          "liquidDensity",
+          "rhoLiquid",
+          "rhoL",
+          "rho_liquid",
+          "liquid_density"
+        ],
+        "units": [
+          "lb/ft3",
+          "lb/ft³"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-009.md",
+        "sourceLine": 8,
+        "fileSha256": "86f22693a5f9b040458afb0c443a36074d7c989a27c8c19dc028a656b149b313",
+        "lineSha256": "805dcd4d9ec99beb6255507a20585347cc15002242bf426a30c83c212330b1f6",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-009.md",
+        "sourceLine": 9,
+        "fileSha256": "86f22693a5f9b040458afb0c443a36074d7c989a27c8c19dc028a656b149b313",
+        "lineSha256": "c508b4666d3c3226c466977696ee3e31c98061dccbf601c4c64a8fc9e2b3b4d0",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-009.md",
+        "sourceLine": 10,
+        "fileSha256": "86f22693a5f9b040458afb0c443a36074d7c989a27c8c19dc028a656b149b313",
+        "lineSha256": "7aaf185288f797913bce2a0dc520ebfd6e177f872fc6b382e87284375337bb01",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-009:typed-supplied-vapor-density",
+    "requestId": "CC-009",
+    "kind": "required-input",
+    "semanticRole": "supplied-vapor-density",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "evaporatorInventoryLb",
+        "names": [
+          "vaporDensity",
+          "rhoVapor",
+          "rhoV",
+          "rho_vapor",
+          "vapor_density"
+        ],
+        "units": [
+          "lb/ft3",
+          "lb/ft³"
+        ]
+      },
+      "fast-path": {
+        "export": "evap_inventory_lb",
+        "names": [
+          "vaporDensity",
+          "rhoVapor",
+          "rhoV",
+          "rho_vapor",
+          "vapor_density"
+        ],
+        "units": [
+          "lb/ft3",
+          "lb/ft³"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-009.md",
+        "sourceLine": 8,
+        "fileSha256": "86f22693a5f9b040458afb0c443a36074d7c989a27c8c19dc028a656b149b313",
+        "lineSha256": "805dcd4d9ec99beb6255507a20585347cc15002242bf426a30c83c212330b1f6",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-009.md",
+        "sourceLine": 9,
+        "fileSha256": "86f22693a5f9b040458afb0c443a36074d7c989a27c8c19dc028a656b149b313",
+        "lineSha256": "c508b4666d3c3226c466977696ee3e31c98061dccbf601c4c64a8fc9e2b3b4d0",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-009.md",
+        "sourceLine": 10,
+        "fileSha256": "86f22693a5f9b040458afb0c443a36074d7c989a27c8c19dc028a656b149b313",
+        "lineSha256": "7aaf185288f797913bce2a0dc520ebfd6e177f872fc6b382e87284375337bb01",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-009:typed-inventory-mass-unit",
+    "requestId": "CC-009",
+    "kind": "output-unit",
+    "semanticRole": null,
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "evaporatorInventoryLb",
+        "units": [
+          "lb"
+        ]
+      },
+      "fast-path": {
+        "export": "evap_inventory_lb",
+        "units": [
+          "lb"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-009.md",
+        "sourceLine": 2,
+        "fileSha256": "86f22693a5f9b040458afb0c443a36074d7c989a27c8c19dc028a656b149b313",
+        "lineSha256": "5825fb5e28b84da9685ddae0d5c9bfac55be03935f001b7f920d00749a2b01e5",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "C-005:typed-manual-precharge-length",
+    "requestId": "C-005",
+    "kind": "required-input",
+    "semanticRole": "manual-precharge-length",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "additionalChargeG",
+        "names": [
+          "prechargeLength",
+          "prechargeLengthM",
+          "precharge_length_m"
+        ],
+        "units": [
+          "m"
+        ]
+      },
+      "fast-path": {
+        "export": "addChargeG",
+        "names": [
+          "prechargeLength",
+          "prechargeLengthM",
+          "precharge_length_m"
+        ],
+        "units": [
+          "m"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/C-005.md",
+        "sourceLine": 3,
+        "fileSha256": "782b1d28ccce57b0140fead444b44416674a272ea9337ec8180743ff522d0a15",
+        "lineSha256": "7b8975f01388697b49035dac7db20f3577c8e33678636e85c6e8279545281087",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/C-005.md",
+        "sourceLine": 7,
+        "fileSha256": "782b1d28ccce57b0140fead444b44416674a272ea9337ec8180743ff522d0a15",
+        "lineSha256": "890eb5ac68835d97efa161ebef52d819b3bce4c737fa87bd5de06c507d89228c",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/C-005.md",
+        "sourceLine": 8,
+        "fileSha256": "782b1d28ccce57b0140fead444b44416674a272ea9337ec8180743ff522d0a15",
+        "lineSha256": "36fb6e2471a026053f3b5b0d89497bdc3f76603b28514d73a278e525ace0ec2f",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/C-005.md",
+        "sourceLine": 9,
+        "fileSha256": "782b1d28ccce57b0140fead444b44416674a272ea9337ec8180743ff522d0a15",
+        "lineSha256": "a7addbfabaf1e6c351214e01681146641f77522bdb22963a642976b3477d577b",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "C-005:typed-manual-charge-rate",
+    "requestId": "C-005",
+    "kind": "required-input",
+    "semanticRole": "manual-charge-rate",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "additionalChargeG",
+        "names": [
+          "gramsPerMeter",
+          "chargeRateGPerM",
+          "charge_rate_g_m"
+        ],
+        "units": [
+          "g/m"
+        ]
+      },
+      "fast-path": {
+        "export": "addChargeG",
+        "names": [
+          "gramsPerMeter",
+          "chargeRateGPerM",
+          "charge_rate_g_m"
+        ],
+        "units": [
+          "g/m"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/C-005.md",
+        "sourceLine": 3,
+        "fileSha256": "782b1d28ccce57b0140fead444b44416674a272ea9337ec8180743ff522d0a15",
+        "lineSha256": "7b8975f01388697b49035dac7db20f3577c8e33678636e85c6e8279545281087",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/C-005.md",
+        "sourceLine": 7,
+        "fileSha256": "782b1d28ccce57b0140fead444b44416674a272ea9337ec8180743ff522d0a15",
+        "lineSha256": "890eb5ac68835d97efa161ebef52d819b3bce4c737fa87bd5de06c507d89228c",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/C-005.md",
+        "sourceLine": 8,
+        "fileSha256": "782b1d28ccce57b0140fead444b44416674a272ea9337ec8180743ff522d0a15",
+        "lineSha256": "36fb6e2471a026053f3b5b0d89497bdc3f76603b28514d73a278e525ace0ec2f",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/C-005.md",
+        "sourceLine": 9,
+        "fileSha256": "782b1d28ccce57b0140fead444b44416674a272ea9337ec8180743ff522d0a15",
+        "lineSha256": "a7addbfabaf1e6c351214e01681146641f77522bdb22963a642976b3477d577b",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "C-005:typed-minimum-installation-length",
+    "requestId": "C-005",
+    "kind": "required-input",
+    "semanticRole": "minimum-installation-length",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "additionalChargeG",
+        "names": [
+          "minimumLength",
+          "minLengthM",
+          "minimum_length_m"
+        ],
+        "units": [
+          "m"
+        ]
+      },
+      "fast-path": {
+        "export": "addChargeG",
+        "names": [
+          "minimumLength",
+          "minLengthM",
+          "minimum_length_m"
+        ],
+        "units": [
+          "m"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/C-005.md",
+        "sourceLine": 3,
+        "fileSha256": "782b1d28ccce57b0140fead444b44416674a272ea9337ec8180743ff522d0a15",
+        "lineSha256": "7b8975f01388697b49035dac7db20f3577c8e33678636e85c6e8279545281087",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/C-005.md",
+        "sourceLine": 7,
+        "fileSha256": "782b1d28ccce57b0140fead444b44416674a272ea9337ec8180743ff522d0a15",
+        "lineSha256": "890eb5ac68835d97efa161ebef52d819b3bce4c737fa87bd5de06c507d89228c",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/C-005.md",
+        "sourceLine": 8,
+        "fileSha256": "782b1d28ccce57b0140fead444b44416674a272ea9337ec8180743ff522d0a15",
+        "lineSha256": "36fb6e2471a026053f3b5b0d89497bdc3f76603b28514d73a278e525ace0ec2f",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/C-005.md",
+        "sourceLine": 9,
+        "fileSha256": "782b1d28ccce57b0140fead444b44416674a272ea9337ec8180743ff522d0a15",
+        "lineSha256": "a7addbfabaf1e6c351214e01681146641f77522bdb22963a642976b3477d577b",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "C-005:typed-additional-charge-unit",
+    "requestId": "C-005",
+    "kind": "output-unit",
+    "semanticRole": null,
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "additionalChargeG",
+        "units": [
+          "g"
+        ]
+      },
+      "fast-path": {
+        "export": "addChargeG",
+        "units": [
+          "g"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/C-005.md",
+        "sourceLine": 2,
+        "fileSha256": "782b1d28ccce57b0140fead444b44416674a272ea9337ec8180743ff522d0a15",
+        "lineSha256": "5c9ebe81d3ca23b830c3a9ba763ef756271d0dac1893f5e0e5f08bacf7786e48",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-002:typed-temperature",
+    "requestId": "CC-002",
+    "kind": "required-input",
+    "semanticRole": "dry-bulb-temperature",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "dewPointF",
+        "names": [
+          "tempF"
+        ],
+        "units": [
+          "F",
+          "°F"
+        ]
+      },
+      "fast-path": {
+        "export": "dew_point_f",
+        "names": [
+          "temp_f"
+        ],
+        "units": [
+          "F",
+          "°F"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-002.md",
+        "sourceLine": 3,
+        "fileSha256": "3a965ffaea8da20fd18263a57788db98827cebc3ebbc99275b142e57caff09fb",
+        "lineSha256": "e1f92a09029a6287b98cde393c01a30a19ec632c7b25d2a9d183a440dad3efe0",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-002:typed-humidity",
+    "requestId": "CC-002",
+    "kind": "required-input",
+    "semanticRole": "relative-humidity-percent",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "dewPointF",
+        "names": [
+          "rhPct"
+        ],
+        "units": [
+          "%",
+          "% RH"
+        ]
+      },
+      "fast-path": {
+        "export": "dew_point_f",
+        "names": [
+          "rh_pct"
+        ],
+        "units": [
+          "%",
+          "% RH"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-002.md",
+        "sourceLine": 3,
+        "fileSha256": "3a965ffaea8da20fd18263a57788db98827cebc3ebbc99275b142e57caff09fb",
+        "lineSha256": "e1f92a09029a6287b98cde393c01a30a19ec632c7b25d2a9d183a440dad3efe0",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-002:typed-dewpoint-temperature-unit",
+    "requestId": "CC-002",
+    "kind": "output-unit",
+    "semanticRole": null,
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "dewPointF",
+        "units": [
+          "F",
+          "°F"
+        ]
+      },
+      "fast-path": {
+        "export": "dew_point_f",
+        "units": [
+          "F",
+          "°F"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-002.md",
+        "sourceLine": 2,
+        "fileSha256": "3a965ffaea8da20fd18263a57788db98827cebc3ebbc99275b142e57caff09fb",
+        "lineSha256": "825785885587e986099b54ee2d6af83ba0b18fe6a08e63a8fc2bf9b878da70a6",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-013:typed-temperature",
+    "requestId": "CC-013",
+    "kind": "required-input",
+    "semanticRole": "dry-bulb-temperature",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "dewPointF",
+        "names": [
+          "tempF"
+        ],
+        "units": [
+          "F",
+          "°F"
+        ]
+      },
+      "fast-path": {
+        "export": "dewpoint_f",
+        "names": [
+          "temp_f"
+        ],
+        "units": [
+          "F",
+          "°F"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-013.md",
+        "sourceLine": 3,
+        "fileSha256": "85c45b517670e7be79a300c5ea7628083e839b1fe14b2a5f13b2b6f2a3868f06",
+        "lineSha256": "c0accec8b7c492f32239d741678a550a83a98e77c5b8a2f3949c0efeb94b07b3",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-013:typed-humidity",
+    "requestId": "CC-013",
+    "kind": "required-input",
+    "semanticRole": "relative-humidity-percent",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "dewPointF",
+        "names": [
+          "rhPct"
+        ],
+        "units": [
+          "%",
+          "% RH"
+        ]
+      },
+      "fast-path": {
+        "export": "dewpoint_f",
+        "names": [
+          "rh_pct"
+        ],
+        "units": [
+          "%",
+          "% RH"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-013.md",
+        "sourceLine": 3,
+        "fileSha256": "85c45b517670e7be79a300c5ea7628083e839b1fe14b2a5f13b2b6f2a3868f06",
+        "lineSha256": "c0accec8b7c492f32239d741678a550a83a98e77c5b8a2f3949c0efeb94b07b3",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-013:typed-dewpoint-temperature-unit",
+    "requestId": "CC-013",
+    "kind": "output-unit",
+    "semanticRole": null,
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "dewPointF",
+        "units": [
+          "F",
+          "°F"
+        ]
+      },
+      "fast-path": {
+        "export": "dewpoint_f",
+        "units": [
+          "F",
+          "°F"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-013.md",
+        "sourceLine": 2,
+        "fileSha256": "85c45b517670e7be79a300c5ea7628083e839b1fe14b2a5f13b2b6f2a3868f06",
+        "lineSha256": "c6fdc99ce69a98902945738092a36c497ece561395815416696434c9a4391245",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-025:typed-efficiency",
+    "requestId": "CC-025",
+    "kind": "required-input",
+    "semanticRole": "input-to-shaft-efficiency",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "kwToShaftHp",
+        "names": [
+          "efficiency"
+        ],
+        "units": [
+          "dimensionless"
+        ]
+      },
+      "fast-path": {
+        "export": "kw_input_to_shaft_hp",
+        "names": [
+          "efficiency"
+        ],
+        "units": [
+          "dimensionless"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-025.md",
+        "sourceLine": 3,
+        "fileSha256": "db9e20c880985b1c52be8d80f56a373716ec919b6ce157906f0b9a99b91659cf",
+        "lineSha256": "270530f80e68848279ecc94fb86a8d0f5f3d63c336eb3aa9da7d153de73fb641",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-025.md",
+        "sourceLine": 8,
+        "fileSha256": "db9e20c880985b1c52be8d80f56a373716ec919b6ce157906f0b9a99b91659cf",
+        "lineSha256": "4097f7647dbced5295acf91ce2d7b39d2ef912a2277de8736242964c16137b33",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-025.md",
+        "sourceLine": 9,
+        "fileSha256": "db9e20c880985b1c52be8d80f56a373716ec919b6ce157906f0b9a99b91659cf",
+        "lineSha256": "7f684b279544d7861761bbbe462a0180f53cb9099e5d25d1da6205b07b7f692d",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-025:typed-electrical-power-unit",
+    "requestId": "CC-025",
+    "kind": "argument-unit",
+    "semanticRole": null,
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "kwToShaftHp",
+        "names": [
+          "kwIn"
+        ],
+        "units": [
+          "kW"
+        ]
+      },
+      "fast-path": {
+        "export": "kw_input_to_shaft_hp",
+        "names": [
+          "kw"
+        ],
+        "units": [
+          "kW"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-025.md",
+        "sourceLine": 3,
+        "fileSha256": "db9e20c880985b1c52be8d80f56a373716ec919b6ce157906f0b9a99b91659cf",
+        "lineSha256": "270530f80e68848279ecc94fb86a8d0f5f3d63c336eb3aa9da7d153de73fb641",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-025.md",
+        "sourceLine": 8,
+        "fileSha256": "db9e20c880985b1c52be8d80f56a373716ec919b6ce157906f0b9a99b91659cf",
+        "lineSha256": "4097f7647dbced5295acf91ce2d7b39d2ef912a2277de8736242964c16137b33",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-036:typed-metric-horsepower-unit",
+    "requestId": "CC-036",
+    "kind": "output-unit",
+    "semanticRole": null,
+    "scope": "structural-subassertion",
+    "rationale": "Checks metric output label PS only; incumbent convention-code overload may compute metric correctly yet retains generic hp metadata.",
+    "routes": {
+      "incumbent": {
+        "export": "kwToHpKind",
+        "units": [
+          "PS"
+        ]
+      },
+      "fast-path": {
+        "export": "kw_to_metric_hp",
+        "units": [
+          "PS"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-036.md",
+        "sourceLine": 9,
+        "fileSha256": "538c3b98f90fdb82e35c61d3ba62ca6365089c7d9939c763878f55c507dcbb23",
+        "lineSha256": "556bfd463e3d18de049ac94f7a33cb31cf1fb29f90a40973a2adca9df3bf19b2",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-036:typed-power-vs-energy-input-type",
+    "requestId": "CC-036",
+    "kind": "required-input",
+    "semanticRole": "source-quantity-dimension-envelope",
+    "scope": "structural-subassertion",
+    "rationale": "Tests whether API can represent/refuse a kWh quantity at intake instead of receiving an untyped numeric magnitude; fixed kW label alone is not such an intake envelope.",
+    "routes": {
+      "incumbent": {
+        "export": "kwToHp",
+        "names": [
+          "quantityKind",
+          "inputUnit",
+          "quantity_kind",
+          "unit_code"
+        ],
+        "units": [
+          "code",
+          "unit",
+          "quantity-kind"
+        ]
+      },
+      "fast-path": {
+        "export": "kw_to_hp",
+        "names": [
+          "quantityKind",
+          "inputUnit",
+          "quantity_kind",
+          "unit_code"
+        ],
+        "units": [
+          "code",
+          "unit",
+          "quantity-kind"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-036.md",
+        "sourceLine": 10,
+        "fileSha256": "538c3b98f90fdb82e35c61d3ba62ca6365089c7d9939c763878f55c507dcbb23",
+        "lineSha256": "f57312ce693af3b778aa68aa86f64cbffac5b537ed4bd77400215b97b85addc4",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-011:typed-quoted-price",
+    "requestId": "CC-011",
+    "kind": "required-input",
+    "semanticRole": "supplier-quoted-unit-price",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "r22Cost",
+        "names": [
+          "pricePerLb"
+        ],
+        "units": [
+          "USD/lb"
+        ]
+      },
+      "fast-path": {
+        "export": "refrigerantCost",
+        "names": [
+          "pricePerLb"
+        ],
+        "units": [
+          "USD/lb"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-011.md",
+        "sourceLine": 3,
+        "fileSha256": "52242704773ff86177b360c96dbf55ca2c51251e2e85f0f1abcab0e9b2d3d1a0",
+        "lineSha256": "e660e2d5ae2b15d16f4739dd64c9e64acec5b963764d1d4709b09e27b994df24",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-011.md",
+        "sourceLine": 5,
+        "fileSha256": "52242704773ff86177b360c96dbf55ca2c51251e2e85f0f1abcab0e9b2d3d1a0",
+        "lineSha256": "cc5cb2f97fac563e7e698395bd4bab7bf5cc922166464e70df0e24278ab4667b",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-011:typed-weight",
+    "requestId": "CC-011",
+    "kind": "argument-unit",
+    "semanticRole": null,
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "r22Cost",
+        "names": [
+          "weightLb"
+        ],
+        "units": [
+          "lb"
+        ]
+      },
+      "fast-path": {
+        "export": "refrigerantCost",
+        "names": [
+          "pounds"
+        ],
+        "units": [
+          "lb"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-011.md",
+        "sourceLine": 2,
+        "fileSha256": "52242704773ff86177b360c96dbf55ca2c51251e2e85f0f1abcab0e9b2d3d1a0",
+        "lineSha256": "f76e8bdac5bcfab4f42d06fbb31c4e4e2b4ec7141f014433bbae5694d639fd41",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      },
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-011.md",
+        "sourceLine": 7,
+        "fileSha256": "52242704773ff86177b360c96dbf55ca2c51251e2e85f0f1abcab0e9b2d3d1a0",
+        "lineSha256": "d8ff73d3806be59822fd2b7775f89fd88bb9e9c9480610de02d348e5163d1163",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-011:typed-currency-result",
+    "requestId": "CC-011",
+    "kind": "output-unit",
+    "semanticRole": null,
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "r22Cost",
+        "units": [
+          "USD"
+        ]
+      },
+      "fast-path": {
+        "export": "refrigerantCost",
+        "units": [
+          "USD"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-011.md",
+        "sourceLine": 7,
+        "fileSha256": "52242704773ff86177b360c96dbf55ca2c51251e2e85f0f1abcab0e9b2d3d1a0",
+        "lineSha256": "d8ff73d3806be59822fd2b7775f89fd88bb9e9c9480610de02d348e5163d1163",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-011:typed-currency-precision",
+    "requestId": "CC-011",
+    "kind": "precision",
+    "semanticRole": null,
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "r22Cost",
+        "minimumDecimals": 2
+      },
+      "fast-path": {
+        "export": "refrigerantCost",
+        "minimumDecimals": 2
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-011.md",
+        "sourceLine": 7,
+        "fileSha256": "52242704773ff86177b360c96dbf55ca2c51251e2e85f0f1abcab0e9b2d3d1a0",
+        "lineSha256": "d8ff73d3806be59822fd2b7775f89fd88bb9e9c9480610de02d348e5163d1163",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-011:typed-whole-cylinder-purchase-basis",
+    "requestId": "CC-011",
+    "kind": "required-input",
+    "semanticRole": "whole-cylinder-vs-prorated-purchase",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "r22Cost",
+        "names": [
+          "wholeCylinderOnly",
+          "purchaseBasis",
+          "purchase_basis",
+          "whole_cylinders_only"
+        ],
+        "units": [
+          "flag",
+          "code"
+        ]
+      },
+      "fast-path": {
+        "export": "refrigerantCost",
+        "names": [
+          "wholeCylinderOnly",
+          "purchaseBasis",
+          "purchase_basis",
+          "whole_cylinders_only"
+        ],
+        "units": [
+          "flag",
+          "code"
+        ]
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-011.md",
+        "sourceLine": 8,
+        "fileSha256": "52242704773ff86177b360c96dbf55ca2c51251e2e85f0f1abcab0e9b2d3d1a0",
+        "lineSha256": "631c6f5f9eb3997e25c017dff981a963fc2ab041085899a4b6a7085ce6d05371",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "C-010:typed-anchor-input",
+    "requestId": "C-010",
+    "kind": "argument-unit",
+    "semanticRole": "immutable-session-anchor",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "sampleDateMs",
+        "names": [
+          "anchorMs"
+        ],
+        "units": [
+          "ms since 1970-01-01T00:00Z"
+        ]
+      },
+      "fast-path": {
+        "export": "sampleDateMs",
+        "names": [
+          "anchorMs"
+        ],
+        "units": [
+          "ms since 1970-01-01 UTC"
+        ]
+      }
+    },
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-010:typed-offset-input",
+    "requestId": "C-010",
+    "kind": "argument-unit",
+    "semanticRole": "day-offset",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "sampleDateMs",
+        "names": [
+          "offsetDays"
+        ],
+        "units": [
+          "day"
+        ]
+      },
+      "fast-path": {
+        "export": "sampleDateMs",
+        "names": [
+          "offsetDays"
+        ],
+        "units": [
+          "days"
+        ]
+      }
+    },
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-019:typed-pressure-basis",
+    "requestId": "C-019",
+    "kind": "argument-unit",
+    "semanticRole": "gauge-pressure",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "overCapacity",
+        "names": [
+          "psig"
+        ],
+        "units": [
+          "psig"
+        ]
+      },
+      "fast-path": {
+        "export": "over_capacity",
+        "names": [
+          "psig"
+        ],
+        "units": [
+          "psig"
+        ]
+      }
+    },
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "C-019:typed-explicit-threshold",
+    "requestId": "C-019",
+    "kind": "required-input",
+    "semanticRole": "equipment-pressure-threshold",
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "overCapacity",
+        "names": [
+          "thresholdPsig"
+        ],
+        "units": [
+          "psig"
+        ]
+      },
+      "fast-path": {
+        "export": "over_capacity",
+        "names": [
+          "limit_psig"
+        ],
+        "units": [
+          "psig"
+        ]
+      }
+    },
+    "criteria": []
+  },
+  {
+    "version": 1,
+    "id": "CC-002:typed-attached-refusal-message",
+    "requestId": "CC-002",
+    "kind": "trap-binding",
+    "semanticRole": null,
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "dewPointF"
+      },
+      "fast-path": {
+        "export": "dew_point_f"
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-002.md",
+        "sourceLine": 10,
+        "fileSha256": "3a965ffaea8da20fd18263a57788db98827cebc3ebbc99275b142e57caff09fb",
+        "lineSha256": "2c36bc7c0de8c7f88b656820804388abfda7dc7d96bbcd66107e1c2df1d520e8",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-013:typed-attached-refusal-message",
+    "requestId": "CC-013",
+    "kind": "trap-binding",
+    "semanticRole": null,
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "dewPointF"
+      },
+      "fast-path": {
+        "export": "dewpoint_f"
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-013.md",
+        "sourceLine": 11,
+        "fileSha256": "85c45b517670e7be79a300c5ea7628083e839b1fe14b2a5f13b2b6f2a3868f06",
+        "lineSha256": "576889d1b3a7eb946dd311b16280f7a94435adb9ad7a41e29bdd02f22709e258",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-007:typed-attached-refusal-message",
+    "requestId": "CC-007",
+    "kind": "trap-binding",
+    "semanticRole": null,
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "recirculationRatio"
+      },
+      "fast-path": {
+        "export": "recirc_ratio"
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-007.md",
+        "sourceLine": 9,
+        "fileSha256": "51f7a2766664c33f64b5b2697489023092812f2d7f02326537c22a65fe39eac6",
+        "lineSha256": "44791688a2908f9b9d98dc95e2410c6d628359c69fe5fa1b05deae4a7c6f3d78",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-025:typed-attached-refusal-message",
+    "requestId": "CC-025",
+    "kind": "trap-binding",
+    "semanticRole": null,
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "kwToShaftHp"
+      },
+      "fast-path": {
+        "export": "kw_input_to_shaft_hp"
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-025.md",
+        "sourceLine": 9,
+        "fileSha256": "db9e20c880985b1c52be8d80f56a373716ec919b6ce157906f0b9a99b91659cf",
+        "lineSha256": "7f684b279544d7861761bbbe462a0180f53cb9099e5d25d1da6205b07b7f692d",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-011:typed-attached-refusal-message",
+    "requestId": "CC-011",
+    "kind": "trap-binding",
+    "semanticRole": null,
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "r22Cost"
+      },
+      "fast-path": {
+        "export": "refrigerantCost"
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-011.md",
+        "sourceLine": 9,
+        "fileSha256": "52242704773ff86177b360c96dbf55ca2c51251e2e85f0f1abcab0e9b2d3d1a0",
+        "lineSha256": "8eba58f4864d6b67a29fb7f33c8fcd514e27f346df3c28196d85a8ffc1d96b34",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "CC-026:typed-attached-refusal-message",
+    "requestId": "CC-026",
+    "kind": "trap-binding",
+    "semanticRole": null,
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "dischargePressure"
+      },
+      "fast-path": {
+        "export": "dischargePressurePsig"
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-026.md",
+        "sourceLine": 7,
+        "fileSha256": "ba1d5eaebf00f8aee400bea4cc70c55a154e2651f54278241288d3d6184c0ff5",
+        "lineSha256": "a4874585bee125b3adf6816c336630a3274fa6f5935b233363395de6c1fcb05a",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  },
+  {
+    "version": 1,
+    "id": "C-005:typed-attached-refusal-message",
+    "requestId": "C-005",
+    "kind": "trap-binding",
+    "semanticRole": null,
+    "scope": "structural-subassertion",
+    "rationale": "Exact explicit metadata/actual WASM type predicate; behavior and source applicability require separate procedures.",
+    "routes": {
+      "incumbent": {
+        "export": "additionalChargeG"
+      },
+      "fast-path": {
+        "export": "addChargeG"
+      }
+    },
+    "criteria": [
+      {
+        "path": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/C-005.md",
+        "sourceLine": 9,
+        "fileSha256": "782b1d28ccce57b0140fead444b44416674a272ea9337ec8180743ff522d0a15",
+        "lineSha256": "a7addbfabaf1e6c351214e01681146641f77522bdb22963a642976b3477d577b",
+        "scope": "subassertion-only; no whole-clause completion inferred"
+      }
+    ]
+  }
+]

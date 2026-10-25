@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "frozenSuiteHash": "2222222222222222222222222222222222222222222222222222222222222222",
+  "requirement": {
+    "id": "pressure-psi",
+    "referenceKey": "oxygen-pressure",
+    "inputs": {
+      "temperatureK": 300
+    },
+    "unit": "psi",
+    "expect": 100,
+    "tolerance": 0
+  },
+  "evidence": {
+    "source": "campaigns/next50-20261018/quality/bipm-prefixes-source.html",
+    "sourceSha256": "db6bb75731bc92dcf3961b219ec9f9bdf3596ca5f43b74b5e85e492be55773c9",
+    "computation": "campaigns/next50-20261018/quality/challenge-evidence.json",
+    "computationSha256": "80246604dff8ff74b272ae93af3460d25119772c1adf6dc4bc80ee057c7915cb",
+    "independentOfCandidate": true,
+    "resolution": "eval-invalid"
+  },
+  "action": "new-eval-version-required",
+  "auditConclusion": "Unrelated pressure requirement accepted as invalidated using metres-to-kilometres evidence. Registry proves byte identity but not claim relevance."
+}

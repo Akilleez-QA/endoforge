@@ -1,0 +1,18 @@
+{
+  "manifest": "incumbent",
+  "name": "factory v2 as run in loop 0, plus --effort low, in single-shot metered form",
+  "stages": {
+    "S": { "level": "old", "what": "one worker call writes CONTRACT.md and tests.json (template, rubric fields, >= 4 tests incl. boundary, assumption pin, trap); the coordinator freezes both by hash before compiling", "brief": "incumbent-worker-v1", "model": "claude-opus-5-5 (CLI default)", "effort": "low" },
+    "G": { "level": "old", "what": "the same call writes kernel.ts and glue.json after the tests (shared context, as in loop 0); up to 3 repair rounds on gate feedback, kernel.ts and glue.json only", "brief": "incumbent-worker-v1 + incumbent-repair-v1", "model": "claude-opus-5-5 (CLI default)", "effort": "low", "width": 1, "selfCheck": "none (the coordinator compiles)" },
+    "Q": { "level": "old", "what": "G1-G7 from campaigns/x1-spec-study/factory/gate.mjs, byte-identical to loop 0 (sha256 in freeze.json)", "gateAdditions": [] },
+    "R": { "level": "old", "what": "blind output persona stage: one call, two personas chosen from the requester role, on the consumer sheet (frozen-test calls + coordinator probe calls); reject -> not promoted; accept-with-change -> promoted-pending-change", "brief": "persona-output-v1 + personas-v1", "model": "claude-sonnet-5-5", "effort": "default" }
+  },
+  "retrieval": "none",
+  "promotion": "promoted = gated (G1-G7 re-run by the coordinator) and no persona reject; pending-change counts as promoted (shipped) as in loop 0",
+  "departuresFromLoop0": [
+    "single-shot CLI call instead of a multi-turn Agent-tool worker with the kit (the coordinator runs freeze and gates; the worker has no tools): required for per-stage token metering and the 8M budget; the information flow (one context writes tests then kernel) is unchanged",
+    "model: claude-opus-5-5 through claude -p (the CLI default) at --effort low; loop 0's workers ran on the orchestrating session's model through the Agent tool",
+    "persona stage in single-shot form on a rendered sheet (the loop-0 persona agent ran try.mjs itself); personas chosen by a fixed mapping from the requester role"
+  ],
+  "arms": { "inc-low": { "effort": "low" }, "inc-default": { "effort": "default", "note": "the incumbent without its low-effort move (noise-floor third arm)" } }
+}

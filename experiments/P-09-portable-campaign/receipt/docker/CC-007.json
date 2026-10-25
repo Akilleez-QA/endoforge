@@ -1,0 +1,206 @@
+{
+  "id": "CC-007",
+  "argv": [
+    "sudo",
+    "-n",
+    "docker",
+    "run",
+    "--rm",
+    "--pull=never",
+    "--network=none",
+    "--read-only",
+    "--user",
+    "1000:1000",
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges",
+    "--cpus=1",
+    "--memory=512m",
+    "--memory-swap=512m",
+    "--pids-limit=64",
+    "--tmpfs",
+    "/tmp:rw,nosuid,nodev,size=64m",
+    "--mount",
+    "type=bind,src=/home/user/Work/endoforge/experiments/P-09-portable-campaign/work/docker,dst=/out",
+    "--entrypoint",
+    "/usr/local/bin/node",
+    "endoforge-p09:probe",
+    "/bundle/campaigns/x1-spec-study/factory/gate.mjs",
+    "run",
+    "/out/CC-007"
+  ],
+  "exit": 0,
+  "wallMs": 1189.964516001055,
+  "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 343,\n   \"wasmSha256\": \"93c451be05fdca001e9655d6d275b2b51cb973df1ba0e4bdecf20b896f9be26a\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"recirculationRatio\",\n    \"recirculationRatioFromLoad\",\n    \"recirculationRatioFromQuality\",\n    \"recirculationRatioFromCompressorModel\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 11,\n   \"total\": 11\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.041988\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+  "stderr": "",
+  "result": {
+    "at": "2026-10-18T18:45:46.150Z",
+    "gates": {
+      "G1_frozen": {
+        "ok": true
+      },
+      "G2_compiles": {
+        "ok": true,
+        "wasmBytes": 343,
+        "wasmSha256": "93c451be05fdca001e9655d6d275b2b51cb973df1ba0e4bdecf20b896f9be26a"
+      },
+      "G3_exports": {
+        "ok": true,
+        "exports": [
+          "recirculationRatio",
+          "recirculationRatioFromLoad",
+          "recirculationRatioFromQuality",
+          "recirculationRatioFromCompressorModel"
+        ]
+      },
+      "G4_tests": {
+        "ok": true,
+        "passed": 11,
+        "total": 11
+      },
+      "G6_bounded": {
+        "ok": true,
+        "maxMs": 0.041988
+      },
+      "G5_deterministic": {
+        "ok": true
+      },
+      "G7_glue": {
+        "ok": true
+      }
+    },
+    "tests": [
+      {
+        "name": "basic ratio 12/3",
+        "fn": "recirculationRatio",
+        "args": [
+          12,
+          3
+        ],
+        "expect": 4,
+        "got": 4,
+        "ms": 0.038,
+        "pass": true
+      },
+      {
+        "name": "direction pinned: pumped over evaporated",
+        "fn": "recirculationRatio",
+        "args": [
+          3,
+          1
+        ],
+        "expect": 3,
+        "got": 3,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "boundary: equal flows gives exactly 1",
+        "fn": "recirculationRatio",
+        "args": [
+          5,
+          5
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "from load: 1 kg/s pumped, 300 kW, hfg 1200",
+        "fn": "recirculationRatioFromLoad",
+        "args": [
+          1,
+          300,
+          1200
+        ],
+        "expect": 4,
+        "got": 4,
+        "ms": 0.004,
+        "pass": true
+      },
+      {
+        "name": "from quality 0.25",
+        "fn": "recirculationRatioFromQuality",
+        "args": [
+          0.25
+        ],
+        "expect": 4,
+        "got": 4,
+        "ms": 0.006,
+        "pass": true
+      },
+      {
+        "name": "from quality 1.0 boundary",
+        "fn": "recirculationRatioFromQuality",
+        "args": [
+          1
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "zero evaporated flow traps",
+        "fn": "recirculationRatio",
+        "args": [
+          3,
+          0
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.042,
+        "pass": true
+      },
+      {
+        "name": "pumped less than evaporated traps",
+        "fn": "recirculationRatio",
+        "args": [
+          2,
+          4
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.003,
+        "pass": true
+      },
+      {
+        "name": "quality above 1 traps",
+        "fn": "recirculationRatioFromQuality",
+        "args": [
+          1.5
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.002,
+        "pass": true
+      },
+      {
+        "name": "zero hfg traps",
+        "fn": "recirculationRatioFromLoad",
+        "args": [
+          1,
+          300,
+          0
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.002,
+        "pass": true
+      },
+      {
+        "name": "compressor model alone traps (code 0 = Frick SCS 46TH-DN-LB-HC-6EC6-GG-GR)",
+        "fn": "recirculationRatioFromCompressorModel",
+        "args": [
+          0
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.007,
+        "pass": true
+      }
+    ],
+    "promotable": true
+  },
+  "wasmSha256": "93c451be05fdca001e9655d6d275b2b51cb973df1ba0e4bdecf20b896f9be26a"
+}

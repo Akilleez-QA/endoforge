@@ -1,0 +1,30 @@
+{
+  "id": "P10",
+  "assumption": "Complete explicit request; no added assumptions.",
+  "question": "No missing input: provide Celsius in the declared finite range.",
+  "exports": [
+    {
+      "name": "celsiusToFahrenheit",
+      "label": "Celsius to Fahrenheit",
+      "args": [
+        {
+          "name": "c",
+          "kind": "number",
+          "unit": "degC"
+        }
+      ],
+      "result": {
+        "kind": "number",
+        "unit": "degF",
+        "precision": 6
+      }
+    }
+  ],
+  "traps": [
+    {
+      "fn": "celsiusToFahrenheit",
+      "when": "not finite or outside [-273.15, 1000]",
+      "message": "Supply finite Celsius from -273.15 through 1000."
+    }
+  ]
+}

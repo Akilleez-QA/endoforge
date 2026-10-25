@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+const bytes = fs.readFileSync('/data/kernel.wasm');
+const test = JSON.parse(fs.readFileSync('/data/tests.json', 'utf8')).find(t => typeof t.expect === 'number' && !t.expectError);
+if (!test) throw new Error('no numeric reference case');
+const start = process.hrtime.bigint();
+const module = new WebAssembly.Module(bytes);
+const instance = new WebAssembly.Instance(module, {env: {abort() {throw new Error('abort');}}});
+let got;
+for (let i = 0; i < 100000; ++i) got = instance.exports[test.fn](...test.args);
+const workMs = Number(process.hrtime.bigint() - start) / 1e6;
+const ok = Math.abs(Number(got) - test.expect) <= (test.tol ?? 0);
+console.log(JSON.stringify({ok, workMs, calls:100000, fn:test.fn, got, expected:test.expect}));
+if (!ok) process.exit(1);

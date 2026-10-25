@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "name": "celsiusToFahrenheit",
+  "inputs": [
+    {
+      "path": "c",
+      "type": "number",
+      "unit": "degC",
+      "domain": [
+        -273.15,
+        1000
+      ]
+    }
+  ],
+  "output": {
+    "type": "number",
+    "unit": "degF"
+  }
+}

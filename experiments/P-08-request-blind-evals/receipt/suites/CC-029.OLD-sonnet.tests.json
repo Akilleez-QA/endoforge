@@ -1,0 +1,16 @@
+[
+  { "name": "assumption-10-vs-20-r410a", "fn": "whichBoilsMost", "args": [10, 20, 0], "expect": 0 },
+  { "name": "swap-20-vs-10-r410a", "fn": "whichBoilsMost", "args": [20, 10, 0], "expect": 1 },
+  { "name": "equal-pressures-same", "fn": "whichBoilsMost", "args": [15, 15, 0], "expect": 2 },
+  { "name": "ordering-independent-r22", "fn": "whichBoilsMost", "args": [10, 20, 1], "expect": 0 },
+  { "name": "boundary-range-ends", "fn": "whichBoilsMost", "args": [-14, 600, 0], "expect": 0 },
+  { "name": "ref-r410a-118.5psig-40F", "fn": "saturationTemperature", "args": [118.5, 0], "expect": 40, "tol": 2 },
+  { "name": "ref-r22-68.5psig-40F", "fn": "saturationTemperature", "args": [68.5, 1], "expect": 40, "tol": 2 },
+  { "name": "ref-r134a-35psig-40F", "fn": "saturationTemperature", "args": [35, 2], "expect": 40, "tol": 2 },
+  { "name": "sat-r410a-10psig", "fn": "saturationTemperature", "args": [10, 0], "expect": -41.5, "tol": 3 },
+  { "name": "sat-r410a-20psig", "fn": "saturationTemperature", "args": [20, 0], "expect": -27, "tol": 3 },
+  { "name": "boundary-r22-0psig-normal-bp", "fn": "saturationTemperature", "args": [0, 1], "expect": -41.4, "tol": 2 },
+  { "name": "boundary-r134a-0psig-normal-bp", "fn": "saturationTemperature", "args": [0, 2], "expect": -14.9, "tol": 2 },
+  { "name": "trap-sat-above-600", "fn": "saturationTemperature", "args": [601, 0], "expectError": true },
+  { "name": "trap-compare-below-minus14", "fn": "whichBoilsMost", "args": [10, -15, 0], "expectError": true }
+]

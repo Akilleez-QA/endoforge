@@ -1,0 +1,51 @@
+{
+ "order": [
+  "iface",
+  "contract",
+  "data",
+  "g-pair",
+  "k-pair",
+  "t-traps",
+  "g-charge",
+  "k-charge",
+  "t-charge",
+  "compose",
+  "r-tech",
+  "r-codex",
+  "r-safety"
+ ],
+ "waves": {
+  "0": [
+   "iface",
+   "contract",
+   "data"
+  ],
+  "1": [
+   "k-charge",
+   "k-pair",
+   "t-charge",
+   "t-traps",
+   "g-charge",
+   "g-pair"
+  ],
+  "2": [
+   "compose"
+  ],
+  "3": [
+   "r-tech",
+   "r-codex",
+   "r-safety"
+  ]
+ },
+ "total": 18,
+ "critical": 8,
+ "criticalPath": [
+  "contract",
+  "k-charge",
+  "compose",
+  "r-tech"
+ ],
+ "speedupBound": 2.25,
+ "serialFraction": 0.44,
+ "width": 6
+}

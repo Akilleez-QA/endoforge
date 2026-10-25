@@ -1,0 +1,84 @@
+{
+  "id": "cli-bare-A-1",
+  "arm": "cli-bare",
+  "at": "2026-10-17T17:42:01.235Z",
+  "args": [
+    "-p",
+    "--bare",
+    "--output-format",
+    "json",
+    "--no-session-persistence",
+    "--tools",
+    "",
+    "--max-budget-usd",
+    "2"
+  ],
+  "prompt_sha256": "8b015a52007a2d67ea6fa58408c9bf4d0167e39d4ceb6bdd1782a47490098279",
+  "exit_code": 1,
+  "is_error": true,
+  "subtype": "success",
+  "model_ids": [],
+  "wall_ms": 1196.5,
+  "duration_ms": 156,
+  "duration_api_ms": 0,
+  "usage": {
+    "output_tokens_details": {
+      "thinking_tokens": 0
+    },
+    "input_tokens": 0,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "output_tokens": 0,
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 0,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "",
+    "iterations": [],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "thinking_tokens": 0,
+  "total_input_tokens_all_classes": 0,
+  "context_size_tokens": 0,
+  "model_usage": {},
+  "total_cost_usd": 0,
+  "num_turns": 1,
+  "tok_s_wall": null,
+  "result_chars": 33,
+  "result_head": "Not logged in · Please run /login",
+  "stderr_head": "",
+  "json_fields": [
+    "duration_api_ms",
+    "stop_reason",
+    "session_id",
+    "total_cost_usd",
+    "usage",
+    "modelUsage",
+    "permission_denials",
+    "terminal_reason",
+    "fast_mode_state",
+    "fast_mode_disabled_reason",
+    "subagent_stats",
+    "safety_stops",
+    "is_error",
+    "num_turns",
+    "subtype",
+    "api_error_status",
+    "result",
+    "type",
+    "duration_ms",
+    "uuid",
+    "queued_turn_count",
+    "result_index"
+  ],
+  "asc_gate": {
+    "status": "not checked",
+    "reason": "run errored"
+  }
+}

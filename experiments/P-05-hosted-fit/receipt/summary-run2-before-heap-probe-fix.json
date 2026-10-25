@@ -1,0 +1,272 @@
+{
+  "label": "Recorded (probe)",
+  "precommitSha256": "55071876e2dbe0256b45c2f0cb705f92b92d0e79ac006791f8ce5359be55a1c9  PRECOMMIT.md",
+  "n": 20,
+  "warmups": 3,
+  "port": 48517,
+  "bundle": {
+    "shim.js": {
+      "bytes": 5364,
+      "gzipBytes": 2089
+    },
+    "core.js": {
+      "bytes": 14114,
+      "gzipBytes": 4677
+    },
+    "ts_rust.size.wasm": {
+      "bytes": 5214613,
+      "gzipBytes": 2225718
+    },
+    "kernel.wasm": {
+      "bytes": 41,
+      "gzipBytes": 61
+    },
+    "total": {
+      "bytes": 5234132,
+      "gzipBytes": 2232545
+    },
+    "concatGzipBytes": 2232565,
+    "speedWasmForReference": {
+      "bytes": 6518285,
+      "gzipBytes": 2667192
+    }
+  },
+  "overlay": {
+    "five": {
+      "files": 6,
+      "bytes": 11774,
+      "jsonBodyBytes": 12545
+    },
+    "fifty": {
+      "files": 51,
+      "bytes": 131497,
+      "jsonBodyBytes": 138384
+    }
+  },
+  "memoryMiB": {
+    "idle": {
+      "vmRss": 74.4,
+      "vmHwm": 74.4,
+      "rssAnon": 36.8,
+      "rssFile": 37.6,
+      "threads": 17
+    },
+    "afterFirstCheck": {
+      "vmRss": 145.8,
+      "vmHwm": 145.8,
+      "rssAnon": 102.7,
+      "rssFile": 43.1,
+      "threads": 17
+    },
+    "after_five": {
+      "vmRss": 201,
+      "vmHwm": 281.8,
+      "rssAnon": 155.1,
+      "rssFile": 45.9,
+      "threads": 17
+    },
+    "after_fifty": {
+      "vmRss": 244.8,
+      "vmHwm": 351.6,
+      "rssAnon": 198.2,
+      "rssFile": 46.6,
+      "threads": 17
+    },
+    "afterAll": {
+      "vmRss": 244.8,
+      "vmHwm": 351.6,
+      "rssAnon": 198.2,
+      "rssFile": 46.6,
+      "threads": 17
+    }
+  },
+  "workerdStartMs": 59.783703,
+  "workerdFirstCheck": 161.338972,
+  "latencyMs": {
+    "workerd_wall": {
+      "five": {
+        "n": 20,
+        "median": 52.62670800000001,
+        "p95": 65.39465900000005,
+        "min": 45.787510999999995,
+        "max": 66.81311799999992,
+        "mean": 53.87476200000002
+      },
+      "fifty": {
+        "n": 20,
+        "median": 119.73471800000016,
+        "p95": 139.63232200000039,
+        "min": 102.19246599999997,
+        "max": 146.19001899999967,
+        "mean": 119.72889440000002
+      }
+    },
+    "workerd_isolate": {
+      "five": {
+        "n": 20,
+        "median": 49,
+        "p95": 61,
+        "min": 42,
+        "max": 64,
+        "mean": 50.95
+      },
+      "fifty": {
+        "n": 20,
+        "median": 116,
+        "p95": 136,
+        "min": 99,
+        "max": 142,
+        "mean": 116.4
+      }
+    },
+    "node_wall": {
+      "five": {
+        "n": 20,
+        "median": 47.23522299999968,
+        "p95": 57.229145000000244,
+        "min": 41.11183300000084,
+        "max": 62.383482000000186,
+        "mean": 48.82698310000005
+      },
+      "fifty": {
+        "n": 20,
+        "median": 93.10822200000075,
+        "p95": 100.901613,
+        "min": 88.48328200000014,
+        "max": 108.43294400000013,
+        "mean": 94.5756270500001
+      }
+    },
+    "native_single_wall": {
+      "five": {
+        "n": 20,
+        "median": 19.584153000001606,
+        "p95": 22.26792199999909,
+        "min": 17.812449999999444,
+        "max": 22.91989900000044,
+        "mean": 20.02956349999995
+      },
+      "fifty": {
+        "n": 20,
+        "median": 47.272681999998895,
+        "p95": 61.76198000000113,
+        "min": 37.92377399999896,
+        "max": 62.21929099999943,
+        "mean": 48.21386994999993
+      }
+    },
+    "native_default_wall": {
+      "five": {
+        "n": 20,
+        "median": 13.964962000000014,
+        "p95": 16.702100999998947,
+        "min": 12.77691699999923,
+        "max": 17.70352499999899,
+        "mean": 14.532320599999911
+      },
+      "fifty": {
+        "n": 20,
+        "median": 25.316737999999532,
+        "p95": 31.948803999999654,
+        "min": 22.376205000000482,
+        "max": 36.12890799999877,
+        "mean": 26.25326004999988
+      }
+    }
+  },
+  "ratios50": {
+    "workerd_over_native_single": 2.533,
+    "node_over_native_single": 1.97,
+    "workerd_over_node": 1.286,
+    "workerd_over_native_default": 4.729
+  },
+  "ratios5": {
+    "workerd_over_native_single": 2.687,
+    "node_over_native_single": 2.412
+  },
+  "diagnosticsAgreement": {
+    "five": {
+      "count": 1,
+      "workerd_eq_node": true,
+      "workerd_eq_native": true,
+      "native_single_eq_default": true,
+      "keys": [
+        "/proj/src/m03.ts:83:2322"
+      ]
+    },
+    "fifty": {
+      "count": 5,
+      "workerd_eq_node": true,
+      "workerd_eq_native": true,
+      "native_single_eq_default": true,
+      "keys": [
+        "/proj/src/m07.ts:82:2322",
+        "/proj/src/m19.ts:82:2322",
+        "/proj/src/m23.ts:82:2322",
+        "/proj/src/m38.ts:88:2322",
+        "/proj/src/m49.ts:67:2322"
+      ]
+    }
+  },
+  "limitEnforcement": {
+    "wasm": {
+      "probe": {
+        "kind": "wasm",
+        "mib": 256
+      },
+      "before": 75.7,
+      "response": {
+        "status": 200,
+        "body": "{\"ok\":true,\"kind\":\"wasm\",\"mib\":256,\"bytes\":268500992,\"ms\":111}"
+      },
+      "processAliveAfter": true,
+      "exitCode": null,
+      "after": {
+        "vmRss": 332.4,
+        "vmHwm": 332.4
+      },
+      "log": ""
+    },
+    "js": {
+      "probe": {
+        "kind": "js",
+        "mib": 200
+      },
+      "before": 74.6,
+      "response": {
+        "status": 200,
+        "body": "{\"ok\":true,\"kind\":\"js\",\"mib\":200,\"bytes\":226492416,\"ms\":47}"
+      },
+      "processAliveAfter": true,
+      "exitCode": null,
+      "after": {
+        "vmRss": 179.1,
+        "vmHwm": 179.1
+      },
+      "log": ""
+    }
+  },
+  "nodeMemoryMiB": {
+    "beforeChecks": 106.9,
+    "after_five": 174.3,
+    "after_fifty": 187.8
+  },
+  "loadavg": {
+    "before": [
+      10.84,
+      12.63,
+      15.04
+    ],
+    "after": [
+      12.62,
+      12.94,
+      15.11
+    ]
+  },
+  "badSigns": {
+    "rssOver128MiB": true,
+    "hwmOver128MiB": true,
+    "wasmWorkerdOver3xNative": false,
+    "bundleGzipOver10MB": false
+  }
+}

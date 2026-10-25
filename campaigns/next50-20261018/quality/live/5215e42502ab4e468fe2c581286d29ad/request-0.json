@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "id": "dev-affine-01",
+  "raw": "Convert a finite Celsius input c in [-273.15,1000] to Fahrenheit with absolute tolerance 1e-9 degF. Refuse other inputs naming c. Input c is required. Return a number labelled degF.",
+  "artifactClass": "closed-form",
+  "requiredFacts": [
+    {
+      "path": "c",
+      "unit": "degC",
+      "domain": [
+        -273.15,
+        1000
+      ],
+      "tolerance": 1e-09
+    }
+  ],
+  "sources": [
+    "BIPM SI Brochure 9th edition, Celsius offset and temperature intervals"
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "checks": {
+    "0-bundle.json": true,
+    "codex.json": true,
+    "precommit.json": true,
+    "qwen.json": true,
+    "sealed": true,
+    "arm-precommit": true,
+    "copiedOriginalWriters": true,
+    "exactOneExplicitValueCorrection": true,
+    "requestSignatureProceduresUnchanged": true,
+    "fourConsumerComplete": true,
+    "fourGenerationValid": true,
+    "bothArmsSameFrozenSuites": true
+  },
+  "changes": [
+    {
+      "index": 8,
+      "before": {
+        "expect": 50.125,
+        "id": "qwen-case-02",
+        "inputs": {
+          "x": -95
+        },
+        "tolerance": 1e-09,
+        "unit": "index-units"
+      },
+      "after": {
+        "expect": 51.125,
+        "id": "qwen-case-02",
+        "inputs": {
+          "x": -95
+        },
+        "tolerance": 1e-09,
+        "unit": "index-units"
+      }
+    }
+  ],
+  "decision": "no-evidence",
+  "modelCalls": 0,
+  "frozenHashes": {
+    "synthetic-holdout-d2fd1cfaed-01": {
+      "candidate": "7925ac9ef093266ae12bf694ddc6e65b374aa7db3370ecb9911a2398e57b9a54",
+      "incumbent": "e9b351178ef6f7d6e1efd2bd49d91362518fc0446c710b379d4d92e42121271d"
+    },
+    "synthetic-holdout-d2fd1cfaed-02": {
+      "incumbent": "fbe5c1c1760b8c693e6b8a0716164ee031bc8218a9353dc8fd88288fe1d3e490",
+      "candidate": "7fe5ca8b45dbba308225cc6b69d8ca6cb210f3b6c44f1b1dfc18f2b88b7776b8"
+    }
+  },
+  "frozenIdentityPolicy": "suite/procedure/cases content and hashes identical; per-job frozenAt timestamps differ"
+}

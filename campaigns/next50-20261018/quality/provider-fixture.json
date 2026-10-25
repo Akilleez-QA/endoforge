@@ -1,0 +1,54 @@
+{
+  "version": 1,
+  "name": "refrigeration-ai-project-fixture",
+  "providerVersion": "CoolProp-8.0.0@2026-10-06",
+  "source": "/home/user/LOCAL LLM/refrigeration-ai-retained-review/packages/domain/src/calculators/pt-tables.generated.ts",
+  "contentHash": "77ee9040bfef1ac51d50c429fbc9feb3078934e102d3521cbd490b2c7d7e0938",
+  "units": {
+    "pressure": "psig",
+    "atmosphere": "psia",
+    "value": "degF"
+  },
+  "limits": {
+    "saturationTemperature": {
+      "pressure": [
+        -3.593399999999999,
+        309.87989999999996
+      ]
+    }
+  },
+  "interpolation": "exact-only",
+  "records": [
+    {
+      "key": "saturationTemperature",
+      "inputs": {
+        "pressure": 15,
+        "atmosphere": 14.696,
+        "phase": "dew"
+      },
+      "value": -21.459726885720215,
+      "unit": "degF"
+    },
+    {
+      "key": "saturationTemperature",
+      "inputs": {
+        "pressure": 15,
+        "atmosphere": 14.696,
+        "phase": "bubble"
+      },
+      "value": -22.64414780894691,
+      "unit": "degF"
+    }
+  ],
+  "provenance": {
+    "sourceHashes": {
+      "/home/user/LOCAL LLM/refrigeration-ai-retained-review/packages/domain/src/calculators/pt-tables.generated.ts": "0d114890217cccaa69da26fefea0a0bfa2245e773d2c1d0f187b9ead0a640134",
+      "/home/user/LOCAL LLM/refrigeration-ai-retained-review/scripts/refrigerant-tables/generate_pt_tables.py": "877d44c9bbf2eedd7a5fed547fdfa44fe2a9a11e0b4bdda055812794df5aaf07"
+    },
+    "upstreamInterpolation": "ln(P) versus inverse Rankine, no extrapolation",
+    "generatorVisibility": "not mounted; trusted eval only",
+    "commonSourceDependence": "project table and direct computation both CoolProp8.0.0; manufacturer REFPROP9 chart independent",
+    "independentSource": "https://forane.arkema.com/files/live/sites/shared_arkema/files/downloads/fluorochemicals/forane-404a-pressure-temperature-chart.pdf",
+    "independentSourceHash": "1e9ff2cd36fcad01a6ec30ddc5ae97142d2cacb6987114e728f3e16fadf03533"
+  }
+}

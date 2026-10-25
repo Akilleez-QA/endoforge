@@ -1,0 +1,156 @@
+{
+  "version": 1,
+  "label": "Recorded local kit and probes; not production",
+  "gateA": false,
+  "items": [
+    {
+      "id": "N05",
+      "status": "complete-local",
+      "evidence": [
+        "campaigns/next50-20261018/quality/development-request.json",
+        "campaigns/next50-20261018/quality/development-signature.json",
+        "campaigns/next50-20261018/quality/test-qualification.json",
+        "campaigns/next50-20261018/quality/audit-hardening.json"
+      ],
+      "limitations": "Typed primitive v1 only; no claim of arbitrary object schema/compiler."
+    },
+    {
+      "id": "N06",
+      "status": "complete-local",
+      "evidence": [
+        "campaigns/next50-20261018/quality/test-qualification.json"
+      ],
+      "limitations": "Routes classify; numeric execution does not qualify workflow/text backends."
+    },
+    {
+      "id": "N07",
+      "status": "complete-local",
+      "evidence": [
+        "campaigns/next50-20261018/quality/decision-stability.json"
+      ],
+      "limitations": "Validates supplied paired evidence; does not discover unknowns from prose."
+    },
+    {
+      "id": "N09",
+      "status": "complete-local",
+      "evidence": [
+        "campaigns/next50-20261018/quality/provider-fixture.json",
+        "campaigns/next50-20261018/quality/test-qualification.json"
+      ],
+      "limitations": "Exact records only; interpolation fails closed."
+    },
+    {
+      "id": "N11",
+      "status": "partial",
+      "evidence": [
+        "campaigns/next50-20261018/quality/development-view.json",
+        "campaigns/next50-20261018/quality/live/5215e42502ab4e468fe2c581286d29ad/summary.json"
+      ],
+      "limitations": "Input views built and Codex3runs request-blind. Claude3authentication failures prevent completed dual-family exposure."
+    },
+    {
+      "id": "N12",
+      "status": "partial",
+      "evidence": [
+        "campaigns/next50-20261018/quality/test-frozen.json",
+        "campaigns/next50-20261018/quality/test-qualification.json"
+      ],
+      "limitations": "Deterministic procedures/freeze mechanical tests pass; live dual-family suite freeze blocked."
+    },
+    {
+      "id": "N13",
+      "status": "complete-local",
+      "evidence": [
+        "campaigns/next50-20261018/quality/independent-resolution.json",
+        "campaigns/next50-20261018/quality/test-qualification.json"
+      ],
+      "limitations": "Contradictions reject before freeze; independent provider resolves unique matches, ambiguity remains unresolved. Full live family agreement not measured."
+    },
+    {
+      "id": "N14",
+      "status": "complete-local",
+      "evidence": [
+        "campaigns/next50-20261018/quality/test-qualification.json",
+        "campaigns/next50-20261018/quality/reference-regression.json"
+      ],
+      "limitations": "General finite/type/domain/unit equality only; domain bounds supplied by provider. No universal physical ontology."
+    },
+    {
+      "id": "N15",
+      "status": "complete-local",
+      "evidence": [
+        "campaigns/next50-20261018/quality/provider-fixture.json",
+        "campaigns/next50-20261018/quality/reference-boundary.json"
+      ],
+      "limitations": "Actual bwrap evalreadonly/genabsent reference mount probe; source hashes retained. Parent runtime integration separate."
+    },
+    {
+      "id": "N16",
+      "status": "complete-local",
+      "evidence": [
+        "campaigns/next50-20261018/quality/reference-regression.json",
+        "campaigns/next50-20261018/quality/arkema-r404a-source.pdf",
+        "campaigns/next50-20261018/quality/arkema-r404a-source.png"
+      ],
+      "limitations": "Seven regressions pass. Manufacturer REFPROP independent bracket only; direct CoolProp computation shares model lineage with project tables."
+    },
+    {
+      "id": "N17",
+      "status": "complete-local",
+      "evidence": [
+        "campaigns/next50-20261018/quality/decision-stability.json",
+        "campaigns/next50-20261018/quality/test-qualification.json",
+        "campaigns/next50-20261018/quality/audit-hardening.json"
+      ],
+      "limitations": "Paired decision-changing and harmless facts checked; truth of paired results remains provider responsibility."
+    },
+    {
+      "id": "N18",
+      "status": "complete-local",
+      "evidence": [
+        "campaigns/next50-20261018/quality/test-qualification.json"
+      ],
+      "limitations": "Five canaries+known-good control all expected outcomes in deterministic numeric scope."
+    },
+    {
+      "id": "N19",
+      "status": "partial",
+      "evidence": [
+        "campaigns/next50-20261018/quality/test-qualification.json"
+      ],
+      "limitations": "Five reproducible observation-layer mutation classes all detected; not source-level WASM mutant qualification. Equivalent add-zero classified separately."
+    },
+    {
+      "id": "N20",
+      "status": "blocked",
+      "evidence": [
+        "campaigns/next50-20261018/quality/usage.json",
+        "campaigns/next50-20261018/quality/live/5215e42502ab4e468fe2c581286d29ad/summary.json",
+        "campaigns/next50-20261018/quality/test-qualification.json"
+      ],
+      "limitations": "GateA remains closed: Claude current subscription credentials unavailable; cannot substitute deterministic placeholder families for actual dual writers."
+    },
+    {
+      "id": "N43",
+      "status": "waiting-gate-B",
+      "evidence": [],
+      "limitations": "Parent handoff not received; no historical criteria transformed."
+    },
+    {
+      "id": "N44",
+      "status": "waiting-N43",
+      "evidence": [],
+      "limitations": "No historical incumbent replay attempted before qualified procedures."
+    }
+  ],
+  "usage": {
+    "turns": 6,
+    "successfulModelTurns": 3,
+    "failedBeforeModel": 3,
+    "inputTokens": 43679,
+    "outputTokens": 1603,
+    "cachedInputTokens": 36864,
+    "wallMs": 42436,
+    "paidApiCalls": 0
+  }
+}

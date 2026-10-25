@@ -1,0 +1,93 @@
+{
+  "memoryMiB": {
+    "idle": {
+      "vmRss": 77.1,
+      "vmHwm": 77.1,
+      "rssAnon": 39.3,
+      "rssFile": 37.8,
+      "threads": 17
+    },
+    "afterFirstCheck": {
+      "vmRss": 153.8,
+      "vmHwm": 153.8,
+      "rssAnon": 110.1,
+      "rssFile": 43.7,
+      "threads": 17
+    },
+    "after_five": {
+      "vmRss": 173.8,
+      "vmHwm": 173.8,
+      "rssAnon": 127,
+      "rssFile": 46.9,
+      "threads": 17
+    },
+    "after_fifty": {
+      "vmRss": 182.9,
+      "vmHwm": 182.9,
+      "rssAnon": 135.5,
+      "rssFile": 47.4,
+      "threads": 17
+    },
+    "afterAll": {
+      "vmRss": 182.9,
+      "vmHwm": 182.9,
+      "rssAnon": 135.5,
+      "rssFile": 47.4,
+      "threads": 17
+    }
+  },
+  "latency50": {
+    "workerd_wall": 107.38478600000008,
+    "workerd_isolate": 105,
+    "node_wall": 87.53268200000093,
+    "native_single_wall": 56.5753820000009,
+    "native_default_wall": 22.030226999999286
+  },
+  "latency5": {
+    "workerd_wall": 59.68430400000011,
+    "workerd_isolate": 57,
+    "node_wall": 43.784905999999864,
+    "native_single_wall": 19.841349000000264,
+    "native_default_wall": 17.31346499999927
+  },
+  "ratios50": {
+    "workerd_over_native_single": 1.898,
+    "node_over_native_single": 1.547,
+    "workerd_over_node": 1.227,
+    "workerd_over_native_default": 4.874
+  },
+  "bundleGzip": 2232561,
+  "agree": {
+    "five": [
+      1,
+      true,
+      true
+    ],
+    "fifty": [
+      5,
+      true,
+      true
+    ]
+  },
+  "limits": {
+    "wasm": [
+      200,
+      true,
+      {
+        "vmRss": 332.8,
+        "vmHwm": 332.8
+      }
+    ],
+    "js": [
+      null,
+      false,
+      null
+    ]
+  },
+  "badSigns": {
+    "rssOver128MiB": true,
+    "hwmOver128MiB": true,
+    "wasmWorkerdOver3xNative": false,
+    "bundleGzipOver10MB": false
+  }
+}

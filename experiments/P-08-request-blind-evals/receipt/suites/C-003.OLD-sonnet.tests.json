@@ -1,0 +1,14 @@
+[
+  { "name": "ref-70F-60rh", "fn": "dewPointF", "args": [70, 60], "expect": 55.5, "tol": 0.3 },
+  { "name": "saturated-70F", "fn": "dewPointF", "args": [70, 100], "expect": 70, "tol": 0.1 },
+  { "name": "unit-pin-32F-saturated", "fn": "dewPointF", "args": [32, 100], "expect": 32, "tol": 0.1 },
+  { "name": "mono-rh-40", "fn": "dewPointF", "args": [70, 40], "expect": 44.6, "tol": 0.4 },
+  { "name": "mono-rh-80", "fn": "dewPointF", "args": [70, 80], "expect": 63.5, "tol": 0.4 },
+  { "name": "mono-temp-90F-60rh", "fn": "dewPointF", "args": [90, 60], "expect": 74.3, "tol": 0.5 },
+  { "name": "ref-68F-50rh", "fn": "dewPointF", "args": [68, 50], "expect": 48.7, "tol": 0.5 },
+  { "name": "dry-air-70F-10rh", "fn": "dewPointF", "args": [70, 10], "expect": 10.9, "tol": 1.0 },
+  { "name": "trap-rh-zero", "fn": "dewPointF", "args": [70, 0], "expectError": true },
+  { "name": "trap-rh-negative", "fn": "dewPointF", "args": [70, -10], "expectError": true },
+  { "name": "trap-rh-just-over-100", "fn": "dewPointF", "args": [70, 100.5], "expectError": true },
+  { "name": "trap-rh-101", "fn": "dewPointF", "args": [70, 101], "expectError": true }
+]

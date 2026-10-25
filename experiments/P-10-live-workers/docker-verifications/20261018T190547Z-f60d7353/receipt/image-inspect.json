@@ -1,0 +1,16 @@
+{
+  "command": [
+    "sudo",
+    "-n",
+    "docker",
+    "image",
+    "inspect",
+    "endoforge-p09:probe"
+  ],
+  "precommitSha256": "230e9c6c1cd6e0c8a72df171094b02ece48289c9084ad96fd50c00ead36ea1fa",
+  "exit": 0,
+  "timeout": false,
+  "stdout": "[\n    {\n        \"Id\": \"sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541\",\n        \"RepoTags\": [\n            \"endoforge-p09:probe\",\n            \"endoforge-p09:roundtrip\"\n        ],\n        \"RepoDigests\": [\n            \"endoforge-p09@sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541\"\n        ],\n        \"Comment\": \"buildkit.dockerfile.v0\",\n        \"Created\": \"2026-10-18T14:45:15.16098934-04:00\",\n        \"Config\": {\n            \"Env\": [\n                \"PATH=/usr/local/bin:/usr/bin:/bin\",\n                \"NODE_VERSION=22.18.0\",\n                \"YARN_VERSION=1.22.22\",\n                \"HOME=/tmp\"\n            ],\n            \"Entrypoint\": [\n                \"docker-entrypoint.sh\"\n            ],\n            \"Cmd\": [\n                \"node\"\n            ],\n            \"WorkingDir\": \"/tmp\"\n        },\n        \"Architecture\": \"amd64\",\n        \"Os\": \"linux\",\n        \"Size\": 452373528,\n        \"RootFS\": {\n            \"Type\": \"layers\",\n            \"Layers\": [\n                \"sha256:eb5f13bce9936c760b9fa73aeb1b608787daa36106cc888104132e353ed37252\",\n                \"sha256:5e63d79d36027aac3b9fffcdd79aec007ba39bac1fbb918dcd6db5aa41f9c19a\",\n                \"sha256:06769c9c802b79461910d4a68119c97dce29b4e1d1d47039c760aba60e084629\",\n                \"sha256:4f5fd88901b05e59a3cd054b22447a2ad4b13fb964da9489f023ffea11683856\",\n                \"sha256:b54dd33191f2b56314b0cb0e39066c22ec5a18f11f1fcc7a279f319d3da8a49a\",\n                \"sha256:b17932533c96ca89e1642c4bbbfc598185b034d815402349c64c7248f21a528c\",\n                \"sha256:5f70bf18a086007016e948b04aed3b82103a36bea41755b6cddfaf10ace3c6ef\"\n            ]\n        },\n        \"Metadata\": {\n            \"LastTagTime\": \"2026-10-18T18:46:01.604950261Z\"\n        },\n        \"Descriptor\": {\n            \"mediaType\": \"application/vnd.oci.image.index.v1+json\",\n            \"digest\": \"sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541\",\n            \"size\": 856,\n            \"annotations\": {\n                \"io.containerd.image.name\": \"docker.io/library/endoforge-p09:probe\",\n                \"org.opencontainers.image.ref.name\": \"probe\"\n            }\n        },\n        \"Identity\": {\n            \"Build\": [\n                {\n                    \"Ref\": \"nvjn0hmlgi1qmr680wtle5hu3\",\n                    \"CreatedAt\": \"2026-10-18T14:45:16.915131274-04:00\"\n                }\n            ]\n        }\n    }\n]\n",
+  "stderr": "",
+  "wallMs": 25
+}

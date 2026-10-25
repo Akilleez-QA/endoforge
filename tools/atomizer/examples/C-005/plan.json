@@ -1,0 +1,54 @@
+{
+ "order": [
+  "iface",
+  "contract",
+  "k-liq",
+  "k-gas",
+  "k-tot",
+  "t-liq",
+  "t-gas",
+  "t-tot",
+  "glue",
+  "compose",
+  "rev-tech",
+  "rev-eng",
+  "rev-safety"
+ ],
+ "waves": {
+  "0": [
+   "iface"
+  ],
+  "1": [
+   "contract"
+  ],
+  "2": [
+   "k-liq",
+   "k-gas",
+   "k-tot",
+   "t-liq",
+   "t-gas",
+   "t-tot",
+   "glue"
+  ],
+  "3": [
+   "compose"
+  ],
+  "4": [
+   "rev-tech",
+   "rev-eng",
+   "rev-safety"
+  ]
+ },
+ "total": 24,
+ "critical": 10,
+ "criticalPath": [
+  "iface",
+  "contract",
+  "k-tot",
+  "compose",
+  "rev-tech"
+ ],
+ "speedupBound": 2.4,
+ "serialFraction": 0.42,
+ "width": 7
+}

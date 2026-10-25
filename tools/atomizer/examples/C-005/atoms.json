@@ -1,0 +1,642 @@
+{
+ "schema": "endoforge/atoms/1",
+ "need": {
+  "id": "C-005",
+  "text": "# Request C-005\n\n| Field | Content |\n|---|---|\n| Collected | 2026-10-17, by the Endoforge mining agent and the refrigeration-ai session (candidate C-005, grade MEDIUM, source list: TI-111) |\n| Requester | service technician (anonymous chatbot user) |\n| Context | service technician, chatbot (unit model redacted in the corpus). |\n| Inclusion rules met | 1 (owner vouched in chat on 2026-10-17: \"Add all HIGH and MEDIUM candidates to the pool; I vouch for them\") / 2 / 3 / 4 |\n\n## The request, in the requester's words\n\n> \"<model> 1 Meter pipe run how much refrigerant and what type 1/4 and 1/2 pipe size\"\n\n## Authoritative inputs the requester named\n\n- unit model, line length (1 m), line sizes (1/4 and 1/2 in).\n\n## Examples the requester gave, if any\n\n- none recorded\n\n## What the collector did not ask\n\nNothing was clarified with the requester; the request is as found. Source: session file row TI-111.."
+ },
+ "acceptance": [
+  {
+   "id": "A1",
+   "statement": "The composed artefact passes all gates and is promotable.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const g=JSON.parse(require('fs').readFileSync('/in/compose/gates.json','utf8'));process.exit(g.promotable===true?0:1)\""
+   }
+  },
+  {
+   "id": "A2",
+   "statement": "The kernel exports the three line-charge functions and has no imports.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const m=new WebAssembly.Module(require('fs').readFileSync('/in/compose/kernel.wasm'));const e=WebAssembly.Module.exports(m).map(x=>x.name);const ok=['liquidLineChargeG','gasLineChargeG','totalLineChargeG'].every(n=>e.includes(n))&&WebAssembly.Module.imports(m).length===0;process.exit(ok?0:1)\""
+   }
+  },
+  {
+   "id": "A3",
+   "statement": "For the requester's case (1 m, 1/4 in liquid line, 1/2 in gas line, R410A code 1) the total is finite, positive and equals liquid plus gas line charge within 1e-9 g.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const i=new WebAssembly.Instance(new WebAssembly.Module(require('fs').readFileSync('/in/compose/kernel.wasm')),{}).exports;const l=i.liquidLineChargeG(1,1,0.25),g=i.gasLineChargeG(1,1,0.5),t=i.totalLineChargeG(1,1,0.25,0.5);process.exit(isFinite(t)&&t>0&&Math.abs(t-l-g)<1e-9?0:1)\""
+   }
+  },
+  {
+   "id": "A4",
+   "statement": "Zero length, negative length, non-finite length, an unknown refrigerant code and an unsupported pipe size are refused (trap) by the kernel.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const i=new WebAssembly.Instance(new WebAssembly.Module(require('fs').readFileSync('/in/compose/kernel.wasm')),{}).exports;const bad=[[1,0,0.25],[1,-1,0.25],[1,NaN,0.25],[1,Infinity,0.25],[99,1,0.25],[1,1,0.3]];let ok=true;for(const a of bad){try{i.liquidLineChargeG(...a);ok=false}catch(e){}}process.exit(ok?0:1)\""
+   }
+  },
+  {
+   "id": "A5",
+   "statement": "tests.json contains both value tests and expectError tests for every export.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const t=JSON.parse(require('fs').readFileSync('/in/compose/tests.json','utf8'));const fns=['liquidLineChargeG','gasLineChargeG','totalLineChargeG'];const ok=fns.every(f=>t.some(x=>x.fn===f&&x.expectError)&&t.some(x=>x.fn===f&&!x.expectError));process.exit(ok?0:1)\""
+   }
+  },
+  {
+   "id": "A6",
+   "statement": "glue.json records a non-empty assumption and a non-empty question, and CONTRACT.md mentions both.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const g=JSON.parse(require('fs').readFileSync('/in/compose/glue.json','utf8'));const c=require('fs').readFileSync('/in/compose/CONTRACT.md','utf8').toLowerCase();process.exit(g.assumption&&g.assumption.length>10&&g.question&&g.question.length>10&&c.includes('assumption')&&c.includes('question')?0:1)\""
+   }
+  },
+  {
+   "id": "A7",
+   "statement": "The artefact answers both parts of the request (how much, and what type) without guessing the refrigerant: the type is an explicit coded input, and the single question asks the technician for the unit model/refrigerant and the manufacturer's pre-charged line length and additional-charge rate.",
+   "check": {
+    "kind": "oracle",
+    "criteria": "From CONTRACT.md and glue.json alone, a technician can tell that the refrigerant type is chosen by code from the nameplate, not assumed; that the result is grams of refrigerant held in the 1/4 in and 1/2 in lines for a given length; that the figure is a physical estimate which does not replace the manufacturer's additional-charge table; and which single question resolves the open fact."
+   }
+  }
+ ],
+ "atoms": [
+  {
+   "id": "iface",
+   "kind": "interface",
+   "title": "Interface stub",
+   "contract": "A markdown file listing exactly three exports with argument names, types, units, codes and return types: liquidLineChargeG(refrigerant:i32, lengthM:f64, odIn:f64):f64, gasLineChargeG(refrigerant:i32, lengthM:f64, odIn:f64):f64, totalLineChargeG(refrigerant:i32, lengthM:f64, liquidOdIn:f64, gasOdIn:f64):f64. Refrigerant codes: 1=R410A, 2=R32, 3=R134a, 4=R22. Results in grams. Lengths in metres. Outer diameters in inches.",
+   "inputs": [
+    {
+     "from": "need"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "interface",
+     "path": "interface.md",
+     "describe": "Export names, argument names, kinds, units, refrigerant codes, return type and unit"
+    }
+   ],
+   "verify": "grep -c for each of the three export names and for the four refrigerant codes in interface.md; all present.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Write the interface stub for this capability: three exports (liquidLineChargeG, gasLineChargeG, totalLineChargeG) with the argument names, types, units, refrigerant codes (1=R410A, 2=R32, 3=R134a, 4=R22) and return type (grams, f64) given in your contract. Say what each export represents; do not write code."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "contract",
+   "kind": "contract",
+   "title": "CONTRACT.md",
+   "contract": "CONTRACT.md states what is computed (grams of refrigerant held in a copper line of given length and outer diameter, liquid line at liquid density, gas line at vapour density), the constants, the assumption, the one question, and the refused inputs.",
+   "inputs": [
+    {
+     "from": "need"
+    },
+    {
+     "from": "iface",
+     "output": "interface"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "contract",
+     "path": "CONTRACT.md",
+     "describe": "Contract with formulas, constants, assumption, question and refusals"
+    }
+   ],
+   "verify": "CONTRACT.md contains the words Assumption, Question and Refused, and names all four refrigerant codes and all three exports.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Write CONTRACT.md. Computation: inner diameter = outer diameter (inches x 25.4 mm) minus 2 x 0.8 mm wall (assumed for every size); volume per metre = pi/4 x ID^2; charge in grams = volume in litres x density in g/L x length in m. Liquid line uses liquid density, gas line uses vapour density; total is the sum. Constants (nominal reference values, state them as assumed): liquid density at 25 C in kg/m3: R410A 1062, R32 960, R134a 1207, R22 1194; gas (suction) vapour density in kg/m3: R410A 33, R32 29, R134a 17, R22 22. Supported outer diameters: 0.25, 0.375, 0.5, 0.625, 0.75 in (exact match); anything else is refused. Refused: length <= 0 or not finite, unknown refrigerant code, unsupported diameter. Assumption: the requester gave no unit model, so the refrigerant type is not known and is supplied as a code; the 1/4 in line is taken as the liquid line and the 1/2 in line as the gas line; the result is the physical fill of the lines and is not the manufacturer's additional-charge rate. Question (exactly one): what are the unit model and refrigerant on the nameplate, and what pre-charged line length and additional-charge rate does the manufacturer give? Do not claim the answer is the amount to add."
+   },
+   "size": {
+    "work": 2,
+    "interface": 2
+   }
+  },
+  {
+   "id": "k-liq",
+   "kind": "kernel",
+   "title": "Kernel: liquidLineChargeG",
+   "contract": "Exports liquidLineChargeG(refrigerant:i32, lengthM:f64, odIn:f64):f64 per the contract, using liquid density; traps on refused inputs with a clear message; all private names prefixed k_liq_.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "kernel",
+     "path": "k-liq.ts",
+     "describe": "AssemblyScript source fragment for liquidLineChargeG"
+    }
+   ],
+   "verify": "asc compiles the fragment together with a stub; calling with (1,1,0.25) returns a finite positive value; (1,0,0.25) traps.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [
+     "Bash",
+     "Read",
+     "Write",
+     "Edit"
+    ],
+    "toolchain": [
+     "asc",
+     "node"
+    ],
+    "prompt": "Implement liquidLineChargeG exactly as the contract states. Prefix every private helper and constant with k_liq_."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "k-gas",
+   "kind": "kernel",
+   "title": "Kernel: gasLineChargeG",
+   "contract": "Exports gasLineChargeG(refrigerant:i32, lengthM:f64, odIn:f64):f64 per the contract, using vapour density; traps on refused inputs with a clear message; all private names prefixed k_gas_.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "kernel",
+     "path": "k-gas.ts",
+     "describe": "AssemblyScript source fragment for gasLineChargeG"
+    }
+   ],
+   "verify": "asc compiles the fragment together with a stub; calling with (1,1,0.5) returns a finite positive value; (99,1,0.5) traps.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [
+     "Bash",
+     "Read",
+     "Write",
+     "Edit"
+    ],
+    "toolchain": [
+     "asc",
+     "node"
+    ],
+    "prompt": "Implement gasLineChargeG exactly as the contract states. Prefix every private helper and constant with k_gas_."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "k-tot",
+   "kind": "kernel",
+   "title": "Kernel: totalLineChargeG",
+   "contract": "Exports totalLineChargeG(refrigerant:i32, lengthM:f64, liquidOdIn:f64, gasOdIn:f64):f64 equal to liquid-line plus gas-line charge per the contract, self-contained (no calls into other atoms); traps on refused inputs; all private names prefixed k_tot_.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "kernel",
+     "path": "k-tot.ts",
+     "describe": "AssemblyScript source fragment for totalLineChargeG"
+    }
+   ],
+   "verify": "asc compiles the fragment together with a stub; calling with (1,1,0.25,0.5) returns a finite positive value; (1,1,0.3,0.5) traps.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [
+     "Bash",
+     "Read",
+     "Write",
+     "Edit"
+    ],
+    "toolchain": [
+     "asc",
+     "node"
+    ],
+    "prompt": "Implement totalLineChargeG exactly as the contract states, with its own copies of the constants and helpers. Prefix every private helper and constant with k_tot_."
+   },
+   "size": {
+    "work": 3,
+    "interface": 1
+   }
+  },
+  {
+   "id": "t-liq",
+   "kind": "tests",
+   "title": "Tests: liquidLineChargeG",
+   "contract": "A JSON array of tests for liquidLineChargeG: value tests for each refrigerant code and several supported diameters (expected values computed by hand from the contract formula, with tol), plus expectError tests for length 0, negative, NaN, +Infinity, unknown code, unsupported diameter.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "tests",
+     "path": "t-liq.json",
+     "describe": "Tests for liquidLineChargeG"
+    }
+   ],
+   "verify": "File parses as a JSON array; every entry has fn liquidLineChargeG; at least 4 value entries and 6 expectError entries.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Write the tests for liquidLineChargeG from the contract and interface only. Work the expected numbers out from the formula and constants in the contract; include the 1 m, 0.25 in, R410A case."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "t-gas",
+   "kind": "tests",
+   "title": "Tests: gasLineChargeG",
+   "contract": "A JSON array of tests for gasLineChargeG: value tests for each refrigerant code and several supported diameters (expected values computed from the contract, with tol), plus expectError tests for length 0, negative, NaN, -Infinity, unknown code, unsupported diameter.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "tests",
+     "path": "t-gas.json",
+     "describe": "Tests for gasLineChargeG"
+    }
+   ],
+   "verify": "File parses as a JSON array; every entry has fn gasLineChargeG; at least 4 value entries and 6 expectError entries.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Write the tests for gasLineChargeG from the contract and interface only. Work the expected numbers out from the formula and constants in the contract; include the 1 m, 0.5 in, R410A case."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "t-tot",
+   "kind": "tests",
+   "title": "Tests: totalLineChargeG",
+   "contract": "A JSON array of tests for totalLineChargeG: value tests including the requester's case (R410A, 1 m, 0.25 in liquid, 0.5 in gas) and other codes and lengths, plus expectError tests for each bad argument (length, code, liquid diameter, gas diameter).",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "tests",
+     "path": "t-tot.json",
+     "describe": "Tests for totalLineChargeG"
+    }
+   ],
+   "verify": "File parses as a JSON array; every entry has fn totalLineChargeG; at least 4 value entries and 6 expectError entries.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Write the tests for totalLineChargeG from the contract and interface only. Work the expected numbers out from the formula and constants in the contract."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "glue",
+   "kind": "glue",
+   "title": "glue.json",
+   "contract": "A glue.json in the closed schema covering all three exports with labels, argument units, refrigerant codes (1 R410A, 2 R32, 3 R134a, 4 R22) inside the refrigerant argument entries, result unit g with precision 1, the contract's assumption and question, and one trap per refusal condition per export.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "glue",
+     "path": "glue.json",
+     "describe": "Labels, units, precision, codes, assumption, question, trap messages"
+    }
+   ],
+   "verify": "File parses as JSON; top-level keys are only those of the closed schema; exports has 3 entries; assumption and question are non-empty; traps cover every export.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Write glue.json for the three exports in plain technician language, with the assumption and the single question taken verbatim in meaning from the contract. Trap messages tell the technician what to correct."
+   },
+   "size": {
+    "work": 2,
+    "interface": 2
+   }
+  },
+  {
+   "id": "compose",
+   "kind": "compose",
+   "title": "Compose and run gates",
+   "contract": "Concatenate the three kernel fragments into one module, merge the three test files into tests.json, copy CONTRACT.md and glue.json, and run gates G1-G7, producing the fixed compose outputs.",
+   "inputs": [
+    {
+     "from": "k-liq",
+     "output": "kernel"
+    },
+    {
+     "from": "k-gas",
+     "output": "kernel"
+    },
+    {
+     "from": "k-tot",
+     "output": "kernel"
+    },
+    {
+     "from": "t-liq",
+     "output": "tests"
+    },
+    {
+     "from": "t-gas",
+     "output": "tests"
+    },
+    {
+     "from": "t-tot",
+     "output": "tests"
+    },
+    {
+     "from": "glue",
+     "output": "glue"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "kernel.wasm",
+     "path": "kernel.wasm",
+     "describe": "Compiled module"
+    },
+    {
+     "name": "kernel.wat",
+     "path": "kernel.wat",
+     "describe": "Text form"
+    },
+    {
+     "name": "kernel.ts",
+     "path": "kernel.ts",
+     "describe": "Concatenated source"
+    },
+    {
+     "name": "CONTRACT.md",
+     "path": "CONTRACT.md",
+     "describe": "Contract"
+    },
+    {
+     "name": "tests.json",
+     "path": "tests.json",
+     "describe": "Merged tests"
+    },
+    {
+     "name": "glue.json",
+     "path": "glue.json",
+     "describe": "Glue"
+    },
+    {
+     "name": "gates.json",
+     "path": "gates.json",
+     "describe": "Gate results"
+    },
+    {
+     "name": "failures.json",
+     "path": "failures.json",
+     "describe": "Failing tests"
+    },
+    {
+     "name": "frozen.sha256",
+     "path": "frozen.sha256",
+     "describe": "Frozen hashes"
+    }
+   ],
+   "verify": "gates.json parses; promotable is true; kernel.wasm has no imports and exports the three functions.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [
+     "Bash",
+     "Read",
+     "Write",
+     "Edit"
+    ],
+    "toolchain": [
+     "asc",
+     "wasmtime",
+     "node"
+    ],
+    "prompt": "Assemble the parts into the artefact and run the gates. Report gate results as they are; do not edit tests to make them pass."
+   },
+   "size": {
+    "work": 3,
+    "interface": 2
+   },
+   "verifies": [
+    "A1",
+    "A2",
+    "A3",
+    "A4",
+    "A5",
+    "A6"
+   ]
+  },
+  {
+   "id": "rev-tech",
+   "kind": "review",
+   "title": "Review: service technician",
+   "contract": "A JSON review from a field service technician judging from the request and the artefact interface whether the answer to 'how much refrigerant and what type' is usable and honest, including A7.",
+   "inputs": [
+    {
+     "from": "need"
+    },
+    {
+     "from": "compose",
+     "output": "CONTRACT.md"
+    },
+    {
+     "from": "compose",
+     "output": "glue.json"
+    },
+    {
+     "from": "compose",
+     "output": "gates.json"
+    },
+    {
+     "from": "compose",
+     "output": "tests.json"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "review",
+     "path": "review-tech.json",
+     "describe": "Verdict and findings"
+    }
+   ],
+   "verify": "File parses as JSON with a verdict and a findings list.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "You are a service technician who asked this question in the field. Judge whether the artefact gives you something you can use and does not mislead you about what to add to the unit."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   },
+   "verifies": [
+    "A7"
+   ]
+  },
+  {
+   "id": "rev-eng",
+   "kind": "review",
+   "title": "Review: refrigeration engineer",
+   "contract": "A JSON review from a refrigeration engineer on whether the physics, constants, refusals and stated assumption are sound and not presented as manufacturer data.",
+   "inputs": [
+    {
+     "from": "need"
+    },
+    {
+     "from": "compose",
+     "output": "CONTRACT.md"
+    },
+    {
+     "from": "compose",
+     "output": "glue.json"
+    },
+    {
+     "from": "compose",
+     "output": "gates.json"
+    },
+    {
+     "from": "compose",
+     "output": "tests.json"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "review",
+     "path": "review-eng.json",
+     "describe": "Verdict and findings"
+    }
+   ],
+   "verify": "File parses as JSON with a verdict and a findings list.",
+   "worker": {
+    "model": "codex",
+    "tools": [],
+    "prompt": "You are a refrigeration engineer. Check the stated method, constants and refusals for soundness, and whether the artefact is clear that it is not the manufacturer's additional-charge rate."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   },
+   "verifies": [
+    "A7"
+   ]
+  },
+  {
+   "id": "rev-safety",
+   "kind": "review",
+   "title": "Review: safety and QA skeptic",
+   "contract": "A JSON review from a skeptical safety/QA reviewer on whether any input or wording could lead to an overcharge or a silent wrong answer, and whether the gates and tests cover the refusals.",
+   "inputs": [
+    {
+     "from": "need"
+    },
+    {
+     "from": "compose",
+     "output": "CONTRACT.md"
+    },
+    {
+     "from": "compose",
+     "output": "glue.json"
+    },
+    {
+     "from": "compose",
+     "output": "gates.json"
+    },
+    {
+     "from": "compose",
+     "output": "tests.json"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "review",
+     "path": "review-safety.json",
+     "describe": "Verdict and findings"
+    }
+   ],
+   "verify": "File parses as JSON with a verdict and a findings list.",
+   "worker": {
+    "model": "opus",
+    "tools": [],
+    "prompt": "You are a skeptical safety and QA reviewer. Look for ways the artefact could silently give a wrong or dangerous charge figure, and for refusals or tests that are missing."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   },
+   "verifies": [
+    "A4",
+    "A5"
+   ]
+  }
+ ]
+}

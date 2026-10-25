@@ -1,0 +1,61 @@
+time="2026-10-18T15:01:30.560767436-04:00" level=info msg="Starting up"
+time="2026-10-18T15:01:30.561332451-04:00" level=info msg="OTEL tracing is not configured, using no-op tracer provider"
+time="2026-10-18T15:01:30.561379219-04:00" level=info msg="CDI directory does not exist, skipping" dir=/var/run/cdi
+time="2026-10-18T15:01:30.561384248-04:00" level=info msg="CDI directory does not exist, skipping" dir=/etc/cdi
+time="2026-10-18T15:01:30.561437098-04:00" level=info msg="detected 127.0.0.53 nameserver, assuming systemd-resolved, so using resolv.conf: /run/systemd/resolve/resolv.conf"
+time="2026-10-18T15:01:30.566957093-04:00" level=info msg="loaded extension" extension=org.mobyproject.namesgenerator.legacy.v1 origin=builtin providers="[org.mobyproject.extension.containernamegenerator.v0 org.mobyproject.extension.servicenamegenerator.v0]"
+time="2026-10-18T15:01:30.566973765-04:00" level=info msg="loaded extension" extension=org.mobyproject.storage.bbolt.v0 origin=builtin providers="[org.mobyproject.extension.storage.kv.v0]"
+time="2026-10-18T15:01:30.566978995-04:00" level=info msg="loaded extension" extension=org.mobyproject.daemon.config.v0 origin=builtin providers="[org.mobyproject.extension.daemon.config.v0]"
+time="2026-10-18T15:01:30.567168722-04:00" level=info msg="Creating a containerd client" address=/home/user/Work/endoforge/experiments/P-11-clean-restore/w3/c.sock timeout=1m0s
+time="2026-10-18T15:01:30.613052595-04:00" level=info msg="Loading containers: start."
+time="2026-10-18T15:01:30.613089875-04:00" level=info msg="NRI is disabled"
+time="2026-10-18T15:01:30.613097379-04:00" level=info msg="[graphdriver] trying configured driver: vfs"
+time="2026-10-18T15:01:30.618958908-04:00" level=info msg="Restoring containers: start."
+time="2026-10-18T15:01:30.684175774-04:00" level=info msg="Loading containers: done."
+time="2026-10-18T15:01:30.689101169-04:00" level=info msg="Docker daemon" commit=b26fb77d3e containerd-snapshotter=false storage-driver=vfs version=29.9.1
+time="2026-10-18T15:01:30.689192441-04:00" level=info msg="Initializing buildkit"
+time="2026-10-18T15:01:30.840601752-04:00" level=info msg="Completed buildkit initialization"
+time="2026-10-18T15:01:30.843720491-04:00" level=info msg="Daemon has completed initialization"
+time="2026-10-18T15:01:30.843776106-04:00" level=info msg="API listen on /home/user/Work/endoforge/experiments/P-11-clean-restore/w3/docker.sock"
+time="2026-10-18T15:01:36.417607436-04:00" level=info msg="sbJoin: gwep4 ''->'', gwep6 ''->''" eid=565316401e2e ep=endoforge-p11-3727415-c-005 net=none nid=cad8922815d1
+time="2026-10-18T15:01:37.711062173-04:00" level=info msg="received task-delete event from containerd" container=4df8657b9523fc1c241c67677c76d9398d9e86b249ecf31d69d54575090c4a0a module=libcontainerd namespace=p11 topic=/tasks/delete type="*events.TaskDelete"
+time="2026-10-18T15:01:38.842473606-04:00" level=info msg="sbJoin: gwep4 ''->'', gwep6 ''->''" eid=7c568ef42384 ep=endoforge-p11-3727415-c-006 net=none nid=cad8922815d1
+time="2026-10-18T15:01:40.176236149-04:00" level=info msg="received task-delete event from containerd" container=007c630831217a00bc85a388ca5867d732e670c8c75f49bf228bc2d009a42f39 module=libcontainerd namespace=p11 topic=/tasks/delete type="*events.TaskDelete"
+time="2026-10-18T15:01:41.269657621-04:00" level=info msg="sbJoin: gwep4 ''->'', gwep6 ''->''" eid=3dfb7092eb2c ep=endoforge-p11-3727415-c-007 net=none nid=cad8922815d1
+time="2026-10-18T15:01:42.215051290-04:00" level=info msg="received task-delete event from containerd" container=01abd5e4556cd21e103f314041abfc65b2ef628c02486dda451249c2d18ce13f module=libcontainerd namespace=p11 topic=/tasks/delete type="*events.TaskDelete"
+time="2026-10-18T15:01:43.327720546-04:00" level=info msg="sbJoin: gwep4 ''->'', gwep6 ''->''" eid=5010fce0297b ep=endoforge-p11-3727415-c-010 net=none nid=cad8922815d1
+time="2026-10-18T15:01:44.506879645-04:00" level=info msg="received task-delete event from containerd" container=1979f5c8dad5519b3cf7e0b433e0fd7acadd0c4cc71cb39a596133c6654e6cc9 module=libcontainerd namespace=p11 topic=/tasks/delete type="*events.TaskDelete"
+time="2026-10-18T15:01:45.626632350-04:00" level=info msg="sbJoin: gwep4 ''->'', gwep6 ''->''" eid=732344d5e275 ep=endoforge-p11-3727415-c-012 net=none nid=cad8922815d1
+time="2026-10-18T15:01:46.445373004-04:00" level=info msg="received task-delete event from containerd" container=bdee85bb1f560499f8b294d1d8aae2617cc4dafd03e2ebd636c3b7ae746a9ac7 module=libcontainerd namespace=p11 topic=/tasks/delete type="*events.TaskDelete"
+time="2026-10-18T15:01:47.685004955-04:00" level=info msg="sbJoin: gwep4 ''->'', gwep6 ''->''" eid=f88757854d37 ep=endoforge-p11-3727415-c-015 net=none nid=cad8922815d1
+time="2026-10-18T15:01:48.545712690-04:00" level=info msg="received task-delete event from containerd" container=ad6b3d89c8962a4cbb7de1c2e63eb4c072d6116da37885b958c1a0e3ab3d7b85 module=libcontainerd namespace=p11 topic=/tasks/delete type="*events.TaskDelete"
+time="2026-10-18T15:01:49.664359845-04:00" level=info msg="sbJoin: gwep4 ''->'', gwep6 ''->''" eid=298cc827ec29 ep=endoforge-p11-3727415-c-016 net=none nid=cad8922815d1
+time="2026-10-18T15:01:50.875300762-04:00" level=info msg="received task-delete event from containerd" container=c45ca5ebde0e72ac67cd34f7c05097c3a1f52aa0c6c3780959946b7da2312374 module=libcontainerd namespace=p11 topic=/tasks/delete type="*events.TaskDelete"
+time="2026-10-18T15:01:51.980780372-04:00" level=info msg="sbJoin: gwep4 ''->'', gwep6 ''->''" eid=dc357b9bfc21 ep=endoforge-p11-3727415-c-019 net=none nid=cad8922815d1
+time="2026-10-18T15:01:53.178703148-04:00" level=info msg="received task-delete event from containerd" container=7db866e5cb7aeb1fd39b98e92b482ea1361f9529edb20649a4c635141a108007 module=libcontainerd namespace=p11 topic=/tasks/delete type="*events.TaskDelete"
+time="2026-10-18T15:01:54.261596303-04:00" level=info msg="sbJoin: gwep4 ''->'', gwep6 ''->''" eid=61a187c6290d ep=endoforge-p11-3727415-cc-002 net=none nid=cad8922815d1
+time="2026-10-18T15:01:55.518936474-04:00" level=info msg="received task-delete event from containerd" container=6d83d45bff0bb235fb4fd539ace31221b78f1463541d93df3522d49a17b6a43c module=libcontainerd namespace=p11 topic=/tasks/delete type="*events.TaskDelete"
+time="2026-10-18T15:01:56.633267762-04:00" level=info msg="sbJoin: gwep4 ''->'', gwep6 ''->''" eid=c0ded9a84b26 ep=endoforge-p11-3727415-cc-007 net=none nid=cad8922815d1
+time="2026-10-18T15:01:57.643137816-04:00" level=info msg="received task-delete event from containerd" container=5ce3566b221cb95dd119e6ab5e20258d6bd1a65ff2c7170981a9960b5e2316d1 module=libcontainerd namespace=p11 topic=/tasks/delete type="*events.TaskDelete"
+time="2026-10-18T15:01:58.750635433-04:00" level=info msg="sbJoin: gwep4 ''->'', gwep6 ''->''" eid=387d60fb8d43 ep=endoforge-p11-3727415-cc-009 net=none nid=cad8922815d1
+time="2026-10-18T15:02:00.214023986-04:00" level=info msg="received task-delete event from containerd" container=4674e75c2fcd669bca497196a97b50391a191f2a6ccd93679b3836b09df3d3b8 module=libcontainerd namespace=p11 topic=/tasks/delete type="*events.TaskDelete"
+time="2026-10-18T15:02:01.318097113-04:00" level=info msg="sbJoin: gwep4 ''->'', gwep6 ''->''" eid=b75e7cef6c65 ep=endoforge-p11-3727415-cc-011 net=none nid=cad8922815d1
+time="2026-10-18T15:02:02.439058965-04:00" level=info msg="received task-delete event from containerd" container=6513e0e641143f9f2a5445260f017b8dba0de7d8ff21cda83d9dd0915bb68c94 module=libcontainerd namespace=p11 topic=/tasks/delete type="*events.TaskDelete"
+time="2026-10-18T15:02:03.520812620-04:00" level=info msg="sbJoin: gwep4 ''->'', gwep6 ''->''" eid=af9ade3dbebf ep=endoforge-p11-3727415-cc-013 net=none nid=cad8922815d1
+time="2026-10-18T15:02:05.070267341-04:00" level=info msg="received task-delete event from containerd" container=996b20e818302c04da08fe61121a5125ec4ee35bdec53d13dc3b85ecc8d47e29 module=libcontainerd namespace=p11 topic=/tasks/delete type="*events.TaskDelete"
+time="2026-10-18T15:02:06.159998191-04:00" level=info msg="sbJoin: gwep4 ''->'', gwep6 ''->''" eid=1b83b1d2c371 ep=endoforge-p11-3727415-cc-014 net=none nid=cad8922815d1
+time="2026-10-18T15:02:07.303934094-04:00" level=info msg="received task-delete event from containerd" container=ccc20c600ab90cad6c33e918f3cd7876eb7ccbec36e0f7ace2d1ce806f8ecfda module=libcontainerd namespace=p11 topic=/tasks/delete type="*events.TaskDelete"
+time="2026-10-18T15:02:08.409564676-04:00" level=info msg="sbJoin: gwep4 ''->'', gwep6 ''->''" eid=caa4958cd7be ep=endoforge-p11-3727415-cc-022 net=none nid=cad8922815d1
+time="2026-10-18T15:02:09.802391179-04:00" level=info msg="received task-delete event from containerd" container=60d2f12d68a0d0aa3dcece8bdd497f02913cad46029c146fcea1b66994bf4420 module=libcontainerd namespace=p11 topic=/tasks/delete type="*events.TaskDelete"
+time="2026-10-18T15:02:10.881340740-04:00" level=info msg="sbJoin: gwep4 ''->'', gwep6 ''->''" eid=544cbb94e050 ep=endoforge-p11-3727415-cc-025 net=none nid=cad8922815d1
+time="2026-10-18T15:02:11.684613752-04:00" level=info msg="received task-delete event from containerd" container=f7028f19d966f73977b2135360243844d9279ba69de69a027bdebc5292085791 module=libcontainerd namespace=p11 topic=/tasks/delete type="*events.TaskDelete"
+time="2026-10-18T15:02:12.863334340-04:00" level=info msg="sbJoin: gwep4 ''->'', gwep6 ''->''" eid=256a29bc6deb ep=endoforge-p11-3727415-cc-026 net=none nid=cad8922815d1
+time="2026-10-18T15:02:14.392782736-04:00" level=info msg="received task-delete event from containerd" container=093a0311c712beeb259e67b9a0e0d2429a0c9b0eb6d0b1b1de2d66250989617e module=libcontainerd namespace=p11 topic=/tasks/delete type="*events.TaskDelete"
+time="2026-10-18T15:02:15.514494397-04:00" level=info msg="sbJoin: gwep4 ''->'', gwep6 ''->''" eid=b855d2a95b4e ep=endoforge-p11-3727415-cc-027 net=none nid=cad8922815d1
+time="2026-10-18T15:02:16.343590416-04:00" level=info msg="received task-delete event from containerd" container=2728604657c4d4031ec99a282c714fe40e62e0800dc0aa4cf00504598d0de045 module=libcontainerd namespace=p11 topic=/tasks/delete type="*events.TaskDelete"
+time="2026-10-18T15:02:17.481785512-04:00" level=info msg="sbJoin: gwep4 ''->'', gwep6 ''->''" eid=502f35e60f68 ep=endoforge-p11-3727415-cc-036 net=none nid=cad8922815d1
+time="2026-10-18T15:02:18.325932148-04:00" level=info msg="received task-delete event from containerd" container=32d1385af29a4693490f0dcbbf9003b2fb7cb7a723caac9fa3cb76659365b778 module=libcontainerd namespace=p11 topic=/tasks/delete type="*events.TaskDelete"
+time="2026-10-18T15:02:18.704021484-04:00" level=info msg="Processing signal 'terminated'"
+time="2026-10-18T15:02:18.704800231-04:00" level=info msg="stopping event stream following graceful shutdown" error="grpc: the client connection is closing: context canceled" module=libcontainerd namespace=p11
+time="2026-10-18T15:02:18.715535886-04:00" level=info msg="stopping event stream following graceful shutdown" error="context canceled" module=libcontainerd namespace=p11-plugins
+time="2026-10-18T15:02:18.715560783-04:00" level=info msg="Daemon shutdown complete"

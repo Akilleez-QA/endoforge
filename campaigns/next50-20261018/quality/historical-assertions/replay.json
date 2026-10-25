@@ -1,0 +1,3318 @@
+{
+  "version": 1,
+  "rows": [
+    {
+      "version": 1,
+      "assertionId": "C-019:binary-binding:incumbent:overCapacity",
+      "requestId": "C-019",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "overCapacity",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          127
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-019:binary-binding:incumbent:levelAdequate",
+      "requestId": "C-019",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "levelAdequate",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          127
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-019:typed-pressure-basis",
+      "requestId": "C-019",
+      "arm": "incumbent",
+      "kind": "argument-unit",
+      "semanticRole": "gauge-pressure",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "overCapacity",
+      "observed": {
+        "argument": "psig",
+        "index": 0,
+        "kind": "number",
+        "unit": "psig",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-019:typed-explicit-threshold",
+      "requestId": "C-019",
+      "arm": "incumbent",
+      "kind": "required-input",
+      "semanticRole": "equipment-pressure-threshold",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "overCapacity",
+      "observed": {
+        "argument": "thresholdPsig",
+        "index": 1,
+        "kind": "number",
+        "unit": "psig",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-019:binary-binding:fast-path:over_capacity",
+      "requestId": "C-019",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "over_capacity",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          127
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-019:binary-binding:fast-path:condenser_level_adequate",
+      "requestId": "C-019",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "condenser_level_adequate",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          127
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-019:typed-pressure-basis",
+      "requestId": "C-019",
+      "arm": "fast-path",
+      "kind": "argument-unit",
+      "semanticRole": "gauge-pressure",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "over_capacity",
+      "observed": {
+        "argument": "psig",
+        "index": 0,
+        "kind": "number",
+        "unit": "psig",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-019:typed-explicit-threshold",
+      "requestId": "C-019",
+      "arm": "fast-path",
+      "kind": "required-input",
+      "semanticRole": "equipment-pressure-threshold",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "over_capacity",
+      "observed": {
+        "argument": "limit_psig",
+        "index": 1,
+        "kind": "number",
+        "unit": "psig",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-027:binary-binding:incumbent:subcoolStatus",
+      "requestId": "CC-027",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "subcoolStatus",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-027:binary-binding:incumbent:subcoolStatusVsTarget",
+      "requestId": "CC-027",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "subcoolStatusVsTarget",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          127
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-027:binary-binding:incumbent:subcoolExcess",
+      "requestId": "CC-027",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "subcoolExcess",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-027:typed-equipment-target",
+      "requestId": "CC-027",
+      "arm": "incumbent",
+      "kind": "required-input",
+      "semanticRole": "equipment-subcooling-target",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "subcoolExcess",
+      "observed": {
+        "argument": "targetF",
+        "index": 1,
+        "kind": "number",
+        "unit": "F",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-027:binary-binding:fast-path:subcooling_f",
+      "requestId": "CC-027",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "subcooling_f",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-027:binary-binding:fast-path:excess_subcool_f",
+      "requestId": "CC-027",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "excess_subcool_f",
+      "observed": {
+        "glueArity": 3,
+        "wasmArity": 3,
+        "params": [
+          124,
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-027:typed-equipment-target",
+      "requestId": "CC-027",
+      "arm": "fast-path",
+      "kind": "required-input",
+      "semanticRole": "equipment-subcooling-target",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "excess_subcool_f",
+      "observed": {
+        "argument": "target_f",
+        "index": 2,
+        "kind": "number",
+        "unit": "F",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-026:binary-binding:incumbent:dischargePressure",
+      "requestId": "CC-026",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "dischargePressure",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-026:binary-binding:incumbent:dewPressure",
+      "requestId": "CC-026",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "dewPressure",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-026:typed-independent-pressure",
+      "requestId": "CC-026",
+      "arm": "incumbent",
+      "kind": "required-input",
+      "semanticRole": "independent-measured-discharge-pressure",
+      "scope": "structural-subassertion",
+      "passed": false,
+      "reason": "Decision-relevant input path absent from this exported computation"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-026:typed-output-pressure-unit",
+      "requestId": "CC-026",
+      "arm": "incumbent",
+      "kind": "output-unit",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "dischargePressure",
+      "observed": {
+        "kind": "number",
+        "unit": "psig",
+        "precision": 1
+      },
+      "reason": "Checks declared output quantity only; numeric correctness is a separate procedure"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-026:typed-attached-refusal-message",
+      "requestId": "CC-026",
+      "arm": "incumbent",
+      "kind": "trap-binding",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "dischargePressure",
+      "observed": [
+        {
+          "fn": "dischargePressure",
+          "when": "superheat is negative, discharge temperature is outside -40..350 F, or the resulting saturated temperature is outside -40..150 F",
+          "message": "That combination is not a superheated discharge within the R448A fit range. Supply a non-negative superheat and a discharge temperature that gives a condensing temperature between -40 and 150 F."
+        }
+      ],
+      "reason": "Only checks nonempty refusal metadata attached to actual export; does not infer message semantics or actual trap behavior"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-026:binary-binding:fast-path:dischargePressurePsig",
+      "requestId": "CC-026",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "dischargePressurePsig",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-026:binary-binding:fast-path:dewPressurePsig",
+      "requestId": "CC-026",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "dewPressurePsig",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-026:typed-independent-pressure",
+      "requestId": "CC-026",
+      "arm": "fast-path",
+      "kind": "required-input",
+      "semanticRole": "independent-measured-discharge-pressure",
+      "scope": "structural-subassertion",
+      "passed": false,
+      "reason": "Decision-relevant input path absent from this exported computation"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-026:typed-output-pressure-unit",
+      "requestId": "CC-026",
+      "arm": "fast-path",
+      "kind": "output-unit",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "dischargePressurePsig",
+      "observed": {
+        "kind": "number",
+        "unit": "psig",
+        "precision": 0
+      },
+      "reason": "Checks declared output quantity only; numeric correctness is a separate procedure"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-026:typed-attached-refusal-message",
+      "requestId": "CC-026",
+      "arm": "fast-path",
+      "kind": "trap-binding",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "dischargePressurePsig",
+      "observed": [
+        {
+          "fn": "dischargePressurePsig",
+          "when": "superheat <= 0 or > 200, non-finite input, or dew temperature outside 0..140 °F",
+          "message": "Cannot infer a pressure: supply a discharge superheat above 0 (up to 200 °F) giving a 0..140 °F condensing dew point, or the condensing temperature."
+        }
+      ],
+      "reason": "Only checks nonempty refusal metadata attached to actual export; does not infer message semantics or actual trap behavior"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-007:binary-binding:incumbent:classifySubcooling",
+      "requestId": "C-007",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "classifySubcooling",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          127
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-007:binary-binding:incumbent:subcoolingDeviation",
+      "requestId": "C-007",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "subcoolingDeviation",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-007:typed-equipment-target",
+      "requestId": "C-007",
+      "arm": "incumbent",
+      "kind": "required-input",
+      "semanticRole": "equipment-subcooling-target",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "classifySubcooling",
+      "observed": {
+        "argument": "target",
+        "index": 1,
+        "kind": "number",
+        "unit": "°F",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-007:binary-binding:fast-path:subcool_is_normal",
+      "requestId": "C-007",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "subcool_is_normal",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-007:binary-binding:fast-path:subcool_class",
+      "requestId": "C-007",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "subcool_class",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-007:typed-equipment-target",
+      "requestId": "C-007",
+      "arm": "fast-path",
+      "kind": "required-input",
+      "semanticRole": "equipment-subcooling-target",
+      "scope": "structural-subassertion",
+      "passed": false,
+      "reason": "Decision-relevant input path absent from this exported computation"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-007:binary-binding:incumbent:recirculationRatio",
+      "requestId": "CC-007",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "recirculationRatio",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-007:binary-binding:incumbent:pumpedFlow",
+      "requestId": "CC-007",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "pumpedFlow",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-007:typed-pumped-mass-flow",
+      "requestId": "CC-007",
+      "arm": "incumbent",
+      "kind": "required-input",
+      "semanticRole": "liquid-supply-mass-flow",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "recirculationRatio",
+      "observed": {
+        "argument": "pumped",
+        "index": 0,
+        "kind": "number",
+        "unit": "mass flow (same unit as evaporated)",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-007:typed-evaporated-mass-flow",
+      "requestId": "CC-007",
+      "arm": "incumbent",
+      "kind": "required-input",
+      "semanticRole": "evaporation-mass-flow",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "recirculationRatio",
+      "observed": {
+        "argument": "evaporated",
+        "index": 1,
+        "kind": "number",
+        "unit": "mass flow (same unit as pumped)",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-007:typed-ratio-unit",
+      "requestId": "CC-007",
+      "arm": "incumbent",
+      "kind": "output-unit",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "recirculationRatio",
+      "observed": {
+        "kind": "number",
+        "unit": "ratio N:1",
+        "precision": 2
+      },
+      "reason": "Checks declared output quantity only; numeric correctness is a separate procedure"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-007:typed-attached-refusal-message",
+      "requestId": "CC-007",
+      "arm": "incumbent",
+      "kind": "trap-binding",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "recirculationRatio",
+      "observed": [
+        {
+          "fn": "recirculationRatio",
+          "when": "evaporated flow is zero or negative, or pumped flow is less than evaporated flow",
+          "message": "The pumped flow cannot be less than the flow that evaporates, and the evaporated flow must be positive. Enter both flows from the data sheet on the same mass basis."
+        }
+      ],
+      "reason": "Only checks nonempty refusal metadata attached to actual export; does not infer message semantics or actual trap behavior"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-007:binary-binding:fast-path:recirc_ratio",
+      "requestId": "CC-007",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "recirc_ratio",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-007:binary-binding:fast-path:recirc_ratio_from_exit_quality",
+      "requestId": "CC-007",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "recirc_ratio_from_exit_quality",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-007:typed-pumped-mass-flow",
+      "requestId": "CC-007",
+      "arm": "fast-path",
+      "kind": "required-input",
+      "semanticRole": "liquid-supply-mass-flow",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "recirc_ratio",
+      "observed": {
+        "argument": "pumped_flow",
+        "index": 0,
+        "kind": "number",
+        "unit": "kg/s",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-007:typed-evaporated-mass-flow",
+      "requestId": "CC-007",
+      "arm": "fast-path",
+      "kind": "required-input",
+      "semanticRole": "evaporation-mass-flow",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "recirc_ratio",
+      "observed": {
+        "argument": "evaporated_flow",
+        "index": 1,
+        "kind": "number",
+        "unit": "kg/s",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-007:typed-ratio-unit",
+      "requestId": "CC-007",
+      "arm": "fast-path",
+      "kind": "output-unit",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "recirc_ratio",
+      "observed": {
+        "kind": "number",
+        "unit": "dimensionless",
+        "precision": 2
+      },
+      "reason": "Checks declared output quantity only; numeric correctness is a separate procedure"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-007:typed-attached-refusal-message",
+      "requestId": "CC-007",
+      "arm": "fast-path",
+      "kind": "trap-binding",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "recirc_ratio",
+      "observed": [
+        {
+          "fn": "recirc_ratio",
+          "when": "any flow is non-finite, zero or negative, or pumped flow is below evaporated flow",
+          "message": "Both flows must be positive and the pumped flow at least the evaporated flow; supply valid flows in the same unit."
+        }
+      ],
+      "reason": "Only checks nonempty refusal metadata attached to actual export; does not infer message semantics or actual trap behavior"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-010:binary-binding:incumbent:sampleDateMs",
+      "requestId": "C-010",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "sampleDateMs",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-010:binary-binding:incumbent:anchorDayMs",
+      "requestId": "C-010",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "anchorDayMs",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-010:typed-anchor-input",
+      "requestId": "C-010",
+      "arm": "incumbent",
+      "kind": "argument-unit",
+      "semanticRole": "immutable-session-anchor",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "sampleDateMs",
+      "observed": {
+        "argument": "anchorMs",
+        "index": 1,
+        "kind": "number",
+        "unit": "ms since 1970-01-01T00:00Z",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-010:typed-offset-input",
+      "requestId": "C-010",
+      "arm": "incumbent",
+      "kind": "argument-unit",
+      "semanticRole": "day-offset",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "sampleDateMs",
+      "observed": {
+        "argument": "offsetDays",
+        "index": 0,
+        "kind": "integer",
+        "unit": "day",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-010:binary-binding:fast-path:sampleDateMs",
+      "requestId": "C-010",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "sampleDateMs",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-010:binary-binding:fast-path:anchorDay",
+      "requestId": "C-010",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "anchorDay",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-010:binary-binding:fast-path:daysAgo",
+      "requestId": "C-010",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "daysAgo",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-010:binary-binding:fast-path:isFutureDate",
+      "requestId": "C-010",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "isFutureDate",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          127
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-010:typed-anchor-input",
+      "requestId": "C-010",
+      "arm": "fast-path",
+      "kind": "argument-unit",
+      "semanticRole": "immutable-session-anchor",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "sampleDateMs",
+      "observed": {
+        "argument": "anchorMs",
+        "index": 0,
+        "kind": "number",
+        "unit": "ms since 1970-01-01 UTC",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-010:typed-offset-input",
+      "requestId": "C-010",
+      "arm": "fast-path",
+      "kind": "argument-unit",
+      "semanticRole": "day-offset",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "sampleDateMs",
+      "observed": {
+        "argument": "offsetDays",
+        "index": 1,
+        "kind": "integer",
+        "unit": "days",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-001:binary-binding:incumbent:superheatTargetK",
+      "requestId": "CC-001",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "superheatTargetK",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-001:binary-binding:fast-path:superheat_target_k",
+      "requestId": "CC-001",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "superheat_target_k",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-022:binary-binding:incumbent:claimTrue",
+      "requestId": "CC-022",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "claimTrue",
+      "observed": {
+        "glueArity": 3,
+        "wasmArity": 3,
+        "params": [
+          124,
+          124,
+          124
+        ],
+        "results": [
+          127
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-022:binary-binding:incumbent:psiPerDegF",
+      "requestId": "CC-022",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "psiPerDegF",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-022:binary-binding:fast-path:slope_psi_per_F",
+      "requestId": "CC-022",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "slope_psi_per_F",
+      "observed": {
+        "glueArity": 4,
+        "wasmArity": 4,
+        "params": [
+          124,
+          124,
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-022:binary-binding:fast-path:claim_holds",
+      "requestId": "CC-022",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "claim_holds",
+      "observed": {
+        "glueArity": 6,
+        "wasmArity": 6,
+        "params": [
+          124,
+          124,
+          124,
+          124,
+          124,
+          124
+        ],
+        "results": [
+          127
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-015:binary-binding:incumbent:approvalDecision",
+      "requestId": "C-015",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "approvalDecision",
+      "observed": {
+        "glueArity": 3,
+        "wasmArity": 3,
+        "params": [
+          127,
+          127,
+          127
+        ],
+        "results": [
+          127
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-015:binary-binding:fast-path:approvalAllowed",
+      "requestId": "C-015",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "approvalAllowed",
+      "observed": {
+        "glueArity": 3,
+        "wasmArity": 3,
+        "params": [
+          127,
+          127,
+          127
+        ],
+        "results": [
+          127
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-016:binary-binding:incumbent:uiStatus",
+      "requestId": "C-016",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "uiStatus",
+      "observed": {
+        "glueArity": 3,
+        "wasmArity": 3,
+        "params": [
+          127,
+          127,
+          127
+        ],
+        "results": [
+          127
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-016:binary-binding:incumbent:namedConfirmer",
+      "requestId": "C-016",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "namedConfirmer",
+      "observed": {
+        "glueArity": 3,
+        "wasmArity": 3,
+        "params": [
+          127,
+          127,
+          127
+        ],
+        "results": [
+          127
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-016:binary-binding:fast-path:display_state",
+      "requestId": "C-016",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "display_state",
+      "observed": {
+        "glueArity": 3,
+        "wasmArity": 3,
+        "params": [
+          127,
+          127,
+          127
+        ],
+        "results": [
+          127
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-009:binary-binding:incumbent:evaporatorInventoryLb",
+      "requestId": "CC-009",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "evaporatorInventoryLb",
+      "observed": {
+        "glueArity": 4,
+        "wasmArity": 4,
+        "params": [
+          124,
+          124,
+          127,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-009:binary-binding:incumbent:ammoniaLiquidDensity",
+      "requestId": "CC-009",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "ammoniaLiquidDensity",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-009:binary-binding:incumbent:fillFraction",
+      "requestId": "CC-009",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "fillFraction",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          127
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-009:typed-actual-liquid-fraction",
+      "requestId": "CC-009",
+      "arm": "incumbent",
+      "kind": "required-input",
+      "semanticRole": "actual-liquid-fraction",
+      "scope": "structural-subassertion",
+      "passed": false,
+      "reason": "Decision-relevant input path absent from this exported computation"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-009:typed-supplied-liquid-density",
+      "requestId": "CC-009",
+      "arm": "incumbent",
+      "kind": "required-input",
+      "semanticRole": "supplied-liquid-density",
+      "scope": "structural-subassertion",
+      "passed": false,
+      "reason": "Decision-relevant input path absent from this exported computation"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-009:typed-supplied-vapor-density",
+      "requestId": "CC-009",
+      "arm": "incumbent",
+      "kind": "required-input",
+      "semanticRole": "supplied-vapor-density",
+      "scope": "structural-subassertion",
+      "passed": false,
+      "reason": "Decision-relevant input path absent from this exported computation"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-009:typed-inventory-mass-unit",
+      "requestId": "CC-009",
+      "arm": "incumbent",
+      "kind": "output-unit",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "evaporatorInventoryLb",
+      "observed": {
+        "kind": "number",
+        "unit": "lb",
+        "precision": 0
+      },
+      "reason": "Checks declared output quantity only; numeric correctness is a separate procedure"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-009:binary-binding:fast-path:evap_inventory_lb",
+      "requestId": "CC-009",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "evap_inventory_lb",
+      "observed": {
+        "glueArity": 4,
+        "wasmArity": 4,
+        "params": [
+          124,
+          124,
+          124,
+          127
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-009:typed-actual-liquid-fraction",
+      "requestId": "CC-009",
+      "arm": "fast-path",
+      "kind": "required-input",
+      "semanticRole": "actual-liquid-fraction",
+      "scope": "structural-subassertion",
+      "passed": false,
+      "reason": "Decision-relevant input path absent from this exported computation"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-009:typed-supplied-liquid-density",
+      "requestId": "CC-009",
+      "arm": "fast-path",
+      "kind": "required-input",
+      "semanticRole": "supplied-liquid-density",
+      "scope": "structural-subassertion",
+      "passed": false,
+      "reason": "Decision-relevant input path absent from this exported computation"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-009:typed-supplied-vapor-density",
+      "requestId": "CC-009",
+      "arm": "fast-path",
+      "kind": "required-input",
+      "semanticRole": "supplied-vapor-density",
+      "scope": "structural-subassertion",
+      "passed": false,
+      "reason": "Decision-relevant input path absent from this exported computation"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-009:typed-inventory-mass-unit",
+      "requestId": "CC-009",
+      "arm": "fast-path",
+      "kind": "output-unit",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "evap_inventory_lb",
+      "observed": {
+        "kind": "number",
+        "unit": "lb",
+        "precision": 1
+      },
+      "reason": "Checks declared output quantity only; numeric correctness is a separate procedure"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-002:binary-binding:incumbent:dewPointF",
+      "requestId": "CC-002",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "dewPointF",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-002:typed-temperature",
+      "requestId": "CC-002",
+      "arm": "incumbent",
+      "kind": "required-input",
+      "semanticRole": "dry-bulb-temperature",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "dewPointF",
+      "observed": {
+        "argument": "tempF",
+        "index": 0,
+        "kind": "number",
+        "unit": "F",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-002:typed-humidity",
+      "requestId": "CC-002",
+      "arm": "incumbent",
+      "kind": "required-input",
+      "semanticRole": "relative-humidity-percent",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "dewPointF",
+      "observed": {
+        "argument": "rhPct",
+        "index": 1,
+        "kind": "number",
+        "unit": "%",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-002:typed-dewpoint-temperature-unit",
+      "requestId": "CC-002",
+      "arm": "incumbent",
+      "kind": "output-unit",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "dewPointF",
+      "observed": {
+        "kind": "number",
+        "unit": "F",
+        "precision": 1
+      },
+      "reason": "Checks declared output quantity only; numeric correctness is a separate procedure"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-002:typed-attached-refusal-message",
+      "requestId": "CC-002",
+      "arm": "incumbent",
+      "kind": "trap-binding",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "dewPointF",
+      "observed": [
+        {
+          "fn": "dewPointF",
+          "when": "relative humidity is 0 or less, or above 100",
+          "message": "Relative humidity must be greater than 0 and at most 100 percent; supply the RH reading in percent."
+        },
+        {
+          "fn": "dewPointF",
+          "when": "temperature is below -40 F or above 140 F",
+          "message": "Temperature is outside the -40 to 140 F range this calculation covers; supply a room temperature in degrees F within that range."
+        }
+      ],
+      "reason": "Only checks nonempty refusal metadata attached to actual export; does not infer message semantics or actual trap behavior"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-002:binary-binding:fast-path:dew_point_f",
+      "requestId": "CC-002",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "dew_point_f",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-002:typed-temperature",
+      "requestId": "CC-002",
+      "arm": "fast-path",
+      "kind": "required-input",
+      "semanticRole": "dry-bulb-temperature",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "dew_point_f",
+      "observed": {
+        "argument": "temp_f",
+        "index": 0,
+        "kind": "number",
+        "unit": "°F",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-002:typed-humidity",
+      "requestId": "CC-002",
+      "arm": "fast-path",
+      "kind": "required-input",
+      "semanticRole": "relative-humidity-percent",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "dew_point_f",
+      "observed": {
+        "argument": "rh_pct",
+        "index": 1,
+        "kind": "number",
+        "unit": "%",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-002:typed-dewpoint-temperature-unit",
+      "requestId": "CC-002",
+      "arm": "fast-path",
+      "kind": "output-unit",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "dew_point_f",
+      "observed": {
+        "kind": "number",
+        "unit": "°F",
+        "precision": 1
+      },
+      "reason": "Checks declared output quantity only; numeric correctness is a separate procedure"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-002:typed-attached-refusal-message",
+      "requestId": "CC-002",
+      "arm": "fast-path",
+      "kind": "trap-binding",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "dew_point_f",
+      "observed": [
+        {
+          "fn": "dew_point_f",
+          "when": "RH <= 0 or > 100, temperature outside -40..140 °F, or non-finite input",
+          "message": "Dew point is only defined for RH above 0 and up to 100 % and temperature from -40 to 140 °F; supply values in those ranges."
+        }
+      ],
+      "reason": "Only checks nonempty refusal metadata attached to actual export; does not infer message semantics or actual trap behavior"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-013:binary-binding:incumbent:dewPointF",
+      "requestId": "CC-013",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "dewPointF",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-013:typed-temperature",
+      "requestId": "CC-013",
+      "arm": "incumbent",
+      "kind": "required-input",
+      "semanticRole": "dry-bulb-temperature",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "dewPointF",
+      "observed": {
+        "argument": "tempF",
+        "index": 0,
+        "kind": "number",
+        "unit": "°F",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-013:typed-humidity",
+      "requestId": "CC-013",
+      "arm": "incumbent",
+      "kind": "required-input",
+      "semanticRole": "relative-humidity-percent",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "dewPointF",
+      "observed": {
+        "argument": "rhPct",
+        "index": 1,
+        "kind": "number",
+        "unit": "% RH",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-013:typed-dewpoint-temperature-unit",
+      "requestId": "CC-013",
+      "arm": "incumbent",
+      "kind": "output-unit",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "dewPointF",
+      "observed": {
+        "kind": "number",
+        "unit": "°F",
+        "precision": 1
+      },
+      "reason": "Checks declared output quantity only; numeric correctness is a separate procedure"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-013:typed-attached-refusal-message",
+      "requestId": "CC-013",
+      "arm": "incumbent",
+      "kind": "trap-binding",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "dewPointF",
+      "observed": [
+        {
+          "fn": "dewPointF",
+          "when": "RH is 0 or below, or above 100",
+          "message": "Relative humidity must be greater than 0 and no more than 100 %. Enter the RH reading in percent."
+        },
+        {
+          "fn": "dewPointF",
+          "when": "temperature below -49 °F or above 140 °F",
+          "message": "The temperature is outside the -49 to 140 °F range where this formula is accurate. Enter a dry-bulb temperature inside that range."
+        }
+      ],
+      "reason": "Only checks nonempty refusal metadata attached to actual export; does not infer message semantics or actual trap behavior"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-013:binary-binding:fast-path:dewpoint_f",
+      "requestId": "CC-013",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "dewpoint_f",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-013:typed-temperature",
+      "requestId": "CC-013",
+      "arm": "fast-path",
+      "kind": "required-input",
+      "semanticRole": "dry-bulb-temperature",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "dewpoint_f",
+      "observed": {
+        "argument": "temp_f",
+        "index": 0,
+        "kind": "number",
+        "unit": "°F",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-013:typed-humidity",
+      "requestId": "CC-013",
+      "arm": "fast-path",
+      "kind": "required-input",
+      "semanticRole": "relative-humidity-percent",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "dewpoint_f",
+      "observed": {
+        "argument": "rh_pct",
+        "index": 1,
+        "kind": "number",
+        "unit": "%",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-013:typed-dewpoint-temperature-unit",
+      "requestId": "CC-013",
+      "arm": "fast-path",
+      "kind": "output-unit",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "dewpoint_f",
+      "observed": {
+        "kind": "number",
+        "unit": "°F",
+        "precision": 1
+      },
+      "reason": "Checks declared output quantity only; numeric correctness is a separate procedure"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-013:typed-attached-refusal-message",
+      "requestId": "CC-013",
+      "arm": "fast-path",
+      "kind": "trap-binding",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "dewpoint_f",
+      "observed": [
+        {
+          "fn": "dewpoint_f",
+          "when": "temperature outside -60..140 °F, relative humidity <= 0 or > 100, or a non-finite value",
+          "message": "Refused: temperature must be -60 to 140 °F and relative humidity above 0 and at most 100 %; supply values in those ranges."
+        }
+      ],
+      "reason": "Only checks nonempty refusal metadata attached to actual export; does not infer message semantics or actual trap behavior"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-036:binary-binding:incumbent:kwToHp",
+      "requestId": "CC-036",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "kwToHp",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-036:binary-binding:incumbent:kwToHpKind",
+      "requestId": "CC-036",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "kwToHpKind",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          127
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-036:typed-metric-horsepower-unit",
+      "requestId": "CC-036",
+      "arm": "incumbent",
+      "kind": "output-unit",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": false,
+      "export": "kwToHpKind",
+      "observed": {
+        "kind": "number",
+        "unit": "hp",
+        "precision": 2
+      },
+      "reason": "Checks declared output quantity only; numeric correctness is a separate procedure"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-036:typed-power-vs-energy-input-type",
+      "requestId": "CC-036",
+      "arm": "incumbent",
+      "kind": "required-input",
+      "semanticRole": "source-quantity-dimension-envelope",
+      "scope": "structural-subassertion",
+      "passed": false,
+      "reason": "Decision-relevant input path absent from this exported computation"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-036:binary-binding:fast-path:kw_to_hp",
+      "requestId": "CC-036",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "kw_to_hp",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-036:binary-binding:fast-path:kw_to_metric_hp",
+      "requestId": "CC-036",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "kw_to_metric_hp",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-036:typed-metric-horsepower-unit",
+      "requestId": "CC-036",
+      "arm": "fast-path",
+      "kind": "output-unit",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "kw_to_metric_hp",
+      "observed": {
+        "kind": "number",
+        "unit": "PS",
+        "precision": 4
+      },
+      "reason": "Checks declared output quantity only; numeric correctness is a separate procedure"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-036:typed-power-vs-energy-input-type",
+      "requestId": "CC-036",
+      "arm": "fast-path",
+      "kind": "required-input",
+      "semanticRole": "source-quantity-dimension-envelope",
+      "scope": "structural-subassertion",
+      "passed": false,
+      "reason": "Decision-relevant input path absent from this exported computation"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-006:binary-binding:incumbent:maxChargeR290Kg",
+      "requestId": "C-006",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "maxChargeR290Kg",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          127
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-006:binary-binding:fast-path:max_charge_kg",
+      "requestId": "C-006",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "max_charge_kg",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-006:binary-binding:fast-path:min_room_area_m2",
+      "requestId": "C-006",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "min_room_area_m2",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-025:binary-binding:incumbent:kwToHp",
+      "requestId": "CC-025",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "kwToHp",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-025:binary-binding:incumbent:kwToShaftHp",
+      "requestId": "CC-025",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "kwToShaftHp",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-025:typed-efficiency",
+      "requestId": "CC-025",
+      "arm": "incumbent",
+      "kind": "required-input",
+      "semanticRole": "input-to-shaft-efficiency",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "kwToShaftHp",
+      "observed": {
+        "argument": "efficiency",
+        "index": 1,
+        "kind": "number",
+        "unit": "dimensionless",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-025:typed-electrical-power-unit",
+      "requestId": "CC-025",
+      "arm": "incumbent",
+      "kind": "argument-unit",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "kwToShaftHp",
+      "observed": {
+        "argument": "kwIn",
+        "index": 0,
+        "kind": "number",
+        "unit": "kW",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-025:typed-attached-refusal-message",
+      "requestId": "CC-025",
+      "arm": "incumbent",
+      "kind": "trap-binding",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "kwToShaftHp",
+      "observed": [
+        {
+          "fn": "kwToShaftHp",
+          "when": "power is negative, or efficiency is not between 0 and 1",
+          "message": "Enter kW drawn as zero or positive and efficiency as a fraction from 0 to 1 (for example 0.9 for 90%)."
+        }
+      ],
+      "reason": "Only checks nonempty refusal metadata attached to actual export; does not infer message semantics or actual trap behavior"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-025:binary-binding:fast-path:kw_to_hp",
+      "requestId": "CC-025",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "kw_to_hp",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-025:binary-binding:fast-path:kw_input_to_shaft_hp",
+      "requestId": "CC-025",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "kw_input_to_shaft_hp",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-025:typed-efficiency",
+      "requestId": "CC-025",
+      "arm": "fast-path",
+      "kind": "required-input",
+      "semanticRole": "input-to-shaft-efficiency",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "kw_input_to_shaft_hp",
+      "observed": {
+        "argument": "efficiency",
+        "index": 1,
+        "kind": "number",
+        "unit": "dimensionless",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-025:typed-electrical-power-unit",
+      "requestId": "CC-025",
+      "arm": "fast-path",
+      "kind": "argument-unit",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "kw_input_to_shaft_hp",
+      "observed": {
+        "argument": "kw",
+        "index": 0,
+        "kind": "number",
+        "unit": "kW",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-025:typed-attached-refusal-message",
+      "requestId": "CC-025",
+      "arm": "fast-path",
+      "kind": "trap-binding",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "kw_input_to_shaft_hp",
+      "observed": [
+        {
+          "fn": "kw_input_to_shaft_hp",
+          "when": "kW negative or not finite, or efficiency not in (0, 1]",
+          "message": "Give input power as a non-negative kW and efficiency as a fraction above 0 and at most 1 (for example 0.9)."
+        }
+      ],
+      "reason": "Only checks nonempty refusal metadata attached to actual export; does not infer message semantics or actual trap behavior"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-012:binary-binding:incumbent:neutralize",
+      "requestId": "C-012",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "neutralize",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          127
+        ],
+        "results": [
+          127
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-012:binary-binding:incumbent:identifierNumber",
+      "requestId": "C-012",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "identifierNumber",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          127
+        ],
+        "results": [
+          127
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-012:binary-binding:fast-path:generic_id_length",
+      "requestId": "C-012",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "generic_id_length",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-012:binary-binding:fast-path:generic_id_letter",
+      "requestId": "C-012",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "generic_id_letter",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          127
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-005:binary-binding:incumbent:additionalChargeG",
+      "requestId": "C-005",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "additionalChargeG",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          127
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-005:binary-binding:incumbent:belowMinimumLength",
+      "requestId": "C-005",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "belowMinimumLength",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-005:typed-manual-precharge-length",
+      "requestId": "C-005",
+      "arm": "incumbent",
+      "kind": "required-input",
+      "semanticRole": "manual-precharge-length",
+      "scope": "structural-subassertion",
+      "passed": false,
+      "reason": "Decision-relevant input path absent from this exported computation"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-005:typed-manual-charge-rate",
+      "requestId": "C-005",
+      "arm": "incumbent",
+      "kind": "required-input",
+      "semanticRole": "manual-charge-rate",
+      "scope": "structural-subassertion",
+      "passed": false,
+      "reason": "Decision-relevant input path absent from this exported computation"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-005:typed-minimum-installation-length",
+      "requestId": "C-005",
+      "arm": "incumbent",
+      "kind": "required-input",
+      "semanticRole": "minimum-installation-length",
+      "scope": "structural-subassertion",
+      "passed": false,
+      "reason": "Decision-relevant input path absent from this exported computation"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-005:typed-additional-charge-unit",
+      "requestId": "C-005",
+      "arm": "incumbent",
+      "kind": "output-unit",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "additionalChargeG",
+      "observed": {
+        "kind": "number",
+        "unit": "g",
+        "precision": 0
+      },
+      "reason": "Checks declared output quantity only; numeric correctness is a separate procedure"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-005:typed-attached-refusal-message",
+      "requestId": "C-005",
+      "arm": "incumbent",
+      "kind": "trap-binding",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "additionalChargeG",
+      "observed": [
+        {
+          "fn": "additionalChargeG",
+          "when": "length is 0 or less, above 50 m, or the refrigerant code is not 1 or 2",
+          "message": "Refused: enter a line length above 0 m and up to 50 m, and choose R-410A (1) or R-32 (2) from the nameplate."
+        }
+      ],
+      "reason": "Only checks nonempty refusal metadata attached to actual export; does not infer message semantics or actual trap behavior"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-005:binary-binding:fast-path:addChargeG",
+      "requestId": "C-005",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "addChargeG",
+      "observed": {
+        "glueArity": 3,
+        "wasmArity": 3,
+        "params": [
+          124,
+          124,
+          127
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-005:typed-manual-precharge-length",
+      "requestId": "C-005",
+      "arm": "fast-path",
+      "kind": "required-input",
+      "semanticRole": "manual-precharge-length",
+      "scope": "structural-subassertion",
+      "passed": false,
+      "reason": "Decision-relevant input path absent from this exported computation"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-005:typed-manual-charge-rate",
+      "requestId": "C-005",
+      "arm": "fast-path",
+      "kind": "required-input",
+      "semanticRole": "manual-charge-rate",
+      "scope": "structural-subassertion",
+      "passed": false,
+      "reason": "Decision-relevant input path absent from this exported computation"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-005:typed-minimum-installation-length",
+      "requestId": "C-005",
+      "arm": "fast-path",
+      "kind": "required-input",
+      "semanticRole": "minimum-installation-length",
+      "scope": "structural-subassertion",
+      "passed": false,
+      "reason": "Decision-relevant input path absent from this exported computation"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-005:typed-additional-charge-unit",
+      "requestId": "C-005",
+      "arm": "fast-path",
+      "kind": "output-unit",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "addChargeG",
+      "observed": {
+        "kind": "number",
+        "unit": "g",
+        "precision": 1
+      },
+      "reason": "Checks declared output quantity only; numeric correctness is a separate procedure"
+    },
+    {
+      "version": 1,
+      "assertionId": "C-005:typed-attached-refusal-message",
+      "requestId": "C-005",
+      "arm": "fast-path",
+      "kind": "trap-binding",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "addChargeG",
+      "observed": [
+        {
+          "fn": "addChargeG",
+          "when": "length outside 0..100 m, negative or not finite",
+          "message": "The pipe length must be between 0 and 100 metres; give the run length in metres."
+        },
+        {
+          "fn": "addChargeG",
+          "when": "liquid line diameter outside 0.125..1.125 in",
+          "message": "The liquid line size must be between 1/8 and 1-1/8 inch; give the outside diameter in inches (1/4 = 0.25)."
+        },
+        {
+          "fn": "addChargeG",
+          "when": "refrigerant code not 1..5",
+          "message": "Refrigerant must be 1 R410A, 2 R32, 3 R22, 4 R134a or 5 R290; read the type from the unit nameplate."
+        }
+      ],
+      "reason": "Only checks nonempty refusal metadata attached to actual export; does not infer message semantics or actual trap behavior"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-011:binary-binding:incumbent:r22Cost",
+      "requestId": "CC-011",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "r22Cost",
+      "observed": {
+        "glueArity": 3,
+        "wasmArity": 3,
+        "params": [
+          124,
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-011:typed-quoted-price",
+      "requestId": "CC-011",
+      "arm": "incumbent",
+      "kind": "required-input",
+      "semanticRole": "supplier-quoted-unit-price",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "r22Cost",
+      "observed": {
+        "argument": "pricePerLb",
+        "index": 1,
+        "kind": "number",
+        "unit": "USD/lb",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-011:typed-weight",
+      "requestId": "CC-011",
+      "arm": "incumbent",
+      "kind": "argument-unit",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "r22Cost",
+      "observed": {
+        "argument": "weightLb",
+        "index": 0,
+        "kind": "number",
+        "unit": "lb",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-011:typed-currency-result",
+      "requestId": "CC-011",
+      "arm": "incumbent",
+      "kind": "output-unit",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "r22Cost",
+      "observed": {
+        "kind": "number",
+        "unit": "USD",
+        "precision": 2
+      },
+      "reason": "Checks declared output quantity only; numeric correctness is a separate procedure"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-011:typed-currency-precision",
+      "requestId": "CC-011",
+      "arm": "incumbent",
+      "kind": "precision",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "r22Cost",
+      "observed": 2,
+      "reason": "Checks declared rendering precision only; numeric accuracy remains separate"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-011:typed-whole-cylinder-purchase-basis",
+      "requestId": "CC-011",
+      "arm": "incumbent",
+      "kind": "required-input",
+      "semanticRole": "whole-cylinder-vs-prorated-purchase",
+      "scope": "structural-subassertion",
+      "passed": false,
+      "reason": "Decision-relevant input path absent from this exported computation"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-011:typed-attached-refusal-message",
+      "requestId": "CC-011",
+      "arm": "incumbent",
+      "kind": "trap-binding",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "r22Cost",
+      "observed": [
+        {
+          "fn": "r22Cost",
+          "when": "weight is negative or not a number",
+          "message": "The weight must be zero or more pounds. Enter the amount of R-22 you are buying, for example 15."
+        },
+        {
+          "fn": "r22Cost",
+          "when": "price per pound is negative or not a number",
+          "message": "The price must be zero or more dollars per pound. Enter your supplier's quoted price for R-22."
+        },
+        {
+          "fn": "r22Cost",
+          "when": "tax rate is below 0 or above 100 percent",
+          "message": "The sales tax rate must be between 0 and 100 percent. Enter 0 if no tax applies."
+        }
+      ],
+      "reason": "Only checks nonempty refusal metadata attached to actual export; does not infer message semantics or actual trap behavior"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-011:binary-binding:fast-path:refrigerantCost",
+      "requestId": "CC-011",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "refrigerantCost",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-011:typed-quoted-price",
+      "requestId": "CC-011",
+      "arm": "fast-path",
+      "kind": "required-input",
+      "semanticRole": "supplier-quoted-unit-price",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "refrigerantCost",
+      "observed": {
+        "argument": "pricePerLb",
+        "index": 1,
+        "kind": "number",
+        "unit": "USD/lb",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-011:typed-weight",
+      "requestId": "CC-011",
+      "arm": "fast-path",
+      "kind": "argument-unit",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "refrigerantCost",
+      "observed": {
+        "argument": "pounds",
+        "index": 0,
+        "kind": "number",
+        "unit": "lb",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-011:typed-currency-result",
+      "requestId": "CC-011",
+      "arm": "fast-path",
+      "kind": "output-unit",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "refrigerantCost",
+      "observed": {
+        "kind": "number",
+        "unit": "USD",
+        "precision": 2
+      },
+      "reason": "Checks declared output quantity only; numeric correctness is a separate procedure"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-011:typed-currency-precision",
+      "requestId": "CC-011",
+      "arm": "fast-path",
+      "kind": "precision",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "refrigerantCost",
+      "observed": 2,
+      "reason": "Checks declared rendering precision only; numeric accuracy remains separate"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-011:typed-whole-cylinder-purchase-basis",
+      "requestId": "CC-011",
+      "arm": "fast-path",
+      "kind": "required-input",
+      "semanticRole": "whole-cylinder-vs-prorated-purchase",
+      "scope": "structural-subassertion",
+      "passed": false,
+      "reason": "Decision-relevant input path absent from this exported computation"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-011:typed-attached-refusal-message",
+      "requestId": "CC-011",
+      "arm": "fast-path",
+      "kind": "trap-binding",
+      "semanticRole": null,
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "refrigerantCost",
+      "observed": [
+        {
+          "fn": "refrigerantCost",
+          "when": "pounds or price is negative, NaN or infinite",
+          "message": "Weight and price must be finite numbers of zero or more; supply the pounds and the USD price per pound."
+        }
+      ],
+      "reason": "Only checks nonempty refusal metadata attached to actual export; does not infer message semantics or actual trap behavior"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-014:binary-binding:incumbent:liquidOutFraction",
+      "requestId": "CC-014",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "liquidOutFraction",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-014:binary-binding:incumbent:liquidOutFlow",
+      "requestId": "CC-014",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "liquidOutFlow",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-014:binary-binding:incumbent:liquidFeedFlow",
+      "requestId": "CC-014",
+      "arm": "incumbent",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "liquidFeedFlow",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-014:typed-absolute-flow-basis",
+      "requestId": "CC-014",
+      "arm": "incumbent",
+      "kind": "required-input",
+      "semanticRole": "evaporation-mass-flow",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "liquidOutFlow",
+      "observed": {
+        "argument": "evaporated",
+        "index": 1,
+        "kind": "number",
+        "unit": "mass flow (any unit, e.g. lb/h)",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-014:typed-ratio-input",
+      "requestId": "CC-014",
+      "arm": "incumbent",
+      "kind": "required-input",
+      "semanticRole": "feed-to-evaporation-ratio",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "liquidOutFlow",
+      "observed": {
+        "argument": "n",
+        "index": 0,
+        "kind": "number",
+        "unit": "dimensionless",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-014:binary-binding:fast-path:liquid_out_per_evap",
+      "requestId": "CC-014",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "liquid_out_per_evap",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-014:binary-binding:fast-path:liquid_out_flow",
+      "requestId": "CC-014",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "liquid_out_flow",
+      "observed": {
+        "glueArity": 2,
+        "wasmArity": 2,
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-014:binary-binding:fast-path:exit_quality",
+      "requestId": "CC-014",
+      "arm": "fast-path",
+      "kind": "binding",
+      "semanticRole": null,
+      "scope": "binary-schema-qualification-only",
+      "passed": true,
+      "export": "exit_quality",
+      "observed": {
+        "glueArity": 1,
+        "wasmArity": 1,
+        "params": [
+          124
+        ],
+        "results": [
+          124
+        ],
+        "integerEncodingPolicy": "Declared integer may use float ABI; static check does not prove integral-value guards."
+      },
+      "reason": "Declared numeric interface bound to actual WASM function"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-014:typed-absolute-flow-basis",
+      "requestId": "CC-014",
+      "arm": "fast-path",
+      "kind": "required-input",
+      "semanticRole": "evaporation-mass-flow",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "liquid_out_flow",
+      "observed": {
+        "argument": "evap",
+        "index": 1,
+        "kind": "number",
+        "unit": "kg/s",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    },
+    {
+      "version": 1,
+      "assertionId": "CC-014:typed-ratio-input",
+      "requestId": "CC-014",
+      "arm": "fast-path",
+      "kind": "required-input",
+      "semanticRole": "feed-to-evaporation-ratio",
+      "scope": "structural-subassertion",
+      "passed": true,
+      "export": "liquid_out_flow",
+      "observed": {
+        "argument": "n",
+        "index": 0,
+        "kind": "number",
+        "unit": "dimensionless",
+        "wasmType": 124
+      },
+      "reason": "Explicit argument path and declared quantity matched"
+    }
+  ],
+  "sources": {
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-019/C-019/glue.json": "9c13f60896120274e75189d470d438109123bd37592b9ad7d3ae62e10e451531",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-019/C-019/kernel.wasm": "1cbcf25d10543dd701053f29edf32e1947cfe108c0bfce8f4e78dbddca46118f",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-019/C-019/CONTRACT.md": "0aeb770983f7dafc3093906d6769b397f42289473d5c5790961b4dfc55cc23dd",
+    "tools/atomizer/work/baseline-20/runs/C-019/atoms/direct/work/C-019/glue.json": "d3e43d9e3ae0c5cb97af12f5cd6b6c5721680622e89ae8184932c8b813109273",
+    "tools/atomizer/work/baseline-20/runs/C-019/atoms/direct/work/C-019/kernel.wasm": "529b2cbb1b1650e2cdbd3617061156dbb0925521d39b29bf6cefd829f1c65a6f",
+    "tools/atomizer/work/baseline-20/runs/C-019/atoms/direct/work/C-019/CONTRACT.md": "c946b65505d7101aa9b694bc5129b403b31c3221dbecff020a21081a5efe9e17",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-027/CC-027/glue.json": "62d95470414b3a2a3af7795310424a0e8d6d678d860568d88ca805599b15fd2f",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-027/CC-027/kernel.wasm": "62bbe7b1389ad28ab810e4ed5da8aa75bdad8722356f7285e3e8e7af1b5e0996",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-027/CC-027/CONTRACT.md": "37b9d9457e312162f0332108cbc67fe02c4cd0083d82126a577625cddd8deae5",
+    "tools/atomizer/work/baseline-20/runs/CC-027/atoms/direct/work/CC-027/glue.json": "077ac8c7fe71f191c51dd4e8e5b40f735c2b041035192b7b8cf33bb1cedb2a98",
+    "tools/atomizer/work/baseline-20/runs/CC-027/atoms/direct/work/CC-027/kernel.wasm": "241536947aa704bcee0ffc55f8bbfeee484b50fef959db178d5024ce74bc011c",
+    "tools/atomizer/work/baseline-20/runs/CC-027/atoms/direct/work/CC-027/CONTRACT.md": "5108dfeab4270ae66af024618bd59a54a59f550538ed6b8bc402bcc2099e110d",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-026/CC-026/glue.json": "fd6c9aa1bb39129cae68cdf5f975e51fac77c974e016bd44e649294ca35d7ffc",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-026/CC-026/kernel.wasm": "179e06105dd11b8f1f1a827d387d6fef251ad4e482c3a3851faf59c4a8c2c336",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-026/CC-026/CONTRACT.md": "535ded471501c42c4c00ea252be7fb01d94cd5284622d4273f8142664d844aef",
+    "tools/atomizer/work/baseline-20/runs/CC-026/atoms/direct/work/CC-026/glue.json": "fcfef5c7033e26939578a4f770e631be14db32c9450ec9674d5419f2749db043",
+    "tools/atomizer/work/baseline-20/runs/CC-026/atoms/direct/work/CC-026/kernel.wasm": "d2982f25385a0c962eb9d9bf86b98623526b75d443339cdd976b3537b9bdd0c1",
+    "tools/atomizer/work/baseline-20/runs/CC-026/atoms/direct/work/CC-026/CONTRACT.md": "54bca7bfbcfce7dd61f373cfcee5e46d9e6019c930574192052205307117069f",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/glue.json": "e799e935023d1a4fa7c4e0cf6a5f3d7c4a684451b1d530ab76a632ceda15d2f4",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/kernel.wasm": "86aaed9febff7579f7ab9ba535b8f1d7675b3cb25f31613044927e52af2e9f12",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/CONTRACT.md": "9dad2dcb1dd014ad72de42bfaf44dc0d2cf607842a97ff72b2d51b0764c620b8",
+    "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/glue.json": "7b0e8f8ece30d541c8d6febfcbdf98638cdd57e4dd2dfb386d081d033cacf7ac",
+    "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/kernel.wasm": "ab71ebecb0ef7bb94a7db721dca73235f6982e665c8fe1b03e99b7f0cef7f048",
+    "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/CONTRACT.md": "86e68705c53211cd7f6425f90705d912f5b6a8f05f68e8fe26ceeef67ff260f8",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-007/CC-007/glue.json": "c4db3876cac5d2c3297a9dbf20217f53a7cb76d6a31f37791116ce8c4ab74e0c",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-007/CC-007/kernel.wasm": "ccc13916e52df87aa8de452811d7074d686ee7b0f6fd45975131083fa90711b9",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-007/CC-007/CONTRACT.md": "59bb93942784040d0bcf7b6b0a37b8f05f05f5bff6f8b884f29d47b0fddb77db",
+    "tools/atomizer/work/baseline-20/runs/CC-007/atoms/direct/work/CC-007/glue.json": "66479c1f0f1aa07e52a6e125ca8c059823ad72459a77c06503646f5b3bf7590c",
+    "tools/atomizer/work/baseline-20/runs/CC-007/atoms/direct/work/CC-007/kernel.wasm": "33f9a84a093d17ec4175688369dfea9eea9ffc854e08a18f6e6d4d590a63bba8",
+    "tools/atomizer/work/baseline-20/runs/CC-007/atoms/direct/work/CC-007/CONTRACT.md": "2f330fdf329f0b9fa358aa99c6318efab2d69901b3b3745b1de542a06ddf5434",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-010/C-010/glue.json": "77f60b3899d646319395d15a6e67d3650895cb9ad76df8e3cc48cd4a6f1437b0",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-010/C-010/kernel.wasm": "0a5a086812c46d9de4dce238e89a053a2a45df372e3c531f5c7c9825c54ed758",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-010/C-010/CONTRACT.md": "cd79c54977342705ae938c056dca3917dcb9f76725d5960dbefdead5b7254c78",
+    "tools/atomizer/work/baseline-20/runs/C-010/atoms/direct/work/C-010/glue.json": "51f891b167d4583a99046ff2f80ebc14e7d665c3bda8af8875571edba99be4a6",
+    "tools/atomizer/work/baseline-20/runs/C-010/atoms/direct/work/C-010/kernel.wasm": "d36b4a325d04bab2862e6b6850a9b0f240af20a800a9d72322fd25b2024276b6",
+    "tools/atomizer/work/baseline-20/runs/C-010/atoms/direct/work/C-010/CONTRACT.md": "89b0c16be5315577f0fffeeb8671c29fbcd587f9490c4285b0587bf1df76b994",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-001/CC-001/glue.json": "9e51e42b205130ee6f2164166a4a5728612c74d575592a77b83e5d05329e6360",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-001/CC-001/kernel.wasm": "73cd33ca31414420908b1b8c66f38d18788d6e56d1c0b4b3b2e070cb6a2bbb55",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-001/CC-001/CONTRACT.md": "835b9d26f94b64a732682acd88f2cc7526125ccb3c7b16674b066a816edf332a",
+    "tools/atomizer/work/baseline-20/runs/CC-001/atoms/direct/work/CC-001/glue.json": "92e2c7da3203ce52757409031a510410a9a2d37ede03311e6fa56dbc410c3a09",
+    "tools/atomizer/work/baseline-20/runs/CC-001/atoms/direct/work/CC-001/kernel.wasm": "52413f04f08f6128c614e72fba25bc5f0904376576fddb05bec5338a263edcaf",
+    "tools/atomizer/work/baseline-20/runs/CC-001/atoms/direct/work/CC-001/CONTRACT.md": "f1142a53c0504aba397c728557059d470f84ef9e37fd61f1cd008466dcc6b34c",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-022/CC-022/glue.json": "e76bf5a91883c6a52dfda51b89e28e4cd784aac194b55094338f15eaa631d8cc",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-022/CC-022/kernel.wasm": "445d21eebf5534834ab07552dc8d828955e3af703d175e90bc957cc0cf65990e",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-022/CC-022/CONTRACT.md": "6dfc8a3c9d6b7de6c4dd3d012f676ca2667f7d17c74efca0cf2d0e91fc75b411",
+    "tools/atomizer/work/baseline-20/runs/CC-022/atoms/direct/work/CC-022/glue.json": "3734f22deeef1cddabc5209457c7d8547e756332e1a0994b9766427c8ad68a28",
+    "tools/atomizer/work/baseline-20/runs/CC-022/atoms/direct/work/CC-022/kernel.wasm": "0118013dc8cbb58e2b76b7e99ede1c266e718ea1b8217225583950b7609436c4",
+    "tools/atomizer/work/baseline-20/runs/CC-022/atoms/direct/work/CC-022/CONTRACT.md": "72d77839605e15d6609a03ef4908d6d4143feab30343f64e4695f4326cdbba81",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-015/C-015/glue.json": "cc5b08c2479c5bf564ff1d29fa8e839fd73c3f1f7199ac6980a5c3fcd35821f0",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-015/C-015/kernel.wasm": "91c38225db68d00f752faefc30bd82e735b9dcf60787a24cf6f02d4b3ba8dbef",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-015/C-015/CONTRACT.md": "a1ccdd944ea351aa0093f5a2324192a89a85c197b9422cc3d0848877a1fb9888",
+    "tools/atomizer/work/baseline-20/runs/C-015/atoms/direct/work/C-015/glue.json": "13ed108a73e360b025eebc28c54eb38f7dcbc04a74e61fd00643415bf1c397a8",
+    "tools/atomizer/work/baseline-20/runs/C-015/atoms/direct/work/C-015/kernel.wasm": "5115e60e2b535be7ab3636e423da15e24c8639b00c285af735e0e71fd029452e",
+    "tools/atomizer/work/baseline-20/runs/C-015/atoms/direct/work/C-015/CONTRACT.md": "020a0035dcbb051ffae3c7ead0165a79574c91ca4f5c09ae5dc2ae84e80d1969",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-016/C-016/glue.json": "c62b05216d236393b80852905546ba71f6e0da9346e86c2d86ead43eab21d437",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-016/C-016/kernel.wasm": "2273cc26cb0e14445334c423d892f728ffce0b6c2e4293089cd2d4e9158e5585",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-016/C-016/CONTRACT.md": "b583885205b6595523c625cc16016d8e839672a37c952be918fd4f87dbc06163",
+    "tools/atomizer/work/baseline-20/runs/C-016/atoms/direct/work/C-016/glue.json": "cd84ad26d5c2564258b82410899afbf0b70c2ecfe292758b482a6646d3e1465b",
+    "tools/atomizer/work/baseline-20/runs/C-016/atoms/direct/work/C-016/kernel.wasm": "1db49a25ccb87df10a2400939d767ad0a1a7285d5e3af7bbc4b3024845f47f45",
+    "tools/atomizer/work/baseline-20/runs/C-016/atoms/direct/work/C-016/CONTRACT.md": "210c27e70212365b9f78da9165ba0fd362abf37eecf2d2e23d3a33a9e07927ae",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-009/CC-009/glue.json": "bc8b602a6a0a47841e04cbdc30a43b5c12db079e8743ab73df35a8fd134ca09f",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-009/CC-009/kernel.wasm": "1bddab502f5e8c146157abef2b13ef6c4bf3a3f6b8b92c24573594288f47ec89",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-009/CC-009/CONTRACT.md": "4bdcaf4a8936cc3ef2450f30346b11c185ce04214a54b189d9116753c9060f16",
+    "tools/atomizer/work/baseline-20/runs/CC-009/atoms/direct/work/CC-009/glue.json": "60efe0551ebcf2c312767f7c4f825ca3eba7c3150d24e6bbb64c440147af713a",
+    "tools/atomizer/work/baseline-20/runs/CC-009/atoms/direct/work/CC-009/kernel.wasm": "c93e991bb734fb29558a477a5c5f0ed7dcb3b7e0303c0ad0e2b1304c7c8f7c00",
+    "tools/atomizer/work/baseline-20/runs/CC-009/atoms/direct/work/CC-009/CONTRACT.md": "a3acf53291a2a7af3ed6fd97ff271f89dfa2834a8e148c0c1b163570aff958e1",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-002/CC-002/glue.json": "38368008c1148e97569b553e6c6d5ea8ec789e99a44d84f654d4f676201a023a",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-002/CC-002/kernel.wasm": "395128a95817d03172d09ee1903279168a8b86a955992ad5cf0302873c1b326d",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-002/CC-002/CONTRACT.md": "eacc415f5648430bddbee22f594f52764609a82e2863a5fb7b7eef0a534183e2",
+    "tools/atomizer/work/baseline-20/runs/CC-002/atoms/direct/work/CC-002/glue.json": "73132dd2696160cb5300f2ebf5c63d569208fcb8784d76a1945591facf1b0a19",
+    "tools/atomizer/work/baseline-20/runs/CC-002/atoms/direct/work/CC-002/kernel.wasm": "bc32a16753b467c5de92fe4cc5d7737aa175a0db989593dcb2d5efe805ddcf4c",
+    "tools/atomizer/work/baseline-20/runs/CC-002/atoms/direct/work/CC-002/CONTRACT.md": "e3d642b20dcbfd99f39c5caad6631bea2ac8b832df37b0d79c33f6fd0ca4fc5d",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-013/CC-013/glue.json": "bd916fe6f7aafedd1c91a2068ec83821a7c38722a55e335eee50efbff065fe30",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-013/CC-013/kernel.wasm": "cf7a28702c56aee011afc6721a2f6dd1a34758cae59e9ccb1a9c7ec5fdc101e2",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-013/CC-013/CONTRACT.md": "30fbfd85e5b7c191ca23237c382afd5d0847b3858ab566952d672337299ac64c",
+    "tools/atomizer/work/baseline-20/runs/CC-013/atoms/direct/work/CC-013/glue.json": "e9ab2e96b70d63876ca90e832cff3a0822bb4b70ea41c42ad3cb55523e8e5581",
+    "tools/atomizer/work/baseline-20/runs/CC-013/atoms/direct/work/CC-013/kernel.wasm": "9c26f943a33d7546854151521879d78efa454cedde1470bdf567a7b9b5f1f3ff",
+    "tools/atomizer/work/baseline-20/runs/CC-013/atoms/direct/work/CC-013/CONTRACT.md": "e459ce645ae5b8385a70815cab5ccce92855b1ba940aa35a4e0cc3359ca1db12",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-036/CC-036/glue.json": "7984470ef6636ffd8be9116ceb0e12f9f68559712cc0b9876848f75f8836be00",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-036/CC-036/kernel.wasm": "19db910453976d8de041c2f7c0636ff5b58f2b27dabb8d82775ab7bd032b48a5",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-036/CC-036/CONTRACT.md": "945f2abe00abbf442fd7e84206fe2347d74a34c825cc091fe913bd8bf9cd0ec7",
+    "tools/atomizer/work/baseline-20/runs/CC-036/atoms/direct/work/CC-036/glue.json": "4e99623bb188ad1ea62492cda188a822c7abd445f026e3764ca427e2f287c624",
+    "tools/atomizer/work/baseline-20/runs/CC-036/atoms/direct/work/CC-036/kernel.wasm": "28b1953890a69f1d0fe03d310dddd9424d6f64b9f3238799f3e2a816a3fd5aa1",
+    "tools/atomizer/work/baseline-20/runs/CC-036/atoms/direct/work/CC-036/CONTRACT.md": "92e8df4389032cb4ea41043bdc9b90f89630d741dba873aba660ef8ae2cc5ef4",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-006/C-006/glue.json": "87f7d06d193bc783960d1616da5ddf2f36a2913627a99aaf3f6f31aab7faaad4",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-006/C-006/kernel.wasm": "2be406eecf54cba2d9b739b38ecf23b794499e26bd5ba0ef905f496072e00cc2",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-006/C-006/CONTRACT.md": "a37979f0f1d83e1cc404770e7281c1ebad18132ac0a84880d7bb67a8fa2ca22f",
+    "tools/atomizer/work/baseline-20/runs/C-006/atoms/direct/work/C-006/glue.json": "6ad1688254d1fb7711e3625df58604040aec291b1752dc8c875812da22595307",
+    "tools/atomizer/work/baseline-20/runs/C-006/atoms/direct/work/C-006/kernel.wasm": "d288c847bb2f24adf437510627bd08a3cc159a82fc9bbcad83346f6947a15983",
+    "tools/atomizer/work/baseline-20/runs/C-006/atoms/direct/work/C-006/CONTRACT.md": "015af729c5c5f3748c4f5a1c58134a788c7e13a429aa73c32e4574e79997343e",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-025/CC-025/glue.json": "fcaa13a34a36c15cc2bcd629206ac97ced2a3fb7d33c5cec310a241477d3131a",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-025/CC-025/kernel.wasm": "66be22f9054c989dd7bb7e19f423aed597fd9efd9c1f00140bae483f9aeb0a71",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-025/CC-025/CONTRACT.md": "9a423a07008ed91c136fc2ff515a5e422d4f9e83b874ea1b91fe607b48289dbb",
+    "tools/atomizer/work/baseline-20/runs/CC-025/atoms/direct/work/CC-025/glue.json": "c292096304128b48f220d2224099f8ca96117d7ceca198c7268c006546fd3977",
+    "tools/atomizer/work/baseline-20/runs/CC-025/atoms/direct/work/CC-025/kernel.wasm": "41fed1823c15aee4144ab4c1ad48bac7cec7bf2503bf99a58032c68a7caba586",
+    "tools/atomizer/work/baseline-20/runs/CC-025/atoms/direct/work/CC-025/CONTRACT.md": "5c19176408decac3433550a8374464d3c74703376f78dfb28c6fc8b9e3df6f2b",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-012/C-012/glue.json": "b10c28b9224636a425c61c571bd4ab1cf24b6df4fd4df3596fdda7042e487316",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-012/C-012/kernel.wasm": "0c624d7eeb6973a5128add601892103d636e0986a7f7a58650308f3fc2b215ff",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-012/C-012/CONTRACT.md": "881783f3b49423dd19b1b92f2c6372f0186d7fae0f01eee66b9cfabefdeffeb0",
+    "tools/atomizer/work/baseline-20/runs/C-012/atoms/direct/work/C-012/glue.json": "ce6ceec08b65fcc705ee55d17bd86504b47c1a5133d45bc1ec1f1620b1857003",
+    "tools/atomizer/work/baseline-20/runs/C-012/atoms/direct/work/C-012/kernel.wasm": "70edb4ae222bb7d4726352948f70cf76b69d2fdbf836fd735b1204a6dbcc7de7",
+    "tools/atomizer/work/baseline-20/runs/C-012/atoms/direct/work/C-012/CONTRACT.md": "296aa0fd372735734814fa076c0a938f90e3ea55bdbeb32a3403f674c3ba6577",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-005/C-005/glue.json": "3d0958ad30947809b177427d23f6a76b031ad65c5c92b3c3a7a835a234b3e980",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-005/C-005/kernel.wasm": "531f2e3efb9a6a3cfd183bbbf7a027dc80896d10247cfe29dfe2b16d7845474d",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-005/C-005/CONTRACT.md": "4e52747b15662a3f55a94e896c17462e26bfd5f1ea55a2d9eb3d50ee64d7a4a6",
+    "tools/atomizer/work/baseline-20/runs/C-005/atoms/direct/work/C-005/glue.json": "8057e95e6edfb466fdbdc807eeb450611aa2ae1321b8db9f65262df0531779d6",
+    "tools/atomizer/work/baseline-20/runs/C-005/atoms/direct/work/C-005/kernel.wasm": "9cc1f52b155f023f322c163ff909462b803cbabe7c83f9595a6d9202a6c2fc90",
+    "tools/atomizer/work/baseline-20/runs/C-005/atoms/direct/work/C-005/CONTRACT.md": "a391a7d3cab42a81e38cc0a50b6271732231f604565eaea2c29d4c9f008287da",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-011/CC-011/glue.json": "98f7d50bdc987e54df534bed1ec29c9cef0dd5ef9668ebfbdd7966eaacbdd645",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-011/CC-011/kernel.wasm": "997c9f8b23d5ec8cf93ca2da32b99c0784557c8ab521438e87a95680d4b5be84",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-011/CC-011/CONTRACT.md": "4d80696abec2fcf93b4b918e4929cf602e7e1d055d1ed7a45132295a3f46729e",
+    "tools/atomizer/work/baseline-20/runs/CC-011/atoms/direct/work/CC-011/glue.json": "291be733c8ac214b0c535ad1142eb9ccc3d8ba204544cc2de6e09d528d4bcbe3",
+    "tools/atomizer/work/baseline-20/runs/CC-011/atoms/direct/work/CC-011/kernel.wasm": "d110909b9708c068f4879565bd406f853732c42cd76ae0b05cb48381c6076201",
+    "tools/atomizer/work/baseline-20/runs/CC-011/atoms/direct/work/CC-011/CONTRACT.md": "78bdd35b621cec0aa758f7da5a484ab4365da3ef449bd7e5d7939546aab3d7c9",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-014/CC-014/glue.json": "f75f19d1c3f72178e70f94ea908da4b1bf6d81e1f2e388f998b912dc955e9496",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-014/CC-014/kernel.wasm": "1d0c091ff156c7a67fe3a0ef3d3180dad5085b2ba66204e908409b9ce7ff2836",
+    "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-014/CC-014/CONTRACT.md": "2e50b1ddddb71f44e3761ad3b11f7e56b7bd5a36cfa6357e1627ffe3b6e1529c",
+    "tools/atomizer/work/baseline-20/runs/CC-014/atoms/direct/work/CC-014/glue.json": "818aac6a0907daae06466a50167b9ed0739ad380ae92382b0933c01e43d0347c",
+    "tools/atomizer/work/baseline-20/runs/CC-014/atoms/direct/work/CC-014/kernel.wasm": "5a586cc160ea2f794297d8c7fde8cc0a6f55b6e36e6d28737deee5b9a0dcb533",
+    "tools/atomizer/work/baseline-20/runs/CC-014/atoms/direct/work/CC-014/CONTRACT.md": "1b48185b07965868ba1b50b26c47ab7e0e6d034f4db3d8402d89ebf9d78f870e"
+  }
+}

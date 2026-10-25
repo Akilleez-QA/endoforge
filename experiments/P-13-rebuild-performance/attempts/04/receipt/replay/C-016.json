@@ -1,0 +1,269 @@
+{
+  "execution": {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "run",
+      "--rm",
+      "--name",
+      "endoforge-p13-gate-c-016-3739593",
+      "--pull=never",
+      "--network=none",
+      "--read-only",
+      "--user",
+      "1000:1000",
+      "--cap-drop=ALL",
+      "--security-opt=no-new-privileges",
+      "--cpus=1",
+      "--memory=512m",
+      "--memory-swap=512m",
+      "--pids-limit=64",
+      "--tmpfs",
+      "/tmp:rw,nosuid,nodev,size=64m",
+      "--mount",
+      "type=bind,src=/home/user/Work/endoforge/experiments/P-13-rebuild-performance/attempts/04/work/replay/C-016,dst=/out/C-016",
+      "--entrypoint",
+      "/usr/local/bin/node",
+      "sha256:d55f6101f61e7f3b52ea2e3490ceb2e8ce2e4fc19c45f9b7fbf205737c68499e",
+      "/bundle/campaigns/x1-spec-study/factory/gate.mjs",
+      "run",
+      "/out/C-016"
+    ],
+    "exit": 0,
+    "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 364,\n   \"wasmSha256\": \"ec5b2f16466e802a5d6f5ee398e1f785413e0f84a49fc73d0e5d4d35fb63ee1a\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"displayStatus\",\n    \"nameToShow\",\n    \"labelAllowed\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 14,\n   \"total\": 14\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.041508\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+    "stderr": "",
+    "timeout": false,
+    "wallMs": 1415.9634629977518
+  },
+  "result": {
+    "at": "2026-10-18T19:04:40.707Z",
+    "gates": {
+      "G1_frozen": {
+        "ok": true
+      },
+      "G2_compiles": {
+        "ok": true,
+        "wasmBytes": 364,
+        "wasmSha256": "ec5b2f16466e802a5d6f5ee398e1f785413e0f84a49fc73d0e5d4d35fb63ee1a"
+      },
+      "G3_exports": {
+        "ok": true,
+        "exports": [
+          "displayStatus",
+          "nameToShow",
+          "labelAllowed"
+        ]
+      },
+      "G4_tests": {
+        "ok": true,
+        "passed": 14,
+        "total": 14
+      },
+      "G6_bounded": {
+        "ok": true,
+        "maxMs": 0.041508
+      },
+      "G5_deterministic": {
+        "ok": true
+      },
+      "G7_glue": {
+        "ok": true
+      }
+    },
+    "tests": [
+      {
+        "name": "unbuilt+confirmed shows REQUESTED (boundary)",
+        "fn": "displayStatus",
+        "args": [
+          1,
+          1,
+          0
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0.038,
+        "pass": true
+      },
+      {
+        "name": "unbuilt+unconfirmed shows REQUESTED",
+        "fn": "displayStatus",
+        "args": [
+          1,
+          0,
+          0
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "built+confirmed shows APPROVED",
+        "fn": "displayStatus",
+        "args": [
+          1,
+          1,
+          1
+        ],
+        "expect": 2,
+        "got": 2,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "built+unconfirmed shows REQUESTED",
+        "fn": "displayStatus",
+        "args": [
+          1,
+          0,
+          1
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "not requested shows NOT_REQUESTED",
+        "fn": "displayStatus",
+        "args": [
+          0,
+          1,
+          0
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0.002,
+        "pass": true
+      },
+      {
+        "name": "requested names recorded confirmer",
+        "fn": "nameToShow",
+        "args": [
+          1,
+          1,
+          0,
+          2
+        ],
+        "expect": 2,
+        "got": 2,
+        "ms": 0.007,
+        "pass": true
+      },
+      {
+        "name": "assumption: no confirmer recorded -> owner (1)",
+        "fn": "nameToShow",
+        "args": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "approved carries no expected-confirmer name",
+        "fn": "nameToShow",
+        "args": [
+          1,
+          1,
+          1,
+          2
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "not requested carries no name",
+        "fn": "nameToShow",
+        "args": [
+          0,
+          0,
+          0,
+          2
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "APPROVED label forbidden while unbuilt",
+        "fn": "labelAllowed",
+        "args": [
+          1,
+          1,
+          0,
+          2
+        ],
+        "expect": false,
+        "got": 0,
+        "ms": 0.004,
+        "pass": true
+      },
+      {
+        "name": "REQUESTED label allowed while unbuilt",
+        "fn": "labelAllowed",
+        "args": [
+          1,
+          1,
+          0,
+          1
+        ],
+        "expect": true,
+        "got": 1,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "APPROVED label allowed once built+confirmed",
+        "fn": "labelAllowed",
+        "args": [
+          1,
+          1,
+          1,
+          2
+        ],
+        "expect": true,
+        "got": 1,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "invalid flag traps",
+        "fn": "displayStatus",
+        "args": [
+          1,
+          2,
+          0
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.042,
+        "pass": true
+      },
+      {
+        "name": "negative confirmer traps",
+        "fn": "nameToShow",
+        "args": [
+          1,
+          0,
+          0,
+          -1
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.007,
+        "pass": true
+      }
+    ],
+    "promotable": true
+  },
+  "match": true
+}

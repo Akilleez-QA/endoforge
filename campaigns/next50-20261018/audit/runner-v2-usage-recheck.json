@@ -1,0 +1,36 @@
+{
+  "version": 1,
+  "v2PacketSha256": "2cbec9aa0cd97c3d67b922569dc72d8a04fae62f930516ad69d7983fa9574524",
+  "immutableSnapshotVerification": {
+    "passed": true,
+    "snapshotFilesVerified": 203,
+    "v1Unchanged": true,
+    "postcomparisonChronologyDisclosed": true,
+    "modelCalls": 0
+  },
+  "currentSourceDrift": [
+    "Makefile"
+  ],
+  "expectedDisclosedDrift": [
+    "Makefile"
+  ],
+  "meterChecks": [
+    {
+      "path": "control/model-meter.jsonl",
+      "matchesSummary": true
+    },
+    {
+      "path": "work/cli-qualification-01/control/model-meter.jsonl",
+      "matchesSummary": true
+    }
+  ],
+  "knownReportedTokensArithmeticMatches": true,
+  "knownAttemptsArithmeticMatches": true,
+  "knownAttempts": 45,
+  "knownReportedTokens": 575055,
+  "unknownUsageRetained": [
+    "consumer-8c6d09401b08"
+  ],
+  "budgetClaimScope": "Reported known usage only; unknown stages prevent exact billing/hard consumption assertion",
+  "modelCalls": 0
+}

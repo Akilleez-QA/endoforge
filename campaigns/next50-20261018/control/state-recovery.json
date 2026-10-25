@@ -1,0 +1,20 @@
+{
+  "passed": true,
+  "scope": "deterministic stage-state crash controls; no authenticated-model-stage resume qualification",
+  "cases": [
+    {
+      "boundary": "event-durable",
+      "controllerExit": -9,
+      "eventRecovered": true,
+      "partialSnapshotRecovered": true,
+      "eventTamperDenied": true
+    },
+    {
+      "boundary": "snapshot-durable",
+      "controllerExit": -9,
+      "eventRecovered": true,
+      "partialSnapshotRecovered": true,
+      "eventTamperDenied": true
+    }
+  ]
+}

@@ -1,0 +1,116 @@
+{
+  "passed": true,
+  "scope": "synthetic harness controls only",
+  "checks": [
+    "numeric outcome",
+    "explicit refusal",
+    "input immutability",
+    "single publication",
+    "idempotent second resume",
+    "new stage state",
+    "wrong expected outcome refused without publication"
+  ],
+  "good": {
+    "passed": true,
+    "published": true,
+    "reused": false,
+    "publicationSha256": "a6c5b72e73fb6872490155e93c3ee655583b9576197cad4684b939a208935504",
+    "moduleSha256": "f208f53f3c1a4a7f5ef6b52580881872069baafa9674ba824a5713156f5c896a",
+    "inputImmutable": true,
+    "completedStagesPreserved": [
+      "fixture"
+    ],
+    "cases": [
+      {
+        "id": "good",
+        "passed": true,
+        "outcome": "value",
+        "value": 4.0
+      },
+      {
+        "id": "refuse",
+        "passed": true,
+        "outcome": "refused"
+      }
+    ],
+    "resumedState": {
+      "job": "synthetic-harness-only",
+      "completedStages": [
+        "fixture",
+        "verify"
+      ],
+      "pendingStages": [],
+      "stage": "verify-completed"
+    },
+    "attempt": "7a16bd25e5084788b28b970d977dc236.json"
+  },
+  "duplicate": {
+    "passed": true,
+    "published": false,
+    "reused": true,
+    "publicationSha256": "a6c5b72e73fb6872490155e93c3ee655583b9576197cad4684b939a208935504",
+    "moduleSha256": "f208f53f3c1a4a7f5ef6b52580881872069baafa9674ba824a5713156f5c896a",
+    "inputImmutable": true,
+    "completedStagesPreserved": [
+      "fixture"
+    ],
+    "cases": [
+      {
+        "id": "good",
+        "passed": true,
+        "outcome": "value",
+        "value": 4.0
+      },
+      {
+        "id": "refuse",
+        "passed": true,
+        "outcome": "refused"
+      }
+    ],
+    "resumedState": {
+      "job": "synthetic-harness-only",
+      "completedStages": [
+        "fixture",
+        "verify"
+      ],
+      "pendingStages": [],
+      "stage": "verify-completed"
+    },
+    "attempt": "9d00de1f832947b3bf4d3cb6a4182248.json"
+  },
+  "wrong": {
+    "passed": false,
+    "published": false,
+    "reused": false,
+    "publicationSha256": null,
+    "moduleSha256": "f208f53f3c1a4a7f5ef6b52580881872069baafa9674ba824a5713156f5c896a",
+    "inputImmutable": true,
+    "completedStagesPreserved": [
+      "fixture"
+    ],
+    "cases": [
+      {
+        "id": "good",
+        "passed": false,
+        "outcome": "value",
+        "value": 4.0
+      },
+      {
+        "id": "refuse",
+        "passed": true,
+        "outcome": "refused"
+      }
+    ],
+    "resumedState": {
+      "job": "synthetic-harness-only",
+      "completedStages": [
+        "fixture"
+      ],
+      "pendingStages": [
+        "verify"
+      ],
+      "stage": "verify-failed"
+    },
+    "attempt": "ce09c48e0cd64c9db778dda5ca7ab6ff.json"
+  }
+}

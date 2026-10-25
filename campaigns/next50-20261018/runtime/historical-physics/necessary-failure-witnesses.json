@@ -1,0 +1,2535 @@
+[
+  {
+    "version": 1,
+    "requestId": "CC-009",
+    "family": "oracle-sonnet",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-sonnet/criteria/CC-009.md",
+    "criteriaSha256": "881698530b708b995e6093e20b1229d2f4b3fc36d897f9b379cccc0739347cd3",
+    "sourceLine": 12,
+    "sourceLineSha256": "63c3b0852ace9541b88bc55e742a81de3d9a72bc4afdd0952c9ce9e3ad6b285f",
+    "arm": "incumbent",
+    "assertion": "CC-009:physics:zero-volume-refusal",
+    "necessaryPredicate": "Historical requested volume<=0 refusal; unlike the model-derived acceptance contract zero must refuse",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented artifact interface under explicitly supplied conditional values; no outside composition, legal applicability, or property-table truth inferred",
+    "evidence": "observations.json",
+    "outcome": "criterion-failed",
+    "observed": 0.0,
+    "conditionalAuthorityOnly": false
+  },
+  {
+    "version": 1,
+    "requestId": "CC-013",
+    "family": "oracle-opus",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-opus/criteria/CC-013.md",
+    "criteriaSha256": "fea8581e190afe1399759df3681e6b208b45651485847bf34b9ef5ef5ff65c37",
+    "sourceLine": 12,
+    "sourceLineSha256": "4f798041d5eb7ad8866ec97dfe5d7b949d220e1dd420b90e33fbbfcb86928697",
+    "arm": "fast-path",
+    "assertion": "CC-013:physics:below-water-validity-range",
+    "necessaryPredicate": "Explicit historical criterion requires another validated correlation OR flag at-50F. Both frozen sources implement water Magnus; absent a replacement, refusal is required.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented artifact interface under explicitly supplied conditional values; no outside composition, legal applicability, or property-table truth inferred",
+    "evidence": "observations.json",
+    "outcome": "criterion-failed",
+    "observed": -61.007678021330435,
+    "conditionalAuthorityOnly": false
+  },
+  {
+    "version": 1,
+    "requestId": "CC-022",
+    "family": "oracle-sonnet",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-sonnet/criteria/CC-022.md",
+    "criteriaSha256": "c5152be35cdd0492205bf19ba9acec8c5541ec13063f2dcd68c5cb6d84506274",
+    "sourceLine": 8,
+    "sourceLineSha256": "21323283be45bf1ad234e1e53a318e5692eeb1917088f90416e19a687b9c7387",
+    "arm": "incumbent",
+    "assertion": "CC-022:physics:r22-supplied",
+    "necessaryPredicate": "Conditional on explicitly supplied P/T points; validates subtraction/division and units, NOT fluid/dew/bubble lookup truth",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented artifact interface under explicitly supplied conditional values; no outside composition, legal applicability, or property-table truth inferred",
+    "evidence": "observations.json",
+    "outcome": "interface-not-expressible",
+    "observed": null,
+    "conditionalAuthorityOnly": false
+  },
+  {
+    "version": 1,
+    "requestId": "CC-022",
+    "family": "oracle-opus",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-opus/criteria/CC-022.md",
+    "criteriaSha256": "c173848ee57b9c36e53dfac74de067f70a766aed324a6ed3142357a6aa234b2f",
+    "sourceLine": 14,
+    "sourceLineSha256": "3b1cdaf5b1d81339333c0177642790dec85d9c5e198cd8ae1f33b5d0c85f4a3f",
+    "arm": "incumbent",
+    "assertion": "CC-022:physics:r22-supplied",
+    "necessaryPredicate": "Conditional on explicitly supplied P/T points; validates subtraction/division and units, NOT fluid/dew/bubble lookup truth",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented artifact interface under explicitly supplied conditional values; no outside composition, legal applicability, or property-table truth inferred",
+    "evidence": "observations.json",
+    "outcome": "interface-not-expressible",
+    "observed": null,
+    "conditionalAuthorityOnly": false
+  },
+  {
+    "version": 1,
+    "requestId": "CC-022",
+    "family": "oracle-sonnet",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-sonnet/criteria/CC-022.md",
+    "criteriaSha256": "c5152be35cdd0492205bf19ba9acec8c5541ec13063f2dcd68c5cb6d84506274",
+    "sourceLine": 9,
+    "sourceLineSha256": "3126b31a465f1afb8f4bbd7584ef77d2aa745ef24b27e9d09f830247d869d430",
+    "arm": "incumbent",
+    "assertion": "CC-022:physics:r410-low-supplied",
+    "necessaryPredicate": "Conditional on explicitly supplied P/T points; validates subtraction/division and units, NOT fluid/dew/bubble lookup truth",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented artifact interface under explicitly supplied conditional values; no outside composition, legal applicability, or property-table truth inferred",
+    "evidence": "observations.json",
+    "outcome": "interface-not-expressible",
+    "observed": null,
+    "conditionalAuthorityOnly": false
+  },
+  {
+    "version": 1,
+    "requestId": "CC-022",
+    "family": "oracle-opus",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-opus/criteria/CC-022.md",
+    "criteriaSha256": "c173848ee57b9c36e53dfac74de067f70a766aed324a6ed3142357a6aa234b2f",
+    "sourceLine": 12,
+    "sourceLineSha256": "dee4651f95594c04a0f02fde2e96017cd46c8d058174a2dab0391f4882d47505",
+    "arm": "incumbent",
+    "assertion": "CC-022:physics:r410-low-supplied",
+    "necessaryPredicate": "Conditional on explicitly supplied P/T points; validates subtraction/division and units, NOT fluid/dew/bubble lookup truth",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented artifact interface under explicitly supplied conditional values; no outside composition, legal applicability, or property-table truth inferred",
+    "evidence": "observations.json",
+    "outcome": "interface-not-expressible",
+    "observed": null,
+    "conditionalAuthorityOnly": false
+  },
+  {
+    "version": 1,
+    "requestId": "CC-022",
+    "family": "oracle-opus",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-opus/criteria/CC-022.md",
+    "criteriaSha256": "c173848ee57b9c36e53dfac74de067f70a766aed324a6ed3142357a6aa234b2f",
+    "sourceLine": 13,
+    "sourceLineSha256": "e78e868e97713c5a6752fbd82719006d823fecec6b499e9042c89aac9a22f457",
+    "arm": "incumbent",
+    "assertion": "CC-022:physics:r410-high-supplied",
+    "necessaryPredicate": "Conditional on explicitly supplied P/T points; validates subtraction/division and units, NOT fluid/dew/bubble lookup truth",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented artifact interface under explicitly supplied conditional values; no outside composition, legal applicability, or property-table truth inferred",
+    "evidence": "observations.json",
+    "outcome": "interface-not-expressible",
+    "observed": null,
+    "conditionalAuthorityOnly": false
+  },
+  {
+    "version": 1,
+    "requestId": "C-006",
+    "family": "oracle-sonnet",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-sonnet/criteria/C-006.md",
+    "criteriaSha256": "872379179c368a5b6d688ce3e837ddb0e750f77c226a10250835206b008d518c",
+    "sourceLine": 14,
+    "sourceLineSha256": "d9760418e1c1c9ba1b3593f1b6efe14f873c9dd4966957d799be6787fdbf05d3",
+    "arm": "incumbent",
+    "assertion": "C-006:physics:floor-raw-formula-branch",
+    "necessaryPredicate": "Raw formula branch only; conflicts with separately supplied minimum-threshold branch",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented artifact interface under explicitly supplied conditional values; no outside composition, legal applicability, or property-table truth inferred",
+    "evidence": "standard-supplement-observations.json",
+    "outcome": "conditional-arithmetic-failed",
+    "observed": 0.152,
+    "conditionalAuthorityOnly": true
+  },
+  {
+    "version": 1,
+    "requestId": "C-006",
+    "family": "oracle-opus",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-opus/criteria/C-006.md",
+    "criteriaSha256": "6f885d829c973ff903464eebfd762310d2ac264eb8c3828d5b78934db7e41194",
+    "sourceLine": 16,
+    "sourceLineSha256": "01af8aa5a4027fa8a8e5432bb15d2b75a3e7f13ca642025b50fcdf65f1a6031d",
+    "arm": "fast-path",
+    "assertion": "C-006:physics:floor-minimum-branch",
+    "necessaryPredicate": "Conditional explicit max(m1,raw) with m1=.152; not a ruling that this standard applies",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented artifact interface under explicitly supplied conditional values; no outside composition, legal applicability, or property-table truth inferred",
+    "evidence": "standard-supplement-observations.json",
+    "outcome": "conditional-arithmetic-failed",
+    "observed": 0.11254747411876347,
+    "conditionalAuthorityOnly": true
+  },
+  {
+    "version": 1,
+    "requestId": "C-006",
+    "family": "oracle-opus",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-opus/criteria/C-006.md",
+    "criteriaSha256": "6f885d829c973ff903464eebfd762310d2ac264eb8c3828d5b78934db7e41194",
+    "sourceLine": 17,
+    "sourceLineSha256": "d4df05eb05d928da92eed0912c5dea066558cbfd53e96001e344e2d94e958522",
+    "arm": "fast-path",
+    "assertion": "C-006:physics:ceiling-explicit-cap-branch",
+    "necessaryPredicate": "Conditional explicit min(m3,raw) with m3=4.94; not legal applicability",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented artifact interface under explicitly supplied conditional values; no outside composition, legal applicability, or property-table truth inferred",
+    "evidence": "standard-supplement-observations.json",
+    "outcome": "conditional-arithmetic-failed",
+    "observed": 5.054204529551216,
+    "conditionalAuthorityOnly": true
+  },
+  {
+    "version": 1,
+    "requestId": "CC-009",
+    "family": "oracle-codex",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-009.md",
+    "criteriaSha256": "86f22693a5f9b040458afb0c443a36074d7c989a27c8c19dc028a656b149b313",
+    "sourceLine": 9,
+    "sourceLineSha256": "c508b4666d3c3226c466977696ee3e31c98061dccbf601c4c64a8fc9e2b3b4d0",
+    "arm": "incumbent",
+    "assertion": "CC-009:physics:actual-liquid-fraction-density",
+    "necessaryPredicate": "Neither frozen arm accepts measured liquid fraction, liquid density or vapor density; do not pass those values into circulation-ratio/feed slots. Conditional reference arithmetic is167.2lb at f.25 and332.8lb at f.5, but candidate has no lawful invocation for those supplied inputs.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "ammoniaLiquidDensity": {
+        "params": [
+          124
+        ],
+        "results": [
+          124
+        ]
+      },
+      "fillFraction": {
+        "params": [
+          127
+        ],
+        "results": [
+          124
+        ]
+      },
+      "evaporatorInventoryLb": {
+        "params": [
+          124,
+          124,
+          127,
+          124
+        ],
+        "results": [
+          124
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "evaporatorInventoryLb",
+        "label": "Normal inventory of the evaporator",
+        "headline": true,
+        "args": [
+          {
+            "name": "volumeFt3",
+            "kind": "number",
+            "unit": "ft3",
+            "label": "Evaporator internal volume",
+            "range": ">= 0"
+          },
+          {
+            "name": "tempF",
+            "kind": "number",
+            "unit": "F",
+            "label": "Operating temperature",
+            "range": "-60..50 F fit range"
+          },
+          {
+            "name": "feedCode",
+            "kind": "code",
+            "unit": "code",
+            "label": "Evaporator feed type",
+            "codes": {
+              "0": "direct expansion",
+              "1": "top-feed overfeed",
+              "2": "bottom-feed overfeed",
+              "3": "flooded"
+            }
+          },
+          {
+            "name": "recircRatio",
+            "kind": "number",
+            "unit": "dimensionless",
+            "label": "Recirculation ratio (x:1)",
+            "range": ">= 1 for overfeed"
+          }
+        ],
+        "result": {
+          "kind": "number",
+          "unit": "lb",
+          "precision": 0
+        }
+      },
+      {
+        "name": "ammoniaLiquidDensity",
+        "label": "Liquid ammonia density at operating temperature",
+        "args": [
+          {
+            "name": "tempF",
+            "kind": "number",
+            "unit": "F",
+            "label": "Operating temperature",
+            "range": "-60..50 F fit range"
+          }
+        ],
+        "result": {
+          "kind": "number",
+          "unit": "lb/ft3",
+          "precision": 2
+        }
+      },
+      {
+        "name": "fillFraction",
+        "label": "Fraction of evaporator volume filled with liquid",
+        "args": [
+          {
+            "name": "feedCode",
+            "kind": "code",
+            "unit": "code",
+            "label": "Evaporator feed type",
+            "codes": {
+              "0": "direct expansion",
+              "1": "top-feed overfeed",
+              "2": "bottom-feed overfeed",
+              "3": "flooded"
+            }
+          }
+        ],
+        "result": {
+          "kind": "number",
+          "unit": "dimensionless",
+          "precision": 2
+        }
+      }
+    ],
+    "sourceHashes": {
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-009/CC-009/glue.json": "bc8b602a6a0a47841e04cbdc30a43b5c12db079e8743ab73df35a8fd134ca09f",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-009/CC-009/kernel.wasm": "1bddab502f5e8c146157abef2b13ef6c4bf3a3f6b8b92c24573594288f47ec89",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-009/CC-009/CONTRACT.md": "4bdcaf4a8936cc3ef2450f30346b11c185ce04214a54b189d9116753c9060f16"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "CC-009",
+    "family": "oracle-codex",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-009.md",
+    "criteriaSha256": "86f22693a5f9b040458afb0c443a36074d7c989a27c8c19dc028a656b149b313",
+    "sourceLine": 10,
+    "sourceLineSha256": "7aaf185288f797913bce2a0dc520ebfd6e177f872fc6b382e87284375337bb01",
+    "arm": "incumbent",
+    "assertion": "CC-009:physics:actual-liquid-fraction-density",
+    "necessaryPredicate": "Neither frozen arm accepts measured liquid fraction, liquid density or vapor density; do not pass those values into circulation-ratio/feed slots. Conditional reference arithmetic is167.2lb at f.25 and332.8lb at f.5, but candidate has no lawful invocation for those supplied inputs.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "ammoniaLiquidDensity": {
+        "params": [
+          124
+        ],
+        "results": [
+          124
+        ]
+      },
+      "fillFraction": {
+        "params": [
+          127
+        ],
+        "results": [
+          124
+        ]
+      },
+      "evaporatorInventoryLb": {
+        "params": [
+          124,
+          124,
+          127,
+          124
+        ],
+        "results": [
+          124
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "evaporatorInventoryLb",
+        "label": "Normal inventory of the evaporator",
+        "headline": true,
+        "args": [
+          {
+            "name": "volumeFt3",
+            "kind": "number",
+            "unit": "ft3",
+            "label": "Evaporator internal volume",
+            "range": ">= 0"
+          },
+          {
+            "name": "tempF",
+            "kind": "number",
+            "unit": "F",
+            "label": "Operating temperature",
+            "range": "-60..50 F fit range"
+          },
+          {
+            "name": "feedCode",
+            "kind": "code",
+            "unit": "code",
+            "label": "Evaporator feed type",
+            "codes": {
+              "0": "direct expansion",
+              "1": "top-feed overfeed",
+              "2": "bottom-feed overfeed",
+              "3": "flooded"
+            }
+          },
+          {
+            "name": "recircRatio",
+            "kind": "number",
+            "unit": "dimensionless",
+            "label": "Recirculation ratio (x:1)",
+            "range": ">= 1 for overfeed"
+          }
+        ],
+        "result": {
+          "kind": "number",
+          "unit": "lb",
+          "precision": 0
+        }
+      },
+      {
+        "name": "ammoniaLiquidDensity",
+        "label": "Liquid ammonia density at operating temperature",
+        "args": [
+          {
+            "name": "tempF",
+            "kind": "number",
+            "unit": "F",
+            "label": "Operating temperature",
+            "range": "-60..50 F fit range"
+          }
+        ],
+        "result": {
+          "kind": "number",
+          "unit": "lb/ft3",
+          "precision": 2
+        }
+      },
+      {
+        "name": "fillFraction",
+        "label": "Fraction of evaporator volume filled with liquid",
+        "args": [
+          {
+            "name": "feedCode",
+            "kind": "code",
+            "unit": "code",
+            "label": "Evaporator feed type",
+            "codes": {
+              "0": "direct expansion",
+              "1": "top-feed overfeed",
+              "2": "bottom-feed overfeed",
+              "3": "flooded"
+            }
+          }
+        ],
+        "result": {
+          "kind": "number",
+          "unit": "dimensionless",
+          "precision": 2
+        }
+      }
+    ],
+    "sourceHashes": {
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-009/CC-009/glue.json": "bc8b602a6a0a47841e04cbdc30a43b5c12db079e8743ab73df35a8fd134ca09f",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-009/CC-009/kernel.wasm": "1bddab502f5e8c146157abef2b13ef6c4bf3a3f6b8b92c24573594288f47ec89",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-009/CC-009/CONTRACT.md": "4bdcaf4a8936cc3ef2450f30346b11c185ce04214a54b189d9116753c9060f16"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "CC-009",
+    "family": "oracle-opus",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-opus/criteria/CC-009.md",
+    "criteriaSha256": "90205d39129b1f8f65387c2b46f55c06c3823b000d91e06177460fee15c02d67",
+    "sourceLine": 14,
+    "sourceLineSha256": "7f0525c58a8afb38311220e5c5095427f92f4bf6f704fa149b886361739cf325",
+    "arm": "incumbent",
+    "assertion": "CC-009:physics:actual-liquid-fraction-density",
+    "necessaryPredicate": "Neither frozen arm accepts measured liquid fraction, liquid density or vapor density; do not pass those values into circulation-ratio/feed slots. Conditional reference arithmetic is167.2lb at f.25 and332.8lb at f.5, but candidate has no lawful invocation for those supplied inputs.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "ammoniaLiquidDensity": {
+        "params": [
+          124
+        ],
+        "results": [
+          124
+        ]
+      },
+      "fillFraction": {
+        "params": [
+          127
+        ],
+        "results": [
+          124
+        ]
+      },
+      "evaporatorInventoryLb": {
+        "params": [
+          124,
+          124,
+          127,
+          124
+        ],
+        "results": [
+          124
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "evaporatorInventoryLb",
+        "label": "Normal inventory of the evaporator",
+        "headline": true,
+        "args": [
+          {
+            "name": "volumeFt3",
+            "kind": "number",
+            "unit": "ft3",
+            "label": "Evaporator internal volume",
+            "range": ">= 0"
+          },
+          {
+            "name": "tempF",
+            "kind": "number",
+            "unit": "F",
+            "label": "Operating temperature",
+            "range": "-60..50 F fit range"
+          },
+          {
+            "name": "feedCode",
+            "kind": "code",
+            "unit": "code",
+            "label": "Evaporator feed type",
+            "codes": {
+              "0": "direct expansion",
+              "1": "top-feed overfeed",
+              "2": "bottom-feed overfeed",
+              "3": "flooded"
+            }
+          },
+          {
+            "name": "recircRatio",
+            "kind": "number",
+            "unit": "dimensionless",
+            "label": "Recirculation ratio (x:1)",
+            "range": ">= 1 for overfeed"
+          }
+        ],
+        "result": {
+          "kind": "number",
+          "unit": "lb",
+          "precision": 0
+        }
+      },
+      {
+        "name": "ammoniaLiquidDensity",
+        "label": "Liquid ammonia density at operating temperature",
+        "args": [
+          {
+            "name": "tempF",
+            "kind": "number",
+            "unit": "F",
+            "label": "Operating temperature",
+            "range": "-60..50 F fit range"
+          }
+        ],
+        "result": {
+          "kind": "number",
+          "unit": "lb/ft3",
+          "precision": 2
+        }
+      },
+      {
+        "name": "fillFraction",
+        "label": "Fraction of evaporator volume filled with liquid",
+        "args": [
+          {
+            "name": "feedCode",
+            "kind": "code",
+            "unit": "code",
+            "label": "Evaporator feed type",
+            "codes": {
+              "0": "direct expansion",
+              "1": "top-feed overfeed",
+              "2": "bottom-feed overfeed",
+              "3": "flooded"
+            }
+          }
+        ],
+        "result": {
+          "kind": "number",
+          "unit": "dimensionless",
+          "precision": 2
+        }
+      }
+    ],
+    "sourceHashes": {
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-009/CC-009/glue.json": "bc8b602a6a0a47841e04cbdc30a43b5c12db079e8743ab73df35a8fd134ca09f",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-009/CC-009/kernel.wasm": "1bddab502f5e8c146157abef2b13ef6c4bf3a3f6b8b92c24573594288f47ec89",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-CC-009/CC-009/CONTRACT.md": "4bdcaf4a8936cc3ef2450f30346b11c185ce04214a54b189d9116753c9060f16"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "CC-009",
+    "family": "oracle-codex",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-009.md",
+    "criteriaSha256": "86f22693a5f9b040458afb0c443a36074d7c989a27c8c19dc028a656b149b313",
+    "sourceLine": 9,
+    "sourceLineSha256": "c508b4666d3c3226c466977696ee3e31c98061dccbf601c4c64a8fc9e2b3b4d0",
+    "arm": "fast-path",
+    "assertion": "CC-009:physics:actual-liquid-fraction-density",
+    "necessaryPredicate": "Neither frozen arm accepts measured liquid fraction, liquid density or vapor density; do not pass those values into circulation-ratio/feed slots. Conditional reference arithmetic is167.2lb at f.25 and332.8lb at f.5, but candidate has no lawful invocation for those supplied inputs.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "evap_inventory_lb": {
+        "params": [
+          124,
+          124,
+          124,
+          127
+        ],
+        "results": [
+          124
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "evap_inventory_lb",
+        "label": "normal refrigerant inventory of the evaporator",
+        "headline": true,
+        "args": [
+          {
+            "name": "volume_ft3",
+            "kind": "number",
+            "unit": "ft3",
+            "label": "evaporator internal volume",
+            "range": "> 0"
+          },
+          {
+            "name": "temp_F",
+            "kind": "number",
+            "unit": "F",
+            "label": "operating temperature",
+            "range": "-40..40 F"
+          },
+          {
+            "name": "recirc_ratio",
+            "kind": "number",
+            "unit": "dimensionless",
+            "label": "recirculation ratio",
+            "range": ">= 1"
+          },
+          {
+            "name": "feed_code",
+            "kind": "code",
+            "unit": "code",
+            "label": "feed type",
+            "codes": {
+              "1": "bottom feed",
+              "2": "top feed"
+            },
+            "range": "1 or 2"
+          }
+        ],
+        "result": {
+          "kind": "number",
+          "unit": "lb",
+          "precision": 1
+        }
+      }
+    ],
+    "sourceHashes": {
+      "tools/atomizer/work/baseline-20/runs/CC-009/atoms/direct/work/CC-009/glue.json": "60efe0551ebcf2c312767f7c4f825ca3eba7c3150d24e6bbb64c440147af713a",
+      "tools/atomizer/work/baseline-20/runs/CC-009/atoms/direct/work/CC-009/kernel.wasm": "c93e991bb734fb29558a477a5c5f0ed7dcb3b7e0303c0ad0e2b1304c7c8f7c00",
+      "tools/atomizer/work/baseline-20/runs/CC-009/atoms/direct/work/CC-009/CONTRACT.md": "a3acf53291a2a7af3ed6fd97ff271f89dfa2834a8e148c0c1b163570aff958e1"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "CC-009",
+    "family": "oracle-codex",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/CC-009.md",
+    "criteriaSha256": "86f22693a5f9b040458afb0c443a36074d7c989a27c8c19dc028a656b149b313",
+    "sourceLine": 10,
+    "sourceLineSha256": "7aaf185288f797913bce2a0dc520ebfd6e177f872fc6b382e87284375337bb01",
+    "arm": "fast-path",
+    "assertion": "CC-009:physics:actual-liquid-fraction-density",
+    "necessaryPredicate": "Neither frozen arm accepts measured liquid fraction, liquid density or vapor density; do not pass those values into circulation-ratio/feed slots. Conditional reference arithmetic is167.2lb at f.25 and332.8lb at f.5, but candidate has no lawful invocation for those supplied inputs.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "evap_inventory_lb": {
+        "params": [
+          124,
+          124,
+          124,
+          127
+        ],
+        "results": [
+          124
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "evap_inventory_lb",
+        "label": "normal refrigerant inventory of the evaporator",
+        "headline": true,
+        "args": [
+          {
+            "name": "volume_ft3",
+            "kind": "number",
+            "unit": "ft3",
+            "label": "evaporator internal volume",
+            "range": "> 0"
+          },
+          {
+            "name": "temp_F",
+            "kind": "number",
+            "unit": "F",
+            "label": "operating temperature",
+            "range": "-40..40 F"
+          },
+          {
+            "name": "recirc_ratio",
+            "kind": "number",
+            "unit": "dimensionless",
+            "label": "recirculation ratio",
+            "range": ">= 1"
+          },
+          {
+            "name": "feed_code",
+            "kind": "code",
+            "unit": "code",
+            "label": "feed type",
+            "codes": {
+              "1": "bottom feed",
+              "2": "top feed"
+            },
+            "range": "1 or 2"
+          }
+        ],
+        "result": {
+          "kind": "number",
+          "unit": "lb",
+          "precision": 1
+        }
+      }
+    ],
+    "sourceHashes": {
+      "tools/atomizer/work/baseline-20/runs/CC-009/atoms/direct/work/CC-009/glue.json": "60efe0551ebcf2c312767f7c4f825ca3eba7c3150d24e6bbb64c440147af713a",
+      "tools/atomizer/work/baseline-20/runs/CC-009/atoms/direct/work/CC-009/kernel.wasm": "c93e991bb734fb29558a477a5c5f0ed7dcb3b7e0303c0ad0e2b1304c7c8f7c00",
+      "tools/atomizer/work/baseline-20/runs/CC-009/atoms/direct/work/CC-009/CONTRACT.md": "a3acf53291a2a7af3ed6fd97ff271f89dfa2834a8e148c0c1b163570aff958e1"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "CC-009",
+    "family": "oracle-opus",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-opus/criteria/CC-009.md",
+    "criteriaSha256": "90205d39129b1f8f65387c2b46f55c06c3823b000d91e06177460fee15c02d67",
+    "sourceLine": 14,
+    "sourceLineSha256": "7f0525c58a8afb38311220e5c5095427f92f4bf6f704fa149b886361739cf325",
+    "arm": "fast-path",
+    "assertion": "CC-009:physics:actual-liquid-fraction-density",
+    "necessaryPredicate": "Neither frozen arm accepts measured liquid fraction, liquid density or vapor density; do not pass those values into circulation-ratio/feed slots. Conditional reference arithmetic is167.2lb at f.25 and332.8lb at f.5, but candidate has no lawful invocation for those supplied inputs.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "evap_inventory_lb": {
+        "params": [
+          124,
+          124,
+          124,
+          127
+        ],
+        "results": [
+          124
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "evap_inventory_lb",
+        "label": "normal refrigerant inventory of the evaporator",
+        "headline": true,
+        "args": [
+          {
+            "name": "volume_ft3",
+            "kind": "number",
+            "unit": "ft3",
+            "label": "evaporator internal volume",
+            "range": "> 0"
+          },
+          {
+            "name": "temp_F",
+            "kind": "number",
+            "unit": "F",
+            "label": "operating temperature",
+            "range": "-40..40 F"
+          },
+          {
+            "name": "recirc_ratio",
+            "kind": "number",
+            "unit": "dimensionless",
+            "label": "recirculation ratio",
+            "range": ">= 1"
+          },
+          {
+            "name": "feed_code",
+            "kind": "code",
+            "unit": "code",
+            "label": "feed type",
+            "codes": {
+              "1": "bottom feed",
+              "2": "top feed"
+            },
+            "range": "1 or 2"
+          }
+        ],
+        "result": {
+          "kind": "number",
+          "unit": "lb",
+          "precision": 1
+        }
+      }
+    ],
+    "sourceHashes": {
+      "tools/atomizer/work/baseline-20/runs/CC-009/atoms/direct/work/CC-009/glue.json": "60efe0551ebcf2c312767f7c4f825ca3eba7c3150d24e6bbb64c440147af713a",
+      "tools/atomizer/work/baseline-20/runs/CC-009/atoms/direct/work/CC-009/kernel.wasm": "c93e991bb734fb29558a477a5c5f0ed7dcb3b7e0303c0ad0e2b1304c7c8f7c00",
+      "tools/atomizer/work/baseline-20/runs/CC-009/atoms/direct/work/CC-009/CONTRACT.md": "a3acf53291a2a7af3ed6fd97ff271f89dfa2834a8e148c0c1b163570aff958e1"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "C-007",
+    "family": "oracle-sonnet",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-sonnet/criteria/C-007.md",
+    "criteriaSha256": "c2cbb788fe8d4243cda8b9b53490551110686812a651518dc38445b025f8bf62",
+    "sourceLine": 7,
+    "sourceLineSha256": "0897a92aaf09b4d2115c18119f8cf84b4e8171803b724037c8fe0e4ae62b5b6e",
+    "arm": "incumbent",
+    "assertion": "C-007:physics:temperature-endpoints",
+    "necessaryPredicate": "Neither paired capability accepts inlet/outlet or verified saturation/liquid temperature as the requested semantic inputs and returns the requested temperature-drop output. Do not reinterpret measured-target deviation arguments as temperature endpoints.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "classifySubcooling": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          127
+        ]
+      },
+      "subcoolingDeviation": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "classifySubcooling",
+        "label": "Is my subcooling low, OK or high?",
+        "headline": true,
+        "args": [
+          {
+            "name": "measured",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Measured subcooling (sub cooler delta)",
+            "range": "0..100"
+          },
+          {
+            "name": "target",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Target subcooling from nameplate (10 if unknown)",
+            "range": "> 0 and <= 100"
+          }
+        ],
+        "result": {
+          "kind": "code",
+          "unit": "code",
+          "codes": {
+            "0": "Low: possible undercharge",
+            "1": "Within \u00b15 \u00b0F of target",
+            "2": "High: possible overcharge or restriction"
+          }
+        }
+      },
+      {
+        "name": "subcoolingDeviation",
+        "label": "How far is my subcooling from target?",
+        "args": [
+          {
+            "name": "measured",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Measured subcooling (sub cooler delta)",
+            "range": "0..100"
+          },
+          {
+            "name": "target",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Target subcooling from nameplate (10 if unknown)",
+            "range": "> 0 and <= 100"
+          }
+        ],
+        "result": {
+          "kind": "number",
+          "unit": "\u00b0F",
+          "precision": 1
+        }
+      }
+    ],
+    "sourceHashes": {
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/glue.json": "e799e935023d1a4fa7c4e0cf6a5f3d7c4a684451b1d530ab76a632ceda15d2f4",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/kernel.wasm": "86aaed9febff7579f7ab9ba535b8f1d7675b3cb25f31613044927e52af2e9f12",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/CONTRACT.md": "9dad2dcb1dd014ad72de42bfaf44dc0d2cf607842a97ff72b2d51b0764c620b8"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "C-007",
+    "family": "oracle-sonnet",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-sonnet/criteria/C-007.md",
+    "criteriaSha256": "c2cbb788fe8d4243cda8b9b53490551110686812a651518dc38445b025f8bf62",
+    "sourceLine": 9,
+    "sourceLineSha256": "36e86d433fd1cc5716b4b8c2477273e183a8730bd2e5509fa6eaf1f31fb3344f",
+    "arm": "incumbent",
+    "assertion": "C-007:physics:temperature-endpoints",
+    "necessaryPredicate": "Neither paired capability accepts inlet/outlet or verified saturation/liquid temperature as the requested semantic inputs and returns the requested temperature-drop output. Do not reinterpret measured-target deviation arguments as temperature endpoints.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "classifySubcooling": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          127
+        ]
+      },
+      "subcoolingDeviation": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "classifySubcooling",
+        "label": "Is my subcooling low, OK or high?",
+        "headline": true,
+        "args": [
+          {
+            "name": "measured",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Measured subcooling (sub cooler delta)",
+            "range": "0..100"
+          },
+          {
+            "name": "target",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Target subcooling from nameplate (10 if unknown)",
+            "range": "> 0 and <= 100"
+          }
+        ],
+        "result": {
+          "kind": "code",
+          "unit": "code",
+          "codes": {
+            "0": "Low: possible undercharge",
+            "1": "Within \u00b15 \u00b0F of target",
+            "2": "High: possible overcharge or restriction"
+          }
+        }
+      },
+      {
+        "name": "subcoolingDeviation",
+        "label": "How far is my subcooling from target?",
+        "args": [
+          {
+            "name": "measured",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Measured subcooling (sub cooler delta)",
+            "range": "0..100"
+          },
+          {
+            "name": "target",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Target subcooling from nameplate (10 if unknown)",
+            "range": "> 0 and <= 100"
+          }
+        ],
+        "result": {
+          "kind": "number",
+          "unit": "\u00b0F",
+          "precision": 1
+        }
+      }
+    ],
+    "sourceHashes": {
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/glue.json": "e799e935023d1a4fa7c4e0cf6a5f3d7c4a684451b1d530ab76a632ceda15d2f4",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/kernel.wasm": "86aaed9febff7579f7ab9ba535b8f1d7675b3cb25f31613044927e52af2e9f12",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/CONTRACT.md": "9dad2dcb1dd014ad72de42bfaf44dc0d2cf607842a97ff72b2d51b0764c620b8"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "C-007",
+    "family": "oracle-codex",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/C-007.md",
+    "criteriaSha256": "76004bb8e44c2da116cc72cd5617018185327c2bfcf7e31cdb3e0ea66bf10c14",
+    "sourceLine": 7,
+    "sourceLineSha256": "6941e44fa923ec1d34406f50ea41a13d4f8f5f97009ae8afd9ddb433bc30ca8c",
+    "arm": "incumbent",
+    "assertion": "C-007:physics:temperature-endpoints",
+    "necessaryPredicate": "Neither paired capability accepts inlet/outlet or verified saturation/liquid temperature as the requested semantic inputs and returns the requested temperature-drop output. Do not reinterpret measured-target deviation arguments as temperature endpoints.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "classifySubcooling": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          127
+        ]
+      },
+      "subcoolingDeviation": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "classifySubcooling",
+        "label": "Is my subcooling low, OK or high?",
+        "headline": true,
+        "args": [
+          {
+            "name": "measured",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Measured subcooling (sub cooler delta)",
+            "range": "0..100"
+          },
+          {
+            "name": "target",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Target subcooling from nameplate (10 if unknown)",
+            "range": "> 0 and <= 100"
+          }
+        ],
+        "result": {
+          "kind": "code",
+          "unit": "code",
+          "codes": {
+            "0": "Low: possible undercharge",
+            "1": "Within \u00b15 \u00b0F of target",
+            "2": "High: possible overcharge or restriction"
+          }
+        }
+      },
+      {
+        "name": "subcoolingDeviation",
+        "label": "How far is my subcooling from target?",
+        "args": [
+          {
+            "name": "measured",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Measured subcooling (sub cooler delta)",
+            "range": "0..100"
+          },
+          {
+            "name": "target",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Target subcooling from nameplate (10 if unknown)",
+            "range": "> 0 and <= 100"
+          }
+        ],
+        "result": {
+          "kind": "number",
+          "unit": "\u00b0F",
+          "precision": 1
+        }
+      }
+    ],
+    "sourceHashes": {
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/glue.json": "e799e935023d1a4fa7c4e0cf6a5f3d7c4a684451b1d530ab76a632ceda15d2f4",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/kernel.wasm": "86aaed9febff7579f7ab9ba535b8f1d7675b3cb25f31613044927e52af2e9f12",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/CONTRACT.md": "9dad2dcb1dd014ad72de42bfaf44dc0d2cf607842a97ff72b2d51b0764c620b8"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "C-007",
+    "family": "oracle-codex",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/C-007.md",
+    "criteriaSha256": "76004bb8e44c2da116cc72cd5617018185327c2bfcf7e31cdb3e0ea66bf10c14",
+    "sourceLine": 8,
+    "sourceLineSha256": "e9e427ea244079179cac6029093b6a2dd633d39ee6635fe5dbfaa4147eacdd7b",
+    "arm": "incumbent",
+    "assertion": "C-007:physics:temperature-endpoints",
+    "necessaryPredicate": "Neither paired capability accepts inlet/outlet or verified saturation/liquid temperature as the requested semantic inputs and returns the requested temperature-drop output. Do not reinterpret measured-target deviation arguments as temperature endpoints.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "classifySubcooling": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          127
+        ]
+      },
+      "subcoolingDeviation": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "classifySubcooling",
+        "label": "Is my subcooling low, OK or high?",
+        "headline": true,
+        "args": [
+          {
+            "name": "measured",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Measured subcooling (sub cooler delta)",
+            "range": "0..100"
+          },
+          {
+            "name": "target",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Target subcooling from nameplate (10 if unknown)",
+            "range": "> 0 and <= 100"
+          }
+        ],
+        "result": {
+          "kind": "code",
+          "unit": "code",
+          "codes": {
+            "0": "Low: possible undercharge",
+            "1": "Within \u00b15 \u00b0F of target",
+            "2": "High: possible overcharge or restriction"
+          }
+        }
+      },
+      {
+        "name": "subcoolingDeviation",
+        "label": "How far is my subcooling from target?",
+        "args": [
+          {
+            "name": "measured",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Measured subcooling (sub cooler delta)",
+            "range": "0..100"
+          },
+          {
+            "name": "target",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Target subcooling from nameplate (10 if unknown)",
+            "range": "> 0 and <= 100"
+          }
+        ],
+        "result": {
+          "kind": "number",
+          "unit": "\u00b0F",
+          "precision": 1
+        }
+      }
+    ],
+    "sourceHashes": {
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/glue.json": "e799e935023d1a4fa7c4e0cf6a5f3d7c4a684451b1d530ab76a632ceda15d2f4",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/kernel.wasm": "86aaed9febff7579f7ab9ba535b8f1d7675b3cb25f31613044927e52af2e9f12",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/CONTRACT.md": "9dad2dcb1dd014ad72de42bfaf44dc0d2cf607842a97ff72b2d51b0764c620b8"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "C-007",
+    "family": "oracle-sonnet",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-sonnet/criteria/C-007.md",
+    "criteriaSha256": "c2cbb788fe8d4243cda8b9b53490551110686812a651518dc38445b025f8bf62",
+    "sourceLine": 7,
+    "sourceLineSha256": "0897a92aaf09b4d2115c18119f8cf84b4e8171803b724037c8fe0e4ae62b5b6e",
+    "arm": "fast-path",
+    "assertion": "C-007:physics:temperature-endpoints",
+    "necessaryPredicate": "Neither paired capability accepts inlet/outlet or verified saturation/liquid temperature as the requested semantic inputs and returns the requested temperature-drop output. Do not reinterpret measured-target deviation arguments as temperature endpoints.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "subcool_class": {
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ]
+      },
+      "subcool_is_normal": {
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "subcool_is_normal",
+        "label": "Is this subcooling normal?",
+        "headline": true,
+        "args": [
+          {
+            "name": "delta_f",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Subcooling (saturation temp minus liquid-line temp)",
+            "range": "0..100"
+          }
+        ],
+        "result": {
+          "kind": "boolean",
+          "unit": "flag",
+          "labels": {
+            "true": "Normal (8-12 \u00b0F)",
+            "false": "Not normal for a TXV system (outside 8-12 \u00b0F)"
+          }
+        }
+      },
+      {
+        "name": "subcool_class",
+        "label": "How far is this subcooling from normal?",
+        "args": [
+          {
+            "name": "delta_f",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Subcooling",
+            "range": "0..100"
+          }
+        ],
+        "result": {
+          "kind": "code",
+          "unit": "code",
+          "codes": {
+            "0": "low (below 5 \u00b0F)",
+            "1": "slightly low (5 to below 8 \u00b0F)",
+            "2": "normal (8-12 \u00b0F)",
+            "3": "high (above 12 to 20 \u00b0F)",
+            "4": "very high (above 20 \u00b0F)"
+          }
+        }
+      }
+    ],
+    "sourceHashes": {
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/glue.json": "7b0e8f8ece30d541c8d6febfcbdf98638cdd57e4dd2dfb386d081d033cacf7ac",
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/kernel.wasm": "ab71ebecb0ef7bb94a7db721dca73235f6982e665c8fe1b03e99b7f0cef7f048",
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/CONTRACT.md": "86e68705c53211cd7f6425f90705d912f5b6a8f05f68e8fe26ceeef67ff260f8"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "C-007",
+    "family": "oracle-sonnet",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-sonnet/criteria/C-007.md",
+    "criteriaSha256": "c2cbb788fe8d4243cda8b9b53490551110686812a651518dc38445b025f8bf62",
+    "sourceLine": 9,
+    "sourceLineSha256": "36e86d433fd1cc5716b4b8c2477273e183a8730bd2e5509fa6eaf1f31fb3344f",
+    "arm": "fast-path",
+    "assertion": "C-007:physics:temperature-endpoints",
+    "necessaryPredicate": "Neither paired capability accepts inlet/outlet or verified saturation/liquid temperature as the requested semantic inputs and returns the requested temperature-drop output. Do not reinterpret measured-target deviation arguments as temperature endpoints.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "subcool_class": {
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ]
+      },
+      "subcool_is_normal": {
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "subcool_is_normal",
+        "label": "Is this subcooling normal?",
+        "headline": true,
+        "args": [
+          {
+            "name": "delta_f",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Subcooling (saturation temp minus liquid-line temp)",
+            "range": "0..100"
+          }
+        ],
+        "result": {
+          "kind": "boolean",
+          "unit": "flag",
+          "labels": {
+            "true": "Normal (8-12 \u00b0F)",
+            "false": "Not normal for a TXV system (outside 8-12 \u00b0F)"
+          }
+        }
+      },
+      {
+        "name": "subcool_class",
+        "label": "How far is this subcooling from normal?",
+        "args": [
+          {
+            "name": "delta_f",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Subcooling",
+            "range": "0..100"
+          }
+        ],
+        "result": {
+          "kind": "code",
+          "unit": "code",
+          "codes": {
+            "0": "low (below 5 \u00b0F)",
+            "1": "slightly low (5 to below 8 \u00b0F)",
+            "2": "normal (8-12 \u00b0F)",
+            "3": "high (above 12 to 20 \u00b0F)",
+            "4": "very high (above 20 \u00b0F)"
+          }
+        }
+      }
+    ],
+    "sourceHashes": {
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/glue.json": "7b0e8f8ece30d541c8d6febfcbdf98638cdd57e4dd2dfb386d081d033cacf7ac",
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/kernel.wasm": "ab71ebecb0ef7bb94a7db721dca73235f6982e665c8fe1b03e99b7f0cef7f048",
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/CONTRACT.md": "86e68705c53211cd7f6425f90705d912f5b6a8f05f68e8fe26ceeef67ff260f8"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "C-007",
+    "family": "oracle-codex",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/C-007.md",
+    "criteriaSha256": "76004bb8e44c2da116cc72cd5617018185327c2bfcf7e31cdb3e0ea66bf10c14",
+    "sourceLine": 7,
+    "sourceLineSha256": "6941e44fa923ec1d34406f50ea41a13d4f8f5f97009ae8afd9ddb433bc30ca8c",
+    "arm": "fast-path",
+    "assertion": "C-007:physics:temperature-endpoints",
+    "necessaryPredicate": "Neither paired capability accepts inlet/outlet or verified saturation/liquid temperature as the requested semantic inputs and returns the requested temperature-drop output. Do not reinterpret measured-target deviation arguments as temperature endpoints.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "subcool_class": {
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ]
+      },
+      "subcool_is_normal": {
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "subcool_is_normal",
+        "label": "Is this subcooling normal?",
+        "headline": true,
+        "args": [
+          {
+            "name": "delta_f",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Subcooling (saturation temp minus liquid-line temp)",
+            "range": "0..100"
+          }
+        ],
+        "result": {
+          "kind": "boolean",
+          "unit": "flag",
+          "labels": {
+            "true": "Normal (8-12 \u00b0F)",
+            "false": "Not normal for a TXV system (outside 8-12 \u00b0F)"
+          }
+        }
+      },
+      {
+        "name": "subcool_class",
+        "label": "How far is this subcooling from normal?",
+        "args": [
+          {
+            "name": "delta_f",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Subcooling",
+            "range": "0..100"
+          }
+        ],
+        "result": {
+          "kind": "code",
+          "unit": "code",
+          "codes": {
+            "0": "low (below 5 \u00b0F)",
+            "1": "slightly low (5 to below 8 \u00b0F)",
+            "2": "normal (8-12 \u00b0F)",
+            "3": "high (above 12 to 20 \u00b0F)",
+            "4": "very high (above 20 \u00b0F)"
+          }
+        }
+      }
+    ],
+    "sourceHashes": {
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/glue.json": "7b0e8f8ece30d541c8d6febfcbdf98638cdd57e4dd2dfb386d081d033cacf7ac",
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/kernel.wasm": "ab71ebecb0ef7bb94a7db721dca73235f6982e665c8fe1b03e99b7f0cef7f048",
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/CONTRACT.md": "86e68705c53211cd7f6425f90705d912f5b6a8f05f68e8fe26ceeef67ff260f8"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "C-007",
+    "family": "oracle-codex",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/C-007.md",
+    "criteriaSha256": "76004bb8e44c2da116cc72cd5617018185327c2bfcf7e31cdb3e0ea66bf10c14",
+    "sourceLine": 8,
+    "sourceLineSha256": "e9e427ea244079179cac6029093b6a2dd633d39ee6635fe5dbfaa4147eacdd7b",
+    "arm": "fast-path",
+    "assertion": "C-007:physics:temperature-endpoints",
+    "necessaryPredicate": "Neither paired capability accepts inlet/outlet or verified saturation/liquid temperature as the requested semantic inputs and returns the requested temperature-drop output. Do not reinterpret measured-target deviation arguments as temperature endpoints.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "subcool_class": {
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ]
+      },
+      "subcool_is_normal": {
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "subcool_is_normal",
+        "label": "Is this subcooling normal?",
+        "headline": true,
+        "args": [
+          {
+            "name": "delta_f",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Subcooling (saturation temp minus liquid-line temp)",
+            "range": "0..100"
+          }
+        ],
+        "result": {
+          "kind": "boolean",
+          "unit": "flag",
+          "labels": {
+            "true": "Normal (8-12 \u00b0F)",
+            "false": "Not normal for a TXV system (outside 8-12 \u00b0F)"
+          }
+        }
+      },
+      {
+        "name": "subcool_class",
+        "label": "How far is this subcooling from normal?",
+        "args": [
+          {
+            "name": "delta_f",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Subcooling",
+            "range": "0..100"
+          }
+        ],
+        "result": {
+          "kind": "code",
+          "unit": "code",
+          "codes": {
+            "0": "low (below 5 \u00b0F)",
+            "1": "slightly low (5 to below 8 \u00b0F)",
+            "2": "normal (8-12 \u00b0F)",
+            "3": "high (above 12 to 20 \u00b0F)",
+            "4": "very high (above 20 \u00b0F)"
+          }
+        }
+      }
+    ],
+    "sourceHashes": {
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/glue.json": "7b0e8f8ece30d541c8d6febfcbdf98638cdd57e4dd2dfb386d081d033cacf7ac",
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/kernel.wasm": "ab71ebecb0ef7bb94a7db721dca73235f6982e665c8fe1b03e99b7f0cef7f048",
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/CONTRACT.md": "86e68705c53211cd7f6425f90705d912f5b6a8f05f68e8fe26ceeef67ff260f8"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "C-007",
+    "family": "oracle-codex",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/C-007.md",
+    "criteriaSha256": "76004bb8e44c2da116cc72cd5617018185327c2bfcf7e31cdb3e0ea66bf10c14",
+    "sourceLine": 9,
+    "sourceLineSha256": "a0bddd72ce0fbf017c59c83181a9c33617ff393d332b6d602d41a3efa2c4e86f",
+    "arm": "incumbent",
+    "assertion": "C-007:physics:interval-conversion",
+    "necessaryPredicate": "Neither paired capability exports a Fahrenheit-interval\u2192Celsius-interval conversion; required45*5/9=25degC cannot be requested through the declared ABI.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "classifySubcooling": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          127
+        ]
+      },
+      "subcoolingDeviation": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "classifySubcooling",
+        "label": "Is my subcooling low, OK or high?",
+        "headline": true,
+        "args": [
+          {
+            "name": "measured",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Measured subcooling (sub cooler delta)",
+            "range": "0..100"
+          },
+          {
+            "name": "target",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Target subcooling from nameplate (10 if unknown)",
+            "range": "> 0 and <= 100"
+          }
+        ],
+        "result": {
+          "kind": "code",
+          "unit": "code",
+          "codes": {
+            "0": "Low: possible undercharge",
+            "1": "Within \u00b15 \u00b0F of target",
+            "2": "High: possible overcharge or restriction"
+          }
+        }
+      },
+      {
+        "name": "subcoolingDeviation",
+        "label": "How far is my subcooling from target?",
+        "args": [
+          {
+            "name": "measured",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Measured subcooling (sub cooler delta)",
+            "range": "0..100"
+          },
+          {
+            "name": "target",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Target subcooling from nameplate (10 if unknown)",
+            "range": "> 0 and <= 100"
+          }
+        ],
+        "result": {
+          "kind": "number",
+          "unit": "\u00b0F",
+          "precision": 1
+        }
+      }
+    ],
+    "sourceHashes": {
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/glue.json": "e799e935023d1a4fa7c4e0cf6a5f3d7c4a684451b1d530ab76a632ceda15d2f4",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/kernel.wasm": "86aaed9febff7579f7ab9ba535b8f1d7675b3cb25f31613044927e52af2e9f12",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/CONTRACT.md": "9dad2dcb1dd014ad72de42bfaf44dc0d2cf607842a97ff72b2d51b0764c620b8"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "C-007",
+    "family": "oracle-codex",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-codex/criteria/C-007.md",
+    "criteriaSha256": "76004bb8e44c2da116cc72cd5617018185327c2bfcf7e31cdb3e0ea66bf10c14",
+    "sourceLine": 9,
+    "sourceLineSha256": "a0bddd72ce0fbf017c59c83181a9c33617ff393d332b6d602d41a3efa2c4e86f",
+    "arm": "fast-path",
+    "assertion": "C-007:physics:interval-conversion",
+    "necessaryPredicate": "Neither paired capability exports a Fahrenheit-interval\u2192Celsius-interval conversion; required45*5/9=25degC cannot be requested through the declared ABI.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "subcool_class": {
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ]
+      },
+      "subcool_is_normal": {
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "subcool_is_normal",
+        "label": "Is this subcooling normal?",
+        "headline": true,
+        "args": [
+          {
+            "name": "delta_f",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Subcooling (saturation temp minus liquid-line temp)",
+            "range": "0..100"
+          }
+        ],
+        "result": {
+          "kind": "boolean",
+          "unit": "flag",
+          "labels": {
+            "true": "Normal (8-12 \u00b0F)",
+            "false": "Not normal for a TXV system (outside 8-12 \u00b0F)"
+          }
+        }
+      },
+      {
+        "name": "subcool_class",
+        "label": "How far is this subcooling from normal?",
+        "args": [
+          {
+            "name": "delta_f",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Subcooling",
+            "range": "0..100"
+          }
+        ],
+        "result": {
+          "kind": "code",
+          "unit": "code",
+          "codes": {
+            "0": "low (below 5 \u00b0F)",
+            "1": "slightly low (5 to below 8 \u00b0F)",
+            "2": "normal (8-12 \u00b0F)",
+            "3": "high (above 12 to 20 \u00b0F)",
+            "4": "very high (above 20 \u00b0F)"
+          }
+        }
+      }
+    ],
+    "sourceHashes": {
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/glue.json": "7b0e8f8ece30d541c8d6febfcbdf98638cdd57e4dd2dfb386d081d033cacf7ac",
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/kernel.wasm": "ab71ebecb0ef7bb94a7db721dca73235f6982e665c8fe1b03e99b7f0cef7f048",
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/CONTRACT.md": "86e68705c53211cd7f6425f90705d912f5b6a8f05f68e8fe26ceeef67ff260f8"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "C-007",
+    "family": "oracle-opus",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-opus/criteria/C-007.md",
+    "criteriaSha256": "cd0a5f8258ec740cd99f8ce90e63ce2b98b22b83ad05c38cd41f320f4a4995cd",
+    "sourceLine": 13,
+    "sourceLineSha256": "52dd27a698849e953ac0fb87a99aa8a100c8802d8e9447cafafcbb4e197730fb",
+    "arm": "incumbent",
+    "assertion": "C-007:physics:heat-duty",
+    "necessaryPredicate": "Neither paired capability accepts supplied massflow1000lb/h and cp.35Btu/lb/degF to return15750Btu/h. A status code is not a heat-duty output.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "classifySubcooling": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          127
+        ]
+      },
+      "subcoolingDeviation": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "classifySubcooling",
+        "label": "Is my subcooling low, OK or high?",
+        "headline": true,
+        "args": [
+          {
+            "name": "measured",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Measured subcooling (sub cooler delta)",
+            "range": "0..100"
+          },
+          {
+            "name": "target",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Target subcooling from nameplate (10 if unknown)",
+            "range": "> 0 and <= 100"
+          }
+        ],
+        "result": {
+          "kind": "code",
+          "unit": "code",
+          "codes": {
+            "0": "Low: possible undercharge",
+            "1": "Within \u00b15 \u00b0F of target",
+            "2": "High: possible overcharge or restriction"
+          }
+        }
+      },
+      {
+        "name": "subcoolingDeviation",
+        "label": "How far is my subcooling from target?",
+        "args": [
+          {
+            "name": "measured",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Measured subcooling (sub cooler delta)",
+            "range": "0..100"
+          },
+          {
+            "name": "target",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Target subcooling from nameplate (10 if unknown)",
+            "range": "> 0 and <= 100"
+          }
+        ],
+        "result": {
+          "kind": "number",
+          "unit": "\u00b0F",
+          "precision": 1
+        }
+      }
+    ],
+    "sourceHashes": {
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/glue.json": "e799e935023d1a4fa7c4e0cf6a5f3d7c4a684451b1d530ab76a632ceda15d2f4",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/kernel.wasm": "86aaed9febff7579f7ab9ba535b8f1d7675b3cb25f31613044927e52af2e9f12",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/CONTRACT.md": "9dad2dcb1dd014ad72de42bfaf44dc0d2cf607842a97ff72b2d51b0764c620b8"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "C-007",
+    "family": "oracle-opus",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-opus/criteria/C-007.md",
+    "criteriaSha256": "cd0a5f8258ec740cd99f8ce90e63ce2b98b22b83ad05c38cd41f320f4a4995cd",
+    "sourceLine": 13,
+    "sourceLineSha256": "52dd27a698849e953ac0fb87a99aa8a100c8802d8e9447cafafcbb4e197730fb",
+    "arm": "fast-path",
+    "assertion": "C-007:physics:heat-duty",
+    "necessaryPredicate": "Neither paired capability accepts supplied massflow1000lb/h and cp.35Btu/lb/degF to return15750Btu/h. A status code is not a heat-duty output.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "subcool_class": {
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ]
+      },
+      "subcool_is_normal": {
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "subcool_is_normal",
+        "label": "Is this subcooling normal?",
+        "headline": true,
+        "args": [
+          {
+            "name": "delta_f",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Subcooling (saturation temp minus liquid-line temp)",
+            "range": "0..100"
+          }
+        ],
+        "result": {
+          "kind": "boolean",
+          "unit": "flag",
+          "labels": {
+            "true": "Normal (8-12 \u00b0F)",
+            "false": "Not normal for a TXV system (outside 8-12 \u00b0F)"
+          }
+        }
+      },
+      {
+        "name": "subcool_class",
+        "label": "How far is this subcooling from normal?",
+        "args": [
+          {
+            "name": "delta_f",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Subcooling",
+            "range": "0..100"
+          }
+        ],
+        "result": {
+          "kind": "code",
+          "unit": "code",
+          "codes": {
+            "0": "low (below 5 \u00b0F)",
+            "1": "slightly low (5 to below 8 \u00b0F)",
+            "2": "normal (8-12 \u00b0F)",
+            "3": "high (above 12 to 20 \u00b0F)",
+            "4": "very high (above 20 \u00b0F)"
+          }
+        }
+      }
+    ],
+    "sourceHashes": {
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/glue.json": "7b0e8f8ece30d541c8d6febfcbdf98638cdd57e4dd2dfb386d081d033cacf7ac",
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/kernel.wasm": "ab71ebecb0ef7bb94a7db721dca73235f6982e665c8fe1b03e99b7f0cef7f048",
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/CONTRACT.md": "86e68705c53211cd7f6425f90705d912f5b6a8f05f68e8fe26ceeef67ff260f8"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "C-007",
+    "family": "oracle-sonnet",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-sonnet/criteria/C-007.md",
+    "criteriaSha256": "c2cbb788fe8d4243cda8b9b53490551110686812a651518dc38445b025f8bf62",
+    "sourceLine": 8,
+    "sourceLineSha256": "0872864041e70f9c9c99161cd048ed1fb0272e55396d9b9d80d3d63edc6f5e82",
+    "arm": "incumbent",
+    "assertion": "C-007:physics:coupled-physics",
+    "necessaryPredicate": "Neither paired interface can receive leaving-liquid and subcooler-suction-saturation temperatures together, or inlet and condensing-saturation temperatures, to evaluate the explicit impossibility conditions.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "classifySubcooling": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          127
+        ]
+      },
+      "subcoolingDeviation": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "classifySubcooling",
+        "label": "Is my subcooling low, OK or high?",
+        "headline": true,
+        "args": [
+          {
+            "name": "measured",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Measured subcooling (sub cooler delta)",
+            "range": "0..100"
+          },
+          {
+            "name": "target",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Target subcooling from nameplate (10 if unknown)",
+            "range": "> 0 and <= 100"
+          }
+        ],
+        "result": {
+          "kind": "code",
+          "unit": "code",
+          "codes": {
+            "0": "Low: possible undercharge",
+            "1": "Within \u00b15 \u00b0F of target",
+            "2": "High: possible overcharge or restriction"
+          }
+        }
+      },
+      {
+        "name": "subcoolingDeviation",
+        "label": "How far is my subcooling from target?",
+        "args": [
+          {
+            "name": "measured",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Measured subcooling (sub cooler delta)",
+            "range": "0..100"
+          },
+          {
+            "name": "target",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Target subcooling from nameplate (10 if unknown)",
+            "range": "> 0 and <= 100"
+          }
+        ],
+        "result": {
+          "kind": "number",
+          "unit": "\u00b0F",
+          "precision": 1
+        }
+      }
+    ],
+    "sourceHashes": {
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/glue.json": "e799e935023d1a4fa7c4e0cf6a5f3d7c4a684451b1d530ab76a632ceda15d2f4",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/kernel.wasm": "86aaed9febff7579f7ab9ba535b8f1d7675b3cb25f31613044927e52af2e9f12",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/CONTRACT.md": "9dad2dcb1dd014ad72de42bfaf44dc0d2cf607842a97ff72b2d51b0764c620b8"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "C-007",
+    "family": "oracle-opus",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-opus/criteria/C-007.md",
+    "criteriaSha256": "cd0a5f8258ec740cd99f8ce90e63ce2b98b22b83ad05c38cd41f320f4a4995cd",
+    "sourceLine": 14,
+    "sourceLineSha256": "cb45e58d7a04e2c25cb8b312347d7a7d6c3844993321fbff0aaf333cd659a576",
+    "arm": "incumbent",
+    "assertion": "C-007:physics:coupled-physics",
+    "necessaryPredicate": "Neither paired interface can receive leaving-liquid and subcooler-suction-saturation temperatures together, or inlet and condensing-saturation temperatures, to evaluate the explicit impossibility conditions.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "classifySubcooling": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          127
+        ]
+      },
+      "subcoolingDeviation": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "classifySubcooling",
+        "label": "Is my subcooling low, OK or high?",
+        "headline": true,
+        "args": [
+          {
+            "name": "measured",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Measured subcooling (sub cooler delta)",
+            "range": "0..100"
+          },
+          {
+            "name": "target",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Target subcooling from nameplate (10 if unknown)",
+            "range": "> 0 and <= 100"
+          }
+        ],
+        "result": {
+          "kind": "code",
+          "unit": "code",
+          "codes": {
+            "0": "Low: possible undercharge",
+            "1": "Within \u00b15 \u00b0F of target",
+            "2": "High: possible overcharge or restriction"
+          }
+        }
+      },
+      {
+        "name": "subcoolingDeviation",
+        "label": "How far is my subcooling from target?",
+        "args": [
+          {
+            "name": "measured",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Measured subcooling (sub cooler delta)",
+            "range": "0..100"
+          },
+          {
+            "name": "target",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Target subcooling from nameplate (10 if unknown)",
+            "range": "> 0 and <= 100"
+          }
+        ],
+        "result": {
+          "kind": "number",
+          "unit": "\u00b0F",
+          "precision": 1
+        }
+      }
+    ],
+    "sourceHashes": {
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/glue.json": "e799e935023d1a4fa7c4e0cf6a5f3d7c4a684451b1d530ab76a632ceda15d2f4",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/kernel.wasm": "86aaed9febff7579f7ab9ba535b8f1d7675b3cb25f31613044927e52af2e9f12",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/CONTRACT.md": "9dad2dcb1dd014ad72de42bfaf44dc0d2cf607842a97ff72b2d51b0764c620b8"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "C-007",
+    "family": "oracle-opus",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-opus/criteria/C-007.md",
+    "criteriaSha256": "cd0a5f8258ec740cd99f8ce90e63ce2b98b22b83ad05c38cd41f320f4a4995cd",
+    "sourceLine": 15,
+    "sourceLineSha256": "e7f380ad0a47697b4ddecb3dc6f98f31a9080007f2588d84360afc16c4dabf13",
+    "arm": "incumbent",
+    "assertion": "C-007:physics:coupled-physics",
+    "necessaryPredicate": "Neither paired interface can receive leaving-liquid and subcooler-suction-saturation temperatures together, or inlet and condensing-saturation temperatures, to evaluate the explicit impossibility conditions.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "classifySubcooling": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          127
+        ]
+      },
+      "subcoolingDeviation": {
+        "params": [
+          124,
+          124
+        ],
+        "results": [
+          124
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "classifySubcooling",
+        "label": "Is my subcooling low, OK or high?",
+        "headline": true,
+        "args": [
+          {
+            "name": "measured",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Measured subcooling (sub cooler delta)",
+            "range": "0..100"
+          },
+          {
+            "name": "target",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Target subcooling from nameplate (10 if unknown)",
+            "range": "> 0 and <= 100"
+          }
+        ],
+        "result": {
+          "kind": "code",
+          "unit": "code",
+          "codes": {
+            "0": "Low: possible undercharge",
+            "1": "Within \u00b15 \u00b0F of target",
+            "2": "High: possible overcharge or restriction"
+          }
+        }
+      },
+      {
+        "name": "subcoolingDeviation",
+        "label": "How far is my subcooling from target?",
+        "args": [
+          {
+            "name": "measured",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Measured subcooling (sub cooler delta)",
+            "range": "0..100"
+          },
+          {
+            "name": "target",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Target subcooling from nameplate (10 if unknown)",
+            "range": "> 0 and <= 100"
+          }
+        ],
+        "result": {
+          "kind": "number",
+          "unit": "\u00b0F",
+          "precision": 1
+        }
+      }
+    ],
+    "sourceHashes": {
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/glue.json": "e799e935023d1a4fa7c4e0cf6a5f3d7c4a684451b1d530ab76a632ceda15d2f4",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/kernel.wasm": "86aaed9febff7579f7ab9ba535b8f1d7675b3cb25f31613044927e52af2e9f12",
+      "campaigns/hillclimb-loop-01/work/runs/s3/inc-low-r1-C-007/C-007/CONTRACT.md": "9dad2dcb1dd014ad72de42bfaf44dc0d2cf607842a97ff72b2d51b0764c620b8"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "C-007",
+    "family": "oracle-sonnet",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-sonnet/criteria/C-007.md",
+    "criteriaSha256": "c2cbb788fe8d4243cda8b9b53490551110686812a651518dc38445b025f8bf62",
+    "sourceLine": 8,
+    "sourceLineSha256": "0872864041e70f9c9c99161cd048ed1fb0272e55396d9b9d80d3d63edc6f5e82",
+    "arm": "fast-path",
+    "assertion": "C-007:physics:coupled-physics",
+    "necessaryPredicate": "Neither paired interface can receive leaving-liquid and subcooler-suction-saturation temperatures together, or inlet and condensing-saturation temperatures, to evaluate the explicit impossibility conditions.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "subcool_class": {
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ]
+      },
+      "subcool_is_normal": {
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "subcool_is_normal",
+        "label": "Is this subcooling normal?",
+        "headline": true,
+        "args": [
+          {
+            "name": "delta_f",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Subcooling (saturation temp minus liquid-line temp)",
+            "range": "0..100"
+          }
+        ],
+        "result": {
+          "kind": "boolean",
+          "unit": "flag",
+          "labels": {
+            "true": "Normal (8-12 \u00b0F)",
+            "false": "Not normal for a TXV system (outside 8-12 \u00b0F)"
+          }
+        }
+      },
+      {
+        "name": "subcool_class",
+        "label": "How far is this subcooling from normal?",
+        "args": [
+          {
+            "name": "delta_f",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Subcooling",
+            "range": "0..100"
+          }
+        ],
+        "result": {
+          "kind": "code",
+          "unit": "code",
+          "codes": {
+            "0": "low (below 5 \u00b0F)",
+            "1": "slightly low (5 to below 8 \u00b0F)",
+            "2": "normal (8-12 \u00b0F)",
+            "3": "high (above 12 to 20 \u00b0F)",
+            "4": "very high (above 20 \u00b0F)"
+          }
+        }
+      }
+    ],
+    "sourceHashes": {
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/glue.json": "7b0e8f8ece30d541c8d6febfcbdf98638cdd57e4dd2dfb386d081d033cacf7ac",
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/kernel.wasm": "ab71ebecb0ef7bb94a7db721dca73235f6982e665c8fe1b03e99b7f0cef7f048",
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/CONTRACT.md": "86e68705c53211cd7f6425f90705d912f5b6a8f05f68e8fe26ceeef67ff260f8"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "C-007",
+    "family": "oracle-opus",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-opus/criteria/C-007.md",
+    "criteriaSha256": "cd0a5f8258ec740cd99f8ce90e63ce2b98b22b83ad05c38cd41f320f4a4995cd",
+    "sourceLine": 14,
+    "sourceLineSha256": "cb45e58d7a04e2c25cb8b312347d7a7d6c3844993321fbff0aaf333cd659a576",
+    "arm": "fast-path",
+    "assertion": "C-007:physics:coupled-physics",
+    "necessaryPredicate": "Neither paired interface can receive leaving-liquid and subcooler-suction-saturation temperatures together, or inlet and condensing-saturation temperatures, to evaluate the explicit impossibility conditions.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "subcool_class": {
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ]
+      },
+      "subcool_is_normal": {
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "subcool_is_normal",
+        "label": "Is this subcooling normal?",
+        "headline": true,
+        "args": [
+          {
+            "name": "delta_f",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Subcooling (saturation temp minus liquid-line temp)",
+            "range": "0..100"
+          }
+        ],
+        "result": {
+          "kind": "boolean",
+          "unit": "flag",
+          "labels": {
+            "true": "Normal (8-12 \u00b0F)",
+            "false": "Not normal for a TXV system (outside 8-12 \u00b0F)"
+          }
+        }
+      },
+      {
+        "name": "subcool_class",
+        "label": "How far is this subcooling from normal?",
+        "args": [
+          {
+            "name": "delta_f",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Subcooling",
+            "range": "0..100"
+          }
+        ],
+        "result": {
+          "kind": "code",
+          "unit": "code",
+          "codes": {
+            "0": "low (below 5 \u00b0F)",
+            "1": "slightly low (5 to below 8 \u00b0F)",
+            "2": "normal (8-12 \u00b0F)",
+            "3": "high (above 12 to 20 \u00b0F)",
+            "4": "very high (above 20 \u00b0F)"
+          }
+        }
+      }
+    ],
+    "sourceHashes": {
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/glue.json": "7b0e8f8ece30d541c8d6febfcbdf98638cdd57e4dd2dfb386d081d033cacf7ac",
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/kernel.wasm": "ab71ebecb0ef7bb94a7db721dca73235f6982e665c8fe1b03e99b7f0cef7f048",
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/CONTRACT.md": "86e68705c53211cd7f6425f90705d912f5b6a8f05f68e8fe26ceeef67ff260f8"
+    },
+    "outcome": "required-semantic-interface-absent"
+  },
+  {
+    "version": 1,
+    "requestId": "C-007",
+    "family": "oracle-opus",
+    "criteriaPath": "campaigns/hillclimb-loop-01/work/oracle/oracle-opus/criteria/C-007.md",
+    "criteriaSha256": "cd0a5f8258ec740cd99f8ce90e63ce2b98b22b83ad05c38cd41f320f4a4995cd",
+    "sourceLine": 15,
+    "sourceLineSha256": "e7f380ad0a47697b4ddecb3dc6f98f31a9080007f2588d84360afc16c4dabf13",
+    "arm": "fast-path",
+    "assertion": "C-007:physics:coupled-physics",
+    "necessaryPredicate": "Neither paired interface can receive leaving-liquid and subcooler-suction-saturation temperatures together, or inlet and condensing-saturation temperatures, to evaluate the explicit impossibility conditions.",
+    "predicatePassed": false,
+    "fullMixedClauseFalseUnderDeclaredScope": true,
+    "scope": "Direct documented ABI only; external composition or repurposing differently typed arguments is outside this entry point",
+    "evidence": "actual-binary-interfaces.json",
+    "binarySignatures": {
+      "subcool_class": {
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ]
+      },
+      "subcool_is_normal": {
+        "params": [
+          124
+        ],
+        "results": [
+          127
+        ]
+      }
+    },
+    "documentedExports": [
+      {
+        "name": "subcool_is_normal",
+        "label": "Is this subcooling normal?",
+        "headline": true,
+        "args": [
+          {
+            "name": "delta_f",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Subcooling (saturation temp minus liquid-line temp)",
+            "range": "0..100"
+          }
+        ],
+        "result": {
+          "kind": "boolean",
+          "unit": "flag",
+          "labels": {
+            "true": "Normal (8-12 \u00b0F)",
+            "false": "Not normal for a TXV system (outside 8-12 \u00b0F)"
+          }
+        }
+      },
+      {
+        "name": "subcool_class",
+        "label": "How far is this subcooling from normal?",
+        "args": [
+          {
+            "name": "delta_f",
+            "kind": "number",
+            "unit": "\u00b0F",
+            "label": "Subcooling",
+            "range": "0..100"
+          }
+        ],
+        "result": {
+          "kind": "code",
+          "unit": "code",
+          "codes": {
+            "0": "low (below 5 \u00b0F)",
+            "1": "slightly low (5 to below 8 \u00b0F)",
+            "2": "normal (8-12 \u00b0F)",
+            "3": "high (above 12 to 20 \u00b0F)",
+            "4": "very high (above 20 \u00b0F)"
+          }
+        }
+      }
+    ],
+    "sourceHashes": {
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/glue.json": "7b0e8f8ece30d541c8d6febfcbdf98638cdd57e4dd2dfb386d081d033cacf7ac",
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/kernel.wasm": "ab71ebecb0ef7bb94a7db721dca73235f6982e665c8fe1b03e99b7f0cef7f048",
+      "tools/atomizer/work/baseline-20/runs/C-007/atoms/direct/work/C-007/CONTRACT.md": "86e68705c53211cd7f6425f90705d912f5b6a8f05f68e8fe26ceeef67ff260f8"
+    },
+    "outcome": "required-semantic-interface-absent"
+  }
+]

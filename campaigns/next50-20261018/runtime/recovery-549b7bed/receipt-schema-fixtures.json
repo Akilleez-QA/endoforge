@@ -1,0 +1,97 @@
+{
+  "timeout": {
+    "version": 1,
+    "kind": "receipt",
+    "job": "fixture",
+    "attempt": "attempt",
+    "parent": null,
+    "state": "timeout",
+    "usage": {
+      "wallMs": 0,
+      "tokens": null
+    },
+    "hashes": {
+      "input": "c13208ac20f7d4ee70e2ae7e21553ee7523d3b78ac7928d67afcd2105ab03c83"
+    },
+    "error": {
+      "type": "timeout",
+      "message": "fixture"
+    }
+  },
+  "cancelled": {
+    "version": 1,
+    "kind": "receipt",
+    "job": "fixture",
+    "attempt": "attempt",
+    "parent": null,
+    "state": "cancelled",
+    "usage": {
+      "wallMs": 0,
+      "tokens": null
+    },
+    "hashes": {
+      "input": "c13208ac20f7d4ee70e2ae7e21553ee7523d3b78ac7928d67afcd2105ab03c83"
+    },
+    "error": {
+      "type": "cancelled",
+      "message": "fixture"
+    }
+  },
+  "unknown": {
+    "version": 1,
+    "kind": "receipt",
+    "job": "fixture",
+    "attempt": "attempt",
+    "parent": null,
+    "state": "unknown",
+    "usage": {
+      "wallMs": 0,
+      "tokens": null
+    },
+    "hashes": {
+      "input": "c13208ac20f7d4ee70e2ae7e21553ee7523d3b78ac7928d67afcd2105ab03c83"
+    },
+    "error": {
+      "type": "unknown",
+      "message": "fixture"
+    }
+  },
+  "queued": {
+    "version": 1,
+    "kind": "receipt",
+    "job": "fixture",
+    "attempt": "retry",
+    "parent": "prior",
+    "state": "queued",
+    "usage": {
+      "wallMs": 0,
+      "tokens": null
+    },
+    "hashes": {
+      "input": "c13208ac20f7d4ee70e2ae7e21553ee7523d3b78ac7928d67afcd2105ab03c83"
+    },
+    "error": {
+      "type": "queued",
+      "message": "fixture"
+    }
+  },
+  "publication_recovered": {
+    "version": 1,
+    "kind": "receipt",
+    "job": "fixture",
+    "attempt": "attempt",
+    "parent": null,
+    "state": "publication_recovered",
+    "usage": {
+      "wallMs": 0,
+      "tokens": null
+    },
+    "hashes": {
+      "artifact": "c13208ac20f7d4ee70e2ae7e21553ee7523d3b78ac7928d67afcd2105ab03c83"
+    },
+    "error": {
+      "type": "publication_recovered",
+      "message": "fixture"
+    }
+  }
+}

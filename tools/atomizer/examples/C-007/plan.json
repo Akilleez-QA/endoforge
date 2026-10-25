@@ -1,0 +1,47 @@
+{
+ "order": [
+  "iface",
+  "contract",
+  "kstatus",
+  "kdev",
+  "tstatus",
+  "tdev",
+  "glue",
+  "compose",
+  "rev-tech",
+  "rev-eng",
+  "rev-safe"
+ ],
+ "waves": {
+  "0": [
+   "iface",
+   "contract"
+  ],
+  "1": [
+   "kstatus",
+   "kdev",
+   "tstatus",
+   "tdev",
+   "glue"
+  ],
+  "2": [
+   "compose"
+  ],
+  "3": [
+   "rev-tech",
+   "rev-eng",
+   "rev-safe"
+  ]
+ },
+ "total": 16,
+ "critical": 7,
+ "criticalPath": [
+  "contract",
+  "tstatus",
+  "compose",
+  "rev-tech"
+ ],
+ "speedupBound": 2.29,
+ "serialFraction": 0.44,
+ "width": 5
+}

@@ -1,0 +1,287 @@
+{
+  "id": "C-016",
+  "argv": [
+    "bwrap",
+    "--ro-bind",
+    "/usr",
+    "/usr",
+    "--ro-bind",
+    "/lib",
+    "/lib",
+    "--ro-bind",
+    "/lib64",
+    "/lib64",
+    "--ro-bind",
+    "/bin",
+    "/bin",
+    "--ro-bind",
+    "/sbin",
+    "/sbin",
+    "--ro-bind",
+    "/home/user/Work/endoforge/experiments/P-09-portable-campaign/work/node",
+    "/opt/node",
+    "--ro-bind",
+    "/home/user/Work/endoforge/experiments/P-09-portable-campaign/work/context/bundle",
+    "/bundle",
+    "--bind",
+    "/home/user/Work/endoforge/experiments/P-09-portable-campaign/work/bubblewrap",
+    "/out",
+    "--tmpfs",
+    "/tmp",
+    "--proc",
+    "/proc",
+    "--dev",
+    "/dev",
+    "--unshare-all",
+    "--die-with-parent",
+    "--new-session",
+    "--clearenv",
+    "--setenv",
+    "PATH",
+    "/opt:/usr/bin:/bin",
+    "--setenv",
+    "HOME",
+    "/tmp",
+    "--chdir",
+    "/tmp",
+    "--",
+    "/opt/node",
+    "/bundle/campaigns/x1-spec-study/factory/gate.mjs",
+    "run",
+    "/out/C-016"
+  ],
+  "exit": 0,
+  "wallMs": 498.8812709998456,
+  "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 364,\n   \"wasmSha256\": \"ec5b2f16466e802a5d6f5ee398e1f785413e0f84a49fc73d0e5d4d35fb63ee1a\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"displayStatus\",\n    \"nameToShow\",\n    \"labelAllowed\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 14,\n   \"total\": 14\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.034233\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+  "stderr": "",
+  "result": {
+    "at": "2026-10-18T18:45:27.137Z",
+    "gates": {
+      "G1_frozen": {
+        "ok": true
+      },
+      "G2_compiles": {
+        "ok": true,
+        "wasmBytes": 364,
+        "wasmSha256": "ec5b2f16466e802a5d6f5ee398e1f785413e0f84a49fc73d0e5d4d35fb63ee1a"
+      },
+      "G3_exports": {
+        "ok": true,
+        "exports": [
+          "displayStatus",
+          "nameToShow",
+          "labelAllowed"
+        ]
+      },
+      "G4_tests": {
+        "ok": true,
+        "passed": 14,
+        "total": 14
+      },
+      "G6_bounded": {
+        "ok": true,
+        "maxMs": 0.034233
+      },
+      "G5_deterministic": {
+        "ok": true
+      },
+      "G7_glue": {
+        "ok": true
+      }
+    },
+    "tests": [
+      {
+        "name": "unbuilt+confirmed shows REQUESTED (boundary)",
+        "fn": "displayStatus",
+        "args": [
+          1,
+          1,
+          0
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0.032,
+        "pass": true
+      },
+      {
+        "name": "unbuilt+unconfirmed shows REQUESTED",
+        "fn": "displayStatus",
+        "args": [
+          1,
+          0,
+          0
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "built+confirmed shows APPROVED",
+        "fn": "displayStatus",
+        "args": [
+          1,
+          1,
+          1
+        ],
+        "expect": 2,
+        "got": 2,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "built+unconfirmed shows REQUESTED",
+        "fn": "displayStatus",
+        "args": [
+          1,
+          0,
+          1
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "not requested shows NOT_REQUESTED",
+        "fn": "displayStatus",
+        "args": [
+          0,
+          1,
+          0
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0.002,
+        "pass": true
+      },
+      {
+        "name": "requested names recorded confirmer",
+        "fn": "nameToShow",
+        "args": [
+          1,
+          1,
+          0,
+          2
+        ],
+        "expect": 2,
+        "got": 2,
+        "ms": 0.007,
+        "pass": true
+      },
+      {
+        "name": "assumption: no confirmer recorded -> owner (1)",
+        "fn": "nameToShow",
+        "args": [
+          1,
+          0,
+          0,
+          0
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "approved carries no expected-confirmer name",
+        "fn": "nameToShow",
+        "args": [
+          1,
+          1,
+          1,
+          2
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "not requested carries no name",
+        "fn": "nameToShow",
+        "args": [
+          0,
+          0,
+          0,
+          2
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "APPROVED label forbidden while unbuilt",
+        "fn": "labelAllowed",
+        "args": [
+          1,
+          1,
+          0,
+          2
+        ],
+        "expect": false,
+        "got": 0,
+        "ms": 0.003,
+        "pass": true
+      },
+      {
+        "name": "REQUESTED label allowed while unbuilt",
+        "fn": "labelAllowed",
+        "args": [
+          1,
+          1,
+          0,
+          1
+        ],
+        "expect": true,
+        "got": 1,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "APPROVED label allowed once built+confirmed",
+        "fn": "labelAllowed",
+        "args": [
+          1,
+          1,
+          1,
+          2
+        ],
+        "expect": true,
+        "got": 1,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "invalid flag traps",
+        "fn": "displayStatus",
+        "args": [
+          1,
+          2,
+          0
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.034,
+        "pass": true
+      },
+      {
+        "name": "negative confirmer traps",
+        "fn": "nameToShow",
+        "args": [
+          1,
+          0,
+          0,
+          -1
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.007,
+        "pass": true
+      }
+    ],
+    "promotable": true
+  },
+  "wasmSha256": "ec5b2f16466e802a5d6f5ee398e1f785413e0f84a49fc73d0e5d4d35fb63ee1a"
+}

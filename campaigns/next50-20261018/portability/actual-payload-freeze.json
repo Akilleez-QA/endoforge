@@ -1,0 +1,58 @@
+{
+  "scope": "actual Codex-generated synthetic development job after paired Codex/Qwen evals, with genuinely pending deterministic consumer stage",
+  "originStateSha256": "a25ad50c65008ccfc24c02e95f7e4d4ada687eeccbe7559daa101557a64afa37",
+  "moduleSha256": "f3177f3d3b8c0ec2322067a2c5c3c127fb2d0ed6cffa0315c0aa2e1f7a64f81a",
+  "frozenSha256": "8abe905e136149e47bb426ad21f0944f103e2a88a0e2762193114c4687b235d9",
+  "sourceFiles": 79,
+  "completedStages": [
+    "intake",
+    "paired-evals",
+    "freeze",
+    "generate",
+    "compile",
+    "bounded-evals",
+    "trusted-gates",
+    "publish"
+  ],
+  "pendingStages": [
+    "portable-consumer"
+  ],
+  "consumerCases": [
+    {
+      "id": "numeric37.5",
+      "args": [
+        37.5
+      ],
+      "expect": 99.5,
+      "tolerance": 1e-09,
+      "fn": "celsiusToFahrenheit"
+    },
+    {
+      "id": "freezing",
+      "args": [
+        0
+      ],
+      "expect": 32,
+      "tolerance": 1e-09,
+      "fn": "celsiusToFahrenheit"
+    },
+    {
+      "id": "invalid",
+      "args": [
+        -300
+      ],
+      "expectError": true,
+      "fn": "celsiusToFahrenheit"
+    },
+    {
+      "id": "nonfinite",
+      "args": [
+        "nan"
+      ],
+      "expectError": true,
+      "fn": "celsiusToFahrenheit"
+    }
+  ],
+  "noModelCalls": true,
+  "sourceImmutable": true
+}

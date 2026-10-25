@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "maxTurns": 6,
+  "timeoutSeconds": 180,
+  "thresholds": {
+    "canaryRecall": 1,
+    "falseRejection": 0,
+    "mutationSensitivity": 1,
+    "writerAgreement": 1
+  },
+  "network": "Provider network available; unrestricted egress, no restricted-network claim",
+  "files": {
+    "tools/factory_quality/index.mjs": "12927d28da48c898612f6310a8bd46d225954539015f88ba5712abcc930d3af9",
+    "tools/factory_quality/cli.mjs": "18ee6e5ad7fc9190fc7c5bcf909df7ada07b6db9fc054ac44c38e5b346abd947",
+    "tools/factory_quality/test.mjs": "8195ad2eb07a6e72d989e65b19151ceec02333827642d17c595f3435561776b3",
+    "tools/factory_quality/live.py": "7cc634406a68ea8467cbed1dd835082c48d0914e04216eb29c9ce5743ac2dbcd",
+    "campaigns/next50-20261018/quality/live/5215e42502ab4e468fe2c581286d29ad/request-0.json": "8371185e34d0b0810d9a1a60830b25bb8576ebd197472c72359e505c5d3a9728",
+    "campaigns/next50-20261018/quality/live/5215e42502ab4e468fe2c581286d29ad/signature-0.json": "4501839c39b7486e0e32df363b803ab90e51dc7c18ff0ca7d6dcae075800b0cd",
+    "campaigns/next50-20261018/quality/live/5215e42502ab4e468fe2c581286d29ad/view-0.json": "dd9a040a74d3e8652dce55549a2fd77f872580b85266d16b6c5990310f1863d7",
+    "campaigns/next50-20261018/quality/live/5215e42502ab4e468fe2c581286d29ad/request-1.json": "cc0e49c730692a44d2595ba8da15c033f496def5eefc32b8902dc0373b44cd84",
+    "campaigns/next50-20261018/quality/live/5215e42502ab4e468fe2c581286d29ad/signature-1.json": "ce0bf3c23d6db2a7f26c6a6f888b7bf9edc5cb08a7b64cbb3b81017b5e2018e8",
+    "campaigns/next50-20261018/quality/live/5215e42502ab4e468fe2c581286d29ad/view-1.json": "895834e9089d0e32ebdd721695dd4ca6516859398e497ee33c4c31debfd1ea0d",
+    "campaigns/next50-20261018/quality/live/5215e42502ab4e468fe2c581286d29ad/request-2.json": "c615b3889fbf9df248cc2089860186c6b062114cd56dbe8903ecf556da8a8c24",
+    "campaigns/next50-20261018/quality/live/5215e42502ab4e468fe2c581286d29ad/signature-2.json": "04a59a5db494acb0f4a02c3dbc98aa1aa0127b9ffd1a99db2c027ffc4a781f48",
+    "campaigns/next50-20261018/quality/live/5215e42502ab4e468fe2c581286d29ad/view-2.json": "1cbcabc1ffb83371d6c83ff0c4ad87235d1b8cf89dcf2766f49cf78a05b943a6"
+  },
+  "prompt": "Write independent executable evals from ONLY the attached raw request and bare signature. No generator code or contract exists. Output only JSON object {\"procedure\":{...},\"cases\":[...]}. Procedure fields required: version:1,id:string,kind:\"affine\" or \"threshold\",input:argument path,domain:[min,max],seed:7919,count:16,tolerance:number,unit:output unit. For affine include slope,offset; threshold include threshold,below,above. Each explicit case: {id,inputs:{argument:value},expect:number,tolerance,unit} or {id,inputs:{argument:value},expectError:true,errorPath:argument,tolerance:0,unit}. Include finite out-of-range, string \"NaN\", \"Infinity\", \"-Infinity\" refusal cases, missing-input refusal {}, and threshold boundary if applicable. Cases must not reuse procedure case IDs. No markdown, explanation or extra fields.",
+  "requestIds": [
+    "dev-affine-01",
+    "dev-length-02",
+    "dev-threshold-03"
+  ]
+}

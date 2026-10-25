@@ -1,0 +1,468 @@
+[
+ {
+  "request": "C-003",
+  "kernel": "B",
+  "truth": "accept",
+  "arm": "OLD-sonnet",
+  "verdict": "accept",
+  "correct": true,
+  "nCases": 12,
+  "nProps": 0,
+  "nRequired": 0,
+  "fails": []
+ },
+ {
+  "request": "C-003",
+  "kernel": "B",
+  "truth": "accept",
+  "arm": "OLD-codex",
+  "verdict": "accept",
+  "correct": true,
+  "nCases": 10,
+  "nProps": 0,
+  "nRequired": 0,
+  "fails": []
+ },
+ {
+  "request": "C-003",
+  "kernel": "B",
+  "truth": "accept",
+  "arm": "NEW-sonnet",
+  "verdict": "reject",
+  "correct": false,
+  "nCases": 10,
+  "nProps": 4,
+  "nRequired": 0,
+  "fails": [
+   "case Temperature below absolute zero (-500 F) is impossible: expected refusal, got -500.59572055358217"
+  ]
+ },
+ {
+  "request": "C-003",
+  "kernel": "B",
+  "truth": "accept",
+  "arm": "NEW-codex",
+  "verdict": "reject",
+  "correct": false,
+  "nCases": 6,
+  "nProps": 4,
+  "nRequired": 0,
+  "fails": [
+   "case Temperature below absolute zero: -460 F < -459.67 F: expected refusal, got -460.1976988630806",
+   "property Temperatures below absolute zero must be refused: fails at [-760.904,89.823] (out -762.671428661253)"
+  ]
+ },
+ {
+  "request": "C-003",
+  "kernel": "E",
+  "truth": "accept",
+  "arm": "OLD-sonnet",
+  "verdict": "accept",
+  "correct": true,
+  "nCases": 12,
+  "nProps": 0,
+  "nRequired": 0,
+  "fails": []
+ },
+ {
+  "request": "C-003",
+  "kernel": "E",
+  "truth": "accept",
+  "arm": "OLD-codex",
+  "verdict": "accept",
+  "correct": true,
+  "nCases": 10,
+  "nProps": 0,
+  "nRequired": 0,
+  "fails": []
+ },
+ {
+  "request": "C-003",
+  "kernel": "E",
+  "truth": "accept",
+  "arm": "NEW-sonnet",
+  "verdict": "reject",
+  "correct": false,
+  "nCases": 10,
+  "nProps": 4,
+  "nRequired": 0,
+  "fails": [
+   "case Temperature below absolute zero (-500 F) is impossible: expected refusal, got -500.59572055358217"
+  ]
+ },
+ {
+  "request": "C-003",
+  "kernel": "E",
+  "truth": "accept",
+  "arm": "NEW-codex",
+  "verdict": "reject",
+  "correct": false,
+  "nCases": 6,
+  "nProps": 4,
+  "nRequired": 0,
+  "fails": [
+   "case Temperature below absolute zero: -460 F < -459.67 F: expected refusal, got -460.1976988630806",
+   "property Temperatures below absolute zero must be refused: fails at [-760.904,89.823] (out -762.671428661253)"
+  ]
+ },
+ {
+  "request": "C-003",
+  "kernel": "planted",
+  "truth": "reject",
+  "arm": "OLD-sonnet",
+  "verdict": "reject",
+  "correct": true,
+  "nCases": 12,
+  "nProps": 0,
+  "nRequired": 0,
+  "fails": [
+   "case ref-70F-60rh: expected 55.5 +/- 0.3, got 54.97621639139052",
+   "case mono-rh-40: expected 44.6 +/- 0.4, got 43.68703705441992",
+   "case mono-temp-90F-60rh: expected 74.3 +/- 0.5, got 73.75378223768926",
+   "case ref-68F-50rh: expected 48.7 +/- 0.5, got 47.99295946253561"
+  ]
+ },
+ {
+  "request": "C-003",
+  "kernel": "planted",
+  "truth": "reject",
+  "arm": "OLD-codex",
+  "verdict": "reject",
+  "correct": true,
+  "nCases": 10,
+  "nProps": 0,
+  "nRequired": 0,
+  "fails": [
+   "case requested_room_reference: expected 55.5 +/- 0.2, got 54.97621639139052",
+   "case dry_bulb_assumption_reference: expected 48.7 +/- 0.2, got 47.99295946253561",
+   "case humidity_monotonic_low: expected 44.6 +/- 0.2, got 43.68703705441992",
+   "case temperature_monotonic_high: expected 64.9 +/- 0.2, got 64.3707882102903"
+  ]
+ },
+ {
+  "request": "C-003",
+  "kernel": "planted",
+  "truth": "reject",
+  "arm": "NEW-sonnet",
+  "verdict": "reject",
+  "correct": true,
+  "nCases": 10,
+  "nProps": 4,
+  "nRequired": 0,
+  "fails": [
+   "case Temperature below absolute zero (-500 F) is impossible: expected refusal, got -500.3744920835535"
+  ]
+ },
+ {
+  "request": "C-003",
+  "kernel": "planted",
+  "truth": "reject",
+  "arm": "NEW-codex",
+  "verdict": "reject",
+  "correct": true,
+  "nCases": 6,
+  "nProps": 4,
+  "nRequired": 0,
+  "fails": [
+   "case Requested case: T=(70-32)*5/9; g=ln(0.60)+17.625*T/(243.04+T); dew point=32+(9/5)*243.04*g/(17.625-g), approximately 55.5 F: expected 55.5 +/- 0.5, got 54.97621639139052",
+   "case Temperature below absolute zero: -460 F < -459.67 F: expected refusal, got -460.08510288725574",
+   "property Temperatures below absolute zero must be refused: fails at [-760.904,89.823] (out -762.433354678988)"
+  ]
+ },
+ {
+  "request": "CC-020",
+  "kernel": "B",
+  "truth": "reject",
+  "arm": "OLD-sonnet",
+  "verdict": "accept",
+  "correct": false,
+  "nCases": 8,
+  "nProps": 0,
+  "nRequired": 0,
+  "fails": []
+ },
+ {
+  "request": "CC-020",
+  "kernel": "B",
+  "truth": "reject",
+  "arm": "OLD-codex",
+  "verdict": "accept",
+  "correct": false,
+  "nCases": 6,
+  "nProps": 0,
+  "nRequired": 0,
+  "fails": []
+ },
+ {
+  "request": "CC-020",
+  "kernel": "B",
+  "truth": "reject",
+  "arm": "NEW-sonnet",
+  "verdict": "reject",
+  "correct": true,
+  "nCases": 0,
+  "nProps": 2,
+  "nRequired": 3,
+  "fails": [
+   "required input has no argument: Nominal cooling capacity of the Frigid Coil RALTG-3040 evaporator from the manufacturer's catalog/data sheet (the model number alone does not fix it; no table was named)",
+   "required input has no argument: Operating conditions at which the capacity is rated (saturated suction temperature, air-on temperature/TD, refrigerant) if the capacity is to be taken at other than the catalog rating point",
+   "required input has no argument: Whether the model number's digits encode capacity (e.g. 3040 as MBH/Btu/h) and the manufacturer's coding convention to decode it"
+  ]
+ },
+ {
+  "request": "CC-020",
+  "kernel": "B",
+  "truth": "reject",
+  "arm": "NEW-codex",
+  "verdict": "reject",
+  "correct": true,
+  "nCases": 1,
+  "nProps": 0,
+  "nRequired": 2,
+  "fails": [
+   "required input has no argument: Verified manufacturer cooling-capacity rating for the Frigid Coil RALTG-3040 evaporator; the model designation alone does not establish its capacity.",
+   "required input has no argument: The conditions under which that capacity is rated, and confirmation that this rating is the capacity being requested."
+  ]
+ },
+ {
+  "request": "CC-020",
+  "kernel": "E",
+  "truth": "reject",
+  "arm": "OLD-sonnet",
+  "verdict": "accept",
+  "correct": false,
+  "nCases": 8,
+  "nProps": 0,
+  "nRequired": 0,
+  "fails": []
+ },
+ {
+  "request": "CC-020",
+  "kernel": "E",
+  "truth": "reject",
+  "arm": "OLD-codex",
+  "verdict": "accept",
+  "correct": false,
+  "nCases": 6,
+  "nProps": 0,
+  "nRequired": 0,
+  "fails": []
+ },
+ {
+  "request": "CC-020",
+  "kernel": "E",
+  "truth": "reject",
+  "arm": "NEW-sonnet",
+  "verdict": "reject",
+  "correct": true,
+  "nCases": 0,
+  "nProps": 2,
+  "nRequired": 3,
+  "fails": [
+   "required input has no argument: Nominal cooling capacity of the Frigid Coil RALTG-3040 evaporator from the manufacturer's catalog/data sheet (the model number alone does not fix it; no table was named)",
+   "required input has no argument: Operating conditions at which the capacity is rated (saturated suction temperature, air-on temperature/TD, refrigerant) if the capacity is to be taken at other than the catalog rating point",
+   "required input has no argument: Whether the model number's digits encode capacity (e.g. 3040 as MBH/Btu/h) and the manufacturer's coding convention to decode it"
+  ]
+ },
+ {
+  "request": "CC-020",
+  "kernel": "E",
+  "truth": "reject",
+  "arm": "NEW-codex",
+  "verdict": "reject",
+  "correct": true,
+  "nCases": 1,
+  "nProps": 0,
+  "nRequired": 2,
+  "fails": [
+   "required input has no argument: Verified manufacturer cooling-capacity rating for the Frigid Coil RALTG-3040 evaporator; the model designation alone does not establish its capacity.",
+   "required input has no argument: The conditions under which that capacity is rated, and confirmation that this rating is the capacity being requested."
+  ]
+ },
+ {
+  "request": "C-022",
+  "kernel": "B",
+  "truth": "reject",
+  "arm": "OLD-sonnet",
+  "verdict": "accept",
+  "correct": false,
+  "nCases": 13,
+  "nProps": 0,
+  "nRequired": 0,
+  "fails": []
+ },
+ {
+  "request": "C-022",
+  "kernel": "B",
+  "truth": "reject",
+  "arm": "OLD-codex",
+  "verdict": "reject",
+  "correct": true,
+  "nCases": 14,
+  "nProps": 0,
+  "nRequired": 0,
+  "fails": [
+   "case reject_fractional_refrigerant: expected refusal, got 40.382585222237594"
+  ]
+ },
+ {
+  "request": "C-022",
+  "kernel": "B",
+  "truth": "reject",
+  "arm": "NEW-sonnet",
+  "verdict": "reject",
+  "correct": true,
+  "nCases": 8,
+  "nProps": 2,
+  "nRequired": 7,
+  "fails": [
+   "required input has no argument: Whether a negative excess (pressure below saturation) is returned as is or clamped to zero",
+   "required input has no argument: The acceptable measurement tolerance or deadband before excess counts as non-condensables, and the workbook's saturation table revision",
+   "required input has no argument: Sensor offset or gauge calibration correction applied to condensingPressure"
+  ]
+ },
+ {
+  "request": "C-022",
+  "kernel": "B",
+  "truth": "reject",
+  "arm": "NEW-codex",
+  "verdict": "reject",
+  "correct": true,
+  "nCases": 3,
+  "nProps": 2,
+  "nRequired": 9,
+  "fails": [
+   "required input has no argument: The refrigerant saturation table, its pressure reference, valid temperature range, and interpolation convention.",
+   "required input has no argument: For a refrigerant blend, the applicable saturation convention, including bubble point versus dew point.",
+   "required input has no argument: Confirmation that pressure and temperature represent the same operating condition and that equilibrium saturation pressure is an appropriate basis for inferring non-condensables.",
+   "required input has no argument: Whether excess means a signed pressure residual or a nonnegative inferred non-condensable partial pressure, and how negative residuals must be handled."
+  ]
+ },
+ {
+  "request": "C-022",
+  "kernel": "E",
+  "truth": "reject",
+  "arm": "OLD-sonnet",
+  "verdict": "accept",
+  "correct": false,
+  "nCases": 13,
+  "nProps": 0,
+  "nRequired": 0,
+  "fails": []
+ },
+ {
+  "request": "C-022",
+  "kernel": "E",
+  "truth": "reject",
+  "arm": "OLD-codex",
+  "verdict": "reject",
+  "correct": true,
+  "nCases": 14,
+  "nProps": 0,
+  "nRequired": 0,
+  "fails": [
+   "case reject_fractional_refrigerant: expected refusal, got 40.3"
+  ]
+ },
+ {
+  "request": "C-022",
+  "kernel": "E",
+  "truth": "reject",
+  "arm": "NEW-sonnet",
+  "verdict": "reject",
+  "correct": true,
+  "nCases": 8,
+  "nProps": 2,
+  "nRequired": 7,
+  "fails": [
+   "required input has no argument: Whether a negative excess (pressure below saturation) is returned as is or clamped to zero",
+   "required input has no argument: The acceptable measurement tolerance or deadband before excess counts as non-condensables, and the workbook's saturation table revision",
+   "required input has no argument: Sensor offset or gauge calibration correction applied to condensingPressure"
+  ]
+ },
+ {
+  "request": "C-022",
+  "kernel": "E",
+  "truth": "reject",
+  "arm": "NEW-codex",
+  "verdict": "reject",
+  "correct": true,
+  "nCases": 3,
+  "nProps": 2,
+  "nRequired": 9,
+  "fails": [
+   "required input has no argument: The refrigerant saturation table, its pressure reference, valid temperature range, and interpolation convention.",
+   "required input has no argument: For a refrigerant blend, the applicable saturation convention, including bubble point versus dew point.",
+   "required input has no argument: Confirmation that pressure and temperature represent the same operating condition and that equilibrium saturation pressure is an appropriate basis for inferring non-condensables.",
+   "required input has no argument: Whether excess means a signed pressure residual or a nonnegative inferred non-condensable partial pressure, and how negative residuals must be handled."
+  ]
+ },
+ {
+  "request": "CC-029",
+  "kernel": "E",
+  "truth": "reject",
+  "arm": "OLD-sonnet",
+  "verdict": "reject",
+  "correct": true,
+  "nCases": 14,
+  "nProps": 0,
+  "nRequired": 0,
+  "fails": [
+   "case ref-r410a-118.5psig-40F: export saturationTemperature missing",
+   "case ref-r22-68.5psig-40F: export saturationTemperature missing",
+   "case ref-r134a-35psig-40F: export saturationTemperature missing",
+   "case sat-r410a-10psig: export saturationTemperature missing"
+  ]
+ },
+ {
+  "request": "CC-029",
+  "kernel": "E",
+  "truth": "reject",
+  "arm": "OLD-codex",
+  "verdict": "reject",
+  "correct": true,
+  "nCases": 14,
+  "nProps": 0,
+  "nRequired": 0,
+  "fails": [
+   "case temperature_low: export saturationTemperature missing",
+   "case temperature_high: export saturationTemperature missing",
+   "case temperature_freezing_reference: export saturationTemperature missing",
+   "case temperature_below_range: export saturationTemperature missing"
+  ]
+ },
+ {
+  "request": "CC-029",
+  "kernel": "E",
+  "truth": "reject",
+  "arm": "NEW-sonnet",
+  "verdict": "reject",
+  "correct": true,
+  "nCases": 6,
+  "nProps": 2,
+  "nRequired": 3,
+  "fails": [
+   "required input has no argument: Local atmospheric pressure (altitude), needed to convert gauge pressure (psig) to absolute pressure before finding saturation temperature. The request does not fix it, and no argument carries it.",
+   "required input has no argument: What 'boils most' means. At a fixed liquid temperature, a lower saturation pressure means more boiling. The request gives no liquid or coil temperature, and it is unclear whether both pressures are for the same refrigerant.",
+   "case pressure below perfect vacuum: -20 psig is about -5.3 psia, which is physically impossible, so refuse: export saturationTemperature missing",
+   "case pressure far above R-22 critical pressure (about 707 psig): 5000 psig has no saturation state, so refuse: export saturationTemperature missing"
+  ]
+ },
+ {
+  "request": "CC-029",
+  "kernel": "E",
+  "truth": "reject",
+  "arm": "NEW-codex",
+  "verdict": "reject",
+  "correct": true,
+  "nCases": 6,
+  "nProps": 1,
+  "nRequired": 6,
+  "fails": [
+   "required input has no argument: Whether 'boils most' means lower boiling temperature, higher boiling temperature, or greater boiling rate.",
+   "required input has no argument: The meaning of the returned comparison codes, including how a tie is represented.",
+   "required input has no argument: For numerical saturation temperatures, the atmospheric reference needed to convert gauge pressure to absolute pressure.",
+   "required input has no argument: For a refrigerant mixture with temperature glide, whether saturation temperature means bubble point or dew point."
+  ]
+ }
+]

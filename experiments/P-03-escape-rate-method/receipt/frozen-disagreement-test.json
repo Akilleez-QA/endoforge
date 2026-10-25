@@ -1,0 +1,149 @@
+{
+  "origin_pair": {
+    "A": "REFERENCE",
+    "B": "S1-155"
+  },
+  "draws": 42,
+  "choice": {
+    "where": "row 0 (pt-05, rd-0) .classification",
+    "A": "unconvertible",
+    "B": "match"
+  },
+  "test": {
+    "name": "D1 person-authored disagreement input (answered for the reference)",
+    "input": {
+      "state": {
+        "seen": {}
+      },
+      "event": {
+        "type": "reconcile",
+        "readings": [
+          {
+            "id": "rd-0",
+            "point": "pt-05",
+            "source": "src:sensor-9",
+            "value": 40.0961,
+            "unit": "psi",
+            "basis": "absolute"
+          },
+          {
+            "id": "rd-1",
+            "point": "pt-01",
+            "source": "src:sensor-9",
+            "value": 49.3,
+            "unit": "psi",
+            "basis": null
+          }
+        ],
+        "reference": [
+          {
+            "point": "pt-08",
+            "source": "ref:table-1#0",
+            "value": 2,
+            "unit": "bar",
+            "basis": "absolute"
+          },
+          {
+            "point": "pt-06",
+            "source": "ref:table-2#1",
+            "value": 2.2343,
+            "unit": "bar",
+            "basis": "gauge"
+          },
+          {
+            "point": "pt-04",
+            "source": "ref:table-1#2",
+            "value": 8.163,
+            "unit": "bar",
+            "basis": "absolute"
+          },
+          {
+            "point": "pt-07",
+            "source": "ref:table-2#3",
+            "value": -85.2,
+            "unit": "kPa",
+            "basis": "gauge"
+          },
+          {
+            "point": "pt-05",
+            "source": "ref:table-1#4",
+            "value": 26.2276,
+            "unit": "psig",
+            "basis": "gauge"
+          },
+          {
+            "point": "pt-01",
+            "source": "ref:table-1#5",
+            "value": 228.8012,
+            "unit": "kPa",
+            "basis": "gauge"
+          }
+        ],
+        "atmosphere": null,
+        "target": {
+          "unit": "bar",
+          "basis": "absolute"
+        },
+        "tolerance": {
+          "minor": 1.117,
+          "major": 11.465
+        }
+      }
+    },
+    "expected_effects": [
+      {
+        "type": "emit",
+        "rows": [
+          {
+            "point": "pt-05",
+            "reading_id": "rd-0",
+            "sources": [
+              "src:sensor-9"
+            ],
+            "converted": {
+              "value": 2.7645287790259347,
+              "unit": "bar",
+              "basis": "absolute",
+              "sources": [
+                "src:sensor-9"
+              ]
+            },
+            "expected": null,
+            "delta": null,
+            "classification": "unconvertible"
+          },
+          {
+            "point": "pt-01",
+            "reading_id": "rd-1",
+            "sources": [
+              "src:sensor-9"
+            ],
+            "converted": null,
+            "expected": null,
+            "delta": null,
+            "classification": "unresolved-basis"
+          }
+        ]
+      },
+      {
+        "type": "summary",
+        "totals": {
+          "match": 0,
+          "minor": 0,
+          "major": 0,
+          "no-reference": 0,
+          "unresolved-basis": 1,
+          "unconvertible": 1,
+          "rows": 2,
+          "unmatched_reference": 4
+        }
+      }
+    ],
+    "expected_state": {
+      "seen": {
+        "pt-05": "unconvertible",
+        "pt-01": "unresolved-basis"
+      }
+    }
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "requiredInputs": [
+    {
+      "fact": "Whether 'boils most' means lower boiling temperature, higher boiling temperature, or greater boiling rate.",
+      "unit": "meaning",
+      "argName": null
+    },
+    {
+      "fact": "The refrigerant identity and the numeric code representing it.",
+      "unit": "code",
+      "argName": "refrigerant"
+    },
+    {
+      "fact": "The meaning of the returned comparison codes, including how a tie is represented.",
+      "unit": "code",
+      "argName": null
+    },
+    {
+      "fact": "For numerical saturation temperatures, the atmospheric reference needed to convert gauge pressure to absolute pressure.",
+      "unit": "psia",
+      "argName": null
+    },
+    {
+      "fact": "For a refrigerant mixture with temperature glide, whether saturation temperature means bubble point or dew point.",
+      "unit": "phase boundary",
+      "argName": null
+    },
+    {
+      "fact": "If 'boils most' means boiling rate, the heat supplied and thermodynamic state at each pressure; pressure alone does not determine the rate.",
+      "unit": "operating conditions",
+      "argName": null
+    }
+  ],
+  "cases": [
+    {
+      "name": "NaN pressure cannot specify a saturation state",
+      "fn": "saturationTemperature",
+      "args": ["NaN", 0],
+      "refuse": true
+    },
+    {
+      "name": "Infinite pressure cannot specify a finite liquid-vapor saturation state",
+      "fn": "saturationTemperature",
+      "args": [1e999, 0],
+      "refuse": true
+    },
+    {
+      "name": "Negative infinite pressure cannot specify a physical saturation state",
+      "fn": "saturationTemperature",
+      "args": [-1e999, 0],
+      "refuse": true
+    },
+    {
+      "name": "The request's 10 and 20 psig cannot be compared with an undefined refrigerant code",
+      "fn": "whichBoilsMost",
+      "args": [10, 20, "NaN"],
+      "refuse": true
+    },
+    {
+      "name": "NaN first pressure cannot support a boiling comparison",
+      "fn": "whichBoilsMost",
+      "args": ["NaN", 20, 0],
+      "refuse": true
+    },
+    {
+      "name": "NaN second pressure cannot support a boiling comparison",
+      "fn": "whichBoilsMost",
+      "args": [10, "NaN", 0],
+      "refuse": true
+    }
+  ],
+  "properties": [
+    {
+      "name": "Any accepted saturation temperature must be finite and above absolute zero: F = 1.8 K - 459.67 with K > 0",
+      "fn": "saturationTemperature",
+      "ranges": [[-1000000, 1000000], [0, 1000]],
+      "check": "out === null || (Number.isFinite(out) && out > -459.67)"
+    }
+  ]
+}

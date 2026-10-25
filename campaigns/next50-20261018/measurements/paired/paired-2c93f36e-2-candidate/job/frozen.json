@@ -1,0 +1,268 @@
+{
+  "version": 1,
+  "suite": {
+    "cases": [
+      {
+        "expect": 0,
+        "id": "codex-below-threshold",
+        "inputs": {
+          "s": 59.999
+        },
+        "tolerance": 0,
+        "unit": "score-class"
+      },
+      {
+        "expect": 1,
+        "id": "codex-at-threshold",
+        "inputs": {
+          "s": 60
+        },
+        "tolerance": 0,
+        "unit": "score-class"
+      },
+      {
+        "errorPath": "s",
+        "expectError": true,
+        "id": "codex-missing",
+        "inputs": {},
+        "tolerance": 0,
+        "unit": "score-class"
+      },
+      {
+        "errorPath": "s",
+        "expectError": true,
+        "id": "codex-nonfinite",
+        "inputs": {
+          "s": "NaN"
+        },
+        "tolerance": 0,
+        "unit": "score-class"
+      },
+      {
+        "errorPath": "s",
+        "expectError": true,
+        "id": "codex-outside-domain",
+        "inputs": {
+          "s": 101
+        },
+        "tolerance": 0,
+        "unit": "score-class"
+      },
+      {
+        "expect": 0,
+        "id": "qwen-case-01",
+        "inputs": {
+          "s": 59
+        },
+        "tolerance": 0,
+        "unit": "score-class"
+      },
+      {
+        "expect": 1,
+        "id": "qwen-case-02",
+        "inputs": {
+          "s": 60
+        },
+        "tolerance": 0,
+        "unit": "score-class"
+      },
+      {
+        "expect": 1,
+        "id": "qwen-case-03",
+        "inputs": {
+          "s": 100
+        },
+        "tolerance": 0,
+        "unit": "score-class"
+      },
+      {
+        "errorPath": "s",
+        "expectError": true,
+        "id": "qwen-case-04",
+        "inputs": {
+          "s": "NaN"
+        },
+        "tolerance": 0,
+        "unit": "score-class"
+      },
+      {
+        "errorPath": "s",
+        "expectError": true,
+        "id": "qwen-case-05",
+        "inputs": {},
+        "tolerance": 0,
+        "unit": "score-class"
+      },
+      {
+        "errorPath": "s",
+        "expectError": true,
+        "id": "qwen-case-06",
+        "inputs": {
+          "s": 101
+        },
+        "tolerance": 0,
+        "unit": "score-class"
+      },
+      {
+        "errorPath": "s",
+        "expectError": true,
+        "id": "host-validity-nan",
+        "inputs": {
+          "s": "NaN"
+        },
+        "tolerance": 0,
+        "unit": "score-class"
+      },
+      {
+        "errorPath": "s",
+        "expectError": true,
+        "id": "host-validity-positive-infinity",
+        "inputs": {
+          "s": "Infinity"
+        },
+        "tolerance": 0,
+        "unit": "score-class"
+      },
+      {
+        "errorPath": "s",
+        "expectError": true,
+        "id": "host-validity-negative-infinity",
+        "inputs": {
+          "s": "-Infinity"
+        },
+        "tolerance": 0,
+        "unit": "score-class"
+      },
+      {
+        "errorPath": "s",
+        "expectError": true,
+        "id": "host-validity-below-domain",
+        "inputs": {
+          "s": -5e-324
+        },
+        "tolerance": 0,
+        "unit": "score-class"
+      },
+      {
+        "errorPath": "s",
+        "expectError": true,
+        "id": "host-validity-above-domain",
+        "inputs": {
+          "s": 100.00000000000001
+        },
+        "tolerance": 0,
+        "unit": "score-class"
+      },
+      {
+        "errorPath": "s",
+        "expectError": true,
+        "id": "host-validity-missing",
+        "inputs": {},
+        "tolerance": 0,
+        "unit": "score-class"
+      }
+    ],
+    "procedures": [
+      {
+        "above": 1,
+        "below": 0,
+        "count": 6,
+        "domain": [
+          0,
+          100
+        ],
+        "id": "codex-values",
+        "input": "s",
+        "kind": "threshold",
+        "seed": 7919,
+        "threshold": 60,
+        "tolerance": 0,
+        "unit": "score-class",
+        "version": 1
+      },
+      {
+        "above": 1,
+        "below": 0,
+        "count": 6,
+        "domain": [
+          0,
+          100
+        ],
+        "id": "qwen-values",
+        "input": "s",
+        "kind": "threshold",
+        "seed": 7919,
+        "threshold": 60,
+        "tolerance": 0,
+        "unit": "score-class",
+        "version": 1
+      }
+    ],
+    "request": {
+      "artifactClass": "closed-form",
+      "id": "dev-threshold-03",
+      "raw": "Classify finite score s in [0,100] as numeric 0 when s<60, numeric 1 when s>=60. Refuse nonfinite, missing and out-of-domain s naming s. Absolute tolerance0; unit score-class.",
+      "requiredFacts": [
+        {
+          "domain": [
+            0,
+            100
+          ],
+          "path": "s",
+          "plausible": [
+            {
+              "result": 0,
+              "value": 59
+            },
+            {
+              "result": 1,
+              "value": 60
+            }
+          ],
+          "tolerance": 1e-9,
+          "unit": "score"
+        }
+      ],
+      "sources": [
+        "explicit request; SI kilo for metric conversion"
+      ],
+      "version": 1
+    },
+    "signature": {
+      "inputs": [
+        {
+          "domain": [
+            0,
+            100
+          ],
+          "path": "s",
+          "type": "number",
+          "unit": "score"
+        }
+      ],
+      "name": "classifyScore",
+      "output": {
+        "type": "number",
+        "unit": "score-class"
+      },
+      "version": 1
+    },
+    "version": 1,
+    "writers": [
+      {
+        "family": "codex",
+        "outputHash": "a0dd5f93b3b22bfcf659edc0ce80738e8a3efeb5875f2a1c93f1c085fd093168",
+        "viewHash": "d9330725db379f55039a24c38095bbf7335e4aac89a0e834e5e74f863f4b64d1"
+      },
+      {
+        "family": "qwen",
+        "outputHash": "99d9914518c559997031c0c9567c3614139c80263c89a3e30be53158f984ca49",
+        "viewHash": "d9330725db379f55039a24c38095bbf7335e4aac89a0e834e5e74f863f4b64d1"
+      }
+    ]
+  },
+  "suiteHash": "c3caab73a3e25cfce8f208d28c2c3d34d4b118fa59bb9b804d4fb00b5a6fbc0f",
+  "procedureHash": "2428d1bded749affc0ce47c4729dddba35a611e89167880c14512919e519adc3",
+  "casesHash": "831685587c24e261ade7eca6047fce6722ba2723635738f1c8b0f567e8971e3f",
+  "frozenAt": "2026-10-18T22:55:21.045Z"
+}

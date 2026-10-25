@@ -1,0 +1,90 @@
+{
+  "version": 2,
+  "meters": [
+    {
+      "path": "control/model-meter.jsonl",
+      "attempts": 32,
+      "finishedMeterRecords": 28,
+      "reportedTokens": 490304,
+      "withoutFinishMeterRecord": [
+        "criteria-compile-cd6538c5b44f-0",
+        "criteria-compile-cd6538c5b44f-1",
+        "criteria-compile-cd6538c5b44f-2",
+        "criteria-compile-cd6538c5b44f-3"
+      ]
+    },
+    {
+      "path": "work/cli-qualification-01/control/model-meter.jsonl",
+      "attempts": 3,
+      "finishedMeterRecords": 3,
+      "reportedTokens": 25081,
+      "withoutFinishMeterRecord": []
+    }
+  ],
+  "prelaunchReconciliation": [
+    {
+      "stage": "criteria-compile-cd6538c5b44f-0",
+      "reason": "role wrapper rejects intake before run_bounded/model process launch",
+      "modelProcessLaunched": false,
+      "credentialsRemoved": true
+    },
+    {
+      "stage": "criteria-compile-cd6538c5b44f-1",
+      "reason": "role wrapper rejects intake before run_bounded/model process launch",
+      "modelProcessLaunched": false,
+      "credentialsRemoved": true
+    },
+    {
+      "stage": "criteria-compile-cd6538c5b44f-2",
+      "reason": "role wrapper rejects intake before run_bounded/model process launch",
+      "modelProcessLaunched": false,
+      "credentialsRemoved": true
+    },
+    {
+      "stage": "criteria-compile-cd6538c5b44f-3",
+      "reason": "role wrapper rejects intake before run_bounded/model process launch",
+      "modelProcessLaunched": false,
+      "credentialsRemoved": true
+    }
+  ],
+  "qualityHistoricalAttempts": {
+    "cachedInputTokens": 36864,
+    "failedBeforeModel": 3,
+    "inputTokens": 43679,
+    "outputTokens": 1603,
+    "paidApiCalls": 0,
+    "successfulModelTurns": 3,
+    "turns": 6,
+    "wallMs": 42436
+  },
+  "additionalRuntimeQualification": {
+    "codexTokens": 11694,
+    "qwenTokens": 21,
+    "successfulCodexCalls": 1,
+    "successfulQwenCalls": 1
+  },
+  "historicalRuntimePreProhibition": {
+    "attempts": 2,
+    "failed": 1,
+    "reportedTokens": 2673,
+    "successful": 1
+  },
+  "knownAttemptsIncludingPrelaunchFailures": 45,
+  "knownReportedTokens": 575055,
+  "ceilings": {
+    "hardTokens": 1500000,
+    "softTokens": 750000,
+    "turns": 60
+  },
+  "withinReportedBudgets": true,
+  "unknownUsageStages": [
+    "consumer-8c6d09401b08"
+  ],
+  "notes": [
+    "Attempts include prelaunch failures; they are not successful model turns. Four compiler role failures have no finish meter but are reconciled against wrapper failure and credential-cleanup receipts.",
+    "Codex input tokens already include cache reads; not added twice.",
+    "Reported token total is not a claim of exact billing: earlier failed/timed-out model attempts with unavailable usage remain unknown.",
+    "Historical pre-prohibition Claude evidence remains preserved; this continuation used no Claude CLI or paid API.",
+    "Compiler actual calls: four Codex turns,234439 reported tokens. CLI qualification: three calls,25081 reported tokens."
+  ]
+}

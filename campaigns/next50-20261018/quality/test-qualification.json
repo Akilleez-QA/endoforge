@@ -1,0 +1,252 @@
+{
+  "version": 1,
+  "passed": true,
+  "metrics": {
+    "canaryRecall": 1,
+    "falseRejection": 0,
+    "mutationSensitivity": 1
+  },
+  "thresholds": {
+    "canaryRecall": 1,
+    "falseRejection": 0,
+    "mutationSensitivity": 1
+  },
+  "results": [
+    {
+      "id": "known-good",
+      "kind": "good",
+      "passed": true,
+      "failures": [],
+      "caseCount": 18,
+      "suiteHash": "87a154e90ef943b631444b1eea9979592387736058addf1de4e290340b041197",
+      "referenceHash": null
+    },
+    {
+      "id": "wrong-question",
+      "kind": "canary",
+      "expectedCode": "value",
+      "passed": false,
+      "failures": [
+        {
+          "code": "value",
+          "caseId": "linear-0"
+        },
+        {
+          "code": "value",
+          "caseId": "linear-1"
+        },
+        {
+          "code": "value",
+          "caseId": "linear-2"
+        },
+        {
+          "code": "value",
+          "caseId": "linear-3"
+        },
+        {
+          "code": "value",
+          "caseId": "linear-4"
+        },
+        {
+          "code": "value",
+          "caseId": "linear-5"
+        },
+        {
+          "code": "value",
+          "caseId": "linear-6"
+        },
+        {
+          "code": "value",
+          "caseId": "linear-7"
+        },
+        {
+          "code": "value",
+          "caseId": "linear-8"
+        },
+        {
+          "code": "value",
+          "caseId": "linear-9"
+        },
+        {
+          "code": "value",
+          "caseId": "linear-10"
+        },
+        {
+          "code": "value",
+          "caseId": "linear-11"
+        },
+        {
+          "code": "value",
+          "caseId": "linear-12"
+        },
+        {
+          "code": "value",
+          "caseId": "linear-13"
+        },
+        {
+          "code": "value",
+          "caseId": "linear-14"
+        },
+        {
+          "code": "value",
+          "caseId": "linear-15"
+        }
+      ],
+      "caseCount": 18,
+      "suiteHash": "87a154e90ef943b631444b1eea9979592387736058addf1de4e290340b041197",
+      "referenceHash": null
+    },
+    {
+      "id": "hidden-default",
+      "kind": "canary",
+      "expectedCode": "input-path",
+      "passed": false,
+      "failures": [
+        {
+          "code": "interface-identity"
+        },
+        {
+          "code": "input-path",
+          "path": "c"
+        }
+      ],
+      "caseCount": 18,
+      "suiteHash": "87a154e90ef943b631444b1eea9979592387736058addf1de4e290340b041197",
+      "referenceHash": null
+    },
+    {
+      "id": "bad-domain",
+      "kind": "canary",
+      "expectedCode": "refusal-path",
+      "passed": false,
+      "failures": [
+        {
+          "code": "refusal-path",
+          "caseId": "outside"
+        }
+      ],
+      "caseCount": 18,
+      "suiteHash": "87a154e90ef943b631444b1eea9979592387736058addf1de4e290340b041197",
+      "referenceHash": null
+    },
+    {
+      "id": "misleading-refusal",
+      "kind": "canary",
+      "expectedCode": "refusal-path",
+      "passed": false,
+      "failures": [
+        {
+          "code": "refusal-path",
+          "caseId": "outside"
+        }
+      ],
+      "caseCount": 18,
+      "suiteHash": "87a154e90ef943b631444b1eea9979592387736058addf1de4e290340b041197",
+      "referenceHash": null
+    },
+    {
+      "id": "bad-unit",
+      "kind": "canary",
+      "expectedCode": "unit",
+      "passed": false,
+      "failures": [
+        {
+          "code": "unit",
+          "caseId": "linear-0"
+        }
+      ],
+      "caseCount": 18,
+      "suiteHash": "87a154e90ef943b631444b1eea9979592387736058addf1de4e290340b041197",
+      "referenceHash": null
+    },
+    {
+      "id": "arithmetic",
+      "kind": "mutation",
+      "expectedCode": "value",
+      "passed": false,
+      "failures": [
+        {
+          "code": "value",
+          "caseId": "linear-0"
+        }
+      ],
+      "caseCount": 18,
+      "suiteHash": "87a154e90ef943b631444b1eea9979592387736058addf1de4e290340b041197",
+      "referenceHash": null
+    },
+    {
+      "id": "unit",
+      "kind": "mutation",
+      "expectedCode": "unit",
+      "passed": false,
+      "failures": [
+        {
+          "code": "unit",
+          "caseId": "linear-0"
+        }
+      ],
+      "caseCount": 18,
+      "suiteHash": "87a154e90ef943b631444b1eea9979592387736058addf1de4e290340b041197",
+      "referenceHash": null
+    },
+    {
+      "id": "guard",
+      "kind": "mutation",
+      "expectedCode": "refusal-path",
+      "passed": false,
+      "failures": [
+        {
+          "code": "refusal-path",
+          "caseId": "outside"
+        }
+      ],
+      "caseCount": 18,
+      "suiteHash": "87a154e90ef943b631444b1eea9979592387736058addf1de4e290340b041197",
+      "referenceHash": null
+    },
+    {
+      "id": "input-path",
+      "kind": "mutation",
+      "expectedCode": "input-path",
+      "passed": false,
+      "failures": [
+        {
+          "code": "interface-identity"
+        },
+        {
+          "code": "input-path",
+          "path": "c"
+        }
+      ],
+      "caseCount": 18,
+      "suiteHash": "87a154e90ef943b631444b1eea9979592387736058addf1de4e290340b041197",
+      "referenceHash": null
+    },
+    {
+      "id": "output-label",
+      "kind": "mutation",
+      "expectedCode": "output-unit",
+      "passed": false,
+      "failures": [
+        {
+          "code": "interface-identity"
+        },
+        {
+          "code": "output-unit"
+        }
+      ],
+      "caseCount": 18,
+      "suiteHash": "87a154e90ef943b631444b1eea9979592387736058addf1de4e290340b041197",
+      "referenceHash": null
+    }
+  ],
+  "tests": 12,
+  "scope": "deterministic controls; not live qualification",
+  "equivalentMutations": [
+    {
+      "id": "add-zero",
+      "classification": "equivalent",
+      "excludedFromSensitivity": true
+    }
+  ]
+}

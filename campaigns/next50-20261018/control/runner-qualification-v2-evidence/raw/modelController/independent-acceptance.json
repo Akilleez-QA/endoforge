@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "wrongWorkerClaimRejected": {
+    "attempt": "forged-success",
+    "job": "candidate",
+    "containerName": "endoforge-v1-4f8a44675aa84d3397f79c66d0cd244a",
+    "image": "sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541",
+    "outcome": "validation_failed",
+    "published": false,
+    "inputSha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+    "containerId": "6d990c58742c7fa8f96bde8110fefddb7f98681295f88ae36cbc7d491000ff48",
+    "terminalState": {
+      "Status": "exited",
+      "Running": false,
+      "Paused": false,
+      "Restarting": false,
+      "OOMKilled": false,
+      "Dead": false,
+      "Pid": 0,
+      "ExitCode": 0,
+      "Error": "",
+      "StartedAt": "2026-10-18T22:42:33.940683198Z",
+      "FinishedAt": "2026-10-18T22:42:34.032383816Z"
+    },
+    "cleanupVerified": true,
+    "signals": [],
+    "wallMs": 797.0198449984309,
+    "version": 1,
+    "parent": null,
+    "stage": "verification",
+    "usage": {
+      "wallMs": 797.0198449984309,
+      "tokens": null
+    },
+    "generation": "03a4e3a28fa548baa5bb8773fd841d2b"
+  },
+  "correctDigestAccepted": {
+    "attempt": "known-good",
+    "job": "candidate",
+    "containerName": "endoforge-v1-35a8474c054e4270b45f7ce04412aa0a",
+    "image": "sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541",
+    "outcome": "passed",
+    "published": true,
+    "inputSha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+    "containerId": "fd242d6220fe216e6641717175223a74a1f31f7f9e2b5805d93bc0bb6f0cdb0b",
+    "terminalState": {
+      "Status": "exited",
+      "Running": false,
+      "Paused": false,
+      "Restarting": false,
+      "OOMKilled": false,
+      "Dead": false,
+      "Pid": 0,
+      "ExitCode": 0,
+      "Error": "",
+      "StartedAt": "2026-10-18T22:42:34.720877698Z",
+      "FinishedAt": "2026-10-18T22:42:34.821800292Z"
+    },
+    "artifactSha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+    "cleanupVerified": true,
+    "signals": [],
+    "wallMs": 704.3368550002924,
+    "version": 1,
+    "parent": null,
+    "stage": "verification",
+    "usage": {
+      "wallMs": 704.3368550002924,
+      "tokens": null
+    },
+    "generation": "4397d6ddb6df4ed1816e859348e4c8a8"
+  },
+  "duplicateRejected": {
+    "attempt": "duplicate",
+    "job": "candidate",
+    "containerName": "endoforge-v1-411ad2577a0e41abbf6ed509aa909e8d",
+    "image": "sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541",
+    "outcome": "duplicate_publication",
+    "published": false,
+    "inputSha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+    "containerId": "3b0f5a9cfc34060f2fcd29ba7c60e40f353383af70ad83abb7f6928f277d579a",
+    "terminalState": {
+      "Status": "exited",
+      "Running": false,
+      "Paused": false,
+      "Restarting": false,
+      "OOMKilled": false,
+      "Dead": false,
+      "Pid": 0,
+      "ExitCode": 0,
+      "Error": "",
+      "StartedAt": "2026-10-18T22:42:35.42544911Z",
+      "FinishedAt": "2026-10-18T22:42:35.516076349Z"
+    },
+    "artifactSha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58",
+    "cleanupVerified": true,
+    "signals": [],
+    "wallMs": 651.3948759966297,
+    "version": 1,
+    "parent": null,
+    "stage": "verification",
+    "usage": {
+      "wallMs": 651.3948759966297,
+      "tokens": null
+    },
+    "generation": "09e35cfc825441af8030d8ab8a86a48f"
+  },
+  "publishedSha256": "10159baf262b43a92d95db59dae1f72c645127301661e0a3ce4e38b295a97c58"
+}

@@ -1,0 +1,32 @@
+{
+  "scope": "deterministic metadata/event recovery; no hosted-model resume, power-loss, or hostile-host authenticity qualification",
+  "cases": [
+    {
+      "boundary": "event-durable",
+      "exitSignal": 9,
+      "latestEventRecovered": true,
+      "truncatedSnapshotRecovered": true,
+      "ancestorTamperRejected": "state hash chain mismatch"
+    },
+    {
+      "boundary": "snapshot-durable",
+      "exitSignal": 9,
+      "latestEventRecovered": true,
+      "truncatedSnapshotRecovered": true,
+      "ancestorTamperRejected": "state hash chain mismatch"
+    }
+  ],
+  "unsafeJob": {
+    "rejected": "unsafe request identifier",
+    "noJobCreated": true
+  },
+  "unsupportedClass": {
+    "rejected": "unsupported by this qualified numeric backend; retain request in unsupported stratum",
+    "noJobCreated": true
+  },
+  "multipleArgs": {
+    "rejected": "unsupported by this qualified numeric backend; retain request in unsupported stratum",
+    "noJobCreated": true
+  },
+  "passed": true
+}

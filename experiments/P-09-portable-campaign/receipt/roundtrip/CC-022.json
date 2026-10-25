@@ -1,0 +1,274 @@
+{
+  "id": "CC-022",
+  "argv": [
+    "sudo",
+    "-n",
+    "docker",
+    "run",
+    "--rm",
+    "--pull=never",
+    "--network=none",
+    "--read-only",
+    "--user",
+    "1000:1000",
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges",
+    "--cpus=1",
+    "--memory=512m",
+    "--memory-swap=512m",
+    "--pids-limit=64",
+    "--tmpfs",
+    "/tmp:rw,nosuid,nodev,size=64m",
+    "--mount",
+    "type=bind,src=/home/user/Work/endoforge/experiments/P-09-portable-campaign/work/roundtrip,dst=/out",
+    "--entrypoint",
+    "/usr/local/bin/node",
+    "endoforge-p09:roundtrip",
+    "/bundle/campaigns/x1-spec-study/factory/gate.mjs",
+    "run",
+    "/out/CC-022"
+  ],
+  "exit": 0,
+  "wallMs": 1933.3306790067581,
+  "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 8496,\n   \"wasmSha256\": \"ad6fdb263dd8e65ba67d5aac50d211f75516504e8dc62c4d0de59d89a8fe202c\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"satPressurePsig\",\n    \"psiPerDegF\",\n    \"claimHolds\",\n    \"claimHoldsEverywhere\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 16,\n   \"total\": 16\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.065512\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+  "stderr": "",
+  "result": {
+    "at": "2026-10-18T18:46:24.629Z",
+    "gates": {
+      "G1_frozen": {
+        "ok": true
+      },
+      "G2_compiles": {
+        "ok": true,
+        "wasmBytes": 8496,
+        "wasmSha256": "ad6fdb263dd8e65ba67d5aac50d211f75516504e8dc62c4d0de59d89a8fe202c"
+      },
+      "G3_exports": {
+        "ok": true,
+        "exports": [
+          "satPressurePsig",
+          "psiPerDegF",
+          "claimHolds",
+          "claimHoldsEverywhere"
+        ]
+      },
+      "G4_tests": {
+        "ok": true,
+        "passed": 16,
+        "total": 16
+      },
+      "G6_bounded": {
+        "ok": true,
+        "maxMs": 0.065512
+      },
+      "G5_deterministic": {
+        "ok": true
+      },
+      "G7_glue": {
+        "ok": true
+      }
+    },
+    "tests": [
+      {
+        "name": "R-410A node 40F",
+        "fn": "satPressurePsig",
+        "args": [
+          4,
+          40
+        ],
+        "expect": 118.1,
+        "got": 118.1,
+        "ms": 0.066,
+        "pass": true
+      },
+      {
+        "name": "R-22 node 0F",
+        "fn": "satPressurePsig",
+        "args": [
+          1,
+          0
+        ],
+        "expect": 24,
+        "got": 24,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "R-134a node 20F",
+        "fn": "satPressurePsig",
+        "args": [
+          2,
+          20
+        ],
+        "expect": 18.4,
+        "got": 18.4,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "boundary low node R-410A -40F",
+        "fn": "satPressurePsig",
+        "args": [
+          4,
+          -40
+        ],
+        "expect": 10.8,
+        "got": 10.8,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "boundary high node R-410A 120F",
+        "fn": "satPressurePsig",
+        "args": [
+          4,
+          120
+        ],
+        "expect": 418,
+        "got": 418,
+        "ms": 0.002,
+        "pass": true
+      },
+      {
+        "name": "boundary above range traps",
+        "fn": "satPressurePsig",
+        "args": [
+          4,
+          121
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.042,
+        "pass": true
+      },
+      {
+        "name": "boundary below range traps",
+        "fn": "satPressurePsig",
+        "args": [
+          4,
+          -40.5
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.005,
+        "pass": true
+      },
+      {
+        "name": "unknown refrigerant 0 traps",
+        "fn": "satPressurePsig",
+        "args": [
+          0,
+          40
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.003,
+        "pass": true
+      },
+      {
+        "name": "unknown refrigerant 5 traps",
+        "fn": "satPressurePsig",
+        "args": [
+          5,
+          40
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.002,
+        "pass": true
+      },
+      {
+        "name": "slope R-22 at 40F",
+        "fn": "psiPerDegF",
+        "args": [
+          1,
+          40
+        ],
+        "expect": 1.46,
+        "got": 1.4554947504878868,
+        "ms": 0.043,
+        "pass": true
+      },
+      {
+        "name": "slope R-410A at 75F",
+        "fn": "psiPerDegF",
+        "args": [
+          4,
+          75
+        ],
+        "expect": 3.54,
+        "got": 3.536657202141697,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "claim holds R-410A 75F",
+        "fn": "claimHolds",
+        "args": [
+          4,
+          75,
+          3.47,
+          0.05
+        ],
+        "expect": true,
+        "got": 1,
+        "ms": 0.003,
+        "pass": true
+      },
+      {
+        "name": "claim fails R-22 40F",
+        "fn": "claimHolds",
+        "args": [
+          1,
+          40,
+          3.47,
+          0.1
+        ],
+        "expect": false,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "claim fails R-134a 40F",
+        "fn": "claimHolds",
+        "args": [
+          2,
+          40,
+          3.47,
+          0.1
+        ],
+        "expect": false,
+        "got": 0,
+        "ms": 0.004,
+        "pass": true
+      },
+      {
+        "name": "assumption pin: universal claim is false",
+        "fn": "claimHoldsEverywhere",
+        "args": [
+          3.47,
+          0.1
+        ],
+        "expect": false,
+        "got": 0,
+        "ms": 0.007,
+        "pass": true
+      },
+      {
+        "name": "universal claim false even at 50% tolerance",
+        "fn": "claimHoldsEverywhere",
+        "args": [
+          3.47,
+          0.5
+        ],
+        "expect": false,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      }
+    ],
+    "promotable": true
+  },
+  "wasmSha256": "ad6fdb263dd8e65ba67d5aac50d211f75516504e8dc62c4d0de59d89a8fe202c"
+}

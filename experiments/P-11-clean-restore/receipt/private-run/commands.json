@@ -1,0 +1,103 @@
+[
+  {
+    "argv": [
+      "git",
+      "-C",
+      "/home/user/Work/endoforge/experiments/P-11-clean-restore",
+      "rev-parse",
+      "HEAD"
+    ],
+    "exit": 0,
+    "stdout": "226f8bb9ac8c0d5e7f09a006aef02a874322fcf3\n",
+    "stderr": "",
+    "wallMs": 1.468489004764706
+  },
+  {
+    "argv": [
+      "dockerd",
+      "--version"
+    ],
+    "exit": 0,
+    "stdout": "Docker version 29.9.1, build b26fb77d3e\n",
+    "stderr": "",
+    "wallMs": 20.06290099961916
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "sha256sum",
+      "/home/user/Work/endoforge/experiments/P-09-portable-campaign/work/image.tar"
+    ],
+    "exit": 0,
+    "stdout": "d5f69702b5d8e1dd59d1914c7922a75f79980f9c136bb9f83b59b2da6c1bb70a  /home/user/Work/endoforge/experiments/P-09-portable-campaign/work/image.tar\n",
+    "stderr": "",
+    "wallMs": 60.89274999976624
+  },
+  {
+    "argv": [
+      "pgrep",
+      "-P",
+      "3724189"
+    ],
+    "exit": 0,
+    "stdout": "3724191\n",
+    "stderr": "",
+    "wallMs": 41.6504070017254
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "cat",
+      "/proc/3724191/cmdline"
+    ],
+    "exit": 0,
+    "stdout": "containerd\u0000--config\u0000/home/user/Work/endoforge/experiments/P-11-clean-restore/work-private/containerd.toml\u0000--root\u0000/home/user/Work/endoforge/experiments/P-11-clean-restore/work-private/c-root\u0000--state\u0000/home/user/Work/endoforge/experiments/P-11-clean-restore/work-private/c-state\u0000--address\u0000/home/user/Work/endoforge/experiments/P-11-clean-restore/work-private/c.sock\u0000",
+    "stderr": "",
+    "wallMs": 9.866193002380896
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "kill",
+      "-TERM",
+      "3724191"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "",
+    "wallMs": 8.936370999435894
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "rm",
+      "-rf",
+      "--",
+      "/home/user/Work/endoforge/experiments/P-11-clean-restore/work-private/c-root",
+      "/home/user/Work/endoforge/experiments/P-11-clean-restore/work-private/c-state"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "",
+    "wallMs": 10.414058000606019
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "rm",
+      "-rf",
+      "--",
+      "/home/user/Work/endoforge/experiments/P-11-clean-restore/work-private/daemon-data",
+      "/home/user/Work/endoforge/experiments/P-11-clean-restore/work-private/daemon-exec"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "",
+    "wallMs": 10.1153939976939
+  }
+]

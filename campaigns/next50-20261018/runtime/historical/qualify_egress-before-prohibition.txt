@@ -1,0 +1,57 @@
+import json,os,shutil,subprocess,tempfile,time,uuid
+from pathlib import Path
+from . import core,egress
+R=Path(__file__).resolve().parents[2];A=R/'campaigns/next50-20261018/runtime'/('egress-'+uuid.uuid4().hex[:8]);A.mkdir()
+def save(name,obj):core.durable(A/(name+'.json'),obj)
+def main():
+ scratch=Path(tempfile.mkdtemp(prefix='endoforge-n27-'));scratch.chmod(0o700);server=None
+ try:
+  home=scratch/'home';home.mkdir();out=scratch/'out';out.mkdir();sock=scratch/'proxy.sock';server=egress.serve(sock)
+  # Real private peer canary and receipt path, no role mount.
+  peer=scratch/'peer';peer.write_text('private-peer-secret');source=scratch/'source';source.mkdir();(source/'request').write_text('public input')
+  denied=[str(peer),str(A),str(R/'campaigns'),'/var/run/docker.sock','/home/user/.codex/auth.json']
+  script='set -eu; cat /in/request >/dev/null; '
+  import shlex
+  for path in denied:script+=f'if cat {shlex.quote(path)} >/dev/null 2>&1; then exit 40; fi; '
+  script+='if (echo tamper >/in/request) 2>/dev/null; then exit 41; fi; echo mounts-denied'
+  def run(name,command,timeout=30):
+   cmd=egress.worker_command(home,out,sock,command,[(source,'/in')]);begin=time.monotonic();p=subprocess.Popen(cmd,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,start_new_session=True)
+   try:o,e=p.communicate(timeout=timeout)
+   except subprocess.TimeoutExpired:
+    import signal;os.killpg(p.pid,signal.SIGKILL);o,e=p.communicate();save(name,{'exit':p.returncode,'timeout':True,'stdout':o,'stderr':e});raise
+   r={'exit':p.returncode,'stdout':o,'stderr':e,'wallMs':(time.monotonic()-begin)*1000};save(name,r);return r
+  assert run('mounts',['sh','-c',script])['exit']==0
+  # Direct sockets: IPv4, IPv6, private, metadata, public DNS must all fail.
+  network='''import socket,json
+result={}
+for host,port in [('127.0.0.1',2375),('10.0.0.1',443),('169.254.169.254',80),('1.1.1.1',53),('::1',2375),('2606:4700:4700::1111',53)]:
+ try:
+  s=socket.create_connection((host,port),timeout=1);s.close();result[host]='CONNECTED'
+ except OSError:result[host]='denied'
+try:socket.getaddrinfo('example.com',443);result['DNS']='RESOLVED'
+except OSError:result['DNS']='denied'
+print(json.dumps(result));assert all(v=='denied' for v in result.values())
+'''
+  assert run('direct-network',['python','-c',network])['exit']==0
+  # Allowlist rejects literals, DNS labels, metadata, mangled authorities and ports.
+  attacks=['https://127.0.0.1:2375','https://169.254.169.254','https://10.0.0.1','https://[::1]','https://api.anthropic.com.evil.example','https://api.anthropic.com:2375','https://example.com','https://localhost']
+  for i,url in enumerate(attacks):assert run('proxy-deny-'+str(i),['curl','-fsS','--max-time','5',url])['exit']!=0
+  # Provider DNS rebind defense injected at trusted resolver boundary, real proxy handler.
+  from unittest.mock import patch
+  import socket
+  with patch.object(egress.socket,'getaddrinfo',return_value=[(socket.AF_INET,socket.SOCK_STREAM,6,'',('127.0.0.1',443))]):
+   assert run('dns-nonpublic',['curl','-fsS','--max-time','5','https://api.anthropic.com'])['exit']!=0
+  # Model auth copied only into temporary role home and destroyed in finally.
+  (home/'.claude').mkdir();shutil.copy2(Path.home()/'.claude/.credentials.json',home/'.claude/.credentials.json');(home/'.claude/.credentials.json').chmod(0o600);(home/'.claude.json').write_text('{"hasCompletedOnboarding":true}')
+  claude=Path(shutil.which('claude')).resolve()
+  command=[str(claude),'-p','Return only the integer 7.','--output-format','json','--no-session-persistence','--tools','','--strict-mcp-config','--mcp-config','{"mcpServers":{}}','--disable-slash-commands','--no-chrome','--setting-sources','','--model','claude-sonnet-5-5','--effort','low']
+  model=run('subscription-model',command,180)
+  if model['exit']==0:
+   j=json.loads(model['stdout']);assert not j.get('is_error') and j.get('usage') and j['result'].strip()=='7';save('model-verdict',{'passed':True,'usage':j['usage'],'roleScopedTemporaryCopy':True,'credentialAuthority':'existing subscription OAuth authority, not token-scoped by provider'})
+  else:save('model-verdict',{'passed':False,'reason':'model CLI did not complete under enforced proxy; no unrestricted fallback'})
+  save('policy-events',server.events)
+ finally:
+  if server:server.shutdown();server.server_close()
+  shutil.rmtree(scratch);save('credential-cleanup',{'removed':not scratch.exists(),'credentialContentsRecorded':False})
+ print(A)
+if __name__=='__main__':main()

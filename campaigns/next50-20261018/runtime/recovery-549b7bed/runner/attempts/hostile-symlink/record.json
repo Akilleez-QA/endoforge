@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "kind": "receipt",
+  "job": "hostile",
+  "attempt": "hostile-symlink",
+  "state": "failed",
+  "parent": null,
+  "usage": {
+    "wallMs": 10.105599998496473,
+    "tokens": null
+  },
+  "hashes": {
+    "input": "c13208ac20f7d4ee70e2ae7e21553ee7523d3b78ac7928d67afcd2105ab03c83",
+    "expected": "c13208ac20f7d4ee70e2ae7e21553ee7523d3b78ac7928d67afcd2105ab03c83"
+  },
+  "error": {
+    "type": "controller_error",
+    "message": "OSError(40, 'Too many levels of symbolic links')"
+  }
+}

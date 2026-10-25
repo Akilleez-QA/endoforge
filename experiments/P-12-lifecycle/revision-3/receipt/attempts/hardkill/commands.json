@@ -1,0 +1,74 @@
+[
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "create",
+      "--name",
+      "endoforge-p12-72eaa6cdeaf44990a3a2cc869b188665",
+      "--label",
+      "endoforge.probe=P12",
+      "--label",
+      "endoforge.owner=72eaa6cdeaf44990a3a2cc869b188665",
+      "--pull=never",
+      "--network=none",
+      "--read-only",
+      "--user",
+      "1000:1000",
+      "--cap-drop=ALL",
+      "--security-opt=no-new-privileges",
+      "--cpus=1",
+      "--memory=128m",
+      "--memory-swap=128m",
+      "--pids-limit=32",
+      "--log-opt",
+      "max-size=1m",
+      "--log-opt",
+      "max-file=1",
+      "--tmpfs",
+      "/tmp:rw,nosuid,nodev,size=64m",
+      "--tmpfs",
+      "/out:rw,nosuid,nodev,size=8m,uid=1000,gid=1000",
+      "--mount",
+      "type=bind,src=/home/user/Work/endoforge/experiments/P-12-lifecycle/revision-3/receipt/attempts/hardkill/input.txt,dst=/input.txt,readonly",
+      "--entrypoint",
+      "/bin/sh",
+      "sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541",
+      "-c",
+      "echo running >&2; sleep 100"
+    ],
+    "exit": 0,
+    "stdout": "47c4fb181e9f7b62ea8b104dfc5bd06201d024dd9ce3fc0155a536a98e1f5079\n",
+    "stderr": "",
+    "wallMs": 192.7976429942646
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "start",
+      "endoforge-p12-72eaa6cdeaf44990a3a2cc869b188665"
+    ],
+    "exit": 0,
+    "stdout": "endoforge-p12-72eaa6cdeaf44990a3a2cc869b188665\n",
+    "stderr": "",
+    "wallMs": 180.62583699793322
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "inspect",
+      "--format",
+      "{{json .State}}",
+      "endoforge-p12-72eaa6cdeaf44990a3a2cc869b188665"
+    ],
+    "exit": 0,
+    "stdout": "{\"Status\":\"running\",\"Running\":true,\"Paused\":false,\"Restarting\":false,\"OOMKilled\":false,\"Dead\":false,\"Pid\":3737761,\"ExitCode\":0,\"Error\":\"\",\"StartedAt\":\"2026-10-18T19:03:55.257205604Z\",\"FinishedAt\":\"0001-01-01T00:00:00Z\"}\n",
+    "stderr": "",
+    "wallMs": 24.163264002709184
+  }
+]

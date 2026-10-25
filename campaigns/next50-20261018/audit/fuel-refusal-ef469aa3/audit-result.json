@@ -1,0 +1,103 @@
+{
+  "quality": {
+    "passed": false,
+    "failures": [
+      {
+        "code": "refusal-path",
+        "caseId": "nan"
+      },
+      {
+        "code": "refusal-path",
+        "caseId": "outside"
+      }
+    ],
+    "caseCount": 18,
+    "suiteHash": "87a154e90ef943b631444b1eea9979592387736058addf1de4e290340b041197",
+    "referenceHash": null
+  },
+  "failedRaw": [
+    {
+      "caseId": "nan",
+      "stdout": "",
+      "stderr": "warning: using `--invoke` with a function that takes arguments is experimental and may break in the future\nError: failed to run main module `campaigns/next50-20261018/audit/fuel-refusal-ef469aa3/job/kernel.wasm`\n\nCaused by:\n    0: failed to invoke `celsiusToFahrenheit`\n    1: error while executing at wasm backtrace:\n    0:     0x6b - <unknown>!<wasm function 0>\n    2: wasm trap: all fuel consumed by WebAssembly\n\n",
+      "version": 1,
+      "exit": 134,
+      "outcome": "worker_failed",
+      "wallMs": 22.639896000328008,
+      "outputLimit": 1048576,
+      "argv": [
+        "systemd-run",
+        "--user",
+        "--scope",
+        "--quiet",
+        "--unit",
+        "endoforge-wasm-d438f656247f4810b2d4b2faa8318667",
+        "-p",
+        "MemoryMax=512M",
+        "-p",
+        "MemorySwapMax=0",
+        "-p",
+        "TasksMax=32",
+        "-p",
+        "CPUQuota=100%",
+        "/home/user/Work/endoforge/experiments/P-01-kernel-instantiate/.tools/wasmtime",
+        "run",
+        "-W",
+        "fuel=100000",
+        "-W",
+        "max-memory-size=1048576",
+        "-W",
+        "trap-on-grow-failure=y",
+        "-W",
+        "timeout=100ms",
+        "--invoke",
+        "celsiusToFahrenheit",
+        "campaigns/next50-20261018/audit/fuel-refusal-ef469aa3/job/kernel.wasm",
+        "nan"
+      ],
+      "wallTimeout": false
+    },
+    {
+      "caseId": "outside",
+      "stdout": "",
+      "stderr": "warning: using `--invoke` with a function that takes arguments is experimental and may break in the future\nError: failed to run main module `campaigns/next50-20261018/audit/fuel-refusal-ef469aa3/job/kernel.wasm`\n\nCaused by:\n    0: failed to invoke `celsiusToFahrenheit`\n    1: error while executing at wasm backtrace:\n    0:     0x6b - <unknown>!<wasm function 0>\n    2: wasm trap: all fuel consumed by WebAssembly\n\n",
+      "version": 1,
+      "exit": 134,
+      "outcome": "worker_failed",
+      "wallMs": 14.483658997050952,
+      "outputLimit": 1048576,
+      "argv": [
+        "systemd-run",
+        "--user",
+        "--scope",
+        "--quiet",
+        "--unit",
+        "endoforge-wasm-0c28f10ccbbf4ed3aeaa457e1135b56c",
+        "-p",
+        "MemoryMax=512M",
+        "-p",
+        "MemorySwapMax=0",
+        "-p",
+        "TasksMax=32",
+        "-p",
+        "CPUQuota=100%",
+        "/home/user/Work/endoforge/experiments/P-01-kernel-instantiate/.tools/wasmtime",
+        "run",
+        "-W",
+        "fuel=100000",
+        "-W",
+        "max-memory-size=1048576",
+        "-W",
+        "trap-on-grow-failure=y",
+        "-W",
+        "timeout=100ms",
+        "--invoke",
+        "celsiusToFahrenheit",
+        "campaigns/next50-20261018/audit/fuel-refusal-ef469aa3/job/kernel.wasm",
+        "-300"
+      ],
+      "wallTimeout": false
+    }
+  ],
+  "publishedPaths": []
+}

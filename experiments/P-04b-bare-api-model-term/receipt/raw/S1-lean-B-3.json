@@ -1,0 +1,100 @@
+{
+  "id": "S1-lean-B-3",
+  "arm": "S1-lean",
+  "at": "2026-10-17T18:01:29.804Z",
+  "argv": [
+    "-p",
+    "--output-format",
+    "json",
+    "--no-session-persistence",
+    "--tools",
+    "",
+    "--strict-mcp-config",
+    "--mcp-config",
+    "{\"mcpServers\":{}}",
+    "--disable-slash-commands",
+    "--no-chrome",
+    "--setting-sources",
+    "",
+    "--max-budget-usd",
+    "2"
+  ],
+  "cwd": "/tmp/claude-1000/p04b-empty-cwd",
+  "prompt_sha256": "559eb751ecc7bf7deb83a3c08728bb6b4d2e79e68d723492404789b72ffb5283",
+  "prompt_bytes": 10500,
+  "exit_code": 0,
+  "is_error": false,
+  "subtype": "success",
+  "terminal_reason": "completed",
+  "stop_reason": "end_turn",
+  "model_ids": [
+    "claude-opus-5-5"
+  ],
+  "model_usage": {
+    "claude-opus-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 12280,
+      "cacheReadInputTokens": 6678,
+      "cacheCreationInputTokens": 521,
+      "webSearchRequests": 0,
+      "costUSD": 0.2511116,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 8016,
+      "canonicalModel": "claude-opus-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "wall_ms": 113966.1,
+  "duration_ms": 112235,
+  "duration_api_ms": 108779,
+  "num_turns": 1,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 521,
+    "cache_read_input_tokens": 6678,
+    "output_tokens": 12280,
+    "output_tokens_details": {
+      "thinking_tokens": 8016
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 521,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 12280,
+        "cache_read_input_tokens": 6678,
+        "cache_creation_input_tokens": 521,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 521
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "thinking_tokens": 8016,
+  "visible_tokens": 4264,
+  "context_size_tokens": 7201,
+  "total_cost_usd_list": 0.2511116,
+  "tok_s_wall": 107.75,
+  "tok_s_api": 112.89,
+  "result_chars": 8411,
+  "result_head": "```\n// NOTE: classification-then-asset_id order departs from section 6 join order; T1 and T5 expect asset rows first, then orphans.\n// NOTE: export.csv expects ",
+  "stderr_head": "",
+  "asc_gate": {
+    "status": "pass",
+    "lines": 174
+  }
+}

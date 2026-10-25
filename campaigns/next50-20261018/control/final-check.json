@@ -1,0 +1,36 @@
+{
+  "version": 2,
+  "ledgerValid": true,
+  "counts": {
+    "blocked": 0,
+    "implemented": 6,
+    "in_progress": 2,
+    "pending": 0,
+    "qualified": 42
+  },
+  "oldExperimentFilesUnchanged": 526,
+  "expectedActiveDocEdits": [
+    "Makefile",
+    "README.md",
+    "docs/INDEX.md",
+    "docs/execution/EXECUTION-PLAN.md",
+    "docs/execution/WORK-PACKAGES.md"
+  ],
+  "claudeCodeCLI": "prohibited; no invocation in this continuation",
+  "gateA": true,
+  "gateB": true,
+  "sourceManifestFiles": 84,
+  "sourceManifestVerified": true,
+  "currentQualification": "control/runner-qualification-v2.json",
+  "usageSummary": "control/usage-summary.json",
+  "notAll50AcceptanceCriteriaQualified": true,
+  "verification": {
+    "factoryCheck": "passed; new DSL controls also passed and now included in target",
+    "documentationCheck": {
+      "failures": 0,
+      "existingWarnings": 12
+    }
+  },
+  "finalIndependentHistoricalReview": "complete;81executable/620applicable-uncovered/38headings-conflicts/44unsupported",
+  "independentAuditManifestVerifiedFiles": 258
+}

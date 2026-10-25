@@ -1,0 +1,1279 @@
+Diagram atlas / visual index
+Sheets 01–15 | Click any thumbnail to open its full-size vector page.
+
+
+
+
+01 The complete software-synthesis          02 The unit of work becomes an              03 Inside one factory isolate         04 Choose the candidate boundary        05 The TypeScript + Rust + WASM
+platform                                    experiment                                                                        explicitly                              toolchain
+
+
+
+
+06 One candidate, from request to           07 Three lifetimes, three storage rules     08 Count the full resource envelope   09 Agentic coding: make code the tool   10 Swarm hill-climbing with a
+presentation                                                                                                                                                          bounded frontier
+
+
+
+
+11 Evaluation is a ladder, not a single     12 Generative UI is a tested software       13 Optimize UI behavior through       14 Keep the interface stable while      15 Where speed and density can come
+score                                       artifact                                    measured loops                        candidates evolve                       from
+Blue: authority | Purple: reusable tools | Amber: candidate execution | Green: evidence | Red: failure/risk
+Diagram atlas / visual index
+Sheets 16–30 | Click any thumbnail to open its full-size vector page.
+
+
+
+
+16 One artifact contract, several           17 Cloudflare: runtime-created              18 Self-hosting: isolate != failure     19 Capability and data-flow       20 Artifact identity and transitive
+deployment lanes                            software                                    boundary                                boundaries                        provenance
+
+
+
+
+21 Task lifecycle and attempt               22 Durable dispatch and crash               23 A swarm is a queue, not a pile of    24 Recorded evidence: warm        25 Recorded evidence: native tsc-rs
+boundaries                                  reconciliation                              idle machines                           execution                         gains
+
+
+
+
+26 Recorded evidence: containment           27 Field OS is the applied case study       28 The decisive experiment: the whole   29 From disposable candidate to   30 The bigger picture—and the
+and recovery                                                                            local loop                              reusable software                 evidence frontier
+Blue: authority | Purple: reusable tools | Amber: candidate execution | Green: evidence | Red: failure/risk
+IN-ISOLATE SOFTWARE FACTORY / FOUNDATIONS
+
+01 The complete software-synthesis platform
+A general-purpose architecture: Field OS is one application, not the boundary of the idea.
+
+
+
+  DURABLE CONTROL PLANE / TRUSTED OWNERS
+
+
+     Objective + contract                        Admission + scheduling                     Artifact + task store                     Independent evaluator
+     Task, constraints, budget                   Grants, revision, deadline                 Inputs, frontier, receipts                Held-out tests, selection
+
+
+                                                                                                                                 final evaluation
+
+
+                                           REUSABLE FACTORY ISOLATE / LOCAL HOT PATH
+                                                                                                                                 typed calls
+
+                                              Private                         WASM toolchain              Candidate guest                      Capability adapters
+  Model provider
+                                              workspace                       Type-check + emit;          Execute bounded                      Data / APIs / browser /
+  Propose patches or repairs.
+                                              Immutable base +                pinned module ABI           code;                                native tools. No ambient
+  Waits do not pin compute.
+                                              per-attempt overlay                                         collect observations                 secrets or shell.
+
+
+
+                                                           Local loop: patch → check → run → score
+
+
+                                                                                                                             persist + authorize return
+
+
+
+                                            Generative UI                                     Reusable software
+                                            Validated views + behavior                        Reviewed tool / API / recipe
+
+
+
+Move the repeated compute loop close to code and data; keep identity, durable truth and consequential actions outside it.
+
+
+PROPOSED | SOURCES: R01, U02, U13 | Reference register: SOURCES.md                                                                                    14 OCT 2026 / DIAGRAM 01
+IN-ISOLATE SOFTWARE FACTORY / FOUNDATIONS
+
+02 The unit of work becomes an experiment
+Replace repeated environment setup with reusable machinery and bounded candidate execution.
+
+
+
+  ENVIRONMENT-CENTRIC PATH                                              FACTORY PATH
+
+
+      Task + generated edit                                                Admit exact inputs once
+      Obtain or reconnect a workspace                                      Task + locked tools + approved imports
+
+
+
+      Prepare tools and files                                              Reuse warm immutable machinery
+      Resolve / stage / start processes                                    VFS base + compiled WASM modules
+
+
+
+      Type-check, build and run                                            Patch → check → run → measure
+      Gather logs across tool boundaries                                   Fresh mutable state on every attempt
+
+
+
+      Send evidence to the agent                                           Return compact evidence or UI
+      Repair, repeat, then deploy                                          Persist best candidate; release resources
+
+
+
+
+  Already-warm native pools are a required baseline—not a straw-man cold VM comparison.
+
+
+
+The potential gain is cheaper repeated experiments—not an assumption that every workload belongs in an isolate.
+
+
+PROPOSED | SOURCES: R01, U02 | Reference register: SOURCES.md                                                          14 OCT 2026 / DIAGRAM 02
+IN-ISOLATE SOFTWARE FACTORY / FOUNDATIONS
+
+03 Inside one factory isolate
+The checker is WASM; the generated application is still JavaScript unless explicitly compiled otherwise.
+
+
+
+  OUTSIDE THE DISPOSABLE ISOLATE
+
+
+     Authority + watchdog                         Durable task store                      Protected final oracle                 Renderer / external I/O
+     Grants, budgets, cancellation                Checkpoint + artifact lineage           Not editable by the candidate          Browser, native UI, model
+
+
+
+
+  V8 FACTORY ISOLATE / ONE LOCAL COMPUTATIONAL ENVELOPE
+
+
+     Trusted factory harness                           Workspace + declarations                    Compiled tsc-rs WASM module
+     Loop policy, VFS imports,                         Read-only base + overlay;                   Reuse compiled module; instantiate mutable compiler
+     diagnostics, quotas, result                       locked dependencies + APIs.                 state per check. Narrow filesystem/WASI shims.
+     serialization. Not generated.                     No runtime package installs.
+
+
+
+
+     INNER CANDIDATE BOUNDARY / SEPARATE MUTABLE MEMORY
+
+
+        Fresh QuickJS/WASM guest or proven inner sandbox                              Bounded output → harness → independent evaluation
+        Generated JS runs here, not via eval in the trusted harness.                  Candidate cannot grant itself permissions or mark itself approved.
+
+
+
+
+Keep the computational inner loop local without giving candidate code access to the harness, final oracle or host authority.
+
+
+PROPOSED | SOURCES: U02, R09, U13 | Reference register: SOURCES.md                                                                           14 OCT 2026 / DIAGRAM 03
+IN-ISOLATE SOFTWARE FACTORY / FOUNDATIONS
+
+04 Choose the candidate boundary explicitly
+Three different isolation choices; do not draw them as interchangeable mechanisms.
+
+
+
+  A / NESTED GUEST                                             B / CHILD V8 ISOLATE                    C / NATIVE EXECUTION
+
+
+     Factory V8 isolate                                           Factory / supervisor                  Registered native adapter
+     WASM checker + trusted harness                               Check and package exact emitted JS    Pinned executable + input closure
+
+
+
+
+     Inner WASM guest                                             Dynamic child Worker                  Container / process / VM
+     Fresh QuickJS + guest memory;                                Fresh V8 candidate identity;          Compiler, browser, native modules;
+     only declared imports.                                       scoped bindings and egress.           measured OS containment.
+
+
+
+
+     Locality / trade-off                                         Isolation / trade-off                 Compatibility / trade-off
+     No candidate process launch;                                 Not literally one isolate;            Broader tool support;
+     interpreter and bridge overhead.                             creation, call and copy costs.        more startup and resident costs.
+     Host envelope still shared.                                  Runtime-specific limits apply.        Required fallback lane.
+
+
+
+
+A same-isolate WASM guest can preserve locality. A child V8 isolate moves the trust boundary. A native sandbox preserves
+compatibility.
+PROPOSED | SOURCES: R01, R09, U04, U13, U14 | Reference register: SOURCES.md                                                   14 OCT 2026 / DIAGRAM 04
+IN-ISOLATE SOFTWARE FACTORY / FOUNDATIONS
+
+05 The TypeScript + Rust + WASM toolchain
+Build the compiler once; execute portable type checks over an in-memory project.
+
+
+
+  PREPARE THE TOOLCHAIN / OUTSIDE THE PER-EDIT LOOP
+
+
+     Pinned Rust compiler                        Build WASM artifact          Compile                               Freeze declarations +
+     source                                                                   WebAssembly.Module                    shims
+                                                 wasm32-wasip1 + optimized
+     ts-rust revision + build profile            binary                       One reusable module per host          Types, imports, library identity
+                                                                              scope
+
+
+
+
+  EACH CHECK / IN THE FACTORY ISOLATE
+
+
+     Source overlay + config                     Fresh WASM instance          Structured                            Checked output artifact
+     Current patch + exact                       Type-check / emit;           diagnostics                    pass   JS + source map + receipt;
+     tsconfig;                                   per-check mutable state.     Paths, codes, locations;              bundle only approved imports.
+     bounded file count and bytes.                                            repair feedback on failure.
+
+
+                                                       repair then re-check
+
+
+
+
+   UPSTREAM WASM: 4.2 MB module; 1.8 MB gzip; single-threaded. Module bytes are not peak RAM.
+
+
+Rust accelerates the checker implementation; WASM makes it embeddable. Neither turns generated JavaScript into native Rust.
+
+
+PROPOSED | SOURCES: U01, U02 | Reference register: SOURCES.md                                                                    14 OCT 2026 / DIAGRAM 05
+IN-ISOLATE SOFTWARE FACTORY / FOUNDATIONS
+
+06 One candidate, from request to presentation
+Sequence diagram: a fast local loop with an external trust and persistence boundary.
+
+
+
+Actor                          Authority                      Factory                     WASM + guest              Evaluator      View host
+
+
+                request + context
+
+
+                                             admitted task + inputs
+
+                                                                LOCAL REPAIR LOOP / BOUNDED
+                                                                            patch / check / run
+
+
+                                                                           diagnostics + results
+
+
+                                                                           bounded local retry
+
+
+                                                                                       candidate + exact hashes
+
+
+                                                                           independent result
+
+
+
+                                                          commit receipt
+
+                                                                                         authorized UI / artifact
+
+
+
+
+Persist the winning result before exposing it as accepted output; intermediate candidates remain replaceable.
+
+
+PROPOSED | SOURCES: R01, R06, U02 | Reference register: SOURCES.md                                                              14 OCT 2026 / DIAGRAM 06
+IN-ISOLATE SOFTWARE FACTORY / FOUNDATIONS
+
+07 Three lifetimes, three storage rules
+Durable task state, warm immutable caches, and disposable per-attempt state.
+
+
+
+  DURABLE / correctness depends on retention
+
+
+     Task + objective                                           Frontier + current best                  Objects + receipts
+     Intent, actor, context, budgets                            Candidate lineage + seed IDs             Inputs, outputs, evaluations
+
+
+
+
+  WARM / cache loss must be harmless
+
+
+     Compiled WASM module                                       Approved library base                    Read-only input cache
+     Engine may reuse compiled machinery                        Declarations + immutable package bytes   Partitioned by permissions and digest
+
+
+
+
+  ATTEMPT / discard after bounded execution
+
+
+     Source + VFS overlay                                       Compiler instance + guest                Transient output buffers
+     One candidate, one mutable workspace                       Fresh memory, globals and handles        Capped; publish validated results only
+
+
+
+
+Eviction should increase latency, not erase the task or change its truth. Retain references while waiting—not a live guest heap.
+
+
+PROPOSED | SOURCES: R01, R04, U02 | Reference register: SOURCES.md                                                                 14 OCT 2026 / DIAGRAM 07
+IN-ISOLATE SOFTWARE FACTORY / FOUNDATIONS
+
+08 Count the full resource envelope
+Binary size, WASM memory, V8 heap and whole-process memory are different measurements.
+
+
+
+  EXECUTION GROUP / ACCOUNT THE WHOLE GROUP                                                KEEP THESE SEPARATE
+
+
+     Runtime and compiled code                                                               Outside the worker group
+     V8 / Node / workerd engine, loaded modules, worker threads and native allocations       Supervisor + durable store;
+                                                                                             model service + GPU memory;
+                                                                                             renderer / browser; native adapters.
+
+     WASM linear memories                                   JavaScript heap
+     Compiler state + nested guest;                         Harness, virtual files,
+     growth, stack and allocator                            strings, parsed objects,
+     behavior need measurement.                             promises and result objects.     Measure the complete outcome
+                                                                                             Useful accepted work / second;
+                                                                                             CPU-seconds, peak RSS or cgroup;
+     Bridge and copy buffers                                Host-charged resources           energy and cost if instrumented.
+
+     UTF-8 / UTF-16 conversions,                            Mapped files, tmpfs, child
+     IPC frames, serialization,                             processes, sockets, tasks
+     input + output staging.                                and other charged pages.
+                                                                                             Bound the swarm
+                                                                                             Admit against measured headroom;
+                                                                                             check then run sequentially first;
+     Enforce aggregate memory, CPU rate, tasks, bytes and wall time                          parallelism costs real memory.
+
+
+
+
+Resource efficiency comes from amortized machinery and bounded concurrency—not from treating a 4.2 MB compiler binary as
+total RAM.
+PROPOSED | SOURCES: R01, R03, R04, U02, U07 | Reference register: SOURCES.md                                            14 OCT 2026 / DIAGRAM 08
+IN-ISOLATE SOFTWARE FACTORY / FOUNDATIONS
+
+09 Agentic coding: make code the tool
+Use models for proposals; use execution for deterministic manipulation, checks and measurements.
+
+
+
+
+  Task + allowed API surface                                    Model proposes program or patch                        Admission + source identity
+  Objective, schema, data references,                           Typed API-aware source; not a script                   Budget, policy, dependency closure;
+  acceptance conditions and cost ceiling                        with ambient host access                               content hashes and lineage
+
+
+
+
+  LOCAL FACTORY WORK / ONE ADMITTED EXECUTION BUDGET
+
+
+
+     Patch + type-check                          Execute deterministic                    Run candidate tests                   Compress evidence
+     Reject interface errors early               work                                     Local fixtures + bounded probes       Diagnostics, diffs and metrics
+                                                 Join, filter, transform, calculate
+
+
+
+
+  Need new reasoning? Journal and release compute                                        Result / UI / reusable tool candidate
+  Return compact evidence; resume under a fresh bounded attempt                          Evaluate independently, persist and present under current permissions
+
+
+
+
+The platform can spend model calls on reasoning and repairs while ordinary loops, filters and tests run as bounded software.
+
+
+PROPOSED | SOURCES: R01, U11 | Reference register: SOURCES.md                                                                                14 OCT 2026 / DIAGRAM 09
+IN-ISOLATE SOFTWARE FACTORY / SEARCH & GENERATIVE UI
+
+10 Swarm hill-climbing with a bounded frontier
+Many durable hypotheses; only a measured number of candidates actively consuming compute.
+
+
+
+
+  Frozen task + budget                                           Durable search frontier                               Bounded proposal batch
+  Public fitness, hidden acceptance,                             Best-so-far + diverse candidates;                     Model repairs + deterministic edits;
+  seeds, max rounds and total spend                              exact parents and mutation recipes                    recombine only compatible artifacts
+
+
+
+
+  ADMITTED WORKER POOL / ILLUSTRATIVE WIDTH, NOT A CAPACITY CLAIM
+
+
+     Candidate A                                  Candidate B                               Candidate C                         Candidate D
+     Private overlay → check → run                Private overlay → check → run             Private overlay → check → run       Private overlay → check → run
+     Fresh guest; bounded resources               Fresh guest; bounded resources            Fresh guest; bounded resources      Fresh guest; bounded resources
+
+
+
+
+  Independent measurements                                        Select under constraints                              Persist next generation
+  Correctness gates, performance,                                 Reject failures; retain Pareto                        Elites + evidence + branch IDs;
+  resource cost, UI interaction                                   frontier; preserve diversity;                         new revision for every candidate;
+  quality and failure evidence                                    stop on budget or plateau                             release unused workers
+
+
+
+
+Retain elites and diverse alternatives, not every live runtime. More parallel candidates do not guarantee better solutions.
+
+
+PROPOSED | SOURCES: R01; proposed search design | Reference register: SOURCES.md                                                              14 OCT 2026 / DIAGRAM 10
+IN-ISOLATE SOFTWARE FACTORY / SEARCH & GENERATIVE UI
+
+11 Evaluation is a ladder, not a single score
+Cheap deterministic rejection first; expensive independent tests only for survivors.
+
+
+
+  1 / Contract + syntax                                                                                   PROTECTED EVALUATION PLANE
+  Closed schema; pinned imports; bounded size
+                                                                                                           Hard gates precede ranking
+                                                                                                           Correctness and permissions are
+     2 / Type + interface
+                                                                                                           constraints, not soft rewards.
+     Real semantic checks; matching emitted output
+
+
+
+        3 / Deterministic tests
+        Unit / property / metamorphic invariants                                                           Measure from outside candidate
+                                                                                                           Trusted time / resource counters;
+                                                                                                           repeat runs; record failures;
+            4 / Interaction + integration                                                                  count setup and inference costs.
+            Render, exercise controls, accessibility, APIs
+
+
+
+               5 / Held-out acceptance                                                                     Reject or quarantine
+               Independent fixtures; blind or rotated trials                                               Keep bounded reason and lineage.
+                                                                                                           Do not promote a fast wrong UI.
+                                                                                                           No test-set leaks in model context.
+                  6 / Cost + regression gate
+                  Matched baseline; tail latency; memory; stability
+
+
+                                                                                       any hard failure
+
+
+The candidate may see repair feedback; it must not edit the evaluator, rewrite held-out fixtures or self-report trusted
+performance.
+PROPOSED | SOURCES: R01; proposed evaluation design | Reference register: SOURCES.md                                                  14 OCT 2026 / DIAGRAM 11
+IN-ISOLATE SOFTWARE FACTORY / SEARCH & GENERATIVE UI
+
+12 Generative UI is a tested software artifact
+Generate layout, behavior and bindings together; the presentation host remains stable.
+
+
+
+  GENERATED CANDIDATE / VERSIONED PACKAGE                                                     TRUSTED PRESENTATION HOST / ILLUSTRATIVE UI
+
+
+     View specification                                                                         Validate contract → authorize → reconcile UI
+     Registered components, semantic roles, layout and accessibility                            Renderer refuses unknown components, scripts and wider grants
+
+
+
+
+     Behavior module                                                                            Generated comparison workbench
+     Pure transformations, validation and event/state transitions
+                                                                                                Source A: pinned revision           Source B: pinned revision
+
+                                                                                                  Value / confidence / unit          Difference / explanation
+
+     Data + action bindings                                                                       Evidence remains inspectable       Derived, not physical truth
+     Exact owner / revision; named capability; explicit input schema
+
+
+
+
+     Interaction tests + result schema                                                            Adjust filter → recompute state              Keep candidate
+
+     Expected states, empty/error/stale cases and bounded output
+
+
+
+
+A useful generated interface is more than an image: it has typed state, working interactions, data lineage and
+permission-scoped actions.
+PROPOSED | SOURCES: R01, R11; proposed general UI contract | Reference register: SOURCES.md                                                         14 OCT 2026 / DIAGRAM 12
+IN-ISOLATE SOFTWARE FACTORY / SEARCH & GENERATIVE UI
+
+13 Optimize UI behavior through measured loops
+Search over useful interactions—not just visual novelty or an evaluator's first impression.
+
+
+
+
+  User task + evidence                                              Generate alternatives                                  Isolated preview
+  What must a person accomplish?                                    Composition, behavior, labels,                         Known host; authorized data;
+  Constraints + input scope                                         queries and interaction choices                        no production mutation
+
+
+
+
+  Select + checkpoint                                               Measure outcome                                        Exercise the interface
+  Keep best and diverse variants;                                   Task success, steps, latency,                          Deterministic actions, focus,
+  revise only within budget                                         accessibility and resource cost                        empty/error cases and navigation
+
+
+
+
+  Human evaluation for genuinely subjective goals                                           Acceptance before activation
+  Use consented tasks, declared trade-offs and stable comparison                            Do not use a metric improvement to bypass correctness or permissions.
+  conditions.
+
+
+
+
+A generated interface can improve while it runs, but its evaluation needs independent tasks, stable controls and explicit release
+gates.
+PROPOSED | SOURCES: R11; proposed UI optimization design | Reference register: SOURCES.md                                                      14 OCT 2026 / DIAGRAM 13
+IN-ISOLATE SOFTWARE FACTORY / SEARCH & GENERATIVE UI
+
+14 Keep the interface stable while candidates evolve
+Versioned activation, state migration and safe rollback prevent a constantly shifting experience.
+
+
+
+  ACTIVE VIEW / PINNED V17                                                                   SHADOW CANDIDATE / V18
+
+
+     Stable instance identity                                                                   Generate / check / simulate off-screen
+     Inputs, focus, selection, scroll, unsaved edits                                            No mutation of active state; no live layout churn.
+     and source binding remain owned by host.                                                   Compare against the pinned active version.
+
+
+
+
+     Actions target an expected version                                                         Validate a state migration
+     Event carries view ID + revision + schema.                                                 Schema version + deterministic migration;
+     Stale events never silently target a new UI.                                               refuse destructive or incompatible changes.
+
+
+
+                                                                            activate / retain prior
+
+     Rollback target retained                                                                   Atomic activation at a safe boundary
+     Keep prior bundle + compatible state snapshot.                                             Recheck permissions + source context.
+     In-flight effects require reconciliation.                                                  Preserve focus and inputs or require confirmation.
+
+
+
+
+The active user experience stays pinned until a validated candidate can replace it without losing input, focus or authority.
+
+
+PROPOSED | SOURCES: R01, R11; proposed release design | Reference register: SOURCES.md                                                               14 OCT 2026 / DIAGRAM 14
+IN-ISOLATE SOFTWARE FACTORY / PERFORMANCE & DEPLOYMENT
+
+15 Where speed and density can come from
+A causal model of benefits; these arrows are not an end-to-end benchmark claim.
+
+
+
+  Warm tools                                                                 Latency
+  Amortize engine / module startup                                           T = setup + check + run + evaluate + external waits
+
+
+
+
+  In-memory workspace                                                        Memory
+  Reduce file staging + serialization                                        M = shared runtime + active attempts + buffers
+
+
+
+
+  Local repeated checks                                                      Throughput
+  Avoid avoidable tool round trips                                           Useful rate = accepted candidates / elapsed time
+
+
+
+
+  Early deterministic rejection                                              Cost
+  Spend expensive evaluation on survivors                                    Cost = inference + compute + I/O + review + failures
+
+
+
+
+  Durable wait + bounded swarm                                               Limits
+  Release idle compute; limit active width                                   Speedups do not multiply when optimizing the same time
+
+
+
+
+The economic unit is an independently accepted useful improvement—not a generated token, an isolate count or one fast type
+check.
+PROPOSED | SOURCES: R01, R04, U01, U02 | Reference register: SOURCES.md                                                         14 OCT 2026 / DIAGRAM 15
+IN-ISOLATE SOFTWARE FACTORY / PERFORMANCE & DEPLOYMENT
+
+16 One artifact contract, several deployment lanes
+Portability is an adapter contract—not a promise that all hosts have identical capabilities.
+
+
+
+                               Portable package: source + emitted code + schemas + toolchain + policy + receipts
+                               Runtime-specific capabilities and ABI requirements are explicit, versioned and checked.
+
+
+
+
+  LOCAL / SELF-HOSTED                                          HOSTED / CLOUDFLARE                                 CLIENT / BROWSER
+
+
+     Supervised runtime                                           Worker + loader + services                             Module Web Worker
+     V8 / Node / workerd + WASM;                                  Factory and child workers;                             WASM checker and local workspace;
+     OS sandbox, cgroups, watchdog;                               scoped bindings, egress, quotas;                       separate UI main thread;
+     local durable store and adapters.                            durable coordinator or external store.                 browser-specific stacks and APIs.
+
+
+
+
+     Good fit                                                     Good fit                                               Good fit
+     Offline / private data;                                      Hosted generation / previews;                          Interactive local checks;
+     custom containment and native tools.                         managed dynamic execution.                             no full browser inside a server isolate.
+
+
+
+
+Place the same logical loop near its data and user; admit only the capabilities, runtime APIs and resource budgets verified on
+that host.
+PROPOSED | SOURCES: R01, U02, U04, U13 | Reference register: SOURCES.md                                                                           14 OCT 2026 / DIAGRAM 16
+IN-ISOLATE SOFTWARE FACTORY / PERFORMANCE & DEPLOYMENT
+
+17 Cloudflare: runtime-created software
+Hosted Dynamic Workers provide a deployment path; the all-in-isolate compiler adapter still needs proof.
+
+
+
+  Request / durable coordinator                                    Factory Worker                                              Dynamic Worker loader
+  Task, frontier and current best                                  Pinned WASM tools + input overlay;                          Content identity, modules,
+  persist outside worker residency                                 check and package candidate code                            compatibility date + bindings
+
+
+
+
+  DYNAMIC CANDIDATE WORKERS / SCOPED EXECUTION
+                                                                                                                      Bindings + controlled egress
+                                                                                                                      Only registered services; broker owns
+     Candidate A                          Candidate B                          Candidate C                            secrets and external effect policy
+     Exact JS/WASM                        Exact JS/WASM                        Exact JS/WASM
+     Scoped imports                       Scoped imports                       Scoped imports
+     Bounded execution                    Bounded execution                    Bounded execution
+                                                                                                                      Hosted invocation ceilings
+                                                                                                                      Lower CPU and subrequest limits
+                                                                                                                      can be configured; verify plan limits.
+
+
+
+
+  Measurement is not a guest self-report                                                     Bounded width / checked 14 October 2026
+  Production timing APIs are restricted. Use supported                                       4 distinct in-flight Dynamic Workers per request;
+  telemetry / external harnesses; separate local measurements.                               10 per Durable Object shared I/O context.
+
+
+
+
+Dynamic loading removes a deployment step. It does not remove CPU, concurrency, evaluation, creation-cost or observability
+constraints.
+PROPOSED | SOURCES: U04, U05, U06, U08, U09; CF docs checked 2026-10-14 | Reference register: SOURCES.md                                           14 OCT 2026 / DIAGRAM 17
+IN-ISOLATE SOFTWARE FACTORY / PERFORMANCE & DEPLOYMENT
+
+18 Self-hosting: isolate != failure boundary
+A shared workerd process can share a failure; the external controller must survive it.
+
+
+
+  TRUSTED HOST / OUTSIDE EXECUTION GROUPS
+
+
+     Admission + external watchdog                                                        Durable ledger + immutable object store
+     Monotonic deadline, owned identity, cancellation and reconciliation                  Persist first; a spool is not proof of completion
+
+
+
+
+  COHORT A / ONE SUPERVISED PROCESS + GROUP                                                                      COHORT B / SEPARATE GROUP
+
+
+     Pinned workerd process / reviewed services                                                                     Different trust or failure budget
+     Trust-compatible cohort; explicit outbound bindings; measured group limits                                     Separate supervised process.
+                                                                                                                    Contain malicious code with
+                                                                                                                    appropriate outer sandbox.
+
+     Service 1                           Service 2                        Service 3
+     Separate isolate;                   Separate isolate;                Separate isolate;
+     shared host failure scope           shared host failure scope        shared host failure scope
+                                                                                                                    Pinned source observation
+                                                                                                                    Null isolate limits at 9f247e0d…;
+                                                                                                                    not a claim about future revisions.
+   Runaway / OOM → kill owned cohort → reconcile every in-flight attempt
+
+
+
+
+Cloudflare hosting adds defenses and enforcement around workerd. The standalone binary does not inherit that service
+automatically.
+PROPOSED | SOURCES: R01, R08, U13, U14 | Reference register: SOURCES.md                                                                         14 OCT 2026 / DIAGRAM 18
+IN-ISOLATE SOFTWARE FACTORY / SAFETY & DURABILITY
+
+19 Capability and data-flow boundaries
+Candidate outputs are untrusted data; source content cannot grant authority.
+
+
+
+  UNTRUSTED MATERIAL                                        NARROW TRUSTED BROKER                       OWNED RESOURCES
+
+
+     Model-generated source                                    Validate + normalize                      Read-only source snapshots
+     May contain bugs or malicious                             Closed schemas; bytes, depth, count       Digest + scope; no arbitrary paths
+     intent
+
+
+
+
+     Source documents + data                                   Authorize exact operation                 Registered tools / services
+     May contain prompt-injection text                         Actor + source + context + generation     Broker-owned credentials and egress
+
+
+
+
+     Candidate output + logs                                   Bound amplification                       Candidate custody + views
+     Cannot self-approve or override                           Rows, calls, time, output and decoding    Recheck access; keep provenance
+     policy
+
+
+
+
+Confine what code can do, what data it can see, how much work it can request and what its output is permitted to mean.
+
+
+PROPOSED | SOURCES: R01, R07, R09 | Reference register: SOURCES.md                                                              14 OCT 2026 / DIAGRAM 19
+IN-ISOLATE SOFTWARE FACTORY / SAFETY & DURABILITY
+
+20 Artifact identity and transitive provenance
+Content addressing names bytes; policy and review records decide whether those bytes may run.
+
+
+
+  IMMUTABLE ARTIFACT MANIFEST                                             APPENDED RECORDS / DO NOT MUTATE THE MANIFEST
+
+
+     Code + dependency closure                                               Admission + attempt
+     Source bytes; logical modules; locked package hashes                    Actor, context revision, fence, exact inputs
+
+
+
+
+     Runtime + build identity                                                Execution + evaluation receipt
+     Engine ABI; compiler/WASM; flags; emitted hashes                        Runtime metrics, oracle version, failures, result hashes
+
+
+
+
+     Interfaces + policy ceiling                                             Review + activation record
+     Input/output schemas; requested capabilities; limits                    Exact artifact digest, approver, scope, prior version
+
+
+
+
+     Lineage + applicability                                                 Reuse under current permissions
+     Input/authoring scope; parent artifact; declared domain                 Reauthorize every inherited data restriction
+
+
+
+
+Code, compiler, inputs, permission scope and evaluator version must be attributable. Promotion does not erase customer-bound
+lineage.
+PROPOSED | SOURCES: R01, R06, R07 | Reference register: SOURCES.md                                                              14 OCT 2026 / DIAGRAM 20
+IN-ISOLATE SOFTWARE FACTORY / SAFETY & DURABILITY
+
+21 Task lifecycle and attempt boundaries
+A durable task can outlive many short execution attempts, waits and restarts.
+
+
+
+
+  Accepted                                       Queued                                       Running                       Completed
+  Admission persisted                            References, not heaps                        Owned attempt + fence         Validated + durable
+
+
+
+                                                                                                                          failed attempt
+
+
+
+
+                                                 Waiting external                             Outcome unknown               Failed / exhausted
+                                                 Persist continuation;                        Reconcile exact identity;     Keep bounded reason;
+                                                 release execution slot                       no automatic success          new attempt only by policy
+
+
+
+
+  Cancelled only after verified closure                                   Explicit reconciliation / retry decision
+  Fence future release; close owned group.                                Retain original outcome; append observations.
+  Cancellation does not undo past effects.                                A new execution gets a new attempt identity.
+
+
+
+
+An attempt is potentially executed after authorization, even without a later running record. Never silently retry an ambiguous
+external effect.
+PROPOSED | SOURCES: R01, R06; proposed general state model | Reference register: SOURCES.md                                                14 OCT 2026 / DIAGRAM 21
+IN-ISOLATE SOFTWARE FACTORY / SAFETY & DURABILITY
+
+22 Durable dispatch and crash reconciliation
+Authorize only the exact verified execution unit; record ambiguity rather than fabricate success.
+
+
+
+  1 / Commit admission                                                                              INTERRUPTION RULES
+  Request + runtime + source hashes
+                                                                                                     Crash before trusted ownership
+                                                                                                     Do not adopt an arbitrary unit.
+  2 / Claim one attempt
+                                                                                                     Use bounded passive observation.
+  Durable winning fence; no duplicate launch
+
+
+
+  3 / Start trusted stub
+                                                                                                     Crash after execution permit
+  No candidate payload released yet
+                                                                                                     Possibly executed. Fence future work;
+                                                                                                     verify exact owned closure; record
+  4 / Verify containment                                                                             outcome_unknown when completion unproved.
+
+  Namespace + cgroup + nonce + process identity
+
+
+
+  5 / Persist permit, then release                                                                   Crash after successful spool
+  Potential execution begins at this boundary                                                        No canonical finish = not completed.
+                                                                                                     Keep zero result references until
+                                                                                                     authorized durable completion exists.
+  6 / Publish result, then commit
+  Atomic terminal + return; acknowledge afterward
+
+
+
+
+A process name, PID alone, or successful leftover file is not sufficient proof of owned execution or durable completion.
+
+
+RECORDED DESIGN + NAMED TESTS | SOURCES: R05, R06, R08 | Reference register: SOURCES.md                                           14 OCT 2026 / DIAGRAM 22
+IN-ISOLATE SOFTWARE FACTORY / SAFETY & DURABILITY
+
+23 A swarm is a queue, not a pile of idle machines
+Release execution while waiting; use admission to protect foreground responsiveness.
+
+
+
+  Durable task queue + continuation store                                                          Scheduler + admission
+  Task IDs, next step, code/input hashes, source grants;                                           Measured memory headroom; CPU and task limits;
+  frontier checkpoints, priorities and deadlines                                                   foreground priority, fair aging and backpressure
+
+
+
+
+  ACTIVE COMPUTE SLOTS / EXAMPLE WIDTH ONLY
+                                                                                                                            Waiting / deferred
+                                                                                                                            Model inference
+     Active slot 1                          Active slot 2                              Active slot 3
+                                                                                                                            Human review
+     Load immutable cache                   Load immutable cache                       Load immutable cache                 Network reconnection
+     Fresh attempt state                    Fresh attempt state                        Fresh attempt state                  External effect reconciliation
+     Check → execute → report               Check → execute → report                   Check → execute → report             No live guest required
+
+
+
+
+  Resume = fresh admission checks                                                                Persist compact progress, then free resources
+  Revalidate source scope, context, policy, deadline and                                         Retain useful candidate, logs within caps, evaluation
+  runtime; a cache hit is not authorization.                                                     receipts and continuation references.
+
+
+
+
+Scale durable agent state independently of active compute. Concurrency is a budgeted resource, not a synonym for intelligence.
+
+
+PROPOSED | SOURCES: R01; proposed general scheduler | Reference register: SOURCES.md                                                               14 OCT 2026 / DIAGRAM 23
+IN-ISOLATE SOFTWARE FACTORY / MEASUREMENTS & ACCEPTANCE
+
+24 Recorded evidence: warm execution
+Field OS / Main-rig, 8 October 2026. Same six-case synthetic packet; not a V8-versus-VM benchmark.
+
+
+
+  MEDIAN LATENCY / 100% CPU QUOTA / LOG SCALE
+                                                                                                   Measurement protocol
+                                                                                                   5 warm-ups + 20 measured jobs per arm.
+   Native function                         0.131 ms                                                Per-job latency excludes host oracle check.
+                                                                                                   All outputs matched frozen expected bytes.
+
+
+   Guest / shared VFS                                                       18.64 ms
+
+                                                                                                   Whole-unit peak memory
+                                                                                                   Native: 29.96 MiB
+   Guest / fresh VFS                                                        18.65 ms               Guest shared VFS: 150.62 MiB
+                                                                                                   Guest fresh VFS: 151.93 MiB
+                                     0.1                1              10
+
+
+
+
+  COLD AND WARM ARE DISTINCT OBSERVATIONS
+
+
+     Cold at 50% CPU quota                                                         Warm at 50% CPU quota
+     Native payload 28 ms; guest payload 669 ms.                                   Native median 0.146 ms; guest median 24.04 ms.
+     Whole supervision: 178 ms vs 814 ms.                                          Warm state, timing scopes and memory differ from cold.
+
+
+
+
+Warm reuse helps the guest adapter. The known reviewed function is still dramatically cheaper to call natively; fresh VFS had
+similar median cost.
+RECORDED / NOT RERUN | SOURCES: R04 | Reference register: SOURCES.md                                                                 14 OCT 2026 / DIAGRAM 24
+IN-ISOLATE SOFTWARE FACTORY / MEASUREMENTS & ACCEPTANCE
+
+25 Recorded evidence: native tsc-rs gains
+Upstream T3 Code benchmark, 13 October 2026. Native compiler numbers—not in-isolate WASM numbers.
+
+
+
+  WITHOUT EFFECT / SUM OF FIVE PROJECT MEDIANS
+                                                                                               With Effect diagnostics
+                                                                                               TS 7 / Effect: 42.55 s
+   TypeScript 7                                                             19.45 s            tsc-rs: 14.30 s; --fast: 9.77 s
+                                                                                               Reported: 2.98x / 4.35x faster
+
+
+   tsc-rs 0.6.0                                             7.95 s
+
+                                                                                               Upstream conditions
+                                                                                               16 AMD EPYC vCPUs; ~62 GiB RAM.
+   tsc-rs --fast                                         6.91 s
+                                                                                               1 warm-up + 5 runs per project/mode.
+                                                                                               Pinned TS 7 parity is reported;
+                                                                                               other compiler diagnostics differ.
+  Derived speed ratios vs TS 7: 2.45x default / 2.81x --fast
+
+
+
+
+  WASM packaging and constraints                                             Wall time != resource reduction
+  Maintainer: 4.2 MB module (1.8 MB gzip).                                   Upstream --fast measurements report CPU time
+  Compile module once; new instance per check.                               up to 2.2x and peak memory up to 1.9x.
+  Single-threaded WASM; host stack/ABI probes required.                      Measure default and fast under matched budgets;
+  Native speedup is not inherited automatically.                             more checkers are not free parallelism.
+
+
+
+
+Fast native checks support the compiler choice. The decisive missing measurement is this toolchain inside the complete bounded
+generative loop.
+UPSTREAM / NOT RERUN | SOURCES: U01, U02 | Reference register: SOURCES.md                                                        14 OCT 2026 / DIAGRAM 25
+IN-ISOLATE SOFTWARE FACTORY / MEASUREMENTS & ACCEPTANCE
+
+26 Recorded evidence: containment and recovery
+Keep successful scoped tests and wider failures in the same evidence picture.
+
+
+
+  W1/W2 / FRESH-PROCESS GATEWAY CASES                                           W3/W4 / RETURN AND PROCESS RECOVERY
+
+  Room A / Room B              937 / 923 ms; 125.2 / 124.0 MiB
+                                                                                  Source-bound return: 17 checks passed
+  Domain packet                984 ms; 131.1 MiB; oracle matched                  Two origins; stale/revoked/corrupt handling;
+                                                                                  atomic finish + return; no cross-room mutation.
+
+  Infinite loop                2,389 ms; terminal exhausted
+
+
+  Allocation bomb              1,067 ms; guest heap exhausted                     Six controller trials / five Linux methods
+                                                                                  SIGKILL before and after permit / payload / spool;
+  Output flood                 5,230 ms; external timeout                         unknown outcomes retained; active cancel verified.
+                                                                                  All observed owned groups absent or empty.
+
+
+  Flood timed out before proving the transport-cap threshold.
+
+
+
+
+  Published-checkout test scope                                                 Wider dirty-worktree run remained failed
+  180 tests: 170 executed passes + 10 Linux skips.                              2,106 tests: 17 failures, 325 errors, 259 skips.
+  Separate native runs covered named methods.                                   Different and broader artifact; not superseded
+  The two-room arithmetic remains synthetic;                                    by the focused passing suite.
+  visible generative UI was not qualified here.                                 Physical power-loss acceptance remains open.
+
+
+
+
+The private read-only adapter has concrete containment and recovery evidence. It is not a released multi-tenant generative UI /
+swarm platform.
+RECORDED / NOT RERUN | SOURCES: R05, R06 | Reference register: SOURCES.md                                                           14 OCT 2026 / DIAGRAM 26
+IN-ISOLATE SOFTWARE FACTORY / MEASUREMENTS & ACCEPTANCE
+
+27 Field OS is the applied case study
+The general factory pattern maps onto existing domain owners instead of replacing them.
+
+
+
+  Native Construct room                                        Python authority plane                              Ledger + evidence objects
+  Task, source session, mission                                Admission, source access,                           Durable events and immutable
+  and expected context revisions                               policy, fences and review                           content-addressed custody
+
+
+
+
+  EXECUTION LANES / DIFFERENT IMPLEMENTATION STATUS
+
+
+     PRIVATE ADAPTER / IMPLEMENTED                             WORKERD SERVICES / CONDITIONAL                  NATIVE ADAPTERS / SEPARATE
+     Pinned Node + Just Bash + run                             Reviewed reusable JS/WASM                       Browser, Python/domain libraries
+     Fresh QuickJS/WASM + VFS                                  Trust-compatible cohorts                        Build tools and peripherals
+     One self-contained read-only script                       Outer supervision and egress policy             Registered operations and effects
+     Source-bound candidate return                             No deployment implied here                      Not forced through the JS guest
+
+
+
+
+                                 Validated result → exact originating context
+                                 Stale context becomes an explicit candidate; revoked or corrupt output is withheld.
+                                 No plant actuation, guest approval or silent room reassignment.
+
+
+
+
+Field OS demonstrates part of the substrate. The larger concept applies to IDEs, business systems, analysis workbenches and
+adaptive software.
+RECORDED SUBSET + PROPOSED LANES | SOURCES: R01, R03, R06, R11 | Reference register: SOURCES.md                                         14 OCT 2026 / DIAGRAM 27
+IN-ISOLATE SOFTWARE FACTORY / MEASUREMENTS & ACCEPTANCE
+
+28 The decisive experiment: the whole local loop
+Freeze identical tasks, expected outcomes, toolchains and budgets before comparing architectures.
+
+
+
+  Matched task set + independent oracle + exact artifact identities
+  Small generated tool; type-heavy code; data transform; interactive UI; adversarial loop/heap/output cases.
+
+
+
+
+  CONTROLLED ARMS / RUN THE SAME USEFUL TASKS
+
+
+     A / Warm native baseline                   B / Current guest                          C / All-local WASM                       D / Child Worker
+     Vetted function or                         adapter                                    factory                                  topology
+     declarative composition                    Fresh guest and VFS;                       Checker + guest + loop;                  Loader + candidate V8;
+                                                known existing boundary                    matched resource limits                  account calls and creation
+
+
+
+
+  MEASURE                                                                                  HARD ACCEPTANCE GATES
+
+
+     End-to-end and per-stage costs                                                           Correctness before speed
+     Cold/warm; p50/p95; accepted count; CPU; memory;                                         No scope leak; bounded closure; diagnostic parity;
+     model tokens; copies; evaluator and render cost.                                         UI task success; independent held-out pass.
+
+
+
+
+Prove more accepted useful improvements per second and per unit cost—while preserving correctness, isolation and the user
+experience.
+PROPOSED EXPERIMENT / NO NEW BENCHMARK | SOURCES: R01, R04, U01, U02 | Reference register: SOURCES.md                                              14 OCT 2026 / DIAGRAM 28
+IN-ISOLATE SOFTWARE FACTORY / MEASUREMENTS & ACCEPTANCE
+
+29 From disposable candidate to reusable software
+A versioned promotion path turns successful experiments into a growing library of trusted tools.
+
+
+
+
+  Candidate                                   Evaluated artifact                       Reviewed package                       Active version
+  One task; unreviewed                        Passed task gates                        Applicability + permissions            Atomic selection
+  source + exact inputs                       with limitations retained                separate from data lineage             with prior rollback target
+
+
+
+
+  Reusable library                                                                      Every reuse is a new admitted request
+  Data-free templates where possible; otherwise retain                                  Current grants, exact context, selected runtime,
+  transitive customer / source restrictions.                                            new attempt and fresh mutable state.
+  Packages are versioned, never silently overwritten.                                   Previous review is not blanket permission.
+
+
+
+
+  Revocation / rollback                                                                 Learning signal for the next synthesis
+  Disable future admission; reconcile active effects;                                   Successful schemas, components, tests and recipes
+  retain historical receipts and evidence.                                              reduce future search without hiding failures.
+
+
+
+
+The compounding asset is an evidence-backed library of useful software—not a collection of unreviewed generated code or
+cached heaps.
+PROPOSED GENERAL PROMOTION PATH | SOURCES: R01, R06 | Reference register: SOURCES.md                                                       14 OCT 2026 / DIAGRAM 29
+IN-ISOLATE SOFTWARE FACTORY / MEASUREMENTS & ACCEPTANCE
+
+30 The bigger picture—and the evidence frontier
+Software synthesis can become a runtime capability, provided the complete feedback loop earns its claims.
+
+
+
+  ESTABLISHED BUILDING BLOCKS                                  NEXT INTEGRATION PROOF                           PLATFORM IMPLICATIONS
+
+
+     Recorded local substrate                                     One integrated factory                         Adaptive applications
+     Warm guest machinery;                                        Pinned WASM checker;                           Temporary tools for a task;
+     fresh VFS and VM;                                            isolated candidate behavior;                   UI generated around intent;
+     contained execution and recovery.                            real independent measurements.                 keep useful versions.
+
+
+
+
+     Upstream tool capabilities                                   One working generative UI                      Agentic development platforms
+     Fast native Rust checker;                                    Typed behavior + stable state;                 Cheaper executable feedback;
+     WASM compiler artifact;                                      useful task completion;                        more verified search per budget;
+     runtime-created Workers.                                     measured improvement loop.                     less idle environment occupancy.
+
+
+
+
+     Limits still visible                                         One bounded search campaign                    Reusable software ecosystem
+     No local full-loop benchmark;                                Fixed budget and oracle;                       Trusted package library;
+     no proved swarm economy;                                     diverse frontier;                              portable capability contracts;
+     no broad appliance acceptance.                               accepted outcomes versus baseline.             local, browser and cloud lanes.
+
+
+
+
+Potentially transformative: task-specific software, generated and improved in place. Demonstrated today: useful components
+and a bounded applied slice.
+SYNTHESIS / NO PRODUCTION CLAIM | SOURCES: R01, R04, R05, R06, U01, U02, U04 | Reference register: SOURCES.md                           14 OCT 2026 / DIAGRAM 30
+Source register / evidence boundaries
+Source titles are clickable. Full URLs and exact revisions are also in SOURCES.md and source/sources.json.
+
+
+
+
+R01 Field OS Worker Fabric v1 specification                                                                 R09 Guest bridge implementation
+
+Defines layered architecture, lifecycle, limits, promotion and acceptance scope.                            Fresh guest/VFS behavior and removed host ports.
+
+
+
+
+R03 Worker fabric runtime guide                                                                             R11 Operational instrument binding contract
+
+Actual private adapter, dependencies, limits and declared boundary.                                         Native UI binding, owner identity, explicit source context and limits.
+
+
+
+
+R04 Main-rig execution receipt                                                                              U01 ts-rust / tsc-rs README and native benchmarks
+
+Cold/warm tables, oracle scope, retained-state findings and failed model trial.                             Pinned 14 October checkout; benchmark measured 13 October 2026. Native 0.6.0, not WASM.
+
+
+
+
+R05 Private W1/W2 receipt                                                                                   U02 ts-rust WASM interface
+
+Seven gateway cases, containment, durability and failed broader suite.                                      Module size, in-memory API, instance reuse/reset, build/publication and stack constraints.
+
+
+
+
+R06 Private W3/W4 receipt                                                                                   U04 Dynamic Workers: getting started
+
+Return/recovery tests, published-checkout scope and retained failures.                                      Runtime loading, supported JS/Python/WASM inputs, and TypeScript precompilation. Checked 14 October 2026.
+
+
+
+
+R07 Admission and fence implementation                                                                      U05 Dynamic Workers API reference
+
+Closed contracts and durable control boundaries.                                                            load/get semantics, content identity and non-guaranteed warm residence. Checked 14 October 2026.
+
+
+
+
+R08 Supervised execution implementation                                                                     U06 Dynamic Workers platform limits
+
+Host resource accounting and verified owned execution.                                                      Four distinct active workers per request; ten per Durable Object I/O context. Checked 14 October 2026.
+
+
+
+
+Recorded ≠ rerun. Upstream native compiler timings ≠ WASM timings. Proposed architecture ≠ deployed capability.
+Source register / evidence boundaries
+Source titles are clickable. Full URLs and exact revisions are also in SOURCES.md and source/sources.json.
+
+
+
+
+U07 Workers platform limits
+
+Memory accounting includes JS and WASM; per-isolate rather than per-invocation. Checked 14 October 2026.
+
+
+
+
+U08 Dynamic Workers custom resource limits
+
+CPU and subrequest ceilings; lower limits can be supplied per invocation. Checked 14 October 2026.
+
+
+
+
+U09 Workers performance and timers
+
+Production clock restrictions and local measurement difference. Checked 14 October 2026.
+
+
+
+
+U11 Cloudflare Code Mode architecture
+
+Related code-based orchestration, executor/connector/durable-runtime separation. Experimental API; checked
+14 October 2026.
+
+
+U13 workerd README
+
+Runtime design, nanoservices and explicit standalone sandbox warning. Checked 14 October 2026.
+
+
+
+
+U14 Pinned workerd server source
+
+NullIsolateLimitEnforcer and ignored dynamic ResourceLimits at the research pin; do not generalize to
+uninspected revisions.
+
+
+
+
+Recorded ≠ rerun. Upstream native compiler timings ≠ WASM timings. Proposed architecture ≠ deployed capability.
+

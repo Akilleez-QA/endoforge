@@ -1,0 +1,233 @@
+[
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "create",
+      "--name",
+      "endoforge-v1-ab25477187f3401284f146d8dae4c388",
+      "--label",
+      "endoforge.runtime=v1",
+      "--label",
+      "endoforge.owner=ab25477187f3401284f146d8dae4c388",
+      "--pull=never",
+      "--network=none",
+      "--read-only",
+      "--user",
+      "1000:1000",
+      "--cap-drop=ALL",
+      "--security-opt=no-new-privileges",
+      "--cpus=1",
+      "--memory=512m",
+      "--memory-swap=512m",
+      "--pids-limit=32",
+      "--log-opt",
+      "max-size=1m",
+      "--log-opt",
+      "max-file=1",
+      "--tmpfs",
+      "/tmp:rw,nosuid,nodev,size=64m",
+      "--tmpfs",
+      "/out:rw,nosuid,nodev,size=8m,uid=1000,gid=1000",
+      "--mount",
+      "type=bind,src=/home/user/Work/endoforge/campaigns/next50-20261018/runtime/attempts/verify-e9a54f2c042e/input.txt,dst=/input.txt,readonly",
+      "--entrypoint",
+      "/bin/sh",
+      "sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541",
+      "-c",
+      "exec /usr/local/bin/node -e 'const fs=require('\"'\"'fs'\"'\"'),cp=require('\"'\"'child_process'\"'\"'),p=JSON.parse(fs.readFileSync('\"'\"'/input.txt'\"'\"','\"'\"'utf8'\"'\"'));\nif(p.version!==1||!/^[-A-Za-z0-9_]{1,80}$/.test(p.job))throw Error('\"'\"'payload'\"'\"');\nconst names=['\"'\"'CONTRACT.md'\"'\"','\"'\"'tests.json'\"'\"','\"'\"'frozen.sha256'\"'\"','\"'\"'kernel.ts'\"'\"','\"'\"'glue.json'\"'\"'];\nif(Object.keys(p.files).sort().join()!=names.sort().join())throw Error('\"'\"'file set'\"'\"');\nconst d='\"'\"'/tmp/'\"'\"'+p.job;fs.mkdirSync(d);for(const n of names){if(typeof p.files[n]!=='\"'\"'string'\"'\"')throw Error('\"'\"'file content'\"'\"');fs.writeFileSync(d+'\"'\"'/'\"'\"'+n,p.files[n]);}\nconst r=cp.spawnSync('\"'\"'/usr/local/bin/node'\"'\"',['\"'\"'/bundle/campaigns/x1-spec-study/factory/gate.mjs'\"'\"','\"'\"'run'\"'\"',d],{timeout:60000,encoding:'\"'\"'utf8'\"'\"'});process.stderr.write(r.stdout||'\"'\"''\"'\"');process.stderr.write(r.stderr||'\"'\"''\"'\"');if(r.status!==0)process.exit(r.status||1);process.stdout.write(fs.readFileSync('\"'\"'/input.txt'\"'\"','\"'\"'utf8'\"'\"'));'"
+    ],
+    "exit": 0,
+    "stdout": "6191dbb5154619018e5d5915fb2cc538d48d3a63c7a1103cc4a050aceb31fb0e\n",
+    "stderr": "",
+    "wallMs": 201.8136870028684
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "start",
+      "endoforge-v1-ab25477187f3401284f146d8dae4c388"
+    ],
+    "exit": 0,
+    "stdout": "endoforge-v1-ab25477187f3401284f146d8dae4c388\n",
+    "stderr": "",
+    "wallMs": 245.4378260008525
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "inspect",
+      "--format",
+      "{{json .State}}",
+      "endoforge-v1-ab25477187f3401284f146d8dae4c388"
+    ],
+    "exit": 0,
+    "stdout": "{\"Status\":\"running\",\"Running\":true,\"Paused\":false,\"Restarting\":false,\"OOMKilled\":false,\"Dead\":false,\"Pid\":3984910,\"ExitCode\":0,\"Error\":\"\",\"StartedAt\":\"2026-10-18T20:37:28.364093826Z\",\"FinishedAt\":\"0001-01-01T00:00:00Z\"}\n",
+    "stderr": "",
+    "wallMs": 21.246730000711977
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "inspect",
+      "--format",
+      "{{json .State}}",
+      "endoforge-v1-ab25477187f3401284f146d8dae4c388"
+    ],
+    "exit": 0,
+    "stdout": "{\"Status\":\"running\",\"Running\":true,\"Paused\":false,\"Restarting\":false,\"OOMKilled\":false,\"Dead\":false,\"Pid\":3984910,\"ExitCode\":0,\"Error\":\"\",\"StartedAt\":\"2026-10-18T20:37:28.364093826Z\",\"FinishedAt\":\"0001-01-01T00:00:00Z\"}\n",
+    "stderr": "",
+    "wallMs": 21.033084994996898
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "inspect",
+      "--format",
+      "{{json .State}}",
+      "endoforge-v1-ab25477187f3401284f146d8dae4c388"
+    ],
+    "exit": 0,
+    "stdout": "{\"Status\":\"running\",\"Running\":true,\"Paused\":false,\"Restarting\":false,\"OOMKilled\":false,\"Dead\":false,\"Pid\":3984910,\"ExitCode\":0,\"Error\":\"\",\"StartedAt\":\"2026-10-18T20:37:28.364093826Z\",\"FinishedAt\":\"0001-01-01T00:00:00Z\"}\n",
+    "stderr": "",
+    "wallMs": 20.899716997519135
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "inspect",
+      "--format",
+      "{{json .State}}",
+      "endoforge-v1-ab25477187f3401284f146d8dae4c388"
+    ],
+    "exit": 0,
+    "stdout": "{\"Status\":\"running\",\"Running\":true,\"Paused\":false,\"Restarting\":false,\"OOMKilled\":false,\"Dead\":false,\"Pid\":3984910,\"ExitCode\":0,\"Error\":\"\",\"StartedAt\":\"2026-10-18T20:37:28.364093826Z\",\"FinishedAt\":\"0001-01-01T00:00:00Z\"}\n",
+    "stderr": "",
+    "wallMs": 20.488184003625065
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "inspect",
+      "--format",
+      "{{json .State}}",
+      "endoforge-v1-ab25477187f3401284f146d8dae4c388"
+    ],
+    "exit": 0,
+    "stdout": "{\"Status\":\"running\",\"Running\":true,\"Paused\":false,\"Restarting\":false,\"OOMKilled\":false,\"Dead\":false,\"Pid\":3984910,\"ExitCode\":0,\"Error\":\"\",\"StartedAt\":\"2026-10-18T20:37:28.364093826Z\",\"FinishedAt\":\"0001-01-01T00:00:00Z\"}\n",
+    "stderr": "",
+    "wallMs": 21.870949000003748
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "inspect",
+      "--format",
+      "{{json .State}}",
+      "endoforge-v1-ab25477187f3401284f146d8dae4c388"
+    ],
+    "exit": 0,
+    "stdout": "{\"Status\":\"running\",\"Running\":true,\"Paused\":false,\"Restarting\":false,\"OOMKilled\":false,\"Dead\":false,\"Pid\":3984910,\"ExitCode\":0,\"Error\":\"\",\"StartedAt\":\"2026-10-18T20:37:28.364093826Z\",\"FinishedAt\":\"0001-01-01T00:00:00Z\"}\n",
+    "stderr": "",
+    "wallMs": 20.690257995738648
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "inspect",
+      "--format",
+      "{{json .State}}",
+      "endoforge-v1-ab25477187f3401284f146d8dae4c388"
+    ],
+    "exit": 0,
+    "stdout": "{\"Status\":\"exited\",\"Running\":false,\"Paused\":false,\"Restarting\":false,\"OOMKilled\":false,\"Dead\":false,\"Pid\":0,\"ExitCode\":0,\"Error\":\"\",\"StartedAt\":\"2026-10-18T20:37:28.364093826Z\",\"FinishedAt\":\"2026-10-18T20:37:29.195917532Z\"}\n",
+    "stderr": "",
+    "wallMs": 36.60794700408587
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "inspect",
+      "endoforge-v1-ab25477187f3401284f146d8dae4c388"
+    ],
+    "exit": 0,
+    "stdout": "[\n    {\n        \"Id\": \"6191dbb5154619018e5d5915fb2cc538d48d3a63c7a1103cc4a050aceb31fb0e\",\n        \"Created\": \"2026-10-18T20:37:28.089557279Z\",\n        \"Path\": \"/bin/sh\",\n        \"Args\": [\n            \"-c\",\n            \"exec /usr/local/bin/node -e 'const fs=require('\\\"'\\\"'fs'\\\"'\\\"'),cp=require('\\\"'\\\"'child_process'\\\"'\\\"'),p=JSON.parse(fs.readFileSync('\\\"'\\\"'/input.txt'\\\"'\\\"','\\\"'\\\"'utf8'\\\"'\\\"'));\\nif(p.version!==1||!/^[-A-Za-z0-9_]{1,80}$/.test(p.job))throw Error('\\\"'\\\"'payload'\\\"'\\\"');\\nconst names=['\\\"'\\\"'CONTRACT.md'\\\"'\\\"','\\\"'\\\"'tests.json'\\\"'\\\"','\\\"'\\\"'frozen.sha256'\\\"'\\\"','\\\"'\\\"'kernel.ts'\\\"'\\\"','\\\"'\\\"'glue.json'\\\"'\\\"'];\\nif(Object.keys(p.files).sort().join()!=names.sort().join())throw Error('\\\"'\\\"'file set'\\\"'\\\"');\\nconst d='\\\"'\\\"'/tmp/'\\\"'\\\"'+p.job;fs.mkdirSync(d);for(const n of names){if(typeof p.files[n]!=='\\\"'\\\"'string'\\\"'\\\"')throw Error('\\\"'\\\"'file content'\\\"'\\\"');fs.writeFileSync(d+'\\\"'\\\"'/'\\\"'\\\"'+n,p.files[n]);}\\nconst r=cp.spawnSync('\\\"'\\\"'/usr/local/bin/node'\\\"'\\\"',['\\\"'\\\"'/bundle/campaigns/x1-spec-study/factory/gate.mjs'\\\"'\\\"','\\\"'\\\"'run'\\\"'\\\"',d],{timeout:60000,encoding:'\\\"'\\\"'utf8'\\\"'\\\"'});process.stderr.write(r.stdout||'\\\"'\\\"''\\\"'\\\"');process.stderr.write(r.stderr||'\\\"'\\\"''\\\"'\\\"');if(r.status!==0)process.exit(r.status||1);process.stdout.write(fs.readFileSync('\\\"'\\\"'/input.txt'\\\"'\\\"','\\\"'\\\"'utf8'\\\"'\\\"'));'\"\n        ],\n        \"State\": {\n            \"Status\": \"exited\",\n            \"Running\": false,\n            \"Paused\": false,\n            \"Restarting\": false,\n            \"OOMKilled\": false,\n            \"Dead\": false,\n            \"Pid\": 0,\n            \"ExitCode\": 0,\n            \"Error\": \"\",\n            \"StartedAt\": \"2026-10-18T20:37:28.364093826Z\",\n            \"FinishedAt\": \"2026-10-18T20:37:29.195917532Z\"\n        },\n        \"Image\": \"sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541\",\n        \"ResolvConfPath\": \"/var/lib/docker/containers/6191dbb5154619018e5d5915fb2cc538d48d3a63c7a1103cc4a050aceb31fb0e/resolv.conf\",\n        \"HostnamePath\": \"/var/lib/docker/containers/6191dbb5154619018e5d5915fb2cc538d48d3a63c7a1103cc4a050aceb31fb0e/hostname\",\n        \"HostsPath\": \"/var/lib/docker/containers/6191dbb5154619018e5d5915fb2cc538d48d3a63c7a1103cc4a050aceb31fb0e/hosts\",\n        \"LogPath\": \"/var/lib/docker/containers/6191dbb5154619018e5d5915fb2cc538d48d3a63c7a1103cc4a050aceb31fb0e/6191dbb5154619018e5d5915fb2cc538d48d3a63c7a1103cc4a050aceb31fb0e-json.log\",\n        \"Name\": \"/endoforge-v1-ab25477187f3401284f146d8dae4c388\",\n        \"RestartCount\": 0,\n        \"Driver\": \"overlayfs\",\n        \"Platform\": \"linux\",\n        \"MountLabel\": \"\",\n        \"ProcessLabel\": \"\",\n        \"AppArmorProfile\": \"\",\n        \"ExecIDs\": null,\n        \"HostConfig\": {\n            \"Binds\": null,\n            \"ContainerIDFile\": \"\",\n            \"LogConfig\": {\n                \"Type\": \"json-file\",\n                \"Config\": {\n                    \"max-file\": \"1\",\n                    \"max-size\": \"1m\"\n                }\n            },\n            \"NetworkMode\": \"none\",\n            \"PortBindings\": {},\n            \"RestartPolicy\": {\n                \"Name\": \"no\",\n                \"MaximumRetryCount\": 0\n            },\n            \"AutoRemove\": false,\n            \"VolumeDriver\": \"\",\n            \"VolumesFrom\": null,\n            \"ConsoleSize\": [\n                0,\n                0\n            ],\n            \"CapAdd\": null,\n            \"CapDrop\": [\n                \"ALL\"\n            ],\n            \"CgroupnsMode\": \"private\",\n            \"Dns\": null,\n            \"DnsOptions\": [],\n            \"DnsSearch\": [],\n            \"ExtraHosts\": null,\n            \"GroupAdd\": null,\n            \"IpcMode\": \"private\",\n            \"Cgroup\": \"\",\n            \"Links\": null,\n            \"OomScoreAdj\": 0,\n            \"PidMode\": \"\",\n            \"Privileged\": false,\n            \"PublishAllPorts\": false,\n            \"ReadonlyRootfs\": true,\n            \"SecurityOpt\": [\n                \"no-new-privileges\"\n            ],\n            \"Tmpfs\": {\n                \"/out\": \"rw,nosuid,nodev,size=8m,uid=1000,gid=1000\",\n                \"/tmp\": \"rw,nosuid,nodev,size=64m\"\n            },\n            \"UTSMode\": \"\",\n            \"UsernsMode\": \"\",\n            \"ShmSize\": 67108864,\n            \"Runtime\": \"runc\",\n            \"Isolation\": \"\",\n            \"CpuShares\": 0,\n            \"Memory\": 536870912,\n            \"NanoCpus\": 1000000000,\n            \"CgroupParent\": \"\",\n            \"BlkioWeight\": 0,\n            \"BlkioWeightDevice\": [],\n            \"BlkioDeviceReadBps\": [],\n            \"BlkioDeviceWriteBps\": [],\n            \"BlkioDeviceReadIOps\": [],\n            \"BlkioDeviceWriteIOps\": [],\n            \"CpuPeriod\": 0,\n            \"CpuQuota\": 0,\n            \"CpuRealtimePeriod\": 0,\n            \"CpuRealtimeRuntime\": 0,\n            \"CpusetCpus\": \"\",\n            \"CpusetMems\": \"\",\n            \"Devices\": [],\n            \"DeviceCgroupRules\": null,\n            \"DeviceRequests\": null,\n            \"MemoryReservation\": 0,\n            \"MemorySwap\": 536870912,\n            \"MemorySwappiness\": null,\n            \"OomKillDisable\": null,\n            \"PidsLimit\": 32,\n            \"Ulimits\": null,\n            \"CpuCount\": 0,\n            \"CpuPercent\": 0,\n            \"IOMaximumIOps\": 0,\n            \"IOMaximumBandwidth\": 0,\n            \"Mounts\": [\n                {\n                    \"Type\": \"bind\",\n                    \"Source\": \"/home/user/Work/endoforge/campaigns/next50-20261018/runtime/attempts/verify-e9a54f2c042e/input.txt\",\n                    \"Target\": \"/input.txt\",\n                    \"ReadOnly\": true\n                }\n            ],\n            \"MaskedPaths\": [\n                \"/proc/acpi\",\n                \"/proc/asound\",\n                \"/proc/interrupts\",\n                \"/proc/kcore\",\n                \"/proc/keys\",\n                \"/proc/latency_stats\",\n                \"/proc/sched_debug\",\n                \"/proc/scsi\",\n                \"/proc/timer_list\",\n                \"/proc/timer_stats\",\n                \"/sys/devices/virtual/powercap\",\n                \"/sys/firmware\"\n            ],\n            \"ReadonlyPaths\": [\n                \"/proc/bus\",\n                \"/proc/fs\",\n                \"/proc/irq\",\n                \"/proc/sys\",\n                \"/proc/sysrq-trigger\"\n            ]\n        },\n        \"Storage\": {\n            \"RootFS\": {\n                \"Snapshot\": {\n                    \"Name\": \"overlayfs\"\n                }\n            }\n        },\n        \"Mounts\": [\n            {\n                \"Type\": \"bind\",\n                \"Source\": \"/home/user/Work/endoforge/campaigns/next50-20261018/runtime/attempts/verify-e9a54f2c042e/input.txt\",\n                \"Destination\": \"/input.txt\",\n                \"Mode\": \"\",\n                \"RW\": false,\n                \"Propagation\": \"rprivate\"\n            }\n        ],\n        \"Config\": {\n            \"Hostname\": \"6191dbb51546\",\n            \"Domainname\": \"\",\n            \"User\": \"1000:1000\",\n            \"AttachStdin\": false,\n            \"AttachStdout\": true,\n            \"AttachStderr\": true,\n            \"Tty\": false,\n            \"OpenStdin\": false,\n            \"StdinOnce\": false,\n            \"Env\": [\n                \"PATH=/usr/local/bin:/usr/bin:/bin\",\n                \"NODE_VERSION=22.18.0\",\n                \"YARN_VERSION=1.22.22\",\n                \"HOME=/tmp\"\n            ],\n            \"Cmd\": [\n                \"-c\",\n                \"exec /usr/local/bin/node -e 'const fs=require('\\\"'\\\"'fs'\\\"'\\\"'),cp=require('\\\"'\\\"'child_process'\\\"'\\\"'),p=JSON.parse(fs.readFileSync('\\\"'\\\"'/input.txt'\\\"'\\\"','\\\"'\\\"'utf8'\\\"'\\\"'));\\nif(p.version!==1||!/^[-A-Za-z0-9_]{1,80}$/.test(p.job))throw Error('\\\"'\\\"'payload'\\\"'\\\"');\\nconst names=['\\\"'\\\"'CONTRACT.md'\\\"'\\\"','\\\"'\\\"'tests.json'\\\"'\\\"','\\\"'\\\"'frozen.sha256'\\\"'\\\"','\\\"'\\\"'kernel.ts'\\\"'\\\"','\\\"'\\\"'glue.json'\\\"'\\\"'];\\nif(Object.keys(p.files).sort().join()!=names.sort().join())throw Error('\\\"'\\\"'file set'\\\"'\\\"');\\nconst d='\\\"'\\\"'/tmp/'\\\"'\\\"'+p.job;fs.mkdirSync(d);for(const n of names){if(typeof p.files[n]!=='\\\"'\\\"'string'\\\"'\\\"')throw Error('\\\"'\\\"'file content'\\\"'\\\"');fs.writeFileSync(d+'\\\"'\\\"'/'\\\"'\\\"'+n,p.files[n]);}\\nconst r=cp.spawnSync('\\\"'\\\"'/usr/local/bin/node'\\\"'\\\"',['\\\"'\\\"'/bundle/campaigns/x1-spec-study/factory/gate.mjs'\\\"'\\\"','\\\"'\\\"'run'\\\"'\\\"',d],{timeout:60000,encoding:'\\\"'\\\"'utf8'\\\"'\\\"'});process.stderr.write(r.stdout||'\\\"'\\\"''\\\"'\\\"');process.stderr.write(r.stderr||'\\\"'\\\"''\\\"'\\\"');if(r.status!==0)process.exit(r.status||1);process.stdout.write(fs.readFileSync('\\\"'\\\"'/input.txt'\\\"'\\\"','\\\"'\\\"'utf8'\\\"'\\\"'));'\"\n            ],\n            \"Image\": \"sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541\",\n            \"Volumes\": null,\n            \"WorkingDir\": \"/tmp\",\n            \"Entrypoint\": [\n                \"/bin/sh\"\n            ],\n            \"Labels\": {\n                \"endoforge.owner\": \"ab25477187f3401284f146d8dae4c388\",\n                \"endoforge.runtime\": \"v1\"\n            }\n        },\n        \"NetworkSettings\": {\n            \"SandboxID\": \"\",\n            \"SandboxKey\": \"\",\n            \"Ports\": {},\n            \"Networks\": {\n                \"none\": {\n                    \"IPAMConfig\": null,\n                    \"Links\": null,\n                    \"Aliases\": null,\n                    \"DriverOpts\": null,\n                    \"GwPriority\": 0,\n                    \"NetworkID\": \"71b70e061c4cf3fb02a1b8daa6c619af2e2e0bb4e89e2841e16869b20eb456d5\",\n                    \"EndpointID\": \"\",\n                    \"Gateway\": \"\",\n                    \"IPAddress\": \"\",\n                    \"MacAddress\": \"\",\n                    \"IPPrefixLen\": 0,\n                    \"IPv6Gateway\": \"\",\n                    \"GlobalIPv6Address\": \"\",\n                    \"GlobalIPv6PrefixLen\": 0,\n                    \"DNSNames\": null\n                }\n            }\n        },\n        \"ImageManifestDescriptor\": {\n            \"mediaType\": \"application/vnd.oci.image.manifest.v1+json\",\n            \"digest\": \"sha256:b4356e815af83cb01924298cc24739640ce70062772972751ab46ec155ce3131\",\n            \"size\": 1624,\n            \"platform\": {\n                \"architecture\": \"amd64\",\n                \"os\": \"linux\"\n            }\n        }\n    }\n]\n",
+    "stderr": "",
+    "wallMs": 19.435431000601966
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "inspect",
+      "--format",
+      "{{json .State}}",
+      "endoforge-v1-ab25477187f3401284f146d8dae4c388"
+    ],
+    "exit": 0,
+    "stdout": "{\"Status\":\"exited\",\"Running\":false,\"Paused\":false,\"Restarting\":false,\"OOMKilled\":false,\"Dead\":false,\"Pid\":0,\"ExitCode\":0,\"Error\":\"\",\"StartedAt\":\"2026-10-18T20:37:28.364093826Z\",\"FinishedAt\":\"2026-10-18T20:37:29.195917532Z\"}\n",
+    "stderr": "",
+    "wallMs": 20.04576299805194
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "logs",
+      "endoforge-v1-ab25477187f3401284f146d8dae4c388"
+    ],
+    "exit": 0,
+    "stdout": "{\"files\":{\"CONTRACT.md\":\"Convert a finite Celsius input c in [-273.15,1000] to Fahrenheit with absolute tolerance 1e-9 degF. Refuse other inputs naming c. Input c is required. Return a number labelled degF.\\n\\nBare signature: {\\\"inputs\\\":[{\\\"domain\\\":[-273.15,1000],\\\"path\\\":\\\"c\\\",\\\"type\\\":\\\"number\\\",\\\"unit\\\":\\\"degC\\\"}],\\\"name\\\":\\\"celsiusToFahrenheit\\\",\\\"output\\\":{\\\"type\\\":\\\"number\\\",\\\"unit\\\":\\\"degF\\\"},\\\"version\\\":1}\\n\",\"frozen.sha256\":\"{\\\"at\\\":\\\"2026-10-18T20:37:25Z\\\",\\\"contract\\\":\\\"d13645f058766b5721b3837a62d63707c2974ff18106bbb868e42c22c5551973\\\",\\\"tests\\\":\\\"a4b95f9294db479ffed7e9d00c3a4637f3027e6bb3641ce96481c0837d5846d8\\\"}\\n\",\"glue.json\":\"{\\\"assumption\\\":\\\"Only the explicit request and typed inputs; no additional defaults.\\\",\\\"exports\\\":[{\\\"args\\\":[{\\\"kind\\\":\\\"number\\\",\\\"name\\\":\\\"c\\\",\\\"unit\\\":\\\"degC\\\"}],\\\"label\\\":\\\"celsiusToFahrenheit\\\",\\\"name\\\":\\\"celsiusToFahrenheit\\\",\\\"result\\\":{\\\"kind\\\":\\\"number\\\",\\\"precision\\\":6,\\\"unit\\\":\\\"degF\\\"}}],\\\"id\\\":\\\"debug-positive-v1\\\",\\\"question\\\":\\\"Provide all declared required inputs.\\\",\\\"traps\\\":[{\\\"fn\\\":\\\"celsiusToFahrenheit\\\",\\\"message\\\":\\\"Supply every named argument within its finite declared domain.\\\",\\\"when\\\":\\\"Missing, nonfinite or outside the declared input domain\\\"}]}\\n\",\"kernel.ts\":\"export function celsiusToFahrenheit(c:f64):f64 { if(c!=c || c < -273.15 || c > 1000) unreachable(); return c*1.8+32; }\\n\",\"tests.json\":\"[{\\\"args\\\":[-273.15],\\\"expect\\\":-459.66999999999996,\\\"fn\\\":\\\"celsiusToFahrenheit\\\",\\\"name\\\":\\\"linear-0\\\",\\\"tol\\\":1e-09},{\\\"args\\\":[1000],\\\"expect\\\":1832,\\\"fn\\\":\\\"celsiusToFahrenheit\\\",\\\"name\\\":\\\"linear-1\\\",\\\"tol\\\":1e-09},{\\\"args\\\":[115.2825182301691],\\\"expect\\\":239.5085328143044,\\\"fn\\\":\\\"celsiusToFahrenheit\\\",\\\"name\\\":\\\"linear-2\\\",\\\"tol\\\":1e-09},{\\\"args\\\":[441.9570118151489],\\\"expect\\\":827.522621267268,\\\"fn\\\":\\\"celsiusToFahrenheit\\\",\\\"name\\\":\\\"linear-3\\\",\\\"tol\\\":1e-09},{\\\"args\\\":[-242.15844969791357],\\\"expect\\\":-403.8852094562444,\\\"fn\\\":\\\"celsiusToFahrenheit\\\",\\\"name\\\":\\\"linear-4\\\",\\\"tol\\\":1e-09},{\\\"args\\\":[745.9665199885728],\\\"expect\\\":1374.739735979431,\\\"fn\\\":\\\"celsiusToFahrenheit\\\",\\\"name\\\":\\\"linear-5\\\",\\\"tol\\\":1e-09},{\\\"args\\\":[-107.1660814151866],\\\"expect\\\":-160.89894654733587,\\\"fn\\\":\\\"celsiusToFahrenheit\\\",\\\"name\\\":\\\"linear-6\\\",\\\"tol\\\":1e-09},{\\\"args\\\":[674.2823260913954],\\\"expect\\\":1245.7081869645117,\\\"fn\\\":\\\"celsiusToFahrenheit\\\",\\\"name\\\":\\\"linear-7\\\",\\\"tol\\\":1e-09},{\\\"args\\\":[651.1372192644515],\\\"expect\\\":1204.0469946760127,\\\"fn\\\":\\\"celsiusToFahrenheit\\\",\\\"name\\\":\\\"linear-8\\\",\\\"tol\\\":1e-09},{\\\"args\\\":[561.1961006173981],\\\"expect\\\":1042.1529811113164,\\\"fn\\\":\\\"celsiusToFahrenheit\\\",\\\"name\\\":\\\"linear-9\\\",\\\"tol\\\":1e-09},{\\\"args\\\":[-243.9698858968215],\\\"expect\\\":-407.1457946142787,\\\"fn\\\":\\\"celsiusToFahrenheit\\\",\\\"name\\\":\\\"linear-10\\\",\\\"tol\\\":1e-09},{\\\"args\\\":[384.327532809123],\\\"expect\\\":723.7895590564215,\\\"fn\\\":\\\"celsiusToFahrenheit\\\",\\\"name\\\":\\\"linear-11\\\",\\\"tol\\\":1e-09},{\\\"args\\\":[809.1990449740086],\\\"expect\\\":1488.5582809532157,\\\"fn\\\":\\\"celsiusToFahrenheit\\\",\\\"name\\\":\\\"linear-12\\\",\\\"tol\\\":1e-09},{\\\"args\\\":[700.9853012503708],\\\"expect\\\":1293.7735422506673,\\\"fn\\\":\\\"celsiusToFahrenheit\\\",\\\"name\\\":\\\"linear-13\\\",\\\"tol\\\":1e-09},{\\\"args\\\":[208.06371289140083],\\\"expect\\\":406.5146832045215,\\\"fn\\\":\\\"celsiusToFahrenheit\\\",\\\"name\\\":\\\"linear-14\\\",\\\"tol\\\":1e-09},{\\\"args\\\":[145.55049852974486],\\\"expect\\\":293.99089735354073,\\\"fn\\\":\\\"celsiusToFahrenheit\\\",\\\"name\\\":\\\"linear-15\\\",\\\"tol\\\":1e-09},{\\\"args\\\":[\\\"NaN\\\"],\\\"expectError\\\":true,\\\"fn\\\":\\\"celsiusToFahrenheit\\\",\\\"name\\\":\\\"nan\\\"},{\\\"args\\\":[-300],\\\"expectError\\\":true,\\\"fn\\\":\\\"celsiusToFahrenheit\\\",\\\"name\\\":\\\"outside\\\"}]\\n\"},\"frozenEvalSha256\":\"5b28dd6c4e3cca0c8cb63b103bff8769d6e188f9c29166d815a6f6a1a57d5f0c\",\"job\":\"debug-positive-v1\",\"signature\":{\"inputs\":[{\"domain\":[-273.15,1000],\"path\":\"c\",\"type\":\"number\",\"unit\":\"degC\"}],\"name\":\"celsiusToFahrenheit\",\"output\":{\"type\":\"number\",\"unit\":\"degF\"},\"version\":1},\"version\":1}\n",
+    "stderr": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 122,\n   \"wasmSha256\": \"1bc597db961119da85e952591b068611d3ca32f6ce2de23e27dfebce12969378\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"celsiusToFahrenheit\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 18,\n   \"total\": 18\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.042849\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+    "wallMs": 20.52799800003413
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "rm",
+      "endoforge-v1-ab25477187f3401284f146d8dae4c388"
+    ],
+    "exit": 0,
+    "stdout": "endoforge-v1-ab25477187f3401284f146d8dae4c388\n",
+    "stderr": "",
+    "wallMs": 86.82044300076086
+  },
+  {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "ps",
+      "-aq",
+      "--filter",
+      "name=^/endoforge-v1-ab25477187f3401284f146d8dae4c388$"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "",
+    "wallMs": 20.374804000311997
+  }
+]

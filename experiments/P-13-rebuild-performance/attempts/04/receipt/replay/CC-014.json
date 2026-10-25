@@ -1,0 +1,208 @@
+{
+  "execution": {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "run",
+      "--rm",
+      "--name",
+      "endoforge-p13-gate-cc-014-3739593",
+      "--pull=never",
+      "--network=none",
+      "--read-only",
+      "--user",
+      "1000:1000",
+      "--cap-drop=ALL",
+      "--security-opt=no-new-privileges",
+      "--cpus=1",
+      "--memory=512m",
+      "--memory-swap=512m",
+      "--pids-limit=64",
+      "--tmpfs",
+      "/tmp:rw,nosuid,nodev,size=64m",
+      "--mount",
+      "type=bind,src=/home/user/Work/endoforge/experiments/P-13-rebuild-performance/attempts/04/work/replay/CC-014,dst=/out/CC-014",
+      "--entrypoint",
+      "/usr/local/bin/node",
+      "sha256:d55f6101f61e7f3b52ea2e3490ceb2e8ce2e4fc19c45f9b7fbf205737c68499e",
+      "/bundle/campaigns/x1-spec-study/factory/gate.mjs",
+      "run",
+      "/out/CC-014"
+    ],
+    "exit": 0,
+    "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 511,\n   \"wasmSha256\": \"0fee55c736fe13068287c5460da9d1732b979de78ebee332cdfb9b5987c6636a\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"liquidOutFraction\",\n    \"vaporFractionOfFeed\",\n    \"liquidOutPerEvaporated\",\n    \"liquidOutFromFeed\",\n    \"liquidOutFromLoad\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 11,\n   \"total\": 11\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.040065\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+    "stderr": "",
+    "timeout": false,
+    "wallMs": 1400.354127996252
+  },
+  "result": {
+    "at": "2026-10-18T19:04:51.408Z",
+    "gates": {
+      "G1_frozen": {
+        "ok": true
+      },
+      "G2_compiles": {
+        "ok": true,
+        "wasmBytes": 511,
+        "wasmSha256": "0fee55c736fe13068287c5460da9d1732b979de78ebee332cdfb9b5987c6636a"
+      },
+      "G3_exports": {
+        "ok": true,
+        "exports": [
+          "liquidOutFraction",
+          "vaporFractionOfFeed",
+          "liquidOutPerEvaporated",
+          "liquidOutFromFeed",
+          "liquidOutFromLoad"
+        ]
+      },
+      "G4_tests": {
+        "ok": true,
+        "passed": 11,
+        "total": 11
+      },
+      "G6_bounded": {
+        "ok": true,
+        "maxMs": 0.040065
+      },
+      "G5_deterministic": {
+        "ok": true
+      },
+      "G7_glue": {
+        "ok": true
+      }
+    },
+    "tests": [
+      {
+        "name": "fraction of feed leaving as liquid at 3:1",
+        "fn": "liquidOutFraction",
+        "args": [
+          3
+        ],
+        "expect": 0.666667,
+        "got": 0.6666666666666666,
+        "ms": 0.038,
+        "pass": true
+      },
+      {
+        "name": "liquid out per unit evaporated at 3:1",
+        "fn": "liquidOutPerEvaporated",
+        "args": [
+          3
+        ],
+        "expect": 2,
+        "got": 2,
+        "ms": 0.004,
+        "pass": true
+      },
+      {
+        "name": "absolute liquid out from 30 feed at 3:1",
+        "fn": "liquidOutFromFeed",
+        "args": [
+          30,
+          3
+        ],
+        "expect": 20,
+        "got": 20,
+        "ms": 0.003,
+        "pass": true
+      },
+      {
+        "name": "absolute liquid out from load 100 kW, latent 1200 kJ/kg, 3:1",
+        "fn": "liquidOutFromLoad",
+        "args": [
+          100,
+          1200,
+          3
+        ],
+        "expect": 0.166667,
+        "got": 0.16666666666666666,
+        "ms": 0.004,
+        "pass": true
+      },
+      {
+        "name": "4:1 gives 3/4 of feed",
+        "fn": "liquidOutFraction",
+        "args": [
+          4
+        ],
+        "expect": 0.75,
+        "got": 0.75,
+        "ms": 0.002,
+        "pass": true
+      },
+      {
+        "name": "boundary n=1 dry expansion no liquid out",
+        "fn": "liquidOutFraction",
+        "args": [
+          1
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "boundary n=1 per evaporated zero",
+        "fn": "liquidOutPerEvaporated",
+        "args": [
+          1
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "guard n<1 traps",
+        "fn": "liquidOutFraction",
+        "args": [
+          0.5
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.04,
+        "pass": true
+      },
+      {
+        "name": "guard zero latent heat traps",
+        "fn": "liquidOutFromLoad",
+        "args": [
+          100,
+          0,
+          3
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.004,
+        "pass": true
+      },
+      {
+        "name": "guard negative feed traps",
+        "fn": "liquidOutFromFeed",
+        "args": [
+          -5,
+          3
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.002,
+        "pass": true
+      },
+      {
+        "name": "assumption pin: 3:1 is feed/evaporated so vapor fraction is 1/3",
+        "fn": "vaporFractionOfFeed",
+        "args": [
+          3
+        ],
+        "expect": 0.333333,
+        "got": 0.3333333333333333,
+        "ms": 0.003,
+        "pass": true
+      }
+    ],
+    "promotable": true
+  },
+  "match": true
+}

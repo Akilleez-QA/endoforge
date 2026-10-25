@@ -1,0 +1,81 @@
+{
+  "create": {
+    "attempt": "create",
+    "job": "create",
+    "containerName": "endoforge-v1-84f9c498d7304b4cb52f529aee629a93",
+    "image": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "outcome": "controller_error",
+    "published": false,
+    "inputSha256": "dc51b8c96c2d745df3bd5590d990230a482fd247123599548e0632fdbf97fc22",
+    "error": "RuntimeError('Docker command failed: Error response from daemon: No such image: sha256:0000000000000000000000000000000000000000000000000000000000000000\\n')",
+    "cleanupVerified": true,
+    "signals": [],
+    "wallMs": 99.45831899676705,
+    "version": 1,
+    "parent": null,
+    "stage": "verification",
+    "usage": {
+      "wallMs": 99.45831899676705,
+      "tokens": null
+    },
+    "generation": "bfbfafe5f68d41c2bb869354e5912db6"
+  },
+  "start": {
+    "attempt": "start",
+    "job": "start",
+    "containerName": "endoforge-v1-38d63e9660bb419989f18618f7d87b45",
+    "image": "sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541",
+    "outcome": "controller_error",
+    "published": false,
+    "inputSha256": "dc51b8c96c2d745df3bd5590d990230a482fd247123599548e0632fdbf97fc22",
+    "containerId": "2c1c087ca61989cfc9a86b74c2def9753acc9ac51e7e182134e9935624d2b8cd",
+    "error": "RuntimeError('Docker command failed: injected Docker client start failure')",
+    "terminalState": {
+      "Status": "created",
+      "Running": false,
+      "Paused": false,
+      "Restarting": false,
+      "OOMKilled": false,
+      "Dead": false,
+      "Pid": 0,
+      "ExitCode": 0,
+      "Error": "",
+      "StartedAt": "0001-01-01T00:00:00Z",
+      "FinishedAt": "0001-01-01T00:00:00Z"
+    },
+    "cleanupVerified": true,
+    "signals": [],
+    "wallMs": 355.3543070011074,
+    "version": 1,
+    "parent": null,
+    "stage": "verification",
+    "usage": {
+      "wallMs": 355.3543070011074,
+      "tokens": null
+    },
+    "generation": "d9018a5904fa404d8e4ae4ba710beaaa"
+  },
+  "collision": {
+    "attempt": "collision",
+    "job": "collision",
+    "containerName": "endoforge-v1-ca1b3c664c4a4a0c853016a1bf5ebf96",
+    "image": "sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541",
+    "outcome": "cleanup_failed",
+    "published": false,
+    "inputSha256": "dc51b8c96c2d745df3bd5590d990230a482fd247123599548e0632fdbf97fc22",
+    "error": "RuntimeError('Docker command failed: Error response from daemon: Conflict. The container name \"/endoforge-v1-ca1b3c664c4a4a0c853016a1bf5ebf96\" is already in use by container \"1aa6a3354250a33fa5d472a4fddb5ca9ef848272eae268b7f4aadee2773367ee\". You have to remove (or rename) that container to be able to reuse that name.\\n')",
+    "cleanupError": "RuntimeError('ownership label mismatch; refusing cleanup')",
+    "cleanupVerified": false,
+    "signals": [],
+    "wallMs": 68.83704500069143,
+    "version": 1,
+    "parent": null,
+    "stage": "verification",
+    "usage": {
+      "wallMs": 68.83704500069143,
+      "tokens": null
+    },
+    "generation": "ca1b3c664c4a4a0c853016a1bf5ebf96"
+  },
+  "foreignContainerPreserved": true
+}

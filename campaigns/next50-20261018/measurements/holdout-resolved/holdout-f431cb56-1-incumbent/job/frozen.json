@@ -1,0 +1,305 @@
+{
+  "version": 1,
+  "suite": {
+    "cases": [
+      {
+        "expect": -7,
+        "id": "codex-below-threshold",
+        "inputs": {
+          "z": -11
+        },
+        "tolerance": 0,
+        "unit": "route-band"
+      },
+      {
+        "expect": 11,
+        "id": "codex-at-threshold",
+        "inputs": {
+          "z": -10
+        },
+        "tolerance": 0,
+        "unit": "route-band"
+      },
+      {
+        "expect": 11,
+        "id": "codex-above-threshold",
+        "inputs": {
+          "z": -9
+        },
+        "tolerance": 0,
+        "unit": "route-band"
+      },
+      {
+        "expect": -7,
+        "id": "codex-lower-bound",
+        "inputs": {
+          "z": -105
+        },
+        "tolerance": 0,
+        "unit": "route-band"
+      },
+      {
+        "expect": 11,
+        "id": "codex-upper-bound",
+        "inputs": {
+          "z": 114
+        },
+        "tolerance": 0,
+        "unit": "route-band"
+      },
+      {
+        "errorPath": "z",
+        "expectError": true,
+        "id": "codex-missing",
+        "inputs": {},
+        "tolerance": 0,
+        "unit": "route-band"
+      },
+      {
+        "errorPath": "z",
+        "expectError": true,
+        "id": "codex-nonfinite",
+        "inputs": {
+          "z": "NaN"
+        },
+        "tolerance": 0,
+        "unit": "route-band"
+      },
+      {
+        "errorPath": "z",
+        "expectError": true,
+        "id": "codex-below-domain",
+        "inputs": {
+          "z": -106
+        },
+        "tolerance": 0,
+        "unit": "route-band"
+      },
+      {
+        "errorPath": "z",
+        "expectError": true,
+        "id": "codex-above-domain",
+        "inputs": {
+          "z": 115
+        },
+        "tolerance": 0,
+        "unit": "route-band"
+      },
+      {
+        "expect": -7,
+        "id": "qwen-case-01",
+        "inputs": {
+          "z": -11
+        },
+        "tolerance": 0,
+        "unit": "route-band"
+      },
+      {
+        "expect": 11,
+        "id": "qwen-case-02",
+        "inputs": {
+          "z": -10
+        },
+        "tolerance": 0,
+        "unit": "route-band"
+      },
+      {
+        "expect": 11,
+        "id": "qwen-case-03",
+        "inputs": {
+          "z": 0
+        },
+        "tolerance": 0,
+        "unit": "route-band"
+      },
+      {
+        "errorPath": "z",
+        "expectError": true,
+        "id": "qwen-case-04",
+        "inputs": {
+          "z": "NaN"
+        },
+        "tolerance": 0,
+        "unit": "route-band"
+      },
+      {
+        "errorPath": "z",
+        "expectError": true,
+        "id": "qwen-case-05",
+        "inputs": {},
+        "tolerance": 0,
+        "unit": "route-band"
+      },
+      {
+        "errorPath": "z",
+        "expectError": true,
+        "id": "qwen-case-06",
+        "inputs": {
+          "z": 115
+        },
+        "tolerance": 0,
+        "unit": "route-band"
+      },
+      {
+        "errorPath": "z",
+        "expectError": true,
+        "id": "host-validity-nan",
+        "inputs": {
+          "z": "NaN"
+        },
+        "tolerance": 0,
+        "unit": "route-band"
+      },
+      {
+        "errorPath": "z",
+        "expectError": true,
+        "id": "host-validity-positive-infinity",
+        "inputs": {
+          "z": "Infinity"
+        },
+        "tolerance": 0,
+        "unit": "route-band"
+      },
+      {
+        "errorPath": "z",
+        "expectError": true,
+        "id": "host-validity-negative-infinity",
+        "inputs": {
+          "z": "-Infinity"
+        },
+        "tolerance": 0,
+        "unit": "route-band"
+      },
+      {
+        "errorPath": "z",
+        "expectError": true,
+        "id": "host-validity-below-domain",
+        "inputs": {
+          "z": -105.00000000000001
+        },
+        "tolerance": 0,
+        "unit": "route-band"
+      },
+      {
+        "errorPath": "z",
+        "expectError": true,
+        "id": "host-validity-above-domain",
+        "inputs": {
+          "z": 114.00000000000001
+        },
+        "tolerance": 0,
+        "unit": "route-band"
+      },
+      {
+        "errorPath": "z",
+        "expectError": true,
+        "id": "host-validity-missing",
+        "inputs": {},
+        "tolerance": 0,
+        "unit": "route-band"
+      }
+    ],
+    "procedures": [
+      {
+        "above": 11,
+        "below": -7,
+        "count": 6,
+        "domain": [
+          -105,
+          114
+        ],
+        "id": "codex-values",
+        "input": "z",
+        "kind": "threshold",
+        "seed": 7919,
+        "threshold": -10,
+        "tolerance": 0,
+        "unit": "route-band",
+        "version": 1
+      },
+      {
+        "above": 11,
+        "below": -7,
+        "count": 6,
+        "domain": [
+          -105,
+          114
+        ],
+        "id": "qwen-values",
+        "input": "z",
+        "kind": "threshold",
+        "seed": 7919,
+        "threshold": -10,
+        "tolerance": 0,
+        "unit": "route-band",
+        "version": 1
+      }
+    ],
+    "request": {
+      "artifactClass": "closed-form",
+      "id": "synthetic-holdout-d2fd1cfaed-02",
+      "raw": "Synthetic routing band. Given a finite numeric score z in [-105,114], return numeric -7 when z < -10; return numeric 11 when z >= -10. The numeric result unit is route-band and tolerance is exactly 0. Input z is required. Refuse missing, nonfinite or out-of-domain z. Boundary equality belongs to the second band. No other facts are required.",
+      "requiredFacts": [
+        {
+          "domain": [
+            -105,
+            114
+          ],
+          "path": "z",
+          "plausible": [
+            {
+              "result": -7,
+              "value": -11
+            },
+            {
+              "result": 11,
+              "value": -10
+            }
+          ],
+          "tolerance": 0,
+          "unit": "score"
+        }
+      ],
+      "sources": [
+        "explicit synthetic request generated after frozen comparison arms"
+      ],
+      "version": 1
+    },
+    "signature": {
+      "inputs": [
+        {
+          "domain": [
+            -105,
+            114
+          ],
+          "path": "z",
+          "type": "number",
+          "unit": "score"
+        }
+      ],
+      "name": "routingBandd2fd1cfaed",
+      "output": {
+        "type": "number",
+        "unit": "route-band"
+      },
+      "version": 1
+    },
+    "version": 1,
+    "writers": [
+      {
+        "family": "codex",
+        "outputHash": "64bd9358b90127c6957ad9f505b9e6245d98fa6768370855e899ab362587d0fe",
+        "viewHash": "2349b548536bd12423a6b52885c2b328411021e047ccc4021a73d7846ec152ee"
+      },
+      {
+        "family": "qwen",
+        "outputHash": "5a82acc5eba060fe80d90896d7316edc4b9f8debc4b52382ff24963167f58395",
+        "viewHash": "2349b548536bd12423a6b52885c2b328411021e047ccc4021a73d7846ec152ee"
+      }
+    ]
+  },
+  "suiteHash": "201f9b1f67de6a0f4344a3ef1a4cbcc89cc18f20c8c6aa13d3c686addfc98b18",
+  "procedureHash": "95f3fd244276e7f873f961bcf772723d7b8fdb25a3fca2c3bf85288a8ceccd4a",
+  "casesHash": "ec2b9758d7ff051e10a40ba50e5601bf8c0c3b15304680a87d5d1100527ef030",
+  "frozenAt": "2026-10-18T23:02:25.525Z"
+}

@@ -1,0 +1,80 @@
+{
+  "version": 1,
+  "passed": true,
+  "cases": [
+    {
+      "name": "disputed-15psig-dew",
+      "inputs": {
+        "pressure": 15,
+        "atmosphere": 14.696,
+        "phase": "dew"
+      },
+      "projectTable": -21.459726885720215,
+      "independentComputation": -21.461574608417934,
+      "unit": "degF",
+      "tolerance": 0.05,
+      "passed": true
+    },
+    {
+      "name": "phase-distinction",
+      "bubble": -22.646075860628542,
+      "dew": -21.461574608417934,
+      "passed": true
+    },
+    {
+      "name": "manufacturer-refprop-bracket",
+      "dewTemperatureIntervalF": [
+        -22,
+        -21
+      ],
+      "pressureVaporPsig": [
+        14.6,
+        15.3
+      ],
+      "passed": true,
+      "limit": "Rounded chart establishes bracket; does not independently certify hundredth-degree precision."
+    },
+    {
+      "name": "dew-boundary--60.0",
+      "temperatureF": -60.0,
+      "projectPsia": 11.1026,
+      "computedPsia": 11.102646775222372,
+      "passed": true
+    },
+    {
+      "name": "dew-boundary-120.0",
+      "temperatureF": 120.0,
+      "projectPsia": 324.5759,
+      "computedPsia": 324.5759424421969,
+      "passed": true
+    },
+    {
+      "name": "bubble-boundary--60.0",
+      "temperatureF": -60.0,
+      "projectPsia": 11.5553,
+      "computedPsia": 11.55525396011482,
+      "passed": true
+    },
+    {
+      "name": "bubble-boundary-120.0",
+      "temperatureF": 120.0,
+      "projectPsia": 326.7456,
+      "computedPsia": 326.74562097858853,
+      "passed": true
+    }
+  ],
+  "providerHash": "77ee9040bfef1ac51d50c429fbc9feb3078934e102d3521cbd490b2c7d7e0938",
+  "sourcesUnchanged": true,
+  "sourceHashes": {
+    "/home/user/LOCAL LLM/refrigeration-ai-retained-review/packages/domain/src/calculators/pt-tables.generated.ts": "0d114890217cccaa69da26fefea0a0bfa2245e773d2c1d0f187b9ead0a640134",
+    "/home/user/LOCAL LLM/refrigeration-ai-retained-review/scripts/refrigerant-tables/generate_pt_tables.py": "877d44c9bbf2eedd7a5fed547fdfa44fe2a9a11e0b4bdda055812794df5aaf07"
+  },
+  "independentSource": "https://forane.arkema.com/files/live/sites/shared_arkema/files/downloads/fluorochemicals/forane-404a-pressure-temperature-chart.pdf",
+  "independentSourceHash": "1e9ff2cd36fcad01a6ec30ddc5ae97142d2cacb6987114e728f3e16fadf03533",
+  "commonSourceDependence": "project table and direct computation both CoolProp8.0.0; manufacturer REFPROP9 chart independent",
+  "limits": [
+    "Manufacturer independent crosscheck is bracket only, not hundredth-degree precision.",
+    "No critical-state model validated beyond project-declared table endpoints.",
+    "No production provider service deployed."
+  ]
+}

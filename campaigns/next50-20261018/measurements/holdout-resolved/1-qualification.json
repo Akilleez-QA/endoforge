@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "passed": true,
+  "metrics": {
+    "canaryRecall": 1,
+    "falseRejection": 0,
+    "mutationSensitivity": 1
+  },
+  "thresholds": {
+    "canaryRecall": 1,
+    "falseRejection": 0,
+    "mutationSensitivity": 1
+  },
+  "results": [
+    {
+      "id": "known-good",
+      "kind": "good",
+      "passed": true,
+      "failures": [],
+      "caseCount": 33,
+      "suiteHash": "201f9b1f67de6a0f4344a3ef1a4cbcc89cc18f20c8c6aa13d3c686addfc98b18",
+      "referenceHash": null
+    },
+    {
+      "id": "wrong-value",
+      "kind": "canary",
+      "expectedCode": "value",
+      "passed": false,
+      "failures": [
+        {
+          "code": "value",
+          "caseId": "codex-values-0"
+        }
+      ],
+      "caseCount": 33,
+      "suiteHash": "201f9b1f67de6a0f4344a3ef1a4cbcc89cc18f20c8c6aa13d3c686addfc98b18",
+      "referenceHash": null
+    },
+    {
+      "id": "wrong-refusal",
+      "kind": "canary",
+      "expectedCode": "refusal-path",
+      "passed": false,
+      "failures": [
+        {
+          "code": "refusal-path",
+          "caseId": "codex-missing"
+        }
+      ],
+      "caseCount": 33,
+      "suiteHash": "201f9b1f67de6a0f4344a3ef1a4cbcc89cc18f20c8c6aa13d3c686addfc98b18",
+      "referenceHash": null
+    },
+    {
+      "id": "wrong-unit",
+      "kind": "mutation",
+      "expectedCode": "unit",
+      "passed": false,
+      "failures": [
+        {
+          "code": "unit",
+          "caseId": "codex-values-0"
+        }
+      ],
+      "caseCount": 33,
+      "suiteHash": "201f9b1f67de6a0f4344a3ef1a4cbcc89cc18f20c8c6aa13d3c686addfc98b18",
+      "referenceHash": null
+    }
+  ]
+}

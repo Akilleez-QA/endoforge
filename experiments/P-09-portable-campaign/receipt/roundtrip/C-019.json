@@ -1,0 +1,285 @@
+{
+  "id": "C-019",
+  "argv": [
+    "sudo",
+    "-n",
+    "docker",
+    "run",
+    "--rm",
+    "--pull=never",
+    "--network=none",
+    "--read-only",
+    "--user",
+    "1000:1000",
+    "--cap-drop=ALL",
+    "--security-opt=no-new-privileges",
+    "--cpus=1",
+    "--memory=512m",
+    "--memory-swap=512m",
+    "--pids-limit=64",
+    "--tmpfs",
+    "/tmp:rw,nosuid,nodev,size=64m",
+    "--mount",
+    "type=bind,src=/home/user/Work/endoforge/experiments/P-09-portable-campaign/work/roundtrip,dst=/out",
+    "--entrypoint",
+    "/usr/local/bin/node",
+    "endoforge-p09:roundtrip",
+    "/bundle/campaigns/x1-spec-study/factory/gate.mjs",
+    "run",
+    "/out/C-019"
+  ],
+  "exit": 0,
+  "wallMs": 1410.5040080030449,
+  "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 663,\n   \"wasmSha256\": \"12ec1da2a231da757776b0acfa465162d5592520bb1ba1c622d659268c8778a8\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"isOverCapacity\",\n    \"isOverCapacityDefault\",\n    \"isNh3LevelAdequate\",\n    \"reactionCode\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 16,\n   \"total\": 16\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.046377\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+  "stderr": "",
+  "result": {
+    "at": "2026-10-18T18:46:13.459Z",
+    "gates": {
+      "G1_frozen": {
+        "ok": true
+      },
+      "G2_compiles": {
+        "ok": true,
+        "wasmBytes": 663,
+        "wasmSha256": "12ec1da2a231da757776b0acfa465162d5592520bb1ba1c622d659268c8778a8"
+      },
+      "G3_exports": {
+        "ok": true,
+        "exports": [
+          "isOverCapacity",
+          "isOverCapacityDefault",
+          "isNh3LevelAdequate",
+          "reactionCode"
+        ]
+      },
+      "G4_tests": {
+        "ok": true,
+        "passed": 16,
+        "total": 16
+      },
+      "G6_bounded": {
+        "ok": true,
+        "maxMs": 0.046377
+      },
+      "G5_deterministic": {
+        "ok": true
+      },
+      "G7_glue": {
+        "ok": true
+      }
+    },
+    "tests": [
+      {
+        "name": "over capacity at 150 vs 140",
+        "fn": "isOverCapacity",
+        "args": [
+          150,
+          140
+        ],
+        "expect": true,
+        "got": 1,
+        "ms": 0.046,
+        "pass": true
+      },
+      {
+        "name": "not over capacity at 120 vs 140",
+        "fn": "isOverCapacity",
+        "args": [
+          120,
+          140
+        ],
+        "expect": false,
+        "got": 0,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "boundary: exactly 140 is not over (strict >)",
+        "fn": "isOverCapacity",
+        "args": [
+          140,
+          140
+        ],
+        "expect": false,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "boundary: 140.01 is over",
+        "fn": "isOverCapacity",
+        "args": [
+          140.01,
+          140
+        ],
+        "expect": true,
+        "got": 1,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "negative psig traps",
+        "fn": "isOverCapacity",
+        "args": [
+          -5,
+          140
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.044,
+        "pass": true
+      },
+      {
+        "name": "NH3 level mid-band adequate",
+        "fn": "isNh3LevelAdequate",
+        "args": [
+          50,
+          30,
+          70
+        ],
+        "expect": true,
+        "got": 1,
+        "ms": 0.007,
+        "pass": true
+      },
+      {
+        "name": "NH3 level below band inadequate",
+        "fn": "isNh3LevelAdequate",
+        "args": [
+          20,
+          30,
+          70
+        ],
+        "expect": false,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "assumption pin: band is inclusive at low edge",
+        "fn": "isNh3LevelAdequate",
+        "args": [
+          30,
+          30,
+          70
+        ],
+        "expect": true,
+        "got": 1,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "assumption pin: band is inclusive at high edge",
+        "fn": "isNh3LevelAdequate",
+        "args": [
+          70,
+          30,
+          70
+        ],
+        "expect": true,
+        "got": 1,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "NH3 level above 100% traps",
+        "fn": "isNh3LevelAdequate",
+        "args": [
+          120,
+          30,
+          70
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.004,
+        "pass": true
+      },
+      {
+        "name": "inverted band traps",
+        "fn": "isNh3LevelAdequate",
+        "args": [
+          50,
+          70,
+          30
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.004,
+        "pass": true
+      },
+      {
+        "name": "reaction 0 normal",
+        "fn": "reactionCode",
+        "args": [
+          120,
+          140,
+          50,
+          30,
+          70
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0.007,
+        "pass": true
+      },
+      {
+        "name": "reaction 1 over capacity only",
+        "fn": "reactionCode",
+        "args": [
+          150,
+          140,
+          50,
+          30,
+          70
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "reaction 2 NH3 inadequate only",
+        "fn": "reactionCode",
+        "args": [
+          120,
+          140,
+          10,
+          30,
+          70
+        ],
+        "expect": 2,
+        "got": 2,
+        "ms": 0.003,
+        "pass": true
+      },
+      {
+        "name": "reaction 3 both (escalate)",
+        "fn": "reactionCode",
+        "args": [
+          150,
+          140,
+          90,
+          30,
+          70
+        ],
+        "expect": 3,
+        "got": 3,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "default threshold 140 helper",
+        "fn": "isOverCapacityDefault",
+        "args": [
+          141
+        ],
+        "expect": true,
+        "got": 1,
+        "ms": 0.009,
+        "pass": true
+      }
+    ],
+    "promotable": true
+  },
+  "wasmSha256": "12ec1da2a231da757776b0acfa465162d5592520bb1ba1c622d659268c8778a8"
+}

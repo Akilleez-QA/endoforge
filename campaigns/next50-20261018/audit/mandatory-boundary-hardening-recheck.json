@@ -1,0 +1,56 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "domain": [
+        1e+308,
+        1e+308
+      ],
+      "below": 9.999999999999998e+307,
+      "above": 1.0000000000000002e+308,
+      "outside": true,
+      "strictJSON": true
+    },
+    {
+      "domain": [
+        -1e+308,
+        1e+308
+      ],
+      "below": -1.0000000000000002e+308,
+      "above": 1.0000000000000002e+308,
+      "outside": true,
+      "strictJSON": true
+    },
+    {
+      "domain": [
+        -1.7976931348623157e+308,
+        1.7976931348623157e+308
+      ],
+      "below": "-Infinity",
+      "above": "Infinity",
+      "outside": true,
+      "strictJSON": true
+    },
+    {
+      "domain": [
+        0,
+        0
+      ],
+      "below": -5e-324,
+      "above": 5e-324,
+      "outside": true,
+      "strictJSON": true
+    },
+    {
+      "domain": [
+        -273.15,
+        1000
+      ],
+      "below": -273.15000000000003,
+      "above": 1000.0000000000001,
+      "outside": true,
+      "strictJSON": true
+    }
+  ],
+  "scope": "representable endpoint neighbors, no model quality claim"
+}

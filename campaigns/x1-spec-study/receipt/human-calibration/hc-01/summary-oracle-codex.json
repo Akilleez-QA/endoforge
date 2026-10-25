@@ -1,0 +1,130 @@
+{
+  "runId": "hc-01",
+  "rater": "oracle-codex",
+  "formSha256": "c54d9216e83fd41a146ae7b7bac0a4ff9327c3e9247ed3f97e39a54990619be3",
+  "at": "2026-10-18T03:09:47.427Z",
+  "graded": 10,
+  "exactAgreement": "4/10",
+  "within1": "10/10",
+  "falseAccept": "5/9",
+  "falseAcceptNote": "persona promoted (clean or with-change) but owner not-usable",
+  "falseReject": "0/1",
+  "canaryRecall": [
+    {
+      "id": "CC-011",
+      "ownerCaught": true
+    }
+  ],
+  "rows": [
+    {
+      "item": 1,
+      "id": "CC-007",
+      "persona": "with-change",
+      "owner": "clean",
+      "q1": "yes",
+      "q2": "yes",
+      "q3": "yes",
+      "q5": "",
+      "q6": "yes"
+    },
+    {
+      "item": 2,
+      "id": "CC-036",
+      "persona": "clean",
+      "owner": "clean",
+      "q1": "yes",
+      "q2": "yes",
+      "q3": "yes",
+      "q5": "",
+      "q6": "no"
+    },
+    {
+      "item": 3,
+      "id": "CC-014",
+      "persona": "clean",
+      "owner": "clean",
+      "q1": "yes",
+      "q2": "yes",
+      "q3": "yes",
+      "q5": "",
+      "q6": "yes"
+    },
+    {
+      "item": 4,
+      "id": "CC-009",
+      "persona": "with-change",
+      "owner": "not-usable",
+      "q1": "partly",
+      "q2": "no",
+      "q3": "yes",
+      "q5": "the 530.6 lb answer assumes refrigerant, liquid fill and an evaporating condition before resolving conflicting field readings.",
+      "q6": "yes"
+    },
+    {
+      "item": 5,
+      "id": "CC-027",
+      "persona": "with-change",
+      "owner": "not-usable",
+      "q1": "partly",
+      "q2": "no",
+      "q3": "yes",
+      "q5": "an invented 10 f target cannot establish whether this unit's 20 f subcooling is abnormal or diagnose its cause.",
+      "q6": "yes"
+    },
+    {
+      "item": 6,
+      "id": "C-016",
+      "persona": "with-change",
+      "owner": "not-usable",
+      "q1": "partly",
+      "q2": "no",
+      "q3": "yes",
+      "q5": "naming the owner without evidence can falsely identify who is expected to confirm.",
+      "q6": "yes"
+    },
+    {
+      "item": 7,
+      "id": "CC-025",
+      "persona": "clean",
+      "owner": "clean",
+      "q1": "yes",
+      "q2": "yes",
+      "q3": "yes",
+      "q5": "",
+      "q6": "yes"
+    },
+    {
+      "item": 8,
+      "id": "CC-011",
+      "persona": "not-usable",
+      "owner": "not-usable",
+      "q1": "no",
+      "q2": "no",
+      "q3": "no",
+      "q5": "it requires the requester to supply a price instead of answering what 15 lb costs.",
+      "q6": "no"
+    },
+    {
+      "item": 9,
+      "id": "CC-013",
+      "persona": "with-change",
+      "owner": "not-usable",
+      "q1": "partly",
+      "q2": "no",
+      "q3": "yes",
+      "q5": "assuming a field meter reports rh over ice can give the wrong dew point; establish its rh basis first.",
+      "q6": "yes"
+    },
+    {
+      "item": 10,
+      "id": "C-006",
+      "persona": "with-change",
+      "owner": "not-usable",
+      "q1": "partly",
+      "q2": "no",
+      "q3": "yes",
+      "q5": "defaulting an unidentified propane system to a 494 g allowance is unsafe; its nameplate charge and applicable listing must govern.",
+      "q6": "yes"
+    }
+  ]
+}

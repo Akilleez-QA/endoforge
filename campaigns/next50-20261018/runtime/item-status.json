@@ -1,0 +1,188 @@
+{
+  "version": 1,
+  "productionChanged": false,
+  "broadGate": "Runtime provider and ownership mechanisms qualified narrowly; broader N20/N34/N42 experiment gates require parent evidence",
+  "items": [
+    {
+      "id": "N03",
+      "status": "complete",
+      "scope": "Versioned authority matrix and strict named-resource role wrapper; generator/repairer require host-frozen digest; no promotion authority in workers",
+      "evidence": [
+        "tools/factory_runtime/core.py",
+        "policy-48714cef/role-authority.json",
+        "policy-48714cef/role-real-mounts.json",
+        "policy-c15c2d33"
+      ],
+      "gaps": []
+    },
+    {
+      "id": "N04",
+      "status": "complete",
+      "scope": "Strict v1 job spec and canonical job/attempt/stage/receipt envelopes; hashes,parentage,usage,errors,state transitions and invalid fixtures",
+      "evidence": [
+        "tools/factory_runtime/schemas/v1",
+        "recovery-42fe2ece/receipt-schema-fixtures.json"
+      ],
+      "gaps": []
+    },
+    {
+      "id": "N21",
+      "status": "complete",
+      "scope": "P12 lifecycle extracted to reusable journaled offline Docker API",
+      "evidence": [
+        "attempt-a4b596bb/lifecycle.json",
+        "faults-7b67440c/faults.json",
+        "model-recovery-0be33dfd/recovery-and-retry.json",
+        "actual-workflow-recovery-6595fe3e/qualification.json",
+        "local-journal-d871bcb6/qualification.json"
+      ],
+      "gaps": [
+        "Integrated ModelJournal SIGKILL unknown-cleanup+explicitretry tested; no every-boundary or remote-response-preservation claim"
+      ]
+    },
+    {
+      "id": "N22",
+      "status": "complete",
+      "scope": "Exclusive attempt, validated link-free input snapshot, original+snapshot rehash, immutable sealed receipts, no-overwrite output",
+      "evidence": [
+        "faults-7b67440c/faults.json",
+        "attempt-a4b596bb/lifecycle.json",
+        "actual-workflow-recovery-6595fe3e/qualification.json"
+      ],
+      "gaps": [
+        "Docker-only durability; no hosted-model stage journal/resume"
+      ]
+    },
+    {
+      "id": "N23",
+      "status": "complete",
+      "scope": "flock fencing, boot/PID/starttime identity and generation check before Docker publication; live controller reconcile refuses",
+      "evidence": [
+        "recovery-42fe2ece/identities.json",
+        "attempt-a4b596bb/lifecycle.json",
+        "model-recovery-0be33dfd/recovery-and-retry.json",
+        "local-journal-d871bcb6/qualification.json"
+      ],
+      "gaps": [
+        "Integrated ModelJournal SIGKILL unknown-cleanup+explicitretry tested; no every-boundary or remote-response-preservation claim"
+      ]
+    },
+    {
+      "id": "N24",
+      "status": "complete",
+      "scope": "Fresh explicit reconciliation scans only validated owned journals, dead controller required, unknown never publishes",
+      "evidence": [
+        "attempt-a4b596bb/hardkill.json",
+        "recovery-42fe2ece/crash-boundaries.json",
+        "model-recovery-0be33dfd/recovery-and-retry.json",
+        "actual-workflow-recovery-6595fe3e/qualification.json",
+        "local-journal-d871bcb6/qualification.json"
+      ],
+      "gaps": [
+        "Integrated ModelJournal SIGKILL unknown-cleanup+explicitretry tested; no every-boundary or remote-response-preservation claim"
+      ]
+    },
+    {
+      "id": "N25",
+      "status": "complete",
+      "scope": "Fsynced artifact+validation receipt, exclusive hardlink, directory fsync, recovered matching publication idempotent",
+      "evidence": [
+        "recovery-42fe2ece/crash-boundaries.json",
+        "actual-workflow-recovery-6595fe3e/qualification.json"
+      ],
+      "gaps": [
+        "Docker fsync publication; no power-loss test",
+        "ModelJournal crash cleanup+retry is not remote exactly-once execution"
+      ]
+    },
+    {
+      "id": "N26",
+      "status": "complete",
+      "scope": "Pinned Wasmtime49.0.3 fuel/epoch/linear-memory + process wall/CPU/output/systemd memory/task bounds",
+      "evidence": [
+        "attempt-a4b596bb/wasm.json",
+        "bounds-2e981dee/wasm-args.json"
+      ],
+      "gaps": [
+        "No application or hostile WASI integration claim; unknown imports fail closed"
+      ]
+    },
+    {
+      "id": "N27",
+      "status": "complete",
+      "scope": "Exact final Codex subscription wrapper successful; independent existing Qwen local model successful through exact isolated application gateway; no Claude CLI",
+      "evidence": [
+        "egress-6efdcdc2/model-verdict.json",
+        "egress-5d54d8f2/model-verdict.json",
+        "policy-48714cef/redirect-control.json",
+        "policy-48714cef/sni-controls.json",
+        "host-auth-blocker.json",
+        "transport-8a40346d",
+        "transport-capacity-554b5ea1",
+        "policy-c15c2d33",
+        "final-codex-20261018/qualification.json",
+        "local-qwen-20261018/qualification.json",
+        "local-qwen-20261018/negative-routes.json",
+        "local-journal-d871bcb6/qualification.json"
+      ],
+      "gaps": [
+        "One tiny turn per family does not establish eval quality",
+        "Subscription temp copy retains full provider authority",
+        "Encrypted hosted HTTP Host uninspected; pinnedIPv4+SNI route policy",
+        "Leased Qwen8192context and3072token budget declared separately from initial4096context tiny qualification"
+      ]
+    },
+    {
+      "id": "N28",
+      "status": "complete",
+      "scope": "Declared local worker budgets tested against filesystem/log/CPU-memory-task controls; no writable host data bind",
+      "evidence": [
+        "bounds-2e981dee/docker-budgets.json",
+        "bounds-2e981dee/model-budgets.json",
+        "policy-48714cef/live-model-cgroup-limits.json",
+        "bounds-c52ad45b",
+        "transport-capacity-554b5ea1",
+        "local-qwen-20261018/server-ready.json",
+        "persistent-qwen-20261018/lease.json"
+      ],
+      "gaps": [
+        "GPU free-memory target is allocator policy, not hard GPU quota",
+        "Trusted host journal/receipt storage outside worker write authority"
+      ]
+    },
+    {
+      "id": "N29",
+      "status": "complete",
+      "scope": "Synchronous capacity-bounded FIFO, persistent queue states/backoff, interrupted running becomes unknown; no provider substitution",
+      "evidence": [
+        "attempt-a4b596bb/scheduler.json",
+        "policy-48714cef/scheduler-durable.json"
+      ],
+      "gaps": [
+        "No parallel/multi-host queue; worker retries require trusted reconciliation/new attempt"
+      ]
+    },
+    {
+      "id": "N30",
+      "status": "complete",
+      "scope": "Actual minimal mounts deny private peer/root/receipt/Docker paths; input and mount import reject links,sockets,special files; archives explicitly unsupported",
+      "evidence": [
+        "egress-5d54d8f2/mounts.json",
+        "recovery-42fe2ece/hostile-mounts.json",
+        "recovery-42fe2ece/runner-hostile-input.json",
+        "policy-48714cef/role-real-mounts.json",
+        "policy-c15c2d33",
+        "local-qwen-20261018/negative-routes.json",
+        "model-recovery-0be33dfd/independent-acceptance.json",
+        "actual-workflow-recovery-6595fe3e/qualification.json"
+      ],
+      "gaps": [
+        "Trusted staged trees assumed stable during validation/mount",
+        "No full authenticated final pipeline gate-tampering claim"
+      ]
+    }
+  ],
+  "currentLocalLease": "persistent-qwen-20261018/lease.json",
+  "workflowCompileCrashSupport": "actual-workflow-recovery-6595fe3e/qualification.json",
+  "historicalAuthCorrection": "historical-auth-correction.json"
+}

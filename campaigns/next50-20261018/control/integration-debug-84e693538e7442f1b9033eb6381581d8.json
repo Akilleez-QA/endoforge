@@ -1,0 +1,459 @@
+{
+  "version": 1,
+  "passed": true,
+  "scope": "deterministic development controls; test-only writer hashes, not Gate A or complete live cycle",
+  "wasmSourceCases": [
+    {
+      "name": "control-good",
+      "outcome": "passed",
+      "published": true,
+      "result": {
+        "attempt": "verify-0ae1592650a4",
+        "job": "control-good",
+        "containerName": "endoforge-v1-be56e0f0adbb435a8efc569e50ca7432",
+        "image": "sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541",
+        "outcome": "passed",
+        "published": true,
+        "inputSha256": "453629d046404aa63e90e41420eb765eb7ad99d20aeb33f3d0046c60e08baab4",
+        "containerId": "458d3160a3fd1aecce7564254e5c61d96d28c8adf970e04ad5ebef959db76c6b",
+        "terminalState": {
+          "Status": "exited",
+          "Running": false,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 0,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-10-18T20:47:42.51192578Z",
+          "FinishedAt": "2026-10-18T20:47:43.322337236Z"
+        },
+        "artifactSha256": "453629d046404aa63e90e41420eb765eb7ad99d20aeb33f3d0046c60e08baab4",
+        "cleanupVerified": true,
+        "signals": [],
+        "wallMs": 1338.0522139996174,
+        "version": 1,
+        "parent": null,
+        "stage": "verification",
+        "usage": {
+          "wallMs": 1338.0522139996174,
+          "tokens": null
+        },
+        "generation": "0d02441916b44470873916ce8f491a11"
+      }
+    },
+    {
+      "name": "control-wrong-answer",
+      "outcome": "failed-eval",
+      "published": false,
+      "result": {
+        "published": false,
+        "outcome": "failed-eval",
+        "quality": {
+          "passed": false,
+          "failures": [
+            {
+              "code": "value",
+              "caseId": "linear-0"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-1"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-2"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-3"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-4"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-5"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-6"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-7"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-8"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-9"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-10"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-11"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-12"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-13"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-14"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-15"
+            }
+          ],
+          "caseCount": 18,
+          "suiteHash": "17087e55a7e3bb60834503c69cd58f362a02ddb8a2acb8d9a122e05a4484a5e9",
+          "referenceHash": null
+        }
+      }
+    },
+    {
+      "name": "control-wrong-question",
+      "outcome": "failed-eval",
+      "published": false,
+      "result": {
+        "published": false,
+        "outcome": "failed-eval",
+        "quality": {
+          "passed": false,
+          "failures": [
+            {
+              "code": "value",
+              "caseId": "linear-0"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-1"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-2"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-3"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-4"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-5"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-6"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-7"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-8"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-9"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-10"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-11"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-12"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-13"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-14"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-15"
+            }
+          ],
+          "caseCount": 18,
+          "suiteHash": "0014209e7f0384a3a5f219223a6822587c3eeb4033e7093508ed3b5972f2ccca",
+          "referenceHash": null
+        }
+      }
+    },
+    {
+      "name": "control-missing-output",
+      "outcome": "failed-eval",
+      "published": false,
+      "result": {
+        "published": false,
+        "outcome": "failed-eval",
+        "quality": {
+          "passed": false,
+          "failures": [
+            {
+              "code": "value",
+              "caseId": "linear-0"
+            },
+            {
+              "code": "unit",
+              "caseId": "linear-0"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-1"
+            },
+            {
+              "code": "unit",
+              "caseId": "linear-1"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-2"
+            },
+            {
+              "code": "unit",
+              "caseId": "linear-2"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-3"
+            },
+            {
+              "code": "unit",
+              "caseId": "linear-3"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-4"
+            },
+            {
+              "code": "unit",
+              "caseId": "linear-4"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-5"
+            },
+            {
+              "code": "unit",
+              "caseId": "linear-5"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-6"
+            },
+            {
+              "code": "unit",
+              "caseId": "linear-6"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-7"
+            },
+            {
+              "code": "unit",
+              "caseId": "linear-7"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-8"
+            },
+            {
+              "code": "unit",
+              "caseId": "linear-8"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-9"
+            },
+            {
+              "code": "unit",
+              "caseId": "linear-9"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-10"
+            },
+            {
+              "code": "unit",
+              "caseId": "linear-10"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-11"
+            },
+            {
+              "code": "unit",
+              "caseId": "linear-11"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-12"
+            },
+            {
+              "code": "unit",
+              "caseId": "linear-12"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-13"
+            },
+            {
+              "code": "unit",
+              "caseId": "linear-13"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-14"
+            },
+            {
+              "code": "unit",
+              "caseId": "linear-14"
+            },
+            {
+              "code": "value",
+              "caseId": "linear-15"
+            },
+            {
+              "code": "unit",
+              "caseId": "linear-15"
+            },
+            {
+              "code": "refusal-path",
+              "caseId": "nan"
+            },
+            {
+              "code": "refusal-path",
+              "caseId": "outside"
+            }
+          ],
+          "caseCount": 18,
+          "suiteHash": "1933283ecf39fa8760fd809f77a8412d10476af08cfd5bd7487c400691aeaeec",
+          "referenceHash": null
+        }
+      }
+    },
+    {
+      "name": "control-forged-success",
+      "outcome": "rejected",
+      "published": false,
+      "result": {
+        "error": "compile failed; see receipt"
+      }
+    },
+    {
+      "name": "control-fuel-not-refusal",
+      "outcome": "failed-eval",
+      "published": false,
+      "result": {
+        "published": false,
+        "outcome": "failed-eval",
+        "quality": {
+          "passed": false,
+          "failures": [
+            {
+              "code": "refusal-path",
+              "caseId": "nan"
+            },
+            {
+              "code": "refusal-path",
+              "caseId": "outside"
+            }
+          ],
+          "caseCount": 18,
+          "suiteHash": "b3d5ae1204a605183ad3da8336507366f2466aa47daa6f9c7c675155e7a7ed39",
+          "referenceHash": null
+        }
+      }
+    },
+    {
+      "name": "control-corrupt-freeze",
+      "outcome": "rejected",
+      "published": false,
+      "result": {
+        "error": "frozen requirement file changed"
+      }
+    },
+    {
+      "name": "control-bad-unit",
+      "outcome": "rejected",
+      "published": false,
+      "result": {
+        "error": "glue metadata is incompatible with frozen signature"
+      }
+    },
+    {
+      "name": "control-equivalent",
+      "outcome": "passed",
+      "published": true,
+      "result": {
+        "attempt": "verify-68b8b9a8aeea",
+        "job": "control-equivalent",
+        "containerName": "endoforge-v1-a8f0dce014da43b8bfe750935c88b37c",
+        "image": "sha256:653395e40dfce4bbf2f3919638c1f375056deb81f47d8e3f7c855ed7b27b6541",
+        "outcome": "passed",
+        "published": true,
+        "inputSha256": "93087c4d7c057d22412b69afdc0b04d638164d161ecd7026f6bad824af890806",
+        "containerId": "960fec95c33d6850a73c89423ee40ed2d2a304bf0c8c6e673ac029686e5c383f",
+        "terminalState": {
+          "Status": "exited",
+          "Running": false,
+          "Paused": false,
+          "Restarting": false,
+          "OOMKilled": false,
+          "Dead": false,
+          "Pid": 0,
+          "ExitCode": 0,
+          "Error": "",
+          "StartedAt": "2026-10-18T20:48:00.514004731Z",
+          "FinishedAt": "2026-10-18T20:48:01.295659689Z"
+        },
+        "artifactSha256": "93087c4d7c057d22412b69afdc0b04d638164d161ecd7026f6bad824af890806",
+        "cleanupVerified": true,
+        "signals": [],
+        "wallMs": 1315.890441997908,
+        "version": 1,
+        "parent": null,
+        "stage": "verification",
+        "usage": {
+          "wallMs": 1315.890441997908,
+          "tokens": null
+        },
+        "generation": "9a28a8b29ee246b6b78bda1e96223f66"
+      }
+    }
+  ],
+  "catalogCompatibleReuse": true,
+  "catalogWrongSemanticsUnitReferenceMiss": true,
+  "minimalRepairPreservedFreeze": true,
+  "repairDisputeAndRetryDenied": true,
+  "challengeActualSourceRelevant": true,
+  "challengeWrongClaimDenied": true,
+  "requestBindingEnforced": true,
+  "evidenceRoot": "/home/user/Work/endoforge/campaigns/next50-20261018/work/integration-controls/84e693538e7442f1b9033eb6381581d8"
+}

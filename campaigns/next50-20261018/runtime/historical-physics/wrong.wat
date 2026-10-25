@@ -1,0 +1,1 @@
+(module (func (export "run") (result f64) f64.const 77))

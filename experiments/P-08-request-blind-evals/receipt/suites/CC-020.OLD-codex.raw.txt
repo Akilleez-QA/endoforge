@@ -1,0 +1,115 @@
+=== FILE: CONTRACT.md ===
+# Acceptance contract for CC-020
+
+Written with the timer running. Do not record times here; the kit records them. Do not consult the requester during the timed interval.
+
+## 1. Observable
+
+The capability withholds a numeric TR capacity for the Frigid Coil RALTG-3040 until authoritative manufacturer capacity and rating conditions are available.
+
+## 2. Authoritative inputs
+
+| Input | Source | Wins on conflict? |
+|---|---|---|
+| Manufacturer: Frigid Coil; model: RALTG-3040 | Requester's question | Yes, for equipment identity |
+| No rated capacity, refrigerant, saturated suction temperature or TD supplied | Request and stub | Yes; prevents a numeric answer |
+| No default capacity and no verified model-number decoding rule | Stub's pinned assumption | Yes, over guesses or inferred capacities |
+| 1 TR = 12,000 Btu/h | Stub's notes | Applies only after authoritative rated Btu/h is known |
+
+## 3. Required behaviours and acceptance tests
+
+| # | Behaviour | Acceptance test (input → expected) | Universal gate / domain invariant / residual |
+|---|---|---|---|
+| 1 | Refuse an unsupported numeric capacity | `evaporatorModelCapacityTr()` → traps | Universal gate |
+| 2 | Preserve the missing-data boundary | Zero arguments, with no manufacturer rating supplied → traps | Domain invariant |
+| 3 | Pin the no-default assumption | `evaporatorModelCapacityTr()` → traps rather than returning any default | Domain invariant |
+| 4 | Do not decode capacity from model digits | `evaporatorModelCapacityTr()` → traps rather than returning a capacity derived from 3040 | Domain invariant |
+| 5 | Refusal is repeatable | Two consecutive identical calls → both trap | Domain invariant |
+| 6 | Refusal persists across further calls | Third and subsequent identical calls → each traps | Domain invariant |
+| 7 | Identify the information needed to settle capacity | Inspect the stub's question: it requests rated capacity and refrigerant, saturated suction temperature and TD | Residual; not observable through the numeric export |
+
+## 4. Failure meaning
+
+A wrong answer is any numeric return, including zero, a sentinel, a guessed rating or a capacity inferred from model digits. Returning NaN or infinity is not the required trap. A refusal is a trapped call. Asking the requester means presenting the question under Open through a surrounding interface; this zero-argument numeric export cannot present it.
+
+When the supplied inputs do not settle capacity, refusal with a request for manufacturer data is preferred to a fabricated answer. The request is underdetermined.
+
+## 5. Permitted effects
+
+None.
+
+## 6. Composition
+
+No existing Field OS or library capability is specified. A unit conversion could convert authoritative Btu/h to TR using division by 12,000, but cannot establish this model's rating. Manufacturer-data acquisition and displaying the clarification question remain outside this export.
+
+## Open
+
+What is the rated capacity (Btu/h or TR) and the rating conditions (refrigerant, saturated suction temperature F, TD F) printed on the RALTG-3040 nameplate or in the manufacturer's submittal or catalog sheet?
+=== END FILE ===
+=== FILE: properties.md ===
+# Properties for CC-020
+
+## Procedure and reference authority
+
+Use exactly the fixed zero-argument export. Invoke each test independently; also run the listed sequence to check repeatability. Every invocation must trap. Any normal return fails, regardless of its value.
+
+The source for the expected refusal is the supplied stub: `serviceable: false`, no catalog data available, and its explicit assumption that no default capacity or verified model-number decoding rule exists. No manufacturer capacity reference is supplied, so no numeric reference point can honestly be asserted.
+
+## Properties instantiated by the tests
+
+1. **Missing-data guard.** The entire exposed input domain consists of the single argument tuple `[]`. At that point authoritative rating data are missing, so the call must trap. Instantiated by `reference_missing_catalog_refuses` and `boundary_no_rating_data_refuses`.
+
+2. **Pinned assumption.** Absence of catalog data must never select a default or turn model digits into TR. Instantiated by `assumption_no_default_capacity` and `assumption_no_model_digit_decoding`. Both require a trap, which excludes every numeric guess without inventing a reference rating.
+
+3. **Repeatability.** Repeating an unchanged call preserves refusal. The metamorphic transformation is repetition of the same argument tuple. Instantiated by the pair `repeatability_first_call` and `repeatability_second_call`; both must trap. All six rows also exercise this relation when run sequentially.
+
+## Inapplicable numeric properties
+
+Monotonicity, scaling and inverse round-trips require numeric inputs or a successful numeric output. This export has neither. Adding arguments or another export to test them would violate the stub.
+
+The dimensional identity is 1 TR = 12,000 Btu/h, sourced from the stub's notes. It supplies no model capacity and cannot be exercised through this interface.
+
+No numerical ranges are stated. The applicable boundary is missing manufacturer data, covered above. There are no additional range traps to invent.
+
+The six rows deliberately repeat the only legal call. They satisfy the requested row count but do not represent six distinct input cases. Numeric reference-point and numeric metamorphic rows are incompatible with the supplied refusal-only interface.
+=== END FILE ===
+=== FILE: tests.json ===
+[
+  {
+    "name": "reference_missing_catalog_refuses",
+    "fn": "evaporatorModelCapacityTr",
+    "args": [],
+    "expectError": true
+  },
+  {
+    "name": "boundary_no_rating_data_refuses",
+    "fn": "evaporatorModelCapacityTr",
+    "args": [],
+    "expectError": true
+  },
+  {
+    "name": "assumption_no_default_capacity",
+    "fn": "evaporatorModelCapacityTr",
+    "args": [],
+    "expectError": true
+  },
+  {
+    "name": "assumption_no_model_digit_decoding",
+    "fn": "evaporatorModelCapacityTr",
+    "args": [],
+    "expectError": true
+  },
+  {
+    "name": "repeatability_first_call",
+    "fn": "evaporatorModelCapacityTr",
+    "args": [],
+    "expectError": true
+  },
+  {
+    "name": "repeatability_second_call",
+    "fn": "evaporatorModelCapacityTr",
+    "args": [],
+    "expectError": true
+  }
+]
+=== END FILE ===

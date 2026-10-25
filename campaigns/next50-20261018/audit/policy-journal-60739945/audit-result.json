@@ -1,0 +1,37 @@
+{
+  "modelCalls": 0,
+  "policy": {
+    "claudePublicReject": "Only Codex CLI is enabled; Claude Code CLI is prohibited by user instruction",
+    "noRootCreated": true,
+    "pairedLiveReject": "Two-family live pipeline disabled: Claude Code CLI prohibited; approved second route required",
+    "qualifyExit": 75,
+    "tools/factory_quality/live.py": "DISABLED: Claude Code CLI is prohibited; no model process started.",
+    "tools/factory_runtime/qualify_egress.py": "Disabled: historical Claude Code CLI route is prohibited. Use no-model Codex transport qualification; a Codex model qualification needs its own allocated turn.",
+    "allowlist": [
+      "api.openai.com",
+      "auth.openai.com",
+      "chatgpt.com"
+    ]
+  },
+  "journal": {
+    "secondControllerDenied": true,
+    "liveOwnerReconcileDenied": true,
+    "exactWorkerStopped": true,
+    "foreignUntouched": true,
+    "credentialDirectoryRemoved": true,
+    "promotionAllowed": false,
+    "automaticRetry": false
+  },
+  "helperReceipt": {
+    "checks": 30,
+    "allPassed": true,
+    "filesMatch": true,
+    "currentHelperMatches": false,
+    "currentTestMatches": false
+  },
+  "N34": {
+    "status": "blocked",
+    "note": "Offline Docker durability and host model journal mechanisms tested separately, including 27 deterministic journal crash/ownership controls. Full integrated model-stage SIGKILL/resume qualification remains incomplete."
+  },
+  "passed": true
+}

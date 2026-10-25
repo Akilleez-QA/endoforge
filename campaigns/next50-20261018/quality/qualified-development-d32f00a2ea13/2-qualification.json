@@ -1,0 +1,100 @@
+{
+  "version": 1,
+  "passed": true,
+  "metrics": {
+    "canaryRecall": 1,
+    "falseRejection": 0,
+    "mutationSensitivity": 1
+  },
+  "thresholds": {
+    "canaryRecall": 1,
+    "falseRejection": 0,
+    "mutationSensitivity": 1,
+    "writerAgreement": 1
+  },
+  "results": [
+    {
+      "id": "known-good",
+      "kind": "good",
+      "passed": true,
+      "failures": [],
+      "caseCount": 29,
+      "suiteHash": "c3caab73a3e25cfce8f208d28c2c3d34d4b118fa59bb9b804d4fb00b5a6fbc0f",
+      "referenceHash": null
+    },
+    {
+      "id": "wrong-question",
+      "kind": "canary",
+      "expectedCode": "value",
+      "passed": false,
+      "failures": [
+        {
+          "code": "value",
+          "caseId": "codex-values-0"
+        }
+      ],
+      "caseCount": 29,
+      "suiteHash": "c3caab73a3e25cfce8f208d28c2c3d34d4b118fa59bb9b804d4fb00b5a6fbc0f",
+      "referenceHash": null
+    },
+    {
+      "id": "bad-refusal",
+      "kind": "canary",
+      "expectedCode": "refusal-path",
+      "passed": false,
+      "failures": [
+        {
+          "code": "refusal-path",
+          "caseId": "codex-missing"
+        }
+      ],
+      "caseCount": 29,
+      "suiteHash": "c3caab73a3e25cfce8f208d28c2c3d34d4b118fa59bb9b804d4fb00b5a6fbc0f",
+      "referenceHash": null
+    },
+    {
+      "id": "bad-unit",
+      "kind": "mutation",
+      "expectedCode": "unit",
+      "passed": false,
+      "failures": [
+        {
+          "code": "unit",
+          "caseId": "codex-values-0"
+        }
+      ],
+      "caseCount": 29,
+      "suiteHash": "c3caab73a3e25cfce8f208d28c2c3d34d4b118fa59bb9b804d4fb00b5a6fbc0f",
+      "referenceHash": null
+    },
+    {
+      "id": "arithmetic",
+      "kind": "mutation",
+      "expectedCode": "value",
+      "passed": false,
+      "failures": [
+        {
+          "code": "value",
+          "caseId": "codex-values-0"
+        }
+      ],
+      "caseCount": 29,
+      "suiteHash": "c3caab73a3e25cfce8f208d28c2c3d34d4b118fa59bb9b804d4fb00b5a6fbc0f",
+      "referenceHash": null
+    },
+    {
+      "id": "wrong-export",
+      "kind": "canary",
+      "expectedCode": "interface-identity",
+      "passed": false,
+      "failures": [
+        {
+          "code": "interface-identity"
+        }
+      ],
+      "caseCount": 29,
+      "suiteHash": "c3caab73a3e25cfce8f208d28c2c3d34d4b118fa59bb9b804d4fb00b5a6fbc0f",
+      "referenceHash": null
+    }
+  ]
+}

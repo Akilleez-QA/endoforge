@@ -1,0 +1,373 @@
+{
+ "schema": "endoforge/atoms/1",
+ "need": {
+  "id": "CC-002",
+  "text": "Room temperature is 60 F and 60% relative humidity what is the dew point"
+ },
+ "acceptance": [
+  {
+   "id": "A1",
+   "statement": "For 60 F dry-bulb and 60% RH the kernel returns a dew point of about 46 F (between 45.5 and 46.5), in Fahrenheit.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const i=new WebAssembly.Instance(new WebAssembly.Module(require('fs').readFileSync('/in/compose/kernel.wasm')),{});const d=i.exports.dewPointF(60,60);process.exit(d>45.5&&d<46.5?0:1)\""
+   }
+  },
+  {
+   "id": "A2",
+   "statement": "At 100% RH the dew point equals the dry-bulb temperature (within 0.01 F), and at 50% RH it is below it.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const i=new WebAssembly.Instance(new WebAssembly.Module(require('fs').readFileSync('/in/compose/kernel.wasm')),{});const a=i.exports.dewPointF(60,100),b=i.exports.dewPointF(60,50);process.exit(Math.abs(a-60)<0.01&&b<60?0:1)\""
+   }
+  },
+  {
+   "id": "A3",
+   "statement": "Inputs outside the stated domain (RH <= 0 or > 100, NaN or infinite values, temperature outside the validity range) trap instead of returning a number.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const i=new WebAssembly.Instance(new WebAssembly.Module(require('fs').readFileSync('/in/compose/kernel.wasm')),{});const bad=[[60,0],[60,101],[60,-5],[NaN,60],[60,NaN],[Infinity,60],[500,60]];let ok=true;for(const [t,r] of bad){try{i.exports.dewPointF(t,r);ok=false}catch(e){}}process.exit(ok?0:1)\""
+   }
+  },
+  {
+   "id": "A4",
+   "statement": "CONTRACT.md states the formula assumption taken, the one question that resolves it, and the refused inputs.",
+   "check": {
+    "kind": "command",
+    "run": "grep -qi assumption /in/compose/CONTRACT.md && grep -qi question /in/compose/CONTRACT.md && grep -qi refus /in/compose/CONTRACT.md"
+   }
+  },
+  {
+   "id": "A5",
+   "statement": "glue.json is valid JSON and carries the assumption and the question for the technician.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const g=JSON.parse(require('fs').readFileSync('/in/compose/glue.json','utf8'));const s=JSON.stringify(g).toLowerCase();process.exit(s.includes('assumption')&&s.includes('question')?0:1)\""
+   }
+  },
+  {
+   "id": "A6",
+   "statement": "A technician reading the interface and glue understands that the answer is a dew point in degrees Fahrenheit, taking the room temperature as dry-bulb air temperature, with the formula assumption openly stated.",
+   "check": {
+    "kind": "oracle",
+    "criteria": "Labels, units, precision and the stated assumption are clear and honest for a field technician; nothing is invented about equipment or tables the requester did not name."
+   }
+  }
+ ],
+ "atoms": [
+  {
+   "id": "iface",
+   "kind": "interface",
+   "title": "Interface stub for the dew point export",
+   "contract": "A single JSON file naming the one export dewPointF, its arguments tempF (f64, degrees Fahrenheit, dry-bulb room temperature) and rhPercent (f64, 0-100 percent relative humidity), return type f64 (dew point in degrees Fahrenheit), and the trap conditions by code.",
+   "inputs": [
+    {
+     "from": "need"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "interface",
+     "path": "interface.json",
+     "describe": "Export names, argument names, units, return types, refusal codes."
+    }
+   ],
+   "verify": "Script parses JSON; checks exactly one export dewPointF with two f64 args named tempF and rhPercent and an f64 return.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "From the need, write the interface stub for a dew point calculator: export dewPointF(tempF, rhPercent) returning dew point in F. Include units, types and short refusal codes for out-of-domain inputs."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "contract",
+   "kind": "contract",
+   "title": "CONTRACT.md with assumption, question and refusals",
+   "contract": "CONTRACT.md that says what is computed (dew point from dry-bulb temperature and RH), names the assumption taken for the open fact (Magnus-type formula over water with named constants, room temperature taken as dry-bulb, Celsius conversion internal, result in F), the one question that resolves it, the validity range, and the refused inputs.",
+   "inputs": [
+    {
+     "from": "need"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "contract",
+     "path": "CONTRACT.md",
+     "describe": "Human-readable contract including a worked value for 60 F / 60% RH."
+    }
+   ],
+   "verify": "Script greps for the words assumption, question, refus and the number 60; file is non-empty and under 4 KB.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Write the contract for a dew point capability answering: room at 60 F and 60% RH, what is the dew point. Record the formula assumption (Magnus with explicit constants), exactly one clarifying question, the valid input range (RH in (0,100], temperature within the formula's validity range expressed in F), and which inputs are refused. Do not invent equipment facts."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "kernel-dewpoint",
+   "kind": "kernel",
+   "title": "Kernel for dewPointF",
+   "contract": "AssemblyScript source exporting dewPointF(tempF: f64, rhPercent: f64): f64 implementing the contract's formula; traps with the contract's refusal for NaN, infinite, RH <= 0, RH > 100, or temperature outside the validity range; no imports; every private helper or constant prefixed kernel-dewpoint style (kernel_dewpoint_).",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "kernel",
+     "path": "kernel-dewpoint.ts",
+     "describe": "AssemblyScript module part."
+    }
+   ],
+   "verify": "Script compiles with asc and checks dewPointF(60,60) is within 45.5-46.5 and dewPointF(60,100) equals 60 within 0.01.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [
+     "Bash",
+     "Read",
+     "Write",
+     "Edit"
+    ],
+    "toolchain": "asc",
+    "prompt": "Implement dewPointF per the interface and contract. Compile it to confirm it builds. Do not look for or depend on any tests."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "tests-dewpoint",
+   "kind": "tests",
+   "title": "Tests for dewPointF",
+   "contract": "tests.json cases covering: the request example (60 F, 60% RH, about 46 F), 100% RH equals dry-bulb, monotonic increase with RH, a cold and a hot case, boundary RH values (just above 0, exactly 100), and expected traps for RH 0, RH above 100, NaN, infinity and out-of-range temperature; expected values computed independently from the contract formula with a stated tolerance.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "tests",
+     "path": "tests.json",
+     "describe": "Executable tests in the fixed gate format."
+    }
+   ],
+   "verify": "Script validates tests.json against the gate format and that every call targets dewPointF with two arguments.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [
+     "Bash",
+     "Read",
+     "Write",
+     "Edit"
+    ],
+    "toolchain": "node",
+    "prompt": "Write the tests from the interface and contract only. Compute expected values with an independent node implementation of the contract's formula and constants. Include trap tests for every refused input."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "glue-dewpoint",
+   "kind": "glue",
+   "title": "Glue for dewPointF",
+   "contract": "glue.json with the label for the dew point result, unit F, precision of one decimal, input labels and units (room temperature F, relative humidity %), refusal codes with plain-language trap messages, the assumption text and the one question, all matching the contract.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "glue",
+     "path": "glue.json",
+     "describe": "Labels, units, precision, codes, assumption, question, trap messages."
+    }
+   ],
+   "verify": "Script parses JSON and checks keys for the export, unit, precision, assumption, question and one message per refusal code in the interface.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Write the glue for dewPointF for a field technician: concise labels, units, one-decimal precision, a message for each refusal code, and the assumption and question exactly as in the contract."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "compose",
+   "kind": "compose",
+   "title": "Compose artefact and run gates",
+   "contract": "Gathers the kernel part, CONTRACT.md, tests.json and glue.json into the artefact, builds kernel.wasm, and runs gates G1-G7 reporting each result; satisfies acceptance A1-A5.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    },
+    {
+     "from": "kernel-dewpoint",
+     "output": "kernel"
+    },
+    {
+     "from": "tests-dewpoint",
+     "output": "tests"
+    },
+    {
+     "from": "glue-dewpoint",
+     "output": "glue"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "artefact",
+     "path": "compose/",
+     "describe": "kernel.wasm, CONTRACT.md, tests.json, glue.json and a gates report."
+    }
+   ],
+   "verify": "Script checks the four artefact files exist and all gates G1-G7 report pass; runs acceptance commands A1-A5.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [
+     "Bash",
+     "Read",
+     "Write",
+     "Edit"
+    ],
+    "toolchain": "asc",
+    "prompt": "Assemble the parts into the artefact and run the gates. Report failures faithfully; do not edit the parts to force a pass."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "review-technician",
+   "kind": "review",
+   "title": "Review as a field technician",
+   "contract": "A short verdict from a service technician persona, judging from the request and the artefact's interface, contract and glue, whether the answer to 60 F / 60% RH is usable mid-job and the assumption and question are clear. Verdict states accept or reject with reasons. Satisfies A6.",
+   "inputs": [
+    {
+     "from": "need"
+    },
+    {
+     "from": "compose",
+     "output": "artefact"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "review",
+     "path": "review-technician.md",
+     "describe": "Verdict and reasons."
+    }
+   ],
+   "verify": "Script checks the file starts with a line containing ACCEPT or REJECT.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "You are an HVAC/refrigeration service technician mid-job. Judge whether the capability answers the request clearly, in your units, with an honest assumption."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "review-psychro",
+   "kind": "review",
+   "title": "Review as a psychrometrics engineer",
+   "contract": "A short verdict from a psychrometrics-expert persona, on a different model family, judging whether the stated formula assumption and validity range are sound and the value for 60 F / 60% RH is plausible against standard psychrometric charts. States accept or reject with reasons.",
+   "inputs": [
+    {
+     "from": "need"
+    },
+    {
+     "from": "compose",
+     "output": "artefact"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "review",
+     "path": "review-psychro.md",
+     "describe": "Verdict and reasons."
+    }
+   ],
+   "verify": "Script checks the file starts with a line containing ACCEPT or REJECT.",
+   "worker": {
+    "model": "codex",
+    "tools": [],
+    "prompt": "You are a psychrometrics engineer. Judge the formula assumption, validity range and plausibility of the result for 60 F and 60% RH against standard psychrometric data."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "review-safety",
+   "kind": "review",
+   "title": "Review as a skeptical quality auditor",
+   "contract": "A short verdict from an auditor persona on whether refused inputs, trap messages and the single clarifying question are appropriate, nothing about equipment is invented, and the contract matches the glue. States accept or reject with reasons.",
+   "inputs": [
+    {
+     "from": "need"
+    },
+    {
+     "from": "compose",
+     "output": "artefact"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "review",
+     "path": "review-safety.md",
+     "describe": "Verdict and reasons."
+    }
+   ],
+   "verify": "Script checks the file starts with a line containing ACCEPT or REJECT.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "You are a skeptical quality auditor. Check refusals, messages, the one question, absence of invented facts, and consistency between contract and glue."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  }
+ ]
+}

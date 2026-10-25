@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "prelaunchRoleFailures": 4,
+  "prelaunchRoleFailureHostedStarts": 0,
+  "actualHostedCodexCalls": 4,
+  "actualHostedCallOutcomes": [
+    "passed",
+    "passed",
+    "passed",
+    "passed"
+  ],
+  "knownActualHostedTokens": 234439,
+  "paidApiCalls": 0,
+  "claudeCliCalls": 0,
+  "additionalCallsPlanned": 0,
+  "calls": [
+    {
+      "stage": "criteria-compile-29f210d9352f-0",
+      "family": "codex",
+      "exit": 0,
+      "outcome": "passed",
+      "wallMs": 106358.09159900236,
+      "usage": {
+        "input_tokens": 43812,
+        "cached_input_tokens": 9856,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 11157,
+        "reasoning_output_tokens": 95
+      },
+      "tokens": 54969,
+      "promptSha256": "19b38e02b6e5a09d248291ee4b79a74b881ba7e3e9e3ea63e0909a7d943e37fd",
+      "rawExecutionSha256": "9437d3f5bf177f6c0b0c73b0b7d29c4a8114c03ba655621b4bb302d3c75923b2"
+    },
+    {
+      "stage": "criteria-compile-29f210d9352f-1",
+      "family": "codex",
+      "exit": 0,
+      "outcome": "passed",
+      "wallMs": 145440.22832100018,
+      "usage": {
+        "input_tokens": 51787,
+        "cached_input_tokens": 9856,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 13677,
+        "reasoning_output_tokens": 76
+      },
+      "tokens": 65464,
+      "promptSha256": "8f6b2f07086b00e298ac5488467f6342fd9c54a093b72c8b3c90369097d6dcd3",
+      "rawExecutionSha256": "b10494c30fd205d7f331510b1279973ee539d094a8a4dcebf8b20462db19e5e4"
+    },
+    {
+      "stage": "criteria-compile-29f210d9352f-2",
+      "family": "codex",
+      "exit": 0,
+      "outcome": "passed",
+      "wallMs": 163183.26369900024,
+      "usage": {
+        "input_tokens": 47549,
+        "cached_input_tokens": 9856,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 14669,
+        "reasoning_output_tokens": 83
+      },
+      "tokens": 62218,
+      "promptSha256": "990796fb7d7340dfc9b9dabe3e5dd94a886298305f62800e8708d837624378d7",
+      "rawExecutionSha256": "baa3943fdcca94ed62bb784faa37a810548a64a5b1249a457c782f138e03c70f"
+    },
+    {
+      "stage": "criteria-compile-29f210d9352f-3",
+      "family": "codex",
+      "exit": 0,
+      "outcome": "passed",
+      "wallMs": 175092.22210999724,
+      "usage": {
+        "input_tokens": 39963,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 11825,
+        "reasoning_output_tokens": 47
+      },
+      "tokens": 51788,
+      "promptSha256": "28c30eac1a4bfa5644c1ef5e574c9fe4f5ad0675f8a568a0ead5e05b71bc42a7",
+      "rawExecutionSha256": "c5c005d29ac391aff78ac41ebd88505d41e670598225bdcc3761e93ba8472519"
+    }
+  ],
+  "review": {
+    "version": 1,
+    "sourceClauses": 627,
+    "retainedClauseRecords": 627,
+    "proposedChecks": 197,
+    "checkStatuses": {
+      "executed-proposed-check": 76,
+      "executed-subassertion": 82,
+      "needs-independent-reference": 29,
+      "needs-source-math-review": 10
+    },
+    "modelTruthVerdictsAccepted": 0,
+    "wholeClauseAutoPromotions": 0,
+    "limits": [
+      "Mechanical review is insufficient for source semantic necessity.",
+      "Requires-reference proposals are never executed against remembered physical values.",
+      "Unknown codebook interpretation is deferred, not guessed.",
+      "Missing/failed/omitted clauses stay in the denominator."
+    ]
+  },
+  "privatePacketPath": "campaigns/next50-20261018/quality/criteria-compiled/29f210d9352f4ce0a72f5a4bfcabb4a9",
+  "privateFailedPacketPath": "campaigns/next50-20261018/quality/criteria-compiled/cd6538c5b44f4817be3d382a280429f3",
+  "reviewedProposalSha256": "34cfd694b2243e15c9bb409f5a0294c7946fde0a1963342520f1cec52b312c41",
+  "limits": [
+    "Exposed historical development criterion migration; not blind measurement.",
+    "No generated model truth verdict accepted; source semantic review and actual-arm necessary witness needed.",
+    "No old timeout usage assumed zero."
+  ]
+}

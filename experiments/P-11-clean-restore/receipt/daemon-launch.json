@@ -1,0 +1,26 @@
+{
+  "argv": [
+    "sudo",
+    "-n",
+    "dockerd",
+    "--config-file",
+    "/home/user/Work/endoforge/experiments/P-11-clean-restore/work/daemon.json",
+    "--host",
+    "unix:///home/user/Work/endoforge/experiments/P-11-clean-restore/work/docker.sock",
+    "--data-root",
+    "/home/user/Work/endoforge/experiments/P-11-clean-restore/work/daemon-data",
+    "--exec-root",
+    "/home/user/Work/endoforge/experiments/P-11-clean-restore/work/daemon-exec",
+    "--pidfile",
+    "/home/user/Work/endoforge/experiments/P-11-clean-restore/work/dockerd.pid",
+    "--storage-driver=vfs",
+    "--feature=containerd-snapshotter=false",
+    "--bridge=none",
+    "--iptables=false",
+    "--ip6tables=false",
+    "--ip-forward=false",
+    "--ip-masq=false",
+    "--userland-proxy=false"
+  ],
+  "initialPathsAbsent": true
+}

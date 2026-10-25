@@ -1,0 +1,596 @@
+{
+ "schema": "endoforge/atoms/1",
+ "need": {
+  "id": "C-010",
+  "text": "# Request C-010\n\n| Field | Content |\n|---|---|\n| Collected | 2026-10-17, by the Endoforge mining agent and the refrigeration-ai session (candidate C-010, grade HIGH, source list: OWN-2 (corroborated by BACKLOG C-386 and DEC)) |\n| Requester | author |\n| Context | owner, 2026-10-17, demo data was showing future/unstable dates; day-based counts changed when a run crossed midnight UTC. |\n| Inclusion rules met | 1 (owner vouched in chat on 2026-10-17: \"Add all HIGH and MEDIUM candidates to the pool; I vouch for them\") / 2 / 3 / 4 |\n\n## The request, in the requester's words\n\n> sample demo dates \"must roll with the current day\", with \"now\" anchored once per demo session. DECISIONS.md wording: \"Sample data dates keep rolling with the current day; anchor 'now' once per demo session so counts stay stable during a run.\"\n\n## Authoritative inputs the requester named\n\n- the demo sample-data dates; the session clock.\n\n## Examples the requester gave, if any\n\n- none given; acceptance in C-386: \"counts are stable across midnight UTC\".\n\n## What the collector did not ask\n\nNothing was clarified with the requester; the request is as found. Source: session file (owner row 2); BACKLOG C-386 note \"Owner decision 2026-10-17T13:48:53\"; DECISIONS.md \"2026-10-17T13:48:53Z — demo target and sample dates\".."
+ },
+ "acceptance": [
+  {
+   "id": "A1",
+   "statement": "The composed artefact is promotable: all gates G1-G7 pass.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const g=JSON.parse(require('fs').readFileSync('/in/compose/gates.json','utf8'));if(g.promotable!==true)process.exit(1)\""
+   }
+  },
+  {
+   "id": "A2",
+   "statement": "The kernel exports anchorDay, sampleDateMs, sampleAgeDays and sampleInWindow and has no imports.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const fs=require('fs');const m=new WebAssembly.Module(fs.readFileSync('/in/compose/kernel.wasm'));if(WebAssembly.Module.imports(m).length)process.exit(1);const e=WebAssembly.Module.exports(m).map(x=>x.name);for(const n of ['anchorDay','sampleDateMs','sampleAgeDays','sampleInWindow'])if(!e.includes(n))process.exit(1)\""
+   }
+  },
+  {
+   "id": "A3",
+   "statement": "With the anchor fixed at the last millisecond before midnight UTC, sample dates and ages are the same as they are one millisecond later in wall-clock terms: dates and counts depend only on the anchor, never on a running clock; sample dates roll with the anchor day (a sample 3 days back from the anchor is exactly midnight UTC three days earlier, and its age is 3).",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const fs=require('fs');const i=new WebAssembly.Instance(new WebAssembly.Module(fs.readFileSync('/in/compose/kernel.wasm')),{}).exports;const a=Date.UTC(2026,9,17,23,59,59,999);const d=i.sampleDateMs(a,3);if(d!==Date.UTC(2026,9,14))process.exit(1);if(i.sampleAgeDays(a,d)!==3)process.exit(1);if(!i.sampleInWindow(a,d,7))process.exit(1);if(i.anchorDay(a)!==Math.floor(a/864e5))process.exit(1);const b=Date.UTC(2026,9,18);if(i.sampleDateMs(b,3)!==Date.UTC(2026,9,15))process.exit(1);if(i.sampleDateMs(a,3)!==d)process.exit(1)\""
+   }
+  },
+  {
+   "id": "A4",
+   "statement": "No future sample dates are produced: a negative days-back is refused and the age of a sample dated after the anchor day is refused.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const fs=require('fs');const i=new WebAssembly.Instance(new WebAssembly.Module(fs.readFileSync('/in/compose/kernel.wasm')),{}).exports;const a=Date.UTC(2026,9,17,12);let n=0;try{i.sampleDateMs(a,-1)}catch(e){if(e instanceof WebAssembly.RuntimeError)n++}try{i.sampleAgeDays(a,Date.UTC(2026,9,18))}catch(e){if(e instanceof WebAssembly.RuntimeError)n++}if(n!==2)process.exit(1)\""
+   }
+  },
+  {
+   "id": "A5",
+   "statement": "glue.json records an assumption, one question, and a trap message for each refusal.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const g=JSON.parse(require('fs').readFileSync('/in/compose/glue.json','utf8'));if(!g.assumption||!g.question||!Array.isArray(g.traps)||g.traps.length<1||g.exports.length!==4)process.exit(1)\""
+   }
+  },
+  {
+   "id": "A6",
+   "statement": "CONTRACT.md states that the session anchor is supplied once by the caller and all dates derive from it, names the assumption taken (epoch ms UTC, whole UTC calendar days, no future dates), asks the one question that resolves the open fact, and lists the refused inputs.",
+   "check": {
+    "kind": "oracle",
+    "criteria": "CONTRACT.md has sections for what is computed, the assumption, the single question, and refused inputs; it states that the kernel never reads a clock and that results depend only on the anchor argument."
+   }
+  }
+ ],
+ "atoms": [
+  {
+   "id": "iface",
+   "kind": "interface",
+   "title": "Interface stub for the session-anchored sample-date kernel",
+   "contract": "A markdown file listing exactly four exports with argument names, types, units and return types: anchorDay(anchorMs f64)->f64 UTC day number; sampleDateMs(anchorMs f64, daysBack i32)->f64 epoch ms of 00:00 UTC; sampleAgeDays(anchorMs f64, sampleMs f64)->f64 whole days; sampleInWindow(anchorMs f64, sampleMs f64, windowDays i32)->bool.",
+   "inputs": [
+    {
+     "from": "need"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "interface",
+     "path": "interface.md",
+     "describe": "Export names, argument names, types, units, return types, refusal codes (trap)."
+    }
+   ],
+   "verify": "script: file mentions all four export names and the words anchorMs, daysBack, windowDays.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Write interface.md for a pure AssemblyScript kernel that keeps demo sample dates rolling with the current day from one session anchor. The caller supplies the anchor 'now' once per session as epoch milliseconds UTC (f64); the kernel never reads a clock. Exports, exactly: anchorDay(anchorMs: f64): f64 (UTC day number = floor(anchorMs/86400000)); sampleDateMs(anchorMs: f64, daysBack: i32): f64 (epoch ms of 00:00 UTC of anchor day minus daysBack days); sampleAgeDays(anchorMs: f64, sampleMs: f64): f64 (anchor day minus sample day, whole days); sampleInWindow(anchorMs: f64, sampleMs: f64, windowDays: i32): bool (true when 0 <= age < windowDays). Give units (ms, days), valid ranges (0 <= ms <= 8.64e15) and say that a refused input traps."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "contract",
+   "kind": "contract",
+   "title": "CONTRACT.md for the session-anchored sample dates",
+   "contract": "CONTRACT.md states what is computed, the assumption taken for the open fact, the one question that resolves it, and the refused inputs, for the four exports.",
+   "inputs": [
+    {
+     "from": "need"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "contract",
+     "path": "CONTRACT.md",
+     "describe": "Contract document with sections: Computes, Assumption, Question, Refused inputs."
+    }
+   ],
+   "verify": "script: file contains headings or labels for Assumption, Question and Refused, and names all four exports.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Write CONTRACT.md for four exports: anchorDay(anchorMs), sampleDateMs(anchorMs, daysBack), sampleAgeDays(anchorMs, sampleMs), sampleInWindow(anchorMs, sampleMs, windowDays). Facts from the request: sample dates roll with the current day; 'now' is anchored once per demo session; counts must be stable across midnight UTC; the demo showed future or unstable dates. Open facts to assume and record: time is epoch milliseconds UTC; a day is a UTC calendar day (floor(ms/86400000)); the caller supplies the anchor once and the kernel never reads a clock; sample dates are whole days back from the anchor day, at 00:00 UTC; no sample is ever in the future (daysBack < 0 is refused); sampleAgeDays refuses a sample after the anchor day; sampleInWindow returns false for a future sample and true when 0 <= age < windowDays. Refused inputs (trap): non-finite or NaN ms, ms < 0 or > 8.64e15, daysBack < 0, a sample date that would fall before epoch 0, windowDays < 1, and for sampleAgeDays a sample on a later day than the anchor. State one question: should the demo day boundary be UTC midnight, or the technician's local midnight? Do not invent anything about the equipment."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "k-day",
+   "kind": "kernel",
+   "title": "Kernel: anchorDay",
+   "contract": "Exports anchorDay(anchorMs: f64): f64 returning floor(anchorMs/86400000); traps on NaN, infinite, <0 or >8.64e15 input; deterministic and import-free.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "part",
+     "path": "k-day.ts",
+     "describe": "AssemblyScript part with the exported function and k_day_-prefixed helpers."
+    }
+   ],
+   "verify": "script: asc compiles the part; anchorDay(86400000)=1, anchorDay(86399999)=0.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [
+     "Bash",
+     "Read",
+     "Write",
+     "Edit"
+    ],
+    "toolchain": "asc",
+    "prompt": "Implement the export anchorDay from the interface and contract. Prefix every private helper or constant with k_day_. Compile it alone to confirm it builds."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "k-date",
+   "kind": "kernel",
+   "title": "Kernel: sampleDateMs",
+   "contract": "Exports sampleDateMs(anchorMs: f64, daysBack: i32): f64 returning (floor(anchorMs/86400000) - daysBack)*86400000; traps on invalid anchor, daysBack < 0, or a result before epoch 0.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "part",
+     "path": "k-date.ts",
+     "describe": "AssemblyScript part with the exported function and k_date_-prefixed helpers."
+    }
+   ],
+   "verify": "script: asc compiles the part; sampleDateMs(86400000*5+7,2)=3*86400000.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [
+     "Bash",
+     "Read",
+     "Write",
+     "Edit"
+    ],
+    "toolchain": "asc",
+    "prompt": "Implement the export sampleDateMs from the interface and contract. Prefix every private helper or constant with k_date_. Compile it alone to confirm it builds."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "k-age",
+   "kind": "kernel",
+   "title": "Kernel: sampleAgeDays",
+   "contract": "Exports sampleAgeDays(anchorMs: f64, sampleMs: f64): f64 returning anchor UTC day minus sample UTC day; traps on invalid inputs and when the sample day is after the anchor day.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "part",
+     "path": "k-age.ts",
+     "describe": "AssemblyScript part with the exported function and k_age_-prefixed helpers."
+    }
+   ],
+   "verify": "script: asc compiles the part; age of same-day sample is 0.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [
+     "Bash",
+     "Read",
+     "Write",
+     "Edit"
+    ],
+    "toolchain": "asc",
+    "prompt": "Implement the export sampleAgeDays from the interface and contract. Prefix every private helper or constant with k_age_. Compile it alone to confirm it builds."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "k-win",
+   "kind": "kernel",
+   "title": "Kernel: sampleInWindow",
+   "contract": "Exports sampleInWindow(anchorMs: f64, sampleMs: f64, windowDays: i32): bool, true iff 0 <= age < windowDays by UTC days; false for future samples; traps on invalid ms or windowDays < 1.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "part",
+     "path": "k-win.ts",
+     "describe": "AssemblyScript part with the exported function and k_win_-prefixed helpers."
+    }
+   ],
+   "verify": "script: asc compiles the part; same-day sample with windowDays 1 is true.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [
+     "Bash",
+     "Read",
+     "Write",
+     "Edit"
+    ],
+    "toolchain": "asc",
+    "prompt": "Implement the export sampleInWindow from the interface and contract. Prefix every private helper or constant with k_win_. It must not call other atoms' helpers; compute the days itself. Compile it alone to confirm it builds."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "t-calc",
+   "kind": "tests",
+   "title": "Tests for anchorDay and sampleDateMs",
+   "contract": "tests.json array covering anchorDay and sampleDateMs: day boundaries (86399999 vs 86400000), midnight-crossing anchors, daysBack 0 and large, and expectError cases (NaN, 1e999, negative ms, daysBack -1, result before epoch).",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "tests",
+     "path": "tests-calc.json",
+     "describe": "JSON array of tests in the fixed tests.json format."
+    }
+   ],
+   "verify": "script: valid JSON array; every entry has name, fn in {anchorDay,sampleDateMs} and expect or expectError; at least 10 entries.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Write tests for anchorDay and sampleDateMs from the interface and contract only. Work out expected values by hand with exact integer arithmetic on 86400000 ms per day. Include the midnight pair 2026-10-17T23:59:59.999Z and 2026-10-18T00:00:00.000Z (epoch ms 1792281599999 and 1792281600000)."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "t-rel",
+   "kind": "tests",
+   "title": "Tests for sampleAgeDays and sampleInWindow",
+   "contract": "tests.json array covering sampleAgeDays and sampleInWindow: same-day, one-day, window edges (age = windowDays-1 true, age = windowDays false), future samples (trap for age, false for window), midnight stability, and expectError cases.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "tests",
+     "path": "tests-rel.json",
+     "describe": "JSON array of tests in the fixed tests.json format."
+    }
+   ],
+   "verify": "script: valid JSON array; every entry has name, fn in {sampleAgeDays,sampleInWindow} and expect or expectError; at least 12 entries.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Write tests for sampleAgeDays and sampleInWindow from the interface and contract only. Booleans are expected as true/false. Work out expected values by hand. Include a case where the anchor is 1792281599999 and another where it is 1792281600000 with the same sample, showing the age rolls by exactly one day."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "glue",
+   "kind": "glue",
+   "title": "glue.json for the four exports",
+   "contract": "glue.json in the closed schema with id, assumption, question, four export entries (labels, argument units ms/days, result kinds and precision), and traps for each refusal with a plain message.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "glue",
+     "path": "glue.json",
+     "describe": "glue.json in the fixed closed schema."
+    }
+   ],
+   "verify": "script: valid JSON; only allowed top-level keys; exports length 4; assumption and question non-empty; every trap fn is an export name.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Write glue.json for the four exports. Time arguments have unit ms (epoch, UTC); day counts have unit days; sampleInWindow returns a boolean. Copy the assumption and the one question from the contract. Trap messages must be understandable by a technician running a demo."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "compose",
+   "kind": "compose",
+   "title": "Compose the capability and run gates G1-G7",
+   "contract": "Concatenates the four kernel parts into kernel.ts, merges both test files into tests.json, copies CONTRACT.md and glue.json, builds kernel.wasm/kernel.wat, and writes gates.json, failures.json and frozen.sha256.",
+   "inputs": [
+    {
+     "from": "k-day",
+     "output": "part"
+    },
+    {
+     "from": "k-date",
+     "output": "part"
+    },
+    {
+     "from": "k-age",
+     "output": "part"
+    },
+    {
+     "from": "k-win",
+     "output": "part"
+    },
+    {
+     "from": "t-calc",
+     "output": "tests"
+    },
+    {
+     "from": "t-rel",
+     "output": "tests"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    },
+    {
+     "from": "glue",
+     "output": "glue"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "kernel_wasm",
+     "path": "kernel.wasm",
+     "describe": "Compiled kernel."
+    },
+    {
+     "name": "kernel_wat",
+     "path": "kernel.wat",
+     "describe": "Text form."
+    },
+    {
+     "name": "kernel_ts",
+     "path": "kernel.ts",
+     "describe": "Concatenated source."
+    },
+    {
+     "name": "contract_md",
+     "path": "CONTRACT.md",
+     "describe": "Contract."
+    },
+    {
+     "name": "tests_json",
+     "path": "tests.json",
+     "describe": "Merged tests."
+    },
+    {
+     "name": "glue_json",
+     "path": "glue.json",
+     "describe": "Glue."
+    },
+    {
+     "name": "gates_json",
+     "path": "gates.json",
+     "describe": "Gate results."
+    },
+    {
+     "name": "failures_json",
+     "path": "failures.json",
+     "describe": "Failing tests."
+    },
+    {
+     "name": "frozen_sha",
+     "path": "frozen.sha256",
+     "describe": "Frozen hashes."
+    }
+   ],
+   "verify": "script: gates.json parses; acceptance A1-A6 commands run against /in/compose; satisfies A1, A2, A3, A4, A5, A6.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [
+     "Bash",
+     "Read",
+     "Write",
+     "Edit"
+    ],
+    "toolchain": "asc",
+    "prompt": "Gather the parts into the artefact and run the gates. Satisfies acceptance A1, A2, A3, A4, A5, A6. Do not alter kernel logic; report failures faithfully in failures.json."
+   },
+   "size": {
+    "work": 3,
+    "interface": 2
+   }
+  },
+  {
+   "id": "rv-operator",
+   "kind": "review",
+   "title": "Review by a demo operator",
+   "contract": "A review written from the request and the interface that judges whether a demo operator can rely on stable dates and counts across midnight UTC, naming any gap as a finding with severity.",
+   "inputs": [
+    {
+     "from": "compose",
+     "output": "contract_md"
+    },
+    {
+     "from": "compose",
+     "output": "glue_json"
+    },
+    {
+     "from": "compose",
+     "output": "gates_json"
+    },
+    {
+     "from": "compose",
+     "output": "tests_json"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "review",
+     "path": "review-operator.md",
+     "describe": "Verdict (accept/revise) and findings."
+    }
+   ],
+   "verify": "script: file starts with a line VERDICT: accept or VERDICT: revise.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "You are a technician who runs the demo. Judge whether the capability keeps sample dates rolling with the day and counts stable during a run, from the request and the artefact interface."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "rv-auditor",
+   "kind": "review",
+   "title": "Review by a timekeeping auditor (other model family)",
+   "contract": "A review written from the request and the interface that judges day-boundary correctness (UTC, ms, floor on boundaries, range limits) and test coverage, with findings and a verdict.",
+   "inputs": [
+    {
+     "from": "compose",
+     "output": "contract_md"
+    },
+    {
+     "from": "compose",
+     "output": "glue_json"
+    },
+    {
+     "from": "compose",
+     "output": "gates_json"
+    },
+    {
+     "from": "compose",
+     "output": "tests_json"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "review",
+     "path": "review-auditor.md",
+     "describe": "Verdict (accept/revise) and findings."
+    }
+   ],
+   "verify": "script: file starts with a line VERDICT: accept or VERDICT: revise.",
+   "worker": {
+    "model": "codex",
+    "tools": [],
+    "prompt": "You audit time handling. Check whether the contract and tests cover the midnight-UTC boundary, off-by-one in windows, future dates and range limits, from the request and the artefact interface."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "rv-readability",
+   "kind": "review",
+   "title": "Review of labels, codes and trap messages",
+   "contract": "A review judging whether glue.json labels, units, assumption, the one question and trap messages are clear and consistent with CONTRACT.md, with findings and a verdict.",
+   "inputs": [
+    {
+     "from": "compose",
+     "output": "contract_md"
+    },
+    {
+     "from": "compose",
+     "output": "glue_json"
+    },
+    {
+     "from": "compose",
+     "output": "gates_json"
+    },
+    {
+     "from": "compose",
+     "output": "tests_json"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "review",
+     "path": "review-readability.md",
+     "describe": "Verdict (accept/revise) and findings."
+    }
+   ],
+   "verify": "script: file starts with a line VERDICT: accept or VERDICT: revise.",
+   "worker": {
+    "model": "opus",
+    "tools": [],
+    "prompt": "You are a field-service writer. Judge clarity and consistency of labels, units, the assumption, the question and trap messages against the contract."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  }
+ ]
+}

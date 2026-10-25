@@ -1,0 +1,23 @@
+{
+  "requiredInputs": [
+    {
+      "fact": "Verified manufacturer cooling-capacity rating for the Frigid Coil RALTG-3040 evaporator; the model designation alone does not establish its capacity.",
+      "unit": "Btu/h",
+      "argName": null
+    },
+    {
+      "fact": "The conditions under which that capacity is rated, and confirmation that this rating is the capacity being requested.",
+      "unit": "rating conditions",
+      "argName": null
+    }
+  ],
+  "cases": [
+    {
+      "name": "Refuse when no verified capacity rating is supplied: RALTG-3040 alone does not establish TR",
+      "fn": "evaporatorModelCapacityTr",
+      "args": [],
+      "refuse": true
+    }
+  ],
+  "properties": []
+}

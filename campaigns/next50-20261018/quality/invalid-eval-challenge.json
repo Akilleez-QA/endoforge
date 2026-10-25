@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "requestId": "dev-length-02",
+  "reason": "SI kilo prefix is 1000;1000m equals1km, not1000km.",
+  "frozenClaim": {
+    "caseId": "arithmetic-contradiction",
+    "inputs": {
+      "m": 1000
+    },
+    "expect": 1000,
+    "unit": "km",
+    "tolerance": 1e-9
+  },
+  "evidenceFile": "campaigns/next50-20261018/quality/challenge-evidence.json",
+  "evidenceSha256": "80246604dff8ff74b272ae93af3460d25119772c1adf6dc4bc80ee057c7915cb",
+  "sourceFile": "campaigns/next50-20261018/quality/bipm-prefixes-source.html",
+  "sourceSha256": "db6bb75731bc92dcf3961b219ec9f9bdf3596ca5f43b74b5e85e492be55773c9",
+  "providerHash": "fa51974a1725be872e8c9fddc8dc3b3501a6cc4d247ee37044903d66c65c3055",
+  "proposedCorrection": {
+    "caseId": "arithmetic-contradiction",
+    "inputs": {
+      "m": 1000
+    },
+    "expect": 1,
+    "unit": "km",
+    "tolerance": 1e-9
+  },
+  "status": "independently-supported-new-suite-version-required",
+  "prohibitsInPlaceEvalEdit": true
+}

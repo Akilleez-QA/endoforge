@@ -1,0 +1,51 @@
+{
+ "order": [
+  "iface",
+  "contract",
+  "k-day",
+  "k-date",
+  "k-age",
+  "k-win",
+  "t-calc",
+  "t-rel",
+  "glue",
+  "compose",
+  "rv-operator",
+  "rv-auditor",
+  "rv-readability"
+ ],
+ "waves": {
+  "0": [
+   "iface",
+   "contract"
+  ],
+  "1": [
+   "k-day",
+   "k-date",
+   "k-age",
+   "k-win",
+   "t-calc",
+   "t-rel",
+   "glue"
+  ],
+  "2": [
+   "compose"
+  ],
+  "3": [
+   "rv-operator",
+   "rv-auditor",
+   "rv-readability"
+  ]
+ },
+ "total": 22,
+ "critical": 8,
+ "criticalPath": [
+  "contract",
+  "k-date",
+  "compose",
+  "rv-operator"
+ ],
+ "speedupBound": 2.75,
+ "serialFraction": 0.36,
+ "width": 7
+}

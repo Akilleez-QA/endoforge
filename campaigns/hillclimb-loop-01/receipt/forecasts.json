@@ -1,0 +1,151 @@
+{
+  "registeredAt": "finalised with PRECOMMIT.md v1 before any step-3 run; hash in receipt/precommit.sha256",
+  "scoring": "Brier = (p - outcome)^2; outcome 1 when the event happened, 0 when not, null when the loop could not observe it (excluded from the mean)",
+  "forecasts": [
+    {
+      "id": "F01",
+      "p": 0.77,
+      "event": "|clean(inc-low r1) - clean(inc-low r2)| <= 3 of 20 on the development set, median panel rule",
+      "source": "charter"
+    },
+    {
+      "id": "F02",
+      "p": 0.65,
+      "event": "mean clean of the two inc-low runs on the development set <= 5 of 20 (median rule)"
+    },
+    {
+      "id": "F03",
+      "p": 0.35,
+      "event": "E (all-new + D-02) minus A (incumbent) paired clean gain >= +6 of 20 on the working set (median rule)",
+      "source": "charter, with the deviation arm inside the challenger"
+    },
+    {
+      "id": "F04",
+      "p": 0.5,
+      "event": "(stage corners carried forward; unobservable this loop) S main effect on clean (mean over the other factors) >= +0.20 (4 of 20)",
+      "observable": false
+    },
+    {
+      "id": "F05",
+      "p": 0.25,
+      "event": "(stage corners carried forward; unobservable this loop) G main effect on clean >= +0.20",
+      "observable": false
+    },
+    {
+      "id": "F06",
+      "p": 0.4,
+      "event": "(stage corners carried forward; unobservable this loop) |Q main effect on clean| >= 0.10",
+      "observable": false
+    },
+    {
+      "id": "F07",
+      "p": 0.25,
+      "event": "(stage corners carried forward; unobservable this loop) |R main effect on clean| >= 0.10",
+      "observable": false
+    },
+    {
+      "id": "F08",
+      "p": 0.3,
+      "event": "named cross-stage interaction (carried forward with corners C and D; unobservable this loop): |S x G interaction on clean| >= 0.15",
+      "observable": false
+    },
+    {
+      "id": "F09",
+      "p": 0.6,
+      "event": "canary recall 3/3 on the first dry-run attempt"
+    },
+    {
+      "id": "F10",
+      "p": 0.7,
+      "event": "inter-oracle within-one agreement >= 80 % (every pair) over the working-set artefacts"
+    },
+    {
+      "id": "F11",
+      "p": 0.7,
+      "event": "(default-effort arm carried forward; unobservable this loop) clean(inc-default) within 3 of 20 of the inc-low mean",
+      "observable": false
+    },
+    {
+      "id": "F12",
+      "p": 0.8,
+      "event": "incumbent G1-G7 pass rate >= 17 of 20 in each inc-low run on the development set"
+    },
+    {
+      "id": "F13",
+      "p": 0.6,
+      "event": "E G1-G7 pass count on the working set >= incumbent count - 3"
+    },
+    {
+      "id": "F14",
+      "p": 0.75,
+      "event": "E tokens per request (spec + generation + persona + repair, no scoring) <= 3.0 x the incumbent's (worker + repairs + persona)"
+    },
+    {
+      "id": "F15",
+      "p": 0.55,
+      "event": "loop total <= 8,000,000 tokens (all providers, all kinds)"
+    },
+    {
+      "id": "F16",
+      "p": 0.92,
+      "event": "loop total <= 12,000,000 tokens"
+    },
+    {
+      "id": "F17",
+      "p": 0.4,
+      "event": "sealed set: E clean count >= incumbent clean count + 2 (median rule)"
+    },
+    {
+      "id": "F18",
+      "p": 0.8,
+      "event": ">= 80 % of artefacts the output persona rejects are also not clean under the median panel rule"
+    },
+    {
+      "id": "F19",
+      "p": 0.6,
+      "event": "the deviation critic's top-ranked deviation is one of the seeds D-01..D-07 (possibly sharpened)"
+    },
+    {
+      "id": "F20",
+      "p": 0.5,
+      "event": "G8 fails at least one screen artefact that the panel calls clean (median rule)"
+    },
+    {
+      "id": "F21",
+      "p": 0.6,
+      "event": "median wall per request of E on the critical path (spec, generation, persona, repair) <= 1.5 x the incumbent's median run wall"
+    },
+    {
+      "id": "F22",
+      "p": 0.6,
+      "event": "(carried forward; unobservable this loop) blind Sonnet generation vs Opus-low sequential generation given S-new within 10 points",
+      "source": "charter (Sonnet within 10 points of Opus)",
+      "observable": false
+    },
+    {
+      "id": "F23",
+      "p": 0.35,
+      "event": "D-02's own effect: E minus B paired clean gain >= +3 of 20 on the working set (median rule)"
+    },
+    {
+      "id": "F24",
+      "p": 0.6,
+      "event": "the output persona names a change or rejects on >= 60 % of gated B artefacts (repair triggered)"
+    },
+    {
+      "id": "F25",
+      "p": 0.4,
+      "event": "of the repaired artefacts, >= 50 % are accepted by both personas on the second review (repair resolved)"
+    },
+    {
+      "id": "F26",
+      "p": 0.5,
+      "event": "B minus A paired clean gain >= +4 of 20 on the working set (median rule): the bundle without its deviation"
+    },
+    {
+      "id": "F27",
+      "p": 0.7,
+      "event": "the three sealed oracles' criteria pass the executable-anchoring audit with a mean score >= 1.5 of 2 over the five audited sheets"
+    }
+  ]
+}

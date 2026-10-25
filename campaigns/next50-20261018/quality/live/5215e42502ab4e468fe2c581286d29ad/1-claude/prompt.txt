@@ -1,0 +1,28 @@
+Write independent executable evals from ONLY the attached raw request and bare signature. No generator code or contract exists. Output only JSON object {"procedure":{...},"cases":[...]}. Procedure fields required: version:1,id:string,kind:"affine" or "threshold",input:argument path,domain:[min,max],seed:7919,count:16,tolerance:number,unit:output unit. For affine include slope,offset; threshold include threshold,below,above. Each explicit case: {id,inputs:{argument:value},expect:number,tolerance,unit} or {id,inputs:{argument:value},expectError:true,errorPath:argument,tolerance:0,unit}. Include finite out-of-range, string "NaN", "Infinity", "-Infinity" refusal cases, missing-input refusal {}, and threshold boundary if applicable. Cases must not reuse procedure case IDs. No markdown, explanation or extra fields.
+{
+  "version": 1,
+  "request": {
+    "id": "dev-length-02",
+    "raw": "Convert finite distance m in [0,1000000] metres to kilometres, absolute tolerance 1e-9 km. Refuse other values naming m. Require m; return number labelled km."
+  },
+  "signature": {
+    "version": 1,
+    "name": "metresToKilometres",
+    "inputs": [
+      {
+        "path": "m",
+        "type": "number",
+        "unit": "m",
+        "domain": [
+          0,
+          1000000
+        ]
+      }
+    ],
+    "output": {
+      "type": "number",
+      "unit": "km"
+    }
+  },
+  "reference": null
+}

@@ -1,0 +1,576 @@
+{
+ "schema": "endoforge/atoms/1",
+ "need": {
+  "id": "C-005",
+  "text": "# Request C-005\n\n| Field | Content |\n|---|---|\n| Collected | 2026-10-17, by the Endoforge mining agent and the refrigeration-ai session (candidate C-005, grade MEDIUM, source list: TI-111) |\n| Requester | service technician (anonymous chatbot user) |\n| Context | service technician, chatbot (unit model redacted in the corpus). |\n| Inclusion rules met | 1 (owner vouched in chat on 2026-10-17: \"Add all HIGH and MEDIUM candidates to the pool; I vouch for them\") / 2 / 3 / 4 |\n\n## The request, in the requester's words\n\n> \"<model> 1 Meter pipe run how much refrigerant and what type 1/4 and 1/2 pipe size\"\n\n## Authoritative inputs the requester named\n\n- unit model, line length (1 m), line sizes (1/4 and 1/2 in).\n\n## Examples the requester gave, if any\n\n- none recorded\n\n## What the collector did not ask\n\nNothing was clarified with the requester; the request is as found. Source: session file row TI-111.."
+ },
+ "acceptance": [
+  {
+   "id": "A1",
+   "statement": "The composed kernel is a WASM module with no imports that exports liquidLineFillG, additionalChargeG and linePairValid.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const m=new WebAssembly.Module(require('fs').readFileSync('/in/compose/kernel.wasm'));const e=WebAssembly.Module.exports(m).map(x=>x.name);const i=WebAssembly.Module.imports(m);for(const n of ['liquidLineFillG','additionalChargeG','linePairValid'])if(!e.includes(n))process.exit(1);if(i.length)process.exit(2)\""
+   }
+  },
+  {
+   "id": "A2",
+   "statement": "For the requested case (1 m, 1/4 in liquid line, assumed R410A) the liquid-line fill is between 17 and 21 g.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const m=new WebAssembly.Instance(new WebAssembly.Module(require('fs').readFileSync('/in/compose/kernel.wasm')),{});const v=m.exports.liquidLineFillG(1,1,1);if(!(v>17&&v<21))process.exit(1)\""
+   }
+  },
+  {
+   "id": "A3",
+   "statement": "A run within the unit's pre-charged length needs 0 g additional charge; beyond it the charge is the excess length times the per-metre fill.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const m=new WebAssembly.Instance(new WebAssembly.Module(require('fs').readFileSync('/in/compose/kernel.wasm')),{});const x=m.exports;if(x.additionalChargeG(1,5,1,1)!==0)process.exit(1);const d=x.additionalChargeG(15,5,1,1)-10*x.liquidLineFillG(1,1,1);if(Math.abs(d)>1e-9)process.exit(2)\""
+   }
+  },
+  {
+   "id": "A4",
+   "statement": "Negative, NaN, over-limit lengths and unknown size or refrigerant codes trap rather than return a number.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const m=new WebAssembly.Instance(new WebAssembly.Module(require('fs').readFileSync('/in/compose/kernel.wasm')),{});const x=m.exports;const t=f=>{try{f();return false}catch(e){return true}};if(!(t(()=>x.liquidLineFillG(-1,1,1))&&t(()=>x.liquidLineFillG(NaN,1,1))&&t(()=>x.liquidLineFillG(1,9,1))&&t(()=>x.liquidLineFillG(1,1,9))&&t(()=>x.liquidLineFillG(1e6,1,1))))process.exit(1)\""
+   }
+  },
+  {
+   "id": "A5",
+   "statement": "The contract states the assumptions (1/4 in is the liquid line, 1/2 in is the gas line; refrigerant R410A; pre-charged length), asks exactly one question, and lists refused inputs.",
+   "check": {
+    "kind": "oracle",
+    "criteria": "CONTRACT.md names each assumption as an assumption, contains a single question about the nameplate refrigerant and factory-charged line length, lists refused inputs, and invents no facts about the redacted unit model."
+   }
+  },
+  {
+   "id": "A6",
+   "statement": "Gates G1-G7 all pass on the composed artefact.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const g=JSON.parse(require('fs').readFileSync('/in/compose/gates.json','utf8'));if(!['G1','G2','G3','G4','G5','G6','G7'].every(k=>g[k]&&g[k].pass===true))process.exit(1)\""
+   }
+  },
+  {
+   "id": "A7",
+   "statement": "glue.json gives labels, units (g, m), precision, codes for sizes and refrigerants, the assumption, the question, and a message for every trap.",
+   "check": {
+    "kind": "command",
+    "run": "node -e \"const g=JSON.parse(require('fs').readFileSync('/in/compose/glue.json','utf8'));for(const k of ['exports','codes','assumption','question','traps'])if(!(k in g))process.exit(1)\""
+   }
+  }
+ ],
+ "atoms": [
+  {
+   "id": "iface",
+   "kind": "interface",
+   "title": "Interface stub",
+   "contract": "Declares export names, argument names, units, codes and return types for the line-charge kernel; no logic. Exports: liquidLineFillG(lengthM:f64,sizeCode:i32,refCode:i32):f64; additionalChargeG(lengthM:f64,freeLengthM:f64,sizeCode:i32,refCode:i32):f64; linePairValid(liquidCode:i32,gasCode:i32):i32. sizeCode 1=1/4 in, 2=3/8 in, 3=1/2 in. refCode 1=R410A, 2=R32, 3=R22. Units: metres, grams.",
+   "inputs": [
+    {
+     "from": "need"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "interface",
+     "path": "interface.json",
+     "describe": "JSON listing exports, args with units, codes, return types, trap conditions by name"
+    }
+   ],
+   "verify": "Script parses JSON, checks the three export names, arg names and types are present and codes are integer-keyed.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Reply with exactly the content of interface.json and nothing else. Define the three exports given in the atom contract with arg names, units, types and code tables. Do not add exports or equipment facts."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "contract",
+   "kind": "contract",
+   "title": "CONTRACT.md",
+   "contract": "Writes CONTRACT.md: what is computed (liquid-line fill = pi/4 * innerDiameter^2 * length * liquid density; additional charge = max(0, length - freeLength) * per-metre fill), the assumptions (1/4 in is liquid line and 1/2 in is gas line; gas line vapour fill ignored; refrigerant R410A when unknown; free length is an input), exactly one question, and refused inputs (negative, NaN, infinite, length over 100 m, free length negative, unknown codes).",
+   "inputs": [
+    {
+     "from": "need"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "contract",
+     "path": "CONTRACT.md",
+     "describe": "Markdown contract"
+    }
+   ],
+   "verify": "Script greps for headings Computed, Assumption, Question, Refused and checks exactly one line ending in '?' under Question.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Reply with exactly the content of CONTRACT.md. Sections: Computed, Assumption, Question (one question: what refrigerant and factory-charged line length does the unit nameplate or installation manual give?), Refused inputs. State that the unit model is redacted and nothing is known about it. Do not invent equipment facts."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "data",
+   "kind": "data",
+   "title": "Pipe and density data",
+   "contract": "data.json with inner diameters in mm for 1/4, 3/8, 1/2 in copper (OD 6.35, 9.52, 12.7 with 0.8 mm wall: ID 4.75, 7.92, 11.1) and saturated-liquid densities in g/cm3 at 25 C for R410A, R32, R22, each with a source note saying approximate.",
+   "inputs": [
+    {
+     "from": "need"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "data",
+     "path": "data.json",
+     "describe": "Lookup tables keyed by code"
+    }
+   ],
+   "verify": "Script parses JSON, checks keys 1..3 for size, 1..3 for refrigerant, all numbers positive and densities between 0.8 and 1.4.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Reply with exactly data.json. Keys: sizes {1:{od_mm,wall_mm,id_mm},...}, refrigerants {1:{name,density_g_cm3,note},...}. Use the values in the atom contract; densities approximate at 25 C liquid, marked as such."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "k-charge",
+   "kind": "kernel",
+   "title": "Fill and additional charge kernel",
+   "contract": "charge.ts in AssemblyScript exporting liquidLineFillG and additionalChargeG per interface and contract using data tables as constants; pure, no imports; traps via unreachable() on refused inputs; compiles with asc.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    },
+    {
+     "from": "data",
+     "output": "data"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "charge",
+     "path": "charge.ts",
+     "describe": "AssemblyScript source"
+    }
+   ],
+   "verify": "asc compiles it with no errors; node instantiates with no imports; liquidLineFillG(1,1,1) between 17 and 21.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [
+     "Bash",
+     "Read",
+     "Write",
+     "Edit"
+    ],
+    "toolchain": "asc",
+    "prompt": "Write charge.ts. Implement exactly the two exports from the interface following the contract formulas. Embed table constants from data. Guard with unreachable() for NaN, negatives, lengths over 100, unknown codes. Compile with asc to check, no imports."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "k-pair",
+   "kind": "kernel",
+   "title": "Line pair validity kernel",
+   "contract": "pair.ts exporting linePairValid(liquidCode,gasCode):i32 returning 1 when gas code is larger than liquid code, else 0; traps on codes outside 1..3.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "pair",
+     "path": "pair.ts",
+     "describe": "AssemblyScript source"
+    }
+   ],
+   "verify": "asc compiles; linePairValid(1,3)==1, linePairValid(3,1)==0.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [
+     "Bash",
+     "Read",
+     "Write",
+     "Edit"
+    ],
+    "toolchain": "asc",
+    "prompt": "Write pair.ts with the single export. Compile with asc to check. No imports."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "t-charge",
+   "kind": "tests",
+   "title": "Value tests",
+   "contract": "tests-values.json in the fixed gate format: calls with expected numeric values (with tolerance) for liquidLineFillG, additionalChargeG and linePairValid, including the requested case (1 m, 1/4, R410A) and zero charge within free length. Expected values derived by hand from the contract formula and data.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    },
+    {
+     "from": "data",
+     "output": "data"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "tests",
+     "path": "tests-values.json",
+     "describe": "Test list, calls with expected values"
+    }
+   ],
+   "verify": "Script parses JSON, checks each call names an exported function with correct arity, and at least 10 cases.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Reply with exactly tests-values.json. Compute each expected value as pi/4*id_mm^2*100*length/100... carefully in grams from the data, stating tolerance 1e-6 relative. Cover all three sizes and refrigerants."
+   },
+   "size": {
+    "work": 2,
+    "interface": 1
+   }
+  },
+  {
+   "id": "t-traps",
+   "kind": "tests",
+   "title": "Trap tests",
+   "contract": "tests-traps.json with calls expected to trap: negative length, NaN, Infinity, 100.0001 m, negative free length, size code 0 and 4, refrigerant code 0 and 4, pair codes out of range; plus boundary calls at 0 and 100 m expected not to trap.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "tests",
+     "path": "tests-traps.json",
+     "describe": "Test list, calls with expected trap"
+    }
+   ],
+   "verify": "Script parses JSON and checks each call names an export with correct arity and has expect trap or value.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Reply with exactly tests-traps.json in the fixed gate format with expected traps."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "g-charge",
+   "kind": "glue",
+   "title": "Glue for fill and charge",
+   "contract": "glue-charge.json: labels, unit g, precision 0 decimals for display, size and refrigerant code tables, and trap messages for liquidLineFillG and additionalChargeG.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "glue",
+     "path": "glue-charge.json",
+     "describe": "Glue fragment"
+    }
+   ],
+   "verify": "Script parses JSON; checks both export names, unit g, codes and a message per trap condition.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Reply with exactly glue-charge.json. Include the assumption text and the single question from the contract verbatim."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "g-pair",
+   "kind": "glue",
+   "title": "Glue for pair check",
+   "contract": "glue-pair.json: label, return codes (1 valid, 0 not valid), trap message for linePairValid.",
+   "inputs": [
+    {
+     "from": "iface",
+     "output": "interface"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "glue",
+     "path": "glue-pair.json",
+     "describe": "Glue fragment"
+    }
+   ],
+   "verify": "Script parses JSON; checks export name linePairValid and a trap message.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Reply with exactly glue-pair.json."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "compose",
+   "kind": "compose",
+   "title": "Compose artefact and run gates",
+   "contract": "Concatenates charge.ts and pair.ts into one module, compiles kernel.wasm, merges tests and glue fragments into tests.json and glue.json (with top-level keys exports, codes, assumption, question, traps), copies CONTRACT.md, runs G1-G7 and writes gates.json with pass flags.",
+   "inputs": [
+    {
+     "from": "k-charge",
+     "output": "charge"
+    },
+    {
+     "from": "k-pair",
+     "output": "pair"
+    },
+    {
+     "from": "t-charge",
+     "output": "tests"
+    },
+    {
+     "from": "t-traps",
+     "output": "tests"
+    },
+    {
+     "from": "g-charge",
+     "output": "glue"
+    },
+    {
+     "from": "g-pair",
+     "output": "glue"
+    },
+    {
+     "from": "contract",
+     "output": "contract"
+    },
+    {
+     "from": "iface",
+     "output": "interface"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "wasm",
+     "path": "kernel.wasm",
+     "describe": "Compiled kernel"
+    },
+    {
+     "name": "contract",
+     "path": "CONTRACT.md",
+     "describe": "Contract"
+    },
+    {
+     "name": "tests",
+     "path": "tests.json",
+     "describe": "Merged tests"
+    },
+    {
+     "name": "glue",
+     "path": "glue.json",
+     "describe": "Merged glue"
+    },
+    {
+     "name": "gates",
+     "path": "gates.json",
+     "describe": "G1-G7 results with pass flags"
+    }
+   ],
+   "verify": "Acceptance checks A1-A7 run against the output directory.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [
+     "Bash",
+     "Read",
+     "Write",
+     "Edit"
+    ],
+    "toolchain": "asc",
+    "prompt": "Assemble the artefact. Do not edit kernel logic or test expectations; if a gate fails, record it in gates.json with pass false and the output, and report it."
+   },
+   "size": {
+    "work": 3,
+    "interface": 2
+   }
+  },
+  {
+   "id": "r-tech",
+   "kind": "review",
+   "title": "Service technician review",
+   "contract": "Blind review as a field service technician: judges from the request and the interface/contract/glue whether the answer to 1 m, 1/4 and 1/2 pipe is usable and whether the question is the right one. Output a verdict pass/fail with reasons.",
+   "inputs": [
+    {
+     "from": "need"
+    },
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "compose",
+     "output": "contract"
+    },
+    {
+     "from": "compose",
+     "output": "glue"
+    },
+    {
+     "from": "compose",
+     "output": "gates"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "review",
+     "path": "review-tech.json",
+     "describe": "verdict and findings"
+    }
+   ],
+   "verify": "Script parses JSON with verdict in pass|fail and a findings array.",
+   "worker": {
+    "model": "sonnet",
+    "tools": [],
+    "prompt": "Reply with exactly review-tech.json {verdict,findings[]}. Judge as a technician on a job site."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "r-codex",
+   "kind": "review",
+   "title": "Independent-family review",
+   "contract": "Blind review by a different model family of whether the contract's assumptions are stated honestly, refused inputs are sensible, and glue matches the interface. Output verdict and findings.",
+   "inputs": [
+    {
+     "from": "need"
+    },
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "compose",
+     "output": "contract"
+    },
+    {
+     "from": "compose",
+     "output": "glue"
+    },
+    {
+     "from": "compose",
+     "output": "tests"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "review",
+     "path": "review-codex.json",
+     "describe": "verdict and findings"
+    }
+   ],
+   "verify": "Script parses JSON with verdict in pass|fail and a findings array.",
+   "worker": {
+    "model": "codex",
+    "tools": [],
+    "prompt": "Reply with exactly review-codex.json {verdict,findings[]}. Check for invented equipment facts."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "r-safety",
+   "kind": "review",
+   "title": "Refrigerant safety review",
+   "contract": "Blind review as a refrigerant safety and compliance reviewer: checks that the artefact does not present an assumed refrigerant or charge as authoritative for the unit and directs to the nameplate and manual. Output verdict and findings.",
+   "inputs": [
+    {
+     "from": "need"
+    },
+    {
+     "from": "iface",
+     "output": "interface"
+    },
+    {
+     "from": "compose",
+     "output": "contract"
+    },
+    {
+     "from": "compose",
+     "output": "glue"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "review",
+     "path": "review-safety.json",
+     "describe": "verdict and findings"
+    }
+   ],
+   "verify": "Script parses JSON with verdict in pass|fail and a findings array.",
+   "worker": {
+    "model": "opus",
+    "tools": [],
+    "prompt": "Reply with exactly review-safety.json {verdict,findings[]}."
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  }
+ ]
+}

@@ -1,0 +1,29 @@
+{
+  "at": "2026-10-17T17:48:59Z",
+  "check": "ANTHROPIC_API_KEY and ANTHROPIC_AUTH_TOKEN must be unset in the runner process so claude -p bills the subscription, not the API",
+  "runner_processes": {
+    "476517": {
+      "ANTHROPIC_API_KEY_present": false,
+      "ANTHROPIC_AUTH_TOKEN_present": false,
+      "CLAUDE_EFFORT_present": true
+    },
+    "476530": {
+      "ANTHROPIC_API_KEY_present": false,
+      "ANTHROPIC_AUTH_TOKEN_present": false,
+      "CLAUDE_EFFORT_present": true
+    },
+    "476531": {
+      "ANTHROPIC_API_KEY_present": false,
+      "ANTHROPIC_AUTH_TOKEN_present": false,
+      "CLAUDE_EFFORT_present": true
+    },
+    "478442": {
+      "ANTHROPIC_API_KEY_present": false,
+      "ANTHROPIC_AUTH_TOKEN_present": false,
+      "CLAUDE_EFFORT_present": true
+    }
+  },
+  "launching_shell_ANTHROPIC_API_KEY_present": false,
+  "launching_shell_ANTHROPIC_AUTH_TOKEN_present": false,
+  "note": "Recorded during the first subscription run, before run.mjs gained the built-in assertion (added after this invocation so the run.mjs hash in env-before/env-after stays consistent)."
+}

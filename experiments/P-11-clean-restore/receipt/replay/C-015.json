@@ -1,0 +1,261 @@
+{
+  "id": "C-015",
+  "command": {
+    "argv": [
+      "sudo",
+      "-n",
+      "docker",
+      "--host",
+      "unix:///home/user/Work/endoforge/experiments/P-11-clean-restore/work/docker.sock",
+      "run",
+      "--name",
+      "endoforge-p11-3716445-c-015",
+      "--rm",
+      "--pull=never",
+      "--network=none",
+      "--read-only",
+      "--user",
+      "1000:1000",
+      "--cap-drop=ALL",
+      "--security-opt=no-new-privileges",
+      "--cpus=1",
+      "--memory=512m",
+      "--memory-swap=512m",
+      "--pids-limit=64",
+      "--tmpfs",
+      "/tmp:rw,nosuid,nodev,size=64m",
+      "--mount",
+      "type=bind,src=/home/user/Work/endoforge/experiments/P-11-clean-restore/work/restored/inputs/candidates,dst=/out",
+      "--entrypoint",
+      "/usr/local/bin/node",
+      "sha256:5407fa2b6f7fac21ef527ce0be5bfce9b3034cd5b8e9818435b8100389826e28",
+      "/bundle/campaigns/x1-spec-study/factory/gate.mjs",
+      "run",
+      "/out/C-015"
+    ],
+    "exit": 0,
+    "stdout": "{\n \"promotable\": true,\n \"gates\": {\n  \"G1_frozen\": {\n   \"ok\": true\n  },\n  \"G2_compiles\": {\n   \"ok\": true,\n   \"wasmBytes\": 117,\n   \"wasmSha256\": \"f2b1c0da9031adf8a14e482fe9ee6df343fbefc918bcd644a0e6da65a7fa1666\"\n  },\n  \"G3_exports\": {\n   \"ok\": true,\n   \"exports\": [\n    \"decide\"\n   ]\n  },\n  \"G4_tests\": {\n   \"ok\": true,\n   \"passed\": 11,\n   \"total\": 11\n  },\n  \"G6_bounded\": {\n   \"ok\": true,\n   \"maxMs\": 0.042119\n  },\n  \"G5_deterministic\": {\n   \"ok\": true\n  },\n  \"G7_glue\": {\n   \"ok\": true\n  }\n }\n}\n",
+    "stderr": "",
+    "wallMs": 1824.6208889977424
+  },
+  "result": {
+    "at": "2026-10-18T19:00:04.173Z",
+    "gates": {
+      "G1_frozen": {
+        "ok": true
+      },
+      "G2_compiles": {
+        "ok": true,
+        "wasmBytes": 117,
+        "wasmSha256": "f2b1c0da9031adf8a14e482fe9ee6df343fbefc918bcd644a0e6da65a7fa1666"
+      },
+      "G3_exports": {
+        "ok": true,
+        "exports": [
+          "decide"
+        ]
+      },
+      "G4_tests": {
+        "ok": true,
+        "passed": 11,
+        "total": 11
+      },
+      "G6_bounded": {
+        "ok": true,
+        "maxMs": 0.042119
+      },
+      "G5_deterministic": {
+        "ok": true
+      },
+      "G7_glue": {
+        "ok": true
+      }
+    },
+    "tests": [
+      {
+        "name": "waiver allowed with role right and unexpiring qualification",
+        "fn": "decide",
+        "args": [
+          1,
+          1,
+          1,
+          -1,
+          100
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0.042,
+        "pass": true
+      },
+      {
+        "name": "waiver denied: role right but no qualification",
+        "fn": "decide",
+        "args": [
+          1,
+          1,
+          0,
+          -1,
+          100
+        ],
+        "expect": 2,
+        "got": 2,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "MOC denied: role right but no qualification",
+        "fn": "decide",
+        "args": [
+          2,
+          1,
+          0,
+          -1,
+          100
+        ],
+        "expect": 2,
+        "got": 2,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "MOC allowed with role right and future expiry",
+        "fn": "decide",
+        "args": [
+          2,
+          1,
+          1,
+          200,
+          100
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0.001,
+        "pass": true
+      },
+      {
+        "name": "waiver denied: no role right even with qualification",
+        "fn": "decide",
+        "args": [
+          1,
+          0,
+          1,
+          -1,
+          100
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0.002,
+        "pass": true
+      },
+      {
+        "name": "MOC denied: no role right, no qualification",
+        "fn": "decide",
+        "args": [
+          2,
+          0,
+          0,
+          -1,
+          100
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "other action: role right alone allows",
+        "fn": "decide",
+        "args": [
+          0,
+          1,
+          0,
+          -1,
+          100
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "other action: no role right denies",
+        "fn": "decide",
+        "args": [
+          0,
+          0,
+          1,
+          -1,
+          100
+        ],
+        "expect": 1,
+        "got": 1,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "assumption: expired qualification denied with code 3",
+        "fn": "decide",
+        "args": [
+          1,
+          1,
+          1,
+          99,
+          100
+        ],
+        "expect": 3,
+        "got": 3,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "boundary: expiry on as-of day still valid",
+        "fn": "decide",
+        "args": [
+          1,
+          1,
+          1,
+          100,
+          100
+        ],
+        "expect": 0,
+        "got": 0,
+        "ms": 0,
+        "pass": true
+      },
+      {
+        "name": "unknown action code traps",
+        "fn": "decide",
+        "args": [
+          7,
+          1,
+          1,
+          -1,
+          100
+        ],
+        "expect": "error",
+        "got": "unreachable",
+        "ms": 0.037,
+        "pass": true
+      }
+    ],
+    "promotable": true
+  },
+  "wasmSha256": "f2b1c0da9031adf8a14e482fe9ee6df343fbefc918bcd644a0e6da65a7fa1666",
+  "comparisons": {
+    "bubblewrap": {
+      "semanticMatch": true,
+      "wasmMatch": true,
+      "exitMatch": true
+    },
+    "docker": {
+      "semanticMatch": true,
+      "wasmMatch": true,
+      "exitMatch": true
+    },
+    "roundtrip": {
+      "semanticMatch": true,
+      "wasmMatch": true,
+      "exitMatch": true
+    }
+  }
+}

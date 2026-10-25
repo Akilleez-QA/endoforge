@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "scope": "actual live checkpoint authentication controls",
+  "archiveUnchanged": true,
+  "archiveSha256": "e62c7eec59491721977e0da23782b522906014c20aa4da38ad4a02ac4a8aaefb",
+  "controls": [
+    {
+      "control": "actual-wrongkey",
+      "rejected": true,
+      "destinationCreated": false,
+      "error": "checkpoint decryption/authentication failed"
+    },
+    {
+      "control": "actual-corrupt",
+      "rejected": true,
+      "destinationCreated": false,
+      "error": "checkpoint decryption/authentication failed"
+    }
+  ],
+  "identityPermissions": "0o600"
+}

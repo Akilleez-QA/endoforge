@@ -1,0 +1,15 @@
+[
+{"name":"ref-nh3-86F-zero-excess","fn":"nonCondensableExcessPsi","args":[154.5,86,0,14.7,0],"expect":0,"tol":1.5},
+{"name":"head-pressure-plus-20","fn":"nonCondensableExcessPsi","args":[174.5,86,0,14.7,0],"expect":20,"tol":1.5},
+{"name":"subcooling-10-equals-86F","fn":"nonCondensableExcessPsi","args":[154.5,76,10,14.7,0],"expect":0,"tol":1.5},
+{"name":"subcooling-zero-upper-bound","fn":"nonCondensableExcessPsi","args":[154.5,76,0,14.7,0],"expect":27,"tol":3},
+{"name":"low-atmosphere-altitude","fn":"nonCondensableExcessPsi","args":[154.5,86,0,12.2,0],"expect":-2.5,"tol":1.5},
+{"name":"ref-r134a-86F-zero-excess","fn":"nonCondensableExcessPsi","args":[97.0,86,0,14.7,1],"expect":0,"tol":1.5},
+{"name":"boundary-minus40F","fn":"nonCondensableExcessPsi","args":[0,-40,0,14.7,0],"expect":4.3,"tol":1},
+{"name":"boundary-120F","fn":"nonCondensableExcessPsi","args":[271.7,120,0,14.7,0],"expect":0,"tol":2},
+{"name":"trap-pressure-at-minus-14.7","fn":"nonCondensableExcessPsi","args":[-14.7,86,0,14.7,0],"expectError":true},
+{"name":"trap-temp-121","fn":"nonCondensableExcessPsi","args":[154.5,121,0,14.7,0],"expectError":true},
+{"name":"trap-negative-subcooling","fn":"nonCondensableExcessPsi","args":[154.5,86,-1,14.7,0],"expectError":true},
+{"name":"trap-zero-atmosphere","fn":"nonCondensableExcessPsi","args":[154.5,86,0,0,0],"expectError":true},
+{"name":"trap-unknown-refrigerant","fn":"nonCondensableExcessPsi","args":[154.5,86,0,14.7,2],"expectError":true}
+]

@@ -1,0 +1,28 @@
+Write independent executable evals from ONLY the attached raw request and bare signature. No generator code or contract exists. Output only JSON object {"procedure":{...},"cases":[...]}. Procedure fields required: version:1,id:string,kind:"affine" or "threshold",input:argument path,domain:[min,max],seed:7919,count:16,tolerance:number,unit:output unit. For affine include slope,offset; threshold include threshold,below,above. Each explicit case: {id,inputs:{argument:value},expect:number,tolerance,unit} or {id,inputs:{argument:value},expectError:true,errorPath:argument,tolerance:0,unit}. Include finite out-of-range, string "NaN", "Infinity", "-Infinity" refusal cases, missing-input refusal {}, and threshold boundary if applicable. Cases must not reuse procedure case IDs. No markdown, explanation or extra fields.
+{
+  "version": 1,
+  "request": {
+    "id": "dev-affine-01",
+    "raw": "Convert a finite Celsius input c in [-273.15,1000] to Fahrenheit with absolute tolerance 1e-9 degF. Refuse other inputs naming c. Input c is required. Return a number labelled degF."
+  },
+  "signature": {
+    "version": 1,
+    "name": "celsiusToFahrenheit",
+    "inputs": [
+      {
+        "path": "c",
+        "type": "number",
+        "unit": "degC",
+        "domain": [
+          -273.15,
+          1000
+        ]
+      }
+    ],
+    "output": {
+      "type": "number",
+      "unit": "degF"
+    }
+  },
+  "reference": null
+}

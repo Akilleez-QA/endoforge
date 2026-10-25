@@ -1,0 +1,43 @@
+{
+ "order": [
+  "iface",
+  "contract",
+  "kernel-dewpoint",
+  "tests-dewpoint",
+  "glue-dewpoint",
+  "compose",
+  "review-technician",
+  "review-psychro",
+  "review-safety"
+ ],
+ "waves": {
+  "0": [
+   "iface",
+   "contract"
+  ],
+  "1": [
+   "kernel-dewpoint",
+   "tests-dewpoint",
+   "glue-dewpoint"
+  ],
+  "2": [
+   "compose"
+  ],
+  "3": [
+   "review-technician",
+   "review-psychro",
+   "review-safety"
+  ]
+ },
+ "total": 13,
+ "critical": 7,
+ "criticalPath": [
+  "contract",
+  "kernel-dewpoint",
+  "compose",
+  "review-technician"
+ ],
+ "speedupBound": 1.86,
+ "serialFraction": 0.54,
+ "width": 3
+}

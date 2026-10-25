@@ -1,0 +1,26 @@
+--- rust/src/lib.rs	2026-10-17 13:10:15.300572908 -0400
++++ rust-faulty/src/lib.rs	2026-10-17 13:11:56.394509682 -0400
+@@ -1,5 +1,4 @@
+ //! Rust implementation of CONTRACT.md `convert`. First version (v1), written directly from the contract.
+-use core::cmp::Ordering;
+ 
+ /// kPa per unit × 10^6 for codes 0..3 (kPa, psi, bar, inHg).
+ const K: [i64; 4] = [1_000_000, 6_894_757, 100_000_000, 3_386_389];
+@@ -16,16 +15,6 @@
+         num += ATM_MILLI_KPA * K[0];
+     }
+     let den = K[to_unit as usize];
+-    let mut q = num.div_euclid(den);
+-    let r = num.rem_euclid(den);
+-    match (2 * r).cmp(&den) {
+-        Ordering::Greater => q += 1,
+-        Ordering::Equal => {
+-            if q & 1 != 0 {
+-                q += 1;
+-            }
+-        }
+-        Ordering::Less => {}
+-    }
++    let q = num / den; // SEEDED FAULT: truncation toward zero instead of round-half-even
+     q.clamp(i32::MIN as i64 + 1, i32::MAX as i64) as i32
+ }

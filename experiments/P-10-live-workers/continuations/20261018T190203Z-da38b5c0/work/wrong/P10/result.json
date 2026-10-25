@@ -1,0 +1,158 @@
+{
+  "at": "2026-10-18T19:02:03.704Z",
+  "gates": {
+    "G1_frozen": {
+      "ok": true
+    },
+    "G2_compiles": {
+      "ok": true,
+      "wasmBytes": 74,
+      "wasmSha256": "edc93057df5f366a2fee5b8cf6e843dd1d16c7cd32c36b0101bf85f082d40e10"
+    },
+    "G3_exports": {
+      "ok": true,
+      "exports": [
+        "celsiusToFahrenheit"
+      ]
+    },
+    "G4_tests": {
+      "ok": false,
+      "passed": 1,
+      "total": 11
+    },
+    "G6_bounded": {
+      "ok": true,
+      "maxMs": 0.031008
+    },
+    "G5_deterministic": {
+      "ok": true
+    },
+    "G7_glue": {
+      "ok": true
+    }
+  },
+  "tests": [
+    {
+      "name": "freezing point",
+      "fn": "celsiusToFahrenheit",
+      "args": [
+        0
+      ],
+      "expect": 32,
+      "got": 32,
+      "ms": 0.031,
+      "pass": true
+    },
+    {
+      "name": "boiling point",
+      "fn": "celsiusToFahrenheit",
+      "args": [
+        100
+      ],
+      "expect": 212,
+      "got": 32,
+      "ms": 0.001,
+      "pass": false
+    },
+    {
+      "name": "negative ordinary value",
+      "fn": "celsiusToFahrenheit",
+      "args": [
+        -40
+      ],
+      "expect": -40,
+      "got": 32,
+      "ms": 0,
+      "pass": false
+    },
+    {
+      "name": "fractional ordinary value",
+      "fn": "celsiusToFahrenheit",
+      "args": [
+        37.5
+      ],
+      "expect": 99.5,
+      "got": 32,
+      "ms": 0.001,
+      "pass": false
+    },
+    {
+      "name": "inclusive lower bound",
+      "fn": "celsiusToFahrenheit",
+      "args": [
+        -273.15
+      ],
+      "expect": -459.67,
+      "got": 32,
+      "ms": 0.001,
+      "pass": false
+    },
+    {
+      "name": "inclusive upper bound",
+      "fn": "celsiusToFahrenheit",
+      "args": [
+        1000
+      ],
+      "expect": 1832,
+      "got": 32,
+      "ms": 0.001,
+      "pass": false
+    },
+    {
+      "name": "below lower bound",
+      "fn": "celsiusToFahrenheit",
+      "args": [
+        -273.150001
+      ],
+      "expect": "error",
+      "got": 32,
+      "ms": 0,
+      "pass": false
+    },
+    {
+      "name": "above upper bound",
+      "fn": "celsiusToFahrenheit",
+      "args": [
+        1000.000001
+      ],
+      "expect": "error",
+      "got": 32,
+      "ms": 0,
+      "pass": false
+    },
+    {
+      "name": "NaN refused",
+      "fn": "celsiusToFahrenheit",
+      "args": [
+        "NaN"
+      ],
+      "expect": "error",
+      "got": 32,
+      "ms": 0.001,
+      "pass": false
+    },
+    {
+      "name": "positive infinity refused",
+      "fn": "celsiusToFahrenheit",
+      "args": [
+        "Infinity"
+      ],
+      "expect": "error",
+      "got": 32,
+      "ms": 0,
+      "pass": false
+    },
+    {
+      "name": "negative infinity refused",
+      "fn": "celsiusToFahrenheit",
+      "args": [
+        "-Infinity"
+      ],
+      "expect": "error",
+      "got": 32,
+      "ms": 0,
+      "pass": false
+    }
+  ],
+  "promotable": false
+}

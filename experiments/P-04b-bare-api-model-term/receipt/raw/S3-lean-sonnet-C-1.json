@@ -1,0 +1,102 @@
+{
+  "id": "S3-lean-sonnet-C-1",
+  "arm": "S3-lean-sonnet",
+  "at": "2026-10-17T18:24:11.496Z",
+  "argv": [
+    "-p",
+    "--output-format",
+    "json",
+    "--no-session-persistence",
+    "--tools",
+    "",
+    "--strict-mcp-config",
+    "--mcp-config",
+    "{\"mcpServers\":{}}",
+    "--disable-slash-commands",
+    "--no-chrome",
+    "--setting-sources",
+    "",
+    "--max-budget-usd",
+    "2",
+    "--model",
+    "claude-sonnet-5-5"
+  ],
+  "cwd": "/tmp/claude-1000/p04b-empty-cwd",
+  "prompt_sha256": "8b015a52007a2d67ea6fa58408c9bf4d0167e39d4ceb6bdd1782a47490098279",
+  "prompt_bytes": 10390,
+  "exit_code": 0,
+  "is_error": false,
+  "subtype": "success",
+  "terminal_reason": "completed",
+  "stop_reason": "end_turn",
+  "model_ids": [
+    "claude-sonnet-5-5"
+  ],
+  "model_usage": {
+    "claude-sonnet-5-5": {
+      "inputTokens": 2,
+      "outputTokens": 10089,
+      "cacheReadInputTokens": 6647,
+      "cacheCreationInputTokens": 530,
+      "webSearchRequests": 0,
+      "costUSD": 0.10367870000000001,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 128000,
+      "thinkingTokens": 6954,
+      "canonicalModel": "claude-sonnet-5-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "wall_ms": 69496.1,
+  "duration_ms": 68411,
+  "duration_api_ms": 66167,
+  "num_turns": 1,
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 530,
+    "cache_read_input_tokens": 6647,
+    "output_tokens": 10089,
+    "output_tokens_details": {
+      "thinking_tokens": 6954
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 530,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 10089,
+        "cache_read_input_tokens": 6647,
+        "cache_creation_input_tokens": 530,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 530
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "thinking_tokens": 6954,
+  "visible_tokens": 3135,
+  "context_size_tokens": 7179,
+  "total_cost_usd_list": 0.10367870000000001,
+  "tok_s_wall": 145.17,
+  "tok_s_api": 152.48,
+  "result_chars": 6311,
+  "result_head": "@external(\"host\", \"host_record_count\") declare function host_record_count(set: u32): i32;\n@external(\"host\", \"host_record_field_i64\") declare function host_recor",
+  "stderr_head": "",
+  "asc_gate": {
+    "status": "pass",
+    "lines": 161
+  }
+}

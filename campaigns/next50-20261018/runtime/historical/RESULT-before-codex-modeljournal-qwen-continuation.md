@@ -1,0 +1,33 @@
+# N03/N04/N21–N30 runtime qualification
+
+Recorded local implementation and fault qualification, 18 October2026. No production integration or quality improvement claim. APIs and exact commands are in `tools/factory_runtime/README.md`; item-status.json is authoritative machine-readable scope.
+
+## What this does not show
+
+N27 is incomplete: two actual Claude Sonnet5.5 subscription calls succeeded through private-netnamespace/provider proxy, but final capdrop/rootro/SNI changes happened afterward. Current host credential metadata has no access/refresh token, so a same-final-version authenticated recheck cannot run. The two-turn allocation is exhausted; no paid API/provider substitute was used. Credentials were temporary role-specific copies of full-account subscription authority, not provider-issued limited-scope tokens. TLS SNI is checked but encrypted HTTP Host is not inspected. CONNECT routes are publicIPv4/443 only; no exclusive encrypted application-origin claim.
+
+N21–N25 qualify journaled offline Docker attempts. Hosted-model primitives have per-worker namespaces, random transient scope names, group deadlines, independent190s scope lifetimes and budgets, but do not yet have durable stage journals or crash-resume reconciliation. A timeout bound is not resumption. No full hosted workflow N34/N42 claim follows. Fsync crash qualification kills controller processes; it does not power-cycle storage. Scheduler executes synchronous FIFO batches, not parallel/multi-host scheduling. No archive extraction is supported. Trusted host administrator mutation and races from a malicious supervisor are outside worker isolation scope.
+
+## Accepted latest packets
+
+- `attempt-a4b596bb/`: normal/bad/missing/timeout/trap/duplicate, reuse refusal, live fence denial, actual controller SIGKILL/dead reconcile; Wasmtime good/trap/fuel/epoch/memory cases.
+- `faults-7b67440c/`: image create failure, injected client start failure, actual foreign-name collision preserved, source rehash mismatch, actual SIGTERM while container running; owned cleanup verified.
+- `recovery-42fe2ece/`: actual controller exit at artifact-fsync, validated-receipt-fsync, publication-fsync, terminal-receipt-fsync. Before publication gives explicit interrupted state; after publication recovers exactly matching artifact; repeated reconcile gives no duplicate. PID/starttime mismatch and stale generation denied. Hostile input/mount/archive controls and strict schema fixtures passed.
+- `bounds-2e981dee/`: actual Docker output/tmp quota failures, read-only root, memory OOMKilled, process exhaustion, bounded logs; actual model home/tmp/output filesystem full, bounded stdout cutoff, undeclared root/device writes refused, CapEff0; numeric Wasmtime args2.5+4=6.5.
+- `policy-48714cef/`: real HTTPS302 redirect to metadata fails second CONNECT (trusted upstream DNS/connection injection only), live model cgroup limits, evaluator mount authority, generator freeze and cross-read denials, native TLS SNI positive/negative controls, capture-without-publication and durable backoff.
+- `egress-6efdcdc2/`, `egress-5d54d8f2/`: earlier authenticated Claude subscription turns, respectively before/after quota scopes/tmpfs. Each returned7 with nonzero usage and no provider fallback. Direct IPv4/IPv6 host/LAN/metadata/public-DNS routes and forbidden proxy authorities denied; temporary creds deleted.
+- `cleanup-inventory.json`:114 distinct journal-owned container names checked; none remain; foreign containers untouched.
+
+The final-code distinction is explicit: latest deterministic policy/bounds run the hardened wrapper; earlier authenticated turns are retained as earlier-version evidence. Schema fixtures exercise timeout, cancellation, unknown outcome, retry parentage and recovered publication. JSON schemas and Python validators reject unknown versions/fields; terminal errors, content hashes and usage are mandatory.
+
+## Preserved failures and corrections
+
+`recovery-72c98bc1`: fixture directory collided with earlier symlink fixture; fixed unique fixture names, original evidence retained. `policy-216ffa45`: cgroup parser assumed unified hierarchy was first line; this host also has net_cls, so final parser selects0::. `bounds-90b6a3c7`: effective-capability check exposed retained mapped-root capabilities; final wrapper explicitly dropsALL and later test verifies0. An audit also found initially writable bubblewrap root/dev directories could bypass per-directory budgets; final wrapper remounts both read-only. Wasmtime stdout/native process resource bounds were expanded beyond linear-memory limits. Proxy EOF/slowheaders/concurrent thread/event/connection budgets and SNI were hardened after initial success. All earlier receipts remain separately identifiable.
+
+## Current constraint and transport follow-up
+
+The user subsequently prohibited Claude Code CLI. The current wrapper discovers/mounts Codex only and binds only temporary Codex auth; default provider allowlist is OpenAI only. `qualify_egress.py` refuses its historical Claude route. Earlier Claude receipts/source remain historical. Do not restore Claude login or invoke it. Current N27 gap is an authenticated Codex turn on the exact final wrapper, not a request to restore a prohibited route.
+
+Parent's `work/model-stages/consumer-8c6d09401b08/execution.json` timed out180s after `socat fork(): Resource temporarily unavailable`, then connection refusals. Native idle Codex reaches roughly50threads inside the64task limit; fork-per-connection forwarding can kill its listener when that limit is hit. CPU affinity/threadpool tuning was tried and preserved but was not reliable, so it was reverted. The final fix replaces fork-per-connection socat with a bounded single-process asyncio bridge and waits for bridge readiness before executing the worker. Tasks64, CPU100%, memory2GiB, zero capabilities, read-only root/dev, SNI and provider allowlist remain enforced.
+
+Final Codex-only, no-model packets: `transport-8a40346d/` proves provider HTTPS homepage TLS (HTTP403 counts as successful transport); `transport-capacity-554b5ea1/` runs native idle Codex plus concurrent homepage requests, checks every admitted connection and a post-pressure probe succeed. Resource-limit spawnEAGAIN remains an attributed refusal; it is not silently accepted work. `policy-c15c2d33/` repeats role/mount/redirect/SNI and resource checks; `bounds-c52ad45b/` repeats hard budgets. No credentials were copied and no model requests were made in the transport follow-up. This proves the listener-survival correction, not successful model execution or stage resumption.

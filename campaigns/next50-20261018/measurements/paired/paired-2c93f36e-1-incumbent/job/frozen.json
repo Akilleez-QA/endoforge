@@ -1,0 +1,257 @@
+{
+  "version": 1,
+  "suite": {
+    "cases": [
+      {
+        "expect": 1,
+        "id": "codex-one-kilometre",
+        "inputs": {
+          "m": 1000
+        },
+        "tolerance": 1e-9,
+        "unit": "km"
+      },
+      {
+        "errorPath": "m",
+        "expectError": true,
+        "id": "codex-missing",
+        "inputs": {},
+        "tolerance": 0,
+        "unit": "km"
+      },
+      {
+        "errorPath": "m",
+        "expectError": true,
+        "id": "codex-nonfinite",
+        "inputs": {
+          "m": "NaN"
+        },
+        "tolerance": 0,
+        "unit": "km"
+      },
+      {
+        "errorPath": "m",
+        "expectError": true,
+        "id": "codex-outside-domain",
+        "inputs": {
+          "m": -1
+        },
+        "tolerance": 0,
+        "unit": "km"
+      },
+      {
+        "expect": 1,
+        "id": "qwen-case-01",
+        "inputs": {
+          "m": 1000
+        },
+        "tolerance": 1e-9,
+        "unit": "km"
+      },
+      {
+        "expect": 0,
+        "id": "qwen-case-02",
+        "inputs": {
+          "m": 0
+        },
+        "tolerance": 1e-9,
+        "unit": "km"
+      },
+      {
+        "expect": 1000,
+        "id": "qwen-case-03",
+        "inputs": {
+          "m": 1000000
+        },
+        "tolerance": 1e-9,
+        "unit": "km"
+      },
+      {
+        "errorPath": "m",
+        "expectError": true,
+        "id": "qwen-case-04",
+        "inputs": {
+          "m": "NaN"
+        },
+        "tolerance": 0,
+        "unit": "km"
+      },
+      {
+        "errorPath": "m",
+        "expectError": true,
+        "id": "qwen-case-05",
+        "inputs": {},
+        "tolerance": 0,
+        "unit": "km"
+      },
+      {
+        "errorPath": "m",
+        "expectError": true,
+        "id": "qwen-case-06",
+        "inputs": {
+          "m": -1
+        },
+        "tolerance": 0,
+        "unit": "km"
+      },
+      {
+        "errorPath": "m",
+        "expectError": true,
+        "id": "host-validity-nan",
+        "inputs": {
+          "m": "NaN"
+        },
+        "tolerance": 0,
+        "unit": "km"
+      },
+      {
+        "errorPath": "m",
+        "expectError": true,
+        "id": "host-validity-positive-infinity",
+        "inputs": {
+          "m": "Infinity"
+        },
+        "tolerance": 0,
+        "unit": "km"
+      },
+      {
+        "errorPath": "m",
+        "expectError": true,
+        "id": "host-validity-negative-infinity",
+        "inputs": {
+          "m": "-Infinity"
+        },
+        "tolerance": 0,
+        "unit": "km"
+      },
+      {
+        "errorPath": "m",
+        "expectError": true,
+        "id": "host-validity-below-domain",
+        "inputs": {
+          "m": -5e-324
+        },
+        "tolerance": 0,
+        "unit": "km"
+      },
+      {
+        "errorPath": "m",
+        "expectError": true,
+        "id": "host-validity-above-domain",
+        "inputs": {
+          "m": 1000000.0000000001
+        },
+        "tolerance": 0,
+        "unit": "km"
+      },
+      {
+        "errorPath": "m",
+        "expectError": true,
+        "id": "host-validity-missing",
+        "inputs": {},
+        "tolerance": 0,
+        "unit": "km"
+      }
+    ],
+    "procedures": [
+      {
+        "count": 6,
+        "domain": [
+          0,
+          1000000
+        ],
+        "id": "codex-values",
+        "input": "m",
+        "kind": "affine",
+        "offset": 0,
+        "seed": 7919,
+        "slope": 0.001,
+        "tolerance": 1e-9,
+        "unit": "km",
+        "version": 1
+      },
+      {
+        "count": 6,
+        "domain": [
+          0,
+          1000000
+        ],
+        "id": "qwen-values",
+        "input": "m",
+        "kind": "affine",
+        "offset": 0,
+        "seed": 7919,
+        "slope": 0.001,
+        "tolerance": 1e-9,
+        "unit": "km",
+        "version": 1
+      }
+    ],
+    "request": {
+      "artifactClass": "closed-form",
+      "id": "dev-length-02",
+      "raw": "Convert finite metres m in [0,1000000] to kilometres, absolute tolerance 1e-9 km. Refuse nonfinite, missing and out-of-domain m naming m.",
+      "requiredFacts": [
+        {
+          "domain": [
+            0,
+            1000000
+          ],
+          "path": "m",
+          "plausible": [
+            {
+              "result": 0,
+              "value": 0
+            },
+            {
+              "result": 1,
+              "value": 1000
+            }
+          ],
+          "tolerance": 1e-9,
+          "unit": "m"
+        }
+      ],
+      "sources": [
+        "explicit request; SI kilo for metric conversion"
+      ],
+      "version": 1
+    },
+    "signature": {
+      "inputs": [
+        {
+          "domain": [
+            0,
+            1000000
+          ],
+          "path": "m",
+          "type": "number",
+          "unit": "m"
+        }
+      ],
+      "name": "metresToKilometres",
+      "output": {
+        "type": "number",
+        "unit": "km"
+      },
+      "version": 1
+    },
+    "version": 1,
+    "writers": [
+      {
+        "family": "codex",
+        "outputHash": "a04d6f3364a3e38376767e56382bc4b68b408c83afd7604948a4ef4a4dd24a9a",
+        "viewHash": "b8037386ab2e9d12e204c17f732483b3bf0cc79163a2fe0f78e44f21bd5b58a0"
+      },
+      {
+        "family": "qwen",
+        "outputHash": "881d56c25fca307668e4c550ead1e4bd9401629017dfa3959acd414e842acd28",
+        "viewHash": "b8037386ab2e9d12e204c17f732483b3bf0cc79163a2fe0f78e44f21bd5b58a0"
+      }
+    ]
+  },
+  "suiteHash": "b6365d6d42edcf12d939e5b325588bdd73e01eb1bad78de6dd667d3fb3de7591",
+  "procedureHash": "59620fc71dfeaff4b54cb0916204104065d96f4971d32a78b49a3cba2608bf84",
+  "casesHash": "6879e0af90eab9e8ce5f5a7cac3eaf9d4a218c257ee0f0b1daee608406049df8",
+  "frozenAt": "2026-10-18T22:54:54.636Z"
+}

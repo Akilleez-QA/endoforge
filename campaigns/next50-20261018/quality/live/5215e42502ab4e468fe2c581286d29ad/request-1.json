@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "id": "dev-length-02",
+  "raw": "Convert finite distance m in [0,1000000] metres to kilometres, absolute tolerance 1e-9 km. Refuse other values naming m. Require m; return number labelled km.",
+  "artifactClass": "closed-form",
+  "requiredFacts": [
+    {
+      "path": "m",
+      "unit": "m",
+      "domain": [
+        0,
+        1000000
+      ],
+      "tolerance": 1e-09
+    }
+  ],
+  "sources": [
+    "explicit raw development request"
+  ]
+}

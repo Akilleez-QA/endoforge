@@ -1,0 +1,253 @@
+[
+ {
+  "request": "C-003",
+  "kernel": "B",
+  "truth": "accept",
+  "arm": "NEW-sonnet",
+  "rejectByRequired": false,
+  "rejectByCasesOrProps": true,
+  "caseFails": [
+   "Temperature below absolute zero (-500 F) is impossible"
+  ],
+  "propFails": [],
+  "reqFails": []
+ },
+ {
+  "request": "C-003",
+  "kernel": "B",
+  "truth": "accept",
+  "arm": "NEW-codex",
+  "rejectByRequired": false,
+  "rejectByCasesOrProps": true,
+  "caseFails": [
+   "Temperature below absolute zero: -460 F < -459.67 F"
+  ],
+  "propFails": [
+   "Temperatures below absolute zero must be refused"
+  ],
+  "reqFails": []
+ },
+ {
+  "request": "C-003",
+  "kernel": "E",
+  "truth": "accept",
+  "arm": "NEW-sonnet",
+  "rejectByRequired": false,
+  "rejectByCasesOrProps": true,
+  "caseFails": [
+   "Temperature below absolute zero (-500 F) is impossible"
+  ],
+  "propFails": [],
+  "reqFails": []
+ },
+ {
+  "request": "C-003",
+  "kernel": "E",
+  "truth": "accept",
+  "arm": "NEW-codex",
+  "rejectByRequired": false,
+  "rejectByCasesOrProps": true,
+  "caseFails": [
+   "Temperature below absolute zero: -460 F < -459.67 F"
+  ],
+  "propFails": [
+   "Temperatures below absolute zero must be refused"
+  ],
+  "reqFails": []
+ },
+ {
+  "request": "C-003",
+  "kernel": "planted",
+  "truth": "reject",
+  "arm": "NEW-sonnet",
+  "rejectByRequired": false,
+  "rejectByCasesOrProps": true,
+  "caseFails": [
+   "Temperature below absolute zero (-500 F) is impossible"
+  ],
+  "propFails": [],
+  "reqFails": []
+ },
+ {
+  "request": "C-003",
+  "kernel": "planted",
+  "truth": "reject",
+  "arm": "NEW-codex",
+  "rejectByRequired": false,
+  "rejectByCasesOrProps": true,
+  "caseFails": [
+   "Requested case: T=(70-32)*5/9; g=ln(0.60)+17.625*T/(243.04+T); dew point=32+(9/5",
+   "Temperature below absolute zero: -460 F < -459.67 F"
+  ],
+  "propFails": [
+   "Temperatures below absolute zero must be refused"
+  ],
+  "reqFails": []
+ },
+ {
+  "request": "CC-020",
+  "kernel": "B",
+  "truth": "reject",
+  "arm": "NEW-sonnet",
+  "rejectByRequired": true,
+  "rejectByCasesOrProps": false,
+  "caseFails": [],
+  "propFails": [],
+  "reqFails": [
+   "Nominal cooling capacity of the Frigid Coil RALTG-3040 evaporator from",
+   "Operating conditions at which the capacity is rated (saturated suction",
+   "Whether the model number's digits encode capacity (e.g. 3040 as MBH/Bt"
+  ]
+ },
+ {
+  "request": "CC-020",
+  "kernel": "B",
+  "truth": "reject",
+  "arm": "NEW-codex",
+  "rejectByRequired": true,
+  "rejectByCasesOrProps": false,
+  "caseFails": [],
+  "propFails": [],
+  "reqFails": [
+   "Verified manufacturer cooling-capacity rating for the Frigid Coil RALT",
+   "The conditions under which that capacity is rated, and confirmation th"
+  ]
+ },
+ {
+  "request": "CC-020",
+  "kernel": "E",
+  "truth": "reject",
+  "arm": "NEW-sonnet",
+  "rejectByRequired": true,
+  "rejectByCasesOrProps": false,
+  "caseFails": [],
+  "propFails": [],
+  "reqFails": [
+   "Nominal cooling capacity of the Frigid Coil RALTG-3040 evaporator from",
+   "Operating conditions at which the capacity is rated (saturated suction",
+   "Whether the model number's digits encode capacity (e.g. 3040 as MBH/Bt"
+  ]
+ },
+ {
+  "request": "CC-020",
+  "kernel": "E",
+  "truth": "reject",
+  "arm": "NEW-codex",
+  "rejectByRequired": true,
+  "rejectByCasesOrProps": false,
+  "caseFails": [],
+  "propFails": [],
+  "reqFails": [
+   "Verified manufacturer cooling-capacity rating for the Frigid Coil RALT",
+   "The conditions under which that capacity is rated, and confirmation th"
+  ]
+ },
+ {
+  "request": "C-022",
+  "kernel": "B",
+  "truth": "reject",
+  "arm": "NEW-sonnet",
+  "rejectByRequired": true,
+  "rejectByCasesOrProps": false,
+  "caseFails": [],
+  "propFails": [],
+  "reqFails": [
+   "Whether a negative excess (pressure below saturation) is returned as i",
+   "The acceptable measurement tolerance or deadband before excess counts ",
+   "Sensor offset or gauge calibration correction applied to condensingPre"
+  ]
+ },
+ {
+  "request": "C-022",
+  "kernel": "B",
+  "truth": "reject",
+  "arm": "NEW-codex",
+  "rejectByRequired": true,
+  "rejectByCasesOrProps": false,
+  "caseFails": [],
+  "propFails": [],
+  "reqFails": [
+   "The refrigerant saturation table, its pressure reference, valid temper",
+   "For a refrigerant blend, the applicable saturation convention, includi",
+   "Confirmation that pressure and temperature represent the same operatin",
+   "Whether excess means a signed pressure residual or a nonnegative infer"
+  ]
+ },
+ {
+  "request": "C-022",
+  "kernel": "E",
+  "truth": "reject",
+  "arm": "NEW-sonnet",
+  "rejectByRequired": true,
+  "rejectByCasesOrProps": false,
+  "caseFails": [],
+  "propFails": [],
+  "reqFails": [
+   "Whether a negative excess (pressure below saturation) is returned as i",
+   "The acceptable measurement tolerance or deadband before excess counts ",
+   "Sensor offset or gauge calibration correction applied to condensingPre"
+  ]
+ },
+ {
+  "request": "C-022",
+  "kernel": "E",
+  "truth": "reject",
+  "arm": "NEW-codex",
+  "rejectByRequired": true,
+  "rejectByCasesOrProps": false,
+  "caseFails": [],
+  "propFails": [],
+  "reqFails": [
+   "The refrigerant saturation table, its pressure reference, valid temper",
+   "For a refrigerant blend, the applicable saturation convention, includi",
+   "Confirmation that pressure and temperature represent the same operatin",
+   "Whether excess means a signed pressure residual or a nonnegative infer"
+  ]
+ },
+ {
+  "request": "CC-029",
+  "kernel": "E",
+  "truth": "reject",
+  "arm": "NEW-sonnet",
+  "rejectByRequired": true,
+  "rejectByCasesOrProps": true,
+  "caseFails": [
+   "pressure below perfect vacuum: -20 psig is about -5.3 psia, which is physically ",
+   "pressure far above R-22 critical pressure (about 707 psig): 5000 psig has no sat",
+   "non-numeric pressure must refuse",
+   "infinite pressure must refuse"
+  ],
+  "propFails": [
+   "R-22 saturation temperature for 0 to 300 psig is above absolute zero and below t",
+   "R-22 saturation temperature at or above 0 psig is not below the atmospheric boil"
+  ],
+  "reqFails": [
+   "Local atmospheric pressure (altitude), needed to convert gauge pressur",
+   "What 'boils most' means. At a fixed liquid temperature, a lower satura"
+  ]
+ },
+ {
+  "request": "CC-029",
+  "kernel": "E",
+  "truth": "reject",
+  "arm": "NEW-codex",
+  "rejectByRequired": true,
+  "rejectByCasesOrProps": true,
+  "caseFails": [
+   "NaN pressure cannot specify a saturation state",
+   "Infinite pressure cannot specify a finite liquid-vapor saturation state",
+   "Negative infinite pressure cannot specify a physical saturation state",
+   "The request's 10 and 20 psig cannot be compared with an undefined refrigerant co"
+  ],
+  "propFails": [
+   "Any accepted saturation temperature must be finite and above absolute zero: F = "
+  ],
+  "reqFails": [
+   "Whether 'boils most' means lower boiling temperature, higher boiling t",
+   "The meaning of the returned comparison codes, including how a tie is r",
+   "For numerical saturation temperatures, the atmospheric reference neede",
+   "For a refrigerant mixture with temperature glide, whether saturation t",
+   "If 'boils most' means boiling rate, the heat supplied and thermodynami"
+  ]
+ }
+]

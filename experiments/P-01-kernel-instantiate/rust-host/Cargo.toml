@@ -1,0 +1,11 @@
+[package]
+name = "p01-wasmtime-host"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+wasmtime = { version = "=49.0.3", default-features = false, features = ["cranelift", "runtime", "parallel-compilation", "std", "pooling-allocator"] }
+
+[profile.release]
+opt-level = 3
+debug = false

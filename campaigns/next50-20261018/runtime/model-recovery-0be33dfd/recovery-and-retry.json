@@ -1,0 +1,97 @@
+{
+  "version": 1,
+  "controllerExit": -9,
+  "reconciled": {
+    "attempt": "a8c8f0a87ba24b3b83ba6ec01cb603e4",
+    "automaticRetry": false,
+    "controller": {
+      "bootId": "7825b838-79a4-4963-8969-3a87477e4ce4",
+      "pid": 313609,
+      "starttime": "5625614",
+      "state": "R"
+    },
+    "family": "deterministic-test",
+    "generation": "4eeea5959b2045f88a67fd4f6ce75889",
+    "journalRoot": "/home/user/Work/endoforge/campaigns/next50-20261018/runtime/model-recovery-0be33dfd/journal",
+    "promotionAllowed": false,
+    "promptSha256": "15bd2c9108fe6f2046dff4199e04c7881d2a18e8d11896c02a06203f8ba8102f",
+    "retryOf": null,
+    "scope": "endoforge-worker-a8c8f0a87ba24b3b83ba6ec01cb603e4.scope",
+    "stage": "interrupted-stage",
+    "state": "unknown",
+    "temporary": "/tmp/ef-model-journal-a8c8f0a87ba24b3b83ba6ec01cb603e4",
+    "version": 1,
+    "worker": null,
+    "recoveryOutcome": "cleanup-only-no-promotion-no-retry",
+    "reconciledBy": {
+      "generation": "359aba8c15394ea1a5f4ac4305e508e2",
+      "controller": {
+        "pid": 313584,
+        "starttime": "5625606",
+        "bootId": "7825b838-79a4-4963-8969-3a87477e4ce4",
+        "state": "R"
+      }
+    },
+    "cleanup": [
+      {
+        "scope": "endoforge-worker-a8c8f0a87ba24b3b83ba6ec01cb603e4.scope",
+        "absent": true,
+        "loadState": "not-found"
+      },
+      {
+        "temporary": "/tmp/ef-model-journal-a8c8f0a87ba24b3b83ba6ec01cb603e4",
+        "removed": true
+      }
+    ],
+    "cleanupComplete": true
+  },
+  "oldMembersDead": true,
+  "foreignPreserved": true,
+  "implicitRetryDenied": true,
+  "retry": {
+    "attempt": "a1e87de6973549e6bdf911e5427d476e",
+    "automaticRetry": false,
+    "controller": {
+      "bootId": "7825b838-79a4-4963-8969-3a87477e4ce4",
+      "pid": 313584,
+      "starttime": "5625606",
+      "state": "R"
+    },
+    "family": "deterministic-test",
+    "generation": "359aba8c15394ea1a5f4ac4305e508e2",
+    "journalRoot": "/home/user/Work/endoforge/campaigns/next50-20261018/runtime/model-recovery-0be33dfd/journal",
+    "metadata": {
+      "stdoutSha256": "dbc782ca93a264f1328293af81bf4297abc314546f295e82e320886ad279ced7"
+    },
+    "promotionAllowed": false,
+    "promptSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "retryOf": "a8c8f0a87ba24b3b83ba6ec01cb603e4",
+    "scope": "endoforge-worker-a1e87de6973549e6bdf911e5427d476e.scope",
+    "stage": "interrupted-stage",
+    "state": "passed",
+    "temporary": "/tmp/ef-model-journal-a1e87de6973549e6bdf911e5427d476e",
+    "version": 1,
+    "worker": null,
+    "cleanup": [
+      {
+        "scope": "endoforge-worker-a1e87de6973549e6bdf911e5427d476e.scope",
+        "absent": true,
+        "loadState": "not-found"
+      },
+      {
+        "temporary": "/tmp/ef-model-journal-a1e87de6973549e6bdf911e5427d476e",
+        "removed": true
+      }
+    ]
+  },
+  "retryExecution": {
+    "stdout": "retry-ok\n",
+    "stderr": "",
+    "version": 1,
+    "exit": 0,
+    "outcome": "passed",
+    "wallMs": 75.07024699589238,
+    "outputLimit": 1048576
+  },
+  "modelCalls": 0
+}
