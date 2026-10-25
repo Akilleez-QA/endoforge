@@ -11,6 +11,8 @@ const policy = JSON.parse(fs.readFileSync(path.join(HERE, '..', 'policy.json'), 
 const fx = (n) => path.join(HERE, 'fixtures', n);
 let fails = 0; const check = (name, cond, detail = '') => { console.log(`${cond ? 'PASS' : 'FAIL'} ${name}${detail ? ': ' + detail : ''}`); if (!cond) fails++; };
 const node = process.execPath, sched = path.join(HERE, '..', 'bin', 'schedule.mjs'), verify = path.join(HERE, '..', 'bin', 'verify.mjs');
+const routing = spawnSync(node, [path.join(HERE, 'routing.test.mjs')], { encoding: 'utf8' });
+check('routing unit tests', !routing.error && routing.status === 0, routing.error?.message ?? (routing.stdout + routing.stderr).trim());
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'atomizer-test-'));
 process.env.ATOMIZER_LEDGER_DIR = path.join(tmp, 'ledger');
 // Toolchain overrides are independent of the host's installed versions.
