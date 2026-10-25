@@ -12,6 +12,8 @@ Owner's directive (18 Oct 2026): log and ledger everything; overall speed (wall 
 | `ledger/tables/*.csv` | flattened tables (`runs`, `attempts`, `atoms`, `pools`, `atomizations`, `reviews`) from `bin/ledger-export.mjs` | derived; regenerate any time |
 | `ledger/speed/*.md` | speed decompositions from `bin/speed.mjs` | derived |
 
+When zstd is unavailable, archives use gzip (`<runId>.tar.gz`); results record `format` as `zstd` or `gzip`.
+
 The work directories (`tools/atomizer/work/`) are scratch and git-ignored; nothing in the analysis depends on them once a run is archived.
 
 ## Events (`endoforge/atomizer-ledger/1`)

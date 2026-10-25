@@ -49,11 +49,18 @@ export function emit(event, fields = {}) {
   return rec;
 }
 const SECRET = /refresh_token|access_token|sk-ant-|"apiKey"|Bearer [A-Za-z0-9._-]{20,}/;
-/** Compress a run directory into ledger/archive/<runId>.tar.zst after a credential scan; returns {path, bytes, sha256} or {refused}. */
+let hasZstd;
+/** Compress a credential-scanned run; returns {path, bytes, sha256, files, format} or {refused}. */
 export function archiveRun(runDir, runId) {
-  const files = []; for (const e of fs.readdirSync(runDir, { withFileTypes: true, recursive: true })) if (e.isFile()) files.push(path.join(e.parentPath ?? e.path, e.name));
-  for (const f of files) { let t; try { t = fs.readFileSync(f, 'latin1'); } catch { continue; } if (SECRET.test(t)) return { refused: `credential-like string in ${path.relative(runDir, f)}` }; }
-  const out = path.join(LEDGER_DIR, 'archive', `${runId}.tar.zst`); fs.mkdirSync(path.dirname(out), { recursive: true });
-  execFileSync('/bin/sh', ['-c', `tar -C "$1" -cf - "$2" | zstd -19 -q -f -o "$3"`, 'sh', path.dirname(runDir), path.basename(runDir), out]);
-  return { path: path.relative(REPO, out), bytes: fs.statSync(out).size, sha256: shaFile(out), files: files.length };
+  try {
+    const files = []; for (const e of fs.readdirSync(runDir, { withFileTypes: true, recursive: true })) if (e.isFile()) files.push(path.join(e.parentPath ?? e.path, e.name));
+    for (const f of files) { let t; try { t = fs.readFileSync(f, 'latin1'); } catch { continue; } if (SECRET.test(t)) return { refused: `credential-like string in ${path.relative(runDir, f)}` }; }
+    hasZstd ??= sh('zstd', ['--version']) !== null;
+    const format = hasZstd ? 'zstd' : 'gzip';
+    const out = path.join(LEDGER_DIR, 'archive', `${runId}.tar.${hasZstd ? 'zst' : 'gz'}`); fs.mkdirSync(path.dirname(out), { recursive: true });
+    execFileSync('tar', [...(hasZstd ? ['-I', 'zstd -19 -q', '-cf'] : ['-czf']), out, '-C', path.dirname(runDir), path.basename(runDir)], { stdio: ['ignore', 'pipe', 'pipe'] });
+    return { path: path.relative(REPO, out), bytes: fs.statSync(out).size, sha256: shaFile(out), files: files.length, format };
+  } catch (err) {
+    return { refused: `archive failed: ${String(err.message).split('\n')[0].slice(0, 160)}` };
+  }
 }

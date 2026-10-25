@@ -34,6 +34,18 @@ try {
   try { toolchainFor(['codex'], policy, repoRoot); } catch (e) { message = e.message; }
   check('missing codex reports toolchain, path and override', message.includes('codex') && message.includes(missing) && message.includes('ENDOFORGE_TOOLCHAIN_CODEX'));
 } finally { restoreCodex(); }
+// Force gzip in a fresh process, even on hosts with zstd installed.
+const archivePath = fs.mkdtempSync(path.join(tmp, 'archive-path-'));
+for (const tool of ['tar', 'gzip']) {
+  const resolved = spawnSync('/bin/sh', ['-c', `command -v ${tool}`], { encoding: 'utf8' }).stdout.trim();
+  fs.symlinkSync(resolved, path.join(archivePath, tool));
+}
+const fallback = spawnSync(node, ['--input-type=module', '-e', `
+  import { archiveRun } from ${JSON.stringify(new URL('../lib/ledger.mjs', import.meta.url).href)};
+  console.log(JSON.stringify(archiveRun(process.argv[1], 'fallback')));
+`, fx('')], { encoding: 'utf8', env: { ...process.env, PATH: archivePath, ATOMIZER_LEDGER_DIR: path.join(tmp, 'fallback-ledger') } });
+const gz = JSON.parse(fallback.stdout.trim() || '{}');
+check('archive falls back to gzip without zstd', fallback.status === 0 && gz.format === 'gzip' && /^[0-9a-f]{64}$/.test(gz.sha256) && fs.existsSync(path.join(tmp, 'fallback-ledger', 'archive', path.basename(gz.path))), fallback.error?.message || fallback.stderr || JSON.stringify(gz));
 // 1. validation
 const vc = validate(JSON.parse(fs.readFileSync(fx('synthetic-cycle.json'), 'utf8')), policy);
 check('cycle rejected', !vc.ok && vc.errors.some((e) => /cycle/.test(e)), vc.errors.join('; '));
@@ -63,7 +75,7 @@ check('ledger has run, atom, attempt, verify and archive events', ['run.start', 
 const att = ev.filter((e) => e.event === 'attempt.end');
 check('every attempt event carries wall, stage time, output hashes and load', att.length >= 20 && att.every((e) => typeof e.wallMs === 'number' && typeof e.stageMs === 'number' && Array.isArray(e.outputs) && e.load), `${att.length} attempts`);
 const arch = ev.find((e) => e.event === 'run.archived');
-check('run archive written and hashed', arch && fs.existsSync(path.join(tmp, 'ledger', 'archive', path.basename(arch.path))) && /^[0-9a-f]{64}$/.test(arch.sha256));
+check('run archive written and hashed', arch && /\.tar\.(zst|gz)$/.test(arch.path) && fs.existsSync(path.join(tmp, 'ledger', 'archive', path.basename(arch.path))) && /^[0-9a-f]{64}$/.test(arch.sha256));
 // 5. receipts
 const rec = JSON.parse(fs.readFileSync(path.join(tmp, 'fanout', 'receipt', 'atoms', 'compose.json'), 'utf8'));
 check('compose receipt lists 8 inputs and a hashed output', rec.inputs.length === 8 && /^[0-9a-f]{64}$/.test(rec.outputs['all.txt']));
