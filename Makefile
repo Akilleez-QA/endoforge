@@ -3,12 +3,13 @@
 #   make check      conventions, links, identifiers, source hashes (tools/check-docs.py)
 #   make mononoke   re-fetch and verify the 19 Mononoke files at the pinned commit (network)
 #   make x1-test    self-tests of the X1 specification-study kit (campaigns/x1-spec-study)
+#   make core-test  lifecycle model tests of the stdlib-only Endoforge core (core/, ADR 005 item 12a)
 PYTHON ?= python3
 SCRATCH ?= /tmp/endoforge-mononoke-verify
 
-.PHONY: test check mononoke x1-test
+.PHONY: test check mononoke x1-test core-test
 
-test: check x1-test mononoke
+test: check x1-test core-test mononoke
 
 check:
 	$(PYTHON) -I tools/check-docs.py
@@ -18,6 +19,9 @@ mononoke:
 
 x1-test:
 	node --test campaigns/x1-spec-study/test/
+
+core-test:
+	cd ../.. && $(PYTHON) -B -m unittest tests.test_endoforge_lifecycle
 
 atomizer-test: ## run the task-atomizer tests (scheduler speedup, isolate boundary, validation)
 	node tools/atomizer/test/trace.test.mjs
