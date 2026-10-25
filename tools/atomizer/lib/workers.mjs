@@ -3,11 +3,19 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { expand } from './isolate.mjs';
 const INLINE_LIMIT = 60_000;
+const toolchainEnv = (name) => `ENDOFORGE_TOOLCHAIN_${name.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`;
+export function resolveToolchainPath(name, policy, repoRoot) {
+  const host = process.env[toolchainEnv(name)] ?? policy.toolchain?.[name];
+  if (!host) throw new Error(`unknown toolchain ${name}`);
+  return host.startsWith('~') ? expand(host) : path.resolve(repoRoot, host);
+}
 export function toolchainFor(names, policy, repoRoot) {
   const out = [];
   for (const n of [...new Set(typeof names === 'string' ? [names] : names)]) {
-    const host = policy.toolchain[n]; if (!host) throw new Error(`unknown toolchain ${n}`);
-    const h = host.startsWith('~') ? expand(host) : path.resolve(repoRoot, host);
+    const h = resolveToolchainPath(n, policy, repoRoot);
+    if ((n === 'codex' || n === 'claude') && !fs.existsSync(h)) {
+      throw new Error(`toolchain ${n} host path does not exist: ${h}; override with ${toolchainEnv(n)}`);
+    }
     const bin = n === 'node' || n === 'codex' ? path.join(h, 'bin') : n === 'claude' ? h : n === 'wasmtime' ? path.dirname(h) : n === 'asc' ? path.join(h, '.bin') : null;
     out.push({ host: h, guest: h, bin });
   }

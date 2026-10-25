@@ -6,6 +6,7 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { resolveToolchainPath } from './workers.mjs';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const ATOMIZER = path.resolve(HERE, '..');
 export const REPO = path.resolve(ATOMIZER, '../..');
@@ -23,7 +24,7 @@ export function context() {
   const policy = (() => { try { return JSON.parse(fs.readFileSync(policyPath, 'utf8')); } catch { return {}; } })();
   const codeFiles = ['bin/schedule.mjs', 'bin/atomize.mjs', 'bin/verify.mjs', 'bin/fanout.mjs', 'bin/compose-kernel.mjs', 'lib/isolate.mjs', 'lib/workers.mjs', 'lib/augment.mjs', 'lib/validate.mjs', 'lib/dag.mjs', 'lib/ledger.mjs'];
   const code = Object.fromEntries(codeFiles.map((f) => [f, shaFile(path.join(ATOMIZER, f))?.slice(0, 16) ?? null]));
-  const exp = (p) => (p?.startsWith('~/') ? path.join(os.homedir(), p.slice(2)) : p);
+  const version = (name) => { try { return path.basename(resolveToolchainPath(name, policy, REPO)); } catch { return ''; } };
   CTX = {
     schema: SCHEMA,
     pid: process.pid,
@@ -31,7 +32,7 @@ export function context() {
     policySha256: shaFile(policyPath),
     gateSha256: shaFile(path.join(REPO, policy.toolchain?.gate ?? 'campaigns/x1-spec-study/factory', 'gate.mjs')),
     codeSha16: code,
-    versions: { node: process.version, claude: path.basename(exp(policy.toolchain?.claude ?? '') || ''), codex: path.basename(exp(policy.toolchain?.codex ?? '') || ''), bwrap: sh('bwrap', ['--version']) },
+    versions: { node: process.version, claude: version('claude'), codex: version('codex'), bwrap: sh('bwrap', ['--version']) },
     models: policy.models ?? null,
     host: { hostname: os.hostname(), cpus: os.cpus().length, memTotalGiB: +(os.totalmem() / 2 ** 30).toFixed(1), kernel: os.release() },
   };

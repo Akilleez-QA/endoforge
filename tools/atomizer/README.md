@@ -57,6 +57,8 @@ node tools/atomizer/bin/schedule.mjs run tools/atomizer/examples/C-005/atoms.jso
 node tools/atomizer/bin/verify.mjs work/atom-runs/C-005
 ```
 
+**Running on another host.** Override any `policy.json` toolchain path with `ENDOFORGE_TOOLCHAIN_<NAME>` (uppercase, with non-alphanumerics replaced by `_`), such as `ENDOFORGE_TOOLCHAIN_CODEX`, `ENDOFORGE_TOOLCHAIN_CLAUDE`, `ENDOFORGE_TOOLCHAIN_NODE` or `ENDOFORGE_TOOLCHAIN_ASC`. For example, set `ENDOFORGE_TOOLCHAIN_CODEX=~/.local/share/endoforge-tc/codex` to a prefix whose `bin/` holds `codex`. Paths beginning with `~/` expand to your home; relative paths resolve against the Endoforge repo root. Unset overrides use the policy defaults. Missing Codex or Claude paths fail with an error naming the override; other missing toolchains keep the existing fallback behavior.
+
 ## What was measured (2026-10-17)
 
 - **Scheduler, synthetic DAG** (`test/run.mjs`): ten script atoms of about one second each, one seed → eight parts → one composition, concurrency 9: wall 3,055 ms against a sequential equivalent of 10,135 ms; realized speedup 3.32x against the planned bound 3.33x; both acceptance commands passed inside an isolate. An atom that read a file it had not declared failed (the file was not mounted) and its dependant was blocked; verification failed. Cycles and a `tests→kernel` edge were rejected.

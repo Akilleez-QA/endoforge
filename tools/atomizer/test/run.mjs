@@ -5,6 +5,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { validate } from '../lib/validate.mjs';
+import { toolchainFor } from '../lib/workers.mjs';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const policy = JSON.parse(fs.readFileSync(path.join(HERE, '..', 'policy.json'), 'utf8'));
 const fx = (n) => path.join(HERE, 'fixtures', n);
@@ -12,6 +13,27 @@ let fails = 0; const check = (name, cond, detail = '') => { console.log(`${cond 
 const node = process.execPath, sched = path.join(HERE, '..', 'bin', 'schedule.mjs'), verify = path.join(HERE, '..', 'bin', 'verify.mjs');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'atomizer-test-'));
 process.env.ATOMIZER_LEDGER_DIR = path.join(tmp, 'ledger');
+// Toolchain overrides are independent of the host's installed versions.
+const repoRoot = path.resolve(HERE, '../../..');
+const savedCodex = process.env.ENDOFORGE_TOOLCHAIN_CODEX;
+const restoreCodex = () => {
+  if (savedCodex === undefined) delete process.env.ENDOFORGE_TOOLCHAIN_CODEX;
+  else process.env.ENDOFORGE_TOOLCHAIN_CODEX = savedCodex;
+};
+try {
+  const host = path.join(tmp, 'codex');
+  fs.mkdirSync(path.join(host, 'bin'), { recursive: true });
+  process.env.ENDOFORGE_TOOLCHAIN_CODEX = host;
+  const [tc] = toolchainFor(['codex'], policy, repoRoot);
+  check('codex override supplies host and bin', tc.host === host && tc.bin === path.join(host, 'bin'));
+} finally { restoreCodex(); }
+try {
+  const missing = path.join(tmp, 'missing-codex');
+  process.env.ENDOFORGE_TOOLCHAIN_CODEX = missing;
+  let message = '';
+  try { toolchainFor(['codex'], policy, repoRoot); } catch (e) { message = e.message; }
+  check('missing codex reports toolchain, path and override', message.includes('codex') && message.includes(missing) && message.includes('ENDOFORGE_TOOLCHAIN_CODEX'));
+} finally { restoreCodex(); }
 // 1. validation
 const vc = validate(JSON.parse(fs.readFileSync(fx('synthetic-cycle.json'), 'utf8')), policy);
 check('cycle rejected', !vc.ok && vc.errors.some((e) => /cycle/.test(e)), vc.errors.join('; '));
