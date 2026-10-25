@@ -2,6 +2,7 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import { expand } from './isolate.mjs';
+import { codexArgs } from './routing.mjs';
 const INLINE_LIMIT = 60_000;
 const toolchainEnv = (name) => `ENDOFORGE_TOOLCHAIN_${name.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`;
 export function resolveToolchainPath(name, policy, repoRoot) {
@@ -56,7 +57,7 @@ export function buildPrompt(doc, atom, staged, toolUsing, procedure) {
   return L.join('\n');
 }
 /** Returns { cmd, stdin, toolchain, captureResultTo } for the atom. */
-export function workerCommand(doc, atom, staged, policy, repoRoot) {
+export function workerCommand(doc, atom, staged, policy, repoRoot, sel) {
   const w = atom.worker;
   const subst = (s) => s.replaceAll('{in}', '/in').replaceAll('{out}', '/out').replaceAll('{work}', '/work').replaceAll('{atomizer}', path.join(path.resolve(repoRoot, policy.toolchain.atomizer)));
   if (w.model === 'script') return { cmd: w.command.map(subst), stdin: null, toolchain: toolchainFor(w.toolchain ?? [], policy, repoRoot), captureResultTo: null };
@@ -69,7 +70,7 @@ export function workerCommand(doc, atom, staged, policy, repoRoot) {
   const declared = typeof w.toolchain === 'string' ? [w.toolchain] : (w.toolchain ?? []);
   if (w.model === 'codex') {
     const out = `/out/${atom.outputs[0].path}`;
-    return { cmd: ['codex', ...policy.codexFlags, '-o', out, prompt], stdin: null, toolchain: toolchainFor(['codex', ...kindTools, ...declared], policy, repoRoot), captureResultTo: null, prompt };
+    return { cmd: ['codex', ...(toolUsing ? policy.codexToolFlags : policy.codexFlags), ...codexArgs(sel), ...(!toolUsing ? ['-o', out] : []), prompt], stdin: null, toolchain: toolchainFor(['codex', ...kindTools, ...declared], policy, repoRoot), captureResultTo: null, prompt };
   }
   const cmd = ['claude', '-p', ...policy.claudeLeanFlags, '--model', policy.models[w.model], '--tools', tools.join(',')];
   if (toolUsing) cmd.push('--permission-mode', 'bypassPermissions');

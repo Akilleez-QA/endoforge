@@ -21,6 +21,7 @@ x1-test:
 
 atomizer-test: ## run the task-atomizer tests (scheduler speedup, isolate boundary, validation)
 	node tools/atomizer/test/run.mjs
+	node tools/atomizer/test/codex-swarm.test.mjs
 
 .PHONY: factory-check factory-integration
 factory-check: ## deterministic quality and real state-crash checks; no models

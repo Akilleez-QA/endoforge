@@ -12,6 +12,7 @@ import { makeHomeTemplate, runIsolated, sha256File, listFiles } from '../lib/iso
 import { workerCommand, parseUsage, stripFences, toolchainFor } from '../lib/workers.mjs';
 import { augment } from '../lib/augment.mjs';
 import { emit, context, load, newId, archiveRun, shaFile } from '../lib/ledger.mjs';
+import { loadRouting, resolve } from '../lib/routing.mjs';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, '../../..');
 function args(argv) { const o = { _: [] }; for (let i = 0; i < argv.length; i++) { const a = argv[i]; if (a.startsWith('--')) o[a.slice(2)] = argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[++i] : true; else o._.push(a); } return o; }
@@ -19,10 +20,17 @@ const A = args(process.argv.slice(2));
 if (A._[0] !== 'run' || !A._[1] || !A['run-dir']) { console.error('usage: schedule.mjs run <atoms.json> --run-dir <dir> [--concurrency N] [--retries N] [--timeout-ms N] [--policy file] [--force]'); process.exit(2); }
 const policy = JSON.parse(fs.readFileSync(A.policy ? path.resolve(A.policy) : path.join(HERE, '..', 'policy.json'), 'utf8'));
 const doc = A['no-augment'] ? JSON.parse(fs.readFileSync(A._[1], 'utf8')) : augment(JSON.parse(fs.readFileSync(A._[1], 'utf8')), policy);
+const backend = process.env.ENDOFORGE_WORKER ?? policy.workerBackend ?? 'native';
+if (backend === 'codex') for (const atom of doc.atoms ?? []) {
+  if (atom.worker && !['script', 'codex'].includes(atom.worker.model)) {
+    atom.worker.requestedModel ??= atom.worker.model; atom.worker.model = 'codex';
+  }
+}
+const routing = loadRouting();
 const v = validate(doc, policy);
 if (!v.ok && !A.force) { console.error(JSON.stringify(v, null, 1)); process.exit(3); }
 const RUN = path.resolve(A['run-dir']);
-const CONC = Number(A.concurrency ?? 8), RETRIES = Number(A.retries ?? 1), TIMEOUT = Number(A['timeout-ms'] ?? 900_000);
+const CONC = Number(A.concurrency ?? (backend === 'codex' ? Number(process.env.ENDOFORGE_CODEX_CONCURRENCY) || 3 : 8)), RETRIES = Number(A.retries ?? 1), TIMEOUT = Number(A['timeout-ms'] ?? 900_000);
 fs.mkdirSync(path.join(RUN, 'receipt', 'atoms'), { recursive: true });
 fs.writeFileSync(path.join(RUN, 'atoms.json'), JSON.stringify(doc, null, 1));
 const P = plan(doc.atoms);
@@ -33,7 +41,7 @@ emit('run.start', { runId: RUN_ID, poolId: POOL_ID, need: doc.need.id, runDir: p
 const readyAt = {};
 const byId = new Map(doc.atoms.map((a) => [a.id, a]));
 const state = new Map(doc.atoms.map((a) => [a.id, 'pending']));
-const receipts = {};
+const receipts = {}, codexAccounts = {};
 const homeTemplate = makeHomeTemplate(fs.mkdtempSync(path.join(os.tmpdir(), 'atom-home-template-')));
 const stage = (atom) => {
   const inDir = path.join(RUN, 'atoms', atom.id, 'in'); fs.rmSync(inDir, { recursive: true, force: true }); fs.mkdirSync(inDir, { recursive: true });
@@ -72,8 +80,47 @@ async function runAtom(atom) {
       if (hit) { rec.attempts.push({ attempt: 0, preflight: true, exit: 0, wallMs: Math.round(pr.wallMs), usage: null, missing: [], ok: true, stderrTail: pr.stderr.slice(-400) }); break; }
       fs.rmSync(outDir, { recursive: true, force: true }); fs.mkdirSync(outDir, { recursive: true }); fs.rmSync(workDir, { recursive: true, force: true }); fs.mkdirSync(workDir, { recursive: true });
     }
-    const w = workerCommand(doc, atom, staged, policy, REPO);
-    const r = await runIsolated({ homeTemplate, mounts: [{ host: inDir, guest: '/in', mode: 'ro' }, { host: outDir, guest: '/out', mode: 'rw' }, { host: workDir, guest: '/work', mode: 'rw' }], toolchain: w.toolchain, cmd: w.cmd, stdin: w.stdin, cwd: '/work', timeoutMs: TIMEOUT });
+    const isCodex = atom.worker.model === 'codex';
+    const routed = { ...atom, prompt: atom.worker.prompt, consumes: atom.inputs, produces: atom.outputs };
+    let sel = isCodex ? resolve(routed, attempt, routing) : null;
+    const meta = isCodex ? { account: null, accounts: [], failovers: [], modelFallback: false } : {};
+    let w, r, launchWallMs = 0;
+    for (;;) {
+      const bin = process.env.ENDOFORGE_CODEX_POOL || '/home/box/.local/bin/codex-pool';
+      if (isCodex) Object.assign(meta, { tier: sel.tier, tierReason: sel.reason, codexModel: sel.model, effort: sel.effort });
+      if (isCodex && !fs.existsSync(bin)) {
+        meta.reason = `codex-pool not found: ${bin}; set ENDOFORGE_CODEX_POOL`;
+        w = { cmd: [] }; r = { exit: 127, stdout: '', stderr: meta.reason, wallMs: 0 }; break;
+      }
+      w = workerCommand(doc, atom, staged, policy, REPO, sel);
+      r = await runIsolated({ homeTemplate, mounts: [{ host: inDir, guest: '/in', mode: 'ro' }, { host: outDir, guest: '/out', mode: 'rw' }, { host: workDir, guest: '/work', mode: 'rw' }], toolchain: w.toolchain, cmd: w.cmd, stdin: w.stdin, cwd: '/work', timeoutMs: TIMEOUT,
+        ...(isCodex ? { pool: { bin, env: { CODEX_POOL_TIER: sel.tier, ...(sel.tier === 'throwaway' ? { CODEX_POOL_THROWAWAY: '1' } : {}) } } } : {}) });
+      launchWallMs += r.wallMs;
+      if (!isCodex) break;
+      const accounts = [], failovers = [];
+      try {
+        const log = fs.readFileSync(path.join(process.env.CODEX_POOL_STATE_DIR || path.join(os.homedir(), '.codex-pool'), 'log'), 'utf8');
+        for (const line of log.split('\n').filter((l) => l.includes(` pid=${r.poolPid} `))) {
+          const account = line.match(/(?:^| )account=(\S+)/)?.[1];
+          if (account) { accounts.push(account); if (/ failover=yes(?: |$)/.test(line)) failovers.push({ account, class: line.match(/ class=(\S+)/)?.[1] }); }
+        }
+      } catch (error) { if (error.code !== 'ENOENT') console.error(`codex-pool log unavailable: ${error.message}`); }
+      meta.accounts.push(...accounts); meta.failovers.push(...failovers); meta.account = accounts.at(-1) ?? null;
+      console.error(`codex ${atom.id} attempt=${attempt} tier=${sel.tier} (${sel.reason}) model=${sel.model} effort=${sel.effort} account=${meta.account ?? '?'} failover=${failovers.map((f) => `${f.account}:${f.class}`).join(',') || 'none'}`);
+      if (r.exit === 75) meta.reason = 'codex-pool: all accounts exhausted or guard blocked (exit 75)';
+      else if (r.exit === 77) meta.reason = 'codex-guard ledger denied';
+      else if (r.exit !== 0 && /codex-pool: all accounts exhausted/.test(r.stderr)) meta.reason = 'codex-pool: all accounts exhausted';
+      if (meta.reason) break;
+      if (sel.tier !== 'deep' || r.exit === 0 || r.timedOut || meta.modelFallback || !/model.*(not (found|supported|available)|does not exist|unknown|invalid)|unsupported model/i.test(r.stdout + r.stderr)) break;
+      fs.writeFileSync(path.join(RUN, 'atoms', atom.id, `model-rejected-${attempt}.txt`), r.stdout + r.stderr);
+      fs.rmSync(outDir, { recursive: true, force: true }); fs.mkdirSync(outDir, { recursive: true });
+      sel = resolve(routed, attempt, routing, { fallback: true }); meta.modelFallback = true;
+    }
+    r.wallMs = launchWallMs;
+    if (isCodex && r.exit === 0 && !(atom.worker.tools ?? []).length) {
+      const output = path.join(outDir, atom.outputs[0].path);
+      if (fs.existsSync(output)) { const content = stripFences(fs.readFileSync(output, 'utf8')); fs.writeFileSync(output, content ? content + '\n' : ''); }
+    }
     const usage = parseUsage(r.stdout, atom.worker.model);
     let cli = null; if (atom.worker.model !== 'codex' && atom.worker.model !== 'script') { try { const d = JSON.parse(r.stdout); cli = { durationMs: d.duration_ms ?? null, apiMs: d.duration_api_ms ?? null, turns: d.num_turns ?? null, subtype: d.subtype ?? null, isError: d.is_error ?? null, usage: d.usage ?? null, modelUsage: d.modelUsage ?? null, totalCostUsdList: d.total_cost_usd ?? null }; } catch {} }
     let codexEvents = null; if (atom.worker.model === 'codex') { codexEvents = { items: 0, reasoning: 0, commands: 0, webSearches: 0, errors: 0, usage: null }; for (const line of r.stdout.split('\n')) { try { const e = JSON.parse(line); if (e.type === 'item.completed') { codexEvents.items++; const t = e.item?.type; if (t === 'reasoning') codexEvents.reasoning++; if (t === 'command_execution') codexEvents.commands++; if (t === 'web_search') codexEvents.webSearches++; } if (e.type === 'error') codexEvents.errors++; if (e.type === 'turn.completed') codexEvents.usage = e.usage; } catch {} } }
@@ -82,14 +129,15 @@ async function runAtom(atom) {
     const ok = r.exit === 0 && !r.timedOut && missing.length === 0 && !usage?.isError;
     fs.writeFileSync(path.join(RUN, 'atoms', atom.id, `stdout-${attempt}.txt`), r.stdout); fs.writeFileSync(path.join(RUN, 'atoms', atom.id, `stderr-${attempt}.txt`), r.stderr);
     if (w.prompt) fs.writeFileSync(path.join(RUN, 'atoms', atom.id, `prompt-${attempt}.md`), w.prompt);
-    rec.attempts.push({ attempt, exit: r.exit, signal: r.signal, timedOut: r.timedOut, wallMs: Math.round(r.wallMs), usage: usage && { input: usage.input, output: usage.output, cacheRead: usage.cacheRead, cacheCreate: usage.cacheCreate, thinking: usage.thinking, reasoning: usage.reasoning, costUsdList: usage.costUsdList, models: usage.models }, missing, ok, stderrTail: r.stderr.slice(-400) });
+    rec.attempts.push({ ...meta, attempt, exit: r.exit, signal: r.signal, timedOut: r.timedOut, wallMs: Math.round(r.wallMs), usage: usage && { input: usage.input, output: usage.output, cacheRead: usage.cacheRead, cacheCreate: usage.cacheCreate, thinking: usage.thinking, reasoning: usage.reasoning, costUsdList: usage.costUsdList, models: usage.models }, missing, ok, stderrTail: r.stderr.slice(-400) });
     const att = rec.attempts.at(-1);
-    emit('attempt.end', { runId: RUN_ID, poolId: POOL_ID, need: doc.need.id, atom: atom.id, kind: atom.kind, model: atom.worker.model, tools: atom.worker.tools ?? [], attempt, ok, exit: r.exit, signal: r.signal, timedOut: r.timedOut, stageMs, wallMs: att.wallMs,
+    emit('attempt.end', { ...meta, runId: RUN_ID, poolId: POOL_ID, need: doc.need.id, atom: atom.id, kind: atom.kind, model: atom.worker.model, tools: atom.worker.tools ?? [], attempt, ok, exit: r.exit, signal: r.signal, timedOut: r.timedOut, stageMs, wallMs: att.wallMs,
       split: cli?.durationMs != null ? { modelApiMs: cli.apiMs, toolMs: Math.max(0, cli.durationMs - (cli.apiMs ?? 0)), harnessMs: Math.max(0, Math.round(r.wallMs) - cli.durationMs) } : null,
       cli, codex: codexEvents, promptBytes: w.prompt ? Buffer.byteLength(w.prompt) : 0, promptSha256: w.prompt ? createHash('sha256').update(w.prompt).digest('hex') : null, stdinBytes: w.stdin ? Buffer.byteLength(w.stdin) : 0,
       stdoutBytes: Buffer.byteLength(r.stdout), stderrBytes: Buffer.byteLength(r.stderr), missing, inputsStaged: staged.map((x) => ({ from: x.from, path: x.path, bytes: (() => { try { return fs.statSync(x.host).size; } catch { return null; } })() })),
       outputs: listFiles(outDir).map((f) => ({ path: f, bytes: fs.statSync(path.join(outDir, f)).size, sha256: sha256File(path.join(outDir, f)) })), cmd: w.cmd.map((c) => c.length > 200 ? `<${c.length} chars>` : c), stderrTail: r.stderr.slice(-300), load: load() });
-    if (ok) break;
+    if (ok && meta.account) codexAccounts[meta.account] = (codexAccounts[meta.account] ?? 0) + 1;
+    if (ok || meta.reason) break;
   }
   const last = rec.attempts.at(-1);
   rec.ok = last.ok; rec.finishedAt = new Date().toISOString(); rec.wallMs = rec.attempts.reduce((s, a) => s + a.wallMs, 0);
@@ -121,9 +169,10 @@ const sumAtomWall = Object.values(receipts).reduce((s, r) => s + r.wallMs, 0);
 const criticalWall = P.criticalPath.reduce((s, id) => s + (receipts[id]?.wallMs ?? 0), 0);
 const tok = { input: 0, output: 0, cacheRead: 0, cacheCreate: 0, calls: 0 };
 for (const r of Object.values(receipts)) for (const a of r.attempts) if (a.usage) { tok.calls++; for (const k of ['input', 'output', 'cacheRead', 'cacheCreate']) tok[k] += Number(a.usage[k] ?? 0); }
-const summary = { runDir: RUN, need: doc.need.id, atoms: doc.atoms.length, concurrency: CONC, statuses: Object.fromEntries(state), plan: { waves: P.waves, total: P.total, critical: P.critical, criticalPath: P.criticalPath, speedupBound: P.speedupBound, width: P.width }, wallMs, sumAtomWallMs: sumAtomWall, criticalPathWallMs: criticalWall, realizedSpeedup: sumAtomWall ? +(sumAtomWall / wallMs).toFixed(2) : null, tokens: tok, allDone: [...state.values()].every((s) => s === 'done') };
+const summary = { codexAccounts, runDir: RUN, need: doc.need.id, atoms: doc.atoms.length, concurrency: CONC, statuses: Object.fromEntries(state), plan: { waves: P.waves, total: P.total, critical: P.critical, criticalPath: P.criticalPath, speedupBound: P.speedupBound, width: P.width }, wallMs, sumAtomWallMs: sumAtomWall, criticalPathWallMs: criticalWall, realizedSpeedup: sumAtomWall ? +(sumAtomWall / wallMs).toFixed(2) : null, tokens: tok, allDone: [...state.values()].every((s) => s === 'done') };
 summary.runId = RUN_ID; summary.poolId = POOL_ID;
 fs.writeFileSync(path.join(RUN, 'receipt', 'run.json'), JSON.stringify(summary, null, 1));
 emit('run.end', { runId: RUN_ID, poolId: POOL_ID, need: doc.need.id, allDone: summary.allDone, statuses: summary.statuses, wallMs, sumAtomWallMs: sumAtomWall, criticalPathWallMs: criticalWall, realizedSpeedup: summary.realizedSpeedup, speedupBound: P.speedupBound, tokens: tok, load: load() });
 console.log(JSON.stringify({ allDone: summary.allDone, wallMs, sumAtomWallMs: sumAtomWall, realizedSpeedup: summary.realizedSpeedup, speedupBound: P.speedupBound, statuses: summary.statuses, tokens: tok }));
+if (doc.atoms.some((a) => a.worker.model === 'codex')) console.error(`codexAccounts=${JSON.stringify(codexAccounts)}`);
 process.exit(summary.allDone ? 0 : 1);

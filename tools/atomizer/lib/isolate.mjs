@@ -4,10 +4,11 @@ import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 const HOME = os.homedir();
 export const expand = (p) => (p.startsWith('~/') ? path.join(HOME, p.slice(2)) : p);
 const SYSTEM_RO = ['/usr', '/lib', '/lib64', '/bin', '/sbin', '/etc/ssl', '/etc/ca-certificates', '/etc/resolv.conf', '/etc/hosts', '/etc/passwd', '/etc/group', '/etc/localtime', '/etc/nsswitch.conf'];
-const CREDENTIAL_FILES = ['.claude/.credentials.json', '.claude.json', '.codex/auth.json', '.codex/config.toml'];
+const CREDENTIAL_FILES = ['.claude/.credentials.json', '.claude.json'];
 /** A template home with only the user's own subscription credentials; private (0700); caller deletes it. */
 export function makeHomeTemplate(dir) {
   fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
@@ -27,8 +28,8 @@ export function listFiles(dir) {
   return out.sort();
 }
 /**
- * spec: { homeTemplate, mounts: [{host, guest, mode:'ro'|'rw'}], toolchain: [{host, guest}], cmd: [...], stdin, cwd, env, timeoutMs }
- * Returns { exit, signal, wallMs, stdout, stderr, timedOut, bwrapArgs }.
+ * spec: { homeTemplate, mounts: [{host, guest, mode:'ro'|'rw'}], toolchain: [{host, guest}], cmd: [...], stdin, cwd, env, timeoutMs, pool?: {bin, env} }
+ * Returns { exit, signal, wallMs, stdout, stderr, timedOut, bwrapArgs, poolPid? }.
  */
 export async function runIsolated(spec) {
   const runHome = fs.mkdtempSync(path.join(os.tmpdir(), 'atom-home-'));
@@ -43,18 +44,30 @@ export async function runIsolated(spec) {
     '--setenv', 'HOME', HOME, '--setenv', 'USER', os.userInfo().username, '--setenv', 'TERM', 'dumb', '--setenv', 'LANG', 'C.UTF-8',
     '--setenv', 'PATH', [...(spec.toolchain ?? []).map((t) => t.bin).filter(Boolean), '/usr/bin', '/bin'].join(':'));
   for (const [k, v] of Object.entries(spec.env ?? {})) args.push('--setenv', k, String(v));
-  args.push('--chdir', spec.cwd ?? '/work', '--', ...spec.cmd);
+  args.push('--chdir', spec.cwd ?? '/work');
+  // Keep the launch spec outside the writable guest home across pool failovers.
+  const specDir = spec.pool ? fs.mkdtempSync(path.join(os.tmpdir(), 'atom-isolate-')) : null;
+  let env;
+  if (spec.pool) {
+    const specFile = path.join(specDir, 'spec.json');
+    fs.writeFileSync(specFile, JSON.stringify({ bwrapArgs: args, cmdHead: spec.cmd[0] }), { mode: 0o600 });
+    env = { ...process.env, ...spec.pool.env, CODEX_POOL_BIN: fileURLToPath(new URL('../bin/isolate-exec.mjs', import.meta.url)), ENDOFORGE_ISOLATE_SPEC: specFile };
+  } else args.push('--', ...spec.cmd);
   const t0 = process.hrtime.bigint();
-  const result = await new Promise((resolve) => {
-    const child = spawn('bwrap', args, { stdio: ['pipe', 'pipe', 'pipe'] });
+  let result;
+  try { result = await new Promise((resolve) => {
+    const child = spawn(spec.pool?.bin ?? 'bwrap', spec.pool ? spec.cmd.slice(1) : args, { env, stdio: ['pipe', 'pipe', 'pipe'] });
     let stdout = '', stderr = '', timedOut = false;
     child.stdout.on('data', (d) => { stdout += d; });
     child.stderr.on('data', (d) => { stderr += d; });
-    const timer = spec.timeoutMs ? setTimeout(() => { timedOut = true; child.kill('SIGKILL'); }, spec.timeoutMs) : null;
-    child.on('close', (code, signal) => { if (timer) clearTimeout(timer); resolve({ exit: code, signal, stdout, stderr, timedOut }); });
-    if (spec.stdin != null) child.stdin.write(spec.stdin);
+    const timer = spec.timeoutMs ? setTimeout(() => { timedOut = true; child.kill(spec.pool ? 'SIGTERM' : 'SIGKILL'); }, spec.timeoutMs) : null;
+    child.on('error', (error) => { stderr += error.message; });
+    child.on('close', (code, signal) => { if (timer) clearTimeout(timer); resolve({ exit: code, signal, stdout, stderr, timedOut, ...(spec.pool ? { poolPid: child.pid } : {}) }); });
+    if (!spec.pool && spec.stdin != null) child.stdin.write(spec.stdin);
     child.stdin.end();
-  });
-  fs.rmSync(runHome, { recursive: true, force: true });
+  }); } finally {
+    fs.rmSync(runHome, { recursive: true, force: true });
+    if (specDir) fs.rmSync(specDir, { recursive: true, force: true });
+  }
   return { ...result, wallMs: Number(process.hrtime.bigint() - t0) / 1e6, bwrapArgs: args.filter((a) => !a.startsWith(runHome)) };
 }
