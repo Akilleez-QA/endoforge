@@ -24,6 +24,10 @@ atomizer-test: ## run the task-atomizer tests (scheduler speedup, isolate bounda
 	node tools/atomizer/test/run.mjs
 	node tools/atomizer/test/codex-swarm.test.mjs
 
+.PHONY: harness-test
+harness-test: ## step harness policy tests (scripted fake model and core; no models)
+	$(PYTHON) -B -m unittest tools.step_harness.test_harness -v
+
 .PHONY: factory-check factory-integration
 factory-check: ## deterministic quality and real state-crash checks; no models
 	node tools/factory_quality/test.mjs
