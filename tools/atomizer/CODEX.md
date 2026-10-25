@@ -6,6 +6,7 @@ is `ENDOFORGE_CODEX_CONCURRENCY` (default 3); `--concurrency` takes precedence.
 
 Launch chain: `schedule.mjs → codex-pool (host) → guard (host) → bin/isolate-exec.mjs (host) → bwrap isolate → codex`.
 `ENDOFORGE_CODEX_POOL` overrides `/home/box/.local/bin/codex-pool`.
+Hosts without the fleet pool use `tools/runtime/codex-pool.mjs` (same contract, no cooldown sharing across hosts).
 Accounts, balancing, cooldown, failover and guard execution belong to codex-pool;
 see [/workspace/ops/playbooks/codex-workers.md](/workspace/ops/playbooks/codex-workers.md).
 Add an account with `CODEX_HOME=~/.codex-accounts/<name> codex login`.

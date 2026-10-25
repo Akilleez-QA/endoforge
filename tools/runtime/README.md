@@ -24,6 +24,15 @@ Install from `forge/endoforge`:
 ```sh
 ln -s "$PWD/tools/runtime/endoforge" ~/.local/bin/endoforge
 ```
+Hosts without the fleet pool (main-rig) install the local pool, which passes
+`tools/atomizer/test/codex-swarm.test.mjs`, and point the codex toolchain at an
+installed codex prefix (one with `bin/codex`):
+```sh
+install -m755 tools/runtime/codex-pool.mjs ~/.local/bin/codex-pool
+mkdir -p ~/.local/share/endoforge-tc && ln -sfn ~/.local/share/mise/installs/codex/latest ~/.local/share/endoforge-tc/codex
+```
+Accounts are `~/.codex` (logged as `default`) and `~/.codex-accounts/<name>`;
+it reads neither credential file, only checks that `auth.json` exists.
 Set `ENDOFORGE_SRC_REPO` and `ENDOFORGE_REF` in
 `~/.config/endoforge/runtime.env` (simple KEY=VALUE lines).
 Other knobs: `ENDOFORGE_HOME`, `ENDOFORGE_RUNS_DIR`, `ENDOFORGE_ASC_SEED`,
