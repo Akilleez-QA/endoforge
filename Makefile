@@ -20,6 +20,7 @@ x1-test:
 	node --test campaigns/x1-spec-study/test/
 
 atomizer-test: ## run the task-atomizer tests (scheduler speedup, isolate boundary, validation)
+	node tools/atomizer/test/trace.test.mjs
 	node tools/atomizer/test/run.mjs
 	node tools/atomizer/test/codex-swarm.test.mjs
 

@@ -2,6 +2,7 @@
 // Run an atoms.json DAG: every atom in its own isolate with only its declared inputs mounted; ready-queue scheduling with a concurrency limit.
 // usage: node schedule.mjs run <atoms.json> --run-dir <dir> [--concurrency 8] [--retries 1] [--timeout-ms 900000] [--policy tools/atomizer/policy.json] [--force]
 import fs from 'node:fs';
+import { openTrace, nowEpoch } from '../lib/trace.mjs';
 import { createHash } from 'node:crypto';
 import os from 'node:os';
 import path from 'node:path';
@@ -35,10 +36,11 @@ fs.mkdirSync(path.join(RUN, 'receipt', 'atoms'), { recursive: true });
 fs.writeFileSync(path.join(RUN, 'atoms.json'), JSON.stringify(doc, null, 1));
 const P = plan(doc.atoms);
 const RUN_ID = A['run-id'] ?? newId(`run-${doc.need.id}`);
+const T = openTrace(RUN, { runId: RUN_ID });
 const POOL_ID = A['pool-id'] ?? null;
-const runT0 = Date.now();
+const runT0 = Date.now(), traceRunT0 = nowEpoch();
 emit('run.start', { runId: RUN_ID, poolId: POOL_ID, need: doc.need.id, runDir: path.relative(REPO, RUN), concurrency: CONC, retries: RETRIES, timeoutMs: TIMEOUT, atomsSha256: shaFile(A._[1]), atoms: doc.atoms.length, augmented: doc.augmented ?? null, normalizedCompose: doc.normalizedCompose ?? null, plan: { waves: P.waves, total: P.total, critical: P.critical, criticalPath: P.criticalPath, speedupBound: P.speedupBound, width: P.width }, atomSpecs: doc.atoms.map((a) => ({ id: a.id, kind: a.kind, model: a.worker.model, tools: a.worker.tools ?? [], effort: a.worker.effort ?? null, size: a.size, inputs: (a.inputs ?? []).map((i) => i.from === 'need' ? 'need' : i.output ? `${i.from}#${i.output}` : i.from), outputs: a.outputs.map((o) => o.path) })), context: context(), load: load() });
-const readyAt = {};
+const readyAt = {}, traceReadyAt = {};
 const byId = new Map(doc.atoms.map((a) => [a.id, a]));
 const state = new Map(doc.atoms.map((a) => [a.id, 'pending']));
 const receipts = {}, codexAccounts = {};
@@ -59,16 +61,20 @@ const stage = (atom) => {
   return { inDir, staged };
 };
 async function runAtom(atom) {
-  const tStart = Date.now();
+  const tStart = Date.now(), atomStart = nowEpoch();
+  T.span('queue', traceReadyAt[atom.id] ?? atomStart, atomStart, { atom: atom.id, attempt: 1 });
   emit('atom.start', { runId: RUN_ID, poolId: POOL_ID, need: doc.need.id, atom: atom.id, kind: atom.kind, model: atom.worker.model, readyAtMs: (readyAt[atom.id] ?? tStart) - runT0, startAtMs: tStart - runT0, queueMs: tStart - (readyAt[atom.id] ?? tStart), running: running.size, load: load() });
   const outDir = path.join(RUN, 'atoms', atom.id, 'out'), workDir = path.join(RUN, 'atoms', atom.id, 'work');
   const rec = { id: atom.id, kind: atom.kind, model: atom.worker.model, attempts: [], readyAt: new Date(readyAt[atom.id] ?? tStart).toISOString(), startedAt: new Date(tStart).toISOString() };
   for (let attempt = 1; attempt <= 1 + RETRIES; attempt++) {
+    const setupStart = nowEpoch();
     fs.rmSync(outDir, { recursive: true, force: true }); fs.mkdirSync(outDir, { recursive: true }); fs.rmSync(workDir, { recursive: true, force: true }); fs.mkdirSync(workDir, { recursive: true });
     const tStage = Date.now();
     const { inDir, staged } = stage(atom);
     const stageMs = Date.now() - tStage;
+    T.span('setup', setupStart, nowEpoch(), { atom: atom.id, attempt, inputs: staged.length, bytes: staged.reduce((n, x) => n + fs.statSync(x.host).size, 0) });
     if (atom.worker.preflight && attempt === 1 && !A['no-preflight']) {
+      const pfStart = nowEpoch();
       const pf = atom.worker.preflight;
       const subst = (x) => x.replaceAll('{in}', '/in').replaceAll('{out}', '/out').replaceAll('{work}', '/work').replaceAll('{atomizer}', path.join(REPO, policy.toolchain.atomizer)).replaceAll('{gate}', path.join(REPO, policy.toolchain.gate, 'gate.mjs'));
       const pr = await runIsolated({ homeTemplate, mounts: [{ host: inDir, guest: '/in', mode: 'ro' }, { host: outDir, guest: '/out', mode: 'rw' }, { host: workDir, guest: '/work', mode: 'rw' }], toolchain: toolchainFor(pf.toolchain ?? ['node'], policy, REPO), cmd: pf.command.map(subst), stdin: null, cwd: '/work', timeoutMs: TIMEOUT });
@@ -76,6 +82,7 @@ async function runAtom(atom) {
       const hit = pr.exit === 0 && pmissing.length === 0;
       fs.writeFileSync(path.join(RUN, 'atoms', atom.id, 'preflight-stdout.txt'), pr.stdout); fs.writeFileSync(path.join(RUN, 'atoms', atom.id, 'preflight-stderr.txt'), pr.stderr);
       emit('preflight.end', { runId: RUN_ID, poolId: POOL_ID, need: doc.need.id, atom: atom.id, kind: atom.kind, hit, exit: pr.exit, wallMs: Math.round(pr.wallMs), stageMs, missing: pmissing, stdoutTail: pr.stdout.slice(-300), stderrTail: pr.stderr.slice(-300), load: load() });
+      T.span('preflight', pfStart, nowEpoch(), { atom: atom.id, attempt, hit });
       rec.preflight = { hit, exit: pr.exit, wallMs: Math.round(pr.wallMs) };
       if (hit) { rec.attempts.push({ attempt: 0, preflight: true, exit: 0, wallMs: Math.round(pr.wallMs), usage: null, missing: [], ok: true, stderrTail: pr.stderr.slice(-400) }); break; }
       fs.rmSync(outDir, { recursive: true, force: true }); fs.mkdirSync(outDir, { recursive: true }); fs.rmSync(workDir, { recursive: true, force: true }); fs.mkdirSync(workDir, { recursive: true });
@@ -84,6 +91,7 @@ async function runAtom(atom) {
     const routed = { ...atom, prompt: atom.worker.prompt, consumes: atom.inputs, produces: atom.outputs };
     let sel = isCodex ? resolve(routed, attempt, routing) : null;
     const meta = isCodex ? { account: null, accounts: [], failovers: [], modelFallback: false } : {};
+    const workerStart = nowEpoch(), workerBackend = isCodex ? 'codex' : atom.worker.model === 'script' ? 'script' : 'claude';
     let w, r, launchWallMs = 0;
     for (;;) {
       const bin = process.env.ENDOFORGE_CODEX_POOL || '/home/box/.local/bin/codex-pool';
@@ -95,6 +103,11 @@ async function runAtom(atom) {
       w = workerCommand(doc, atom, staged, policy, REPO, sel);
       r = await runIsolated({ homeTemplate, mounts: [{ host: inDir, guest: '/in', mode: 'ro' }, { host: outDir, guest: '/out', mode: 'rw' }, { host: workDir, guest: '/work', mode: 'rw' }], toolchain: w.toolchain, cmd: w.cmd, stdin: w.stdin, cwd: '/work', timeoutMs: TIMEOUT,
         ...(isCodex ? { pool: { bin, env: { CODEX_POOL_TIER: sel.tier, ...(sel.tier === 'throwaway' ? { CODEX_POOL_THROWAWAY: '1' } : {}) } } } : {}) });
+      T.span('isolate.home', r.spawnEpoch - r.homeMs, r.spawnEpoch, { atom: atom.id, attempt });
+      if (isCodex) {
+        T.span('pool.acquire', r.spawnEpoch, r.tries[0]?.start ?? r.endEpoch, { atom: atom.id, attempt });
+        r.tries.forEach((t, i) => { if (t.end != null) T.span('codex.exec', t.start, t.end, { atom: atom.id, attempt, exit: t.exit, try: i + 1, ...(i === r.tries.length - 1 && r.firstStdoutEpoch > t.start ? { firstEventMs: r.firstStdoutEpoch - t.start } : {}) }); });
+      }
       launchWallMs += r.wallMs;
       if (!isCodex) break;
       const accounts = [], failovers = [];
@@ -116,6 +129,7 @@ async function runAtom(atom) {
       fs.rmSync(outDir, { recursive: true, force: true }); fs.mkdirSync(outDir, { recursive: true });
       sel = resolve(routed, attempt, routing, { fallback: true }); meta.modelFallback = true;
     }
+    const workerEnd = nowEpoch(), postStart = workerEnd;
     r.wallMs = launchWallMs;
     if (isCodex && r.exit === 0 && !(atom.worker.tools ?? []).length) {
       const output = path.join(outDir, atom.outputs[0].path);
@@ -130,12 +144,14 @@ async function runAtom(atom) {
     fs.writeFileSync(path.join(RUN, 'atoms', atom.id, `stdout-${attempt}.txt`), r.stdout); fs.writeFileSync(path.join(RUN, 'atoms', atom.id, `stderr-${attempt}.txt`), r.stderr);
     if (w.prompt) fs.writeFileSync(path.join(RUN, 'atoms', atom.id, `prompt-${attempt}.md`), w.prompt);
     rec.attempts.push({ ...meta, attempt, exit: r.exit, signal: r.signal, timedOut: r.timedOut, wallMs: Math.round(r.wallMs), usage: usage && { input: usage.input, output: usage.output, cacheRead: usage.cacheRead, cacheCreate: usage.cacheCreate, thinking: usage.thinking, reasoning: usage.reasoning, costUsdList: usage.costUsdList, models: usage.models }, missing, ok, stderrTail: r.stderr.slice(-400) });
+    T.span('worker', workerStart, workerEnd, { ...meta, atom: atom.id, attempt, backend: workerBackend, model: atom.worker.model, tier: meta.tier ?? null, tierReason: meta.tierReason ?? null, codexModel: meta.codexModel ?? null, effort: meta.effort ?? atom.worker.effort ?? null, account: meta.account ?? null, accounts: meta.accounts ?? [], modelFallback: meta.modelFallback ?? false, failovers: meta.failovers?.length ?? 0, exit: r.exit, ok, timedOut: r.timedOut });
     const att = rec.attempts.at(-1);
     emit('attempt.end', { ...meta, runId: RUN_ID, poolId: POOL_ID, need: doc.need.id, atom: atom.id, kind: atom.kind, model: atom.worker.model, tools: atom.worker.tools ?? [], attempt, ok, exit: r.exit, signal: r.signal, timedOut: r.timedOut, stageMs, wallMs: att.wallMs,
       split: cli?.durationMs != null ? { modelApiMs: cli.apiMs, toolMs: Math.max(0, cli.durationMs - (cli.apiMs ?? 0)), harnessMs: Math.max(0, Math.round(r.wallMs) - cli.durationMs) } : null,
       cli, codex: codexEvents, promptBytes: w.prompt ? Buffer.byteLength(w.prompt) : 0, promptSha256: w.prompt ? createHash('sha256').update(w.prompt).digest('hex') : null, stdinBytes: w.stdin ? Buffer.byteLength(w.stdin) : 0,
       stdoutBytes: Buffer.byteLength(r.stdout), stderrBytes: Buffer.byteLength(r.stderr), missing, inputsStaged: staged.map((x) => ({ from: x.from, path: x.path, bytes: (() => { try { return fs.statSync(x.host).size; } catch { return null; } })() })),
       outputs: listFiles(outDir).map((f) => ({ path: f, bytes: fs.statSync(path.join(outDir, f)).size, sha256: sha256File(path.join(outDir, f)) })), cmd: w.cmd.map((c) => c.length > 200 ? `<${c.length} chars>` : c), stderrTail: r.stderr.slice(-300), load: load() });
+    T.span('post', postStart, nowEpoch(), { atom: atom.id, attempt });
     if (ok && meta.account) codexAccounts[meta.account] = (codexAccounts[meta.account] ?? 0) + 1;
     if (ok || meta.reason) break;
   }
@@ -145,6 +161,7 @@ async function runAtom(atom) {
   rec.inputs = (atom.inputs ?? []).map((i) => i.from === 'need' ? 'need' : i.output ? `${i.from}#${i.output}` : i.from);
   fs.writeFileSync(path.join(RUN, 'receipt', 'atoms', `${atom.id}.json`), JSON.stringify(rec, null, 1));
   emit('atom.end', { runId: RUN_ID, poolId: POOL_ID, need: doc.need.id, atom: atom.id, kind: atom.kind, model: atom.worker.model, ok: rec.ok, attempts: rec.attempts.length, wallMs: rec.wallMs, endAtMs: Date.now() - runT0, outputs: rec.outputs });
+  T.span('atom', atomStart, nowEpoch(), { atom: atom.id, kind: atom.kind, ok: rec.ok, attempts: rec.attempts.length, backend: atom.worker.model === 'codex' ? 'codex' : atom.worker.model === 'script' ? 'script' : 'claude', tier: last.tier, codexModel: last.codexModel, model: atom.worker.model, effort: last.effort ?? atom.worker.effort ?? null, account: last.account ?? null, accounts: [...new Set(rec.attempts.flatMap((a) => a.accounts ?? []))] });
   receipts[atom.id] = rec;
   return rec;
 }
@@ -152,15 +169,17 @@ const t0 = Date.now();
 const running = new Map();
 const ready = () => doc.atoms.filter((a) => state.get(a.id) === 'pending' && deps(a).every((d) => state.get(d) === 'done'));
 const blockDescendants = (id) => { for (const a of doc.atoms) if (state.get(a.id) === 'pending' && deps(a).includes(id)) { state.set(a.id, 'blocked'); emit('atom.blocked', { runId: RUN_ID, poolId: POOL_ID, need: doc.need.id, atom: a.id, by: id }); blockDescendants(a.id); } };
+const sample = () => T.mark('sched.sample', { running: running.size, ready: ready().length, done: [...state.values()].filter((s) => s === 'done').length });
 try {
   while ([...state.values()].some((s) => s === 'pending' || s === 'running')) {
-    for (const a of ready()) readyAt[a.id] ??= Date.now();
-    for (const a of ready()) { if (running.size >= CONC) break; state.set(a.id, 'running'); running.set(a.id, runAtom(a).then((rec) => ({ id: a.id, rec }))); }
+    for (const a of ready()) { readyAt[a.id] ??= Date.now(); traceReadyAt[a.id] ??= nowEpoch(); }
+    for (const a of ready()) { if (running.size >= CONC) break; state.set(a.id, 'running'); running.set(a.id, runAtom(a).then((rec) => ({ id: a.id, rec }))); sample(); }
     if (!running.size) break;
     const { id, rec } = await Promise.race(running.values());
     running.delete(id);
     state.set(id, rec.ok ? 'done' : 'failed');
     if (!rec.ok) blockDescendants(id);
+    sample();
     console.error(`${rec.ok ? 'done  ' : 'FAILED'} ${id} (${rec.wallMs} ms, attempts ${rec.attempts.length})`);
   }
 } finally { fs.rmSync(homeTemplate, { recursive: true, force: true }); }
@@ -169,10 +188,11 @@ const sumAtomWall = Object.values(receipts).reduce((s, r) => s + r.wallMs, 0);
 const criticalWall = P.criticalPath.reduce((s, id) => s + (receipts[id]?.wallMs ?? 0), 0);
 const tok = { input: 0, output: 0, cacheRead: 0, cacheCreate: 0, calls: 0 };
 for (const r of Object.values(receipts)) for (const a of r.attempts) if (a.usage) { tok.calls++; for (const k of ['input', 'output', 'cacheRead', 'cacheCreate']) tok[k] += Number(a.usage[k] ?? 0); }
-const summary = { codexAccounts, runDir: RUN, need: doc.need.id, atoms: doc.atoms.length, concurrency: CONC, statuses: Object.fromEntries(state), plan: { waves: P.waves, total: P.total, critical: P.critical, criticalPath: P.criticalPath, speedupBound: P.speedupBound, width: P.width }, wallMs, sumAtomWallMs: sumAtomWall, criticalPathWallMs: criticalWall, realizedSpeedup: sumAtomWall ? +(sumAtomWall / wallMs).toFixed(2) : null, tokens: tok, allDone: [...state.values()].every((s) => s === 'done') };
+const summary = { trace: T.enabled ? 'trace.jsonl' : null, codexAccounts, runDir: RUN, need: doc.need.id, atoms: doc.atoms.length, concurrency: CONC, statuses: Object.fromEntries(state), plan: { waves: P.waves, total: P.total, critical: P.critical, criticalPath: P.criticalPath, speedupBound: P.speedupBound, width: P.width }, wallMs, sumAtomWallMs: sumAtomWall, criticalPathWallMs: criticalWall, realizedSpeedup: sumAtomWall ? +(sumAtomWall / wallMs).toFixed(2) : null, tokens: tok, allDone: [...state.values()].every((s) => s === 'done') };
 summary.runId = RUN_ID; summary.poolId = POOL_ID;
 fs.writeFileSync(path.join(RUN, 'receipt', 'run.json'), JSON.stringify(summary, null, 1));
 emit('run.end', { runId: RUN_ID, poolId: POOL_ID, need: doc.need.id, allDone: summary.allDone, statuses: summary.statuses, wallMs, sumAtomWallMs: sumAtomWall, criticalPathWallMs: criticalWall, realizedSpeedup: summary.realizedSpeedup, speedupBound: P.speedupBound, tokens: tok, load: load() });
 console.log(JSON.stringify({ allDone: summary.allDone, wallMs, sumAtomWallMs: sumAtomWall, realizedSpeedup: summary.realizedSpeedup, speedupBound: P.speedupBound, statuses: summary.statuses, tokens: tok }));
 if (doc.atoms.some((a) => a.worker.model === 'codex')) console.error(`codexAccounts=${JSON.stringify(codexAccounts)}`);
+T.span('run', traceRunT0, nowEpoch(), { concurrency: CONC, atoms: doc.atoms.length, backend, need: doc.need.id, allDone: summary.allDone, procStartEpoch: performance.timeOrigin }); T.close();
 process.exit(summary.allDone ? 0 : 1);

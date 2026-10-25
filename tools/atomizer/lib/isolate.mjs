@@ -1,5 +1,6 @@
 // Run one command inside a bubblewrap isolate with a private home and only the declared mounts (P-07).
 import fs from 'node:fs';
+import { nowEpoch } from './trace.mjs';
 import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -32,9 +33,11 @@ export function listFiles(dir) {
  * Returns { exit, signal, wallMs, stdout, stderr, timedOut, bwrapArgs, poolPid? }.
  */
 export async function runIsolated(spec) {
+  const homeStart = nowEpoch();
   const runHome = fs.mkdtempSync(path.join(os.tmpdir(), 'atom-home-'));
   fs.chmodSync(runHome, 0o700);
   fs.cpSync(spec.homeTemplate, runHome, { recursive: true });
+  const homeMs = nowEpoch() - homeStart;
   const args = [];
   for (const p of SYSTEM_RO) if (fs.existsSync(p)) args.push('--ro-bind', p, p);
   args.push('--bind', runHome, HOME);
@@ -51,23 +54,27 @@ export async function runIsolated(spec) {
   if (spec.pool) {
     const specFile = path.join(specDir, 'spec.json');
     fs.writeFileSync(specFile, JSON.stringify({ bwrapArgs: args, cmdHead: spec.cmd[0] }), { mode: 0o600 });
-    env = { ...process.env, ...spec.pool.env, CODEX_POOL_BIN: fileURLToPath(new URL('../bin/isolate-exec.mjs', import.meta.url)), ENDOFORGE_ISOLATE_SPEC: specFile };
+    env = { ...process.env, ...spec.pool.env, CODEX_POOL_BIN: fileURLToPath(new URL('../bin/isolate-exec.mjs', import.meta.url)), ENDOFORGE_ISOLATE_SPEC: specFile, ENDOFORGE_ISOLATE_TRACE: path.join(specDir, 'tries') };
   } else args.push('--', ...spec.cmd);
   const t0 = process.hrtime.bigint();
-  let result;
+  let result, spawnEpoch, endEpoch, firstStdoutEpoch; const tries = [];
   try { result = await new Promise((resolve) => {
+    spawnEpoch = nowEpoch();
     const child = spawn(spec.pool?.bin ?? 'bwrap', spec.pool ? spec.cmd.slice(1) : args, { env, stdio: ['pipe', 'pipe', 'pipe'] });
     let stdout = '', stderr = '', timedOut = false;
-    child.stdout.on('data', (d) => { stdout += d; });
+    child.stdout.on('data', (d) => { firstStdoutEpoch ??= nowEpoch(); stdout += d; });
     child.stderr.on('data', (d) => { stderr += d; });
     const timer = spec.timeoutMs ? setTimeout(() => { timedOut = true; child.kill(spec.pool ? 'SIGTERM' : 'SIGKILL'); }, spec.timeoutMs) : null;
     child.on('error', (error) => { stderr += error.message; });
-    child.on('close', (code, signal) => { if (timer) clearTimeout(timer); resolve({ exit: code, signal, stdout, stderr, timedOut, ...(spec.pool ? { poolPid: child.pid } : {}) }); });
+    child.on('close', (code, signal) => { endEpoch = nowEpoch(); if (timer) clearTimeout(timer); resolve({ exit: code, signal, stdout, stderr, timedOut, ...(spec.pool ? { poolPid: child.pid } : {}) }); });
     if (!spec.pool && spec.stdin != null) child.stdin.write(spec.stdin);
     child.stdin.end();
   }); } finally {
     fs.rmSync(runHome, { recursive: true, force: true });
-    if (specDir) fs.rmSync(specDir, { recursive: true, force: true });
+    if (specDir) {
+      try { for (const line of fs.readFileSync(path.join(specDir, 'tries'), 'utf8').trim().split('\n')) { const [tag, t, code] = line.split(' '); if (tag === 'start') tries.push({ start: Number(t) }); else if (tag === 'end' && tries.length) Object.assign(tries.at(-1), { end: Number(t), exit: Number(code) }); } } catch {}
+      fs.rmSync(specDir, { recursive: true, force: true });
+    }
   }
-  return { ...result, wallMs: Number(process.hrtime.bigint() - t0) / 1e6, bwrapArgs: args.filter((a) => !a.startsWith(runHome)) };
+  return { ...result, homeMs, spawnEpoch, endEpoch, firstStdoutEpoch, tries, wallMs: Number(process.hrtime.bigint() - t0) / 1e6, bwrapArgs: args.filter((a) => !a.startsWith(runHome)) };
 }

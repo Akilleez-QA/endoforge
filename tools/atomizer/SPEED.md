@@ -43,3 +43,18 @@ C-010 got slower: its draft failed one test this time (it passed in run 3), so t
 ## Router state (18 Oct 2026)
 
 Templated planning (about 9 s) plus the test check reaches a promotable result first on large requests (N1, N2: 6/6 paired reps, median 66 s against 97 s direct). Direct stays the default for small requests until the singles are measured on the templated arm. See `CUTOVER.md`.
+
+## Trace and bench
+
+Tracing defaults on; `ENDOFORGE_TRACE=0` disables it without creating a file.
+`trace.jsonl` appends absolute epoch spans: run, atom, queue, setup, preflight, worker,
+pool.acquire, codex.exec, isolate.home, post, verify, verify.acceptance, archive;
+sched.sample marks show occupancy and trace.self records write overhead.
+From forge/endoforge: `node tools/atomizer/bin/bench.mjs --atoms tools/atomizer/examples/C-005/atoms.json --n 3 --concurrency 3`.
+Free replay: add `--stub --replay <finished-run-dir>`; `--stub-latency recorded --stub-scale 1` replays receipt latencies (default latency 0; numeric milliseconds also supported).
+Results live in ~/.cache/endoforge-bench/bench by default; use --out-dir DIR or --label X.
+Use --trace-ab to alternate tracing on/off, or --no-verify to omit verification.
+Summary gives nearest-rank median/p90 and min/max: wall, measured DAG critical path,
+realized chain queue/Codex/other time, pool waits, phase totals, busy time and startup.
+Concurrency average is busy/wall; efficiency divides it by the configured concurrency.
+A/B arms include receipt wall and bench-side process wall; errors and okReps aggregate reps.

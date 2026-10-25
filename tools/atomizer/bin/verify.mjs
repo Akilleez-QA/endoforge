@@ -2,12 +2,14 @@
 // Verify a finished run: every atom done, outputs match receipts, interfaces resolve, acceptance commands pass inside an isolate.
 // usage: node verify.mjs <run-dir> [--policy file]
 import fs from 'node:fs';
+import { openTrace, nowEpoch } from '../lib/trace.mjs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { makeHomeTemplate, runIsolated, sha256File } from '../lib/isolate.mjs';
 import { toolchainFor } from '../lib/workers.mjs';
 import { emit, context, archiveRun } from '../lib/ledger.mjs';
+const verifyStart = nowEpoch();
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const RUN = path.resolve(process.argv[2] ?? '');
 if (!RUN || !fs.existsSync(path.join(RUN, 'atoms.json'))) { console.error('usage: verify.mjs <run-dir>'); process.exit(2); }
@@ -16,6 +18,7 @@ const policy = JSON.parse(fs.readFileSync(path.join(HERE, '..', 'policy.json'), 
 const REPO = path.resolve(HERE, '../../..');
 const TOOLCHAIN = toolchainFor(['node'], policy, REPO);
 const run = JSON.parse(fs.readFileSync(path.join(RUN, 'receipt', 'run.json'), 'utf8'));
+const T = openTrace(RUN, { runId: run.runId });
 const fails = [], notes = [];
 for (const a of doc.atoms) {
   if (run.statuses[a.id] !== 'done') { fails.push(`${a.id}: status ${run.statuses[a.id]}`); continue; }
@@ -29,11 +32,13 @@ const acceptance = [];
 try {
   for (const acc of doc.acceptance) {
     if (acc.check.kind !== 'command') { acceptance.push({ id: acc.id, kind: acc.check.kind, result: 'not executed here' }); notes.push(`${acc.id}: ${acc.check.kind} check not executed by verify.mjs`); continue; }
+    const acceptanceStart = nowEpoch();
     const mounts = compose && run.statuses[compose.id] === 'done' ? [{ host: path.join(RUN, 'atoms', compose.id, 'out'), guest: `/in/${compose.id}`, mode: 'ro' }] : [];
     const work = fs.mkdtempSync(path.join(os.tmpdir(), 'verify-work-'));
     const r = await runIsolated({ homeTemplate, mounts: [...mounts, { host: work, guest: '/work', mode: 'rw' }], toolchain: TOOLCHAIN, cmd: ['/bin/sh', '-c', acc.check.run], cwd: '/work', timeoutMs: 120_000 });
     fs.rmSync(work, { recursive: true, force: true });
     const ok = r.exit === 0; acceptance.push({ id: acc.id, kind: 'command', run: acc.check.run, exit: r.exit, ok, stdout: r.stdout.slice(0, 400), stderr: r.stderr.slice(0, 400) });
+    T.span('verify.acceptance', acceptanceStart, nowEpoch(), { id: acc.id, ok });
     if (!ok) fails.push(`acceptance ${acc.id} failed (exit ${r.exit}): ${r.stderr.trim().slice(0, 200) || r.stdout.trim().slice(0, 200)}`);
   }
 } finally { fs.rmSync(homeTemplate, { recursive: true, force: true }); }
@@ -43,6 +48,8 @@ const gatesFile = compose ? path.join(RUN, 'atoms', compose.id, 'out', 'gates.js
 const gates = gatesFile && fs.existsSync(gatesFile) ? JSON.parse(fs.readFileSync(gatesFile, 'utf8')) : null;
 const reviews = doc.atoms.filter((a) => a.kind === 'review').map((a) => { const p = path.join(RUN, 'atoms', a.id, 'out', a.outputs[0].path); let j = null; try { j = JSON.parse(fs.readFileSync(p, 'utf8')); } catch {} return { atom: a.id, model: a.worker.model, persona: j?.persona ?? null, verdict: j?.verdict ?? null, change: j?.change ?? null }; });
 emit('verify.end', { runId: run.runId ?? null, poolId: run.poolId ?? null, need: doc.need.id, ok: report.ok, fails, acceptance: acceptance.map((a) => ({ id: a.id, kind: a.kind, ok: a.ok ?? null, exit: a.exit ?? null })), gates: gates ? { promotable: gates.promotable, byGate: Object.fromEntries(Object.entries(gates.gates ?? {}).map(([k, v]) => [k, v.ok])), testsPassed: gates.gates?.G4_tests?.passed ?? null, testsTotal: gates.gates?.G4_tests?.total ?? null } : null, reviews, context: context() });
-if (!process.argv.includes('--no-archive')) { const ar = archiveRun(RUN, run.runId ?? path.basename(RUN)); emit(ar.refused ? 'archive.refused' : 'run.archived', { runId: run.runId ?? null, poolId: run.poolId ?? null, need: doc.need.id, ...ar }); }
+if (!process.argv.includes('--no-archive')) { const archiveStart = nowEpoch(); const ar = archiveRun(RUN, run.runId ?? path.basename(RUN)); emit(ar.refused ? 'archive.refused' : 'run.archived', { runId: run.runId ?? null, poolId: run.poolId ?? null, need: doc.need.id, ...ar }); T.span('archive', archiveStart, nowEpoch()); }
+T.span('verify', verifyStart, nowEpoch(), { ok: report.ok, promotable: gates?.promotable ?? null });
+T.close();
 console.log(JSON.stringify({ ok: report.ok, fails, acceptance: acceptance.map((a) => ({ id: a.id, ok: a.ok ?? a.result })) }));
 process.exit(report.ok ? 0 : 1);
