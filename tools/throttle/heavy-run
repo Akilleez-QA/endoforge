@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+# heavy-run: throttle for heavy CPU/RAM jobs so a machine never runs out of memory (Endoforge tools/throttle).
+#   heavy-run [--mem GB] [--name NAME] -- command...   wait for a slot and headroom, then run in heavy.slice
+#   heavy-run --limits                                 print the limits sized for this machine
+#   heavy-run --write-slice                            (re)write heavy.slice for this machine and reload systemd
+# Every limit scales with the hardware (Craig, 2026-10-26: "it should scale itself to fit the hardware"):
+#   max load = 0.875 x threads; reserve = 12 % of RAM (min 8 GB); slots = RAM / 48 GB (1 .. threads / 8);
+#   heavy.slice MemoryHigh = 45 % of RAM, MemoryMax = 58 %, CPUQuota = 56 % of threads. HEAVY_* variables override
+#   (HEAVY_THREADS and HEAVY_RAM_GB stand in for the hardware, for tests).
+# It waits and never refuses. Inside heavy.slice already (a nested call) it runs the command directly. The slice is
+# re-sized automatically when the machine's threads or RAM change.
+set -euo pipefail
+cpus=${HEAVY_THREADS:-$(nproc)} memgb=${HEAVY_RAM_GB:-$(awk '/^MemTotal/{printf "%d", $2/1048576}' /proc/meminfo)}
+clamp() { local v=$1 lo=$2 hi=$3; ((v < lo)) && v=$lo; ((v > hi)) && v=$hi; echo "$v"; }
+maxload=${HEAVY_MAX_LOAD:-$(awk -v c="$cpus" 'BEGIN{printf "%.1f", c * 0.875}')}
+reserve=${HEAVY_RESERVE_GB:-$(clamp $((memgb * 12 / 100)) 8 $memgb)}
+slots=${HEAVY_SLOTS:-$(clamp $((memgb / 48)) 1 $(clamp $((cpus / 8)) 1 64))}
+high=$((memgb * 45 / 100)) max=$((memgb * 58 / 100)) quota=$((cpus * 56))
+stamp="# sized for threads=$cpus ram=${memgb}G"
+slice=${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user/heavy.slice
+write_slice() {
+  mkdir -p "$(dirname "$slice")"
+  cat > "$slice.tmp" <<UNIT
+$stamp (heavy-run --write-slice; rewritten automatically when the hardware changes)
+# Shared lane for heavy jobs. MemoryHigh makes the kernel throttle and reclaim inside this slice first, so a big job
+# slows down instead of starving the desktop; MemoryMax stops only jobs in this slice.
+[Unit]
+Description=Heavy jobs (throttled lane, see heavy-run)
+
+[Slice]
+MemoryHigh=${high}G
+MemoryMax=${max}G
+MemorySwapMax=$((memgb / 8))G
+CPUQuota=${quota}%
+CPUWeight=40
+UNIT
+  mv "$slice.tmp" "$slice"; systemctl --user daemon-reload
+}
+case ${1:-} in
+  --limits) echo "threads=$cpus ram=${memgb}G max_load=$maxload reserve=${reserve}G slots=$slots slice_high=${high}G slice_max=${max}G cpu_quota=${quota}%"; exit 0;;
+  --write-slice) write_slice; echo "wrote $slice ($stamp)"; exit 0;;
+esac
+mem=16 name=job
+while [ $# -gt 0 ]; do
+  case $1 in --mem) mem=$2; shift 2;; --name) name=$2; shift 2;; --) shift; break;; *) break;; esac
+done
+[ $# -gt 0 ] || { echo "usage: heavy-run [--mem GB] [--name NAME] -- command... | --limits | --write-slice" >&2; exit 2; }
+if grep -q '/heavy.slice/' /proc/self/cgroup; then exec "$@"; fi
+[ -f "$slice" ] && head -1 "$slice" | grep -qF "$stamp" || write_slice
+mem=$(clamp "$mem" 1 $((memgb - reserve > 1 ? memgb - reserve : 1)))   # a job bigger than the machine still runs
+state=${XDG_STATE_HOME:-$HOME/.local/state}/heavy-run; mkdir -p "$state"
+say() { echo "heavy-run[$name]: $*" >&2; }
+start=$(date +%s) last=0
+while :; do                                                    # 1. a slot (fd 9 stays open for the job's lifetime)
+  for i in $(seq 1 "$slots"); do
+    exec 9>"$state/slot-$i.lock"
+    if flock -n 9; then slot=$i; break 2; fi
+    exec 9>&-
+  done
+  now=$(date +%s); [ $((now - last)) -ge 120 ] && { say "waiting for a slot ($slots busy, $(( (now-start)/60 )) min)"; last=$now; }
+  sleep 15
+done
+while :; do                                                    # 2. headroom
+  avail=$(awk '/^MemAvailable/{printf "%d", $2/1048576}' /proc/meminfo)
+  load=$(cut -d' ' -f1 /proc/loadavg)
+  if [ "$avail" -ge $((mem + reserve)) ] && awk -v l="$load" -v m="$maxload" 'BEGIN{exit !(l < m)}'; then break; fi
+  now=$(date +%s); [ $((now - last)) -ge 120 ] && { say "slot $slot held; waiting for headroom: ${avail} GB free (need $((mem + reserve))), load $load (max $maxload)"; last=$now; }
+  sleep 15
+done
+[ "$last" -gt 0 ] && say "starting after $(( ($(date +%s) - start) / 60 )) min"
+echo "$(date -Is) slot=$slot mem=$mem pid=$$ $name" >> "$state/runs.log"
+exec systemd-run --user --scope --quiet --slice=heavy.slice --nice=10 --unit="heavy-${name//[^A-Za-z0-9_-]/_}-$$" -- "$@"
