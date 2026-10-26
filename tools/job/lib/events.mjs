@@ -5,18 +5,21 @@
 //   SMOKE      the one-atom-per-engine smoke result
 //   SCORED     a round's score deltas
 //   GATE       a gate passed or failed
-//   NEEDS-YOU  a decision blocks the critical path
+//   NEEDS-YOU  a decision blocks the critical path (authority only: card go, taste locks, spend, outward actions)
+//   NEEDS-COORDINATOR  judgment the Conductor cannot make (an atom still failing after its iterations, a contract that
+//              cannot express a criterion, a check at odds with its calibration, a new failure); goes to the model
 //   DONE       the job finished
 // Channels: the durable log (events.jsonl + EVENTS.md beside the manifest, or job.events.dir), a desktop
 // notification (notify-send; ENDOFORGE_NOTIFY=none turns it off), hooks that get every event (job.events.hooks,
 // ENDOFORGE_EVENT_HOOKS) and push hooks that get only FIRED, GATE, NEEDS-YOU and DONE (job.events.push,
-// ENDOFORGE_PUSH_HOOKS): phones never buzz for routine progress. Each hook gets the event as JSON on stdin.
+// ENDOFORGE_PUSH_HOOKS): phones never buzz for routine progress. NEEDS-COORDINATOR goes only to coordinator hooks
+// (job.events.coordinator, ENDOFORGE_COORDINATOR_HOOKS), which wake the model. Each hook gets the event as JSON on stdin.
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { cardHash } from './card.mjs';
 
-export const EVENT_KINDS = ['STAGED', 'FIRED', 'SMOKE', 'SCORED', 'GATE', 'NEEDS-YOU', 'DONE'];
+export const EVENT_KINDS = ['STAGED', 'FIRED', 'SMOKE', 'SCORED', 'GATE', 'NEEDS-YOU', 'NEEDS-COORDINATOR', 'DONE'];
 export const PUSH_KINDS = ['FIRED', 'GATE', 'NEEDS-YOU', 'DONE'];
 export const eventsDir = (job, file) => job.events?.dir ?? path.dirname(path.resolve(file));
 export function readEvents(job, file) {
@@ -38,7 +41,8 @@ export function emit(job, file, { kind, summary, detail = '', data = {} }, { env
     const r = spawnSync('notify-send', ['-u', kind === 'NEEDS-YOU' ? 'critical' : 'normal', '-a', 'Endoforge', `Endoforge ${kind}`, summary], { stdio: 'ignore', timeout: 5000 });
     if (r.status !== 0) failed.push('desktop');
   }
-  const hooks = [...hooksFrom(job.events?.hooks, env.ENDOFORGE_EVENT_HOOKS), ...(ev.push ? hooksFrom(job.events?.push, env.ENDOFORGE_PUSH_HOOKS) : [])];
+  const hooks = [...hooksFrom(job.events?.hooks, env.ENDOFORGE_EVENT_HOOKS), ...(ev.push ? hooksFrom(job.events?.push, env.ENDOFORGE_PUSH_HOOKS) : []),
+    ...(kind === 'NEEDS-COORDINATOR' ? hooksFrom(job.events?.coordinator, env.ENDOFORGE_COORDINATOR_HOOKS) : [])];
   for (const h of hooks) {
     const r = spawnSync(h[0], h.slice(1), { input: JSON.stringify(ev), stdio: ['pipe', 'ignore', 'ignore'], timeout: 10_000, env: { ...env, ENDOFORGE_EVENT_KIND: kind, ENDOFORGE_EVENT_PUSH: ev.push ? '1' : '0' } });
     if (r.status !== 0) failed.push(h[0]);

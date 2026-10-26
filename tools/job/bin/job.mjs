@@ -16,7 +16,8 @@
 //   job.mjs fire <job.json> [-- <launch command>]    only after the user's go on the staged card: Orchestrate gates,
 //        compiled prompts, FIRED (atoms by engine and login, prompt hash, predictions, gates, ETA, stop), then launch
 //   job.mjs event <job.json> <SMOKE|SCORED|GATE|NEEDS-YOU|DONE> <summary> [--detail md] [--data json]
-//   job.mjs status <job.json>                        the live timeline from events.jsonl (also `endoforge job status`)
+//   job.mjs status <job.json>                        the live timeline (with the Conductor's phase and atoms when it runs)
+//   job.mjs go|lock|pause|resume|budget|stop <job.json> …   the Conductor's commands (tools/conductor/bin/conduct.mjs)
 //   job.mjs smoke <job.json>                         one tiny atom per engine on a discovered login; records proofs.smoke
 //   job.mjs prove-split <job.json> --from <path> (--before A --after B [--noise C] | --tests "<cmd>")
 //        writes the split's proof file: a pixel diff within the noise floor measured as A vs C (a second baseline
@@ -29,6 +30,8 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { validate, PROXY_KINDS } from '../lib/validate.mjs';
+import { loadJob, health, proofsFile } from '../lib/load.mjs';
+export { loadJob, health };
 import { INVARIANTS, GATES } from '../lib/invariants.mjs';
 import { renderCard, cardHash } from '../lib/card.mjs';
 import { retrieveLessons, lessonsForAtom } from '../lib/lessons.mjs';
@@ -40,29 +43,12 @@ const [cmd, file, ...rest] = process.argv.slice(2);
 const flag = (k) => { const i = rest.indexOf(k); return i < 0 ? null : rest[i + 1]; };
 const has = (k) => rest.includes(k);
 const out = (s) => process.stdout.write(s + '\n');
-const proofsFile = (f) => f.replace(/\.json$/, '') + '.proofs.json';
 
-export function loadJob(f) {
-  const job = JSON.parse(fs.readFileSync(f, 'utf8'));
-  const pf = proofsFile(f);
-  if (fs.existsSync(pf)) {
-    const p = JSON.parse(fs.readFileSync(pf, 'utf8'));
-    job.proofs = { ...job.proofs, ...p, calibration: { ...job.proofs?.calibration, ...p.calibration } };
-  }
-  return job;
-}
 function saveProof(f, key, value) {
   const pf = proofsFile(f), p = fs.existsSync(pf) ? JSON.parse(fs.readFileSync(pf, 'utf8')) : {};
   p[key] = key === 'calibration' ? { ...p.calibration, ...value } : value;
   if (key === 'confirmed') delete p.confirmedRefused;
   fs.writeFileSync(pf, JSON.stringify(p, null, 1) + '\n');
-}
-
-/** Machine health before the wide launch (FMEA: machine overload, detection). Exit 0 means healthy. */
-export function health(job) {
-  const argv = job.resources?.health ?? [path.join(os.homedir(), '.local/bin/system-safety-status')];
-  const r = spawnSync(argv[0], argv.slice(1), { encoding: 'utf8', timeout: 30_000 });
-  return r.status === 0 ? { ok: true } : { ok: false, why: `${argv.join(' ')} exited ${r.status ?? r.error?.code} ${(r.stderr || r.stdout || '').trim().split('\n').at(-1) ?? ''}`.trim() };
 }
 
 /** FMEA: a miscalibrated check (detection): the known-good case must pass and the known-bad case must fail. */
@@ -86,7 +72,7 @@ function report(v) {
 async function main() {
   if (cmd === 'gates') { for (const g of GATES) out(`${g.name}\t${g.invariants.join(',')}\t${g.what}`); return 0; }
   if (cmd === 'invariants') { for (const i of INVARIANTS) out(`${i.id}\t${i.name}\t${i.rule}`); return 0; }
-  if (!file) { console.error(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 29).join('\n')); return 2; }
+  if (!file) { console.error(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 30).join('\n')); return 2; }
   const job = loadJob(path.resolve(file));
   if (cmd === 'validate') {
     const gate = flag('--gate') ?? 'orchestrate', offline = has('--offline');
@@ -150,6 +136,11 @@ async function main() {
     if (!EVENT_KINDS.includes(kind) || !rest[1]) { console.error(`event: <${EVENT_KINDS.filter((k) => !['FIRED', 'STAGED'].includes(k)).join('|')}> <summary>`); return 2; }
     const e = emit(job, file, { kind, summary: rest[1], detail: flag('--detail') ?? '', data: flag('--data') ? JSON.parse(flag('--data')) : {} });
     out(`${e.ts} ${kind} ${e.summary}`); return 0;
+  }
+  const { stateFile } = await import('../../conductor/lib/state.mjs');
+  if (['go', 'lock', 'pause', 'resume', 'budget', 'stop'].includes(cmd) || (cmd === 'status' && fs.existsSync(stateFile(job, file)))) {
+    const { main: conductor } = await import('../../conductor/bin/conduct.mjs');   // the job's Conductor owns these
+    return conductor([cmd, file, ...rest]);
   }
   if (cmd === 'status') { process.stdout.write(renderStatus(job, readEvents(job, file))); return 0; }
   if (cmd === 'smoke') {

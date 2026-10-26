@@ -9,7 +9,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { loadCampaign, roundDir, lastRound, vars, expand } from './campaign.mjs';
 import { fanoutLessons } from './lessons.mjs';
-import { loadJob, health } from '../../job/bin/job.mjs';
+import { loadJob, health } from '../../job/lib/load.mjs';
 import { validate as validateJob } from '../../job/lib/validate.mjs';
 import { compileAtom } from '../../job/lib/compile.mjs';
 import { retrieveLessons } from '../../job/lib/lessons.mjs';

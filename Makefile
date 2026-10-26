@@ -47,6 +47,9 @@ factory-integration: ## offline Docker/WASmtime controls; test writer fixtures, 
 lib-test: ## shared tool libraries: the error taxonomy (75 transient, 78 stop, unscored)
 	node tools/lib/test/errors.test.mjs
 
+conductor-test: ## the job Conductor: state machine, locks, commands, daemon (stub handlers)
+	node tools/conductor/test/state.test.mjs
+
 job-test: ## job intake: POODO gates, invariant rules, kind plugins, FMEA controls (no model)
 	node tools/job/test/run.mjs
 
