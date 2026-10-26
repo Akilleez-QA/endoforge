@@ -51,6 +51,31 @@ node $B score  campaigns/stl-campus.json          # history and the stop decisio
 
 **Bind paths:** `workdir`, `repo` and every reference bind must sit under the atomizer's `policy.bindRoots`. Use the tool from a checkout that is under them too, such as `~/Code/akilleez`.
 
+## Deadline mode: fan-out (`mode: "fanout"`)
+
+Compete mode is for taste calls. For a deadline, **parallelize by decomposition, not by competition**. Each worker gets a different piece, with its own files, and critiques AND fixes it in one stage. The full method is in [the deadline fan-out playbook](../../docs/PLAYBOOK-deadline-fanout.md). It was written from the a collaborator run, where competition and serial stages cost about 10 minutes and the fan-out finished the film's pieces at once. The rules, in brief:
+- **Lock file ownership before fanning out.** That includes eval and tool builders. `atomize` (and `check`) refuse shared files and owned `contracts`.
+- **Split monolithic files into per-piece modules first.** Prove the split is a no-op with a **pixel diff, not frame hashes**: `prove-split --before A --after B`.
+- **The machine is not the bottleneck; logins and serial stages are.** `logins` discovers every Codex and Claude login. Lanes rotate across all of them. One smoke atom per engine goes first, then every lane launches, in waves under the fleet capacity dial.
+- **The evals come first.** Each round renders and evaluates before launching. Workers get their own attributed findings. The ratchet reverts a piece whose own HARD count rose. Every round writes `rounds/rNN/LESSONS.md` and lists the open lessons.
+
+```sh
+node $B check   campaigns/mrton-fanout.json        # includes the atomize check
+node $B logins  campaigns/mrton-fanout.json        # logins found and the lane plan
+node $B round   campaigns/mrton-fanout.json        # evals → smoke → launch all → collect → render → evals → ratchet
+node $B status  campaigns/mrton-fanout.json        # lanes of the latest round
+node $B lessons campaigns/mrton-fanout.json [--close KEY --by "PR #n"]
+```
+
+| Fan-out field | What it holds |
+|---|---|
+| `pieces.<KEY>` | `files` (its alone), `brief`, `stills` (paths under the round's stills), `keys` and `rules` (which eval findings it owns), `engine`, `account`, `check` (its own local check), `speculate` (2–3, one piece only) |
+| `contracts` | Frozen files between pieces. No piece may own them; edits to them are ignored |
+| `evals` | `command` (writes `${out}/evals.json`; `${stills}` is the round's stills), `key` (the finding field that names the piece), `file` |
+| `fanout` | `launcher` (`systemd` or `local`), `links` (e.g. `node_modules` into each worktree), `perAccount`, `laneTimeoutSec`, `pollSec`, `freezeAfter`, `splitAbove`, `codexPool`, `claudeBin`, `claudeModel`, `codexModel` |
+
+A round leaves `rounds/rNN/` with `pre/` and `post/` (stills, evals, meta), `prompts/`, `logs/` (each lane's log and exit code), `lanes.json`, `collect.json`, `round.json` (stages, wall clock, load, ratchet) and `LESSONS.md`. Across rounds it keeps `baseline.json`, `fanout-history.json` and `lessons.json`. Streaming recombination, where each atom loops on its own slice instead of waiting at a barrier, is designed in the playbook but not built yet.
+
 ## Campaign file (`endoforge/hillclimb/1`)
 
 See `campaigns/stl-campus.json`. The fields:
@@ -76,4 +101,4 @@ See `campaigns/stl-campus.json`. The fields:
 - **Private material:** a project's private references (for example Craig's own photos) can be mounted for local viewing, but the tool never copies them into git or the store.
 - **Merging:** PRs follow the repo's merge train. The tool only opens them.
 
-Tests: `node test/run.mjs`. They cover campaign and fix-list validation, atoms passing the atomizer validator, scoring and stop rules, patch scope, a real hc-patch → `git apply` round trip, and both compose steps.
+Tests: `node test/run.mjs`. They cover campaign and fix-list validation, atoms passing the atomizer validator, scoring and stop rules, patch scope, a real hc-patch → `git apply` round trip, and both compose steps. It also runs `fanout.test.mjs` (atomize, logins, attribution, ratchet), `fanout-round.test.mjs` (a whole round on a scratch repo, with stub engines) and `lessons.test.mjs`.

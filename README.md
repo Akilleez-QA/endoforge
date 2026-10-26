@@ -11,6 +11,17 @@ Software creation as a runtime operation: a running system that turns cheap mode
 3. [docs/CONVENTIONS.md](docs/CONVENTIONS.md) — evidence labels and document rules. Read before editing.
 4. [PRIOR-WORK.md](PRIOR-WORK.md) — the earlier lab and Field OS work this builds on.
 
+## Operating loop
+
+Craig, 2026-10-26: "we ALWAYS work like this, iterate measure learn improve repeat". Endoforge runs every job in that loop:
+- **Iterate.** Run short rounds.
+- **Measure.** Every `endoforge run` receipt carries `lessons`: failed launches, retries, failovers, the slowest atom and queue waits. Every hill-climb round writes `rounds/rNN/LESSONS.md`.
+- **Learn.** Keep a running `NOTES.md` of mistakes with their cost, and of findings.
+- **Improve the tool.** Each lesson becomes a tool or PR change; `hillclimb.mjs lessons --close` records which one, and every round lists the lessons still open.
+- **Repeat.**
+
+Shape the work as **atomize → parallelize → recombine**, with **projection** (evals turn the output into numbers) and **attribution** (each finding goes to the atom that owns it). See [the deadline fan-out playbook](docs/PLAYBOOK-deadline-fanout.md) and the hill-climb tool's fan-out mode (`tools/hillclimb`).
+
 ## Layout
 
 | Path | Contents |

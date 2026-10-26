@@ -91,3 +91,7 @@ Start with Edition 3 (`sources/pdf/Endoforge-Edition-3.pdf`). It is the governin
 - [Portable campaign qualification](execution/PORTABLE-CAMPAIGN-QUALIFICATION-2026-10-18.md): P-10 through P-13 follow-ups: live host workers to Docker verification, empty-runtime recovery, owned-container lifecycle/reconciliation, fresh dependencies and equal-resource timings; Recorded (probe), remaining boundaries explicit.
 - [Next 50 work items](execution/NEXT-50-2026-10-18.md): proposed dependency-linked backlog from trustworthy evals and intent handling to controlled execution, complete workflows, portability and a fresh-request comparison; planning only.
 - [Next-50 execution](../campaigns/next50-20261018/README.md) and [item status](../campaigns/next50-20261018/control/STATUS.md): dependency-aware execution evidence and current subscription-authentication gate. Implemented mechanisms are separated from qualified items; no whole-cycle or fresh-request win is inferred.
+
+## Playbooks
+
+- [PLAYBOOK-deadline-fanout.md](PLAYBOOK-deadline-fanout.md): atomize → parallelize → recombine for deadline runs, the operating loop (iterate, measure, learn, improve the tool, repeat), and what enforces each lesson (2026-10-26, from the a collaborator run).

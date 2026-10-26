@@ -19,6 +19,7 @@ const check = (name, ok, detail = '') => { console.log(`${ok ? 'PASS' : 'FAIL'} 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'hillclimb-test-'));
 
 const campaign = JSON.parse(fs.readFileSync(path.join(HERE, '../campaigns/stl-campus.json'), 'utf8'));
+{ const m = JSON.parse(fs.readFileSync(path.join(HERE, '../campaigns/mrton-fanout.json'), 'utf8')); check('a collaborator fan-out campaign validates', validateCampaign(m).ok, validateCampaign(m).errors.join('; ')); }
 check('campus campaign validates', validateCampaign(campaign).ok, validateCampaign(campaign).errors.join('; '));
 const bad = validateCampaign({ ...campaign, owners: { a: { describe: 'x', scope: [] } }, critique: { count: 0 } });
 { const scoped = JSON.parse(JSON.stringify(campaign)); scoped.render[0].command = ['systemd-run', '--user', '--scope', '--', 'blender-cpu', '-b'];
