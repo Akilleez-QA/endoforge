@@ -20,10 +20,14 @@ import { loadCampaign, validateCampaign, roundDir, lastRound, vars, expand } fro
 import { validateFixlist, toMarkdown } from '../lib/fixlist.mjs';
 import { scoreRound, decide } from '../lib/scoreboard.mjs';
 import { reviewAtoms, fixAtoms, judgeAtoms, laneOf, patchPaths, inScope } from '../lib/plan.mjs';
-import { validate } from '../../atomizer/lib/validate.mjs';
+// Host stages validate atoms with the atomizer; inside an atom only this tool is mounted (at /hc-tool), so the compose
+// commands that run there must not need it.
+let validate = null;
+try { ({ validate } = await import('../../atomizer/lib/validate.mjs')); } catch { /* inside an atom */ }
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const POLICY = JSON.parse(fs.readFileSync(path.join(HERE, '../../atomizer/policy.json'), 'utf8'));
+const POLICY_FILE = path.join(HERE, '../../atomizer/policy.json');
+const POLICY = fs.existsSync(POLICY_FILE) ? JSON.parse(fs.readFileSync(POLICY_FILE, 'utf8')) : null;   // absent inside an atom
 const [cmd, ...rest] = process.argv.slice(2);
 const flag = (name, dflt = null) => { const i = rest.indexOf(name); return i < 0 ? dflt : rest[i + 1] ?? true; };
 const has = (name) => rest.includes(name);
@@ -78,6 +82,7 @@ function cmdRender() {
 const sheets = (c, stills, outDir) => run(['python3', '-I', path.join(HERE, '../scripts/sheets.py'), stills, outDir, ...(c.sheets?.brighten ? ['--brighten', c.sheets.brighten.join(',')] : [])]);
 
 function writeAtoms(kind, docv, dir) {
+  if (!validate || !POLICY) throw new Error('atom validation needs forge/endoforge/tools/atomizer next to this tool');
   const v = validate(docv, POLICY);
   if (!v.ok) throw new Error(`${kind} atoms invalid: ${v.errors.join('; ')}`);
   const f = path.join(dir, `${kind}.atoms.json`); writeJSON(f, docv); return f;
@@ -148,7 +153,9 @@ function cmdRefs() {
 
 function cmdPlanFix(go) {
   const { c, n, dir } = campaignAndRound();
-  const fl = readJSON(path.join(dir, 'fixlist.json'));
+  let fl = readJSON(path.join(dir, 'fixlist.json'));
+  const only = flag('--owners');                       // e.g. --owners G,Y when other lanes already own A and BC
+  if (only) fl = { ...fl, items: fl.items.filter((i) => String(only).split(',').includes(i.owner)) };
   const f = writeAtoms('fix', fixAtoms(c, n, fl), dir);
   if (!go) return out(f);
   const atoms = runAtoms(c, f, path.join(dir, 'fix-run'), 'fix');
