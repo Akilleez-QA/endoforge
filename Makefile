@@ -44,6 +44,9 @@ factory-check: ## deterministic quality and real state-crash checks; no models
 factory-integration: ## offline Docker/WASmtime controls; test writer fixtures, not live qualification
 	$(PYTHON) -m tools.factory_campaign.test
 
+job-test: ## job intake: POODO gates, invariant rules, kind plugins, FMEA controls (no model)
+	node tools/job/test/run.mjs
+
 runtime-test: ## ephemeral runtime launcher and local codex-pool tests (stub codex, no model)
 	bash tools/runtime/test/runtime.test.sh
 	node tools/runtime/test/codex-pool.test.mjs

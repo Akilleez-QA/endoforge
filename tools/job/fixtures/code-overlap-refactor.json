@@ -1,0 +1,28 @@
+{
+ "schema": "endoforge/job/1", "id": "overlap-helper-refactor", "kind": "code", "title": "One path-overlap helper for the hill-climb and job tools",
+ "goal": { "verbatim": "pull the duplicated path-overlap logic into one helper and use it in the fan-out, plan and job modules, no behaviour change", "by": "Craig", "at": "2026-10-26T08:00:00-04:00" },
+ "brief": { "objective": "one shared overlaps() used by three modules", "acceptance": "all three test suites pass before and after; no behaviour change", "scope": "forge/endoforge/tools/hillclimb/lib/{fanout,plan}.mjs, forge/endoforge/tools/job/lib/validate.mjs and a new forge/endoforge/tools/lib/paths.mjs", "authority": "open a PR; Chief of Staff merges", "assumptions": { "stated": ["no behaviour change"], "inferred": ["inScope's '/**' suffix handling is kept"] } },
+ "sources": [ { "id": "request", "primary": true, "path": "/mnt/cold-steam/factory-scratch/jobs/overlap-helper-refactor/REQUEST.md", "governs": ["api", "behaviour"], "what": "Craig's request, verbatim, with the three call sites" } ],
+ "references": [ { "id": "conventions", "path": "/home/user/Code/akilleez/forge/endoforge/docs/CONVENTIONS.md", "governs": ["style"], "what": "Endoforge conventions every module follows" } ],
+ "criteria": [
+  { "id": "T1", "statement": "the hill-climb suite passes", "check": { "kind": "tests", "run": "node forge/endoforge/tools/hillclimb/test/run.mjs" } },
+  { "id": "T2", "statement": "the job suite passes", "check": { "kind": "tests", "run": "node forge/endoforge/tools/job/test/run.mjs" } },
+  { "id": "T3", "statement": "the helper matches the old semantics on the shared cases", "check": { "kind": "tests", "run": "node forge/endoforge/tools/lib/test/paths.test.mjs", "reference": "conventions" } }
+ ],
+ "atoms": [
+  { "id": "HELPER", "engine": "codex", "aspects": ["api", "style"], "files": ["forge/endoforge/tools/lib/paths.mjs", "forge/endoforge/tools/lib/test/paths.test.mjs"], "sources": ["request"], "references": ["conventions"], "checks": ["T3"], "contract": "export overlaps(a, b) and inScope(p, scope) with today's semantics" },
+  { "id": "FANOUT", "engine": "codex", "aspects": ["behaviour", "style"], "files": ["forge/endoforge/tools/hillclimb/lib/fanout.mjs", "forge/endoforge/tools/hillclimb/lib/plan.mjs"], "sources": ["request"], "references": ["conventions"], "reads": ["forge/endoforge/tools/lib/paths.mjs"], "checks": ["T1"], "contract": "import from ../../lib/paths.mjs" },
+  { "id": "JOB", "engine": "claude", "aspects": ["behaviour", "style"], "files": ["forge/endoforge/tools/job/lib/validate.mjs"], "sources": ["request"], "references": ["conventions"], "reads": ["forge/endoforge/tools/lib/paths.mjs"], "checks": ["T2"], "contract": "import from ../../lib/paths.mjs" }
+ ],
+ "contracts": [],
+ "seams": [ { "id": "helper-api", "between": ["HELPER", "FANOUT", "JOB"], "owner": "HELPER" } ],
+ "splits": [],
+ "gates": [ { "id": "MERGE", "what": "PR review and merge", "who": "Chief of Staff", "criticalPath": false } ],
+ "resources": { "logins": "discover", "capacityDial": true, "throttle": "endoforge", "ownerBound": true },
+ "ratchet": { "kind": "tests" },
+ "criticalPath": "HELPER", "rival": "leave the three copies; discriminator: a fourth copy appearing in the next week",
+ "deadline": "2026-10-27T17:00:00-04:00",
+ "notes": "/mnt/cold-steam/factory-scratch/jobs/overlap-helper-refactor/NOTES.md", "repo": "/home/user/Code/akilleez",
+ "proofs": { "smoke": { "engines": { "codex": true, "claude": true }, "receipt": "/mnt/cold-steam/factory-scratch/jobs/overlap-helper-refactor/smoke.json" } },
+ "confirmed": { "by": "Craig", "via": "direct", "at": "2026-10-26T08:05:00-04:00" }
+}
