@@ -7,12 +7,16 @@
 // presence is checked. At most CODEX_POOL_PER_ACCOUNT (2) launches per account at once, tracked by host-PID slot
 // directories in CODEX_POOL_STATE_DIR (~/.codex-pool); the least-loaded account goes first. A rate-limited account
 // cools down for the time its error names (default 300 s). Every try is one line in <state>/log.
+// The child is CODEX_POOL_BIN, or the first `codex` on PATH when it is unset (Endoforge sets it to its isolate). The
+// child inherits stdin, so a prompt can come on stdin (`codex exec -`); a regular-file stdin (`< prompt.txt`, systemd
+// StandardInput=file:) is reopened from its start for every try, so a failover retry sees the whole prompt.
 // Exits: the child's code; 75 when every account is cooling down or no slot frees within CODEX_POOL_WAIT (600 s);
-// the guard's code when CODEX_POOL_GUARD (a path, or "none") refuses the launch.
+// the guard's code when CODEX_POOL_GUARD (a path, or "none") refuses the launch; 2 when no codex binary is found.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 const E = process.env, HOME = os.homedir();
 const STATE = E.CODEX_POOL_STATE_DIR || path.join(HOME, '.codex-pool');
@@ -62,13 +66,32 @@ function take(name) {
 }
 const coolUntil = (name) => { try { return Number(fs.readFileSync(path.join(COOL, name), 'utf8')) || 0; } catch { return 0; } };
 
+// The first executable `codex` on PATH that is not this script (a `codex` shim pointing back here would recurse).
+function codexOnPath() {
+  let self = null;
+  try { self = fs.realpathSync(fileURLToPath(import.meta.url)); } catch {}
+  for (const dir of (E.PATH || '').split(path.delimiter)) {
+    if (!dir) continue;
+    const p = path.join(dir, 'codex');
+    try { fs.accessSync(p, fs.constants.X_OK); if (!fs.statSync(p).isFile() || fs.realpathSync(p) === self) continue; return p; } catch {}
+  }
+  return null;
+}
+// A regular file on fd 0 is reopened per try (fresh offset); anything else (a TTY, a pipe, /dev/null) is inherited.
+function stdinFor() {
+  try { if (fs.fstatSync(0).isFile()) return fs.openSync('/proc/self/fd/0', 'r'); } catch {}
+  return 'inherit';
+}
+
 let child = null;
 for (const s of ['SIGTERM', 'SIGINT']) process.on(s, () => { if (child) child.kill(s); else process.exit(128 + os.constants.signals[s]); });
 
-function launch(acct) {
+function launch(bin, acct) {
   return new Promise((resolve) => {
     let tail = '';
-    child = spawn(E.CODEX_POOL_BIN, process.argv.slice(2), { env: { ...E, CODEX_HOME: acct.home }, stdio: ['ignore', 'inherit', 'pipe'] });
+    const stdin = stdinFor();
+    child = spawn(bin, process.argv.slice(2), { env: { ...E, CODEX_HOME: acct.home }, stdio: [stdin, 'inherit', 'pipe'] });
+    if (typeof stdin === 'number') fs.closeSync(stdin);
     child.stderr.on('data', (d) => { process.stderr.write(d); tail = (tail + d).slice(-65536); });
     child.on('error', (e) => { tail += e.message; });
     child.on('close', (code, signal) => { const pid = child.pid; child = null; resolve({ code: code ?? 128 + (os.constants.signals[signal] || 0), tail, pid }); });
@@ -76,7 +99,8 @@ function launch(acct) {
 }
 
 async function main() {
-  if (!E.CODEX_POOL_BIN) { console.error('codex-pool: CODEX_POOL_BIN is not set (Endoforge sets it)'); return 2; }
+  const bin = E.CODEX_POOL_BIN || codexOnPath();
+  if (!bin) { console.error('codex-pool: CODEX_POOL_BIN is not set and no codex is on PATH'); return 2; }
   const all = accounts();
   if (!all.length) { console.error(`codex-pool: no account (need ${PRIMARY}/auth.json or ${ACCOUNTS}/<name>/auth.json)`); return 75; }
   const deadline = Date.now() + WAIT_MS, tried = new Set();
@@ -101,7 +125,7 @@ async function main() {
         const gcode = g.status ?? 1;
         if (gcode !== 0) { log({ account: acct.name, pid: process.pid, child: 0, exit: gcode, class: 'guard' }); return gcode; }
       }
-      const r = await launch(acct);
+      const r = await launch(bin, acct);
       const rate = r.code !== 0 && RATE.test(r.tail);
       if (rate) {
         const secs = Number(r.tail.match(/try again in (\d+)\s*s/i)?.[1]) || 300;

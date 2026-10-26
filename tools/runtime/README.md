@@ -33,6 +33,12 @@ mkdir -p ~/.local/share/endoforge-tc && ln -sfn ~/.local/share/mise/installs/cod
 ```
 Accounts are `~/.codex` (logged as `default`) and `~/.codex-accounts/<name>`;
 it reads neither credential file, only checks that `auth.json` exists.
+Called directly (outside Endoforge, which sets `CODEX_POOL_BIN` to its isolate),
+the pool runs the first `codex` on PATH. The child inherits stdin, so
+`codex-pool exec - < brief.txt` works; a file on stdin is reopened for each
+failover try. With `-i` image flags, put the prompt before them or pass `-`:
+`-i` takes many values and swallows a trailing prompt.
+`node tools/runtime/test/codex-pool.test.mjs` checks both (stub codex, no model).
 Set `ENDOFORGE_SRC_REPO` and `ENDOFORGE_REF` in
 `~/.config/endoforge/runtime.env` (simple KEY=VALUE lines).
 Other knobs: `ENDOFORGE_HOME`, `ENDOFORGE_RUNS_DIR`, `ENDOFORGE_ASC_SEED`,
