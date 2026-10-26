@@ -10,7 +10,7 @@ check 'laptop (8 threads, 16 GB)' '[[ $(lim 8 16) == "threads=8 ram=16G max_load
 check 'big box (128 threads, 512 GB)' '[[ $(lim 128 512) == *"slots=10"* && $(lim 128 512) == *"max_load=112.0"* ]]'
 check 'overrides win' '[[ $(HEAVY_SLOTS=5 HEAVY_MAX_LOAD=9 lim 32 124) == *"max_load=9 "*"slots=5 "* ]]'
 if systemctl --user show-environment >/dev/null 2>&1 && command -v systemd-run >/dev/null; then
-  export XDG_STATE_HOME=$(mktemp -d)
+  export XDG_STATE_HOME=$(mktemp -d) HEAVY_MAX_LOAD=100000 HEAVY_RESERVE_GB=1   # live checks must not wait on this machine's real load
   check 'runs in heavy.slice' '[[ $("$hr" --name t1 -- grep -o "heavy.slice/[^/]*" /proc/self/cgroup) == heavy.slice/heavy-t1-* ]]'
   check 'nested call runs directly' '[[ $("$hr" --name t2 -- "$hr" --name t3 -- grep -o "heavy-t[23]" /proc/self/cgroup) == heavy-t2 ]]'
   HEAVY_RESERVE_GB=100000 timeout 4 "$hr" --name t4 -- true 2>/dev/null; check 'waits for headroom' '[[ $? == 124 ]]'
