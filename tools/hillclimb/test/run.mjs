@@ -119,7 +119,7 @@ check('compose-judge accepts a listed winner', spawnSync(process.execPath, [BIN,
 check('compose-judge rejects an unlisted winner', spawnSync(process.execPath, [BIN, 'compose-judge', path.join(tmp, 'lanes.json'), path.join(tmp, 'w-bad.json'), tmp]).status === 1);
 
 // Fan-out mode has its own suite; run it as part of this one.
-for (const t of ['fanout.test.mjs']) {
+for (const t of ['fanout.test.mjs', 'fanout-round.test.mjs']) {
   const r = spawnSync(process.execPath, [path.join(HERE, t)], { encoding: 'utf8' });
   check(`${t} passes`, r.status === 0, (r.stdout + r.stderr).split('\n').filter((l) => l.startsWith('FAIL')).join('; '));
 }

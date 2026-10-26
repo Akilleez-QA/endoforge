@@ -10,6 +10,8 @@
 //   hillclimb.mjs judge <campaign.json> [--round N]          compete rounds: fast-render each variant, a judge atom picks one per owner
 //   hillclimb.mjs pr <campaign.json> [--round N]             push and open PRs (competing lanes ship only their winner)
 //   hillclimb.mjs score <campaign.json>                      history and the stop decision
+//   fan-out campaigns (mode "fanout"; lib/fanout-run.mjs): round | atomize | prove-split --before A --after B | logins |
+//                                                         smoke | evals [--phase pre|post] | status | collect   [--round N]
 //   (inside atoms) compose-review <campaign.json> <fixlist.json> <out> [--previous f] | compose-fix <campaign.json> <in> <out>
 import fs from 'node:fs';
 import path from 'node:path';
@@ -289,5 +291,10 @@ const table = { render: cmdRender, 'plan-review': () => cmdPlanReview(false), re
   'plan-fix': () => cmdPlanFix(false), fix: () => cmdPlanFix(true), apply: cmdApply, judge: cmdJudge, pr: cmdPr, score: cmdScore, round: cmdRound,
   'compose-review': cmdComposeReview, 'compose-fix': cmdComposeFix, 'compose-judge': cmdComposeJudge,
   check: () => { const v = validateCampaign(readJSON(rest[0])); out(JSON.stringify(v)); process.exit(v.ok ? 0 : 1); } };
-if (!table[cmd]) { console.error(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 12).join('\n')); process.exit(2); }
+const FANOUT = ['round', 'atomize', 'prove-split', 'logins', 'smoke', 'evals', 'status', 'collect'];
+if (FANOUT.includes(cmd) && rest[0] && fs.existsSync(rest[0]) && readJSON(rest[0]).mode === 'fanout') {
+  const { main } = await import('../lib/fanout-run.mjs');
+  try { process.exit(await main(cmd, rest)); } catch (e) { log(e.message); process.exit(1); }
+}
+if (!table[cmd]) { console.error(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 14).join('\n')); process.exit(2); }
 try { table[cmd](); } catch (e) { log(e.message); process.exit(1); }
