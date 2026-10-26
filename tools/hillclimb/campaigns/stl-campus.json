@@ -10,13 +10,6 @@
   {
    "id": "campus",
    "command": [
-    "systemd-run",
-    "--user",
-    "--scope",
-    "--nice=10",
-    "-p",
-    "CPUQuota=800%",
-    "--",
     "${repo}/media/nh3-kit/tools/blender-cpu",
     "-t",
     "8",
@@ -32,7 +25,7 @@
    "command": [
     "sh",
     "-c",
-    "for s in bc_wide_production bc_wide_logistics bc_arsenal_west bc_arsenal_w6 bc_dock_court bc_broadway_docks bc_substation bc_muster stl_s27 stl_s28; do systemd-run --user --scope --nice=10 -p CPUQuota=800% -- ${repo}/media/nh3-kit/tools/blender-cpu -t 8 -P ${repo}/media/nh3-kit/trial/yard/campus_v2/districts/B_production/src/bc_review.py -- $s --out ${out}/$s.png --after || exit 1; done"
+    "for s in bc_wide_production bc_wide_logistics bc_arsenal_west bc_arsenal_w6 bc_dock_court bc_broadway_docks bc_substation bc_muster stl_s27 stl_s28; do ${repo}/media/nh3-kit/tools/blender-cpu -t 8 -P ${repo}/media/nh3-kit/trial/yard/campus_v2/districts/B_production/src/bc_review.py -- $s --out ${out}/$s.png --after || exit 1; done"
    ]
   }
  ],
@@ -165,5 +158,6 @@
   "maxRounds": 12,
   "targetOpen": 10,
   "patience": 2
- }
+ },
+ "render_note": "Render jobs run in the caller's own cgroup (no systemd-run --scope): blender-cpu queues through heavy-run, which binds the job to its caller, so stopping a round stops its renders."
 }
