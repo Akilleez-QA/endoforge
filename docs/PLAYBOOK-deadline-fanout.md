@@ -9,6 +9,47 @@
 - The machine is not the bottleneck. Logins, rate limits and serial stages are. Recorded: 16 workers, CPU 3–19 %, load about 4.
 - Every round measures itself (`rounds/rNN/LESSONS.md`). Every lesson ends as a tool or PR change, or stays listed as open.
 
+## Intake first: POODO executed as code
+
+The method is POODO (`~/.claude/skills/poodo/SKILL.md`, source in `reasoning/poodo/`). Craig: "the first principles the FMEA RCA / this is /poodo".
+
+**Root cause** (the five-whys RCA of the a collaborator model miss): the model was wrong because the lane built a lumberjack.
+1. The lane's prompt said "stylised lumberjack legend" and carried no reference.
+2. The coordinator wrote that prompt by hand, from a summary of the persona.
+3. No step required the primary source and the references before atomizing, and nothing echoed the brief back to Craig.
+4. **Root:** Endoforge's loop started at launch, not at understanding. Correctness depended on one model's vigilance.
+
+The first detector was Craig, about 90 minutes later: the latest and most expensive point. The same root explains the barrier rounds, the empty-band rule, the /tmp reference and the launch failures.
+
+**The intake** (`tools/job`, PRs #396–#400) makes every stage a gate. Each rule cites its invariant (I1–I14 in the repo `AGENTS.md`). Kind plugins (`video`, `model3d`, `code`, `campus`) only add kind-specific checks. The code itself is task-agnostic.
+
+| Gate | Invariants | The tool |
+|---|---|---|
+| Pontificate | I1 | the verbatim goal, primary sources, a decompressed brief (stated vs inferred), the notes file |
+| Observe | I2, I4, I7 | what each source and reference governs; the truth package with tolerances; durable paths only |
+| Orient | I5, I6, I13 | each atom gets its governing inputs; one writer; owned seams; a local check per atom; `prove-split` against a measured noise floor; critical path, rival, deadline |
+| Decide | I3, I9, I11 | criteria mapped to checks; `calibrate`; `smoke`; gates; `stage` (the job card and a STAGED event); the user's own go (`confirm`) |
+| Orchestrate | I8 | `fire`: only on the confirmed, staged card; health, throttle and dial; compiled prompts; the FIRED event |
+| Loop | I10, I12, I14 | SCORED and GATE events, the ratchet, receipts, LESSONS.md, lessons retrieved into the next job |
+
+**FMEA** (AIAG-VDA action priority). Each H row has a prevention and a detection control in the tool, each with a test (`tools/job/README.md`):
+
+| Failure mode | AP | Prevention | Detection |
+|---|---|---|---|
+| Intent distorted in the brief | H | verbatim goal, primary source, decompressed brief | the staged card and the user's go, both bound to the card hash |
+| Reference not delivered to its atoms | H | a governed atom without its reference is refused; compiled prompts put references first | each governing reference must be measured; likeness for looks |
+| Criterion without a check, or miscalibrated | H | every criterion maps to a runnable, labelled check | `calibrate`: known-good passes, known-bad fails |
+| Machine overload | H | throttle, dial, gpu-queue named | health check at Orchestrate |
+
+The M rows are tracked gaps; what exists today is noted:
+- **M1 Unbounded or orphan job.** heavy-run binds heavy jobs; fan-out agent lanes are still unbound (G4).
+- **M2 State in /tmp lost.** The validator refuses /tmp paths. The disconnect protocol does not yet check in-flight work for /tmp.
+- **M3 Relayed authority acted on.** Relayed approvals and confirmations are refused. There are no receipts for outward actions.
+- **M4 Lessons not fed forward.** Retrieval covers NOTES.md, LESSONS.md and ledgers of the same kind. Matching to atoms is by keyword only.
+- **M5 Straggler barrier.** Streaming recombination is not built (G1). `round.json` reports lane times.
+- **M6 False claim of a pass.** Proofs need receipts, and prompts demand that only checks actually run are reported. There is no independent re-run.
+- **M7 Human review saturated.** There is no approved-atom registry and no daily packet.
+
 ## The operating loop: iterate, measure, learn, improve the tool, repeat
 
 | Step | What it means | Enforced by |
@@ -150,6 +191,7 @@ node $B status "$C"; node $B lessons "$C"                         # while runnin
 - **G9** No single post-reboot readiness check (health, GPU, failed units, queue folder).
 - **G10** Coordination rules are rules only: the in-app lane limit, re-checking the merge queue, honest reporting.
 - **G11** Content rules (safety values, brand artwork, private photos) have no automated check in this tool.
+- **M1–M7** The FMEA's M rows; see "Intake first".
 
 ## Sources
 

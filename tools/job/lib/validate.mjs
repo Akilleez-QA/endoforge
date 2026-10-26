@@ -90,7 +90,7 @@ const RULES = {
     }
     for (const s of job.splits ?? []) {
       const p = readProof(s.proof, x.offline) ?? s.proofResult ?? null;
-      const good = p?.ok === true && (p.kind === 'tests' ? x.kind?.splitByTests : typeof p.noiseFloor === 'number');
+      const good = p?.ok === true && (p.kind === 'tests' ? x.kind?.splitByTests : typeof p.noiseFloor === 'number' && p.noiseMeasured !== false);
       if (!good) E('I6', `split of ${s.from} is not proven a no-op (${x.kind?.splitByTests ? 'tests before and after' : 'a pixel diff within a measured noise floor'})`);
     }
     if (!job.criticalPath || !ids.has(job.criticalPath)) E('I13', 'criticalPath must name the atom expected to be the long pole');

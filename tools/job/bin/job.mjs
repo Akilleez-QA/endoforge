@@ -17,6 +17,10 @@
 //        compiled prompts, FIRED (atoms by engine and login, prompt hash, predictions, gates, ETA, stop), then launch
 //   job.mjs event <job.json> <SMOKE|SCORED|GATE|NEEDS-YOU|DONE> <summary> [--detail md] [--data json]
 //   job.mjs status <job.json>                        the live timeline from events.jsonl (also `endoforge job status`)
+//   job.mjs smoke <job.json>                         one tiny atom per engine on a discovered login; records proofs.smoke
+//   job.mjs prove-split <job.json> --from <path> (--before A --after B [--noise C] | --tests "<cmd>")
+//        writes the split's proof file: a pixel diff within the noise floor measured as A vs C (a second baseline
+//        render), or the tests passing after a code split
 //   job.mjs gates | invariants                       the POODO gates and the invariants they hold
 // Proofs the tool makes (calibration, smoke, split) go in <job>.proofs.json beside the manifest, merged on load.
 import fs from 'node:fs';
@@ -30,7 +34,7 @@ import { renderCard, cardHash } from '../lib/card.mjs';
 import { retrieveLessons, lessonsForAtom } from '../lib/lessons.mjs';
 import { compileAll } from '../lib/compile.mjs';
 import { emit, canFire, firedEvent, readEvents, renderStatus, EVENT_KINDS } from '../lib/events.mjs';
-import { discoverLogins, assignLanes } from '../../hillclimb/lib/fanout.mjs';
+import { discoverLogins, assignLanes, workerCommand } from '../../hillclimb/lib/fanout.mjs';
 
 const [cmd, file, ...rest] = process.argv.slice(2);
 const flag = (k) => { const i = rest.indexOf(k); return i < 0 ? null : rest[i + 1]; };
@@ -82,7 +86,7 @@ function report(v) {
 async function main() {
   if (cmd === 'gates') { for (const g of GATES) out(`${g.name}\t${g.invariants.join(',')}\t${g.what}`); return 0; }
   if (cmd === 'invariants') { for (const i of INVARIANTS) out(`${i.id}\t${i.name}\t${i.rule}`); return 0; }
-  if (!file) { console.error(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 24).join('\n')); return 2; }
+  if (!file) { console.error(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 29).join('\n')); return 2; }
   const job = loadJob(path.resolve(file));
   if (cmd === 'validate') {
     const gate = flag('--gate') ?? 'orchestrate', offline = has('--offline');
@@ -148,6 +152,42 @@ async function main() {
     out(`${e.ts} ${kind} ${e.summary}`); return 0;
   }
   if (cmd === 'status') { process.stdout.write(renderStatus(job, readEvents(job, file))); return 0; }
+  if (cmd === 'smoke') {
+    const engines = {}, results = {}, dir = path.join(path.dirname(path.resolve(file)), 'smoke');
+    const pieces = Object.fromEntries((job.atoms ?? []).filter((a) => ['codex', 'claude'].includes(a.engine)).map((a) => [a.id, { files: a.files, engine: a.engine }]));
+    const lanes = Object.keys(pieces).length ? assignLanes({ pieces }, discoverLogins()) : [];
+    for (const e of [...new Set((job.atoms ?? []).map((a) => a.engine).filter(Boolean))]) {
+      const lane = lanes.find((l) => l.engine === e);
+      if (!lane) { engines[e] = !['codex', 'claude'].includes(e); results[e] = { note: engines[e] ? 'no model launch for this engine' : 'no login found' }; continue; }
+      const cwd = path.join(dir, e); fs.mkdirSync(cwd, { recursive: true });
+      const { argv, env } = workerCommand({ fanout: job.fanout ?? {} }, lane, { worktree: cwd, prompt: 'Reply with the single word READY and nothing else. Do not edit any file.' });
+      const r = spawnSync(argv[0], argv.slice(1), { cwd, env: { ...process.env, ...env }, encoding: 'utf8', input: '', timeout: 180_000 });
+      engines[e] = r.status === 0 && /READY/i.test(r.stdout ?? '');
+      results[e] = { account: lane.account, exit: r.status, ok: engines[e], tail: (r.stderr || r.error?.message || '').slice(-300) };
+    }
+    const receipt = path.join(path.dirname(path.resolve(file)), 'smoke-receipt.json');
+    fs.writeFileSync(receipt, JSON.stringify({ at: new Date().toISOString(), results }, null, 1) + '\n');
+    saveProof(path.resolve(file), 'smoke', { engines, receipt });
+    emit(job, file, { kind: 'SMOKE', summary: Object.entries(engines).map(([e, ok]) => `${e} ${ok ? 'ok' : 'FAILED'}`).join(', '), data: results });
+    for (const [e, ok] of Object.entries(engines)) out(`${e}\t${ok ? 'ok' : 'FAILED'}`);
+    return Object.values(engines).every(Boolean) ? 0 : 1;
+  }
+  if (cmd === 'prove-split') {
+    const s = (job.splits ?? []).find((x) => x.from === flag('--from'));
+    if (!s?.proof) { console.error(`prove-split: no split from ${flag('--from')} with a proof path in the manifest`); return 2; }
+    let proof;
+    if (flag('--tests')) { const r = spawnSync('sh', ['-c', flag('--tests')], { cwd: job.repo, stdio: 'inherit' }); proof = { kind: 'tests', ok: r.status === 0, command: flag('--tests') }; }
+    else {
+      const diff = (a, b, tol) => JSON.parse(spawnSync('python3', ['-I', path.join(path.dirname(fileURLToPath(import.meta.url)), '../../hillclimb/scripts/pixel-diff.py'), a, b, '--tolerance', String(tol)], { encoding: 'utf8' }).stdout);
+      const noise = flag('--noise') ? Math.max(0, ...diff(flag('--before'), flag('--noise'), 0).differ.map((d) => d.maxDiff ?? 255)) : 0;
+      const d = diff(flag('--before'), flag('--after'), noise);
+      proof = { kind: 'pixels', ok: d.ok, noiseFloor: noise, noiseMeasured: Boolean(flag('--noise')), compared: d.compared, differ: d.differ, missing: d.missing };
+    }
+    fs.mkdirSync(path.dirname(s.proof), { recursive: true });
+    fs.writeFileSync(s.proof, JSON.stringify({ ...proof, from: s.from, at: new Date().toISOString() }, null, 1) + '\n');
+    out(`split of ${s.from}: ${proof.ok ? 'no-op' : 'NOT a no-op'}${proof.kind === 'pixels' ? ` (noise floor ${proof.noiseFloor}${proof.noiseMeasured ? '' : ', not measured'})` : ''}`);
+    return proof.ok ? 0 : 1;
+  }
   if (cmd === 'compile') {
     const r = compileAll(job, { lessons: retrieveLessons(job), offline: has('--offline') });
     const dir = flag('--out') ?? path.join(path.dirname(path.resolve(file)), 'compiled');

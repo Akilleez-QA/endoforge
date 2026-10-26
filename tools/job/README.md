@@ -18,7 +18,13 @@ Craig, 2026-10-26: "consider how the model working with the user needs to be pro
 `lib/invariants.mjs` lists I1–I14. Each validator message cites one, and `status` reports each invariant as holds, partial, pending or broken. Kind plugins (`lib/kinds.mjs`: `video`, `model3d`, `code`, `campus`, `doc`, `generic`) only add kind-specific checks: likeness for references that govern a look, tests for code, a truth package and site rules for the campus.
 
 ```sh
-J=forge/endoforge/tools/job/bin/job.mjs
+J=forge/endoforge/tools/job/bin/job.mjs   # or: endoforge job <command>
+node $J stage <job.json>                    # Decide minus the go; writes JOB-<id>.md (the card) and emits STAGED
+node $J confirm <job.json> --sha <card sha> --by Craig --words "<his words>"
+node $J fire <job.json> -- <launcher>       # only on the confirmed staged card: gates, compiled prompts, FIRED, launch
+node $J smoke <job.json>                    # one atom per engine; records the smoke receipt
+node $J prove-split <job.json> --from <file> --before A --after B --noise C   # or --tests "<cmd>" for code
+node $J compile <job.json>; node $J status <job.json>; node $J event <job.json> NEEDS-YOU "<decision>"
 node $J validate <job.json> --gate decide       # everything before spend; exit 1 lists each refusal with its gate and invariant
 node $J calibrate <job.json>                    # run each proxy check on its known-good and known-bad case; writes <job>.proofs.json
 node $J validate <job.json>                     # to Orchestrate: also runs the machine health check
@@ -42,5 +48,9 @@ M rows are tracked as gaps in `forge/endoforge/docs/PLAYBOOK-deadline-fanout.md`
 - `fixtures/mrton.json`: the same job, fixed. It passes through Orchestrate.
 - `fixtures/code-overlap-refactor.json`: a three-module refactor. Tests are its truth and its split proof.
 - `fixtures/campus-compressor-hall.json`: rebuild the Compressor Hall, naming its truth package (LiDAR, survey photos, tolerances).
+
+Events (STAGED, FIRED, SMOKE, SCORED, GATE, NEEDS-YOU, DONE) go to `events.jsonl` and `EVENTS.md` beside the manifest, to a desktop notification, and to hooks. Push hooks (`job.events.push`, `ENDOFORGE_PUSH_HOOKS`) get only FIRED, GATE, NEEDS-YOU and DONE. A hill-climb fan-out campaign with `"job": "<manifest>"` runs behind these gates and fires compiled prompts.
+
+The coordinator's trigger is the `endoforge-intake` skill (`forge/endoforge/skills/endoforge-intake/SKILL.md`). Install it with `install -D -m644 forge/endoforge/skills/endoforge-intake/SKILL.md ~/.claude/skills/endoforge-intake/SKILL.md`. The same contract is in the repo `AGENTS.md`.
 
 Tests: `node test/run.mjs` (also run by `make job-test`).
