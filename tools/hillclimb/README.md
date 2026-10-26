@@ -34,7 +34,7 @@ node $B apply  campaigns/stl-campus.json --pr
 node $B score  campaigns/stl-campus.json          # history and the stop decision
 ```
 
-**Runner:** stages that run atoms go through `~/.local/bin/endoforge run` (`campaign.runner` overrides it) with `ENDOFORGE_WORKER` from `campaign.worker` (`native` uses the Claude pool logins, `codex` uses codex-pool).
+**Runner:** stages that run atoms go through `~/.local/bin/endoforge run` (`campaign.runner` overrides it) with `ENDOFORGE_WORKER` from `campaign.workers.<stage>` or `campaign.worker` (`native` uses the Claude pool logins, `codex` uses codex-pool). Setting, for example, `"workers": {"review": "native", "fix": "codex"}` keeps the visual critique on Claude and moves fixes to Codex.
 
 **Background running:** run `round` detached (`systemd-run --user …`), so renders and agents stay out of an interactive app's process tree.
 

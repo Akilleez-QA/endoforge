@@ -68,10 +68,10 @@ function writeAtoms(kind, docv, dir) {
   const f = path.join(dir, `${kind}.atoms.json`); writeJSON(f, docv); return f;
 }
 
-function runAtoms(c, f, outDir) {
+function runAtoms(c, f, outDir, stage) {
   const runner = c.runner ?? [path.join(process.env.HOME, '.local/bin/endoforge'), 'run'];
   run([...runner, f, '--out', outDir, '--concurrency', String(c.concurrency ?? 3), '--timeout', String(c.runTimeoutSec ?? 14400)],
-    { env: { ...process.env, ENDOFORGE_WORKER: c.worker ?? 'native' } });
+    { env: { ...process.env, ENDOFORGE_WORKER: c.workers?.[stage] ?? c.worker ?? 'native' } });  // e.g. review on Claude (vision), fix on Codex
   return path.join(outDir, 'run', 'atoms');
 }
 
@@ -79,7 +79,7 @@ function cmdPlanReview(go) {
   const { c, n, dir } = campaignAndRound();
   const f = writeAtoms('review', reviewAtoms(c, n, { hasPrevious: fs.existsSync(path.join(dir, 'previous.fixlist.json')) }), dir);
   if (!go) return out(f);
-  const atoms = runAtoms(c, f, path.join(dir, 'review-run'));
+  const atoms = runAtoms(c, f, path.join(dir, 'review-run'), 'review');
   for (const [a, files] of [['consult', ['references.json', 'consult.md']], ['critique', ['fixlist.json']], ['compose', ['FIXLIST.md', 'score.json']]])
     for (const x of files) fs.copyFileSync(path.join(atoms, a, 'out', x), path.join(dir, x));
   const hist = path.join(c.workdir, 'scoreboard.json');
@@ -134,7 +134,7 @@ function cmdPlanFix(go) {
   const fl = readJSON(path.join(dir, 'fixlist.json'));
   const f = writeAtoms('fix', fixAtoms(c, n, fl), dir);
   if (!go) return out(f);
-  const atoms = runAtoms(c, f, path.join(dir, 'fix-run'));
+  const atoms = runAtoms(c, f, path.join(dir, 'fix-run'), 'fix');
   for (const a of fs.readdirSync(atoms).filter((x) => x.startsWith('fix-'))) {
     const d = path.join(dir, 'fix', a.slice(4).toUpperCase()); fs.mkdirSync(d, { recursive: true });
     for (const x of ['patch.diff', 'report.json']) if (fs.existsSync(path.join(atoms, a, 'out', x))) fs.copyFileSync(path.join(atoms, a, 'out', x), path.join(d, x));
