@@ -15,6 +15,7 @@ import { workerCommand, parseUsage, stripFences, toolchainFor } from '../lib/wor
 import { augment } from '../lib/augment.mjs';
 import { emit, context, load, newId, archiveRun, shaFile } from '../lib/ledger.mjs';
 import { loadRouting, resolve } from '../lib/routing.mjs';
+import { headroom } from '../../throttle/throttle.mjs';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, '../../..');
 function args(argv) { const o = { _: [] }; for (let i = 0; i < argv.length; i++) { const a = argv[i]; if (a.startsWith('--')) o[a.slice(2)] = argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[++i] : true; else o._.push(a); } return o; }
@@ -175,9 +176,17 @@ const sample = () => T.mark('sched.sample', { running: running.size, ready: read
 try {
   while ([...state.values()].some((s) => s === 'pending' || s === 'running')) {
     for (const a of ready()) { readyAt[a.id] ??= Date.now(); traceReadyAt[a.id] ??= nowEpoch(); }
-    for (const a of ready()) { if (running.size >= CONC) break; state.set(a.id, 'running'); running.set(a.id, runAtom(a).then((rec) => ({ id: a.id, rec }))); sample(); }
+    let held = null;                                   // throttle (tools/throttle): no new atom without headroom; one always runs
+    for (const a of ready()) {
+      if (running.size >= CONC) break;
+      const room = running.size ? headroom() : { ok: true };
+      if (!room.ok) { held = room; T.mark('sched.throttled', room); break; }
+      state.set(a.id, 'running'); running.set(a.id, runAtom(a).then((rec) => ({ id: a.id, rec }))); sample();
+    }
     if (!running.size) break;
-    const { id, rec } = await Promise.race(running.values());
+    const next = await Promise.race([...running.values(), ...(held ? [new Promise((r) => setTimeout(r, 15_000, null))] : [])]);
+    if (!next) continue;                               // recheck headroom
+    const { id, rec } = next;
     running.delete(id);
     state.set(id, rec.ok ? 'done' : 'failed');
     if (!rec.ok) blockDescendants(id);

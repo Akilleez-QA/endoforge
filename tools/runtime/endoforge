@@ -196,8 +196,14 @@ else
   for d in "$HOME/.codex" "$HOME/.codex-accounts" "${CODEX_POOL_STATE_DIR:-$HOME/.codex-pool}" "${ENDOFORGE_CLAUDE_ACCOUNTS:-$HOME/.claude-accts}"; do [[ ! -d $d ]] || wrapper+=(--bind "$d" "$d"); done
 fi
 wrapper+=(--unshare-ipc --unshare-uts --die-with-parent --setenv TMPDIR "$inst/tmp" --setenv ENDOFORGE_INSTANCE "$id" --chdir "$inst/tree/forge/endoforge" --)
+# The whole run (its atoms' Blender, video and build jobs) shares heavy.slice's memory and CPU ceilings (tools/throttle),
+# sized for this machine; ENDOFORGE_THROTTLE=0 or a host without systemd user units runs unthrottled.
+throttle=()
+if [[ ${ENDOFORGE_THROTTLE:-1} != 0 && -x $HOME/.local/bin/heavy-run ]] && "$HOME/.local/bin/heavy-run" --write-slice >/dev/null 2>&1; then
+  throttle=(systemd-run --user --scope --quiet --slice=heavy.slice --nice=10 --)
+fi
 spawn() {
-  ( exec {lease}>&-; exec {slot}>&-; exec setsid "${wrapper[@]}" "$@" ) & pgid=$!; pgidStart=$(proc_start "$pgid") || pgidStart=; manifest
+  ( exec {lease}>&-; exec {slot}>&-; exec setsid "${throttle[@]}" "${wrapper[@]}" "$@" ) & pgid=$!; pgidStart=$(proc_start "$pgid") || pgidStart=; manifest
 }
 args=(node tools/atomizer/bin/schedule.mjs run "$inst/run-input/atoms.json" --run-dir "$inst/run")
 [[ -z $concurrency ]] || args+=(--concurrency "$concurrency")
