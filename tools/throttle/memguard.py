@@ -114,9 +114,9 @@ def vm_tuning(total):
     """Kernel headroom, scaled to RAM (added after the 01:22 Codex app GPU-process crash, Craig: "codex desktop
     crashing"): the NVIDIA driver and Electron GPU processes failed large allocations at 01:23 and 01:26 while RAM was
     fragmented (no free blocks of 512 KB or more) with only a 66 MB free pool. Keep a free pool of 1 % of RAM (64 MB to
-    2 GB), start reclaim earlier (3 % of RAM between watermarks) and compact proactively."""
+    2 GB), start reclaim a little earlier (1.5 % of RAM between watermarks; 3 % kept kswapd busy) and compact proactively."""
     return {'vm.min_free_kbytes': max(65536, min(2 * 2 ** 20, total // 1024 // 100)),
-            'vm.watermark_scale_factor': 300, 'vm.compaction_proactiveness': 40}
+            'vm.watermark_scale_factor': 150, 'vm.compaction_proactiveness': 40}
 
 
 def install():
