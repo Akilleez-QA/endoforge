@@ -52,6 +52,29 @@ class QueueTests(unittest.TestCase):
         self.assertTrue(self.directory.is_dir())
         self.assertEqual(self.directory.stat().st_mode & 0o777, 0o700)
 
+    def test_dangling_symlink_gets_its_target_created(self):
+        # The 2026-10-26 reboot: ~/.local/state/gpu-queue -> /tmp/.../gpu-queue, and /tmp was wiped.
+        self.directory.parent.mkdir(parents=True)
+        target = self.root / 'tmp' / 'claude-1000' / 'gpu-queue'
+        self.directory.symlink_to(target)
+        self.assertFalse(self.directory.exists())
+        with contextlib.redirect_stderr(io.StringIO()) as err:
+            queue.ensure_queue_dir()
+            self.assertEqual(queue.tickets(), [])
+        self.assertTrue(self.directory.is_symlink())
+        self.assertTrue(target.is_dir())
+        self.assertEqual(target.stat().st_mode & 0o777, 0o700)
+        self.assertIn('creating it', err.getvalue())
+        queue.write_ticket(str(self.directory / '1-1-1.ticket'), {})
+        self.assertTrue((target / '1-1-1.ticket').exists())
+
+    def test_relative_dangling_symlink_resolves_from_the_link(self):
+        self.directory.parent.mkdir(parents=True)
+        self.directory.symlink_to('gone/queue')
+        with contextlib.redirect_stderr(io.StringIO()):
+            queue.tickets()
+        self.assertTrue((self.directory.parent / 'gone' / 'queue').is_dir())
+
     def test_tickets_order_and_stale_dead_pid_pruning(self):
         queue.ensure_queue_dir()
         names = ['5-100-11.ticket', '1-300-12.ticket', '1-200-13.ticket',

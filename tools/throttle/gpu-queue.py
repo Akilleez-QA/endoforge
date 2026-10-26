@@ -18,7 +18,8 @@ GPU memory and BAR1 under 60 % and 50 % of the card's own totals (the guard stop
 memory available >= 12 % of RAM (min 8 GB), and the 1-minute load under 0.875 x threads. A temporary problem (guard
 busy, monitor stale or journal slow, pressure, no headroom) means waiting, up to --max-wait; a GPU fault latch still
 stops at once (exit 78). GPU_QUEUE_VRAM_FRAC, GPU_QUEUE_BAR1_FRAC, GPU_QUEUE_RESERVE_GB, GPU_QUEUE_MAX_LOAD override.
-Tickets default to ~/.local/state/gpu-queue; GPU_QUEUE_DIR overrides that path.
+Tickets default to ~/.local/state/gpu-queue; GPU_QUEUE_DIR overrides that path. If that path is a symlink whose target
+is gone (a link into /tmp wiped by a reboot), the target is recreated.
 
 The fleet capacity dial (fleet-disconnect ramp, see FLEET-DISCONNECT.md) scales the start limits: at N % a job starts
 only under N % of the VRAM, BAR1 and load limits. At 0 % (the drain before a reboot) no new ticket is taken and a
@@ -106,7 +107,13 @@ def lease_seconds(poll):
 
 
 def ensure_queue_dir():
+    """Create the queue directory. A symlink whose target is gone (a link into /tmp after a reboot) gets its target
+    created, instead of makedirs failing with FileExistsError on the link and every GPU job with it."""
     require_host()
+    if os.path.islink(QDIR) and not os.path.exists(QDIR):
+        target = os.path.realpath(QDIR)
+        print(f"gpu-queue: {QDIR} pointed at missing {target}; creating it", file=sys.stderr)
+        os.makedirs(target, mode=0o700, exist_ok=True)
     os.makedirs(QDIR, mode=0o700, exist_ok=True)
 
 
