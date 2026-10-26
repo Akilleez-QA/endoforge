@@ -136,7 +136,9 @@ t=$(ms); image=$root/images/$sha
   flock 9
   if [[ ! -d $image ]]; then
     temp=$root/images/.tmp-$sha-$$; mkdir -p "$temp" || exit 1
-    git -C "$src" archive "$sha" forge/endoforge products/hmi/shields media/nh3-kit/tools/blender-cpu | tar -x -C "$temp" || exit 1
+    # Optional extras are archived only when the commit has them (a checkout without the HMI or media trees still runs).
+    paths=(forge/endoforge); for p in products/hmi/shields media/nh3-kit/tools/blender-cpu; do git -C "$src" cat-file -e "$sha:$p" 2>/dev/null && paths+=("$p"); done
+    git -C "$src" archive "$sha" "${paths[@]}" | tar -x -C "$temp" || exit 1
     mv "$temp" "$image" && chmod -R a-w "$image"
   fi
 ) 9>"$root/images/.lock" || fail 'image build failed'
