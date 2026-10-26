@@ -8,7 +8,28 @@
  "concurrency": 3,
  "render": [
   {
+   "id": "realtime",
+   "profile": "fast",
+   "command": [
+    "systemd-run",
+    "--user",
+    "--wait",
+    "--pipe",
+    "--quiet",
+    "--slice=heavy.slice",
+    "--",
+    "node",
+    "${repo}/media/nh3-kit/trial/yard/campus_viewer/render_shots.mjs",
+    "--repo",
+    "${repo}",
+    "--out",
+    "${out}",
+    "--gpu"
+   ]
+  },
+  {
    "id": "campus",
+   "profile": "final",
    "command": [
     "${repo}/media/nh3-kit/tools/blender-cpu",
     "-t",
@@ -22,6 +43,7 @@
   },
   {
    "id": "bc",
+   "profile": "final",
    "command": [
     "sh",
     "-c",
@@ -159,5 +181,6 @@
   "targetOpen": 10,
   "patience": 2
  },
- "render_note": "Render jobs run in the caller's own cgroup (no systemd-run --scope): blender-cpu queues through heavy-run, which binds the job to its caller, so stopping a round stops its renders."
+ "render_note": "Render jobs run in the caller's own cgroup (no systemd-run --scope): blender-cpu queues through heavy-run, which binds the job to its caller, so stopping a round stops its renders.",
+ "finalEvery": 3
 }
