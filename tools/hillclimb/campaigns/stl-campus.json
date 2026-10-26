@@ -1,0 +1,56 @@
+{
+ "schema": "endoforge/hillclimb/1",
+ "id": "stl-campus",
+ "goal": "Hollywood-style replica of the the client St. Louis brewery campus for the the client NH3 training video: every building, street and yard reads as the real place at review quality, matching the references; safety values stay global.",
+ "repo": "/mnt/cold-steam/factory-scratch/wt/hillclimb-campus",
+ "workdir": "/mnt/cold-steam/factory-scratch/wt/hillclimb/stl-campus",
+ "worker": "native",
+ "concurrency": 3,
+ "render": [
+  {"id": "campus", "command": ["systemd-run", "--user", "--scope", "--nice=10", "-p", "CPUQuota=800%", "--",
+    "${repo}/media/nh3-kit/tools/blender-cpu", "-t", "8", "-noaudio", "-P", "${repo}/media/nh3-kit/trial/yard/campus_v2/districts/A_historic/src/campus_review.py", "--", "--out=${out}"]},
+  {"id": "bc", "command": ["sh", "-c", "for s in bc_wide_production bc_wide_logistics bc_arsenal_west bc_arsenal_w6 bc_dock_court bc_broadway_docks bc_substation bc_muster stl_s27 stl_s28; do systemd-run --user --scope --nice=10 -p CPUQuota=800% -- ${repo}/media/nh3-kit/tools/blender-cpu -t 8 -P ${repo}/media/nh3-kit/trial/yard/campus_v2/districts/B_production/src/bc_review.py -- $s --out ${out}/$s.png --after || exit 1; done"]}
+ ],
+ "sheets": {"brighten": ["S48"]},
+ "references": {
+  "binds": [
+   {"host": "${repo}/media/nh3-kit/trial/yard/ref/stlouis", "guest": "/ref/kit-pack"},
+   {"host": "/mnt/cold-steam/factory-scratch/wt/campusBC-ref", "guest": "/ref/survey-pack"},
+   {"host": "${repo}/media/nh3-kit/docs", "guest": "/ref/docs"}
+  ],
+  "index": [
+   "/ref/docs/REFERENCE-INDEX.md (every source; Craig's private photos are listed there and are viewed locally only)",
+   "/ref/kit-pack: buildings.md, BUILDING-BRIEFS.md, EVIDENCE-INDEX.md, photos/, drawings/ (HABS), sanborn/, lidar/, osm/",
+   "/ref/survey-pack: photo-inventory.csv, evidence-index.csv, photos/, supplement-photos/, hillclimb/ (references added by earlier rounds)"
+  ],
+  "research": {
+   "allow": true,
+   "sources": ["commons.wikimedia.org", "upload.wikimedia.org", "loc.gov", "flickr.com", "staticflickr.com", "archive.org", "stlouis-mo.gov", "example.com", "nps.gov"],
+   "licences": ["public domain", "pd", "cc0", "cc by", "cc-by", "cc by-sa", "cc-by-sa"],
+   "store": "/mnt/cold-steam/factory-scratch/wt/campusBC-ref"
+  }
+ },
+ "critique": {
+  "count": 100,
+  "model": "opus",
+  "rubric": "Judge each still as a production designer would before a film shoot: accuracy to the St. Louis references (massing, materials, colour, signage, layout); realism (scale, ground contact, weathering, repetition, texture resolution, lighting and exposure); completeness (no placeholders, blockout, floating or clipping geometry, empty lots or empty horizon); NH3 rules (orange #DE6737 pipe, bands at 40 ft or less, AMMONIA markers before and after every change of direction or penetration); brand rules (official artwork only, never mirrored, never on safety signs). Ignore render noise at 16 spp."
+ },
+ "owners": {
+  "A": {"describe": "district A historic core buildings and extras (Brew House, Bevo, Lyon School, stock houses, power plant, stable, gates, walkway furniture)", "scope": ["media/nh3-kit/trial/yard/campus_v2/districts/A_historic"],
+        "brief": "Edit builders, facade.py or kit.py; the host rebuilds and re-promotes through promote_A.py. Report which buildings need rebuilding."},
+  "BC": {"describe": "districts B (production) and C (logistics): utility blocks, tanks, silos, steel structures, docks, trucks, substation", "scope": ["media/nh3-kit/trial/yard/campus_v2/districts/B_production", "media/nh3-kit/trial/yard/campus_v2/districts/C_logistics"],
+         "brief": "Edit the bc_* generators; keep bc_gate.py and the Compressor Hall relief-vent clearance passing. Report which modules need re-promoting."},
+  "G": {"describe": "campus ground and city context: terrain, paving, streets and markings, curbs, grass, rails, trees, vehicles, the city beyond the campus edge", "scope": ["media/nh3-kit/trial/yard/campus_v2/src", "media/nh3-kit/trial/yard/campus_v2/context"]},
+  "Y": {"describe": "lane Y yard scenes: lighting, sky, exposure, night looks, Compressor Hall, condensers and NH3 roof piping, rooftop signs", "scope": ["media/nh3-kit/trial/yard/src", "media/nh3-kit/trial/yard/tex"],
+        "brief": "Never modify the frozen r24 responder. Brand marks are official artwork only."}
+ },
+ "apply": {
+  "base": "origin/main",
+  "branch": "chief-of-staff/hillclimb-${id}-${round}-${owner}",
+  "worktrees": "/mnt/cold-steam/factory-scratch/wt/hillclimb/worktrees",
+  "gates": [["sh", "-c", "git diff --name-only HEAD | grep '\\.py$' | xargs -r python3 -m py_compile"]],
+  "trailer": "Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>",
+  "prFooter": "🤖 Generated with [Claude Code](https://claude.com/claude-code)"
+ },
+ "stop": {"maxRounds": 12, "targetOpen": 10, "patience": 2}
+}
