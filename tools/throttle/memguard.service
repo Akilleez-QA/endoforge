@@ -1,0 +1,14 @@
+# memguard: reserved memory for the desktop, Claude and Codex apps; throttles any other big job (see memguard.py).
+[Unit]
+Description=memguard (protect desktop, Claude and Codex; throttle big jobs)
+
+[Service]
+ExecStart=/usr/bin/python3 -B %h/.local/bin/memguard
+Restart=always
+RestartSec=5
+# memguard itself must never be the thing that runs out
+MemoryLow=64M
+Nice=-1
+
+[Install]
+WantedBy=default.target
