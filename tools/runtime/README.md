@@ -40,7 +40,10 @@ failover try. With `-i` image flags, put the prompt before them or pass `-`:
 `-i` takes many values and swallows a trailing prompt.
 `node tools/runtime/test/codex-pool.test.mjs` checks both (stub codex, no model).
 Set `ENDOFORGE_SRC_REPO` and `ENDOFORGE_REF` in
-`~/.config/endoforge/runtime.env` (simple KEY=VALUE lines).
+`~/.config/endoforge/runtime.env` (simple KEY=VALUE lines; `ENDOFORGE_RUNTIME_ENV`
+names another file, or `none` to skip it, as the tests do).
+Each result line carries `lessons`: the receipt's failed launches, retries,
+failovers, slowest atom and queue waits, plus the instance-slot wait.
 Other knobs: `ENDOFORGE_HOME`, `ENDOFORGE_RUNS_DIR`, `ENDOFORGE_ASC_SEED`,
 `ENDOFORGE_MAX_INSTANCES` (4), `ENDOFORGE_SLOT_WAIT` (900),
 `ENDOFORGE_TOOLCHAIN_CODEX`, `ENDOFORGE_CODEX_POOL`, `CODEX_POOL_*`,

@@ -4,7 +4,7 @@ cd "$(dirname "$0")/../../.."
 if ! bwrap --ro-bind / / --dev /dev --overlay-src /usr --tmp-overlay /mnt true 2>/dev/null; then echo 'SKIP runtime: bubblewrap overlay unavailable'; exit 0; fi
 testdir=$(mktemp -d "$PWD/tools/runtime/test/runtime-XXXXXX")
 [[ -n ${KEEP:-} ]] || trap 'chmod -R u+w "$testdir"; rm -rf "$testdir"' EXIT
-export ENDOFORGE_HOME=$testdir/home ENDOFORGE_RUNS_DIR=$testdir/results ENDOFORGE_SRC_REPO
+export ENDOFORGE_RUNTIME_ENV=none ENDOFORGE_HOME=$testdir/home ENDOFORGE_RUNS_DIR=$testdir/results ENDOFORGE_SRC_REPO
 ENDOFORGE_SRC_REPO=$(git rev-parse --show-toplevel)
 export ENDOFORGE_NO_AUGMENT=1
 unset ENDOFORGE_ASC_SEED
@@ -33,6 +33,7 @@ for f in a b; do
   check json "$testdir/$f.json" 'assert.equal(d.ok,true);assert.equal(typeof d.timings.coldStartMs,"number");assert.equal(typeof d.timings.teardownMs,"number");for(const id of ["a0","a1"])assert.equal(fs.readFileSync(`${d.out}/run/atoms/${id}/out/result.txt`,"utf8"),`replay ${id}\n`)'
 done
 check node -e 'const fs=require("fs"),a=JSON.parse(fs.readFileSync(process.argv[1])),b=JSON.parse(fs.readFileSync(process.argv[2]));require("assert/strict").notEqual(a.id,b.id)' "$testdir/a.json" "$testdir/b.json"
+check json "$testdir/a.json" 'assert.equal(typeof d.lessons.slotWaitMs,"number");assert(Array.isArray(d.lessons.failedLaunches));assert.equal(d.lessons.failedLaunches.length,0)'
 check json "$testdir/a.json" 'const a=JSON.parse(fs.readFileSync(d.out+"/run/atoms.json"));assert(a.atoms.filter(x=>x.worker.model!=="script").every(x=>x.worker.tier==="light"))'
 check empty
 echo maintenance >"$testdir/shield"

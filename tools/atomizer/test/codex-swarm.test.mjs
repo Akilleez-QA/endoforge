@@ -63,11 +63,13 @@ try {
     ['gpt-6.1-sol effort=low', 'gpt-6-astra effort=high', 'gpt-6.1-sol effort=medium'].forEach((s, i) => { assert(r.output(i).startsWith(`model=${s}`)); assert(!r.output(i).includes('acct-a')); });
     assert(r.receipts.some((a) => a.attempts.some((t) => t.failovers.some((f) => f.account === 'default' && f.class === 'rate'))));
     assert(r.receipts.every((a) => a.attempts.at(-1).account === 'acct-b'));
+    assert(r.summary.lessons.failovers.some((f) => f.account === 'default' && f.class === 'rate'), JSON.stringify(r.summary.lessons));
     assert(r.events.filter((e) => e.event === 'attempt.end' && e.model === 'codex').every((e) => e.tier && e.codexModel && e.accounts.length));
   });
   test('exhaustion stops retries', () => {
     const r = run('exhaustion', ['other'], { limited: ['acct-a', 'acct-b'] }); assert.notEqual(r.status, 0);
     assert.equal(r.receipts[0].attempts.length, 1); assert.match(r.receipts[0].attempts[0].reason, /exhausted/);
+    assert.deepEqual(r.summary.lessons.failedLaunches.map((f) => f.atom), ['a0']);
   });
   test('spread and unhealthy account exclusion', () => {
     const r = run('spread', Array(6).fill('other'), { third: true, extra: ['--concurrency', '3'] }); assert.equal(r.status, 0, r.stderr);

@@ -16,6 +16,7 @@ import { augment } from '../lib/augment.mjs';
 import { emit, context, load, newId, archiveRun, shaFile } from '../lib/ledger.mjs';
 import { loadRouting, resolve } from '../lib/routing.mjs';
 import { headroom } from '../../throttle/throttle.mjs';
+import { runLessons } from '../lib/lessons.mjs';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, '../../..');
 function args(argv) { const o = { _: [] }; for (let i = 0; i < argv.length; i++) { const a = argv[i]; if (a.startsWith('--')) o[a.slice(2)] = argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[++i] : true; else o._.push(a); } return o; }
@@ -170,6 +171,7 @@ async function runAtom(atom) {
 }
 const t0 = Date.now();
 const running = new Map();
+let throttled = 0;                                   // headroom holds, for the receipt's lessons
 const ready = () => doc.atoms.filter((a) => state.get(a.id) === 'pending' && deps(a).every((d) => state.get(d) === 'done'));
 const blockDescendants = (id) => { for (const a of doc.atoms) if (state.get(a.id) === 'pending' && deps(a).includes(id)) { state.set(a.id, 'blocked'); emit('atom.blocked', { runId: RUN_ID, poolId: POOL_ID, need: doc.need.id, atom: a.id, by: id }); blockDescendants(a.id); } };
 const sample = () => T.mark('sched.sample', { running: running.size, ready: ready().length, done: [...state.values()].filter((s) => s === 'done').length });
@@ -180,7 +182,7 @@ try {
     for (const a of ready()) {
       if (running.size >= CONC) break;
       const room = running.size ? headroom() : { ok: true };
-      if (!room.ok) { held = room; T.mark('sched.throttled', room); break; }
+      if (!room.ok) { held = room; throttled++; T.mark('sched.throttled', room); break; }
       state.set(a.id, 'running'); running.set(a.id, runAtom(a).then((rec) => ({ id: a.id, rec }))); sample();
     }
     if (!running.size) break;
@@ -200,7 +202,7 @@ const criticalWall = P.criticalPath.reduce((s, id) => s + (receipts[id]?.wallMs 
 const tok = { input: 0, output: 0, cacheRead: 0, cacheCreate: 0, calls: 0 };
 for (const r of Object.values(receipts)) for (const a of r.attempts) if (a.usage) { tok.calls++; for (const k of ['input', 'output', 'cacheRead', 'cacheCreate']) tok[k] += Number(a.usage[k] ?? 0); }
 const summary = { trace: T.enabled ? 'trace.jsonl' : null, codexAccounts, runDir: RUN, need: doc.need.id, atoms: doc.atoms.length, concurrency: CONC, statuses: Object.fromEntries(state), plan: { waves: P.waves, total: P.total, critical: P.critical, criticalPath: P.criticalPath, speedupBound: P.speedupBound, width: P.width }, wallMs, sumAtomWallMs: sumAtomWall, criticalPathWallMs: criticalWall, realizedSpeedup: sumAtomWall ? +(sumAtomWall / wallMs).toFixed(2) : null, tokens: tok, allDone: [...state.values()].every((s) => s === 'done') };
-summary.runId = RUN_ID; summary.poolId = POOL_ID;
+summary.runId = RUN_ID; summary.poolId = POOL_ID; summary.lessons = runLessons(receipts, { throttled });
 fs.writeFileSync(path.join(RUN, 'receipt', 'run.json'), JSON.stringify(summary, null, 1));
 emit('run.end', { runId: RUN_ID, poolId: POOL_ID, need: doc.need.id, allDone: summary.allDone, statuses: summary.statuses, wallMs, sumAtomWallMs: sumAtomWall, criticalPathWallMs: criticalWall, realizedSpeedup: summary.realizedSpeedup, speedupBound: P.speedupBound, tokens: tok, load: load() });
 console.log(JSON.stringify({ allDone: summary.allDone, wallMs, sumAtomWallMs: sumAtomWall, realizedSpeedup: summary.realizedSpeedup, speedupBound: P.speedupBound, statuses: summary.statuses, tokens: tok }));

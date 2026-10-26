@@ -12,6 +12,8 @@ const fx = (n) => path.join(HERE, 'fixtures', n);
 let fails = 0; const check = (name, cond, detail = '') => { console.log(`${cond ? 'PASS' : 'FAIL'} ${name}${detail ? ': ' + detail : ''}`); if (!cond) fails++; };
 const node = process.execPath, sched = path.join(HERE, '..', 'bin', 'schedule.mjs'), verify = path.join(HERE, '..', 'bin', 'verify.mjs');
 const routing = spawnSync(node, [path.join(HERE, 'routing.test.mjs')], { encoding: 'utf8' });
+const lessonsT = spawnSync(node, [path.join(HERE, 'lessons.test.mjs')], { encoding: 'utf8' });
+check('receipt lessons unit tests', lessonsT.status === 0, (lessonsT.stdout + lessonsT.stderr).trim().slice(-400));
 check('routing unit tests', !routing.error && routing.status === 0, routing.error?.message ?? (routing.stdout + routing.stderr).trim());
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'atomizer-test-'));
 process.env.ATOMIZER_LEDGER_DIR = path.join(tmp, 'ledger');
@@ -62,6 +64,8 @@ const s1 = JSON.parse(r1.stdout.trim().split('\n').at(-1));
 check('fan-out all done', s1.allDone, r1.stderr.slice(-300));
 check('wall below 6 s for ~10 s of atom work', s1.wallMs < 6000, `wall ${s1.wallMs} ms, sequential-equivalent ${s1.sumAtomWallMs} ms`);
 check('realized speedup above 2x', s1.realizedSpeedup > 2, `realized ${s1.realizedSpeedup}x, bound ${s1.speedupBound}x`);
+const l1 = JSON.parse(fs.readFileSync(path.join(tmp, 'fanout', 'receipt', 'run.json'), 'utf8')).lessons;
+check('receipt lessons: no failed launch, a slowest atom, queue waits measured', l1 && !l1.failedLaunches.length && l1.slowestAtom?.wallMs > 0 && Number.isFinite(l1.queueWaits.totalMs), JSON.stringify(l1));
 const v1 = spawnSync(node, [verify, path.join(tmp, 'fanout')], { encoding: 'utf8' });
 check('fan-out verify passes acceptance A1 and A2', v1.status === 0, v1.stdout.trim().slice(0, 300));
 // 3. undeclared read fails inside the isolate and blocks compose
@@ -69,6 +73,8 @@ const r2 = spawnSync(node, [sched, 'run', fx('synthetic-undeclared.json'), '--ru
 const s2 = JSON.parse(r2.stdout.trim().split('\n').at(-1));
 check('undeclared input: w9 failed', s2.statuses.w9 === 'failed', JSON.stringify(s2.statuses));
 check('undeclared input: compose blocked', s2.statuses.compose === 'blocked');
+const l2 = JSON.parse(fs.readFileSync(path.join(tmp, 'undeclared', 'receipt', 'run.json'), 'utf8')).lessons;
+check('receipt lessons name the failed launch', l2?.failedLaunches.some((f) => f.atom === 'w9'), JSON.stringify(l2?.failedLaunches));
 const v2 = spawnSync(node, [verify, path.join(tmp, 'undeclared')], { encoding: 'utf8' });
 check('undeclared run fails verification', v2.status !== 0);
 // 4. ledger
