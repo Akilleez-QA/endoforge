@@ -8,6 +8,7 @@ import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { loadCampaign, roundDir, lastRound, vars, expand } from './campaign.mjs';
+import { fanoutLessons } from './lessons.mjs';
 import { ownershipMap, discoverLogins, assignLanes, laneId, workerCommand, piecePrompt, pieceStills, attribute, totals, ratchet,
   reatomize, wallClock, fleetCapacity, waveSize } from './fanout.mjs';
 
@@ -172,7 +173,7 @@ export async function round(c, n, { notes = {}, smokeOnly = false, noSmoke = fal
   const pre = preEvals(c, n, dir); T.preRender = pre.renderSec; T.preEvals = pre.evalsSec;
   const baseFile = path.join(c.workdir, 'baseline.json');
   if (!fs.existsSync(baseFile)) writeJSON(baseFile, { score: totals(pre.evals, c.evals.key).score, hard: totals(pre.evals, c.evals.key).hard });
-  const lanes = assignLanes(c, discoverLogins(), { skip: frozen });
+  const logins = discoverLogins(), lanes = assignLanes(c, logins, { skip: frozen });
   t = Date.now();
   const smokes = noSmoke ? {} : smoke(c, lanes, dir); T.smoke = sec(t);
   writeJSON(path.join(dir, 'round.json'), { round: n, frozen, split, smokes, stages: T });
@@ -191,9 +192,12 @@ export async function round(c, n, { notes = {}, smokeOnly = false, noSmoke = fal
   const atoms = Object.fromEntries(meta.lanes.filter((l) => l.sec != null).map((l) => [laneId(l), l.sec]));
   const clock = wallClock({ atomize: T.atomize, pre: T.preRender + T.preEvals, smoke: T.smoke, collect: T.collect, post: T.postRender + T.postEvals }, atoms);
   const summary = { round: n, frozen, split, smokes, stages: T, wallClock: clock, ratchet: { ...r, reverted }, unattributed: attribute(c, post.evals).unattributed.length,
-    lanes: meta.lanes.map((l) => ({ lane: laneId(l), engine: l.engine, account: l.account, exit: l.exit ?? null, sec: l.sec ?? null })), collect: report,
+    logins: [...logins.claude.map((a) => `claude:${a.name}`), ...logins.codex.map((x) => `codex:${x}`)],
+    lanes: meta.lanes.map((l) => ({ lane: laneId(l), piece: l.piece, engine: l.engine, account: l.account, exit: l.exit ?? null, sec: l.sec ?? null })), collect: report,
     load: { maxLoad1: Math.max(...meta.load.map((x) => x.load1)), minMemAvailGB: Math.min(...meta.load.map((x) => x.memAvailGB ?? Infinity)), capacity: [...new Set(meta.capacity)] } };
+  summary.openLessons = fanoutLessons(c, dir, summary).map((l) => l.key);   // rNN/LESSONS.md + <workdir>/lessons.json
   writeJSON(path.join(dir, 'round.json'), summary);
+  if (summary.openLessons.length) log(`open lessons with no tool change yet (${dir}/LESSONS.md): ${summary.openLessons.join(', ')}`);
   writeJSON(histFile, [...history.filter((h) => h.round !== n), { round: n, score: r.score, hard: r.hard, pass: r.pass, perPiece: r.perPiece }]);
   return summary;
 }

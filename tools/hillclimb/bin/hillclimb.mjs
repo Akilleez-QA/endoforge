@@ -10,6 +10,7 @@
 //   hillclimb.mjs judge <campaign.json> [--round N]          compete rounds: fast-render each variant, a judge atom picks one per owner
 //   hillclimb.mjs pr <campaign.json> [--round N]             push and open PRs (competing lanes ship only their winner)
 //   hillclimb.mjs score <campaign.json>                      history and the stop decision
+//   hillclimb.mjs lessons <campaign.json> [--close KEY --by "PR #n"] [--add KEY --stage S --text T]   open lessons (any mode)
 //   fan-out campaigns (mode "fanout"; lib/fanout-run.mjs): round | atomize | prove-split --before A --after B | logins |
 //                                                         smoke | evals [--phase pre|post] | status | collect   [--round N]
 //   (inside atoms) compose-review <campaign.json> <fixlist.json> <out> [--previous f] | compose-fix <campaign.json> <in> <out>
@@ -21,6 +22,7 @@ import { fileURLToPath } from 'node:url';
 import { loadCampaign, validateCampaign, roundDir, lastRound, vars, expand } from '../lib/campaign.mjs';
 import { validateFixlist, toMarkdown } from '../lib/fixlist.mjs';
 import { scoreRound, decide } from '../lib/scoreboard.mjs';
+import { competeLessons, lessonsCommand } from '../lib/lessons.mjs';
 import { reviewAtoms, fixAtoms, judgeAtoms, laneOf, patchPaths, inScope } from '../lib/plan.mjs';
 // Host stages validate atoms with the atomizer; inside an atom only this tool is mounted (at /hc-tool), so the compose
 // commands that run there must not need it.
@@ -275,20 +277,28 @@ function cmdScore() {
 
 function cmdRound() {
   cmdRender();
-  rest.push('--round', String(lastRound(loadCampaign(path.resolve(rest[0])))));
-  cmdPlanReview(true);
+  const n = lastRound(loadCampaign(path.resolve(rest[0])));
+  rest.push('--round', String(n));
   const c = loadCampaign(path.resolve(rest[0]));
-  const d = decide(readJSON(path.join(c.workdir, 'scoreboard.json')), c.stop);
-  log(d.why);
-  if (d.stop) return;
-  cmdPlanFix(true);
-  cmdApply();
-  if (c.fix?.compete) cmdJudge();
-  if (has('--pr')) cmdPr();
+  try {
+    cmdPlanReview(true);
+    const d = decide(readJSON(path.join(c.workdir, 'scoreboard.json')), c.stop);
+    log(d.why);
+    if (d.stop) return;
+    cmdPlanFix(true);
+    cmdApply();
+    if (c.fix?.compete) cmdJudge();
+    if (has('--pr')) cmdPr();
+  } finally {
+    // Measure, learn: every round leaves rNN/LESSONS.md and reports the lessons no tool change has closed yet.
+    const open = competeLessons(c, n, roundDir(c, n));
+    if (open.length) log(`open lessons with no tool change yet (${roundDir(c, n)}/LESSONS.md): ${open.map((l) => l.key).join(', ')}`);
+  }
 }
 
 const table = { render: cmdRender, 'plan-review': () => cmdPlanReview(false), review: () => cmdPlanReview(true), refs: cmdRefs,
   'plan-fix': () => cmdPlanFix(false), fix: () => cmdPlanFix(true), apply: cmdApply, judge: cmdJudge, pr: cmdPr, score: cmdScore, round: cmdRound,
+  lessons: () => { for (const l of lessonsCommand(loadCampaign(path.resolve(rest[0])), flag)) out(`${l.key}\t${l.stage}\tr${l.first}-r${l.last} x${l.count}\t${l.lesson}`); },
   'compose-review': cmdComposeReview, 'compose-fix': cmdComposeFix, 'compose-judge': cmdComposeJudge,
   check: () => { const v = validateCampaign(readJSON(rest[0])); out(JSON.stringify(v)); process.exit(v.ok ? 0 : 1); } };
 const FANOUT = ['round', 'atomize', 'prove-split', 'logins', 'smoke', 'evals', 'status', 'collect'];
@@ -296,5 +306,5 @@ if (FANOUT.includes(cmd) && rest[0] && fs.existsSync(rest[0]) && readJSON(rest[0
   const { main } = await import('../lib/fanout-run.mjs');
   try { process.exit(await main(cmd, rest)); } catch (e) { log(e.message); process.exit(1); }
 }
-if (!table[cmd]) { console.error(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 14).join('\n')); process.exit(2); }
+if (!table[cmd]) { console.error(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 15).join('\n')); process.exit(2); }
 try { table[cmd](); } catch (e) { log(e.message); process.exit(1); }

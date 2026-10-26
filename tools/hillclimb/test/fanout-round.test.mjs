@@ -80,10 +80,20 @@ try {
     assert.equal(summary.unattributed, 1); assert.equal(summary.wallClock.longPole != null, true);
     assert.equal(sh(repo, 'git', 'status', '--porcelain'), '');
   });
+  test('round 1 writes LESSONS.md from its measurements and reports open lessons', () => {
+    const md = fs.readFileSync(path.join(dir, 'LESSONS.md'), 'utf8');
+    assert.match(md, /\| ratchet \| pass \|/); assert.match(md, /\| B2 \| b2 \| 0 \| [\d.]+ \| 0 → 0 \| reverted \|/);
+    assert.match(md, /`regressed-b2` \(recombine\)/); assert.match(md, /`unattributed` \(attribution\)/); assert.match(md, /`stray-b1` \(atomize\)/);
+    assert(summary.openLessons.includes('regressed-b2')); assert.match(r1.stderr, /open lessons with no tool change yet/);
+    const closed = hc('lessons', cf, '--close', 'regressed-b2', '--by', 'PR #388');
+    assert.equal(closed.status, 0, closed.stderr); assert(!closed.stdout.includes('regressed-b2')); assert.match(closed.stdout, /^unattributed\tattribution/m);
+  });
   test('round 2 reuses round 1\'s post-evals and freezes the clean pieces', () => {
     const r2 = hc('round', cf); assert.equal(r2.status, 0, r2.stderr.slice(-800));
     const s2 = JSON.parse(r2.stdout);
     assert(!fs.existsSync(path.join(tmp, 'work/rounds/r02/pre'))); assert.deepEqual(s2.frozen, ['B1', 'B2', 'B3']); assert.deepEqual(s2.lanes, []);
+    const md2 = fs.readFileSync(path.join(tmp, 'work/rounds/r02/LESSONS.md'), 'utf8');
+    assert(!md2.includes('`regressed-b2`')); assert.match(md2, /`unattributed` \(attribution, rounds 1–2, seen 2x\)/);
   });
   test('a failed smoke launch stops the round before any worktree is made', () => {
     const c = campaign({ id: 'smoke', workdir: path.join(tmp, 'work-smoke') });
