@@ -47,5 +47,10 @@ class Plan(unittest.TestCase):
         self.assertEqual(mg.vm_tuning(4 * GB)['vm.min_free_kbytes'], 65536)          # floor
         self.assertEqual(mg.vm_tuning(1024 * GB)['vm.min_free_kbytes'], 2 * 2 ** 20)  # cap
 
+    def test_reap_only_jobs_whose_owner_is_gone(self):
+        scopes = [('heavy-a-1.scope', 'heavy-run a (owner hc-round.service)'), ('heavy-b-2.scope', 'heavy-run b (owner live.service)'),
+                  ('heavy-c-3.scope', 'heavy-run c (owner none)')]
+        self.assertEqual(mg.plan_reap(scopes, lambda u: u == 'live.service'), [('heavy-a-1.scope', 'hc-round.service')])
+
 if __name__ == '__main__':
     unittest.main()

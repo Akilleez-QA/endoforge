@@ -22,7 +22,12 @@ export function validateCampaign(c) {
   if (!c?.goal || c.goal.length < 20) E('goal must state what better means (at least 20 characters)');
   if (!c?.workdir) E('workdir is required (rounds live in <workdir>/rounds/rNN)');
   if (!Array.isArray(c?.render) || !c.render.length) E('render must list at least one job');
-  for (const [i, r] of (c?.render ?? []).entries()) if (!r.id || !Array.isArray(r.command)) E(`render[${i}] needs id and command (array)`);
+  for (const [i, r] of (c?.render ?? []).entries()) {
+    if (!r.id || !Array.isArray(r.command)) E(`render[${i}] needs id and command (array)`);
+    // A job wrapped in systemd-run --scope leaves the round's cgroup, so stopping the round leaves it running
+    // (2026-10-26: a stopped round left a 19.8 GB render for 80 minutes). blender-cpu/heavy-run already throttle and bind.
+    else if (/systemd-run\b[^|;&]*--scope/.test(r.command.join(' '))) E(`render[${i}] must not wrap jobs in systemd-run --scope; use blender-cpu or heavy-run`);
+  }
   const owners = c?.owners ?? {};
   if (!Object.keys(owners).length) E('owners must name at least one fix lane');
   for (const [k, o] of Object.entries(owners)) {

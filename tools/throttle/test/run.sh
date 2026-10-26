@@ -18,6 +18,20 @@ if systemctl --user show-environment >/dev/null 2>&1 && command -v systemd-run >
   HEAVY_SLOTS=1 timeout 3 "$hr" --name t5 -- true 2>/dev/null; check 'waits for a slot' '[[ $? == 124 ]]'; wait
   check 'starts once the slot frees' 'HEAVY_SLOTS=1 timeout 30 "$hr" --name t6 -- true 2>/dev/null'
   check 'slice sized for this machine' 'head -1 "${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user/heavy.slice" | grep -q "threads=$(nproc)"'
+  # jobs live and die with their owner; an orphaned launcher is refused (2026-10-26: a stopped round left a 19.8 GB render)
+  E="--setenv=HEAVY_MAX_LOAD=100000 --setenv=HEAVY_RESERVE_GB=1 --setenv=HEAVY_SLOTS=50 --setenv=XDG_STATE_HOME=$XDG_STATE_HOME"
+  u=hr-test-owner-$$; systemd-run --user --quiet --unit=$u --setenv=PATH="$PATH" $E -- bash -c "$hr --name $u -- sleep 120; true"; sleep 3
+  job=$(systemctl --user list-units --no-legend --plain "heavy-$u-*" | awk '{print $1}')
+  check 'a job launched from inside a service is bound to it' '[[ -n $job && $(systemctl --user show "$job" -p BindsTo --value) == "$u.service" ]]'
+  systemctl --user stop $u; sleep 2
+  check 'stopping the owner stops the job' '[[ -n $job ]] && ! systemctl --user is-active --quiet "$job"'
+  m=hr-test-main-$$; systemd-run --user --quiet --unit=$m --setenv=PATH="$PATH" $E -- $hr --name $m -- sleep 120; sleep 3
+  check 'as a service main process the job stays in that service' '[[ $(systemctl --user show $m -p MainPID --value) -gt 0 ]] && [[ $(cat /proc/$(systemctl --user show $m -p MainPID --value)/comm) == sleep ]]'
+  systemctl --user stop $m; sleep 1
+  check 'stopping that service stops the job' '! systemctl --user is-active --quiet $m'
+  o=hr-test-orphan-$$; rc=$XDG_STATE_HOME/orphan.rc
+  systemd-run --user --quiet --unit=$o --setenv=PATH="$PATH" $E -- bash -c "systemd-run --user --scope --quiet -- bash -c 'sleep 3; $hr --name $o -- sleep 120 2>/dev/null; echo \$? > $rc' & sleep 1"; sleep 7
+  check 'an orphaned launcher is refused' '[[ $(cat $rc 2>/dev/null) == 75 ]]'
   rm -rf "$XDG_STATE_HOME"
 else echo "SKIP live heavy-run checks (no systemd user manager)"; fi
 node --input-type=module -e "

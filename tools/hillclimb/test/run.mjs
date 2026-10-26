@@ -21,6 +21,8 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'hillclimb-test-'));
 const campaign = JSON.parse(fs.readFileSync(path.join(HERE, '../campaigns/stl-campus.json'), 'utf8'));
 check('campus campaign validates', validateCampaign(campaign).ok, validateCampaign(campaign).errors.join('; '));
 const bad = validateCampaign({ ...campaign, owners: { a: { describe: 'x', scope: [] } }, critique: { count: 0 } });
+{ const scoped = JSON.parse(JSON.stringify(campaign)); scoped.render[0].command = ['systemd-run', '--user', '--scope', '--', 'blender-cpu', '-b'];
+  check('render jobs wrapped in systemd-run --scope are rejected', !validateCampaign(scoped).ok); }
 check('bad owner key, empty scope and zero count are rejected', !bad.ok && bad.errors.length >= 3, bad.errors.join('; '));
 check('expand fills ${repo} and keeps shell $s', expand(['${repo}/x', 'for s in a; do echo $s; done'], { repo: '/r' }).join('|') === '/r/x|for s in a; do echo $s; done');
 

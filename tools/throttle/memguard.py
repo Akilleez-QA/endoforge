@@ -95,6 +95,76 @@ def plan(found, total, n_slots):
     return actions
 
 
+def plan_reap(scopes, active):
+    """heavy-run jobs whose owner unit is gone: [(scope, owner)]. scopes: [(scope, description)]; active(unit) -> bool.
+
+    heavy-run binds each job to its owner (BindsTo), so systemd stops it with the owner; this catches jobs started
+    before that, or whose binding failed. Craig, 2026-10-26: "a note is insufficient bake it into architecture".
+    """
+    out = []
+    for scope, desc in scopes:
+        m = re.search(r'\(owner ([^)]+)\)', desc or '')
+        if m and m[1] != 'none' and not active(m[1]):
+            out.append((scope, m[1]))
+    return out
+
+
+def loose_heavy(min_rss_gb=2):
+    """Big blender/python processes whose launcher is gone: parent is the user manager and they sit in a transient
+    run-*.scope (a systemd-run --scope job whose caller was stopped). Reported, never killed: they are not ours."""
+    found = []
+    for pid in os.listdir('/proc'):
+        if not pid.isdigit():
+            continue
+        try:
+            comm = open(f'/proc/{pid}/comm').read().strip()
+            if comm not in ('blender', 'python3', 'python'):
+                continue
+            st = open(f'/proc/{pid}/status').read()
+            rss = int(re.search(r'VmRSS:\s+(\d+)', st)[1]) / 2 ** 20
+            ppid = int(re.search(r'PPid:\s+(\d+)', st)[1])
+            unit = open(f'/proc/{pid}/cgroup').read().strip().rsplit('/', 1)[-1]
+            if rss >= min_rss_gb and unit.startswith('run-') and open(f'/proc/{ppid}/comm').read().strip() == 'systemd':
+                found.append({'pid': int(pid), 'unit': unit, 'rss_gb': round(rss, 1), 'cmd': open(f'/proc/{pid}/cmdline').read().replace('\0', ' ')[:160]})
+        except (OSError, TypeError, ValueError):
+            continue
+    return found
+
+
+def reap_and_report(dry):
+    rows = subprocess.run(['systemctl', '--user', 'list-units', '--plain', '--no-legend', '--state=active', 'heavy-*.scope'],
+                          capture_output=True, text=True).stdout.split('\n')
+    scopes = []
+    for r in rows:
+        if r.strip():
+            name = r.split()[0]
+            desc = subprocess.run(['systemctl', '--user', 'show', name, '-p', 'Description', '--value'], capture_output=True, text=True).stdout
+            scopes.append((name, desc))
+    active = lambda u: subprocess.run(['systemctl', '--user', 'is-active', '--quiet', u]).returncode == 0
+    STATE.mkdir(parents=True, exist_ok=True)
+    for scope, owner in plan_reap(scopes, active):
+        if dry:
+            print(f'would stop {scope} (owner {owner} is gone)')
+            continue
+        r = subprocess.run(['systemctl', '--user', 'stop', scope], capture_output=True, text=True)
+        with open(STATE / 'actions.jsonl', 'a') as fh:
+            fh.write(json.dumps({'t': time.strftime('%Y-%m-%dT%H:%M:%S'), 'unit': scope, 'set': 'stopped',
+                                 'why': f'reap: owner {owner} is gone', 'ok': r.returncode == 0}) + '\n')
+    seen = STATE / 'loose.json'
+    known = set(json.loads(seen.read_text())) if seen.exists() else set()
+    for f in loose_heavy():
+        if f['pid'] in known:
+            continue
+        known.add(f['pid'])
+        with open(STATE / 'actions.jsonl', 'a') as fh:
+            fh.write(json.dumps({'t': time.strftime('%Y-%m-%dT%H:%M:%S'), 'unit': f['unit'], 'set': 'reported',
+                                 'why': f"loose heavy process without its launcher: {f}", 'ok': True}) + '\n')
+        subprocess.run(['notify-send', '-a', 'memguard', 'Stray heavy job',
+                        f"{f['cmd'][:80]} ({f['rss_gb']} GB) is running without the job that started it"], capture_output=True)
+    if not dry:
+        seen.write_text(json.dumps(sorted(known)[-500:]))
+
+
 def apply(actions, dry):
     STATE.mkdir(parents=True, exist_ok=True)
     for unit, props, why in actions:
@@ -143,6 +213,7 @@ def main():
     while True:
         total = ram()
         apply(plan(units(), total, slots(total)), '--dry-run' in args)
+        reap_and_report('--dry-run' in args)
         if '--once' in args or '--dry-run' in args:
             return 0
         time.sleep(10)

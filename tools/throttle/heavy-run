@@ -69,4 +69,44 @@ while :; do                                                    # 2. headroom
 done
 [ "$last" -gt 0 ] && say "starting after $(( ($(date +%s) - start) / 60 )) min"
 echo "$(date -Is) slot=$slot mem=$mem pid=$$ $name" >> "$state/runs.log"
-exec systemd-run --user --scope --quiet --slice=heavy.slice --nice=10 --unit="heavy-${name//[^A-Za-z0-9_-]/_}-$$" -- "$@"
+# The job lives and dies with whoever started it (Craig, 2026-10-26: "a note is insufficient bake it into architecture",
+# after a stopped hill-climb left a 19.8 GB render running for 80 minutes). systemd-run --scope moves the job into a
+# cgroup of its own, out of reach of its caller's stop, so bind it to the caller's unit: the nearest ancestor service
+# (a deliberate detached job), else the nearest scope (an app or terminal). A launcher whose owner is already gone (a
+# transient run-*.scope reparented to the user manager) is an orphan loop: refuse it.
+owner_unit() {
+  local p=$PPID unit comm scope="" scope_orphan=0 first=1
+  while [ "${p:-0}" -gt 1 ]; do
+    comm=$(cat /proc/$p/comm 2>/dev/null) || break
+    [ "$comm" = systemd ] && break
+    unit=$(sed -n 's|^0::.*/||p' /proc/$p/cgroup 2>/dev/null)
+    case $unit in
+      user@*.service|init.scope|heavy-*.scope) ;;
+      *.service) echo "$unit"; return 0;;
+      *.scope) if [ -z "$scope" ]; then
+                 scope=$unit
+                 parent=$(ps -o ppid= -p "$p" | tr -d ' ')
+                 [ "$(cat /proc/$parent/comm 2>/dev/null)" = systemd ] && [ "${unit#run-}" != "$unit" ] && scope_orphan=1
+               fi;;
+    esac
+    p=$(ps -o ppid= -p "$p" | tr -d ' ')
+    first=0
+  done
+  [ "$scope_orphan" = 1 ] && { echo "orphan:$scope"; return 0; }
+  echo "$scope"
+}
+self_unit=$(sed -n 's|^0::.*/||p' /proc/self/cgroup)
+if [[ $self_unit == *.service && $(cat /proc/$PPID/comm 2>/dev/null) == systemd ]]; then
+  # heavy-run is a service's own main process (systemd-run --unit=… -- heavy-run …): keep the job inside that service,
+  # so stopping the service stops the job. Moving out to a scope would leave the service empty and the job unowned.
+  echo "$(date -Is) slot=$slot mem=$mem pid=$$ $name in $self_unit" >> "$state/runs.log"
+  exec nice -n 10 "$@"
+fi
+owner=$(owner_unit)
+case $owner in
+  orphan:*) say "refusing: the launcher's owner is gone (${owner#orphan:} was left running by a stopped job)"; exit 75;;
+esac
+bind=()
+[ -n "$owner" ] && bind=(-p "BindsTo=$owner" -p "After=$owner")
+exec systemd-run --user --scope --quiet --slice=heavy.slice --nice=10 --unit="heavy-${name//[^A-Za-z0-9_-]/_}-$$" \
+  --description="heavy-run $name (owner ${owner:-none})" "${bind[@]}" -- "$@"
