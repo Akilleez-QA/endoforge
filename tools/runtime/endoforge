@@ -8,7 +8,7 @@ ms() { date +%s%3N; }
 start=$(ms); root=${ENDOFORGE_HOME:-$HOME/.cache/endoforge}; src=${ENDOFORGE_SRC_REPO:-/workspace/repos/akilleez/main}
 ref=${ENDOFORGE_REF:-HEAD}; id=; sha=; input=; out=; tier=; inst=; pgid=; pgidStart=; watchdog=; signaled=0
 scheduleExit=null; verifyOk=false; status=failed; imageMs=0; layerMs=0; createMs=0; coldStartMs=0; scheduleMs=0; verifyMs=0; copyMs=0; teardownMs=0; slotWaitMs=0
-usage() { echo 'usage: endoforge run <atoms.json|example-id> [--out DIR] [--tier light|standard|deep|throwaway] [--ref REF] [--timeout SEC] [--concurrency N] [--no-verify] [--stub-replay DIR] | ls | reap'; }
+usage() { echo 'usage: endoforge run <atoms.json|example-id> [--out DIR] [--tier light|standard|deep|throwaway] [--ref REF] [--timeout SEC] [--concurrency N] [--no-verify] [--stub-replay DIR] | ls | reap | job <stage|fire|status|…>'; }
 fail() { echo "endoforge: $*" >&2; exit 1; }
 sweep_marker() {
   local p
@@ -88,6 +88,7 @@ case $cmd in
     node -e 'try{const m=JSON.parse(require("fs").readFileSync(process.argv[1])); console.log(`${m.id} held=${process.argv[2]} age=${Math.floor((Date.now()-Date.parse(m.created))/1000)}s pid=${m.pid}`)}catch{}' "$d/manifest.json" "$held"
     exec {fd}>&-
   done; exit 0;;
+  job) exec node "$RUNTIME_DIR/../job/bin/job.mjs" "$@";;   # endoforge job stage|fire|status|… (tools/job)
   run) :;; *) usage >&2; exit 2;;
 esac
 input=${1:-}; [[ -n $input ]] || { usage >&2; exit 2; }; shift

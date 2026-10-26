@@ -12,6 +12,11 @@
 //        record the user's own confirmation of exactly that card; a relayed one is recorded and refused at Decide
 //   job.mjs lessons <job.json>                       the open lessons, and which atoms each reaches
 //   job.mjs compile <job.json> [--out dir] [--offline]   every atom's prompt from the manifest, plus manifest.json (hashes)
+//   job.mjs stage <job.json>                         Decide minus the go must pass; renders JOB-<id>.md, emits STAGED
+//   job.mjs fire <job.json> [-- <launch command>]    only after the user's go on the staged card: Orchestrate gates,
+//        compiled prompts, FIRED (atoms by engine and login, prompt hash, predictions, gates, ETA, stop), then launch
+//   job.mjs event <job.json> <SMOKE|SCORED|GATE|NEEDS-YOU|DONE> <summary> [--detail md] [--data json]
+//   job.mjs status <job.json>                        the live timeline from events.jsonl (also `endoforge job status`)
 //   job.mjs gates | invariants                       the POODO gates and the invariants they hold
 // Proofs the tool makes (calibration, smoke, split) go in <job>.proofs.json beside the manifest, merged on load.
 import fs from 'node:fs';
@@ -24,6 +29,8 @@ import { INVARIANTS, GATES } from '../lib/invariants.mjs';
 import { renderCard, cardHash } from '../lib/card.mjs';
 import { retrieveLessons, lessonsForAtom } from '../lib/lessons.mjs';
 import { compileAll } from '../lib/compile.mjs';
+import { emit, canFire, firedEvent, readEvents, renderStatus, EVENT_KINDS } from '../lib/events.mjs';
+import { discoverLogins, assignLanes } from '../../hillclimb/lib/fanout.mjs';
 
 const [cmd, file, ...rest] = process.argv.slice(2);
 const flag = (k) => { const i = rest.indexOf(k); return i < 0 ? null : rest[i + 1]; };
@@ -75,7 +82,7 @@ function report(v) {
 async function main() {
   if (cmd === 'gates') { for (const g of GATES) out(`${g.name}\t${g.invariants.join(',')}\t${g.what}`); return 0; }
   if (cmd === 'invariants') { for (const i of INVARIANTS) out(`${i.id}\t${i.name}\t${i.rule}`); return 0; }
-  if (!file) { console.error(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 18).join('\n')); return 2; }
+  if (!file) { console.error(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 24).join('\n')); return 2; }
   const job = loadJob(path.resolve(file));
   if (cmd === 'validate') {
     const gate = flag('--gate') ?? 'orchestrate', offline = has('--offline');
@@ -101,10 +108,46 @@ async function main() {
   if (cmd === 'confirm') {
     const sha = flag('--sha') ?? '', full = cardHash(job);
     if (sha.length < 8 || !full.startsWith(sha)) { console.error(`confirm: --sha ${sha || '(none)'} is not this card (${full.slice(0, 12)}); show the current card first`); return 1; }
+    if (readEvents(job, file).filter((e) => e.kind === 'STAGED').at(-1)?.data?.cardSha256 !== full) { console.error('confirm: this card was never staged (job.mjs stage); the user confirms the card they were shown'); return 1; }
     if (!flag('--by') || !flag('--words')) { console.error('confirm: --by and --words (the user\'s own words) are required'); return 2; }
     saveProof(path.resolve(file), 'confirmed', { by: flag('--by'), via: flag('--via') ?? 'direct', words: flag('--words'), at: new Date().toISOString(), cardSha256: full });
     out(`confirmed card ${full.slice(0, 12)} by ${flag('--by')}`); return 0;
   }
+  if (cmd === 'stage') {
+    const lessons = retrieveLessons(job);
+    saveProof(path.resolve(file), 'lessons', { retrieved: new Date().toISOString(), count: lessons.length, keys: lessons.map((l) => l.key) });
+    const fresh = loadJob(path.resolve(file)), v = validate(fresh, { gate: 'decide', offline: has('--offline'), confirmation: { ok: true } });
+    if (!v.ok) { report(v); console.error('stage: refused; fix these before showing the card'); return 1; }
+    const cardFile = path.join(path.dirname(path.resolve(file)), `JOB-${fresh.id}.md`), sha = cardHash(fresh);
+    fs.writeFileSync(cardFile, renderCard(fresh, v, lessons));
+    emit(fresh, file, { kind: 'STAGED', summary: `${fresh.title ?? fresh.id}: card ready for your go (${sha.slice(0, 12)})`, detail: `Card: ${cardFile}`, data: { cardSha256: sha, card: cardFile } });
+    process.stdout.write(fs.readFileSync(cardFile, 'utf8')); return 0;
+  }
+  if (cmd === 'fire') {
+    const may = canFire(job, file);
+    if (!may.ok) { console.error(`fire: refused (I1, I11): ${may.why}`); return 1; }
+    const v = validate(job, { gate: 'orchestrate', offline: has('--offline'), health: health(job) });
+    if (!v.ok) { report(v); emit(job, file, { kind: 'GATE', summary: `refused at ${v.errors[0].gate}: ${v.errors[0].inv} ${v.errors[0].msg}`, data: { errors: v.errors } }); return 1; }
+    const compiled = compileAll(job, { lessons: retrieveLessons(job), offline: has('--offline') }), dir = path.join(path.dirname(path.resolve(file)), 'compiled');
+    fs.mkdirSync(dir, { recursive: true });
+    for (const [id, p] of Object.entries(compiled.prompts)) fs.writeFileSync(path.join(dir, `${id}.prompt`), p);
+    const pieces = Object.fromEntries((job.atoms ?? []).map((a) => [a.id, { files: a.files, engine: ['codex', 'claude'].includes(a.engine) ? a.engine : undefined, account: a.account, speculate: a.speculate }]));
+    let lanes; try { lanes = assignLanes({ pieces }, discoverLogins()).map((l) => ({ id: l.variant ? `${l.piece}-v${l.variant}` : l.piece, engine: l.engine, account: l.account })); }
+    catch { lanes = (job.atoms ?? []).map((a) => ({ id: a.id, engine: a.engine, account: a.account ?? 'default' })); }
+    emit(job, file, firedEvent(job, lanes, compiled.manifestHash));
+    const at = process.argv.indexOf('--');
+    if (at < 0) return 0;
+    const r = spawnSync(process.argv[at + 1], process.argv.slice(at + 2), { stdio: 'inherit', env: { ...process.env, ENDOFORGE_JOB: path.resolve(file), ENDOFORGE_PROMPTS: dir } });
+    return r.status ?? 1;
+  }
+  if (cmd === 'event') {
+    const kind = rest[0];
+    if (kind === 'FIRED' || kind === 'STAGED') { console.error(`event: ${kind} comes only from job.mjs ${kind === 'FIRED' ? 'fire' : 'stage'}`); return 2; }
+    if (!EVENT_KINDS.includes(kind) || !rest[1]) { console.error(`event: <${EVENT_KINDS.filter((k) => !['FIRED', 'STAGED'].includes(k)).join('|')}> <summary>`); return 2; }
+    const e = emit(job, file, { kind, summary: rest[1], detail: flag('--detail') ?? '', data: flag('--data') ? JSON.parse(flag('--data')) : {} });
+    out(`${e.ts} ${kind} ${e.summary}`); return 0;
+  }
+  if (cmd === 'status') { process.stdout.write(renderStatus(job, readEvents(job, file))); return 0; }
   if (cmd === 'compile') {
     const r = compileAll(job, { lessons: retrieveLessons(job), offline: has('--offline') });
     const dir = flag('--out') ?? path.join(path.dirname(path.resolve(file)), 'compiled');

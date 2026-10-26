@@ -13,6 +13,8 @@ import { loadJob, health } from '../../job/bin/job.mjs';
 import { validate as validateJob } from '../../job/lib/validate.mjs';
 import { compileAtom } from '../../job/lib/compile.mjs';
 import { retrieveLessons } from '../../job/lib/lessons.mjs';
+import { emit, canFire, firedEvent } from '../../job/lib/events.mjs';
+import crypto from 'node:crypto';
 import { ownershipMap, discoverLogins, assignLanes, laneId, workerCommand, piecePrompt, pieceStills, attribute, totals, ratchet,
   reatomize, wallClock, fleetCapacity, waveSize } from './fanout.mjs';
 
@@ -94,7 +96,7 @@ const loadSample = () => {
 };
 
 /** Make each lane's worktree from the integration HEAD, write its prompt, and start it, in waves sized by the dial. */
-export async function launchAll(c, n, dir, lanes, { notes = {}, pre, wait = true } = {}) {
+export async function launchAll(c, n, dir, lanes, { notes = {}, pre, wait = true, beforeStart = null } = {}) {
   const base = git(c.repo, 'rev-parse', 'HEAD'), found = attribute(c, pre.evals).byPiece, stills = path.join(pre.dir, 'stills');
   const wtRoot = expand(c.apply?.worktrees ?? path.join(c.workdir, 'worktrees'), vars(c, n));
   for (const lane of lanes) {
@@ -110,6 +112,7 @@ export async function launchAll(c, n, dir, lanes, { notes = {}, pre, wait = true
     fs.mkdirSync(path.join(dir, 'prompts'), { recursive: true }); fs.writeFileSync(path.join(dir, 'prompts', `${laneId(lane)}.prompt`), prompt);
     Object.assign(lane, { argv: workerCommand(c, lane, { worktree: lane.worktree, prompt, images }) });
   }
+  beforeStart?.(lanes);                                  // a job-backed round emits FIRED here, before any lane starts
   const meta = { base, lanes, load: [], capacity: [] };
   const exitOf = (l) => { try { return Number(fs.readFileSync(path.join(dir, 'logs', `${laneId(l)}.exit`), 'utf8')); } catch { return null; } };
   const poll = (c.fanout?.pollSec ?? 5) * 1000, deadline = Date.now() + (c.fanout?.laneTimeoutSec ?? 2400) * 1000 + 60_000;
@@ -179,6 +182,8 @@ export async function round(c, n, { notes = {}, smokeOnly = false, noSmoke = fal
     // must pass before anything launches; nothing fires on an unconfirmed card (I1, I11).
     c.jobDoc = loadJob(c.job);
     const v = validateJob(c.jobDoc, { gate: 'orchestrate', health: health(c.jobDoc) });
+    const may = canFire(c.jobDoc, c.job);
+    if (!may.ok) throw new Error(`job ${c.jobDoc.id} cannot fire (I1, I11): ${may.why}`);
     if (!v.ok) throw new Error(`job ${c.jobDoc.id} refused at ${v.errors.map((e) => `${e.gate} ${e.inv}: ${e.msg}`).join('; ')}`);
     const atoms = Object.fromEntries((c.jobDoc.atoms ?? []).map((a) => [a.id, a]));
     for (const [k, p] of Object.entries(c.pieces)) if (!atoms[k] || JSON.stringify([...atoms[k].files].sort()) !== JSON.stringify([...p.files].sort())) throw new Error(`piece ${k} does not match a job atom with the same files`);
@@ -195,10 +200,16 @@ export async function round(c, n, { notes = {}, smokeOnly = false, noSmoke = fal
   t = Date.now();
   const smokes = noSmoke ? {} : smoke(c, lanes, dir); T.smoke = sec(t);
   writeJSON(path.join(dir, 'round.json'), { round: n, frozen, split, smokes, stages: T });
+  const tell = (ev) => { if (c.jobDoc) emit(c.jobDoc, c.job, ev); };
+  if (!noSmoke) tell({ kind: 'SMOKE', summary: Object.entries(smokes).map(([e, x]) => `${e} ${x.ok ? 'ok' : `FAILED (exit ${x.exit})`}`).join(', ') || 'no engines', data: smokes });
   if (Object.values(smokes).some((s) => !s.ok)) throw new Error(`smoke launch failed: ${JSON.stringify(smokes)}; fix the engine before the wide launch`);
   if (smokeOnly) return { smokes };
   t = Date.now();
-  const meta = await launchAll(c, n, dir, lanes, { notes, pre }); T.parallel = sec(t); t = Date.now();
+  const beforeStart = (ls) => {
+    const hash = crypto.createHash('sha256').update(ls.map((l) => fs.readFileSync(path.join(dir, 'prompts', `${laneId(l)}.prompt`), 'utf8')).join('\0')).digest('hex');
+    tell(firedEvent(c.jobDoc ?? {}, ls.map((l) => ({ id: laneId(l), engine: l.engine, account: l.account })), hash));
+  };
+  const meta = await launchAll(c, n, dir, lanes, { notes, pre, beforeStart }); T.parallel = sec(t); t = Date.now();
   const { done, report } = collect(c, n, dir, meta); T.collect = sec(t); t = Date.now();
   let post = renderAndEval(c, n, path.join(dir, 'post'));
   let r = ratchet(c, readJSON(baseFile), pre.evals, post.evals);
@@ -213,7 +224,11 @@ export async function round(c, n, { notes = {}, smokeOnly = false, noSmoke = fal
     logins: [...logins.claude.map((a) => `claude:${a.name}`), ...logins.codex.map((x) => `codex:${x}`)],
     lanes: meta.lanes.map((l) => ({ lane: laneId(l), piece: l.piece, engine: l.engine, account: l.account, exit: l.exit ?? null, sec: l.sec ?? null })), collect: report,
     load: { maxLoad1: Math.max(...meta.load.map((x) => x.load1)), minMemAvailGB: Math.min(...meta.load.map((x) => x.memAvailGB ?? Infinity)), capacity: [...new Set(meta.capacity)] } };
-  summary.openLessons = fanoutLessons(c, dir, summary).map((l) => l.key);   // rNN/LESSONS.md + <workdir>/lessons.json
+  summary.openLessons = fanoutLessons(c, dir, summary).map((l) => l.key);
+  tell({ kind: 'SCORED', summary: `round ${n}: score ${r.score} (${r.scoreDelta >= 0 ? '+' : ''}${r.scoreDelta}), HARD ${r.hard} (${r.hardDelta >= 0 ? '+' : ''}${r.hardDelta})`, data: { round: n, score: r.score, scoreDelta: r.scoreDelta, hard: r.hard, hardDelta: r.hardDelta, perPiece: r.perPiece } });
+  tell({ kind: 'GATE', summary: `round ${n} ratchet ${r.pass ? 'passed' : 'FAILED'}${reverted.length ? `; reverted ${reverted.join(', ')}` : ''}`, data: { gate: 'ratchet', pass: r.pass, reverted } });
+  const cp = c.jobDoc?.criticalPath, cpLane = meta.lanes.find((l) => l.piece === cp);
+  if (cp && (reverted.includes(cp) || (cpLane && cpLane.exit !== 0))) tell({ kind: 'NEEDS-YOU', summary: `the critical-path atom ${cp} ${reverted.includes(cp) ? 'regressed and was reverted' : 'did not land'}; decide how to proceed`, data: { atom: cp } });   // rNN/LESSONS.md + <workdir>/lessons.json
   writeJSON(path.join(dir, 'round.json'), summary);
   if (summary.openLessons.length) log(`open lessons with no tool change yet (${dir}/LESSONS.md): ${summary.openLessons.join(', ')}`);
   writeJSON(histFile, [...history.filter((h) => h.round !== n), { round: n, score: r.score, hard: r.hard, pass: r.pass, perPiece: r.perPiece }]);

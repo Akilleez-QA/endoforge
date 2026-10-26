@@ -135,17 +135,26 @@ for d, tag, px in (("a", "one", 0), ("b", "two", 0), ("c", "one", 9)):
       criticalPath: 'B1', rival: 'compete mode', deadline: '2026-10-27T00:00:00Z', notes: path.join(jd, 'NOTES.md'),
       proofs: { smoke: { engines: { codex: true, claude: true }, receipt: path.join(jd, 'smoke.json') }, lessons: { retrieved: 'now', count: 0 } } };
     fs.writeFileSync(c.job, JSON.stringify(job));
-    const jenv = { ...env, ENDOFORGE_VOLATILE: '/nonexistent-volatile', ENDOFORGE_JOBS: path.join(tmp, 'no-jobs') };
+    const pushed = path.join(jd, 'pushed.txt'), hook = path.join(jd, 'push.sh');
+    fs.writeFileSync(hook, `#!/bin/sh\necho "$ENDOFORGE_EVENT_KIND" >> ${pushed}\n`, { mode: 0o755 });
+    const jenv = { ...env, ENDOFORGE_VOLATILE: '/nonexistent-volatile', ENDOFORGE_JOBS: path.join(tmp, 'no-jobs'), ENDOFORGE_NOTIFY: 'none', ENDOFORGE_PUSH_HOOKS: hook };
     const cf2 = write('jobbed.json', c), run = () => spawnSync(process.execPath, [BIN, 'round', cf2], { env: jenv, encoding: 'utf8', timeout: 120_000 });
+    const JOB = path.join(HERE, '../../job/bin/job.mjs'), jobCli = (...a) => spawnSync(process.execPath, [JOB, ...a], { env: jenv, encoding: 'utf8' });
     const refused = run();
-    assert.equal(refused.status, 1); assert.match(refused.stderr, /refused at decide I1: the job card has not been confirmed/);
+    assert.equal(refused.status, 1); assert.match(refused.stderr, /cannot fire \(I1, I11\): the card was never staged/);
     assert(!fs.existsSync(path.join(tmp, 'work-job/worktrees')));
-    job.confirmed = { by: 'Craig', via: 'direct', cardSha256: cardHash(job) }; fs.writeFileSync(c.job, JSON.stringify(job));
+    const staged = jobCli('stage', c.job); assert.equal(staged.status, 0, staged.stdout + staged.stderr);
+    assert.equal(run().status, 1, 'staged but not confirmed must not fire');
+    assert.equal(jobCli('confirm', c.job, '--sha', cardHash(job), '--by', 'Craig', '--words', 'go').status, 0);
     sh(repo, 'git', 'checkout', '-q', 'seed', '--', 'game'); sh(repo, 'git', 'commit', '-q', '-m', 'reset for the job round');
     const fired = run(); assert.equal(fired.status, 0, fired.stderr.slice(-800));
     const p = fs.readFileSync(path.join(tmp, 'work-job/rounds/r01/prompts/b1.prompt'), 'utf8');
     assert.match(p, /THE GOAL, in Craig's own words[^\n]*\n> make every beat read good, today/); assert.match(p, /<<<request\nMake every beat read good./);
     assert.match(p, /Reply in exactly this form/);
+    const kinds = fs.readFileSync(path.join(jd, 'events.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l).kind);
+    assert.deepEqual(kinds, ['STAGED', 'SMOKE', 'FIRED', 'SCORED', 'GATE']);
+    assert.deepEqual(fs.readFileSync(pushed, 'utf8').trim().split('\n'), ['FIRED', 'GATE']);
+    const st = jobCli('status', c.job); assert.match(st.stdout, /\* FIRED +demo fired: 3 atoms/); assert.match(st.stdout, /state: GATE; 3 atoms fired/);
   });
   await Promise.all(pending);
 } finally { fs.rmSync(tmp, { recursive: true, force: true }); }

@@ -70,6 +70,8 @@ test('CLI: card records the retrieval; confirm needs this card\'s sha and the us
   const c = job(['card', f, '--offline']); assert.equal(c.status, 0, c.stderr);
   const sha = /card sha256 ([0-9a-f]{64})/.exec(c.stderr)[1];
   assert.equal(JSON.parse(fs.readFileSync(path.join(tmp, 'mrton.proofs.json'), 'utf8')).lessons.count, 1);
+  assert.equal(job(['confirm', f, '--sha', sha.slice(0, 12), '--by', 'Craig', '--words', 'go']).status, 1, 'not staged yet');
+  assert.equal(job(['stage', f, '--offline'], { ENDOFORGE_NOTIFY: 'none' }).status, 0);
   assert.equal(job(['confirm', f, '--sha', 'deadbeef', '--by', 'Craig', '--words', 'go']).status, 1);
   assert.equal(job(['confirm', f, '--sha', sha.slice(0, 12), '--by', 'Craig']).status, 2);
   assert.equal(job(['confirm', f, '--sha', sha.slice(0, 12), '--by', 'Craig', '--words', 'go']).status, 0);

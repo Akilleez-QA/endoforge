@@ -23,7 +23,7 @@ export function manifestPaths(job) {
   for (const c of job.criteria ?? []) { add(`criterion ${c.id} calibration good`, c.check?.calibration?.good); add(`criterion ${c.id} calibration bad`, c.check?.calibration?.bad); }
   for (const a of job.atoms ?? []) for (const i of a.inputs ?? []) add(`atom ${a.id} input`, i);
   for (const s of job.splits ?? []) add(`split ${s.from} proof`, s.proof);
-  add('notes', job.notes); add('repo', job.repo); add('ratchet baseline', job.ratchet?.baseline);
+  add('notes', job.notes); add('repo', job.repo); add('events', job.events?.dir); add('ratchet baseline', job.ratchet?.baseline);
   return out;
 }
 

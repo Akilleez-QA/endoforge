@@ -107,6 +107,8 @@ test('I7 on disk: missing paths are refused; I10, I12, I14 at Loop need the base
   const j = fx('mrton.json'); j.notes = path.join(tmp, 'NOTES.md');
   const v = validate(j, { gate: 'observe', volatile: ['/nonexistent-volatile'] });
   assert(says(v, 'I7', /NOTES.md does not exist/));
+  const e = fx('mrton.json'); e.events = { dir: '/tmp/claude-1000/job-events' };
+  assert(says(at(e, 'observe'), 'I7', /events: \/tmp\/claude-1000\/job-events is on volatile disk/));
   const k = fx('mrton.json'); k.rounds = [{ round: 1, receipt: path.join(tmp, 'nope.json'), lessons: path.join(tmp, 'nope.md') }]; k.ratchet.baseline = path.join(tmp, 'gone.json');
   const w = validate(k, { gate: 'loop', health: OK, volatile: ['/nonexistent-volatile'] });
   assert(says(w, 'I12', /round 1: no receipt/)); assert(says(w, 'I14', /round 1: no LESSONS.md/)); assert(says(w, 'I10', /baseline .* is missing/));
