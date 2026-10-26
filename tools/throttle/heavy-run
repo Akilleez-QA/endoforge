@@ -7,7 +7,9 @@
 #   max load = 0.875 x threads; reserve = 12 % of RAM (min 8 GB); slots = RAM / 48 GB (1 .. threads / 8);
 #   heavy.slice MemoryHigh = 45 % of RAM, MemoryMax = 58 %, CPUQuota = 56 % of threads. HEAVY_* variables override
 #   (HEAVY_THREADS and HEAVY_RAM_GB stand in for the hardware, for tests).
-# It waits and never refuses. Inside heavy.slice already (a nested call) it runs the command directly. The slice is
+# Agents' share follows the fleet capacity dial (fleet-disconnect ramp, see FLEET-DISCONNECT.md): at N % a new job
+# gets N % of the slots and starts only under N % of the load limit. It waits and never refuses, except at 0 % (the
+# drain before a reboot): then a new or waiting job exits 75, to be requeued after `fleet-disconnect resume`. Inside heavy.slice already (a nested call) it runs the command directly. The slice is
 # re-sized automatically when the machine's threads or RAM change.
 set -euo pipefail
 cpus=${HEAVY_THREADS:-$(nproc)} memgb=${HEAVY_RAM_GB:-$(awk '/^MemTotal/{printf "%d", $2/1048576}' /proc/meminfo)}
@@ -46,6 +48,15 @@ while [ $# -gt 0 ]; do
 done
 [ $# -gt 0 ] || { echo "usage: heavy-run [--mem GB] [--name NAME] -- command... | --limits | --write-slice" >&2; exit 2; }
 if grep -q '/heavy.slice/' /proc/self/cgroup; then exec "$@"; fi
+fleet=${FLEET_STATE_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/fleet}
+capacity() { if [ -f "$fleet/DRAIN" ]; then echo 0; elif [ -f "$fleet/CAPACITY" ]; then awk 'NR==1{print int($1)}' "$fleet/CAPACITY"; else echo 100; fi; }
+draining() { [ "$(capacity)" -gt 0 ] && return 1; echo "heavy-run[$name]: refusing: the fleet is draining for a disconnect ($(cat "$fleet/DRAIN" "$fleet/CAPACITY" 2>/dev/null | head -c 200 | tr '\n' ' ')); requeue after fleet-disconnect resume" >&2; }
+draining && exit 75
+pct=$(capacity)
+if [ "$pct" -lt 100 ]; then
+  slots=$(( slots * pct / 100 )); [ "$slots" -lt 1 ] && slots=1
+  maxload=$(awk -v m="$maxload" -v p="$pct" 'BEGIN{printf "%.1f", m * p / 100}')
+fi
 [ -f "$slice" ] && head -1 "$slice" | grep -qF "$stamp" || write_slice
 mem=$(clamp "$mem" 1 $((memgb - reserve > 1 ? memgb - reserve : 1)))   # a job bigger than the machine still runs
 state=${XDG_STATE_HOME:-$HOME/.local/state}/heavy-run; mkdir -p "$state"
@@ -57,12 +68,14 @@ while :; do                                                    # 1. a slot (fd 9
     if flock -n 9; then slot=$i; break 2; fi
     exec 9>&-
   done
+  draining && exit 75
   now=$(date +%s); [ $((now - last)) -ge 120 ] && { say "waiting for a slot ($slots busy, $(( (now-start)/60 )) min)"; last=$now; }
   sleep 15
 done
 while :; do                                                    # 2. headroom
   avail=$(awk '/^MemAvailable/{printf "%d", $2/1048576}' /proc/meminfo)
   load=$(cut -d' ' -f1 /proc/loadavg)
+  draining && exit 75
   if [ "$avail" -ge $((mem + reserve)) ] && awk -v l="$load" -v m="$maxload" 'BEGIN{exit !(l < m)}'; then break; fi
   now=$(date +%s); [ $((now - last)) -ge 120 ] && { say "slot $slot held; waiting for headroom: ${avail} GB free (need $((mem + reserve))), load $load (max $maxload)"; last=$now; }
   sleep 15

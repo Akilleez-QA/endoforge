@@ -19,6 +19,11 @@ memory available >= 12 % of RAM (min 8 GB), and the 1-minute load under 0.875 x 
 busy, monitor stale or journal slow, pressure, no headroom) means waiting, up to --max-wait; a GPU fault latch still
 stops at once (exit 78). GPU_QUEUE_VRAM_FRAC, GPU_QUEUE_BAR1_FRAC, GPU_QUEUE_RESERVE_GB, GPU_QUEUE_MAX_LOAD override.
 Tickets default to ~/.local/state/gpu-queue; GPU_QUEUE_DIR overrides that path.
+
+The fleet capacity dial (fleet-disconnect ramp, see FLEET-DISCONNECT.md) scales the start limits: at N % a job starts
+only under N % of the VRAM, BAR1 and load limits. At 0 % (the drain before a reboot) no new ticket is taken and a
+waiting ticket is released: both exit 75, so the caller requeues after `fleet-disconnect resume`. A job already running
+is left to finish.
 """
 import argparse, json, os, signal, subprocess, sys, tempfile, threading, time
 
@@ -28,6 +33,31 @@ def queue_dir():
 
 
 QDIR = queue_dir()
+
+
+def fleet_capacity():
+    """(percent, note) from the fleet capacity dial (fleet-disconnect ramp); (0, note) while draining for a disconnect."""
+    state = os.environ.get("XDG_STATE_HOME") or os.path.expanduser("~/.local/state")
+    fleet = os.environ.get("FLEET_STATE_DIR") or os.path.join(state, "fleet")
+    for name in ("DRAIN", "CAPACITY"):
+        try:
+            with open(os.path.join(fleet, name)) as fh:
+                text = fh.read(300).strip()
+        except FileNotFoundError:
+            continue
+        if name == "DRAIN":
+            return 0, text or "draining"
+        try:
+            return max(0, min(100, int(text.split()[0]))), text
+        except (IndexError, ValueError):
+            return 100, text
+    return 100, None
+
+
+def drain_reason():
+    """The drain notice while the dial is at 0 %, else None."""
+    pct, note = fleet_capacity()
+    return (note or "capacity 0 %") if pct == 0 else None
 STATUS = os.path.expanduser("~/.local/bin/system-safety-status")
 HEALTH = os.path.expanduser("~/.local/state/automation-safety/health.json")
 STATUS_PATH = "/proc/self/status"
@@ -167,6 +197,7 @@ def status():
 def headroom(health_path=None, meminfo="/proc/meminfo", load1=None):
     """None when a job may start; otherwise why it should wait."""
     env = os.environ
+    scale = fleet_capacity()[0] / 100
     try:
         with open(health_path or HEALTH) as fh:
             gpus = json.load(fh).get("gpus") or []
@@ -175,8 +206,8 @@ def headroom(health_path=None, meminfo="/proc/meminfo", load1=None):
     if not gpus:
         return "no GPU pressure metrics"
     for gpu in gpus:
-        for key, frac in (("framebuffer_mib", float(env.get("GPU_QUEUE_VRAM_FRAC", 0.60))),
-                          ("bar1_mib", float(env.get("GPU_QUEUE_BAR1_FRAC", 0.50)))):
+        for key, frac in (("framebuffer_mib", scale * float(env.get("GPU_QUEUE_VRAM_FRAC", 0.60))),
+                          ("bar1_mib", scale * float(env.get("GPU_QUEUE_BAR1_FRAC", 0.50)))):
             m = gpu.get(key) or {}
             if not m.get("total") or m.get("used") is None:
                 return f"no {key} metric"
@@ -192,7 +223,7 @@ def headroom(health_path=None, meminfo="/proc/meminfo", load1=None):
     if avail < reserve:
         return f"system memory {avail:.0f} GB free (start over {reserve:.0f} GB)"
     load1 = os.getloadavg()[0] if load1 is None else load1
-    max_load = float(env.get("GPU_QUEUE_MAX_LOAD", round((os.cpu_count() or 1) * 0.875, 1)))
+    max_load = scale * float(env.get("GPU_QUEUE_MAX_LOAD", round((os.cpu_count() or 1) * 0.875, 1)))
     if load1 >= max_load:
         return f"load {load1:.1f} (start under {max_load:.1f})"
     return None
@@ -209,6 +240,11 @@ def main():
     cmd = a.cmd[1:] if a.cmd and a.cmd[0] == "--" else a.cmd
     if not cmd:
         ap.error("no command given after --")
+    drain = drain_reason()
+    if drain:
+        print(f"gpu-queue: {a.name} not queued, the fleet is draining for a disconnect ({drain}); "
+              "requeue after fleet-disconnect resume", file=sys.stderr)
+        return 75
     me = f"{a.priority}-{time.time_ns()}-{os.getpid()}.ticket"
     path = os.path.join(QDIR, me)
     poll = max(a.poll, 5)
@@ -232,6 +268,11 @@ def main():
     started, last_why = time.time(), None
     try:
         while True:
+            drain = drain_reason()
+            if drain:
+                print(f"gpu-queue: {a.name} ticket released, the fleet is draining for a disconnect ({drain}); "
+                      "requeue after fleet-disconnect resume", file=sys.stderr)
+                return 75
             heartbeat(path, data)
             q = tickets(poll)
             if q and q[0][3] == me:

@@ -1,0 +1,297 @@
+#!/usr/bin/env python3
+"""fleet-disconnect: bring every fleet member on this machine to a clean stop before a reboot or shutdown, and back.
+
+    fleet-disconnect status [--json]          who is running: heavy jobs, GPU tickets, Blender, agents, fleet hooks
+    fleet-disconnect ramp PERCENT --reason T  turn the agents' CPU and GPU share down (or back up) to PERCENT
+    fleet-disconnect drain --reason TEXT      ramp 0: no new heavy or GPU work, each hook drains, a receipt starts
+    fleet-disconnect wait [--timeout S]       wait until no heavy job, GPU ticket, Blender or busy hook is left
+    fleet-disconnect resume                   ramp 100: clear the drain, run auto-resume hooks, list what is left
+
+Written 2026-10-26 when Craig rebooted mid-fleet (Craig: "tell all these sessions to wrap up were rebooting", then
+"add a fleet memeber disconnect protocol to akileez repo for this"). The protocol is FLEET-DISCONNECT.md beside this
+file. Craig: "ramping down the availability of gpu and cpu to the agents might be the easiest way to ratchet down for
+a reboot". So the drain is the bottom of a capacity dial. At N %, heavy-run gives new jobs N % of its slots and load
+limit, gpu-queue.py starts jobs only under N % of its VRAM, BAR1 and load limits, heavy.slice's CPU quota drops to N %
+for the running jobs, and each hook's `ramp` runs with FLEET_PERCENT=N. At 0 % both refuse new work (exit 75) and
+release waiting GPU tickets. The dial is a file, so it survives the reboot: after boot the fleet stays where it was
+until someone runs resume. This tool never kills anything; it reports what is left so the owner can stop it.
+
+Fleets that keep their own launch loop (a Codex lane supervisor, say) join through hooks in
+~/.config/fleet/hooks.json: [{"name", "ramp", "drain", "resume", "busy", "auto_resume"}]. Each command is a shell string;
+`busy` exits 0 while the fleet still has work in flight and prints what. Example: hooks.example.json.
+FLEET_STATE_DIR (default ~/.local/state/fleet) and FLEET_HOOKS override the paths; GPU_QUEUE_DIR as in gpu-queue.py.
+"""
+import argparse, getpass, json, os, socket, subprocess, sys, time
+
+STATE = os.environ.get("FLEET_STATE_DIR") or os.path.join(
+    os.environ.get("XDG_STATE_HOME") or os.path.expanduser("~/.local/state"), "fleet")
+DRAIN = os.path.join(STATE, "DRAIN")
+CAPACITY = os.path.join(STATE, "CAPACITY")
+CURRENT = os.path.join(STATE, "current.json")
+HOOKS = os.environ.get("FLEET_HOOKS") or os.path.join(
+    os.environ.get("XDG_CONFIG_HOME") or os.path.expanduser("~/.config"), "fleet", "hooks.json")
+QDIR = os.environ.get("GPU_QUEUE_DIR", os.path.expanduser("~/.local/state/gpu-queue"))
+CGROUP = os.environ.get("FLEET_CGROUP_ROOT", f"/sys/fs/cgroup/user.slice/user-{os.getuid()}.slice/user@{os.getuid()}.service")
+PROC = os.environ.get("FLEET_PROC", "/proc")
+AGENTS = {"claude": "Claude Code", "codex": "Codex"}            # agent CLIs: told to wrap up, never stopped here
+
+
+def now():
+    return time.strftime("%Y-%m-%dT%H:%M:%S%z")
+
+
+def hooks():
+    try:
+        with open(HOOKS) as fh:
+            return json.load(fh)
+    except FileNotFoundError:
+        return []
+
+
+def sh(cmd, timeout=60, percent=None):
+    env = dict(os.environ, **({"FLEET_PERCENT": str(percent)} if percent is not None else {}))
+    r = subprocess.run(["bash", "-c", cmd], capture_output=True, text=True, timeout=timeout, env=env)
+    return r.returncode, (r.stdout + r.stderr).strip()
+
+
+def capacity():
+    if os.path.exists(DRAIN):
+        return 0
+    try:
+        with open(CAPACITY) as fh:
+            return max(0, min(100, int(fh.read().split()[0])))
+    except (FileNotFoundError, IndexError, ValueError):
+        return 100
+
+
+def slice_quota(percent):
+    """Scale heavy.slice's CPU quota for the jobs already running (runtime only: a reboot restores the unit's value)."""
+    if os.environ.get("FLEET_NO_SYSTEMD"):
+        return "skipped"
+    quota = max(100, (os.cpu_count() or 1) * 56 * percent // 100)
+    r = subprocess.run(["systemctl", "--user", "set-property", "--runtime", "heavy.slice", f"CPUQuota={quota}%"],
+                       capture_output=True, text=True)
+    return f"heavy.slice CPUQuota={quota}%" + ("" if r.returncode == 0 else f" failed: {r.stderr.strip()[-120:]}")
+
+
+def heavy_jobs():
+    """Units inside heavy.slice that still hold processes."""
+    root, jobs = os.path.join(CGROUP, "heavy.slice"), []
+    for name in sorted(os.listdir(root)) if os.path.isdir(root) else []:
+        try:
+            with open(os.path.join(root, name, "cgroup.procs")) as fh:
+                procs = fh.read().split()
+        except OSError:
+            continue
+        if procs:
+            jobs.append({"unit": name, "pids": len(procs)})
+    return jobs
+
+
+def gpu_tickets():
+    out = []
+    for name in sorted(os.listdir(QDIR)) if os.path.isdir(QDIR) else []:
+        if name.endswith(".ticket"):
+            try:
+                with open(os.path.join(QDIR, name)) as fh:
+                    t = json.load(fh)
+            except (OSError, ValueError):
+                t = {}
+            out.append({"ticket": name, "name": t.get("name"), "pid": t.get("pid")})
+    return out
+
+
+def processes():
+    """Blender processes (work that a reboot would cut) and agent CLIs (members to tell), with their owning unit."""
+    blender, agents = [], []
+    for pid in os.listdir(PROC):
+        if not pid.isdigit():
+            continue
+        try:
+            with open(f"{PROC}/{pid}/comm") as fh:
+                comm = fh.read().strip()
+            with open(f"{PROC}/{pid}/cgroup") as fh:
+                unit = fh.read().strip().rsplit("/", 1)[-1]
+            with open(f"{PROC}/{pid}/cmdline", "rb") as fh:
+                argv = fh.read().split(b"\0")
+        except OSError:
+            continue
+        if comm == "blender":
+            blender.append({"pid": int(pid), "unit": unit})
+        elif comm in AGENTS and not (comm == "codex" and b"exec" not in argv and b"--output-format" not in argv):
+            agents.append({"pid": int(pid), "agent": AGENTS[comm], "unit": unit,
+                           "exec": b"exec" in argv[1:3]})
+    return blender, agents
+
+
+def hook_states():
+    out = []
+    for h in hooks():
+        st = {"name": h["name"], "busy": None, "detail": ""}
+        if h.get("busy"):
+            try:
+                code, text = sh(os.path.expandvars(h["busy"]), timeout=30)
+                st.update(busy=(code == 0), detail=text[-300:])
+            except subprocess.TimeoutExpired:
+                st.update(busy=True, detail="busy check timed out")
+        out.append(st)
+    return out
+
+
+def status():
+    blender, agents = processes()
+    drain = None
+    if os.path.exists(DRAIN):
+        with open(DRAIN) as fh:
+            drain = fh.read().strip()
+    return {"time": now(), "host": socket.gethostname(), "capacity": capacity(), "draining": drain,
+            "heavy_jobs": heavy_jobs(),
+            "gpu_tickets": gpu_tickets(), "blender": blender, "agents": agents, "hooks": hook_states()}
+
+
+def in_flight(st):
+    """What a reboot would cut. Agent CLIs are not counted: they stop at their turn's end, after being told."""
+    left = [f"heavy job {j['unit']}" for j in st["heavy_jobs"]]
+    left += [f"GPU ticket {t['name']}" for t in st["gpu_tickets"]]
+    left += [f"blender pid {b['pid']} ({b['unit']})" for b in st["blender"]]
+    left += [f"hook {h['name']}: {h['detail'] or 'busy'}" for h in st["hooks"] if h["busy"]]
+    return left
+
+
+def show(st):
+    print(f"fleet on {st['host']} at {st['time']}: " +
+          (f"DRAINING ({st['draining']})" if st["draining"] else f"capacity {st['capacity']} %"))
+    for line in in_flight(st) or ["nothing in flight"]:
+        print(f"  - {line}")
+    by = {}
+    for a in st["agents"]:
+        by.setdefault((a["agent"], a["exec"]), []).append(a)
+    for (agent, ex), xs in sorted(by.items()):
+        print(f"  agent: {len(xs)} {agent} {'worker' if ex else 'session'} process(es) in "
+              + ", ".join(sorted({a['unit'] for a in xs})))
+
+
+def receipt(event, st, extra=None):
+    os.makedirs(STATE, exist_ok=True)
+    rec = {"events": []}
+    if os.path.exists(CURRENT):
+        with open(CURRENT) as fh:
+            rec = json.load(fh)
+    rec["events"].append({"event": event, **(extra or {}), "status": st})
+    tmp = CURRENT + ".tmp"
+    with open(tmp, "w") as fh:
+        json.dump(rec, fh, indent=1)
+    os.replace(tmp, CURRENT)
+    return rec
+
+
+WRAP_UP = """Wrap up now: this machine is disconnecting ({reason}). Do not start new work.
+1. Stop any job you own (systemctl --user stop <unit>) and cancel queued GPU tickets; confirm nothing of yours runs.
+2. Commit what is worth keeping (specific files only) and push it, or say it is local only.
+3. Write RESUME.md in your worktree: done, half done, the exact next step, and jobs to requeue.
+4. End your turn with a one-line status."""
+
+
+def ramp(a):
+    pct = max(0, min(100, a.percent))
+    os.makedirs(STATE, exist_ok=True)
+    note = f"{a.reason} (by {a.by}, {now()})"
+    if pct < 100 and capacity() == 100 and os.path.exists(CURRENT):          # a new ramp-down starts a new receipt
+        os.replace(CURRENT, os.path.join(STATE, f"disconnect-{int(os.path.getmtime(CURRENT))}.json"))
+    for path, keep in ((CAPACITY, pct < 100), (DRAIN, pct == 0)):
+        if keep:
+            with open(path + ".tmp", "w") as fh:
+                fh.write(f"{pct} {note}\n" if path == CAPACITY else note + "\n")
+            os.replace(path + ".tmp", path)
+        elif os.path.exists(path):
+            os.remove(path)
+    ran = [{"hook": "heavy.slice", "output": slice_quota(max(pct, 1))}]
+    print(ran[0]["output"])
+    for h in hooks():
+        cmd = h.get("drain") if pct == 0 and h.get("drain") else h.get("ramp")
+        if cmd:
+            code, text = sh(os.path.expandvars(cmd), percent=pct)
+            ran.append({"hook": h["name"], "code": code, "output": text[-300:]})
+            print(f"hook {h['name']} {'drain' if pct == 0 and h.get('drain') else 'ramp'} {pct} %: "
+                  f"{'ok' if code == 0 else f'exit {code}'} {text[-120:]}")
+    st = status()
+    receipt("drain" if pct == 0 else "ramp", st, {"percent": pct, "reason": note, "hooks": ran})
+    show(st)
+    if pct == 0:
+        print("\nSend every agent session and lane this message (FLEET-DISCONNECT.md, step 2):\n")
+        print(WRAP_UP.format(reason=a.reason))
+    return 0
+
+
+def drain(a):
+    a.percent = 0
+    return ramp(a)
+
+
+def wait(a):
+    end = time.time() + a.timeout
+    while True:
+        st = status()
+        left = in_flight(st)
+        if not left:
+            receipt("clear", st)
+            show(st)
+            print("clear: safe to disconnect")
+            return 0
+        if time.time() >= end:
+            receipt("timeout", st, {"left": left})
+            show(st)
+            print(f"still in flight after {a.timeout:.0f} s; stop these through their owners, or accept the loss")
+            return 1
+        time.sleep(a.poll)
+
+
+def resume(a):
+    for path in (DRAIN, CAPACITY):
+        if os.path.exists(path):
+            os.remove(path)
+    print(slice_quota(100))
+    manual = []
+    for h in hooks():
+        if h.get("ramp"):
+            sh(os.path.expandvars(h["ramp"]), percent=100)
+        if h.get("resume") and h.get("auto_resume"):
+            code, text = sh(os.path.expandvars(h["resume"]), percent=100)
+            print(f"hook {h['name']} resume: {'ok' if code == 0 else f'exit {code}'} {text[-120:]}")
+        elif h.get("resume"):
+            manual.append(f"{h['name']}: {h['resume']}")
+    st = status()
+    receipt("resume", st, {"manual": manual})
+    show(st)
+    for m in manual:
+        print(f"  not resumed automatically (resume it when its owner says so): {m}")
+    print(f"receipt: {CURRENT}. Resume lanes one at a time from their RESUME.md.")
+    return 0
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    sub = ap.add_subparsers(dest="cmd", required=True)
+    s = sub.add_parser("status")
+    s.add_argument("--json", action="store_true")
+    r = sub.add_parser("ramp")
+    r.add_argument("percent", type=int)
+    r.add_argument("--reason", required=True)
+    r.add_argument("--by", default=getpass.getuser())
+    d = sub.add_parser("drain")
+    d.add_argument("--reason", required=True)
+    d.add_argument("--by", default=getpass.getuser())
+    w = sub.add_parser("wait")
+    w.add_argument("--timeout", type=float, default=600)
+    w.add_argument("--poll", type=float, default=10)
+    sub.add_parser("resume")
+    a = ap.parse_args(argv)
+    if a.cmd == "status":
+        st = status()
+        print(json.dumps(st, indent=1)) if a.json else show(st)
+        return 0
+    return {"ramp": ramp, "drain": drain, "wait": wait, "resume": resume}[a.cmd](a)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

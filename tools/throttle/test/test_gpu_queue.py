@@ -21,6 +21,9 @@ class QueueTests(unittest.TestCase):
         self.addCleanup(self.temp.cleanup)
         self.root = pathlib.Path(self.temp.name)
         self.directory = self.root / 'nested' / 'queue'
+        patcher = mock.patch.dict(os.environ, {'FLEET_STATE_DIR': str(self.root / 'fleet')})   # this machine's dial
+        patcher.start()
+        self.addCleanup(patcher.stop)
         patcher = mock.patch.object(queue, 'QDIR', str(self.directory))
         patcher.start()
         self.addCleanup(patcher.stop)

@@ -1,0 +1,10 @@
+[
+ {
+  "name": "codex-lane-supervisor",
+  "ramp": "systemctl --user set-property --runtime lane-supervisor.service CPUQuota=$(( 2600 * FLEET_PERCENT / 100 > 100 ? 2600 * FLEET_PERCENT / 100 : 100 ))%",
+  "drain": "touch $HOME/lane-supervisor/STOP",
+  "busy": "cd $HOME/lane-supervisor && python3 supervisor.py status | python3 -c 'import json,sys; r=json.load(sys.stdin)[\"running_lanes\"]; print(\"running lanes: \" + \" \".join(r)); sys.exit(0 if r else 1)'",
+  "resume": "rm -f $HOME/lane-supervisor/STOP",
+  "auto_resume": false
+ }
+]
