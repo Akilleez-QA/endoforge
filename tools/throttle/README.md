@@ -3,6 +3,7 @@
 Written 2026-10-26. Two concurrent campus renders (about 40 GB) plus RAM-backed `/tmp` drove kernel page-allocation failures and took ChatGPT down, and a GPU job pushed VRAM into the guard's kill limit. Craig: "add a way to throttle so we dont trip", "it should scale itself to fit the hardware", "gpu gets a queue too", and "performance isnt high performace if we lose system stability".
 
 Everything here waits rather than fails, and every limit is computed from the machine it runs on.
+`heavy-run` scopes use nice 10 or the inherited nice level, whichever is higher, so jobs already at nice 19 can start without privilege.
 
 | Piece | What it does | Scaled limits (32 threads, 124 GB rig) |
 |---|---|---|

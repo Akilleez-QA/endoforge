@@ -20,6 +20,20 @@ if systemctl --user show-environment >/dev/null 2>&1 && command -v systemd-run >
   check 'slice sized for this machine' 'head -1 "${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user/heavy.slice" | grep -q "threads=$(nproc)"'
   # jobs live and die with their owner; an orphaned launcher is refused (2026-10-26: a stopped round left a 19.8 GB render)
   E="--setenv=HEAVY_MAX_LOAD=100000 --setenv=HEAVY_RESERVE_GB=1 --setenv=HEAVY_SLOTS=50 --setenv=XDG_STATE_HOME=$XDG_STATE_HOME"
+  # A service wrapper gives each launcher a known starting nice, even if this test inherited nice 19. The job runs
+  # plain `nice` (prints its own level); no $ in the command, since systemd-run expands $ in arguments.
+  for initial in 19 0; do
+    n=hr-test-nice-$initial-$$; expected=10
+    [ "$initial" -eq 19 ] && expected=19
+    actual=$(timeout 15 systemd-run --user --quiet --wait --pipe --collect --unit="$n" -p Nice=0 -p RuntimeMaxSec=10 \
+      --setenv=PATH="$PATH" $E -- bash -c '
+        nice -n "$1" "$2" --mem 1 --name "$3" -- nice
+        rc=$?; exit "$rc"
+      ' bash "$initial" "$hr" "$n")
+    nice_rc=$?
+    check "job launched at nice $initial starts at nice $expected" '[[ $nice_rc == 0 && ${actual//[[:space:]]/} == "$expected" ]]'
+    systemctl --user stop "$n.service" "heavy-$n-*.scope" 2>/dev/null || true
+  done
   u=hr-test-owner-$$; systemd-run --user --quiet --unit=$u --setenv=PATH="$PATH" $E -- bash -c "$hr --name $u -- sleep 120; true"; sleep 3
   job=$(systemctl --user list-units --no-legend --plain "heavy-$u-*" | awk '{print $1}')
   check 'a job launched from inside a service is bound to it' '[[ -n $job && $(systemctl --user show "$job" -p BindsTo --value) == "$u.service" ]]'

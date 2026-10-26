@@ -108,5 +108,9 @@ case $owner in
 esac
 bind=()
 [ -n "$owner" ] && bind=(-p "BindsTo=$owner" -p "After=$owner")
-exec systemd-run --user --scope --quiet --slice=heavy.slice --nice=10 --unit="heavy-${name//[^A-Za-z0-9_-]/_}-$$" \
+# --scope sets an absolute nice level; never lower an inherited value (that needs privilege).
+cur=$(ps -o ni= -p $$ | tr -d ' ')
+target=10
+[ "$cur" -gt "$target" ] && target=$cur
+exec systemd-run --user --scope --quiet --slice=heavy.slice --nice="$target" --unit="heavy-${name//[^A-Za-z0-9_-]/_}-$$" \
   --description="heavy-run $name (owner ${owner:-none})" "${bind[@]}" -- "$@"
