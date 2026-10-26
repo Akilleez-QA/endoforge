@@ -15,6 +15,7 @@ import { compileAtom } from '../../job/lib/compile.mjs';
 import { retrieveLessons } from '../../job/lib/lessons.mjs';
 import { emit, canFire, firedEvent } from '../../job/lib/events.mjs';
 import crypto from 'node:crypto';
+import { runTyped, StopError, unscored } from '../../lib/errors.mjs';
 import { ownershipMap, discoverLogins, assignLanes, laneId, workerCommand, piecePrompt, pieceStills, attribute, totals, ratchet,
   reatomize, wallClock, fleetCapacity, waveSize } from './fanout.mjs';
 
@@ -27,20 +28,25 @@ const git = (cwd, ...a) => { const r = spawnSync('git', ['-C', cwd, ...a], { enc
 const sec = (t0) => Math.round((Date.now() - t0) / 100) / 10;
 const codexOnPath = () => (process.env.PATH || '').split(':').map((d) => path.join(d, 'codex')).find((p) => { try { fs.accessSync(p, fs.constants.X_OK); return true; } catch { return false; } });
 
-/** Render the campaign's jobs and run its evals into <phase>/; returns the evals and the seconds each took. */
+/** Render the campaign's jobs and run its evals into <phase>/; returns the evals and the seconds each took.
+ *  Errors are typed (tools/lib/errors.mjs): a busy guard or queue (75) waits and retries with backoff; 78 stops the
+ *  job loudly; evals that could not run return { unscored } instead of a number. */
 export function renderAndEval(c, n, phase, repo = c.repo) {
+  const wait = { maxWaitMs: (c.fanout?.busyWaitSec ?? 900) * 1000, baseMs: (c.fanout?.busyBaseSec ?? 2) * 1000, log };
   const t0 = Date.now(), stills = path.join(phase, 'stills');
   for (const job of c.render.filter((j) => (j.profile ?? 'fast') === 'fast')) {
     const o = path.join(stills, job.id); fs.mkdirSync(o, { recursive: true });
     const argv = expand(job.command, { ...vars(c, n, { out: o }), repo, stills });
-    const r = spawnSync(argv[0], argv.slice(1), { cwd: repo, stdio: ['ignore', 'inherit', 'inherit'] });
-    if (r.status !== 0) throw new Error(`render ${job.id} exited ${r.status}`);
+    const r = runTyped(argv, { cwd: repo, stdio: ['ignore', 'inherit', 'inherit'], ...wait });
+    if (r.kind === 'stop') throw new StopError(`render ${job.id} exited 78 (stop)`);
+    if (r.kind !== 'ok') return { ...unscored(`render ${job.id} ${r.kind === 'transient' ? `still busy after ${Math.round(r.waitedMs / 1000)} s` : `exited ${r.status}`}`), renderSec: sec(t0), evalsSec: 0 };
   }
   const t1 = Date.now(), file = path.join(phase, c.evals.file ?? 'evals.json');
   fs.rmSync(file, { force: true });
   const argv = expand(c.evals.command, { ...vars(c, n, { out: phase }), stills, repo });
-  const r = spawnSync(argv[0], argv.slice(1), { cwd: repo, stdio: ['ignore', 'inherit', 'inherit'] });
-  if (!fs.existsSync(file)) throw new Error(`evals exited ${r.status} without writing ${file}`);   // a HARD-fail exit is fine
+  const r = runTyped(argv, { cwd: repo, stdio: ['ignore', 'inherit', 'inherit'], ...wait });
+  if (r.kind === 'stop') throw new StopError('evals exited 78 (stop)');
+  if (!fs.existsSync(file)) return { ...unscored(`evals ${r.kind === 'transient' ? 'still busy' : `exited ${r.status}`} without writing ${file}`), renderSec: Math.round((t1 - t0) / 100) / 10, evalsSec: sec(t1) };   // a HARD-fail exit with a file is fine
   const evals = readJSON(file), renderSec = Math.round((t1 - t0) / 100) / 10, evalsSec = sec(t1);
   writeJSON(path.join(phase, 'meta.json'), { commit: git(repo, 'rev-parse', 'HEAD'), renderSec, evalsSec, ...totals(evals, c.evals.key) });
   return { evals, renderSec, evalsSec };
@@ -83,7 +89,8 @@ export function smoke(c, lanes, dir) {
     const lane = lanes.find((l) => l.engine === engine), cwd = path.join(dir, 'smoke', engine); fs.mkdirSync(cwd, { recursive: true });
     const { argv, env } = workerCommand(c, lane, { worktree: cwd, prompt: 'Reply with the single word READY and nothing else. Do not edit any file.' });
     const t0 = Date.now();
-    const r = spawnSync(argv[0], argv.slice(1), { cwd, env: { ...process.env, ...laneEnv(c, lane, env) }, encoding: 'utf8', input: '', timeout: (c.fanout?.smokeTimeoutSec ?? 180) * 1000 });
+    const r = runTyped(argv, { cwd, env: { ...process.env, ...laneEnv(c, lane, env) }, input: '', timeout: (c.fanout?.smokeTimeoutSec ?? 180) * 1000, maxWaitMs: (c.fanout?.busyWaitSec ?? 900) * 1000, baseMs: (c.fanout?.busyBaseSec ?? 2) * 1000, log });
+    if (r.kind === 'stop') throw new StopError(`smoke ${engine} exited 78 (stop)`);
     results[engine] = { ok: r.status === 0 && /READY/i.test(r.stdout), exit: r.status, account: lane.account, sec: sec(t0), tail: (r.stderr || r.error?.message || '').slice(-400) };
     log(`smoke ${engine} (${lane.account}): ${results[engine].ok ? 'ok' : `FAILED exit ${r.status}`} in ${results[engine].sec} s`);
   }
@@ -194,6 +201,7 @@ export async function round(c, n, { notes = {}, smokeOnly = false, noSmoke = fal
   const { frozen, split } = reatomize(c, history);
   T.atomize = sec(t); t = Date.now();
   const pre = preEvals(c, n, dir); T.preRender = pre.renderSec; T.preEvals = pre.evalsSec;
+  if (pre.scored === false) throw new Error(`evals come first, and they did not score: ${pre.why}`);
   const baseFile = path.join(c.workdir, 'baseline.json');
   if (!fs.existsSync(baseFile)) writeJSON(baseFile, { score: totals(pre.evals, c.evals.key).score, hard: totals(pre.evals, c.evals.key).hard });
   const logins = discoverLogins(), lanes = assignLanes(c, logins, { skip: frozen });
@@ -212,10 +220,12 @@ export async function round(c, n, { notes = {}, smokeOnly = false, noSmoke = fal
   const meta = await launchAll(c, n, dir, lanes, { notes, pre, beforeStart }); T.parallel = sec(t); t = Date.now();
   const { done, report } = collect(c, n, dir, meta); T.collect = sec(t); t = Date.now();
   let post = renderAndEval(c, n, path.join(dir, 'post'));
-  let r = ratchet(c, readJSON(baseFile), pre.evals, post.evals);
+  // Unscored post-evals are reported as "not scored": no pass, no number, no revert and no baseline change.
+  let r = post.scored === false ? { pass: false, scored: false, why: post.why, score: null, hard: null, scoreDelta: null, hardDelta: null, perPiece: {}, regressed: [], baseline: readJSON(baseFile) }
+    : ratchet(c, readJSON(baseFile), pre.evals, post.evals);
   const reverted = [];
   for (const piece of r.regressed) { const d = done.find((x) => x.piece === piece); if (d) { git(c.repo, 'revert', '--no-edit', d.sha); reverted.push(piece); } }
-  if (reverted.length) { log(`reverted ${reverted.join(', ')}: their own HARD count rose`); post = renderAndEval(c, n, path.join(dir, 'post')); r = ratchet(c, readJSON(baseFile), pre.evals, post.evals); }
+  if (reverted.length) { log(`reverted ${reverted.join(', ')}: their own HARD count rose`); post = renderAndEval(c, n, path.join(dir, 'post')); r = post.scored === false ? { ...r, pass: false, scored: false, why: post.why, baseline: readJSON(baseFile) } : ratchet(c, readJSON(baseFile), pre.evals, post.evals); }
   T.postRender = post.renderSec; T.postEvals = post.evalsSec; T.ratchet = sec(t);
   writeJSON(baseFile, r.baseline);
   const atoms = Object.fromEntries(meta.lanes.filter((l) => l.sec != null).map((l) => [laneId(l), l.sec]));
@@ -225,8 +235,9 @@ export async function round(c, n, { notes = {}, smokeOnly = false, noSmoke = fal
     lanes: meta.lanes.map((l) => ({ lane: laneId(l), piece: l.piece, engine: l.engine, account: l.account, exit: l.exit ?? null, sec: l.sec ?? null })), collect: report,
     load: { maxLoad1: Math.max(...meta.load.map((x) => x.load1)), minMemAvailGB: Math.min(...meta.load.map((x) => x.memAvailGB ?? Infinity)), capacity: [...new Set(meta.capacity)] } };
   summary.openLessons = fanoutLessons(c, dir, summary).map((l) => l.key);
-  tell({ kind: 'SCORED', summary: `round ${n}: score ${r.score} (${r.scoreDelta >= 0 ? '+' : ''}${r.scoreDelta}), HARD ${r.hard} (${r.hardDelta >= 0 ? '+' : ''}${r.hardDelta})`, data: { round: n, score: r.score, scoreDelta: r.scoreDelta, hard: r.hard, hardDelta: r.hardDelta, perPiece: r.perPiece } });
-  tell({ kind: 'GATE', summary: `round ${n} ratchet ${r.pass ? 'passed' : 'FAILED'}${reverted.length ? `; reverted ${reverted.join(', ')}` : ''}`, data: { gate: 'ratchet', pass: r.pass, reverted } });
+  if (r.scored === false) tell({ kind: 'GATE', summary: `round ${n} NOT SCORED: ${r.why}`, data: { gate: 'ratchet', scored: false, why: r.why } });
+  else tell({ kind: 'SCORED', summary: `round ${n}: score ${r.score} (${r.scoreDelta >= 0 ? '+' : ''}${r.scoreDelta}), HARD ${r.hard} (${r.hardDelta >= 0 ? '+' : ''}${r.hardDelta})`, data: { round: n, score: r.score, scoreDelta: r.scoreDelta, hard: r.hard, hardDelta: r.hardDelta, perPiece: r.perPiece } });
+  if (r.scored !== false) tell({ kind: 'GATE', summary: `round ${n} ratchet ${r.pass ? 'passed' : 'FAILED'}${reverted.length ? `; reverted ${reverted.join(', ')}` : ''}`, data: { gate: 'ratchet', pass: r.pass, reverted } });
   const cp = c.jobDoc?.criticalPath, cpLane = meta.lanes.find((l) => l.piece === cp);
   if (cp && (reverted.includes(cp) || (cpLane && cpLane.exit !== 0))) tell({ kind: 'NEEDS-YOU', summary: `the critical-path atom ${cp} ${reverted.includes(cp) ? 'regressed and was reverted' : 'did not land'}; decide how to proceed`, data: { atom: cp } });   // rNN/LESSONS.md + <workdir>/lessons.json
   writeJSON(path.join(dir, 'round.json'), summary);
@@ -252,6 +263,6 @@ export async function main(cmd, rest) {
   if (cmd === 'evals') { const p = path.join(roundDir(c, n || 1), flag('--phase') ?? 'pre'); const r = renderAndEval(c, n || 1, p); out({ ...totals(r.evals, c.evals.key), renderSec: r.renderSec, evalsSec: r.evalsSec }); return 0; }
   if (cmd === 'status') { const m = readJSON(path.join(roundDir(c, n), 'lanes.json')); for (const l of m.lanes) out(`${laneId(l)}\t${l.engine}:${l.account}\t${l.exit ?? (l.started ? 'running' : 'waiting')}`); return 0; }
   if (cmd === 'collect') { const dir = roundDir(c, n), m = readJSON(path.join(dir, 'lanes.json')); collect(c, n, dir, m); return 0; }
-  if (cmd === 'round') { const s = await round(c, n, { notes, noSmoke: rest.includes('--no-smoke') }); out(s); return s.ratchet.pass ? 0 : 1; }
+  if (cmd === 'round') { const s = await round(c, n, { notes, noSmoke: rest.includes('--no-smoke') }); out(s); return s.ratchet.pass ? 0 : 1; }   // StopError → 78 in bin/hillclimb.mjs
   throw new Error(`unknown fan-out command ${cmd}`);
 }

@@ -304,7 +304,7 @@ const table = { render: cmdRender, 'plan-review': () => cmdPlanReview(false), re
 const FANOUT = ['round', 'atomize', 'prove-split', 'logins', 'smoke', 'evals', 'status', 'collect'];
 if (FANOUT.includes(cmd) && rest[0] && fs.existsSync(rest[0]) && readJSON(rest[0]).mode === 'fanout') {
   const { main } = await import('../lib/fanout-run.mjs');
-  try { process.exit(await main(cmd, rest)); } catch (e) { log(e.message); process.exit(1); }
+  try { process.exit(await main(cmd, rest)); } catch (e) { log(e.name === 'StopError' ? `STOP: ${e.message}` : e.message); process.exit(e.exitCode ?? 1); }
 }
 if (!table[cmd]) { console.error(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 15).join('\n')); process.exit(2); }
 try { table[cmd](); } catch (e) { log(e.message); process.exit(1); }

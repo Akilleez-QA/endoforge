@@ -21,7 +21,8 @@ export function autoLessons(s) {
     if (c.stray?.length) L(`stray-${c.lane}`, 'atomize', `lane ${c.lane} edited outside its files (${c.stray.join(', ')}); the piece needs a file it does not own, or a contract`);
   }
   for (const p of s.ratchet?.reverted ?? []) L(`regressed-${p.toLowerCase()}`, 'recombine', `piece ${p} raised its own HARD count and was reverted; tighten its brief or its evals`);
-  if (s.ratchet && !s.ratchet.pass) L('ratchet-fail', 'recombine', `the round did not beat the baseline (score ${s.ratchet.scoreDelta >= 0 ? '+' : ''}${s.ratchet.scoreDelta}, HARD ${s.ratchet.hardDelta >= 0 ? '+' : ''}${s.ratchet.hardDelta})`);
+  if (s.ratchet?.scored === false) L('unscored', 'recombine', `the round could not be scored (${s.ratchet.why}); a gate that cannot run reports "not scored", never a number`);
+  else if (s.ratchet && !s.ratchet.pass) L('ratchet-fail', 'recombine', `the round did not beat the baseline (score ${s.ratchet.scoreDelta >= 0 ? '+' : ''}${s.ratchet.scoreDelta}, HARD ${s.ratchet.hardDelta >= 0 ? '+' : ''}${s.ratchet.hardDelta})`);
   if (s.unattributed) L('unattributed', 'attribution', `${s.unattributed} findings belong to no piece; give the seam an owner (a piece with those keys or rules) or a contract`);
   for (const p of s.split ?? []) L(`split-${p.toLowerCase()}`, 'atomize', `piece ${p}'s findings cluster; split it finer next pass`);
   const w = s.wallClock;
@@ -74,7 +75,7 @@ export function recordLessons(c, dir, page, lessons) {
 /** Fan-out: LESSONS.md from the round summary. */
 export function fanoutLessons(c, dir, s) {
   const r = s.ratchet;
-  const rows = [['score (delta vs baseline)', `${r.score} (${fmt(r.scoreDelta)})`], ['HARD (delta)', `${r.hard} (${fmt(r.hardDelta)})`], ['ratchet', r.pass ? 'pass' : 'FAIL'],
+  const rows = [['score (delta vs baseline)', r.scored === false ? 'not scored' : `${r.score} (${fmt(r.scoreDelta)})`], ['HARD (delta)', r.scored === false ? 'not scored' : `${r.hard} (${fmt(r.hardDelta)})`], ['ratchet', r.scored === false ? `not scored: ${r.why}` : r.pass ? 'pass' : 'FAIL'],
     ['wall clock T = serial + long pole', `${s.wallClock.T} s = ${s.wallClock.serial} + ${s.wallClock.longPoleSec} (${s.wallClock.longPole ?? '-'})`], ['serial share', `${Math.round(s.wallClock.serialShare * 100)} %`],
     ['lanes / logins', `${s.lanes.length} / ${(s.logins ?? []).length}`], ['frozen', s.frozen.join(', ') || '-'], ['unattributed findings', s.unattributed],
     ['max load1 / min MemAvailable', `${s.load?.maxLoad1 ?? '-'} / ${s.load?.minMemAvailGB ?? '-'} GB`], ['capacity dial', (s.load?.capacity ?? []).join(', ') || '-']];

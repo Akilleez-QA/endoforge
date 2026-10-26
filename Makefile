@@ -44,6 +44,9 @@ factory-check: ## deterministic quality and real state-crash checks; no models
 factory-integration: ## offline Docker/WASmtime controls; test writer fixtures, not live qualification
 	$(PYTHON) -m tools.factory_campaign.test
 
+lib-test: ## shared tool libraries: the error taxonomy (75 transient, 78 stop, unscored)
+	node tools/lib/test/errors.test.mjs
+
 job-test: ## job intake: POODO gates, invariant rules, kind plugins, FMEA controls (no model)
 	node tools/job/test/run.mjs
 
