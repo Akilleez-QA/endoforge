@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { validateCampaign, expand } from '../lib/campaign.mjs';
 import { validateFixlist, toMarkdown, SCHEMA } from '../lib/fixlist.mjs';
 import { scoreRound, decide } from '../lib/scoreboard.mjs';
-import { reviewAtoms, fixAtoms, patchPaths, inScope } from '../lib/plan.mjs';
+import { reviewAtoms, fixAtoms, judgeAtoms, laneOf, pick, patchPaths, inScope } from '../lib/plan.mjs';
 import { validate } from '../../atomizer/lib/validate.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -55,8 +55,18 @@ const vr = validate(rv, tpolicy), vf = validate(fx, tpolicy);
 check('review atoms pass the atomizer validator', vr.ok, vr.errors.join('; '));
 check('fix atoms pass the atomizer validator', vf.ok, vf.errors.join('; '));
 check('one fix atom per owner with items, plus compose', fx.atoms.map((a) => a.id).sort().join(',') === 'compose,fix-a,fix-y');
+check('review has one critic per model plus a merge', rv.atoms.map((a) => a.id).join(',') === 'consult,critic-opus,critic-codex,critique,compose');
+check('fix lanes use different models in the same round', new Set(fx.atoms.filter((a) => a.id.startsWith('fix-')).map((a) => a.worker.model)).size === 2);
+check('models rotate between rounds (no fixed roles)', pick(tc, 1, 0) !== pick(tc, 2, 0) && fixAtoms(tc, 3, r2).atoms[0].worker.model !== fx.atoms[0].worker.model);
+check('mix off keeps one critic and the owner model', reviewAtoms({ ...tc, mix: false }, 1).atoms.map((a) => a.id).join(',') === 'consult,critique,compose');
+const cx2 = fixAtoms({ ...tc, fix: { compete: true } }, 2, r2);
+check('compete runs every model on every lane', cx2.atoms.map((a) => a.id).sort().join(',') === 'compose,fix-a--codex,fix-a--opus,fix-y--codex,fix-y--opus');
+check('compete fix atoms pass the atomizer validator', validate(cx2, tpolicy).ok, validate(cx2, tpolicy).errors.join('; '));
+check('lane ids parse back to owner and variant', laneOf('fix-bc--codex').owner === 'BC' && laneOf('fix-bc--codex').variant === 'codex' && laneOf('fix-y').variant === null);
+const jd = judgeAtoms(tc, 2, { A: ['opus', 'codex'] });
+check('judge atoms pass the atomizer validator', validate(jd, tpolicy).ok, validate(jd, tpolicy).errors.join('; '));
 check('fix atoms carry only their own items', JSON.parse(fx.atoms.find((a) => a.id === 'fix-y').contract.split('\n').find((l) => l.startsWith('['))).map((i) => i.id).join() === '2');
-check('research tools only when research is allowed', rv.atoms[0].worker.tools.includes('WebSearch') && !reviewAtoms({ ...tc, references: {} }, 1).atoms[0].worker.tools.includes('WebSearch'));
+check('research tools only when research is allowed (Claude consult rounds)', reviewAtoms(tc, 2).atoms[0].worker.model === 'opus' && reviewAtoms(tc, 2).atoms[0].worker.tools.includes('WebSearch') && !reviewAtoms({ ...tc, references: {} }, 2).atoms[0].worker.tools.includes('WebSearch'));
 
 check('patch paths are read from diff headers', patchPaths('diff --git a/x/y.py b/x/y.py\n--- a/x/y.py\n').join() === 'x/y.py');
 check('scope check is per path segment', inScope('a/b/c.py', ['a/b']) && !inScope('a/bc/c.py', ['a/b']) && inScope('a/b', ['a/b/**']));
@@ -92,6 +102,13 @@ const cx = spawnSync(process.execPath, [BIN, 'compose-fix', cf, fin, path.join(t
 const sum = JSON.parse(fs.readFileSync(path.join(tmp, 'fo/fix-summary.json'), 'utf8'));
 check('compose-fix flags a patch outside its owner scope', cx.status === 1 && sum.violations.length === 1 && sum.violations[0].owner === 'Y');
 check('compose-fix counts fixed items per lane', sum.lanes.find((l) => l.owner === 'A').fixed === 1);
+
+// compose-judge: a winner must be one of the lane's variants
+fs.writeFileSync(path.join(tmp, 'lanes.json'), JSON.stringify({ A: ['opus', 'codex'] }));
+fs.writeFileSync(path.join(tmp, 'w-ok.json'), JSON.stringify({ A: { winner: 'codex', why: 'cleaner' } }));
+fs.writeFileSync(path.join(tmp, 'w-bad.json'), JSON.stringify({ A: { winner: 'sonnet', why: '?' } }));
+check('compose-judge accepts a listed winner', spawnSync(process.execPath, [BIN, 'compose-judge', path.join(tmp, 'lanes.json'), path.join(tmp, 'w-ok.json'), tmp]).status === 0);
+check('compose-judge rejects an unlisted winner', spawnSync(process.execPath, [BIN, 'compose-judge', path.join(tmp, 'lanes.json'), path.join(tmp, 'w-bad.json'), tmp]).status === 1);
 
 fs.rmSync(tmp, { recursive: true, force: true });
 console.log(fails ? `${fails} failure(s)` : 'all hillclimb tests passed');

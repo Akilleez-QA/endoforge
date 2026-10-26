@@ -12,8 +12,10 @@ Written 2026-10-25 after Craig ran the St. Louis campus this way by hand. He ask
 | critique | atom | up to `critique.count` concrete problems against the references and rubric, each with one owner, a severity, and `carried_from` / `resolved_from_previous` against the last round → `fixlist.json` |
 | compose | atom (script) | validates the fix list and writes `FIXLIST.md` and `score.json` |
 | refs | host | `refs --fetch` downloads approved candidates from allowed sources and licences into the reference store, with an inventory row (url, licence, sha256) |
-| fix | atoms | one per owner with open items. Each copies its scope out of the read-only repo (`scripts/hc-patch.sh init`), edits, and returns a repo-relative `patch.diff` plus a per-item `report.json`. The compose step rejects any patch outside the owner's scope |
-| apply | host | one worktree branch per owner from `apply.base`, then `git apply`, the owner's `postApply` builds (binaries are rebuilt here, never patched), `apply.gates`, a commit and, with `--pr`, a PR. It never merges |
+| fix | atoms | one per owner with open items (models rotate; in compete mode, one per owner per model). Each copies its scope out of the read-only repo (`scripts/hc-patch.sh init`), edits, and returns a repo-relative `patch.diff` plus a per-item `report.json`. The compose step rejects any patch outside the owner's scope |
+| apply | host | one worktree branch per lane (per variant when competing) from `apply.base`, then `git apply`, the owner's `postApply` builds (binaries are rebuilt here, never patched), `apply.gates` and a commit |
+| judge | host + atom | compete rounds only: fast renders of every variant, then a judge picks one per lane |
+| pr | host | pushes and opens PRs (competing lanes ship only their winner). It never merges |
 
 **The scoreboard** (`<workdir>/scoreboard.json`) records, per round: open problems, blockers, a weighted score (blocker 5, major 2, minor 1), new, carried and resolved. **The stop rule** (`stop`) ends the loop when:
 - the target is met (`targetOpen` reached with no blockers);
@@ -34,7 +36,16 @@ node $B apply  campaigns/stl-campus.json --pr
 node $B score  campaigns/stl-campus.json          # history and the stop decision
 ```
 
-**Runner:** stages that run atoms go through `~/.local/bin/endoforge run` (`campaign.runner` overrides it) with `ENDOFORGE_WORKER` from `campaign.workers.<stage>` or `campaign.worker` (`native` uses the Claude pool logins, `codex` uses codex-pool). Setting, for example, `"workers": {"review": "native", "fix": "codex"}` keeps the visual critique on Claude and moves fixes to Codex.
+**Runner:** stages that run atoms go through `~/.local/bin/endoforge run` (`campaign.runner` overrides it).
+
+**Models are mixed, not role-locked.** Craig: "mix it up … more likely to have standout improvements that way". With `models` (default `["opus", "codex"]`) and mixing on:
+- every round has one critic per model looking independently, plus a merge step on the round's rotating model that de-duplicates and records which critics found each item;
+- consult alternates between the models;
+- fix lanes rotate by owner and round, so what one model fixes, the other critiques and refixes next round.
+
+**Compete mode** (`fix.compete: true`): every model fixes every lane, `apply` commits each variant on its own branch, and `judge` fast-renders each variant from its worktree. A judge atom on the rotating model then picks the stronger variant per lane and notes ideas worth porting from the loser. `pr` ships only the winners. Set `mix: false` to go back to fixed roles (`workers.review` / `workers.fix` / `worker`).
+
+**Render profiles:** jobs carry `profile: "fast"` (real-time, the default) or `"final"` (high-end). Every round renders `fast`, and every `finalEvery` rounds renders `final` to check the look; `render --profile` overrides.
 
 **Background running:** run `round` detached (`systemd-run --user …`), so renders and agents stay out of an interactive app's process tree.
 

@@ -2,11 +2,13 @@
 // Endoforge hill-climb: render → review (consult references → critique) → fix → apply, round after round, with a scoreboard.
 //
 //   hillclimb.mjs round <campaign.json> [--pr]              one full round (stops early when the stop rule says so)
-//   hillclimb.mjs render <campaign.json> [--round N]         host: start round N (default next), run render jobs, make sheets
+//   hillclimb.mjs render <campaign.json> [--round N] [--profile fast|final]   host: start round N, run that profile's render jobs, make sheets
 //   hillclimb.mjs plan-review | review <campaign.json> [--round N]
 //   hillclimb.mjs refs <campaign.json> [--round N] [--fetch id,id|all]   list the consult's new reference candidates; fetch approved ones
 //   hillclimb.mjs plan-fix | fix <campaign.json> [--round N]
-//   hillclimb.mjs apply <campaign.json> [--round N] [--pr]   host: one branch per owner, git apply, postApply, gates, commit
+//   hillclimb.mjs apply <campaign.json> [--round N]          host: one branch per lane (per variant when competing), git apply, postApply, gates, commit
+//   hillclimb.mjs judge <campaign.json> [--round N]          compete rounds: fast-render each variant, a judge atom picks one per owner
+//   hillclimb.mjs pr <campaign.json> [--round N]             push and open PRs (competing lanes ship only their winner)
 //   hillclimb.mjs score <campaign.json>                      history and the stop decision
 //   (inside atoms) compose-review <campaign.json> <fixlist.json> <out> [--previous f] | compose-fix <campaign.json> <in> <out>
 import fs from 'node:fs';
@@ -17,7 +19,7 @@ import { fileURLToPath } from 'node:url';
 import { loadCampaign, validateCampaign, roundDir, lastRound, vars, expand } from '../lib/campaign.mjs';
 import { validateFixlist, toMarkdown } from '../lib/fixlist.mjs';
 import { scoreRound, decide } from '../lib/scoreboard.mjs';
-import { reviewAtoms, fixAtoms, patchPaths, inScope } from '../lib/plan.mjs';
+import { reviewAtoms, fixAtoms, judgeAtoms, laneOf, patchPaths, inScope } from '../lib/plan.mjs';
 import { validate } from '../../atomizer/lib/validate.mjs';
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -48,19 +50,32 @@ function previousFixlist(c, n) {
   return null;
 }
 
+/** Render jobs for a profile ('fast' real-time by default, 'final' for the high-end check) into <outRoot>/<job>/. */
+function renderJobs(c, n, outRoot, profile, repo = c.repo) {
+  let jobs = c.render.filter((j) => (j.profile ?? 'fast') === profile);
+  if (!jobs.length) jobs = c.render;
+  for (const job of jobs) {
+    const o = path.join(outRoot, job.id); fs.mkdirSync(o, { recursive: true });
+    run(expand(job.command, { ...vars(c, n, { out: o }), repo }), { cwd: repo || undefined });
+  }
+}
+const profileFor = (c, n) => flag('--profile') || (c.finalEvery && n % c.finalEvery === 0 ? 'final' : 'fast');
+
 function cmdRender() {
   const { c, file, n, dir } = campaignAndRound(true);
   fs.mkdirSync(path.join(dir, 'stills'), { recursive: true });
   fs.copyFileSync(file, path.join(dir, 'campaign.json'));
   const prev = previousFixlist(c, n);
   if (prev) fs.copyFileSync(prev, path.join(dir, 'previous.fixlist.json'));
-  for (const job of c.render) {
-    const o = path.join(dir, 'stills', job.id); fs.mkdirSync(o, { recursive: true });
-    run(expand(job.command, vars(c, n, { out: o })), { cwd: c.repo || undefined });
-  }
-  run(['python3', '-I', path.join(HERE, '../scripts/sheets.py'), path.join(dir, 'stills'), path.join(dir, 'sheets'), ...(c.sheets?.brighten ? ['--brighten', c.sheets.brighten.join(',')] : [])]);
+  const profile = profileFor(c, n);
+  log(`round ${n}: ${profile} renders`);
+  const t0 = Date.now();
+  renderJobs(c, n, path.join(dir, 'stills'), profile);
+  sheets(c, path.join(dir, 'stills'), path.join(dir, 'sheets'));
+  writeJSON(path.join(dir, 'render.json'), { profile, seconds: Math.round((Date.now() - t0) / 1000) });
   out(dir);
 }
+const sheets = (c, stills, outDir) => run(['python3', '-I', path.join(HERE, '../scripts/sheets.py'), stills, outDir, ...(c.sheets?.brighten ? ['--brighten', c.sheets.brighten.join(',')] : [])]);
 
 function writeAtoms(kind, docv, dir) {
   const v = validate(docv, POLICY);
@@ -71,7 +86,9 @@ function writeAtoms(kind, docv, dir) {
 function runAtoms(c, f, outDir, stage) {
   const runner = c.runner ?? [path.join(process.env.HOME, '.local/bin/endoforge'), 'run'];
   run([...runner, f, '--out', outDir, '--concurrency', String(c.concurrency ?? 3), '--timeout', String(c.runTimeoutSec ?? 14400)],
-    { env: { ...process.env, ENDOFORGE_WORKER: c.workers?.[stage] ?? c.worker ?? 'native' } });  // e.g. review on Claude (vision), fix on Codex
+    // mixing (default): the run stays native and each atom's own model decides (codex atoms go through codex-pool);
+    // with mix off, one backend per stage from campaign.workers / campaign.worker
+    { env: { ...process.env, ENDOFORGE_WORKER: c.mix === false ? (c.workers?.[stage] ?? c.worker ?? 'native') : 'native' } });
   return path.join(outDir, 'run', 'atoms');
 }
 
@@ -136,7 +153,8 @@ function cmdPlanFix(go) {
   if (!go) return out(f);
   const atoms = runAtoms(c, f, path.join(dir, 'fix-run'), 'fix');
   for (const a of fs.readdirSync(atoms).filter((x) => x.startsWith('fix-'))) {
-    const d = path.join(dir, 'fix', a.slice(4).toUpperCase()); fs.mkdirSync(d, { recursive: true });
+    const { owner, variant } = laneOf(a);
+    const d = path.join(dir, 'fix', variant ? `${owner}--${variant}` : owner); fs.mkdirSync(d, { recursive: true });
     for (const x of ['patch.diff', 'report.json']) if (fs.existsSync(path.join(atoms, a, 'out', x))) fs.copyFileSync(path.join(atoms, a, 'out', x), path.join(d, x));
   }
   fs.copyFileSync(path.join(atoms, 'compose', 'out', 'fix-summary.json'), path.join(dir, 'fix-summary.json'));
@@ -148,7 +166,7 @@ function cmdComposeFix() {
   const c = readJSON(campaignFile);
   const summary = { lanes: [], violations: [] };
   for (const a of fs.readdirSync(inDir).filter((x) => x.startsWith('fix-'))) {
-    const owner = a.slice(4).toUpperCase(), o = c.owners[owner];
+    const { owner, variant } = laneOf(a), o = c.owners[owner];
     const diffF = path.join(inDir, a, 'patch.diff'), repF = path.join(inDir, a, 'report.json');
     const diff = fs.existsSync(diffF) ? fs.readFileSync(diffF, 'utf8') : '';
     const files = patchPaths(diff);
@@ -156,7 +174,7 @@ function cmdComposeFix() {
     for (const p of bad) summary.violations.push({ owner, path: p });
     const rep = fs.existsSync(repF) ? readJSON(repF) : { items: [] };
     const st = (s) => (rep.items ?? []).filter((i) => i.status === s).length;
-    summary.lanes.push({ owner, files: files.length, binary_hunks: (diff.match(/^Binary files /gm) ?? []).length,
+    summary.lanes.push({ owner, variant, files: files.length, binary_hunks: (diff.match(/^Binary files /gm) ?? []).length,
       fixed: st('fixed'), partial: st('partial'), not_fixed: st('not_fixed'), needs_human: rep.needs_human ?? [] });
   }
   writeJSON(path.join(outDir, 'fix-summary.json'), summary);
@@ -170,29 +188,73 @@ function cmdApply() {
   const wtRoot = expand(c.apply?.worktrees ?? path.join(c.workdir, 'worktrees'), vars(c, n));
   run(['git', '-C', c.repo, 'fetch', '-q', 'origin']);
   const results = [];
-  for (const owner of fs.readdirSync(path.join(dir, 'fix'))) {
-    const patch = path.join(dir, 'fix', owner, 'patch.diff');
-    if (!fs.existsSync(patch) || !fs.statSync(patch).size) { results.push({ owner, status: 'empty patch' }); continue; }
-    const branch = expand(c.apply?.branch ?? 'hillclimb/${id}-${round}-${owner}', { ...vars(c, n), id: c.id, round: `r${String(n).padStart(2, '0')}`, owner: owner.toLowerCase() });
-    const wt = path.join(wtRoot, `${c.id}-r${n}-${owner.toLowerCase()}`);
+  for (const lane of fs.readdirSync(path.join(dir, 'fix'))) {
+    const [owner, variant] = lane.split('--');
+    const patch = path.join(dir, 'fix', lane, 'patch.diff');
+    if (!fs.existsSync(patch) || !fs.statSync(patch).size) { results.push({ owner, variant, status: 'empty patch' }); continue; }
+    const tag = variant ? `${owner.toLowerCase()}-${variant}` : owner.toLowerCase();
+    const branch = expand(c.apply?.branch ?? 'hillclimb/${id}-${round}-${owner}', { ...vars(c, n), id: c.id, round: `r${String(n).padStart(2, '0')}`, owner: tag });
+    const wt = path.join(wtRoot, `${c.id}-r${n}-${tag}`);
     if (!fs.existsSync(wt)) run(['git', '-C', c.repo, 'worktree', 'add', '-q', '-B', branch, wt, base]);
     run(['git', '-C', wt, 'apply', '--whitespace=nowarn', patch]);
     const v = vars(c, n, { worktree: wt, owner });
-    for (const cmdv of [...(c.owners[owner].postApply ?? []), ...(c.apply?.gates ?? [])]) run(expand(cmdv, v), { cwd: wt });
+    const steps = [...(c.owners[owner].postApply ?? []), ...(c.apply?.gates ?? [])];
+    for (const cmdv of steps) run(expand(cmdv, v), { cwd: wt });
     run(['git', '-C', wt, 'add', '--', ...patchPaths(fs.readFileSync(patch, 'utf8')), ...(c.owners[owner].commitAlso ?? [])]);
-    const rep = fs.existsSync(path.join(dir, 'fix', owner, 'report.json')) ? readJSON(path.join(dir, 'fix', owner, 'report.json')) : { items: [] };
+    const rep = fs.existsSync(path.join(dir, 'fix', lane, 'report.json')) ? readJSON(path.join(dir, 'fix', lane, 'report.json')) : { items: [] };
     const fixed = (rep.items ?? []).filter((i) => i.status === 'fixed').map((i) => `#${i.id}`).join(' ');
-    run(['git', '-C', wt, 'commit', '-q', '-m', `${c.id} hill-climb round ${n}, lane ${owner}: ${fixed || 'partial fixes'}`, '-m', c.apply?.trailer ?? '']);
-    results.push({ owner, branch, worktree: wt, status: 'committed' });
-    if (has('--pr')) {
-      run(['git', '-C', wt, 'push', '-q', '-u', 'origin', branch]);
-      const body = [`Hill-climb round ${n} of \`${c.id}\`, lane ${owner} (${c.owners[owner].describe}).`, '', '## Items', ...(rep.items ?? []).map((i) => `- #${i.id} ${i.status}: ${i.what ?? ''}`),
-        '', '## Local checks', ...[...(c.owners[owner].postApply ?? []), ...(c.apply?.gates ?? [])].map((g) => `- \`${expand(g, v).join(' ')}\` → passed`), '', c.apply?.prFooter ?? ''].join('\n');
-      run(['gh', 'pr', 'create', '--base', base.replace(/^origin\//, ''), '--head', branch, '--title', `${c.id} hill-climb r${n} ${owner}`, '--body', body], { cwd: wt });
-    }
+    run(['git', '-C', wt, 'commit', '-q', '-m', `${c.id} hill-climb round ${n}, lane ${owner}${variant ? ` (${variant})` : ''}: ${fixed || 'partial fixes'}`, '-m', c.apply?.trailer ?? '']);
+    results.push({ owner, variant: variant ?? null, branch, worktree: wt, status: 'committed', checks: steps.map((g) => expand(g, v).join(' ')) });
   }
   writeJSON(path.join(dir, 'apply.json'), results);
   out(JSON.stringify(results));
+}
+
+/** Compete rounds: render every variant fast from its own worktree, then a judge atom picks one per owner. */
+function cmdJudge() {
+  const { c, n, dir } = campaignAndRound();
+  const applied = readJSON(path.join(dir, 'apply.json')).filter((r) => r.status === 'committed' && r.variant);
+  if (!applied.length) return out('no competing variants this round');
+  const lanes = {};
+  for (const r of applied) {
+    const root = path.join(dir, 'judge', r.owner, r.variant);
+    renderJobs(c, n, path.join(root, 'stills'), 'fast', r.worktree);
+    sheets(c, path.join(root, 'stills'), path.join(root, 'sheets'));
+    (lanes[r.owner] ??= []).push(r.variant);
+  }
+  writeJSON(path.join(dir, 'judge', 'lanes.json'), lanes);
+  const f = writeAtoms('judge', judgeAtoms(c, n, lanes), dir);
+  const atoms = runAtoms(c, f, path.join(dir, 'judge-run'), 'judge');
+  fs.copyFileSync(path.join(atoms, 'compose', 'out', 'winners.json'), path.join(dir, 'winners.json'));
+  out(path.join(dir, 'winners.json'));
+}
+
+function cmdComposeJudge() {
+  const [lanesFile, winnersFile, outDir] = rest;
+  const lanes = readJSON(lanesFile), w = readJSON(winnersFile);
+  const bad = Object.entries(lanes).filter(([o, vs]) => !vs.includes(w[o]?.winner)).map(([o]) => o);
+  if (bad.length) { console.error('no valid winner for', bad.join(', ')); process.exit(1); }
+  writeJSON(path.join(outDir, 'winners.json'), w);
+}
+
+/** Push and open PRs: every committed lane, except that a competing lane only ships its judged winner. */
+function cmdPr() {
+  const { c, n, dir } = campaignAndRound();
+  const base = (c.apply?.base ?? 'origin/main').replace(/^origin\//, '');
+  const winners = fs.existsSync(path.join(dir, 'winners.json')) ? readJSON(path.join(dir, 'winners.json')) : {};
+  const done = [];
+  for (const r of readJSON(path.join(dir, 'apply.json')).filter((x) => x.status === 'committed')) {
+    if (r.variant && winners[r.owner]?.winner !== r.variant) continue;
+    const lane = r.variant ? `${r.owner}--${r.variant}` : r.owner;
+    const rep = fs.existsSync(path.join(dir, 'fix', lane, 'report.json')) ? readJSON(path.join(dir, 'fix', lane, 'report.json')) : { items: [] };
+    run(['git', '-C', r.worktree, 'push', '-q', '-u', 'origin', r.branch]);
+    const body = [`Hill-climb round ${n} of \`${c.id}\`, lane ${r.owner} (${c.owners[r.owner].describe})${r.variant ? `, winning variant ${r.variant}: ${winners[r.owner].why}` : ''}.`, '',
+      '## Items', ...(rep.items ?? []).map((i) => `- #${i.id} ${i.status}: ${i.what ?? ''}`), ...(winners[r.owner]?.runner_up_ideas ? ['', `Worth porting from the other variant: ${winners[r.owner].runner_up_ideas}`] : []),
+      '', '## Local checks', ...(r.checks ?? []).map((g) => `- \`${g}\` → passed`), '', c.apply?.prFooter ?? ''].join('\n');
+    run(['gh', 'pr', 'create', '--base', base, '--head', r.branch, '--title', `${c.id} hill-climb r${n} ${r.owner}${r.variant ? ` (${r.variant})` : ''}`, '--body', body], { cwd: r.worktree });
+    done.push(r.branch);
+  }
+  out(JSON.stringify(done));
 }
 
 function cmdScore() {
@@ -212,11 +274,13 @@ function cmdRound() {
   if (d.stop) return;
   cmdPlanFix(true);
   cmdApply();
+  if (c.fix?.compete) cmdJudge();
+  if (has('--pr')) cmdPr();
 }
 
 const table = { render: cmdRender, 'plan-review': () => cmdPlanReview(false), review: () => cmdPlanReview(true), refs: cmdRefs,
-  'plan-fix': () => cmdPlanFix(false), fix: () => cmdPlanFix(true), apply: cmdApply, score: cmdScore, round: cmdRound,
-  'compose-review': cmdComposeReview, 'compose-fix': cmdComposeFix,
+  'plan-fix': () => cmdPlanFix(false), fix: () => cmdPlanFix(true), apply: cmdApply, judge: cmdJudge, pr: cmdPr, score: cmdScore, round: cmdRound,
+  'compose-review': cmdComposeReview, 'compose-fix': cmdComposeFix, 'compose-judge': cmdComposeJudge,
   check: () => { const v = validateCampaign(readJSON(rest[0])); out(JSON.stringify(v)); process.exit(v.ok ? 0 : 1); } };
 if (!table[cmd]) { console.error(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 12).join('\n')); process.exit(2); }
 try { table[cmd](); } catch (e) { log(e.message); process.exit(1); }
