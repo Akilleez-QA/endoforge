@@ -93,6 +93,12 @@ fs.writeFileSync(path.join(tmp, 'r1.json'), JSON.stringify(r1)); fs.writeFileSyn
 const cr = spawnSync(process.execPath, [BIN, 'compose-review', cf, path.join(tmp, 'r2.json'), path.join(tmp, 'out'), '--previous', path.join(tmp, 'r1.json')], { encoding: 'utf8' });
 check('compose-review writes FIXLIST.md and score.json', cr.status === 0 && fs.existsSync(path.join(tmp, 'out/FIXLIST.md')) && JSON.parse(fs.readFileSync(path.join(tmp, 'out/score.json'))).resolved === 2, cr.stderr);
 fs.writeFileSync(path.join(tmp, 'bad.json'), JSON.stringify(r1bad));
+{ // inside an atom only the hill-climb tool is mounted (2026-10-26: round 2's compose failed importing the atomizer)
+  const alone = path.join(tmp, 'alone', 'hillclimb'); fs.mkdirSync(path.dirname(alone), { recursive: true });
+  fs.cpSync(path.resolve(path.dirname(BIN), '..'), alone, { recursive: true });
+  const r = spawnSync(process.execPath, [path.join(alone, 'bin/hillclimb.mjs'), 'compose-review', cf, path.join(tmp, 'r2.json'), path.join(tmp, 'out3'), '--previous', path.join(tmp, 'r1.json')], { encoding: 'utf8' });
+  check('compose-review runs with only the hill-climb tool present (as inside an atom)', r.status === 0 && fs.existsSync(path.join(tmp, 'out3/FIXLIST.md')), r.stderr);
+}
 check('compose-review fails a bad fix list', spawnSync(process.execPath, [BIN, 'compose-review', cf, path.join(tmp, 'bad.json'), path.join(tmp, 'out2')]).status === 1);
 const fin = path.join(tmp, 'fin'); fs.mkdirSync(path.join(fin, 'fix-a'), { recursive: true }); fs.mkdirSync(path.join(fin, 'fix-y'), { recursive: true });
 fs.writeFileSync(path.join(fin, 'fix-a/patch.diff'), 'diff --git a/media/nh3-kit/trial/yard/campus_v2/districts/A_historic/src/x.py b/media/nh3-kit/trial/yard/campus_v2/districts/A_historic/src/x.py\n');
