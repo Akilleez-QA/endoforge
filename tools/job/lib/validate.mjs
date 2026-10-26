@@ -6,6 +6,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { INVARIANTS, GATES, gateIndex } from './invariants.mjs';
 import { KINDS } from './kinds.mjs';
+import { confirmationOf } from './card.mjs';
 
 export const SCHEMA = 'endoforge/job/1';
 export const VOLATILE = ['/tmp', '/var/tmp', '/dev/shm', '/run/user'];
@@ -125,6 +126,7 @@ const RULES = {
     const missing = engines.filter((e) => smoke?.engines?.[e] !== true);
     if (missing.length) E('I9', `no smoke receipt for ${missing.join(', ')} (one atom per engine before the wide launch)`);
     if (smoke && Object.values(smoke.engines ?? {}).some(Boolean) && !smoke.receipt) E('I12', 'the smoke proof claims a pass without a receipt path');
+    if (!job.proofs?.lessons?.retrieved) E('I14', 'open lessons from earlier jobs of this kind have not been retrieved into the card (job.mjs card)');
     if (!x.confirmation) E('I1', 'the job card has not been confirmed by the user (job.mjs card, then job.mjs confirm)');
     else if (!x.confirmation.ok) E('I1', x.confirmation.why);
     return out;
@@ -151,7 +153,7 @@ const RULES = {
 
 /** Which gates hold rules citing each invariant: it "holds" only once all of them have been checked. */
 export const CITED = { I1: ['pontificate', 'decide'], I2: ['observe', 'orient'], I3: ['decide'], I4: ['observe'], I5: ['orient'], I6: ['orient'],
-  I7: ['observe'], I8: ['orchestrate'], I9: ['decide'], I10: ['decide', 'loop'], I11: ['decide'], I12: ['decide', 'loop'], I13: ['orient'], I14: ['pontificate', 'loop'] };
+  I7: ['observe'], I8: ['orchestrate'], I9: ['decide'], I10: ['decide', 'loop'], I11: ['decide'], I12: ['decide', 'loop'], I13: ['orient'], I14: ['pontificate', 'decide', 'loop'] };
 
 /** Validate up to `gate`. Options: offline (skip disk), volatile roots, confirmation {ok, why} (job card hash check),
  *  health {ok, why} (machine health at Orchestrate). */
@@ -162,7 +164,7 @@ export function validate(job, { gate = 'orchestrate', offline = false, volatile 
   const atoms = job.atoms ?? [], criteria = job.criteria ?? [];
   const x = { kind: KINDS[job.kind], atoms, ids: new Set(atoms.map((a) => a.id)), sources: job.sources ?? [], refs: job.references ?? [], criteria,
     crit: Object.fromEntries(criteria.map((c) => [c.id, c])), gates: Object.fromEntries((job.gates ?? []).map((g) => [g.id, g])), offline, volatile,
-    confirmation: confirmation === undefined ? (job.confirmed ? { ok: true } : null) : confirmation, health };
+    confirmation: confirmation === undefined ? confirmationOf(job) : confirmation, health };
   const errors = [], warnings = [], gates = {};
   for (const [i, g] of GATES.entries()) {
     if (i > upto) { gates[g.id] = 'not checked'; continue; }

@@ -1,29 +1,26 @@
 {
- "schema": "endoforge/job/1", "id": "compressor-hall", "kind": "campus", "title": "Rebuild the Compressor Hall as a measured digital set",
- "goal": { "verbatim": "take what we have today and consider it a source with high detail, and context. then rethink how we would build this from the ground up again. a digital movie set.", "by": "Craig", "at": "2026-10-26T05:00:00-04:00" },
- "brief": { "objective": "the Compressor Hall pilot, inside and out, plus the service lane and first-aid point", "acceptance": "site rules HARD 0 against the baseline; photo-match edges within 2 px at 1920 px; LiDAR heights within 0.3 m RMS", "scope": "the Compressor Hall, its service lane and first-aid point only", "authority": "review stills only; Craig approves before any plate", "assumptions": { "stated": ["plain 1990s brick", "measure, then model"], "inferred": ["interiors are production-designed within SOP tolerances"] } },
- "sources": [ { "id": "backlot-plan", "primary": true, "path": "/home/user/Code/akilleez/media/nh3-kit/docs/REFERENCE-INDEX.md", "governs": ["layout", "exterior", "interior"], "what": "the reference index the St. Louis Digital Backlot Plan builds on: what each source covers" } ],
- "truth": [
-  { "id": "lidar", "what": "OSM footprints and LiDAR heights (site_spec.json)", "path": "/home/user/Code/akilleez/media/nh3-kit/trial/yard/ref/stlouis/site_spec.json", "tolerance": "LiDAR at most 0.3 m RMS; ±5 cm hero exteriors" },
-  { "id": "survey-photos", "what": "campus survey photo pack with an evidence index", "path": "/mnt/cold-steam/factory-scratch/wt/campusBC-ref", "tolerance": "photo-match edges within 2 px at 1920 px" }
- ],
- "references": [ { "id": "stlouis-ref", "path": "/home/user/Code/akilleez/media/nh3-kit/trial/yard/ref/stlouis", "governs": ["exterior"], "what": "the kit research pack: buildings, briefs, drawings, Sanborn maps" } ],
- "criteria": [
-  { "id": "S1", "statement": "no HARD site-rule finding rises", "check": { "kind": "site-rules", "run": "python3 media/nh3-kit/trial/yard/campus_v2/validation/site_rules.py --manifest ${input} --baseline media/nh3-kit/trial/yard/campus_v2/rules/baseline.json", "baseline": "/home/user/Code/akilleez/media/nh3-kit/trial/yard/campus_v2/rules/baseline.json", "proxy": false, "calibration": { "good": "/mnt/cold-steam/factory-scratch/jobs/compressor-hall/calibration/clean-manifest.json", "bad": "/mnt/cold-steam/factory-scratch/jobs/compressor-hall/calibration/floating-manifest.json" } } },
-  { "id": "S2", "statement": "exterior edges match the survey photos within 2 px", "check": { "kind": "eval", "reference": "stlouis-ref", "run": "python3 media/nh3-kit/tools/photo_match.py ${input}", "proxy": true, "calibration": { "good": "/mnt/cold-steam/factory-scratch/jobs/compressor-hall/calibration/aligned", "bad": "/mnt/cold-steam/factory-scratch/jobs/compressor-hall/calibration/offset-4m" } } },
-  { "id": "S3", "statement": "Craig approves the look", "check": { "kind": "human", "gate": "LOOK" } }
- ],
- "atoms": [
-  { "id": "SHELL", "engine": "claude", "aspects": ["exterior", "layout"], "files": ["media/nh3-kit/trial/backlot/compressor_hall/shell"], "sources": ["backlot-plan"], "references": ["stlouis-ref"], "checks": ["S1", "S2"] },
-  { "id": "INTERIOR", "engine": "codex", "aspects": ["interior"], "files": ["media/nh3-kit/trial/backlot/compressor_hall/interior"], "sources": ["backlot-plan"], "reads": ["media/nh3-kit/trial/backlot/compressor_hall/shell/openings.json"], "checks": ["S1"] },
-  { "id": "LANE", "engine": "codex", "aspects": ["layout"], "files": ["media/nh3-kit/trial/backlot/service_lane"], "sources": ["backlot-plan"], "checks": ["S1"] }
- ],
- "contracts": [], "seams": [ { "id": "door-openings", "between": ["SHELL", "INTERIOR"], "owner": "SHELL" } ], "splits": [],
- "gates": [ { "id": "LOOK", "what": "quality OK on review stills", "who": "Craig", "criticalPath": false } ],
- "resources": { "logins": "discover", "capacityDial": true, "throttle": "heavy-run", "gpu": "gpu-queue", "ownerBound": true },
- "ratchet": { "baseline": "/home/user/Code/akilleez/media/nh3-kit/trial/yard/campus_v2/rules/baseline.json" },
- "criticalPath": "SHELL", "rival": "keep polishing the kit facades; discriminator: LiDAR RMS of the current model (4 m off)",
- "deadline": "2026-10-28T17:00:00-04:00", "notes": "/mnt/cold-steam/factory-scratch/jobs/compressor-hall/NOTES.md", "repo": "/home/user/Code/akilleez",
- "proofs": { "smoke": { "engines": { "codex": true, "claude": true }, "receipt": "/mnt/cold-steam/factory-scratch/jobs/compressor-hall/smoke.json" }, "calibration": { "S1": { "good": 0, "bad": 1 }, "S2": { "good": 0, "bad": 1 } } },
- "confirmed": { "by": "Craig", "via": "direct", "at": "2026-10-26T05:10:00-04:00" }
+ "schema": "endoforge/job/1",
+ "id": "compressor-hall",
+ "kind": "campus",
+ "title": "Rebuild the Compressor Hall as a measured digital set",
+ "goal": {"verbatim":"take what we have today and consider it a source with high detail, and context. then rethink how we would build this from the ground up again. a digital movie set.","by":"Craig","at":"2026-10-26T05:00:00-04:00"},
+ "brief": {"objective":"the Compressor Hall pilot, inside and out, plus the service lane and first-aid point","acceptance":"site rules HARD 0 against the baseline; photo-match edges within 2 px at 1920 px; LiDAR heights within 0.3 m RMS","scope":"the Compressor Hall, its service lane and first-aid point only","authority":"review stills only; Craig approves before any plate","assumptions":{"stated":["plain 1990s brick","measure, then model"],"inferred":["interiors are production-designed within SOP tolerances"]}},
+ "sources": [{"id":"backlot-plan","primary":true,"path":"/home/user/Code/akilleez/media/nh3-kit/docs/REFERENCE-INDEX.md","governs":["layout","exterior","interior"],"what":"the reference index the St. Louis Digital Backlot Plan builds on: what each source covers"}],
+ "truth": [{"id":"lidar","what":"OSM footprints and LiDAR heights (site_spec.json)","path":"/home/user/Code/akilleez/media/nh3-kit/trial/yard/ref/stlouis/site_spec.json","tolerance":"LiDAR at most 0.3 m RMS; ±5 cm hero exteriors"},{"id":"survey-photos","what":"campus survey photo pack with an evidence index","path":"/mnt/cold-steam/factory-scratch/wt/campusBC-ref","tolerance":"photo-match edges within 2 px at 1920 px"}],
+ "references": [{"id":"stlouis-ref","path":"/home/user/Code/akilleez/media/nh3-kit/trial/yard/ref/stlouis","governs":["exterior"],"what":"the kit research pack: buildings, briefs, drawings, Sanborn maps"}],
+ "criteria": [{"id":"S1","statement":"no HARD site-rule finding rises","check":{"kind":"site-rules","run":"python3 media/nh3-kit/trial/yard/campus_v2/validation/site_rules.py --manifest ${input} --baseline media/nh3-kit/trial/yard/campus_v2/rules/baseline.json","baseline":"/home/user/Code/akilleez/media/nh3-kit/trial/yard/campus_v2/rules/baseline.json","proxy":false,"calibration":{"good":"/mnt/cold-steam/factory-scratch/jobs/compressor-hall/calibration/clean-manifest.json","bad":"/mnt/cold-steam/factory-scratch/jobs/compressor-hall/calibration/floating-manifest.json"}}},{"id":"S2","statement":"exterior edges match the survey photos within 2 px","check":{"kind":"eval","reference":"stlouis-ref","run":"python3 media/nh3-kit/tools/photo_match.py ${input}","proxy":true,"calibration":{"good":"/mnt/cold-steam/factory-scratch/jobs/compressor-hall/calibration/aligned","bad":"/mnt/cold-steam/factory-scratch/jobs/compressor-hall/calibration/offset-4m"}}},{"id":"S3","statement":"Craig approves the look","check":{"kind":"human","gate":"LOOK"}}],
+ "atoms": [{"id":"SHELL","engine":"claude","aspects":["exterior","layout"],"files":["media/nh3-kit/trial/backlot/compressor_hall/shell"],"sources":["backlot-plan"],"references":["stlouis-ref"],"checks":["S1","S2"]},{"id":"INTERIOR","engine":"codex","aspects":["interior"],"files":["media/nh3-kit/trial/backlot/compressor_hall/interior"],"sources":["backlot-plan"],"reads":["media/nh3-kit/trial/backlot/compressor_hall/shell/openings.json"],"checks":["S1"]},{"id":"LANE","engine":"codex","aspects":["layout"],"files":["media/nh3-kit/trial/backlot/service_lane"],"sources":["backlot-plan"],"checks":["S1"]}],
+ "contracts": [],
+ "seams": [{"id":"door-openings","between":["SHELL","INTERIOR"],"owner":"SHELL"}],
+ "splits": [],
+ "gates": [{"id":"LOOK","what":"quality OK on review stills","who":"Craig","criticalPath":false}],
+ "resources": {"logins":"discover","capacityDial":true,"throttle":"heavy-run","gpu":"gpu-queue","ownerBound":true},
+ "ratchet": {"baseline":"/home/user/Code/akilleez/media/nh3-kit/trial/yard/campus_v2/rules/baseline.json"},
+ "criticalPath": "SHELL",
+ "rival": "keep polishing the kit facades; discriminator: LiDAR RMS of the current model (4 m off)",
+ "deadline": "2026-10-28T17:00:00-04:00",
+ "notes": "/mnt/cold-steam/factory-scratch/jobs/compressor-hall/NOTES.md",
+ "repo": "/home/user/Code/akilleez",
+ "proofs": {"smoke":{"engines":{"codex":true,"claude":true},"receipt":"/mnt/cold-steam/factory-scratch/jobs/compressor-hall/smoke.json"},"calibration":{"S1":{"good":0,"bad":1},"S2":{"good":0,"bad":1}},"lessons":{"retrieved":"2026-10-26T07:35:00-04:00","count":0,"keys":[]}},
+ "confirmed": {"by":"Craig","via":"direct","at":"2026-10-26T05:10:00-04:00","cardSha256":"929fdaa38f434f79e57d9a24d8efb51d652b631829941dc276b6d9bdc0795a91"}
 }

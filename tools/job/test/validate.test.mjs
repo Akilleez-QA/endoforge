@@ -14,7 +14,9 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'job-test-'));
 let fails = 0;
 const test = (name, fn) => { try { fn(); console.log(`PASS ${name}`); } catch (e) { fails++; console.log(`FAIL ${name}: ${e.message}`); } };
 const OK = { ok: true };
-const at = (job, gate = 'orchestrate', o = {}) => validate(job, { gate, offline: true, health: OK, ...o });
+// Most tests edit a fixture, which voids its confirmed card hash; they pass confirmation explicitly, and the
+// confirmation tests below check the real hash.
+const at = (job, gate = 'orchestrate', o = {}) => validate(job, { gate, offline: true, health: OK, confirmation: OK, ...o });
 const broken = (v) => Object.entries(v.status).filter(([, s]) => s === 'broken').map(([k]) => k);
 const says = (v, inv, re) => v.errors.some((e) => e.inv === inv && re.test(e.msg));
 
@@ -64,9 +66,15 @@ test('FMEA H1 intent distorted: prevention needs the verbatim goal, a primary so
   const j = fx('mrton.json'); delete j.brief.assumptions; j.sources[0].primary = false;
   const v = at(j, 'pontificate'); assert(says(v, 'I1', /no primary source/)); assert(says(v, 'I1', /stated apart from what was inferred/));
 });
-test('FMEA H1 intent distorted: detection is the user\'s confirmation before any spend', () => {
+test('FMEA H1 intent distorted: detection is the user\'s confirmation of this exact card before any spend', () => {
+  const real = (j) => validate(j, { gate: 'decide', offline: true });
+  assert(real(fx('mrton.json')).ok, JSON.stringify(real(fx('mrton.json')).errors));
   const j = fx('mrton.json'); delete j.confirmed;
-  assert(says(at(j, 'decide'), 'I1', /not been confirmed/));
+  assert(says(real(j), 'I1', /not been confirmed/));
+  const k = fx('mrton.json'); k.atoms[0].references = ['mr-btu']; k.brief.objective = 'a stylised lumberjack legend';
+  assert(says(real(k), 'I1', /changed after the user confirmed its card/));
+  const r = fx('mrton.json'); r.confirmed.via = 'relayed';
+  assert(says(real(r), 'I1', /only the user's own words count/));
   assert(says(at(fx('mrton.json'), 'decide', { confirmation: { ok: false, why: 'the card changed after it was confirmed' } }), 'I1', /changed after/));
 });
 test('FMEA H2 reference not delivered: prevention refuses a governed atom without it; detection requires a measure against it', () => {
@@ -85,6 +93,10 @@ test('FMEA H4 machine overload: prevention names a throttle and the dial; detect
   const v = at(j); assert(says(v, 'I8', /throttle/)); assert(says(v, 'I8', /capacityDial/)); assert(says(v, 'I8', /gpu-queue/));
   assert(says(at(fx('mrton.json'), 'orchestrate', { health: { ok: false, why: 'fault latch set' } }), 'I8', /health refuses the launch: fault latch set/));
   assert(says(at(fx('mrton.json'), 'orchestrate', { health: null }), 'I8', /health check has not run/));
+});
+test('I14: Decide refuses until open lessons of earlier jobs have been retrieved into the card', () => {
+  const j = fx('mrton.json'); delete j.proofs.lessons;
+  assert(says(at(j, 'decide'), 'I14', /not been retrieved/));
 });
 test('I9, I11, I12: no smoke receipt, a relayed approval, a pass claimed without a receipt', () => {
   const j = fx('mrton.json'); j.proofs.smoke = { engines: { codex: true } }; j.gates[0].approval = { by: 'Craig', via: 'relayed' };
