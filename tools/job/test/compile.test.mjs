@@ -20,6 +20,8 @@ test('an atom prompt runs goal verbatim → governing references → sources →
   assert.match(p, /Look at: \/mnt\/cold-steam\/factory-scratch\/mrton\/reference\/mr-btu\/closeups\/body-views.jpg/);
   assert.match(p, /Private: view locally, never copy it into git/); assert.match(p, /never claim a pass you did not see/);
   assert(!/lumberjack/i.test(p));
+  const b = compileAtom(fx('mrton.json'), 'B1', { offline: true });
+  assert.match(b, /Your contract can express: pose, camera, look, props/); assert.match(b, /A7: each beat stages the script's set-piece .* \(needs pose, camera, props\)/);
 });
 test('the as-briefed character atom would have compiled with no reference at all', () => {
   assert(!compileAtom(fx('mrton-as-briefed.json'), 'CHAR', { offline: true }).includes('READ AND LOOK AT THESE FIRST'));

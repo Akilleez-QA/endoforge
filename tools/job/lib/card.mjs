@@ -39,11 +39,11 @@ export function renderCard(job, v, lessons = []) {
   for (const r of job.references ?? []) for (const t of (r.thumbnails ?? []).slice(0, 3)) L.push(`![${r.id}](${t})`);
   if ((job.references ?? []).some((r) => r.thumbnails?.length)) L.push('');
   if ((job.truth ?? []).length) L.push('## Truth package', ...job.truth.map((t) => `- ${t.id}: ${esc(t.what)}, tolerance ${esc(t.tolerance)} (\`${t.path}\`)`), '');
-  L.push('## Atoms', '| atom | engine | works on | inputs | files | checks |', '|---|---|---|---|---|---|',
-    ...(job.atoms ?? []).map((a) => `| ${a.id}${a.id === job.criticalPath ? ' (critical path)' : ''}${(a.speculate ?? 1) > 1 ? ` x${a.speculate}` : ''} | ${a.engine ?? '-'} | ${list(a.aspects)} | ${list([...(a.sources ?? []), ...(a.references ?? [])])} | ${list(a.files)} | ${list(a.checks)} |`), '');
+  L.push('## Atoms', '| atom | engine | works on | inputs | files | checks | can express |', '|---|---|---|---|---|---|---|',
+    ...(job.atoms ?? []).map((a) => `| ${a.id}${a.id === job.criticalPath ? ' (critical path)' : ''}${(a.speculate ?? 1) > 1 ? ` x${a.speculate}` : ''} | ${a.engine ?? '-'} | ${list(a.aspects)} | ${list([...(a.sources ?? []), ...(a.references ?? [])])} | ${list(a.files)} | ${list(a.checks)} | ${list(a.capabilities)} |`), '');
   if ((job.seams ?? []).length || (job.contracts ?? []).length) L.push(`Seams: ${(job.seams ?? []).map((s) => `${s.id} (${list(s.between)}) → ${s.owner}`).join('; ') || '-'}. Contracts: ${(job.contracts ?? []).map((k) => `${k.path} → ${k.owner}`).join('; ') || '-'}.`, '');
-  L.push('## Acceptance', '| criterion | check | proxy | calibrated |', '|---|---|---|---|',
-    ...(job.criteria ?? []).map((c) => { const cal = job.proofs?.calibration?.[c.id]; return `| ${c.id}: ${esc(c.statement)} | ${c.check?.kind ?? 'NONE'}${c.check?.reference ? ` vs ${c.check.reference}` : ''} | ${c.check?.proxy == null ? '-' : c.check.proxy ? 'yes' : 'no'} | ${cal ? (cal.good === 0 && cal.bad > 0 ? 'yes' : 'NO') : '-'} |`; }), '');
+  L.push('## Acceptance', '| criterion | check | proxy | calibrated | satisfied by (needs) |', '|---|---|---|---|---|',
+    ...(job.criteria ?? []).map((c) => { const cal = job.proofs?.calibration?.[c.id]; return `| ${c.id}: ${esc(c.statement)} | ${c.check?.kind ?? 'NONE'}${c.check?.reference ? ` vs ${c.check.reference}` : ''} | ${c.check?.proxy == null ? '-' : c.check.proxy ? 'yes' : 'no'} | ${cal ? (cal.good === 0 && cal.bad > 0 ? 'yes' : 'NO') : '-'} | ${list(c.satisfiedBy)}${c.requires?.length ? ` (${c.requires.join(', ')})` : ''} |`; }), '');
   L.push(`Human gates: ${(job.gates ?? []).map((g) => `${g.id} ${esc(g.what)} (${g.who}${g.criticalPath ? ', ON the critical path' : ''})`).join('; ') || 'none'}. Rival: ${esc(job.rival ?? '-')}. Deadline: ${job.deadline ?? '-'}.`, '');
   L.push('## Invariants', INVARIANTS.map((i) => `${i.id} ${MARK[v.status[i.id]] ?? v.status[i.id]}`).join(' · '), '',
     `POODO gates: ${GATES.map((g) => `${g.name} ${v.gates[g.id]}`).join(' → ')}`, '');

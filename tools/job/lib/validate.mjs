@@ -93,6 +93,20 @@ const RULES = {
       const good = p?.ok === true && (p.kind === 'tests' ? x.kind?.splitByTests : typeof p.noiseFloor === 'number' && p.noiseMeasured !== false);
       if (!good) E('I6', `split of ${s.from} is not proven a no-op (${x.kind?.splitByTests ? 'tests before and after' : 'a pixel diff within a measured noise floor'})`);
     }
+    // I15 contract capability: the atomization must be able to express every acceptance criterion. Each criterion
+    // names the atoms that satisfy it and what it requires; each of those atoms declares what its contract can do.
+    for (const c of job.criteria ?? []) {
+      if (c.check?.kind === 'human') continue;
+      if (!Array.isArray(c.satisfiedBy) || !c.satisfiedBy.length) { E('I15', `criterion ${c.id} must name the atoms that satisfy it (satisfiedBy)`); continue; }
+      if (!Array.isArray(c.requires)) E('I15', `criterion ${c.id} must declare the capabilities it requires (requires: ["props", …], or [])`);
+      for (const id of c.satisfiedBy) {
+        const a = atoms.find((y) => y.id === id);
+        if (!a) { E('I15', `criterion ${c.id} names unknown atom ${id}`); continue; }
+        if (!Array.isArray(a.capabilities) || !a.capabilities.length) { E('I15', `atom ${id} must declare its contract's capabilities (capabilities: ["pose", "camera", …])`); continue; }
+        const missing = (c.requires ?? []).filter((r) => !a.capabilities.includes(r));
+        if (missing.length) E('I15', `criterion ${c.id} needs ${missing.join(', ')}, which atom ${id}'s contract cannot express; widen the contract before the fan-out`);
+      }
+    }
     if (!job.criticalPath || !ids.has(job.criticalPath)) E('I13', 'criticalPath must name the atom expected to be the long pole');
     for (const a of atoms) if ((a.speculate ?? 1) > 1 && a.id !== job.criticalPath) E('I13', `atom ${a.id} speculates but is not the critical path (${job.criticalPath})`);
     if (!job.rival) E('I13', 'rival: name the strongest rival approach and what would discriminate it');
@@ -153,7 +167,7 @@ const RULES = {
 
 /** Which gates hold rules citing each invariant: it "holds" only once all of them have been checked. */
 export const CITED = { I1: ['pontificate', 'decide'], I2: ['observe', 'orient'], I3: ['decide'], I4: ['observe'], I5: ['orient'], I6: ['orient'],
-  I7: ['observe'], I8: ['orchestrate'], I9: ['decide'], I10: ['decide', 'loop'], I11: ['decide'], I12: ['decide', 'loop'], I13: ['orient'], I14: ['pontificate', 'decide', 'loop'] };
+  I7: ['observe'], I8: ['orchestrate'], I9: ['decide'], I10: ['decide', 'loop'], I11: ['decide'], I12: ['decide', 'loop'], I13: ['orient'], I14: ['pontificate', 'decide', 'loop'], I15: ['orient'] };
 
 /** Validate up to `gate`. Options: offline (skip disk), volatile roots, confirmation {ok, why} (job card hash check),
  *  health {ok, why} (machine health at Orchestrate). */

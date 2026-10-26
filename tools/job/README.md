@@ -10,12 +10,12 @@ Craig, 2026-10-26: "consider how the model working with the user needs to be pro
 |---|---|---|
 | Pontificate | I1 | the goal verbatim with who said it; at least one primary source; a decompressed brief (objective, acceptance, scope, authority, assumptions stated vs inferred); a notes file (I14) |
 | Observe | I2, I4, I7 | every source and reference says what it governs; the truth package with tolerances (required by kind); every path absolute, existing, never on /tmp |
-| Orient | I5, I6, I13 | each atom gets every input that governs its aspects (I2); disjoint files, every shared file and seam owned; a local check per atom; splits proven (pixel diff within a noise floor, or tests for code); the critical path, the strongest rival, the deadline; speculation only on the critical path |
+| Orient | I5, I6, I13, I15 | each atom gets every input that governs its aspects (I2); disjoint files, every shared file and seam owned; a local check per atom; splits proven (pixel diff within a noise floor, or tests for code); the critical path, the strongest rival, the deadline; speculation only on the critical path; I15: each criterion's `satisfiedBy` atoms declare `capabilities` covering its `requires` |
 | Decide | I3, I9, I11 | every criterion has a check that can fail; proxy checks labelled and calibrated (known-good passes, known-bad fails); each governing reference measured; the ratchet precommitted (I10); a smoke receipt per engine; gates listed, relayed approvals refused; the user's confirmation of the card (I1) |
 | Orchestrate | I8 | the throttle and the capacity dial named; GPU work through gpu-queue; the machine health check passes |
 | Loop | I10, I12, I14 | each round has its receipt and LESSONS.md; the ratchet baseline exists |
 
-`lib/invariants.mjs` lists I1–I14. Each validator message cites one, and `status` reports each invariant as holds, partial, pending or broken. Kind plugins (`lib/kinds.mjs`: `video`, `model3d`, `code`, `campus`, `doc`, `generic`) only add kind-specific checks: likeness for references that govern a look, tests for code, a truth package and site rules for the campus.
+`lib/invariants.mjs` lists I1–I15. Each validator message cites one, and `status` reports each invariant as holds, partial, pending or broken. Kind plugins (`lib/kinds.mjs`: `video`, `model3d`, `code`, `campus`, `doc`, `generic`) only add kind-specific checks: likeness for references that govern a look, tests for code, a truth package and site rules for the campus.
 
 ```sh
 J=forge/endoforge/tools/job/bin/job.mjs   # or: endoforge job <command>

@@ -45,7 +45,9 @@ export function compileAtom(job, id, { lessons = [], found = [], stills = [], ro
   }
   if ((job.truth ?? []).length) P.push(`Ground truth and tolerances (measure against these):\n${bullets(job.truth.map((t) => `${t.id}: ${t.what}, tolerance ${t.tolerance}. Path: ${t.path}`))}`);
   P.push(`Your checks (they will be run; leave them passing):\n${bullets((a.checks ?? []).map((c) => `${c}: ${crit[c]?.statement ?? '?'} [${crit[c]?.check?.kind ?? '?'}${crit[c]?.check?.run ? `: ${crit[c].check.run}` : ''}]`))}`);
-  P.push(`You own ONLY these paths; edit nothing else:\n${bullets(a.files ?? [])}${a.contract ? `\nYour contract with the other atoms: ${a.contract}` : ''}`);
+  P.push(`You own ONLY these paths; edit nothing else:\n${bullets(a.files ?? [])}${a.contract ? `\nYour contract with the other atoms: ${a.contract}` : ''}${a.capabilities?.length ? `\nYour contract can express: ${a.capabilities.join(', ')}. Use all of it the criteria need.` : ''}`);
+  const owes = (job.criteria ?? []).filter((c) => (c.satisfiedBy ?? []).includes(id));
+  if (owes.length) P.push(`The acceptance criteria you help satisfy:\n${bullets(owes.map((c) => `${c.id}: ${c.statement}${c.requires?.length ? ` (needs ${c.requires.join(', ')})` : ''}`))}`);
   const ro = [...(a.reads ?? []), ...(job.contracts ?? []).map((k) => `${k.path} (${k.owner === 'frozen' ? 'frozen' : `owned by ${k.owner}`})`)];
   if (ro.length) P.push(`Read-only to you:\n${bullets([...new Set(ro)])}`);
   if (seams.length) P.push(`Seams you touch:\n${bullets(seams.map((s) => `${s.id} between ${s.between.join(' and ')}: ${s.owner === id ? 'you own it; keep both sides consistent' : `owned by ${s.owner}; report problems, do not edit across it`}`))}`);

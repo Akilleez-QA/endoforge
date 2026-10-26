@@ -1,4 +1,4 @@
-// The invariants for ANY task (Craig, 2026-10-26: "not just on this task but any task, what are the invariants").
+// The invariants for ANY task (I15 added after the a collaborator fidelity miss, 07:30) (Craig, 2026-10-26: "not just on this task but any task, what are the invariants").
 // Every validator rule cites one; the job card shows which hold. Source: the a collaborator run's NOTES.md and
 // forge/endoforge/docs/PLAYBOOK-deadline-fanout.md. Kind plugins (lib/kinds.mjs) only add kind-specific checks.
 export const INVARIANTS = [
@@ -16,6 +16,7 @@ export const INVARIANTS = [
   ['I12', 'Honest state', 'delivered is not verified, a proxy is not the outcome; report only what ran'],
   ['I13', 'Constraint focus', 'name the binding constraint; duplicates only there; stream instead of barriers'],
   ['I14', 'Learning loop', 'every mistake logged with its cost; every lesson becomes a tool change or a tracked gap and reaches the next job'],
+  ['I15', 'Contract capability', 'each criterion names the atoms that satisfy it, and their contracts can express what it requires (a collaborator fidelity 1/14: no atom could build props)'],
 ].map(([id, name, rule]) => ({ id, name, rule }));
 export const INVARIANT = Object.fromEntries(INVARIANTS.map((i) => [i.id, i]));
 
@@ -25,7 +26,7 @@ export const INVARIANT = Object.fromEntries(INVARIANTS.map((i) => [i.id, i]));
 export const GATES = [
   { id: 'pontificate', name: 'Pontificate', what: 'the verbatim goal, the primary sources and a decompressed brief', invariants: ['I1'] },
   { id: 'observe', name: 'Observe', what: 'the truth and reference package on durable disk', invariants: ['I2', 'I4', 'I7'] },
-  { id: 'orient', name: 'Orient', what: 'atoms, seams, the critical path and the strongest rival', invariants: ['I5', 'I6', 'I13'] },
+  { id: 'orient', name: 'Orient', what: 'atoms, seams, the critical path, the strongest rival, and contracts able to express the criteria', invariants: ['I5', 'I6', 'I13', 'I15'] },
   { id: 'decide', name: 'Decide', what: 'precommitted, calibrated checks, the smoke receipt, gates and the user\'s confirmation', invariants: ['I3', 'I9', 'I11'] },
   { id: 'orchestrate', name: 'Orchestrate', what: 'the bounded fan-out: throttle, dial, health', invariants: ['I8'] },
   { id: 'loop', name: 'Loop', what: 'the ratchet, claims bounded by receipts, lessons fed forward', invariants: ['I10', 'I12', 'I14'] },

@@ -20,7 +20,7 @@ const at = (job, gate = 'orchestrate', o = {}) => validate(job, { gate, offline:
 const broken = (v) => Object.entries(v.status).filter(([, s]) => s === 'broken').map(([k]) => k);
 const says = (v, inv, re) => v.errors.some((e) => e.inv === inv && re.test(e.msg));
 
-test('POODO gates hold all fourteen invariants, each once', () => {
+test('POODO gates hold all fifteen invariants, each once', () => {
   assert.deepEqual(GATES.map((g) => g.name), ['Pontificate', 'Observe', 'Orient', 'Decide', 'Orchestrate', 'Loop']);
   assert.deepEqual(GATES.flatMap((g) => g.invariants).sort(), INVARIANTS.map((i) => i.id).sort());
 });
@@ -59,6 +59,23 @@ test('I13: speculation off the critical path, no rival, no deadline', () => {
   const j = fx('mrton.json'); j.atoms[1].speculate = 2; delete j.rival; j.deadline = 'today';
   const v = at(j, 'orient');
   assert(says(v, 'I13', /B1 speculates but is not the critical path/)); assert(says(v, 'I13', /strongest rival/)); assert(says(v, 'I13', /deadline/));
+});
+
+test('I15: the beat atoms\' old contract (pose, camera, look) cannot express script fidelity; with props they can', () => {
+  const old = fx('mrton.json'); for (const a of old.atoms) if (a.id === 'B1' || a.id === 'B2') a.capabilities = ['pose', 'camera', 'look'];
+  const v = at(old, 'orient');
+  assert.deepEqual(broken(v), ['I15']);
+  assert(says(v, 'I15', /criterion A7 needs props, which atom B1's contract cannot express; widen the contract before the fan-out/));
+  assert(says(v, 'I15', /atom B2's contract cannot express/));
+  assert(at(fx('mrton.json'), 'orient').ok);
+});
+test('I15: criteria must name their atoms and requirements; those atoms must declare capabilities; human checks are exempt', () => {
+  const j = fx('mrton.json');
+  delete j.criteria[0].satisfiedBy; delete j.criteria[1].requires; delete j.atoms[4].capabilities; j.criteria[2].satisfiedBy = ['NOPE'];
+  const v = at(j, 'orient');
+  assert(says(v, 'I15', /A1 must name the atoms that satisfy it/)); assert(says(v, 'I15', /A2 must declare the capabilities it requires/));
+  assert(says(v, 'I15', /atom SCRIPT must declare its contract's capabilities/)); assert(says(v, 'I15', /A3 names unknown atom NOPE/));
+  assert(!v.errors.some((e) => /A5/.test(e.msg)));
 });
 
 // The FMEA's H rows: each has a prevention control and a detection control.

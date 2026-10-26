@@ -21,13 +21,13 @@ The method is POODO (`~/.claude/skills/poodo/SKILL.md`, source in `reasoning/poo
 
 The first detector was Craig, about 90 minutes later: the latest and most expensive point. The same root explains the barrier rounds, the empty-band rule, the /tmp reference and the launch failures.
 
-**The intake** (`tools/job`, PRs #396–#400) makes every stage a gate. Each rule cites its invariant (I1–I14 in the repo `AGENTS.md`). Kind plugins (`video`, `model3d`, `code`, `campus`) only add kind-specific checks. The code itself is task-agnostic.
+**The intake** (`tools/job`, PRs #396–#400) makes every stage a gate. Each rule cites its invariant (I1–I15 in the repo `AGENTS.md`). Kind plugins (`video`, `model3d`, `code`, `campus`) only add kind-specific checks. The code itself is task-agnostic.
 
 | Gate | Invariants | The tool |
 |---|---|---|
 | Pontificate | I1 | the verbatim goal, primary sources, a decompressed brief (stated vs inferred), the notes file |
 | Observe | I2, I4, I7 | what each source and reference governs; the truth package with tolerances; durable paths only |
-| Orient | I5, I6, I13 | each atom gets its governing inputs; one writer; owned seams; a local check per atom; `prove-split` against a measured noise floor; critical path, rival, deadline |
+| Orient | I5, I6, I13, I15 | each atom gets its governing inputs; one writer; owned seams; a local check per atom; `prove-split` against a measured noise floor; critical path, rival, deadline; each criterion's atoms can express what it requires |
 | Decide | I3, I9, I11 | criteria mapped to checks; `calibrate`; `smoke`; gates; `stage` (the job card and a STAGED event); the user's own go (`confirm`) |
 | Orchestrate | I8 | `fire`: only on the confirmed, staged card; health, throttle and dial; compiled prompts; the FIRED event |
 | Loop | I10, I12, I14 | SCORED and GATE events, the ratchet, receipts, LESSONS.md, lessons retrieved into the next job |
@@ -180,7 +180,15 @@ node $B status "$C"; node $B lessons "$C"                         # while runnin
 
 ## Open questions (gaps with no enforcement yet)
 
-- **G1** Streaming recombination: a per-atom loop (land, apply, slice render and eval, then freeze or relaunch) and timed global evals.
+- **G1** Streaming recombination: a per-atom loop (land, apply, slice render and eval, then freeze or relaunch) and timed global evals. **Reference:** `/mnt/cold-steam/factory-scratch/mrton/beatloop.py` (used live on 2026-10-26, NOTES #29). It runs one thread per beat atom with no barriers:
+  1. collect the lane's owned files when it lands;
+  2. render only that beat's stills through the GPU queue;
+  3. run that beat's script-fidelity check;
+  4. freeze the beat when it passes, or relaunch the lane at once with the findings (at most `--iters`);
+  5. emit events per beat.
+
+  Port it into fan-out mode as `round --stream`.
+- **I15 (built here):** the a collaborator fidelity prediction failed (1/14 against a predicted 70 %) because the beat contract (TonBeat: pose, keys, look) could not express props or effects. Each criterion now names the atoms that satisfy it (`satisfiedBy`) and what it requires (`requires`), and each atom declares its `capabilities`. Orient refuses a required capability the contract lacks.
 - **G2** An automatic splitter for monolithic files; today the split is by hand, then proven with `prove-split`.
 - **G3** Builders outside a campaign (eval and tool builders) are not in any ownership map.
 - **G4** Fan-out lane units are not bound to the round driver: stopping the driver leaves lanes running until `RuntimeMaxSec`.

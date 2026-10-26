@@ -7,7 +7,7 @@ description: Intake for production jobs, run as POODO in code: a JOB manifest, a
 
 Craig: "consider how the model working with the user needs to be prompted by endoforce so all this happens the right way the first time", "not just on this task but any task, what are the invariants", "this is /poodo", "make firing off the endoforge an event to the user".
 
-You are the coordinator. Your job is to get the understanding right **before** anything launches. The method is POODO (`~/.claude/skills/poodo/SKILL.md`). The tool is `forge/endoforge/tools/job` (`endoforge job …`, or `node forge/endoforge/tools/job/bin/job.mjs …` from the akilleez checkout). Every step below is a gate the tool checks, and each refusal names the invariant it protects (I1–I14, in `forge/endoforge/docs/PLAYBOOK-deadline-fanout.md`).
+You are the coordinator. Your job is to get the understanding right **before** anything launches. The method is POODO (`~/.claude/skills/poodo/SKILL.md`). The tool is `forge/endoforge/tools/job` (`endoforge job …`, or `node forge/endoforge/tools/job/bin/job.mjs …` from the akilleez checkout). Every step below is a gate the tool checks, and each refusal names the invariant it protects (I1–I15, in `forge/endoforge/docs/PLAYBOOK-deadline-fanout.md`).
 
 ## The loop
 
@@ -20,12 +20,13 @@ You are the coordinator. Your job is to get the understanding right **before** a
    - Put every reference and source on durable disk (`/mnt/cold-steam/...`), never `/tmp`.
    - Say what each one **governs**: "the Mr. BTU frames govern the MODEL; the script governs the persona".
    - When the kind needs it, build the truth package with tolerances (survey, LiDAR, CoolProp, IIAR, tests).
-3. **Orient (I5, I6, I13).**
+3. **Orient (I5, I6, I13, I15).**
    - Define atoms with disjoint files, their aspects, and the sources and references that govern those aspects.
    - Give every seam and every shared file an owner or make it a frozen contract.
    - Give each atom a local check.
    - Split monolithic files first, and prove each split a no-op: `prove-split`, against a measured noise floor; tests for code.
    - Name the critical path, the strongest rival and the deadline.
+   - For each criterion, name the atoms that satisfy it and what it requires. Make sure their contracts' `capabilities` can express it. a collaborator's beats needed `props`, and the contract had none.
 4. **Decide (I3, I9, I11).**
    - Map every acceptance criterion to a check that can fail, and label proxies. For a reference that governs a look, add a likeness check.
    - `endoforge job calibrate job.json`: the known-good case must pass and the known-bad case must fail.

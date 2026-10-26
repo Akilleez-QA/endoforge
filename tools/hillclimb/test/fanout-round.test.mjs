@@ -129,8 +129,8 @@ for d, tag, px in (("a", "one", 0), ("b", "two", 0), ("c", "one", 9)):
       goal: { verbatim: 'make every beat read good, today', by: 'Craig' },
       brief: { objective: 'o', acceptance: 'a', scope: 's', authority: 'au', assumptions: { stated: [], inferred: [] } },
       sources: [{ id: 'request', primary: true, path: path.join(jd, 'REQUEST.md'), governs: ['beat'], what: 'the request' }],
-      criteria: [{ id: 'T1', statement: 'tests pass', check: { kind: 'tests', run: 'true' } }],
-      atoms: Object.entries(c.pieces).map(([id, p]) => ({ id, engine: p.engine ?? 'codex', aspects: ['beat'], files: p.files, sources: ['request'], checks: ['T1'] })),
+      criteria: [{ id: 'T1', statement: 'tests pass', satisfiedBy: Object.keys(c.pieces), requires: ['edit'], check: { kind: 'tests', run: 'true' } }],
+      atoms: Object.entries(c.pieces).map(([id, p]) => ({ id, engine: p.engine ?? 'codex', aspects: ['beat'], capabilities: ['edit'], files: p.files, sources: ['request'], checks: ['T1'] })),
       gates: [], resources: { capacityDial: true, throttle: 'hillclimb-fanout', ownerBound: true, health: ['true'] }, ratchet: { kind: 'tests' },
       criticalPath: 'B1', rival: 'compete mode', deadline: '2026-10-27T00:00:00Z', notes: path.join(jd, 'NOTES.md'),
       proofs: { smoke: { engines: { codex: true, claude: true }, receipt: path.join(jd, 'smoke.json') }, lessons: { retrieved: 'now', count: 0 } } };
