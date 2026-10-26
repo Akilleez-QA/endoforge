@@ -110,14 +110,28 @@ def apply(actions, dry):
             fh.write(json.dumps(line) + '\n')
 
 
+def vm_tuning(total):
+    """Kernel headroom, scaled to RAM (added after the 01:22 Codex app GPU-process crash, Craig: "codex desktop
+    crashing"): the NVIDIA driver and Electron GPU processes failed large allocations at 01:23 and 01:26 while RAM was
+    fragmented (no free blocks of 512 KB or more) with only a 66 MB free pool. Keep a free pool of 1 % of RAM (64 MB to
+    2 GB), start reclaim earlier (3 % of RAM between watermarks) and compact proactively."""
+    return {'vm.min_free_kbytes': max(65536, min(2 * 2 ** 20, total // 1024 // 100)),
+            'vm.watermark_scale_factor': 300, 'vm.compaction_proactiveness': 40}
+
+
 def install():
     """Root half: reserve the protected total on every ancestor (memory.low only works if the parents hold it too)."""
     total, uid = ram(), os.getuid()
+    conf = ''.join(f'{k} = {v}\n' for k, v in vm_tuning(total).items())
+    subprocess.run(['sudo', '-n', 'tee', '/etc/sysctl.d/99-memguard.conf'], input='# memguard (akilleez forge/endoforge/tools/throttle)\n' + conf,
+                   text=True, stdout=subprocess.DEVNULL, check=True)
+    subprocess.run(['sudo', '-n', 'sysctl', '-q', '-p', '/etc/sysctl.d/99-memguard.conf'], check=True)
     want = int(total * TOTAL_SHARE)
     for unit in ('user.slice', f'user-{uid}.slice', f'user@{uid}.service'):
         subprocess.run(['sudo', '-n', 'systemctl', 'set-property', unit, f'MemoryLow={want}'], check=True)
     for unit, share in (('app.slice', TOTAL_SHARE - DESKTOP_SHARE), ('session.slice', DESKTOP_SHARE)):
         subprocess.run(['systemctl', '--user', 'set-property', unit, f'MemoryLow={int(total * share)}'], check=True)
+    print(conf.strip().replace('\n', '; '))
     print(f'reserved {want / GB:.0f} GB up to user.slice (app.slice {(TOTAL_SHARE - DESKTOP_SHARE) * total / GB:.0f} GB, '
           f'session.slice {DESKTOP_SHARE * total / GB:.0f} GB)')
 
