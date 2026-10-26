@@ -11,7 +11,9 @@ import { fileURLToPath } from 'node:url';
 const HERE = path.dirname(fileURLToPath(import.meta.url)), BIN = path.join(HERE, '../bin/hillclimb.mjs');
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'hillclimb-fanout-round-'));
 let fails = 0;
-const test = (name, fn) => { try { fn(); console.log(`PASS ${name}`); } catch (e) { fails++; console.log(`FAIL ${name}: ${e.message}`); } };
+const pending = [];
+const test = (name, fn) => { const done = (e) => { if (e) { fails++; console.log(`FAIL ${name}: ${e.message}`); } else console.log(`PASS ${name}`); };
+  try { const r = fn(); if (r?.then) pending.push(r.then(() => done(), done)); else done(); } catch (e) { done(e); } };
 const sh = (cwd, ...a) => { const r = spawnSync(a[0], a.slice(1), { cwd, encoding: 'utf8' }); if (r.status !== 0) throw new Error(r.stderr); return r.stdout.trim(); };
 const readJSON = (f) => JSON.parse(fs.readFileSync(f, 'utf8'));
 
@@ -26,7 +28,7 @@ fs.mkdirSync(stubs);
 // One stub for both engines: find the brief among the args, fix the owned file ("regress" makes it worse), and leave
 // a stray file outside the piece's files, which collect must ignore.
 const stub = `#!/bin/bash
-for a in "$@"; do case "$a" in *READY*) [ -n "$STUB_FAIL_SMOKE" ] && exit 3; echo READY; exit 0;; *"YOUR PIECE"*) brief="$a";; esac; done
+for a in "$@"; do case "$a" in *READY*) [ -n "$STUB_FAIL_SMOKE" ] && exit 3; echo READY; exit 0;; *"YOUR PIECE"*|*"You own ONLY"*) brief="$a";; esac; done
 file=$(printf '%s\\n' "$brief" | sed -n '/You own ONLY/{n;s/^- //p;q}')
 if grep -q regress "$file"; then printf 'bad\\nbad\\n' > "$file"; else echo good > "$file"; fi
 echo stray > stray.txt
@@ -118,6 +120,34 @@ for d, tag, px in (("a", "one", 0), ("b", "two", 0), ("c", "one", 9)):
     const diff = hc('prove-split', cf, '--before', path.join(tmp, 'px/a'), '--after', path.join(tmp, 'px/c'));
     assert.equal(diff.status, 1); assert.equal(JSON.parse(diff.stdout).differ[0].pixels, 1);
   });
+  test('a job-backed campaign refuses to fire on an unconfirmed card, then fires compiled prompts once confirmed', async () => {
+    const { cardHash } = await import('../../job/lib/card.mjs');
+    const jd = path.join(tmp, 'job'); fs.mkdirSync(jd);
+    fs.writeFileSync(path.join(jd, 'REQUEST.md'), 'Make every beat read good.\n'); fs.writeFileSync(path.join(jd, 'NOTES.md'), '# notes\n'); fs.writeFileSync(path.join(jd, 'smoke.json'), '{}');
+    const c = campaign({ id: 'jobbed', workdir: path.join(tmp, 'work-job'), job: path.join(jd, 'job.json') });
+    const job = { schema: 'endoforge/job/1', id: 'demo-job', kind: 'code', title: 'demo',
+      goal: { verbatim: 'make every beat read good, today', by: 'Craig' },
+      brief: { objective: 'o', acceptance: 'a', scope: 's', authority: 'au', assumptions: { stated: [], inferred: [] } },
+      sources: [{ id: 'request', primary: true, path: path.join(jd, 'REQUEST.md'), governs: ['beat'], what: 'the request' }],
+      criteria: [{ id: 'T1', statement: 'tests pass', check: { kind: 'tests', run: 'true' } }],
+      atoms: Object.entries(c.pieces).map(([id, p]) => ({ id, engine: p.engine ?? 'codex', aspects: ['beat'], files: p.files, sources: ['request'], checks: ['T1'] })),
+      gates: [], resources: { capacityDial: true, throttle: 'hillclimb-fanout', ownerBound: true, health: ['true'] }, ratchet: { kind: 'tests' },
+      criticalPath: 'B1', rival: 'compete mode', deadline: '2026-10-27T00:00:00Z', notes: path.join(jd, 'NOTES.md'),
+      proofs: { smoke: { engines: { codex: true, claude: true }, receipt: path.join(jd, 'smoke.json') }, lessons: { retrieved: 'now', count: 0 } } };
+    fs.writeFileSync(c.job, JSON.stringify(job));
+    const jenv = { ...env, ENDOFORGE_VOLATILE: '/nonexistent-volatile', ENDOFORGE_JOBS: path.join(tmp, 'no-jobs') };
+    const cf2 = write('jobbed.json', c), run = () => spawnSync(process.execPath, [BIN, 'round', cf2], { env: jenv, encoding: 'utf8', timeout: 120_000 });
+    const refused = run();
+    assert.equal(refused.status, 1); assert.match(refused.stderr, /refused at decide I1: the job card has not been confirmed/);
+    assert(!fs.existsSync(path.join(tmp, 'work-job/worktrees')));
+    job.confirmed = { by: 'Craig', via: 'direct', cardSha256: cardHash(job) }; fs.writeFileSync(c.job, JSON.stringify(job));
+    sh(repo, 'git', 'checkout', '-q', 'seed', '--', 'game'); sh(repo, 'git', 'commit', '-q', '-m', 'reset for the job round');
+    const fired = run(); assert.equal(fired.status, 0, fired.stderr.slice(-800));
+    const p = fs.readFileSync(path.join(tmp, 'work-job/rounds/r01/prompts/b1.prompt'), 'utf8');
+    assert.match(p, /THE GOAL, in Craig's own words[^\n]*\n> make every beat read good, today/); assert.match(p, /<<<request\nMake every beat read good./);
+    assert.match(p, /Reply in exactly this form/);
+  });
+  await Promise.all(pending);
 } finally { fs.rmSync(tmp, { recursive: true, force: true }); }
 console.log(fails ? `${fails} failure(s)` : 'all fan-out round tests passed');
 process.exit(fails ? 1 : 0);

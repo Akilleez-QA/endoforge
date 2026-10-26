@@ -157,7 +157,8 @@ export const CITED = { I1: ['pontificate', 'decide'], I2: ['observe', 'orient'],
 
 /** Validate up to `gate`. Options: offline (skip disk), volatile roots, confirmation {ok, why} (job card hash check),
  *  health {ok, why} (machine health at Orchestrate). */
-export function validate(job, { gate = 'orchestrate', offline = false, volatile = VOLATILE, confirmation = undefined, health = null } = {}) {
+// ENDOFORGE_VOLATILE (colon-separated) replaces the volatile roots, for tests whose scratch dirs live under /tmp.
+export function validate(job, { gate = 'orchestrate', offline = false, volatile = process.env.ENDOFORGE_VOLATILE ? process.env.ENDOFORGE_VOLATILE.split(':') : VOLATILE, confirmation = undefined, health = null } = {}) {
   job = job ?? {};
   const upto = gateIndex(gate);
   if (upto < 0) throw new Error(`unknown gate ${gate} (${GATES.map((g) => g.id).join(', ')})`);

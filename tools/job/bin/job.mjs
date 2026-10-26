@@ -11,6 +11,7 @@
 //   job.mjs confirm <job.json> --sha <card sha> --by <user> --words "<their words>" [--via direct|relayed]
 //        record the user's own confirmation of exactly that card; a relayed one is recorded and refused at Decide
 //   job.mjs lessons <job.json>                       the open lessons, and which atoms each reaches
+//   job.mjs compile <job.json> [--out dir] [--offline]   every atom's prompt from the manifest, plus manifest.json (hashes)
 //   job.mjs gates | invariants                       the POODO gates and the invariants they hold
 // Proofs the tool makes (calibration, smoke, split) go in <job>.proofs.json beside the manifest, merged on load.
 import fs from 'node:fs';
@@ -22,6 +23,7 @@ import { validate, PROXY_KINDS } from '../lib/validate.mjs';
 import { INVARIANTS, GATES } from '../lib/invariants.mjs';
 import { renderCard, cardHash } from '../lib/card.mjs';
 import { retrieveLessons, lessonsForAtom } from '../lib/lessons.mjs';
+import { compileAll } from '../lib/compile.mjs';
 
 const [cmd, file, ...rest] = process.argv.slice(2);
 const flag = (k) => { const i = rest.indexOf(k); return i < 0 ? null : rest[i + 1]; };
@@ -73,7 +75,7 @@ function report(v) {
 async function main() {
   if (cmd === 'gates') { for (const g of GATES) out(`${g.name}\t${g.invariants.join(',')}\t${g.what}`); return 0; }
   if (cmd === 'invariants') { for (const i of INVARIANTS) out(`${i.id}\t${i.name}\t${i.rule}`); return 0; }
-  if (!file) { console.error(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 17).join('\n')); return 2; }
+  if (!file) { console.error(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 18).join('\n')); return 2; }
   const job = loadJob(path.resolve(file));
   if (cmd === 'validate') {
     const gate = flag('--gate') ?? 'orchestrate', offline = has('--offline');
@@ -102,6 +104,14 @@ async function main() {
     if (!flag('--by') || !flag('--words')) { console.error('confirm: --by and --words (the user\'s own words) are required'); return 2; }
     saveProof(path.resolve(file), 'confirmed', { by: flag('--by'), via: flag('--via') ?? 'direct', words: flag('--words'), at: new Date().toISOString(), cardSha256: full });
     out(`confirmed card ${full.slice(0, 12)} by ${flag('--by')}`); return 0;
+  }
+  if (cmd === 'compile') {
+    const r = compileAll(job, { lessons: retrieveLessons(job), offline: has('--offline') });
+    const dir = flag('--out') ?? path.join(path.dirname(path.resolve(file)), 'compiled');
+    fs.mkdirSync(dir, { recursive: true });
+    for (const [id, p] of Object.entries(r.prompts)) fs.writeFileSync(path.join(dir, `${id}.prompt`), p);
+    fs.writeFileSync(path.join(dir, 'manifest.json'), JSON.stringify({ job: job.id, cardSha256: cardHash(job), manifestHash: r.manifestHash, atoms: r.atoms }, null, 1) + '\n');
+    out(`${Object.keys(r.prompts).length} prompts in ${dir}; manifest ${r.manifestHash.slice(0, 12)}`); return 0;
   }
   if (cmd === 'lessons') {
     const lessons = retrieveLessons(job);

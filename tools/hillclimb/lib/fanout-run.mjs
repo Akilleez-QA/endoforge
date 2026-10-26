@@ -9,6 +9,10 @@ import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { loadCampaign, roundDir, lastRound, vars, expand } from './campaign.mjs';
 import { fanoutLessons } from './lessons.mjs';
+import { loadJob, health } from '../../job/bin/job.mjs';
+import { validate as validateJob } from '../../job/lib/validate.mjs';
+import { compileAtom } from '../../job/lib/compile.mjs';
+import { retrieveLessons } from '../../job/lib/lessons.mjs';
 import { ownershipMap, discoverLogins, assignLanes, laneId, workerCommand, piecePrompt, pieceStills, attribute, totals, ratchet,
   reatomize, wallClock, fleetCapacity, waveSize } from './fanout.mjs';
 
@@ -99,7 +103,10 @@ export async function launchAll(c, n, dir, lanes, { notes = {}, pre, wait = true
     git(c.repo, 'worktree', 'add', '-q', '-B', lane.branch, lane.worktree, base);
     for (const l of c.fanout?.links ?? []) fs.symlinkSync(l.target, path.join(lane.worktree, l.path));   // e.g. node_modules (NOTES #3)
     const p = c.pieces[lane.piece], images = pieceStills(p, stills);
-    const prompt = piecePrompt(c, lane.piece, { stills: images, found: found[lane.piece], note: notes[lane.piece] ?? '', round: n });
+    // A campaign backed by a JOB manifest gets compiled prompts (goal verbatim, governing inputs first, checks,
+    // lessons); hand-written briefs are the fallback for campaigns without one.
+    const prompt = c.jobDoc ? compileAtom(c.jobDoc, lane.piece, { lessons: c.jobLessons, stills: images, found: found[lane.piece], note: notes[lane.piece] ?? '', round: n })
+      : piecePrompt(c, lane.piece, { stills: images, found: found[lane.piece], note: notes[lane.piece] ?? '', round: n });
     fs.mkdirSync(path.join(dir, 'prompts'), { recursive: true }); fs.writeFileSync(path.join(dir, 'prompts', `${laneId(lane)}.prompt`), prompt);
     Object.assign(lane, { argv: workerCommand(c, lane, { worktree: lane.worktree, prompt, images }) });
   }
@@ -164,9 +171,20 @@ function preEvals(c, n, dir) {
 }
 
 export async function round(c, n, { notes = {}, smokeOnly = false, noSmoke = false } = {}) {
-  const dir = roundDir(c, n), T = {}; fs.mkdirSync(dir, { recursive: true });
+  const dir = roundDir(c, n), T = {};
   let t = Date.now();
   const own = ownershipMap(c); if (own.errors.length) throw new Error(`atomize: ${own.errors.join('; ')}`);
+  if (c.job) {
+    // The job's POODO gates up to Orchestrate (a confirmed card, calibrated checks, the smoke receipt, machine health)
+    // must pass before anything launches; nothing fires on an unconfirmed card (I1, I11).
+    c.jobDoc = loadJob(c.job);
+    const v = validateJob(c.jobDoc, { gate: 'orchestrate', health: health(c.jobDoc) });
+    if (!v.ok) throw new Error(`job ${c.jobDoc.id} refused at ${v.errors.map((e) => `${e.gate} ${e.inv}: ${e.msg}`).join('; ')}`);
+    const atoms = Object.fromEntries((c.jobDoc.atoms ?? []).map((a) => [a.id, a]));
+    for (const [k, p] of Object.entries(c.pieces)) if (!atoms[k] || JSON.stringify([...atoms[k].files].sort()) !== JSON.stringify([...p.files].sort())) throw new Error(`piece ${k} does not match a job atom with the same files`);
+    c.jobLessons = retrieveLessons(c.jobDoc);
+  }
+  fs.mkdirSync(dir, { recursive: true });                // a refused round leaves no round directory behind
   const histFile = path.join(c.workdir, 'fanout-history.json'), history = readJSON(histFile, []);
   const { frozen, split } = reatomize(c, history);
   T.atomize = sec(t); t = Date.now();
