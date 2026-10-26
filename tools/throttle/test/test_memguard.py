@@ -42,5 +42,10 @@ class Plan(unittest.TestCase):
         self.assertEqual(a[('kimodo.service', ('CPUWeight', 'MemoryHigh'))]['MemoryHigh'], int(16 * GB * 0.45))
 
 
+    def test_vm_tuning_scales_with_ram(self):
+        self.assertEqual(mg.vm_tuning(124 * GB)['vm.min_free_kbytes'], 124 * GB // 1024 // 100)
+        self.assertEqual(mg.vm_tuning(4 * GB)['vm.min_free_kbytes'], 65536)          # floor
+        self.assertEqual(mg.vm_tuning(1024 * GB)['vm.min_free_kbytes'], 2 * 2 ** 20)  # cap
+
 if __name__ == '__main__':
     unittest.main()
