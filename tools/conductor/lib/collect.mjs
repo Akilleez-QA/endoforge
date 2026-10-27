@@ -31,6 +31,7 @@ export function collectAtom(job, file, st, id, { waitMs = 600_000 } = {}) {
     const before = ok(git(job.repo, 'rev-parse', 'HEAD'), 'rev-parse');
     const ap = spawnSync('git', ['-C', job.repo, 'apply', '--3way', '--index', '-'], { input: diff, encoding: 'utf8' });
     if (ap.status !== 0) { revert(job, files, before); return record(gf, { ok: false, stage: 'apply', error: ap.stderr.slice(-1500), stray }); }
+    if (git(job.repo, 'diff', '--cached', '--quiet').status === 0) { writeJSONAtomic(gf, { ok: true, change: false, already: true, stray }); return { status: 'no-change', already: true, stray }; }   // already collected
     const gate = a.gate ?? job.conductor?.gate;
     if (gate) {
       const argv = Array.isArray(gate) ? gate.map((x) => x.replaceAll('${atom}', id)) : ['sh', '-c', gate.replaceAll('${atom}', id)];

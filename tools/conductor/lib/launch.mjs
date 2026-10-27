@@ -62,7 +62,17 @@ export function launchAtom(job, file, state, id, { prompt, images = [] }) {
 }
 
 /** The exit code of an atom's current lane, or null while it runs. */
-export function laneExit(st) { try { return Number(fs.readFileSync(st.lane.exitFile, 'utf8')); } catch { return null; } }
+export function laneExit(st) {
+  if (st.lane?.exitFile) { try { return Number(fs.readFileSync(st.lane.exitFile, 'utf8')); } catch { return null; } }
+  if (!st.lane?.unit) return null;
+  // An adopted lane (started by an older tool) has no exit file: ask systemd. A finished transient unit may be gone,
+  // which counts as a clean exit; ENDOFORGE_SYSTEMCTL stubs it in tests.
+  const ctl = process.env.ENDOFORGE_SYSTEMCTL ?? 'systemctl';
+  const active = spawnSync(ctl, ['--user', 'is-active', st.lane.unit], { encoding: 'utf8' }).stdout.trim();
+  if (['active', 'activating', 'reloading'].includes(active)) return null;
+  const code = spawnSync(ctl, ['--user', 'show', '-p', 'ExecMainStatus', '--value', st.lane.unit], { encoding: 'utf8' }).stdout.trim();
+  return code === '' ? 0 : Number(code);
+}
 
 /** Stop every running lane (stop, budget exhaustion): units through systemctl, local children by process group. */
 export function stopLanes(state) {

@@ -35,7 +35,7 @@ export function go(job, file, o) {
   writeJSONAtomic(pf, p);
   const may = canFire({ ...job, proofs: { ...job.proofs, ...p } }, file);
   if (!may.ok) throw new Error(`cannot go: ${may.why}`);
-  return updateState(job, file, (s) => { if (s.phase === 'staged') transition(s, job, 'go', `go from ${o.by}: ${o.words}`); });
+  return updateState(job, file, (s) => { s.awaitingGo = null; if (s.phase === 'staged') transition(s, job, 'go', `go from ${o.by}: ${o.words}`); });
 }
 
 /** A human taste lock on one atom: it is settled and never relaunched. */

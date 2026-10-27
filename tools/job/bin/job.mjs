@@ -138,7 +138,7 @@ async function main() {
     out(`${e.ts} ${kind} ${e.summary}`); return 0;
   }
   const { stateFile } = await import('../../conductor/lib/state.mjs');
-  if (['go', 'lock', 'pause', 'resume', 'budget', 'stop'].includes(cmd) || (cmd === 'status' && fs.existsSync(stateFile(job, file)))) {
+  if (['go', 'lock', 'pause', 'resume', 'budget', 'stop', 'patch'].includes(cmd) || (cmd === 'status' && fs.existsSync(stateFile(job, file)))) {
     const { main: conductor } = await import('../../conductor/bin/conduct.mjs');   // the job's Conductor owns these
     return conductor([cmd, file, ...rest]);
   }

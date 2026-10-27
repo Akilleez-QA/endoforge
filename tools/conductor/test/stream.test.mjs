@@ -30,7 +30,7 @@ const kinds = (f) => readEvents(loadJob(f), f).map((e) => e.kind);
 test('each atom climbs on its own: slice render → critic → relaunch with the findings → frozen; a hopeless one escalates', async () => {
   const log = path.join(tmp, 'critic-1.log');
   const { f, d } = setup('climb', { 'b1.txt': 'bad', 'b2.txt': 'bad', 'b3.txt': 'never' }, { gate: null, maxIterations: 3, checkConcurrency: 3,
-    slice: { render }, checks: [{ id: 'fidelity', json: true, run: critic(log) }] });
+    slice: { command: render }, checks: [{ id: 'fidelity', json: true, run: critic(log) }] });
   const s = await run(f);
   assert.deepEqual(Object.fromEntries(Object.entries(s.atoms).map(([k, v]) => [k, [v.status, v.iter]])), { B1: ['frozen', 2], B2: ['frozen', 2], B3: ['needs-coordinator', 3] });
   assert.match(fs.readFileSync(path.join(d, 'conductor/prompts/B1-i2.prompt'), 'utf8'), /failed its checks. Fix first:\n- fidelity: make it read good/);
@@ -54,7 +54,7 @@ test('a check that reports 78 stops the whole job loudly', async () => {
   assert.equal(s.phase, 'done'); assert.match(s.stopped.why, /check latch for B1 exited 78/); assert.equal(kinds(f).at(-1), 'DONE');
 });
 test('a daemon restart resumes an atom that was mid-check', async () => {
-  const { f, repo } = setup('resume', { 'b1.txt': 'good' }, { gate: null, checks: [{ id: 'fidelity', json: true, run: critic(path.join(tmp, 'critic-r.log')) }], slice: { render } });
+  const { f, repo } = setup('resume', { 'b1.txt': 'good' }, { gate: null, checks: [{ id: 'fidelity', json: true, run: critic(path.join(tmp, 'critic-r.log')) }], slice: { command: render } });
   updateState(loadJob(f), f, (s) => { s.phase = 'streaming'; Object.assign(s.atoms.B1, { status: 'checking', iter: 1, sha: 'x' }); });
   const s = await run(f, 40);
   assert.equal(s.atoms.B1.status, 'frozen'); assert.equal(s.atoms.B1.iter, 1, 'resumed the check, no relaunch');

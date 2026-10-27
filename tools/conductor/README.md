@@ -36,11 +36,21 @@ The next prompt carries that error. After `conductor.maxIterations` the atom esc
 
 **Streaming** (`lib/checks.mjs`, P-D, ported from `beatloop.py`). There is no barrier: each landed atom becomes its own task, and up to `conductor.checkConcurrency` run at once while the daemon keeps launching and collecting the rest. A task runs:
 1. the collect gate;
-2. `conductor.slice.render`, which renders only that atom's slice into `${out}` (with `${atom}` and `${repo}`; put the GPU queue inside it);
+2. `conductor.slice.command`, which produces only that atom's slice into `${out}` (with `${atom}`, `${repo}` and `${files}`; put any queue, such as the GPU queue, inside the command);
 3. its `conductor.checks`, each `{ id, run, atoms?, json? }`, run with `${input}` = the slice and `${out}` = a JSON result.
 
-A check passes on exit 0, or on `pass` in its JSON. Critics such as `likeness.sh` and `fidelity.sh` are checks with `json: true`; their `fix` and `elements` go into the next prompt. Then the atom is **frozen**, or **relaunched at once** with the findings, up to `maxIterations`, after which it escalates.
+A check passes on exit 0, or on `pass` in its JSON. The tool never knows what a check measures. A critic is a check with `json: true`; its `fix` and `findings` go into the next prompt. Then the atom is **frozen**, or **relaunched at once** with the findings, up to `maxIterations`, after which it escalates.
 
 Errors are typed: 75 waits; 78 stops the job; a check that cannot run is **not scored**. A not-scored check is retried, never counted as a failed iteration, and after `maxUnscored` it wakes the coordinator. A daemon restart resumes atoms that were mid-check.
 
-Tests: `node test/state.test.mjs`, `node test/launch.test.mjs`, `node test/stream.test.mjs` (`make conductor-test`).
+**Escalation** (`lib/escalate.mjs`). When the Conductor cannot decide (an atom still failing after its iterations, checks that cannot run, gates the job no longer passes, an internal error), it writes a compact **context packet** (`escalations/<key>.json`) and emits NEEDS-COORDINATOR. The packet holds the goal, the atom's files, contract, capabilities, the criteria it owes, its last three iterations, its gate and check evidence, and the budget.
+
+The model replies with `endoforge job patch <job> <reply.json>`: `{ key, manifest: <JSON merge patch>, note, relaunch, resetIterations }`. The patch goes through the same gates:
+- a patch that breaks them is refused, and the manifest is left as it was;
+- a patch that changes what the user confirmed holds every launch until the user's new go (stage, then `endoforge job go`; NEEDS-YOU).
+
+**Adopting a running job** (`lib/adopt.mjs`): `endoforge conduct adopt <new job.json> --map <map.json> --legacy <manifest> --loop-state <loop.json> --lanes <dir> --logs <dir> --repo <dir> …`. It converts the old manifest and loop state and tracks the old lanes where they stand: a finished lane is collected, a collected one resumes at its check, and the old worktrees are left alone.
+
+Everything about the old layout is **data** in the map: unit, worktree, base, prompt and log templates, plus how old atoms map to aspects and capabilities. `examples/mrton.adopt-map.json` is the a collaborator run's map. The adopted job starts at `staged` and needs one go from the user. Whatever the old manifest cannot say is listed for the coordinator, never invented.
+
+Tests: `node test/state.test.mjs`, `node test/launch.test.mjs`, `node test/stream.test.mjs`, `node test/adopt.test.mjs` (`make conductor-test`).

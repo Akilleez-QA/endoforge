@@ -24,6 +24,7 @@ const imagesFor = (job, id) => { const a = job.atoms.find((x) => x.id === id); r
 function launchPending(ctx) {
   const { job, file } = ctx, started = [];
   const plan = ctx.update((s) => assignLogins(job, s));
+  if (plan.awaitingGo) return started;                         // the card changed: nothing launches before the user's new go
   const ids = Object.entries(plan.atoms).filter(([, st]) => ['pending', 'relaunch'].includes(st.status)).map(([id]) => id).slice(0, slotsFree(job, plan));
   for (const id of ids) {
     const cur = ctx.update(() => {});
@@ -41,7 +42,7 @@ export async function settleAtom(ctx, id, checkAtom = sliceCheck) {
   const { job, file } = ctx, st = ctx.update(() => {}).atoms[id], exit = laneExit(st);
   if (exit !== 0) return relaunchOrEscalate(ctx, id, `the worker exited ${exit}; see ${st.lane.log}`, { stage: 'worker', exit });
   const g = collectAtom(job, file, st, id);
-  spawnSync('git', ['-C', job.repo, 'worktree', 'remove', '--force', st.lane.worktree], { stdio: 'ignore' });   // collected: the lane's copy goes
+  if (!st.lane.adopted) spawnSync('git', ['-C', job.repo, 'worktree', 'remove', '--force', st.lane.worktree], { stdio: 'ignore' });   // collected: the lane's copy goes (adopted lanes are left as they were)
   if (g.status === 'reverted') return relaunchOrEscalate(ctx, id, gateFeedback(g), { stage: g.stage, error: g.error });
   ctx.update((s) => { s.atoms[id].status = 'checking'; s.atoms[id].sha = g.sha ?? null; });
   return judge(ctx, id, checkAtom);
@@ -67,7 +68,7 @@ export async function judge(ctx, id, checkAtom = sliceCheck) {
 function relaunchOrEscalate(ctx, id, feedback, evidence) {
   const { job, file } = ctx;
   const s = ctx.update((st) => { const a = st.atoms[id]; a.history.push({ iter: a.iter, pass: false, ...evidence }); a.feedback = feedback; a.last = String(feedback).split('\n')[0].slice(0, 160);
-    a.status = a.iter >= st.budget.maxIterations ? 'needs-coordinator' : 'relaunch'; });
+    a.status = a.iter - (a.iterBase ?? 0) >= st.budget.maxIterations ? 'needs-coordinator' : 'relaunch'; });
   const a = s.atoms[id];
   if (a.status === 'needs-coordinator')
     escalate(job, file, { to: 'coordinator', key: `atom:${id}:i${a.iter}`, atom: id, why: `still failing after ${a.iter} iterations: ${a.last}`, packet: { atom: id, iter: a.iter, history: a.history, feedback } });

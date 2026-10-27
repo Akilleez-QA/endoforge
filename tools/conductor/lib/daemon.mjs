@@ -5,6 +5,7 @@
 import fs from 'node:fs';
 import { loadState, updateState, transition, nextPhase, stateFile, allSettled } from './state.mjs';
 import { emit } from '../../job/lib/events.mjs';
+import { writePacket } from './escalate.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
@@ -16,7 +17,9 @@ export function escalate(job, file, { to, key, atom = null, why, packet = null }
     s.escalations.push({ key, to, atom, why, packet, at: new Date().toISOString(), resolved: false }); fresh = true;
     if (atom && to === 'coordinator' && s.atoms[atom]) s.atoms[atom].status = 'needs-coordinator';
   });
-  if (fresh) emit(job, file, { kind: to === 'coordinator' ? 'NEEDS-COORDINATOR' : 'NEEDS-YOU', summary: `${atom ? `${atom}: ` : ''}${why}`, data: { key, atom, packet } });
+  if (!fresh) return false;
+  const packetFile = to === 'coordinator' ? writePacket(job, file, { key, atom, why, packet }) : null;   // the model's compact context
+  emit(job, file, { kind: to === 'coordinator' ? 'NEEDS-COORDINATOR' : 'NEEDS-YOU', summary: `${atom ? `${atom}: ` : ''}${why}`, detail: packetFile ? `Packet: ${packetFile}` : '', data: { key, atom, packet: packetFile ?? packet } });
   return fresh;
 }
 

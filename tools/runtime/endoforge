@@ -89,7 +89,8 @@ case $cmd in
     exec {fd}>&-
   done; exit 0;;
   job) exec node "$RUNTIME_DIR/../job/bin/job.mjs" "$@";;   # endoforge job stage|fire|status|go|lock|pause|… (tools/job)
-  conduct) exec node "$RUNTIME_DIR/../conductor/bin/conduct.mjs" unit "$@";;   # the job's Conductor as a user service
+  conduct) case ${1:-} in adopt|run|unit) exec node "$RUNTIME_DIR/../conductor/bin/conduct.mjs" "$@";;   # endoforge conduct adopt …
+    *) exec node "$RUNTIME_DIR/../conductor/bin/conduct.mjs" unit "$@";; esac;;   # endoforge conduct <job>: the job's Conductor as a user service
   run) :;; *) usage >&2; exit 2;;
 esac
 input=${1:-}; [[ -n $input ]] || { usage >&2; exit 2; }; shift

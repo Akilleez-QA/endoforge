@@ -39,7 +39,9 @@ test('a good atom lands; a broken one is reverted alone, relaunched with the exa
   assert.match(fs.readFileSync(path.join(d, 'conductor/prompts/B2-i2.prompt'), 'utf8'), /reverted at the collect gate \(gate: sh -c ! grep -q "SYNTAX ERROR"/);
   assert.equal(sh(repo, 'git', 'log', '--format=%s', 'main').split('\n').filter((x) => / i\d /.test(x)).length, 2);
   const e = readEvents(loadJob(f), f).find((x) => x.kind === 'NEEDS-COORDINATOR');
-  assert.match(e.summary, /B3: still failing after 2 iterations/); assert.equal(e.data.packet.history.length, 2);
+  assert.match(e.summary, /B3: still failing after 2 iterations/);
+  const packet = JSON.parse(fs.readFileSync(e.data.packet, 'utf8'));
+  assert.equal(packet.atom.history.length, 2); assert.deepEqual(packet.atom.files, ['game/b3.txt']); assert.match(packet.reply, /endoforge job patch/);
   assert.deepEqual(kinds(f).filter((k) => ['SMOKE', 'FIRED'].includes(k)), ['SMOKE', 'FIRED']);
   assert.equal(new Set(Object.values(s.atoms).map((a) => a.lane.account)).size >= 1, true);
 });

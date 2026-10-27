@@ -1,0 +1,19 @@
+{
+ "note": "Adopt map for the a collaborator run on /mnt/cold-steam/factory-scratch/mrton (fanout.py lanes + beatloop.py state). Job data, not tool code.",
+ "by": "Craig",
+ "primarySource": "script",
+ "criticalPath": "CHAR7",
+ "layout": {
+  "unit": "mrton-{round}-{atom}",
+  "worktree": "{lanes}/{round}-{atom}",
+  "base": "{logs}/{round}/round.json#base",
+  "prompt": "{logs}/{round}/{ATOM}.prompt",
+  "log": "{logs}/{round}/{ATOM}.log",
+  "collected": "{lanes}/{round}-{atom}.collected"
+ },
+ "atoms": [
+  { "when": { "field": "beat" }, "aspects": ["script", "lesson"], "capabilities": ["pose", "camera", "look", "props"] },
+  { "when": { "files": "mr-ton\\.ts$" }, "aspects": ["model", "script"], "capabilities": ["model", "pose"] },
+  { "aspects": ["script"], "capabilities": ["edit"] }
+ ]
+}
