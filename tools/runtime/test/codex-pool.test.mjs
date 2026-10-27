@@ -32,12 +32,26 @@ function setup(name, { limited = [] } = {}) {
     if (limited.includes(path.basename(home))) fs.writeFileSync(path.join(root, home, 'RATE_LIMITED'), '');
   }
   const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith('CODEX_POOL_') && k !== 'CODEX_HOME'));
-  Object.assign(env, { CODEX_POOL_PRIMARY: path.join(root, 'acct-a'), CODEX_POOL_ACCOUNTS_DIR: path.join(root, 'accts'), CODEX_POOL_STATE_DIR: path.join(root, 'state'), CODEX_POOL_GUARD: 'none', CODEX_POOL_WAIT: '10' });
+  Object.assign(env, { CODEX_POOL_PRIMARY: path.join(root, 'acct-a'), CODEX_POOL_ACCOUNTS_DIR: path.join(root, 'accts'), CODEX_POOL_STATE_DIR: path.join(root, 'state'), CODEX_POOL_GUARD: 'none', CODEX_POOL_WAIT: '10', WORKERS_DIR: path.join(root, 'workers') });
+  delete env.WORKERS_REGISTERED;
   return { root, env };
 }
 const run = (env, args, opts = {}) => spawnSync(process.execPath, [pool, ...args], { env, encoding: 'utf8', timeout: 30_000, ...opts });
 
 try {
+  test('the codex child runs under the worker registry once; an old registry cannot make the pool recurse', () => {
+    // 2026-10-27: the pool re-ran itself under `workers run` and relied on the registry to mark its child; an installed
+    // registry that did not spawned 465 nested pools. This stand-in never marks anything, like that old registry.
+    const { root, env } = setup('registry');
+    const bin = stub(path.join(root, 'bin'), 'reg');
+    const fake = path.join(root, 'fake-workers');
+    fs.writeFileSync(fake, `#!/bin/sh\necho "registered $3" >> ${path.join(root, 'calls')}\nshift 4\nexec "$@"\n`, { mode: 0o755 });
+    Object.assign(env, { CODEX_POOL_BIN: bin, WORKERS_BIN: fake, CODEX_POOL_BOT: 'claude-code' });
+    const r = run(env, ['exec', 'once'], { input: '', timeout: 10_000 });
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(r.stdout, 'bin=reg home=acct-a args=exec once stdin=\n');
+    assert.equal(fs.readFileSync(path.join(root, 'calls'), 'utf8'), 'registered claude-code\n');
+  });
   test('unset CODEX_POOL_BIN runs the codex found on PATH', () => {
     const { root, env } = setup('path');
     stub(path.join(root, 'bin'), 'path');

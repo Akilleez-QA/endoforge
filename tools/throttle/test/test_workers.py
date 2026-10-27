@@ -72,6 +72,14 @@ class WorkerTests(unittest.TestCase):
         finally:
             proc.wait(10)
 
+    def test_inside_a_registered_worker_it_never_nests(self):
+        # 2026-10-27: a launcher that re-ran itself under `workers run` recursed 465 deep; a nested run is now a plain exec
+        with mock.patch.dict(os.environ, {'WORKERS_REGISTERED': '1'}):
+            r = subprocess.run([sys.executable, str(TOOL), 'run', '--bot', 'grok-bot', '--', 'true'], env=os.environ.copy())
+        self.assertEqual(r.returncode, 0)
+        self.assertEqual(self.history(), [])
+        self.assertFalse((self.dir / 'state' / 'live').exists() and list((self.dir / 'state' / 'live').glob('*.json')))
+
     def test_unknown_and_missing_bot_are_refused(self):
         for argv in (['--bot', 'null'], []):
             rc, _, err = self.main('run', *argv, '--', 'true')

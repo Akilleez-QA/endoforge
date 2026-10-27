@@ -86,11 +86,21 @@ function stdinFor() {
 let child = null;
 for (const s of ['SIGTERM', 'SIGINT']) process.on(s, () => { if (child) child.kill(s); else process.exit(128 + os.constants.signals[s]); });
 
+const WORKERS = [E.WORKERS_BIN, path.join(HOME, '.local/bin/workers'), '/usr/local/bin/workers']
+  .find((w) => w && fs.existsSync(w));
+
 function launch(bin, acct) {
   return new Promise((resolve) => {
     let tail = '';
     const stdin = stdinFor();
-    child = spawn(bin, process.argv.slice(2), { env: { ...E, CODEX_HOME: acct.home }, stdio: [stdin, 'inherit', 'pipe'] });
+    // Worker registry (tools/throttle/workers): the codex child, never this launcher, runs under `workers run`, so
+    // `workers list` shows it with its bot (CODEX_POOL_BOT or WORKER_BOT; `unknown` when neither is set). Wrapping the
+    // child and not re-running this file is what keeps it from recursing: on 2026-10-27 a self re-exec, trusting an
+    // installed `workers` to mark its child, spawned 465 nested launchers in seconds. Visibility only: no registry, no wrap.
+    const [cmd, args] = WORKERS && E.WORKERS_REGISTERED !== '1'
+      ? [WORKERS, ['run', '--bot', E.CODEX_POOL_BOT || E.WORKER_BOT || '', '--', bin, ...process.argv.slice(2)]]
+      : [bin, process.argv.slice(2)];
+    child = spawn(cmd, args, { env: { ...E, CODEX_HOME: acct.home, WORKERS_ALLOW_UNREGISTERED: '1' }, stdio: [stdin, 'inherit', 'pipe'] });
     if (typeof stdin === 'number') fs.closeSync(stdin);
     child.stderr.on('data', (d) => { process.stderr.write(d); tail = (tail + d).slice(-65536); });
     child.on('error', (e) => { tail += e.message; });
