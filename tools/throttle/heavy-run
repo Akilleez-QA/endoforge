@@ -125,5 +125,21 @@ bind=()
 cur=$(ps -o ni= -p $$ | tr -d ' ')
 target=10
 [ "$cur" -gt "$target" ] && target=$cur
-exec systemd-run --user --scope --quiet --slice=heavy.slice --nice="$target" --unit="heavy-${name//[^A-Za-z0-9_-]/_}-$$" \
-  --description="heavy-run $name (owner ${owner:-none})" "${bind[@]}" -- "$@"
+# The job ends when its main process ends. A scope lives while any process in it lives, and every child inherits the
+# slot lock (fd 9), so workers orphaned by a killed main kept a slot for 75 minutes (2026-10-27: photo2model's
+# harvest was OOM-killed at 18:01 and its 10 idle workers starved the ABI set lane). So heavy-run stays as a small
+# supervisor: it waits for the main process, then stops the scope, which kills what is left and frees the slot.
+# A signal to heavy-run stops the job too. Stdin is passed through explicitly (a background job would get /dev/null).
+unit="heavy-${name//[^A-Za-z0-9_-]/_}-$$"
+systemd-run --user --scope --quiet --slice=heavy.slice --nice="$target" --unit="$unit" -p TimeoutStopSec=20 \
+  --description="heavy-run $name (owner ${owner:-none})" "${bind[@]}" -- "$@" <&0 &
+job=$!
+stop_job() { systemctl --user stop "$unit.scope" 2>/dev/null || true; }
+trap 'trap - TERM INT HUP; kill -TERM "$job" 2>/dev/null; stop_job; exit 143' TERM INT HUP
+rc=0; { wait "$job"; } 2>/dev/null || rc=$?
+cg=$(systemctl --user show "$unit.scope" -p ControlGroup --value 2>/dev/null || true)
+left=0
+[ -n "$cg" ] && [ -r "/sys/fs/cgroup$cg/cgroup.procs" ] && left=$(grep -c . "/sys/fs/cgroup$cg/cgroup.procs" 2>/dev/null || true)
+[ "${left:-0}" -gt 0 ] && say "main process exited ($rc); stopping $left process(es) it left running in $unit"
+stop_job
+exit "$rc"

@@ -17,6 +17,15 @@ if systemctl --user show-environment >/dev/null 2>&1 && command -v systemd-run >
   HEAVY_SLOTS=1 "$hr" --name hold -- sleep 5 & sleep 1.5
   HEAVY_SLOTS=1 timeout 3 "$hr" --name t5 -- true 2>/dev/null; check 'waits for a slot' '[[ $? == 124 ]]'; wait
   check 'starts once the slot frees' 'HEAVY_SLOTS=1 timeout 30 "$hr" --name t6 -- true 2>/dev/null'
+  # the job ends with its main process (2026-10-27: an OOM-killed harvest's 10 orphaned workers held a slot for 75 min)
+  km=$XDG_STATE_HOME/killmain.sh; printf '#!/bin/bash\nsleep 120 & sleep 120 & echo $! > %s/child.pid; sleep 1; kill -KILL $$\n' "$XDG_STATE_HOME" > "$km"; chmod +x "$km"
+  HEAVY_SLOTS=1 "$hr" --name t7 -- "$km" 2>/dev/null; check 'a killed main process reports its signal' '[[ $? == 137 ]]'
+  check 'its orphaned children are stopped' '! kill -0 "$(cat "$XDG_STATE_HOME/child.pid")" 2>/dev/null'
+  check 'and the slot frees at once' 'HEAVY_SLOTS=1 timeout 5 "$hr" --name t8 -- true 2>/dev/null'
+  "$hr" --name t9 -- bash -c 'exit 7' 2>/dev/null; check 'the exit status passes through' '[[ $? == 7 ]]'
+  check 'stdin passes through' '[[ $(echo piped | "$hr" --name t10 -- cat) == piped ]]'
+  "$hr" --name t11 -- sleep 120 2>/dev/null & hp=$!; sleep 2; kill -TERM $hp; wait $hp 2>/dev/null; sleep 1
+  check 'stopping heavy-run stops its job' '[[ -z $(systemctl --user list-units --no-legend --plain "heavy-t11-*") ]]'
   check 'slice sized for this machine' 'head -1 "${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user/heavy.slice" | grep -q "threads=$(nproc)"'
   # jobs live and die with their owner; an orphaned launcher is refused (2026-10-26: a stopped round left a 19.8 GB render)
   E="--setenv=HEAVY_MAX_LOAD=100000 --setenv=HEAVY_RESERVE_GB=1 --setenv=HEAVY_SLOTS=50 --setenv=XDG_STATE_HOME=$XDG_STATE_HOME"
