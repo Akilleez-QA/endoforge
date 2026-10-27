@@ -164,6 +164,41 @@ The pieces it needs already exist in #388: per-lane exit files, per-piece commit
 | Safety values global, stricter wins; official brand artwork only, never on safety items; Craig's photos private | the campaign `goal` carries them into every prompt; no automated check here (G11) |
 | RETA lessons stay on black; r24 look frozen; numbers and claims show CHECK until approved | put frozen files (numbers sheet, r24 assets) in `contracts`, so no piece can change them (#387, #388) |
 
+## 2026-10-27: the critique loop as a system
+
+The a collaborator film ran 12 hours as a loop:
+1. A full three.js cut.
+2. Two critics, one per half.
+3. Two beat lanes in worktrees, plus characters, sets and audio sessions.
+4. Merge, then the next cut.
+
+The full retrospective is `/mnt/cold-steam/factory-scratch/mrton/RETRO-20261027.md` (NOTES #100–123). The measurements:
+- **Round time:** about 3 h from cut to cut.
+- **Full cut:** about 40 min. Capture went from 110–173 ms/frame (v1–v2) to 520–625 ms/frame (v3–v5), and nothing measured it.
+- **Recapture:** every cut recaptured all 4,220 frames.
+- **Tokens:** about 2.2 M per round.
+- **Critique:** about 300 open rows re-scored each round. The question "does it read?" was first asked in round 4, and the answer was two physics pictures.
+
+| Lesson | Enforced by |
+|---|---|
+| A gate prints what it covered, and covering nothing fails (the type-check never reached the beat files; NOTES #119) | `series/rai-reta/tools/mrton-check.mjs` (film branch `claude-code/20261027-mrton-film-tools`) |
+| Machine checks before any critic: flashes, one-frame jumps (smears under the shutter), overlays on the hero, labels never on screen | `tools/compose/film-lint.mjs` on a cut's anchors and luma, about 2 s (same branch) |
+| A text-layer change gets a 30 s check, not a full cut | `compose.mjs --from/--to` (same branch) |
+| Recapture only what changed | `tools/capture/cut.mjs`: per-beat plate cache keyed on the beat, its imports, its neighbours, the shared scene, assets, the engine, its voice window and flags (same branch) |
+| Capture cost is measured, by stage and by what is drawn | `tools/capture/profile.mjs` and `__plate.probe.cost` (same branch); no automatic regression gate yet (G15) |
+| Short checks never wait behind long captures; queue waits are recorded | `gpu-queue.py --est` short lane with ageing, `history.jsonl`, `--stats` (#423) |
+| An artifact seen in two or more beats goes to the stage owner, who probes before anyone bisects (ghost copies: three rounds; face lines: two lanes) | `tools/capture/probe.mjs` exists; the routing is a rule only (G12) |
+| Coherence before polish: a short spine checklist of physics pictures scored on every cut, full rows only on changed beats | rule only (G14) |
+
+**New gaps**
+- **G12** Shared-artifact routing (two or more beats → stage owner, probe first) is a rule.
+- **G13** Beat files import helpers from other beats (b04, b09), so one lane's staging edit invalidates most of the plate cache. Move the helpers into their own modules.
+- **G14** No coherence-spine critic; critics re-score every row every round.
+- **G15** No gate fails a cut whose ms/frame rose more than 25 % over the last cut.
+- **G16** Handing off a coordinator needs relays: lane reports go to whoever started the lane, and there is no shared state file (lanes, branches, heads, round, open asks).
+- **G17** Human-only blockers (a captcha, a download consent) sat for hours; there is no single queue of what only Craig can do, raised when it blocks.
+- **G18** Beat files hard-code word times that a re-voice breaks; no lint rejects numeric word times or generates brief and map windows from the markers file.
+
 ## Runbook (one deadline round)
 
 ```sh
@@ -203,4 +238,4 @@ node $B status "$C"; node $B lessons "$C"                         # while runnin
 
 ## Sources
 
-`/mnt/cold-steam/factory-scratch/mrton/NOTES.md` and `fanout.py` (2026-10-26), `/mnt/cold-steam/factory-scratch/wt/LANE-RULES.md`, and PRs #347, #359, #362, #366, #377–#383 and #385–#391 on Akilleez-QA/akilleez.
+`/mnt/cold-steam/factory-scratch/mrton/NOTES.md` and `fanout.py` (2026-10-26), `/mnt/cold-steam/factory-scratch/wt/LANE-RULES.md`, and PRs #347, #359, #362, #366, #377–#383, #385–#391 and #423 on Akilleez-QA/akilleez; `/mnt/cold-steam/factory-scratch/mrton/RETRO-20261027.md` (2026-10-27).
