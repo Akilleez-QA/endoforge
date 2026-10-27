@@ -37,7 +37,7 @@ test('sources are excerpted from disk: line ranges, matches with context, whole 
 });
 test('contracts, seams, findings, stills and matching lessons reach the atom', () => {
   const j = fx('mrton.json');
-  const p = compileAtom(j, 'B1', { round: 2, stills: ['/r/16x9/f00000.png'], found: [{ level: 'HARD', rule: 'MT-04', detail: 'hidden behind the rack', frames: ['16x9/f00'] }],
+  const p = compileAtom(j, 'B1', { round: 2, outputs: ['/r/16x9/f00000.png'], found: [{ level: 'HARD', rule: 'MT-04', detail: 'hidden behind the rack', frames: ['16x9/f00'] }],
     lessons: [{ text: 'staging hid the hero behind the rack', fix: 'check occlusion', key: 'k' }, { text: 'unrelated', key: 'u' }] });
   assert.match(p, /series\/rai-reta\/game\/stage.ts \(frozen\)/); assert.match(p, /b1-b2-cut between B1 and B2: owned by SEAMS; report problems/);
   assert.match(p, /\[HARD MT-04\] hidden behind the rack \(frames 16x9\/f00\)/); assert.match(p, /\/r\/16x9\/f00000.png/);

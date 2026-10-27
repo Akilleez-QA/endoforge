@@ -46,6 +46,7 @@ factory-integration: ## offline Docker/WASmtime controls; test writer fixtures, 
 
 lib-test: ## shared tool libraries: the error taxonomy (75 transient, 78 stop, unscored)
 	node tools/lib/test/errors.test.mjs
+	node tools/lib/test/universal.test.mjs
 
 conductor-test: ## the job Conductor: state machine, locks, commands, daemon (stub handlers)
 	node tools/conductor/test/state.test.mjs

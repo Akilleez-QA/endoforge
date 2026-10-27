@@ -110,17 +110,17 @@ export function piecePrompt(c, piece, { stills = [], found = [], note = '', roun
     `You own ONLY these paths; edit nothing else:\n${lines(p.files)}`,
     ...(c.contracts?.length ? [`Frozen contracts between pieces (read, never edit):\n${lines(c.contracts)}`] : []),
     `The other pieces (read-only to you): ${others.map(([k, o]) => `${k} (${o.files.join(', ')})`).join('; ')}.`,
-    stills.length ? `Current stills of your piece (look at every one):\n${lines(stills)}` : 'No stills selected for this piece; read its files.',
+    stills.length ? `Current outputs of your piece (inspect every one):\n${lines(stills)}` : 'No outputs selected for this piece; read its files.',
     found.length ? `The evals' findings attributed to your piece (fix these first):\n${lines(found.map((f) => `[${f.level} ${f.rule ?? ''}] ${f.detail}${f.frames.length ? ` (frames ${f.frames.join(', ')})` : ''}`))}`
       : 'The evals found nothing attributed to your piece; critique it against the goal yourself.',
     ...(note ? [`Notes from the host: ${note}`] : []),
     ...(p.check ? [`Check your work with \`${p.check.join(' ')}\` and leave it passing.`] : []),
-    'Critique your piece, then fix it, in this one pass. Do not render: the host renders and evaluates after every piece lands.',
+    'Critique your piece, then fix it, in this one pass. Do not run the campaign\'s render or evals: the host runs them after every piece lands.',
     'When done, reply with what you changed and why, in five lines or fewer.'].join('\n\n');
 }
 
 /** Normalise an evals file to findings. Accepts {findings: [{<key>, rule, level, detail, frames}]} or the rule shape
- *  {rules: [{id, level, name, reason, failing: [{<key>, frames}]}]} (series/rai-reta check-mrton). */
+ *  {rules: [{id, level, name, reason, failing: [{<key>, frames}]}]}. */
 export function findings(evals, key = 'piece') {
   if (Array.isArray(evals.findings)) return evals.findings.map((x) => ({ key: x[key] ?? null, rule: x.rule ?? null, level: x.level ?? 'HARD', detail: x.detail ?? x.reason ?? '', frames: x.frames ?? [] }));
   return (evals.rules ?? []).flatMap((r) => (r.failing ?? []).map((x) => ({ key: x[key] ?? null, rule: r.id, level: r.level ?? 'HARD', detail: `${r.name ?? ''}: ${r.reason ?? ''}`.trim(), frames: x.frames ?? [] })));

@@ -5,14 +5,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { INVARIANTS, GATES, gateIndex } from './invariants.mjs';
-import { KINDS } from './kinds.mjs';
+import { KINDS, proxyKinds } from './kinds.mjs';
 import { confirmationOf } from './card.mjs';
 
 export const SCHEMA = 'endoforge/job/1';
 export const VOLATILE = ['/tmp', '/var/tmp', '/dev/shm', '/run/user'];
 const norm = (p) => String(p).replace(/\/+$/, '');
 export const overlaps = (a, b) => { const x = norm(a), y = norm(b); return x === y || x.startsWith(y + '/') || y.startsWith(x + '/'); };
-export const PROXY_KINDS = ['eval', 'likeness', 'critic', 'site-rules'];   // checks that measure a proxy: calibrate and label them
+/** A check that measures a proxy (its kind's proxyCheckKinds, or marked proxy: true) must be labelled and calibrated. */
+export const isProxyCheck = (job, check) => check?.proxy === true || proxyKinds(job).includes(check?.kind);
 
 /** Every durable path the manifest names, with where it came from. */
 export function manifestPaths(job) {
@@ -48,7 +49,7 @@ const RULES = {
     const out = [], E = (i, m) => out.push([i, m]);
     for (const r of [...x.sources, ...x.refs]) {
       if (!r.id || !r.path || !r.what) E('I2', `source or reference ${r.id ?? '?'} needs id, path and what`);
-      if (!Array.isArray(r.governs) || !r.governs.length) E('I2', `${r.id}: say what it governs (governs: ["model"], ["persona"], …)`);
+      if (!Array.isArray(r.governs) || !r.governs.length) E('I2', `${r.id}: say what it governs (governs: [the aspects of the work it decides])`);
     }
     for (const t of job.truth ?? []) if (!t.what || !t.path || !t.tolerance) E('I4', `truth ${t.id ?? '?'} needs what, path and tolerance`);
     if (x.kind?.requiresTruth && !(job.truth ?? []).length) E('I4', `a ${job.kind} job must name its truth package (survey, measurements, standards) with tolerances before building`);
@@ -98,11 +99,11 @@ const RULES = {
     for (const c of job.criteria ?? []) {
       if (c.check?.kind === 'human') continue;
       if (!Array.isArray(c.satisfiedBy) || !c.satisfiedBy.length) { E('I15', `criterion ${c.id} must name the atoms that satisfy it (satisfiedBy)`); continue; }
-      if (!Array.isArray(c.requires)) E('I15', `criterion ${c.id} must declare the capabilities it requires (requires: ["props", …], or [])`);
+      if (!Array.isArray(c.requires)) E('I15', `criterion ${c.id} must declare the capabilities it requires (requires: [capabilities], or [])`);
       for (const id of c.satisfiedBy) {
         const a = atoms.find((y) => y.id === id);
         if (!a) { E('I15', `criterion ${c.id} names unknown atom ${id}`); continue; }
-        if (!Array.isArray(a.capabilities) || !a.capabilities.length) { E('I15', `atom ${id} must declare its contract's capabilities (capabilities: ["pose", "camera", …])`); continue; }
+        if (!Array.isArray(a.capabilities) || !a.capabilities.length) { E('I15', `atom ${id} must declare its contract's capabilities (capabilities: [what its files and API can do])`); continue; }
         const missing = (c.requires ?? []).filter((r) => !a.capabilities.includes(r));
         if (missing.length) E('I15', `criterion ${c.id} needs ${missing.join(', ')}, which atom ${id}'s contract cannot express; widen the contract before the fan-out`);
       }
@@ -122,14 +123,14 @@ const RULES = {
       if (k === 'human' && !x.gates[c.check.gate]) E('I3', `criterion ${c.id} is a human check without a listed gate`);
       if (k !== 'human' && !c.check.run && !(c.check.measure && typeof c.check.target === 'number')) E('I3', `criterion ${c.id}: its check needs run (a command that can fail), or measure with a numeric target`);
       if (c.check.reference && !refs.some((r) => r.id === c.check.reference)) E('I3', `criterion ${c.id} checks against unknown reference ${c.check.reference}`);
-      if (!PROXY_KINDS.includes(k)) continue;
+      if (!isProxyCheck(job, c.check)) continue;
       if (!c.check.calibration?.good || !c.check.calibration?.bad) { E('I3', `criterion ${c.id}: a ${k} check needs calibration.good and calibration.bad (cases it must pass and fail)`); continue; }
       if (typeof c.check.proxy !== 'boolean') E('I3', `criterion ${c.id}: say whether the ${k} check is a proxy (proxy: true|false)`);
       const cal = job.proofs?.calibration?.[c.id];
       if (!(cal?.good === 0 && cal?.bad > 0)) E('I3', `criterion ${c.id} is not calibrated: run job.mjs calibrate (known-good must pass, known-bad must fail)`);
     }
     for (const r of refs) if (atoms.some((a) => (a.references ?? []).includes(r.id)) && !criteria.some((c) => c.check?.reference === r.id))
-      E('I3', `reference ${r.id} governs atoms but no criterion measures against it (likeness or match is a check)`);
+      E('I3', `reference ${r.id} governs atoms but no criterion measures against it (a check that measures against it)`);
     for (const g of job.gates ?? []) {
       if (!g.id || !g.what || !g.who || typeof g.criticalPath !== 'boolean') E('I11', `gate ${g.id ?? '?'} needs id, what, who and criticalPath`);
       if (g.approval && g.approval.via !== 'direct') E('I11', `gate ${g.id}: a relayed approval never counts; it must come from ${g.who} directly`);
@@ -183,7 +184,7 @@ export function validate(job, { gate = 'orchestrate', offline = false, volatile 
   const errors = [], warnings = [], gates = {};
   for (const [i, g] of GATES.entries()) {
     if (i > upto) { gates[g.id] = 'not checked'; continue; }
-    const found = [...RULES[g.id](job, x), ...(x.kind?.checks?.[g.id]?.(job, x) ?? []).map(([inv, m]) => [inv, `${job.kind}: ${m}`])];
+    const found = [...RULES[g.id](job, x), ...(x.kind?.checks?.[g.id]?.(job, x) ?? []).map(([inv, m]) => [inv, `${job.kind}: ${m}`])];   // kind rules are data (tools/job/kinds)
     for (const [inv, msg] of found) errors.push({ gate: g.id, inv, msg });
     gates[g.id] = found.length ? 'refused' : 'passed';
   }

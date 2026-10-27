@@ -1,5 +1,5 @@
 // Job events: firing Endoforge is an event to the user (Craig: "i like this prestage, make firing off the endoforge an
-// event to the user"). Ported from /mnt/cold-steam/factory-scratch/mrton/job/event.py.
+// event to the user").
 //   STAGED     the card is ready; the user confirms it with one go
 //   FIRED      atoms launched: who runs what, the compiled-prompt hash, predictions, gates, ETA, how to stop
 //   SMOKE      the one-atom-per-engine smoke result

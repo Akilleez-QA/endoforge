@@ -1,6 +1,6 @@
 // Phase handlers: the mechanism the daemon runs: go (the gates to Orchestrate), smoke, fired (compiled prompts on
 // every login, under the dial and the budget) and streaming. Streaming has no barrier: each landed atom runs its own
-// collect gate → slice render → checks → freeze or relaunch as a task, several at once (conductor.checkConcurrency),
+// collect gate → slice command → checks → freeze or relaunch as a task, several at once (conductor.checkConcurrency),
 // while the daemon keeps launching and collecting the others. A daemon restart resumes atoms mid-check.
 import { spawnSync } from 'node:child_process';
 import { validate } from '../../job/lib/validate.mjs';

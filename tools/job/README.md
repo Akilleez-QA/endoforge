@@ -15,7 +15,7 @@ Craig, 2026-10-26: "consider how the model working with the user needs to be pro
 | Orchestrate | I8 | the throttle and the capacity dial named; GPU work through gpu-queue; the machine health check passes |
 | Loop | I10, I12, I14 | each round has its receipt and LESSONS.md; the ratchet baseline exists |
 
-`lib/invariants.mjs` lists I1–I15. Each validator message cites one, and `status` reports each invariant as holds, partial, pending or broken. Kind plugins (`lib/kinds.mjs`: `video`, `model3d`, `code`, `campus`, `doc`, `generic`) only add kind-specific checks: likeness for references that govern a look, tests for code, a truth package and site rules for the campus.
+`lib/invariants.mjs` lists I1–I15. Each validator message cites one, and `status` reports each invariant as holds, partial, pending or broken. Job kinds are **data**: `kinds/<kind>.json` (`generic`, `doc`, `video`, `model3d`, `code`, `campus`, plus any directory in `ENDOFORGE_JOB_KINDS`). `lib/kinds.mjs` only interprets universal rule shapes: proxy check kinds, required check kinds, a check against each reference that governs given aspects, a required check field, a required truth package, and splits proven by tests. Core code holds no domain terms; `tools/lib/test/universal.test.mjs` fails if one appears.
 
 ```sh
 J=forge/endoforge/tools/job/bin/job.mjs   # or: endoforge job <command>

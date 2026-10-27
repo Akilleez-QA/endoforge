@@ -1,6 +1,5 @@
-// The collect gate (P-B: check each change the moment it lands, before anything builds on it). Ported from the live
-// /mnt/cold-steam/factory-scratch/mrton/fanout.py collect. One writer on the integration branch (an exclusive lock
-// around the whole apply-gate-commit, from any caller). Per atom:
+// The collect gate (P-B: check each change the moment it lands, before anything builds on it). One writer on the
+// integration branch (an exclusive lock around the whole apply-gate-commit, from any caller). Per atom:
 //   diff its OWN files from its lane base (new files included) → apply → run its gate → commit,
 //   or revert ONLY this atom and write the exact error to gates/<atom>-i<iter>.gate.json for its next prompt.
 // The gate is the atom's `gate` (or conductor.gate), run in the integration repo with ${atom} expanded; a busy gate

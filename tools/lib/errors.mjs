@@ -39,7 +39,7 @@ export function runTyped(argv, { maxWaitMs = 600_000, baseMs = 2000, capMs = 60_
   }
 }
 
-/** runTyped without blocking the event loop, so slice renders and checks of different atoms run at once. */
+/** runTyped without blocking the event loop, so slice commands and checks of different atoms run at once. */
 export async function runTypedAsync(argv, { maxWaitMs = 600_000, baseMs = 2000, capMs = 60_000, timeout = 0, log = () => {}, ...spawnOpts } = {}) {
   const { spawn } = await import('node:child_process');
   let attempts = 0, waited = 0, delay = baseMs;

@@ -114,7 +114,7 @@ export async function launchAll(c, n, dir, lanes, { notes = {}, pre, wait = true
     const p = c.pieces[lane.piece], images = pieceStills(p, stills);
     // A campaign backed by a JOB manifest gets compiled prompts (goal verbatim, governing inputs first, checks,
     // lessons); hand-written briefs are the fallback for campaigns without one.
-    const prompt = c.jobDoc ? compileAtom(c.jobDoc, lane.piece, { lessons: c.jobLessons, stills: images, found: found[lane.piece], note: notes[lane.piece] ?? '', round: n })
+    const prompt = c.jobDoc ? compileAtom(c.jobDoc, lane.piece, { lessons: c.jobLessons, outputs: images, found: found[lane.piece], note: notes[lane.piece] ?? '', round: n })
       : piecePrompt(c, lane.piece, { stills: images, found: found[lane.piece], note: notes[lane.piece] ?? '', round: n });
     fs.mkdirSync(path.join(dir, 'prompts'), { recursive: true }); fs.writeFileSync(path.join(dir, 'prompts', `${laneId(lane)}.prompt`), prompt);
     Object.assign(lane, { argv: workerCommand(c, lane, { worktree: lane.worktree, prompt, images }) });

@@ -30,7 +30,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { validate, PROXY_KINDS } from '../lib/validate.mjs';
+import { validate, isProxyCheck } from '../lib/validate.mjs';
 import { loadJob, health, proofsFile } from '../lib/load.mjs';
 export { loadJob, health };
 import { INVARIANTS, GATES } from '../lib/invariants.mjs';
@@ -56,7 +56,7 @@ function saveProof(f, key, value) {
 export function calibrate(job, only = null) {
   const res = {};
   for (const c of job.criteria ?? []) {
-    if (!PROXY_KINDS.includes(c.check?.kind) || (only && c.id !== only) || !c.check.calibration) continue;
+    if (!isProxyCheck(job, c.check) || (only && c.id !== only) || !c.check.calibration) continue;
     const run = (input) => spawnSync('sh', ['-c', c.check.run.replaceAll('${input}', input)], { cwd: job.repo, stdio: 'ignore', timeout: 1_800_000 }).status ?? 124;
     res[c.id] = { good: run(c.check.calibration.good), bad: run(c.check.calibration.bad), at: new Date().toISOString() };
   }

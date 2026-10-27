@@ -1,0 +1,6 @@
+{
+ "id": "video",
+ "proxyCheckKinds": ["eval", "critic", "likeness"],
+ "measureReferencesGoverning": { "aspects": ["model", "character", "look", "set"], "checkKind": "likeness", "inv": "I3", "why": "add a likeness check against it" },
+ "requireCheckKinds": [{ "kind": "eval", "inv": "I3", "why": "a video needs a numeric eval gate over its outputs (framing, visibility, timing)" }]
+}

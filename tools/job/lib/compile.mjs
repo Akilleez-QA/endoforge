@@ -1,8 +1,8 @@
-// Prompt compiler: JOB manifest → one prompt per atom. Atom prompts are never hand-written (the a collaborator RCA: a
-// summary-written brief carried "stylised lumberjack" and no reference). Each prompt carries, in this order:
+// Prompt compiler: JOB manifest → one prompt per atom. Atom prompts are never hand-written: a brief written from a
+// summary loses the source and the references (see docs/PLAYBOOK-deadline-fanout.md). Each prompt carries, in this order:
 // the goal verbatim; the decompressed brief; the inputs that govern this atom, references first, with paths, what
 // they govern and thumbnails to look at; primary-source excerpts read from disk; the truth package; its checks; its
-// files, contracts and seams; this round's findings and stills; the lessons that bear on it; the return format.
+// files, contracts and seams; this round's findings and outputs; knowledge and lessons that bear on it; the return format.
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { lessonsForAtom } from './lessons.mjs';
@@ -33,7 +33,7 @@ export function knowledgeFor(job, a) {
   return (job.knowledge ?? []).filter((k) => (k.tags ?? ['*']).some((t) => tags.has(String(t).toLowerCase())));
 }
 
-export function compileAtom(job, id, { lessons = [], found = [], stills = [], round = null, note = '', offline = false } = {}) {
+export function compileAtom(job, id, { lessons = [], found = [], outputs = [], round = null, note = '', offline = false } = {}) {
   const a = (job.atoms ?? []).find((x) => x.id === id);
   if (!a) throw new Error(`job ${job.id} has no atom ${id}`);
   const byId = Object.fromEntries([...(job.sources ?? []), ...(job.references ?? [])].map((r) => [r.id, r]));
@@ -58,7 +58,7 @@ export function compileAtom(job, id, { lessons = [], found = [], stills = [], ro
   const ro = [...(a.reads ?? []), ...(job.contracts ?? []).map((k) => `${k.path} (${k.owner === 'frozen' ? 'frozen' : `owned by ${k.owner}`})`)];
   if (ro.length) P.push(`Read-only to you:\n${bullets([...new Set(ro)])}`);
   if (seams.length) P.push(`Seams you touch:\n${bullets(seams.map((s) => `${s.id} between ${s.between.join(' and ')}: ${s.owner === id ? 'you own it; keep both sides consistent' : `owned by ${s.owner}; report problems, do not edit across it`}`))}`);
-  if (stills.length) P.push(`Current stills of your piece (look at every one):\n${bullets(stills)}`);
+  if (outputs.length) P.push(`Current outputs of your piece (inspect every one):\n${bullets(outputs)}`);
   if (found.length) P.push(`The evals' findings attributed to you (fix these first):\n${bullets(found.map((f) => `[${f.level} ${f.rule ?? ''}] ${f.detail}${f.frames?.length ? ` (frames ${f.frames.join(', ')})` : ''}`))}`);
   const known = knowledgeFor(job, a);
   if (known.length) P.push(`Known facts that bear on your atom (each with its source; trust these over memory):\n${bullets(known.map((k) => `${k.text} [source: ${k.source}]`))}`);
