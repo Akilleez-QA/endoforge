@@ -107,7 +107,7 @@ No critic and no fan-out before there is a numeric gate. The campus run graded l
 **Check before moving on.**
 - `hillclimb.mjs atomize <campaign>` (also run by `check` and at the start of every round). It fails on a file two pieces share, on a directory that holds another piece's file, and on a piece that owns a `contracts` path (#387).
 - **Lock ownership before launching anything parallel**, including eval builders and tool builders. Their files go in the map, or in `contracts`.
-- **Split monolithic files into per-piece modules first.** Prove the split is a no-op with a **pixel diff, not frame hashes**: PNG encoders differ run to run. Run `hillclimb.mjs prove-split <campaign> --before <stills> --after <stills>` (`scripts/pixel-diff.py`, #388). On the a collaborator run, 28 of 28 frames came out identical.
+- **Split monolithic files into per-piece modules first.** Prove the split is a no-op with a **pixel diff, not frame hashes**: PNG encoders differ run to run. Run `hillclimb.mjs prove-split <campaign> --before <stills> --after <stills>` (`tools/hillclimb/scripts/pixel-diff.py`, #388). On the a collaborator run, 28 of 28 frames came out identical.
 - **Seams are atoms too.** Coupling between neighbours needs an owner or a contract: b2's end pose against b3's start, voice-over against picture, the character's poses against each beat's staging. Otherwise it only shows up at recombination. A piece owns a seam by listing its eval `keys` or `rules`. A finding nobody owns is counted as `unattributed` and raised as a lesson; it is never handed to an arbitrary worker (#387, #391).
 - **Re-atomize every pass.** A piece is frozen after `fanout.freezeAfter` clean rounds and is not launched. A piece whose findings cluster (at least `fanout.splitAbove` and twice the median) is flagged to be split finer (#388, #391).
 
@@ -208,12 +208,12 @@ The full retrospective is `/mnt/cold-steam/factory-scratch/mrton/RETRO-20261027.
 | Lesson | Enforced by |
 |---|---|
 | A gate prints what it covered, and covering nothing fails (the type-check never reached the beat files; NOTES #119) | `series/rai-reta/tools/mrton-check.mjs` (film branch `claude-code/20261027-mrton-film-tools`) |
-| Machine checks before any critic: flashes, one-frame jumps (smears under the shutter), overlays on the hero, labels never on screen | `tools/compose/film-lint.mjs` on a cut's anchors and luma, about 2 s (same branch) |
+| Machine checks before any critic: flashes, one-frame jumps (smears under the shutter), overlays on the hero, labels never on screen | `series/rai-reta/tools/compose/film-lint.mjs` on a cut's anchors and luma, about 2 s (same branch) |
 | A text-layer change gets a 30 s check, not a full cut | `compose.mjs --from/--to` (same branch) |
-| Recapture only what changed | `tools/capture/cut.mjs`: per-beat plate cache keyed on the beat, its imports, its neighbours, the shared scene, assets, the engine, its voice window and flags (same branch) |
-| Capture cost is measured, by stage and by what is drawn | `tools/capture/profile.mjs` and `__plate.probe.cost` (same branch); no automatic regression gate yet (G15) |
+| Recapture only what changed | `series/rai-reta/tools/capture/cut.mjs`: per-beat plate cache keyed on the beat, its imports, its neighbours, the shared scene, assets, the engine, its voice window and flags (same branch) |
+| Capture cost is measured, by stage and by what is drawn | `series/rai-reta/tools/capture/profile.mjs` and `__plate.probe.cost` (same branch); no automatic regression gate yet (G15) |
 | Short checks never wait behind long captures; queue waits are recorded | `gpu-queue.py --est` short lane with ageing, `history.jsonl`, `--stats` (#423) |
-| An artifact seen in two or more beats goes to the stage owner, who probes before anyone bisects (ghost copies: three rounds; face lines: two lanes) | `tools/capture/probe.mjs` exists; the routing is a rule only (G12) |
+| An artifact seen in two or more beats goes to the stage owner, who probes before anyone bisects (ghost copies: three rounds; face lines: two lanes) | `series/rai-reta/tools/capture/probe.mjs` exists; the routing is a rule only (G12) |
 | Coherence before polish: a short spine checklist of physics pictures scored on every cut, full rows only on changed beats | rule only (G14) |
 
 **New gaps**
@@ -237,7 +237,7 @@ systemd-run --user --unit=hc-<id>-round --slice=heavy.slice --setenv=PATH="$PATH
 node $B status "$C"; node $B lessons "$C"                         # while running / afterwards
 ```
 
-`campaigns/mrton-fanout.json` is the a collaborator campaign as a fan-out campaign (16 pieces, 3 contracts). It was ported from `fanout.py`.
+`tools/hillclimb/campaigns/mrton-fanout.json` is the a collaborator campaign as a fan-out campaign (16 pieces, 3 contracts). It was ported from `fanout.py`.
 
 ## Open questions (gaps with no enforcement yet)
 

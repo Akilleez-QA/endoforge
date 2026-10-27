@@ -113,7 +113,7 @@ The rejections are defects no gate can see: a wrong default and a wrong question
 
 ## Delivery to refrigeration-ai
 
-The 18 non-rejected capabilities are on branch `claude/endoforge-capabilities` at `aaf112ba`, rebased onto trunk `cb77ddc2`, not merged, no PR; the integration lead has accepted it for its own pass. The package (`packages/adapters-capabilities`) is a `ToolRegistry` adapter over the kernels with frozen contracts, tests, glue and a v2 manifest; results carry the rendered value, assumption, question and pending changes, and traps return the glue's message. `factory/deliver.mjs` regenerates it from the receipts.
+The 18 non-rejected capabilities are on branch `claude/endoforge-capabilities` at `aaf112ba`, rebased onto trunk `cb77ddc2`, not merged, no PR; the integration lead has accepted it for its own pass. The package (`packages/adapters-capabilities`) is a `ToolRegistry` adapter over the kernels with frozen contracts, tests, glue and a v2 manifest; results carry the rendered value, assumption, question and pending changes, and traps return the glue's message. `campaigns/x1-spec-study/factory/deliver.mjs` regenerates it from the receipts.
 
 | Check on `aaf112ba` | Result |
 |---|---|
@@ -149,7 +149,7 @@ Example call: `kwToHp(kw = 6.2 kW, hpCode = 0 (mechanical/imperial hp)) -> 8.3 h
 
 | Receipt | Where |
 |---|---|
-| Probe precommits, samples, results | `experiments/P-01`…`P-06`, `P-04b` |
+| Probe precommits, samples, results | `experiments/P-01-*`…`P-06-*`, `P-04b-*` |
 | Probe summary rows | R12 §7 |
 | X1 freeze, events, classifications, factory and persona summaries | `campaigns/x1-spec-study/receipt/` |
 | Contracts, tests, kernels, glue (private, git-ignored) | `campaigns/x1-spec-study/work/factory/<id>/` |

@@ -64,7 +64,7 @@ Start with Edition 3 (`sources/pdf/Endoforge-Edition-3.pdf`). It is the governin
 ## Campaign kits (`../campaigns/`)
 
 - [`campaigns/x1-spec-study/`](../campaigns/x1-spec-study/README.md): the X1 specification-study kit (C01, WP07): intake and contract templates, frozen rubric, timer, blind-half export, analysis with DP-6 bands and Clopper–Pearson intervals. `make x1-test` reproduces R14's interval values.
-- [`campaigns/hillclimb-loop-01/`](../campaigns/hillclimb-loop-01/receipt/PRECOMMIT.md): loop 1 of the factory hill-climb (18 Oct 2026): metered single-shot kit (`lib/`, `bin/`), versioned briefs, the freeze (working/sealed split, canary packet, fixed-file hashes), the deviation step (`receipt/deviations.md`), the hashed precommit and forecast ledger, noise floor, screen, sealed set, decision and hand-offs under `receipt/`; request text stays in git-ignored `work/`.
+- [`campaigns/hillclimb-loop-01/`](../campaigns/hillclimb-loop-01/receipt/PRECOMMIT.md): loop 1 of the factory hill-climb (18 Oct 2026): metered single-shot kit (`lib/`, `bin/`), versioned briefs, the freeze (working/sealed split, canary packet, fixed-file hashes), the deviation step (`campaigns/hillclimb-loop-01/receipt/deviations.md`), the hashed precommit and forecast ledger, noise floor, screen, sealed set, decision and hand-offs under `receipt/`; request text stays in git-ignored `work/`.
 
 ## Experiments (`../experiments/`)
 
@@ -84,7 +84,7 @@ Start with Edition 3 (`sources/pdf/Endoforge-Edition-3.pdf`). It is the governin
 - [`REPORT-2026-10-18.md`](REPORT-2026-10-18.md): where things stand after loop 1 and the speed track, what was missed, ranked opportunities, and corrections to the record.
 - [`audits/AUDIT-2026-10-18-codex.md`](audits/AUDIT-2026-10-18-codex.md): the independent Codex audit of all results, kept verbatim.
 - [`figures/baseline-20-then-and-now.png`](figures/baseline-20-then-and-now.png): the 20 loop-0 requests, 17 Oct against 18 Oct (data in the matching `.json`).
-- [`execution/LOOP-1-BRIEF.md`](execution/LOOP-1-BRIEF.md) and `campaigns/hillclimb-loop-01/`: loop 1's brief, kit and receipts (`receipt/DECISION.md`).
+- [`execution/LOOP-1-BRIEF.md`](execution/LOOP-1-BRIEF.md) and `campaigns/hillclimb-loop-01/`: loop 1's brief, kit and receipts (`campaigns/hillclimb-loop-01/receipt/DECISION.md`).
 - `tools/atomizer/`: the task atomizer and speed track: `README.md`, `LEDGER.md` (schema of the append-only ledger), `SPEED.md`, `CUTOVER.md`, `RESULTS.md`, `ledger/`.
 - `experiments/P-08-request-blind-evals/`: request-blind versus stub-fed evals (DEC-80 evidence).
 - [P-09 portable campaign replay](../experiments/P-09-portable-campaign/RESULT.md): Docker toolchain packaging, frozen-gate replay, role visibility, same-host archive round trip and startup overhead; Recorded (probe), no live agents or quality claims.
