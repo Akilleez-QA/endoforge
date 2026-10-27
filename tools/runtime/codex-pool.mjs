@@ -25,6 +25,37 @@ const ACCOUNTS = E.CODEX_POOL_ACCOUNTS_DIR || path.join(HOME, '.codex-accounts')
 const PER = Number(E.CODEX_POOL_PER_ACCOUNT) || 2, WAIT_MS = (Number(E.CODEX_POOL_WAIT) || 600) * 1000;
 const GUARD = E.CODEX_POOL_GUARD || 'none';
 const RATE = /\b429\b|too many requests|rate[ _-]?limit|usage limit|quota exceeded/i;
+// When a limit lifts, in epoch ms, from the message (adapters/provider_policy.py parse_reset is the same rule): relative
+// ("try again in 120 seconds", "in 2h 30m") or absolute ("try again at Nov 2nd, 2026 2:38 AM": local time, so daylight
+// saving applies; a missing year or date is the next such moment). null when the message names none.
+const UNITS = { s: 1, sec: 1, secs: 1, second: 1, seconds: 1, m: 60, min: 60, mins: 60, minute: 60, minutes: 60, h: 3600,
+  hr: 3600, hrs: 3600, hour: 3600, hours: 3600, d: 86400, day: 86400, days: 86400 };
+const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+function resetAt(text, now = Date.now()) {
+  const rel = text.match(/(?:try again|resets?|available again)\s+in\s+((?:\d+(?:\.\d+)?\s*[a-z]+[\s,]*(?:and\s+)?)+)/i);
+  if (rel) {
+    let s = 0, found = false;
+    for (const [, n, u] of rel[1].matchAll(/(\d+(?:\.\d+)?)\s*([a-z]+)/gi)) if (UNITS[u.toLowerCase()]) { s += Number(n) * UNITS[u.toLowerCase()]; found = true; }
+    if (found) return now + s * 1000;
+  }
+  const m = text.match(/(?:try again|resets?|available again)\s+(?:at|on)\s+(?:([a-z]{3})[a-z]*\.?\s+(\d{1,2})(?:st|nd|rd|th)?,?\s+(?:(\d{4}),?\s+)?)?(\d{1,2}):(\d{2})\s*([ap]\.?m\.?)?/i);
+  if (!m) return null;
+  let h = Number(m[4]); const min = Number(m[5]);
+  if (m[6]) { if (h < 1 || h > 12) return null; h = (h % 12) + (/^p/i.test(m[6]) ? 12 : 0); }
+  if (h > 23 || min > 59) return null;
+  const cur = new Date(now);
+  let when;
+  if (m[1]) {
+    const mon = MONTHS.indexOf(m[1].toLowerCase());
+    if (mon < 0) return null;
+    when = new Date(Number(m[3] || cur.getFullYear()), mon, Number(m[2]), h, min);
+    if (!m[3] && when.getTime() < now - 86400e3) when = new Date(when.getFullYear() + 1, mon, Number(m[2]), h, min);
+  } else {
+    when = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate(), h, min);
+    if (when.getTime() < now) when = new Date(cur.getFullYear(), cur.getMonth(), cur.getDate() + 1, h, min);
+  }
+  return Math.max(now, when.getTime());
+}
 const SLOTS = path.join(STATE, 'slots'), COOL = path.join(STATE, 'cooldown');
 for (const d of [SLOTS, COOL]) fs.mkdirSync(d, { recursive: true });
 
@@ -119,7 +150,14 @@ async function main() {
     const ready = all.filter((a) => !tried.has(a.name) && coolUntil(a.name) <= now);
     if (!ready.length) {
       const next = Math.min(...all.filter((a) => !tried.has(a.name)).map((a) => coolUntil(a.name)), Infinity);
-      if (next === Infinity || next > deadline) { console.error('codex-pool: all accounts exhausted (rate-limited or cooling down)'); return 75; }
+      if (next === Infinity || next > deadline) {
+        // the earliest moment any account (tried this run or not) is usable again
+        const lift = Math.min(...all.map((a) => coolUntil(a.name)));
+        const hrs = (lift - now) / 3600e3;
+        console.error(lift <= now + WAIT_MS ? 'codex-pool: all accounts exhausted (rate-limited or cooling down)'
+          : `codex-pool: all accounts capped until ${new Date(lift).toString()} (${hrs >= 24 ? (hrs / 24).toFixed(1) + ' days' : hrs.toFixed(1) + ' h'}); not retrying before then`);
+        return 75;
+      }
       await sleep(Math.min(next - now, 5000)); continue;
     }
     const pick = ready.map((a) => ({ a, n: held(a.name) })).filter((x) => x.n < PER).sort((x, y) => x.n - y.n)[0];
@@ -138,9 +176,11 @@ async function main() {
       const r = await launch(bin, acct);
       const rate = r.code !== 0 && RATE.test(r.tail);
       if (rate) {
-        const secs = Number(r.tail.match(/try again in (\d+)\s*s/i)?.[1]) || 300;
-        fs.writeFileSync(path.join(COOL, acct.name), String(Date.now() + secs * 1000));
-        log({ account: acct.name, pid: process.pid, child: r.pid, exit: r.code, class: 'rate', failover: 'yes' });
+        // cool down until the limit really lifts; 300 s only when the message names no reset (a five-day cap re-probed
+        // every five minutes for five days before 2026-10-27)
+        const until = resetAt(r.tail) ?? Date.now() + 300e3;
+        fs.writeFileSync(path.join(COOL, acct.name), String(until));
+        log({ account: acct.name, pid: process.pid, child: r.pid, exit: r.code, class: 'rate', failover: 'yes', until: new Date(until).toISOString() });
         tried.add(acct.name); continue;
       }
       log({ account: acct.name, pid: process.pid, child: r.pid, exit: r.code, class: r.code === 0 ? 'ok' : 'error' });

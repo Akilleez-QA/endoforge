@@ -19,6 +19,8 @@ function stub(dir, tag) {
   const p = path.join(dir, 'codex');
   fs.writeFileSync(p, `#!/bin/sh
 input=$(cat)
+echo run >> "$CODEX_HOME/calls"
+if [ -e "$CODEX_HOME/CAPPED" ]; then cat "$CODEX_HOME/CAPPED" >&2; exit 1; fi
 if [ -e "$CODEX_HOME/RATE_LIMITED" ]; then echo 'ERROR: 429 Too Many Requests; try again in 120 seconds' >&2; exit 1; fi
 printf 'bin=${tag} home=%s args=%s stdin=%s\\n' "\${CODEX_HOME##*/}" "$*" "$input"
 `, { mode: 0o755 });
@@ -90,6 +92,27 @@ try {
     const r = run(env, ['exec', '-', '-i', 'a.png', '-i', 'b.png'], { input: 'fix beat b3' });
     assert.equal(r.status, 0, r.stderr);
     assert.equal(r.stdout, 'bin=stub home=acct-a args=exec - -i a.png -i b.png stdin=fix beat b3\n');
+  });
+  test('a multi-day usage cap cools every account until its reset and is not re-probed', () => {
+    // 2026-10-27: "try again at Nov 2nd, 2026 2:38 AM" was read as a 300 s cooldown, re-probing every five minutes
+    // for five days. The cap now holds each account until the time it names, and the pool exits 75 at once.
+    const { root, env } = setup('capped');
+    env.CODEX_POOL_BIN = stub(path.join(root, 'bin'), 'stub');
+    const reset = new Date(Date.now() + 3 * 86400e3); reset.setSeconds(0, 0);
+    const mon = reset.toLocaleString('en-US', { month: 'short' });
+    const hh = reset.getHours() % 12 || 12, ampm = reset.getHours() < 12 ? 'AM' : 'PM';
+    const msg = `ERROR: You\u2019ve hit your usage limit. Visit https://chatgpt.com/settings/usage to purchase more credits or try again at ${mon} ${reset.getDate()}th, ${reset.getFullYear()} ${hh}:${String(reset.getMinutes()).padStart(2, '0')} ${ampm}.`;
+    for (const a of ['acct-a', 'accts/acct-b']) fs.writeFileSync(path.join(root, a, 'CAPPED'), msg);
+    let r = run(env, ['exec', 'x'], { input: '' });
+    assert.equal(r.status, 75, r.stderr);
+    assert.match(r.stderr, /all accounts capped until .*\(3\.0 days\); not retrying before then/);
+    for (const [a, name] of [['acct-a', 'default'], ['accts/acct-b', 'acct-b']]) {
+      assert.equal(Number(fs.readFileSync(path.join(root, 'state', 'cooldown', name), 'utf8')), reset.getTime());
+      assert.equal(fs.readFileSync(path.join(root, a, 'calls'), 'utf8'), 'run\n');
+    }
+    r = run(env, ['exec', 'again'], { input: '' });       // a second launch is refused without touching codex
+    assert.equal(r.status, 75, r.stderr);
+    assert.equal(fs.readFileSync(path.join(root, 'acct-a', 'calls'), 'utf8'), 'run\n');
   });
   test('a file prompt survives a rate-limit failover', () => {
     const { root, env } = setup('failover', { limited: ['acct-a'] });
