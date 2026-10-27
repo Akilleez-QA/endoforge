@@ -1,6 +1,7 @@
-// Phase handlers: the mechanism the daemon runs. Stage 2: go (the gates to Orchestrate), smoke, fired (compiled
-// prompts on every login, under the dial and the budget) and a streaming loop whose only check is the collect gate.
-// Stage 3 plugs slice renders and checks into `checkAtom`.
+// Phase handlers: the mechanism the daemon runs: go (the gates to Orchestrate), smoke, fired (compiled prompts on
+// every login, under the dial and the budget) and streaming. Streaming has no barrier: each landed atom runs its own
+// collect gate → slice render → checks → freeze or relaunch as a task, several at once (conductor.checkConcurrency),
+// while the daemon keeps launching and collecting the others. A daemon restart resumes atoms mid-check.
 import { spawnSync } from 'node:child_process';
 import { validate } from '../../job/lib/validate.mjs';
 import { health } from '../../job/lib/load.mjs';
@@ -11,6 +12,7 @@ import { allSettled } from './state.mjs';
 import { assignLogins, slotsFree, launchAtom, laneExit, stopLanes } from './launch.mjs';
 import { collectAtom, gateFeedback } from './collect.mjs';
 import { escalate } from './daemon.mjs';
+import { checkAtom as sliceCheck } from './checks.mjs';
 
 const promptFor = (job, id, st, note) => compileAtom(job, id, { lessons: retrieveLessons(job), round: st.iter + 1, note: note ?? st.feedback ?? '' });
 
@@ -35,14 +37,25 @@ function launchPending(ctx) {
 }
 
 /** One atom has landed: run the collect gate, then its checks (stage 3), then freeze it or relaunch it. */
-export async function settleAtom(ctx, id, checkAtom = null) {
-  const { job, file } = ctx, s0 = ctx.state, st = s0.atoms[id], exit = laneExit(st);
+export async function settleAtom(ctx, id, checkAtom = sliceCheck) {
+  const { job, file } = ctx, st = ctx.update(() => {}).atoms[id], exit = laneExit(st);
   if (exit !== 0) return relaunchOrEscalate(ctx, id, `the worker exited ${exit}; see ${st.lane.log}`, { stage: 'worker', exit });
   const g = collectAtom(job, file, st, id);
   spawnSync('git', ['-C', job.repo, 'worktree', 'remove', '--force', st.lane.worktree], { stdio: 'ignore' });   // collected: the lane's copy goes
   if (g.status === 'reverted') return relaunchOrEscalate(ctx, id, gateFeedback(g), { stage: g.stage, error: g.error });
-  const verdict = checkAtom ? await checkAtom(ctx, id, g) : { pass: true, why: 'collect gate passed' };
-  if (verdict.unscored) { ctx.update((s) => { s.atoms[id].status = 'landed'; s.atoms[id].last = `not scored: ${verdict.why}`; }); return; }
+  ctx.update((s) => { s.atoms[id].status = 'checking'; s.atoms[id].sha = g.sha ?? null; });
+  return judge(ctx, id, checkAtom);
+}
+
+/** Run the atom's checks and act on the verdict. Also resumes an atom that was mid-check when the daemon stopped. */
+export async function judge(ctx, id, checkAtom = sliceCheck) {
+  const { job, file } = ctx, st = ctx.update(() => {}).atoms[id], g = { sha: st.sha };
+  const verdict = await checkAtom(ctx, id);
+  if (verdict.unscored) {
+    const s = ctx.update((x) => { const a = x.atoms[id]; a.status = 'landed'; a.unscored = (a.unscored ?? 0) + 1; a.last = `not scored: ${verdict.why}`; });
+    if (s.atoms[id].unscored >= (job.conductor?.maxUnscored ?? 3)) escalate(job, file, { to: 'coordinator', key: `unscored:${id}:i${st.iter}`, atom: id, why: `its checks could not run ${s.atoms[id].unscored} times: ${verdict.why}`, packet: { atom: id, why: verdict.why } });
+    return;
+  }
   if (verdict.pass) {
     ctx.update((s) => { Object.assign(s.atoms[id], { status: 'frozen', last: verdict.why, feedback: null }); s.atoms[id].history.push({ iter: st.iter, pass: true, sha: g.sha ?? null }); });
     emit(job, file, { kind: 'GATE', summary: `${id} frozen at iteration ${st.iter}: ${verdict.why}`, data: { atom: id, iter: st.iter, pass: true } });
@@ -59,6 +72,16 @@ function relaunchOrEscalate(ctx, id, feedback, evidence) {
   if (a.status === 'needs-coordinator')
     escalate(job, file, { to: 'coordinator', key: `atom:${id}:i${a.iter}`, atom: id, why: `still failing after ${a.iter} iterations: ${a.last}`, packet: { atom: id, iter: a.iter, history: a.history, feedback } });
 }
+
+/** Atoms being collected or checked by this daemon process (in memory; a restart resumes them from their status). */
+const inFlight = new Map();
+function start(ctx, id, task) {
+  inFlight.set(id, task().catch((e) => {
+    if (e.name === 'StopError') ctx.update((s) => { s.stopped = { by: 'conductor', why: e.message, at: new Date().toISOString() }; });
+    else escalate(ctx.job, ctx.file, { to: 'coordinator', key: `error:${id}:${e.message.slice(0, 60)}`, atom: id, why: `the conductor failed on it: ${e.message}` });
+  }).finally(() => inFlight.delete(id)));
+}
+export const idle = () => Promise.all(inFlight.values());
 
 export const handlers = {
   go: (ctx) => {
@@ -78,10 +101,15 @@ export const handlers = {
     emit(ctx.job, ctx.file, firedEvent(ctx.job, started, 'compiled per launch; see conductor/prompts'));
     return { advance: true, why: `${started.length} atoms launched` };
   },
-  streaming: async (ctx) => {
-    for (const [id, st] of Object.entries(ctx.state.atoms)) if (st.status === 'launched' && laneExit(st) != null) await settleAtom(ctx, id, ctx.checkAtom);
+  streaming: (ctx) => {
+    const limit = ctx.job.conductor?.checkConcurrency ?? 4;
+    for (const [id, st] of Object.entries(ctx.state.atoms)) {
+      if (inFlight.has(id) || inFlight.size >= limit) continue;
+      if (st.status === 'launched' && laneExit(st) != null) start(ctx, id, () => settleAtom(ctx, id));
+      else if (st.status === 'checking' || (st.status === 'landed' && (st.unscored ?? 0) < (ctx.job.conductor?.maxUnscored ?? 3))) start(ctx, id, () => judge(ctx, id));
+    }
     launchPending(ctx);
-    return allSettled(ctx.update(() => {})) ? { advance: true, why: 'every atom frozen or locked' } : null;
+    return allSettled(ctx.update(() => {})) && !inFlight.size ? { advance: true, why: 'every atom frozen or locked' } : null;
   },
   onStop: (ctx) => ctx.update ? ctx.update((s) => stopLanes(s)) : null,
 };

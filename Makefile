@@ -50,6 +50,7 @@ lib-test: ## shared tool libraries: the error taxonomy (75 transient, 78 stop, u
 conductor-test: ## the job Conductor: state machine, locks, commands, daemon (stub handlers)
 	node tools/conductor/test/state.test.mjs
 	node tools/conductor/test/launch.test.mjs
+	node tools/conductor/test/stream.test.mjs
 
 job-test: ## job intake: POODO gates, invariant rules, kind plugins, FMEA controls (no model)
 	node tools/job/test/run.mjs

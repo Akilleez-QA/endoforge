@@ -34,4 +34,13 @@ Stages: (1) state, events and commands, with the phase loop; (2) launcher, colle
 
 The next prompt carries that error. After `conductor.maxIterations` the atom escalates by NEEDS-COORDINATOR with its history.
 
-Tests: `node test/state.test.mjs`, `node test/launch.test.mjs` (`make conductor-test`).
+**Streaming** (`lib/checks.mjs`, P-D, ported from `beatloop.py`). There is no barrier: each landed atom becomes its own task, and up to `conductor.checkConcurrency` run at once while the daemon keeps launching and collecting the rest. A task runs:
+1. the collect gate;
+2. `conductor.slice.render`, which renders only that atom's slice into `${out}` (with `${atom}` and `${repo}`; put the GPU queue inside it);
+3. its `conductor.checks`, each `{ id, run, atoms?, json? }`, run with `${input}` = the slice and `${out}` = a JSON result.
+
+A check passes on exit 0, or on `pass` in its JSON. Critics such as `likeness.sh` and `fidelity.sh` are checks with `json: true`; their `fix` and `elements` go into the next prompt. Then the atom is **frozen**, or **relaunched at once** with the findings, up to `maxIterations`, after which it escalates.
+
+Errors are typed: 75 waits; 78 stops the job; a check that cannot run is **not scored**. A not-scored check is retried, never counted as a failed iteration, and after `maxUnscored` it wakes the coordinator. A daemon restart resumes atoms that were mid-check.
+
+Tests: `node test/state.test.mjs`, `node test/launch.test.mjs`, `node test/stream.test.mjs` (`make conductor-test`).
