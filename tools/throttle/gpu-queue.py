@@ -21,6 +21,17 @@ stops at once (exit 78). GPU_QUEUE_VRAM_FRAC, GPU_QUEUE_BAR1_FRAC, GPU_QUEUE_RES
 Tickets default to ~/.local/state/gpu-queue; GPU_QUEUE_DIR overrides that path. If that path is a symlink whose target
 is gone (a link into /tmp wiped by a reboot), the target is recreated.
 
+Short jobs do not wait behind long ones (2026-10-27: a 2-second check clip waited behind a 40-minute film capture, and
+twice timed out). `--est SECONDS` declares how long a job runs; one of GPU_QUEUE_SHORT_SEC (300) or less takes queue
+priority 0, so it starts at the next gap between long jobs. A long ticket that has waited GPU_QUEUE_AGE_SEC (600) is
+renamed to priority 0 with its arrival kept, so short jobs can never starve it. The lane lives in the ticket's name
+(<priority>-<arrival ns>-<pid>.ticket) because that is all the browser guard reads to find the head: the guard, older
+queue processes and this one agree on who is next.
+
+Every job appends one line to history.jsonl in the queue directory (name, priority, lane, est, queued, started and
+ended times, waited and ran seconds, exit code); `gpu-queue.py --stats [--hours 12]` summarises waits and runs per lane
+and lists the tickets waiting now.
+
 The fleet capacity dial (fleet-disconnect ramp, see FLEET-DISCONNECT.md) scales the start limits: at N % a job starts
 only under N % of the VRAM, BAR1 and load limits. At 0 % (the drain before a reboot) no new ticket is taken and a
 waiting ticket is released: both exit 75, so the caller requeues after `fleet-disconnect resume`. A job already running
@@ -236,10 +247,91 @@ def headroom(health_path=None, meminfo="/proc/meminfo", load1=None):
     return None
 
 
+def short_seconds():
+    try:
+        return float(os.environ.get("GPU_QUEUE_SHORT_SEC", "300"))
+    except ValueError:
+        return 300.0
+
+
+def age_seconds():
+    try:
+        return float(os.environ.get("GPU_QUEUE_AGE_SEC", "600"))
+    except ValueError:
+        return 600.0
+
+
+def ticket_priority(priority, est):
+    """The queue priority a ticket is filed under: 0 for a declared short job, else the caller's."""
+    return 0 if est is not None and est <= short_seconds() else priority
+
+
+def history_path():
+    return os.path.join(QDIR, "history.jsonl")
+
+
+def record(entry):
+    """Append one finished job to history.jsonl (best effort: history never fails a job)."""
+    try:
+        ensure_queue_dir()
+        with open(history_path(), "a") as fh:
+            fh.write(json.dumps(entry) + "\n")
+    except OSError as exc:
+        print(f"gpu-queue: history not written ({exc})", file=sys.stderr)
+
+
+def stats(hours=12.0, now=None, out=sys.stdout):
+    """Waits and runs per lane over the last `hours`, and the tickets waiting now."""
+    now = time.time() if now is None else now
+    rows = []
+    try:
+        with open(history_path()) as fh:
+            for line in fh:
+                try:
+                    e = json.loads(line)
+                except ValueError:
+                    continue
+                if e.get("ended", 0) >= now - hours * 3600:
+                    rows.append(e)
+    except FileNotFoundError:
+        pass
+    def pct(xs, q):
+        xs = sorted(xs)
+        return xs[min(len(xs) - 1, int(q * len(xs)))] if xs else 0
+    print(f"gpu-queue: {len(rows)} jobs in the last {hours:g} h", file=out)
+    for lane in ("short", "long"):
+        sel = [e for e in rows if e.get("lane") == lane]
+        if not sel:
+            continue
+        w = [e.get("waited", 0) for e in sel]; r = [e.get("ran", 0) for e in sel]
+        print(f"  {lane:5} {len(sel):4} jobs  wait median {pct(w, .5):6.0f} s  p90 {pct(w, .9):6.0f} s  max {max(w):6.0f} s"
+              f"   run median {pct(r, .5):6.0f} s  max {max(r):6.0f} s  failed {sum(1 for e in sel if e.get('rc'))}", file=out)
+    late = [e for e in rows if e.get("est") and e.get("ran", 0) > 2 * e["est"]]
+    for e in late[-5:]:
+        print(f"  over estimate: {e.get('name')} ran {e.get('ran'):.0f} s, declared {e.get('est'):.0f} s", file=out)
+    q = tickets()
+    if q:
+        print(f"  waiting now ({len(q)}):", file=out)
+        for prio, ts, pid, f in q:
+            try:
+                with open(os.path.join(QDIR, f)) as fh:
+                    name = json.load(fh).get("name", "?")
+            except (OSError, ValueError):
+                name = "?"
+            print(f"    {prio} {name:32} queued {now - ts / 1e9:6.0f} s ago", file=out)
+    return rows
+
+
 def main():
     ap = argparse.ArgumentParser()
+    if "--stats" in sys.argv[1:]:
+        hours = float(sys.argv[sys.argv.index("--hours") + 1]) if "--hours" in sys.argv else 12.0
+        stats(hours)
+        return 0
     ap.add_argument("--name", required=True)
     ap.add_argument("--priority", type=int, default=5)
+    ap.add_argument("--est", type=float, default=None,
+                    help="expected run seconds; GPU_QUEUE_SHORT_SEC (300) or less takes the short lane (priority 0)")
     ap.add_argument("--poll", type=int, default=30, help="seconds between checks")
     ap.add_argument("--max-wait", type=float, default=6 * 3600, help="seconds to wait for health and headroom")
     ap.add_argument("cmd", nargs=argparse.REMAINDER)
@@ -252,11 +344,13 @@ def main():
         print(f"gpu-queue: {a.name} not queued, the fleet is draining for a disconnect ({drain}); "
               "requeue after fleet-disconnect resume", file=sys.stderr)
         return 75
-    me = f"{a.priority}-{time.time_ns()}-{os.getpid()}.ticket"
+    arrival = time.time_ns()
+    lane = "short" if ticket_priority(a.priority, a.est) == 0 and a.est is not None else "long"
+    me = f"{ticket_priority(a.priority, a.est)}-{arrival}-{os.getpid()}.ticket"
     path = os.path.join(QDIR, me)
     poll = max(a.poll, 5)
     data = {"name": a.name, "cmd": cmd, "cwd": os.getcwd(),
-            "pid": os.getpid(), "pidns": pid_namespace()}
+            "pid": os.getpid(), "pidns": pid_namespace(), "priority": a.priority, "est": a.est}
     write_ticket(path, data)
     stopped = threading.Event()
     worker = None
@@ -273,6 +367,7 @@ def main():
 
     signal.signal(signal.SIGTERM, lambda *_: (release(), sys.exit(143)))
     started, last_why = time.time(), None
+    run_at, rc = None, None
     try:
         while True:
             drain = drain_reason()
@@ -281,6 +376,12 @@ def main():
                       "requeue after fleet-disconnect resume", file=sys.stderr)
                 return 75
             heartbeat(path, data)
+            if not me.startswith("0-") and time.time() - started >= age_seconds():
+                # aged: file it under priority 0, arrival kept, so short jobs cannot starve it
+                aged = f"0-{arrival}-{os.getpid()}.ticket"
+                os.replace(path, os.path.join(QDIR, aged))
+                me, path = aged, os.path.join(QDIR, aged)
+                print(f"gpu-queue: {a.name} waited {age_seconds():.0f} s, now in the short lane", file=sys.stderr, flush=True)
             q = tickets(poll)
             if q and q[0][3] == me:
                 code, st = status()
@@ -299,19 +400,24 @@ def main():
                     print(f"gpu-queue: {a.name} at the head, waiting: {why}", file=sys.stderr, flush=True)
                     last_why = why
             else:
-                ahead = [t for t in q if t[3] != me and (t[0], t[1]) < (a.priority, int(me.split('-')[1]))]
+                ahead = [t for t in q if t[3] != me and (t[0], t[1]) < (int(me.split('-')[0]), arrival)]
                 print(f"gpu-queue: {a.name} waiting, {len(ahead)} ahead", file=sys.stderr, flush=True)
             time.sleep(poll)
         heartbeat(path, data)
         worker = threading.Thread(target=keep_alive, args=(path, data, poll, stopped), daemon=True)
         worker.start()
         print(f"gpu-queue: {a.name} running", file=sys.stderr, flush=True)
+        run_at = time.time()
         rc = subprocess.call(cmd)
         if rc == 75:
             print("gpu-queue: launcher still busy (75); job not run, requeue later", file=sys.stderr)
         return rc
     finally:
         release()
+        ended = time.time()
+        record({"name": a.name, "priority": a.priority, "lane": lane, "est": a.est, "queued": arrival / 1e9,
+                "started": run_at, "ended": ended, "waited": round((run_at or ended) - arrival / 1e9, 1),
+                "ran": round(ended - run_at, 1) if run_at else 0, "rc": rc if run_at else "not run"})
 
 
 if __name__ == "__main__":

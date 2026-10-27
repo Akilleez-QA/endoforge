@@ -249,7 +249,7 @@ class QueueTests(unittest.TestCase):
                 self.assertEqual(queue.main(), 0)
         self.assertTrue(thread.call_args.kwargs['daemon'])
         worker.join.assert_called_once()
-        self.assertEqual(os.listdir(self.directory), [])
+        self.assertEqual([n for n in os.listdir(self.directory) if n.endswith('.ticket')], [])  # history.jsonl stays
 
 
     def write_health(self, fb_used, bar1_used):
@@ -295,7 +295,74 @@ class QueueTests(unittest.TestCase):
              mock.patch.object(queue.subprocess, 'call') as run, contextlib.redirect_stderr(io.StringIO()):
             self.assertEqual(queue.main(), 78)
         run.assert_not_called()
-        self.assertEqual(os.listdir(self.directory), [])
+        self.assertEqual([n for n in os.listdir(self.directory) if n.endswith('.ticket')], [])  # history.jsonl stays
+
+    def test_short_lane_priority(self):
+        with mock.patch.dict(os.environ, {'GPU_QUEUE_SHORT_SEC': '300'}):
+            self.assertEqual(queue.ticket_priority(2, 120), 0)
+            self.assertEqual(queue.ticket_priority(2, 300), 0)
+            self.assertEqual(queue.ticket_priority(2, 900), 2)
+            self.assertEqual(queue.ticket_priority(2, None), 2)
+
+    def run_job(self, argv, call=None):
+        with mock.patch.object(queue.sys, 'argv', ['gpu-queue.py', *argv]), \
+             mock.patch.object(queue.signal, 'signal'), mock.patch.object(queue.time, 'sleep'), \
+             mock.patch.object(queue, 'status', return_value=(0, {})), \
+             mock.patch.object(queue, 'headroom', return_value=None), \
+             mock.patch.object(queue.threading, 'Thread', return_value=mock.Mock()), \
+             mock.patch.object(queue.subprocess, 'call', side_effect=call or (lambda cmd: 0)), \
+             contextlib.redirect_stderr(io.StringIO()) as err:
+            return queue.main(), err.getvalue()
+
+    def test_short_job_is_filed_in_the_short_lane(self):
+        # the 2026-10-27 case: a 2 s check clip waited behind a 40-minute capture
+        seen = []
+        def look(cmd):
+            seen.extend(p.name for p in self.directory.glob('*.ticket'))
+            return 0
+        rc, _ = self.run_job(['--name', 'check', '--priority', '2', '--est', '30', '--', 'example'], look)
+        self.assertEqual(rc, 0)
+        self.assertEqual(len(seen), 1)
+        self.assertTrue(seen[0].startswith('0-'), seen)
+
+    def test_short_ticket_is_the_head_for_the_guard_too(self):
+        # the browser guard reads only names: <priority>-<arrival>-<pid>.ticket, lowest first
+        queue.ensure_queue_dir()
+        for name in ['1-100-11.ticket', '0-300-12.ticket']:
+            (self.directory / name).write_text('{}')
+        with mock.patch.object(queue, 'alive', return_value=True):
+            self.assertEqual(queue.tickets()[0][3], '0-300-12.ticket')
+
+    def test_long_ticket_ages_into_the_short_lane(self):
+        clock = iter(range(0, 10_000, 400))
+        names = []
+        real_tickets = queue.tickets
+        def tickets(poll=30):
+            q = real_tickets(poll)
+            names.append([t[3] for t in q])
+            # a short job ahead keeps the long one waiting until it has aged
+            return [(0, 1, 1, 'ahead')] + q if len(names) < 3 else q
+        with mock.patch.dict(os.environ, {'GPU_QUEUE_AGE_SEC': '600'}), \
+             mock.patch.object(queue.time, 'time', side_effect=lambda: float(next(clock))), \
+             mock.patch.object(queue, 'tickets', side_effect=tickets):
+            rc, err = self.run_job(['--name', 'capture', '--priority', '1', '--', 'example'])
+        self.assertEqual(rc, 0)
+        self.assertTrue(names[0][0].startswith('1-'))
+        self.assertTrue(any(n and n[0].startswith('0-') for n in names[1:]))
+        self.assertIn('now in the short lane', err)
+
+    def test_history_and_stats(self):
+        rc, _ = self.run_job(['--name', 'clip', '--est', '20', '--', 'example'])
+        self.assertEqual(rc, 0)
+        rc, _ = self.run_job(['--name', 'capture', '--priority', '1', '--', 'example'], lambda cmd: 3)
+        self.assertEqual(rc, 3)
+        lines = [json.loads(l) for l in (self.directory / 'history.jsonl').read_text().splitlines()]
+        self.assertEqual([(e['name'], e['lane'], e['rc']) for e in lines], [('clip', 'short', 0), ('capture', 'long', 3)])
+        self.assertTrue(all(e['waited'] >= 0 and e['ran'] >= 0 for e in lines))
+        out = io.StringIO()
+        rows = queue.stats(12, out=out)
+        self.assertEqual(len(rows), 2)
+        self.assertIn('short', out.getvalue()); self.assertIn('long', out.getvalue()); self.assertIn('failed 1', out.getvalue())
 
 if __name__ == '__main__':
     unittest.main()
