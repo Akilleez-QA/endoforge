@@ -32,10 +32,10 @@ test('each atom climbs on its own: slice render → critic → relaunch with the
   const { f, d } = setup('climb', { 'b1.txt': 'bad', 'b2.txt': 'bad', 'b3.txt': 'never' }, { gate: null, maxIterations: 3, checkConcurrency: 3,
     slice: { command: render }, checks: [{ id: 'fidelity', json: true, run: critic(log) }] });
   const s = await run(f);
-  assert.deepEqual(Object.fromEntries(Object.entries(s.atoms).map(([k, v]) => [k, [v.status, v.iter]])), { B1: ['frozen', 2], B2: ['frozen', 2], B3: ['needs-coordinator', 3] });
+  assert.deepEqual(Object.fromEntries(Object.entries(s.atoms).map(([k, v]) => [k, [v.status, v.iter]])), { B1: ['frozen', 2], B2: ['frozen', 2], B3: ['needs-coordinator', 2] }, 'B3 failed the same way twice (U1): a decision, not a third retry');
   assert.match(fs.readFileSync(path.join(d, 'conductor/prompts/B1-i2.prompt'), 'utf8'), /failed its checks. Fix first:\n- fidelity: make it read good/);
   assert(fs.existsSync(path.join(d, 'conductor/slices/B1/i1/verdict.json')));
-  const e = readEvents(loadJob(f), f).find((x) => x.kind === 'NEEDS-COORDINATOR'); assert.match(e.summary, /B3: still failing after 3 iterations/);
+  const e = readEvents(loadJob(f), f).find((x) => x.kind === 'NEEDS-COORDINATOR'); assert.match(e.summary, /B3: failed the same way twice \(fidelity:reads good\)/);
   // checks of different atoms overlapped in time: no barrier, several at once
   const spans = fs.readFileSync(log, 'utf8').trim().split('\n').map((l) => l.split(' ')).map(([a, b, e]) => [a, Number(b) / 1e6, Number(e) / 1e6]);
   const overlap = spans.some((x, i) => spans.some((y, j) => j !== i && x[0] !== y[0] && x[1] < y[2] && y[1] < x[2]));

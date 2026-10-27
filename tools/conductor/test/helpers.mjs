@@ -31,7 +31,7 @@ export function scratch(tmp, workerScript) {
   echo stray > stray.txt
   `, { mode: 0o755 });
 
-  function setup(name, contents, conductor = {}) {
+  function setup(name, contents, conductor = {}, edit = () => {}) {
     const d = path.join(tmp, name), repo = path.join(d, 'repo'); fs.mkdirSync(path.join(repo, 'game'), { recursive: true });
     for (const [f, v] of Object.entries(contents)) fs.writeFileSync(path.join(repo, 'game', f), v + '\n');
     sh(repo, 'git', 'init', '-q', '-b', 'main'); sh(repo, 'git', 'config', 'user.email', 't@t'); sh(repo, 'git', 'config', 'user.name', 't');
@@ -47,6 +47,7 @@ export function scratch(tmp, workerScript) {
       criticalPath: ids[0], rival: 'by hand', deadline: '2026-10-27T00:00:00Z', notes: path.join(d, 'NOTES.md'),
       proofs: { smoke: { engines: { codex: true, claude: true }, receipt: path.join(d, 'smoke.json') } },
       conductor: { launcher: 'local', codexPool: worker, claudeBin: worker, maxIterations: 2, gate: '! grep -q "SYNTAX ERROR" game/*.txt', ...conductor } };
+    edit(job);
     const f = path.join(d, 'job.json'); fs.writeFileSync(f, JSON.stringify(job));
     assert.equal(spawnSync(process.execPath, [JOBCLI, 'stage', f], { encoding: 'utf8' }).status, 0);
     C.go(loadJob(f), f, { sha: cardHash(loadJob(f)), by: 'Craig', words: 'go' });

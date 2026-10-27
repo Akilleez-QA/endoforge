@@ -26,6 +26,13 @@ export function excerpt(src, { offline = false } = {}) {
   return out.length > MAX_EXCERPT ? `${out.slice(0, MAX_EXCERPT)}\n[… excerpt cut at ${MAX_EXCERPT} characters; read the file for the rest]` : out;
 }
 
+/** Knowledge entries (job.knowledge: [{ id, text, source, tags }]) whose tags name this atom, one of its aspects or
+ *  capabilities, or "*". Knowledge is data written during the run (`endoforge job knowledge add`), never tool code. */
+export function knowledgeFor(job, a) {
+  const tags = new Set(['*', a.id, ...(a.aspects ?? []), ...(a.capabilities ?? [])].map((t) => String(t).toLowerCase()));
+  return (job.knowledge ?? []).filter((k) => (k.tags ?? ['*']).some((t) => tags.has(String(t).toLowerCase())));
+}
+
 export function compileAtom(job, id, { lessons = [], found = [], stills = [], round = null, note = '', offline = false } = {}) {
   const a = (job.atoms ?? []).find((x) => x.id === id);
   if (!a) throw new Error(`job ${job.id} has no atom ${id}`);
@@ -53,6 +60,8 @@ export function compileAtom(job, id, { lessons = [], found = [], stills = [], ro
   if (seams.length) P.push(`Seams you touch:\n${bullets(seams.map((s) => `${s.id} between ${s.between.join(' and ')}: ${s.owner === id ? 'you own it; keep both sides consistent' : `owned by ${s.owner}; report problems, do not edit across it`}`))}`);
   if (stills.length) P.push(`Current stills of your piece (look at every one):\n${bullets(stills)}`);
   if (found.length) P.push(`The evals' findings attributed to you (fix these first):\n${bullets(found.map((f) => `[${f.level} ${f.rule ?? ''}] ${f.detail}${f.frames?.length ? ` (frames ${f.frames.join(', ')})` : ''}`))}`);
+  const known = knowledgeFor(job, a);
+  if (known.length) P.push(`Known facts that bear on your atom (each with its source; trust these over memory):\n${bullets(known.map((k) => `${k.text} [source: ${k.source}]`))}`);
   if (mine.length) P.push(`Lessons from earlier jobs that bear on your atom:\n${bullets(mine.map((l) => `${l.text}${l.fix ? ` → ${l.fix}` : ''}`))}`);
   if (note) P.push(`Note from the coordinator: ${note}`);
   P.push(['Critique your piece against the goal and its governing inputs, then fix it, in this one pass.',

@@ -10,7 +10,8 @@ import { retrieveLessons } from '../../job/lib/lessons.mjs';
 import { emit, firedEvent } from '../../job/lib/events.mjs';
 import { allSettled } from './state.mjs';
 import { assignLogins, slotsFree, launchAtom, laneExit, stopLanes } from './launch.mjs';
-import { collectAtom, gateFeedback } from './collect.mjs';
+import { collectAtom, gateFeedback, collectLock } from './collect.mjs';
+import { withLock } from '../../lib/lock.mjs';
 import { escalate } from './daemon.mjs';
 import { checkAtom as sliceCheck } from './checks.mjs';
 
@@ -49,29 +50,47 @@ export async function settleAtom(ctx, id, checkAtom = sliceCheck) {
 }
 
 /** Run the atom's checks and act on the verdict. Also resumes an atom that was mid-check when the daemon stopped. */
+/** The current commit of each atom this one depends on (U4: a check runs against the current upstream). */
+const upstream = (job, s, id) => Object.fromEntries(((job.atoms ?? []).find((a) => a.id === id)?.dependsOn ?? []).map((d) => [d, s.atoms[d]?.sha ?? null]));
+
 export async function judge(ctx, id, checkAtom = sliceCheck) {
   const { job, file } = ctx, st = ctx.update(() => {}).atoms[id], g = { sha: st.sha };
   const verdict = await checkAtom(ctx, id);
+  if (verdict.unstable) escalate(job, file, { to: 'coordinator', key: `unstable:${verdict.unstable.join(',')}`, why: `check ${verdict.unstable.join(', ')} is unstable (${verdict.why}); fix or recalibrate it`, packet: { checks: verdict.unstable, why: verdict.why, atom: id } });
   if (verdict.unscored) {
     const s = ctx.update((x) => { const a = x.atoms[id]; a.status = 'landed'; a.unscored = (a.unscored ?? 0) + 1; a.last = `not scored: ${verdict.why}`; });
-    if (s.atoms[id].unscored >= (job.conductor?.maxUnscored ?? 3)) escalate(job, file, { to: 'coordinator', key: `unscored:${id}:i${st.iter}`, atom: id, why: `its checks could not run ${s.atoms[id].unscored} times: ${verdict.why}`, packet: { atom: id, why: verdict.why } });
+    if (!verdict.unstable && s.atoms[id].unscored >= (job.conductor?.maxUnscored ?? 3)) escalate(job, file, { to: 'coordinator', key: `unscored:${id}:i${st.iter}`, atom: id, why: `its checks could not run ${s.atoms[id].unscored} times: ${verdict.why}`, packet: { atom: id, why: verdict.why } });
     return;
   }
+  const record = (x) => { const a = x.atoms[id]; a.items = { ...a.items, ...(verdict.items ?? {}) }; a.checkedAgainst = upstream(job, x, id); a.unscored = 0; };
   if (verdict.pass) {
-    ctx.update((s) => { Object.assign(s.atoms[id], { status: 'frozen', last: verdict.why, feedback: null }); s.atoms[id].history.push({ iter: st.iter, pass: true, sha: g.sha ?? null }); });
+    ctx.update((s) => { record(s); Object.assign(s.atoms[id], { status: 'frozen', last: verdict.why, feedback: null }); s.atoms[id].history.push({ iter: st.iter, pass: true, sha: g.sha ?? null }); });
     emit(job, file, { kind: 'GATE', summary: `${id} frozen at iteration ${st.iter}: ${verdict.why}`, data: { atom: id, iter: st.iter, pass: true } });
     return;
   }
-  return relaunchOrEscalate(ctx, id, verdict.feedback, { stage: 'check', findings: verdict.findings });
+  // U6: a change that regresses passing items and improves none is rejected; its commit is reverted.
+  let feedback = verdict.feedback;
+  if (verdict.regressed?.length && !verdict.improved?.length && g.sha) {
+    const r = withLock(collectLock(job), () => spawnSync('git', ['-C', job.repo, 'revert', '--no-edit', g.sha], { encoding: 'utf8' }));
+    if (r.status === 0) feedback = `Your change was REVERTED: it regressed ${verdict.regressed.join('; ')} and improved nothing.\n${feedback}`;
+    else { spawnSync('git', ['-C', job.repo, 'revert', '--abort'], { stdio: 'ignore' }); feedback = `Your change regressed ${verdict.regressed.join('; ')} (it could not be reverted cleanly; restore them).\n${feedback}`; }
+  } else ctx.update(record);
+  return relaunchOrEscalate(ctx, id, feedback, { stage: 'check', findings: verdict.findings, failing: failingSignature(verdict) });
 }
+
+/** What failed, independent of wording that changes run to run: check ids and failing item names. */
+const failingSignature = (v) => (v.findings ?? []).map((f) => `${f.id}:${Object.entries(f.items ?? {}).filter(([, p]) => !p).map(([n]) => n).sort().join('|')}`).sort().join(';');
 
 function relaunchOrEscalate(ctx, id, feedback, evidence) {
   const { job, file } = ctx;
-  const s = ctx.update((st) => { const a = st.atoms[id]; a.history.push({ iter: a.iter, pass: false, ...evidence }); a.feedback = feedback; a.last = String(feedback).split('\n')[0].slice(0, 160);
-    a.status = a.iter - (a.iterBase ?? 0) >= st.budget.maxIterations ? 'needs-coordinator' : 'relaunch'; });
+  const sig = evidence.failing ?? `${evidence.stage}:${String(evidence.error ?? evidence.exit ?? '').split('\n').filter(Boolean).at(-1) ?? ''}`;
+  const s = ctx.update((st) => { const a = st.atoms[id]; const prev = a.history.filter((h) => !h.pass).at(-1);
+    a.history.push({ iter: a.iter, pass: false, ...evidence, signature: sig }); a.feedback = feedback; a.last = String(feedback).split('\n')[0].slice(0, 160);
+    a.repeated = Boolean(prev && prev.signature === sig && sig);       // U1: the same failure twice is a decision, not a retry
+    a.status = a.repeated || a.iter - (a.iterBase ?? 0) >= st.budget.maxIterations ? 'needs-coordinator' : 'relaunch'; });
   const a = s.atoms[id];
   if (a.status === 'needs-coordinator')
-    escalate(job, file, { to: 'coordinator', key: `atom:${id}:i${a.iter}`, atom: id, why: `still failing after ${a.iter} iterations: ${a.last}`, packet: { atom: id, iter: a.iter, history: a.history, feedback } });
+    escalate(job, file, { to: 'coordinator', key: `atom:${id}:i${a.iter}`, atom: id, why: a.repeated ? `failed the same way twice (${sig}): ${a.last}` : `still failing after ${a.iter} iterations: ${a.last}`, packet: { atom: id, iter: a.iter, history: a.history, feedback } });
 }
 
 /** Atoms being collected or checked by this daemon process (in memory; a restart resumes them from their status). */
@@ -108,6 +127,11 @@ export const handlers = {
       if (inFlight.has(id) || inFlight.size >= limit) continue;
       if (st.status === 'launched' && laneExit(st) != null) start(ctx, id, () => settleAtom(ctx, id));
       else if (st.status === 'checking' || (st.status === 'landed' && (st.unscored ?? 0) < (ctx.job.conductor?.maxUnscored ?? 3))) start(ctx, id, () => judge(ctx, id));
+      else if (st.status === 'frozen' && st.checkedAgainst && JSON.stringify(upstream(ctx.job, ctx.state, id)) !== JSON.stringify(st.checkedAgainst)) {
+        // U4: an upstream atom has a newer candidate: re-check this one against it
+        ctx.update((s) => { s.atoms[id].status = 'checking'; s.atoms[id].last = `re-check: upstream changed (${Object.keys(st.checkedAgainst).join(', ')})`; });
+        start(ctx, id, () => judge(ctx, id));
+      }
     }
     launchPending(ctx);
     return allSettled(ctx.update(() => {})) && !inFlight.size ? { advance: true, why: 'every atom frozen or locked' } : null;

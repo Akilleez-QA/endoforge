@@ -120,7 +120,7 @@ const RULES = {
       const k = c.check?.kind;
       if (!k) { E('I3', `criterion ${c.id} has no check`); continue; }
       if (k === 'human' && !x.gates[c.check.gate]) E('I3', `criterion ${c.id} is a human check without a listed gate`);
-      if (k !== 'human' && !c.check.run) E('I3', `criterion ${c.id}: its check needs run (a command that can fail)`);
+      if (k !== 'human' && !c.check.run && !(c.check.measure && typeof c.check.target === 'number')) E('I3', `criterion ${c.id}: its check needs run (a command that can fail), or measure with a numeric target`);
       if (c.check.reference && !refs.some((r) => r.id === c.check.reference)) E('I3', `criterion ${c.id} checks against unknown reference ${c.check.reference}`);
       if (!PROXY_KINDS.includes(k)) continue;
       if (!c.check.calibration?.good || !c.check.calibration?.bad) { E('I3', `criterion ${c.id}: a ${k} check needs calibration.good and calibration.bad (cases it must pass and fail)`); continue; }

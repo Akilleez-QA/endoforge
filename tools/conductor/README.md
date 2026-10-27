@@ -43,6 +43,17 @@ A check passes on exit 0, or on `pass` in its JSON. The tool never knows what a 
 
 Errors are typed: 75 waits; 78 stops the job; a check that cannot run is **not scored**. A not-scored check is retried, never counted as a failed iteration, and after `maxUnscored` it wakes the coordinator. A daemon restart resumes atoms that were mid-check.
 
+**Universal principles from the live run**, built as mechanism. Job specifics are data.
+
+| # | Principle | Mechanism |
+|---|---|---|
+| U1 | The same failure twice is an escalation, not a retry | the failing checks and items (or the gate's last error line) form a signature; a repeat raises NEEDS-COORDINATOR with the history |
+| U2 | A target stated as an observable outcome is verified by measuring the outcome | a check `{ measure, target, tolerance }`: the command prints a number, and the tool compares it |
+| U3 | Knowledge found during a run is written back with its source | `endoforge job knowledge <job> add --text … --source … --tags …`; compiled prompts carry the entries whose tags match the atom |
+| U4 | A check runs against the current versions of what the atom depends on | atoms declare `dependsOn`; when an upstream atom lands a new candidate, frozen downstream atoms are re-checked against it |
+| U5 | Stable measures | a check that returns judged items freezes its item list on first use (`${rubric}`); a changed list, or two runs that disagree (`noiseRuns: 2`), mark it unstable: it is not acted on, and the coordinator is told |
+| U6 | Per-item ratchet | items that passed before form a keep-list in the next prompt; a change that regresses an item and improves none is reverted |
+
 **Escalation** (`lib/escalate.mjs`). When the Conductor cannot decide (an atom still failing after its iterations, checks that cannot run, gates the job no longer passes, an internal error), it writes a compact **context packet** (`escalations/<key>.json`) and emits NEEDS-COORDINATOR. The packet holds the goal, the atom's files, contract, capabilities, the criteria it owes, its last three iterations, its gate and check evidence, and the budget.
 
 The model replies with `endoforge job patch <job> <reply.json>`: `{ key, manifest: <JSON merge patch>, note, relaunch, resetIterations }`. The patch goes through the same gates:
@@ -53,4 +64,4 @@ The model replies with `endoforge job patch <job> <reply.json>`: `{ key, manifes
 
 Everything about the old layout is **data** in the map: unit, worktree, base, prompt and log templates, plus how old atoms map to aspects and capabilities. `examples/mrton.adopt-map.json` is the a collaborator run's map. The adopted job starts at `staged` and needs one go from the user. Whatever the old manifest cannot say is listed for the coordinator, never invented.
 
-Tests: `node test/state.test.mjs`, `node test/launch.test.mjs`, `node test/stream.test.mjs`, `node test/adopt.test.mjs` (`make conductor-test`).
+Tests: `node test/state.test.mjs`, `node test/launch.test.mjs`, `node test/stream.test.mjs`, `node test/adopt.test.mjs` plus `node test/principles.test.mjs` (`make conductor-test`).

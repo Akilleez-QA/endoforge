@@ -22,6 +22,7 @@
 //   job.mjs prove-split <job.json> --from <path> (--before A --after B [--noise C] | --tests "<cmd>")
 //        writes the split's proof file: a pixel diff within the noise floor measured as A vs C (a second baseline
 //        render), or the tests passing after a code split
+//   job.mjs knowledge <job.json> add --text "<fact>" --source "<where>" [--tags a,b]   a fact found during the run
 //   job.mjs gates | invariants                       the POODO gates and the invariants they hold
 // Proofs the tool makes (calibration, smoke, split) go in <job>.proofs.json beside the manifest, merged on load.
 import fs from 'node:fs';
@@ -72,7 +73,7 @@ function report(v) {
 async function main() {
   if (cmd === 'gates') { for (const g of GATES) out(`${g.name}\t${g.invariants.join(',')}\t${g.what}`); return 0; }
   if (cmd === 'invariants') { for (const i of INVARIANTS) out(`${i.id}\t${i.name}\t${i.rule}`); return 0; }
-  if (!file) { console.error(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 30).join('\n')); return 2; }
+  if (!file) { console.error(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 31).join('\n')); return 2; }
   const job = loadJob(path.resolve(file));
   if (cmd === 'validate') {
     const gate = flag('--gate') ?? 'orchestrate', offline = has('--offline');
@@ -143,6 +144,18 @@ async function main() {
     return conductor([cmd, file, ...rest]);
   }
   if (cmd === 'status') { process.stdout.write(renderStatus(job, readEvents(job, file))); return 0; }
+  if (cmd === 'knowledge') {
+    // Knowledge discovered during a run goes back into the manifest with its source, so later atoms get it (P-A).
+    if (rest[0] !== 'add' || !flag('--text') || !flag('--source')) { console.error('usage: job.mjs knowledge <job.json> add --text "<fact>" --source "<where it was established>" [--tags a,b]'); return 2; }
+    const { withLock, writeJSONAtomic } = await import('../../lib/lock.mjs');
+    const f = path.resolve(file);
+    const n = withLock(f, () => {
+      const m = JSON.parse(fs.readFileSync(f, 'utf8')); m.knowledge = m.knowledge ?? [];
+      m.knowledge.push({ id: `k${m.knowledge.length + 1}`, text: flag('--text'), source: flag('--source'), tags: (flag('--tags') ?? '*').split(',').map((t) => t.trim()).filter(Boolean), at: new Date().toISOString() });
+      writeJSONAtomic(f, m); return m.knowledge.length;
+    });
+    out(`knowledge k${n} added`); return 0;
+  }
   if (cmd === 'smoke') {
     const engines = {}, results = {}, dir = path.join(path.dirname(path.resolve(file)), 'smoke');
     const pieces = Object.fromEntries((job.atoms ?? []).filter((a) => ['codex', 'claude'].includes(a.engine)).map((a) => [a.id, { files: a.files, engine: a.engine }]));
