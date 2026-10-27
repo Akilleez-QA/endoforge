@@ -1,0 +1,293 @@
+#!/usr/bin/env python3
+"""workers: a registry of the fleet's CLI workers (Codex CLI and any agent CLI run as a job), on every host.
+
+    workers run --bot SLUG [--task TEXT] [--repo DIR] -- CMD ...   register CMD, heartbeat while it runs, record its end
+    workers list [--json] [--all] [--hours 24]                      running, dead and finished workers, every host reporting
+    workers snapshot                                                this host's live workers and recent history (JSON)
+    workers push --ssh HOST                                         send the snapshot to HOST (`workers receive` there)
+    workers receive --from HOST                                     store a snapshot from stdin (the other end of push)
+    workers reap                                                    move dead entries here into history
+
+Written 2026-10-27 after "does grok bot have dead running computer use codex cli workers alive here?": nothing could
+answer. The Grok bot's Codex workers run on the Grok box, which main-rig cannot reach (the box SSHes out to the rig,
+never the other way), and on main-rig only a process list existed: no bot, no task, no history, no way to call a worker
+dead. Now every launch through codex-guard.sh, codex-task or codex-pool registers here:
+
+- An entry <host>-<pid>.json in ~/.local/state/workers/live (WORKERS_DIR overrides the root): host, bot, pid, process
+  group, task (first line), repo, command, start time. Its mtime is the heartbeat, refreshed every WORKERS_BEAT seconds
+  (30) while the command runs. On exit the entry moves to history.jsonl with the exit code and run time.
+- Dead means the process is gone with its entry left behind (killed -9, crashed host, power loss), or the heartbeat is
+  older than WORKERS_LEASE (120 s). A host whose snapshot is older than WORKERS_HOST_STALE (180 s) shows as not
+  reporting: its workers are unknown, not alive.
+- The box sends its snapshot with `workers push --ssh <rig>` on a timer (workshop/box/codex/workers-push.timer), so
+  `workers list` on main-rig shows both machines.
+- --bot must be on the roster: aors/fleet.json bot slugs plus aors/branch-slugs.json lanes and aliases. An unknown name
+  (`null`, an unset variable) is refused with exit 64. WORKERS_ALLOW_UNREGISTERED=1 registers it as `unknown` instead,
+  for launchers that have not been given a slug yet.
+
+The registry reports; it never kills a worker. Exit status of `run` is the command's own.
+"""
+import argparse, json, os, signal, socket, subprocess, sys, threading, time
+
+HOST = socket.gethostname()
+
+
+def root():
+    return os.environ.get("WORKERS_DIR") or os.path.join(
+        os.environ.get("XDG_STATE_HOME") or os.path.expanduser("~/.local/state"), "workers")
+
+
+def num(name, default):
+    try:
+        return float(os.environ.get(name, default))
+    except ValueError:
+        return float(default)
+
+
+def repo_root():
+    """The akilleez checkout that holds the roster: AKILLEEZ_ROOT, this file's own checkout, or the usual places."""
+    here = os.path.realpath(__file__)
+    for cand in (os.environ.get("AKILLEEZ_ROOT"), os.path.join(os.path.dirname(here), "../../../.."),
+                 os.path.expanduser("~/Code/akilleez"), "/workspace/akilleez"):
+        if cand and os.path.isfile(os.path.join(cand, "aors", "fleet.json")):
+            return os.path.realpath(cand)
+    return None
+
+
+def roster(base=None):
+    """Known slugs (fleet bots, lanes, aliases) or None when no roster can be found."""
+    base = base or repo_root()
+    if not base:
+        return None
+    with open(os.path.join(base, "aors", "fleet.json")) as fh:
+        known = {b["slug"] for b in json.load(fh).get("bots", []) if b.get("slug")}
+    try:
+        with open(os.path.join(base, "aors", "branch-slugs.json")) as fh:
+            extra = json.load(fh)
+        known |= set(extra.get("lanes", [])) | set(extra.get("aliases", {}))
+    except FileNotFoundError:
+        pass
+    return known
+
+
+def check_bot(bot, known):
+    """(slug to record, error or None)."""
+    if bot and (known is None or bot in known):      # no roster on this host: record the name as given
+        return bot, None
+    why = f"--bot {bot!r} is not a fleet slug (aors/fleet.json, aors/branch-slugs.json)" if bot else "--bot is required"
+    if os.environ.get("WORKERS_ALLOW_UNREGISTERED") == "1":
+        return "unknown", None
+    return None, why
+
+
+def alive(pid):
+    try:
+        os.kill(pid, 0)
+        return True
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+
+
+def forward(pgid, sig):
+    try:
+        os.killpg(pgid, sig)
+    except ProcessLookupError:
+        pass
+
+
+def write_json(path, data):
+    tmp = f"{path}.{os.getpid()}.tmp"
+    with open(tmp, "w") as fh:
+        json.dump(data, fh)
+    os.replace(tmp, path)
+
+
+def append_history(entry):
+    with open(os.path.join(root(), "history.jsonl"), "a") as fh:
+        fh.write(json.dumps(entry) + "\n")
+
+
+def run(a, cmd):
+    bot, err = check_bot(a.bot, roster())
+    if err:
+        print(f"workers: {err}; refusing to start", file=sys.stderr)
+        return 64
+    live = os.path.join(root(), "live")
+    os.makedirs(live, exist_ok=True)
+    task = ((a.task or (cmd[-1] if len(cmd) > 1 else "")).strip().splitlines() or [""])[0][:200]
+    child = subprocess.Popen(cmd, start_new_session=True)
+    entry = {"host": HOST, "bot": bot, "pid": child.pid, "pgid": child.pid, "wrapper": os.getpid(), "task": task,
+             "repo": os.path.realpath(a.repo) if a.repo else os.getcwd(), "cmd": [os.path.basename(cmd[0]), *cmd[1:3]],
+             "started": time.time()}
+    path = os.path.join(live, f"{HOST}-{child.pid}.json")
+    write_json(path, entry)
+    stop = threading.Event()
+
+    def beat():
+        while not stop.wait(num("WORKERS_BEAT", 30)):
+            try:
+                os.utime(path, None)
+            except FileNotFoundError:
+                write_json(path, entry)
+
+    threading.Thread(target=beat, daemon=True).start()
+    for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+        signal.signal(sig, lambda s, _f: forward(child.pid, s))
+    rc = child.wait()
+    stop.set()
+    append_history({**entry, "ended": time.time(), "ran": round(time.time() - entry["started"], 1), "rc": rc})
+    try:
+        os.remove(path)
+    except FileNotFoundError:
+        pass
+    if rc < 0:                                        # killed by a signal: die by the same one, so callers see it
+        signal.signal(-rc, signal.SIG_DFL)
+        os.kill(os.getpid(), -rc)
+    return rc
+
+
+def local_live(now=None):
+    now = now or time.time()
+    out, live = [], os.path.join(root(), "live")
+    for name in sorted(os.listdir(live)) if os.path.isdir(live) else []:
+        if not name.endswith(".json"):
+            continue
+        path = os.path.join(live, name)
+        try:
+            with open(path) as fh:
+                e = json.load(fh)
+            beat = os.stat(path).st_mtime
+        except (OSError, ValueError):
+            continue
+        gone = e.get("host") == HOST and not alive(e.get("pid", -1))
+        stale = now - beat > num("WORKERS_LEASE", 120)
+        out.append({**e, "heartbeat": beat, "state": "dead" if gone or stale else "running",
+                    "why": "process gone, entry left" if gone else ("no heartbeat" if stale else "")})
+    return out
+
+
+def history(hours):
+    cut, out = time.time() - hours * 3600, []
+    try:
+        with open(os.path.join(root(), "history.jsonl")) as fh:
+            for line in fh:
+                try:
+                    e = json.loads(line)
+                except ValueError:
+                    continue
+                if e.get("ended", 0) >= cut:
+                    out.append({**e, "state": "finished"})
+    except FileNotFoundError:
+        pass
+    return out
+
+
+def snapshot(hours=24):
+    return {"host": HOST, "sent": time.time(), "live": local_live(), "history": history(hours)[-200:]}
+
+
+def remote(now=None):
+    """Snapshots other hosts sent; their live workers are 'not reporting' once the snapshot is stale."""
+    now = now or time.time()
+    out, hosts = [], os.path.join(root(), "hosts")
+    for name in sorted(os.listdir(hosts)) if os.path.isdir(hosts) else []:
+        if not name.endswith(".json"):
+            continue
+        try:
+            with open(os.path.join(hosts, name)) as fh:
+                snap = json.load(fh)
+        except (OSError, ValueError):
+            continue
+        age = now - snap.get("sent", 0)
+        quiet = age > num("WORKERS_HOST_STALE", 180)
+        for e in snap.get("live", []):
+            out.append({**e, "state": "unknown" if quiet else e.get("state"),
+                        "why": f"host not reporting for {age:.0f} s" if quiet else e.get("why", "")})
+        out.extend({**e, "state": "finished"} for e in snap.get("history", []))
+        out.append({"host": snap.get("host", name[:-5]), "state": "host", "age": round(age), "quiet": quiet})
+    return out
+
+
+def show(rows, all_rows):
+    hosts = [r for r in rows if r["state"] == "host"]
+    rows = [r for r in rows if r["state"] != "host"]
+    now = time.time()
+    print(f"workers on {HOST}" + "".join(f", {h['host']} ({'NOT REPORTING ' if h['quiet'] else ''}{h['age']} s ago)" for h in hosts))
+    order = {"dead": 0, "unknown": 1, "running": 2, "finished": 3}
+    shown = [r for r in rows if all_rows or r["state"] != "finished"]
+    for r in sorted(shown, key=lambda r: (order.get(r["state"], 9), -r.get("started", 0))):
+        end = r.get("ended") or now
+        print(f"  {r['state'].upper():8} {r.get('host', '?'):14} {r.get('bot', '?'):22} pid {r.get('pid', '?'):<8} "
+              f"{(end - r.get('started', end)) / 60:6.1f} min  {r.get('task', '')[:70]}"
+              + (f"  [{r['why']}]" if r.get("why") else "") + (f"  rc {r['rc']}" if "rc" in r else ""))
+    counts = {s: sum(1 for r in rows if r["state"] == s) for s in order}
+    print("  " + ", ".join(f"{n} {s}" for s, n in counts.items() if n or s in ("running", "dead")))
+
+
+def main(argv=None):
+    argv = sys.argv[1:] if argv is None else argv
+    cmd = []
+    if "--" in argv:
+        i = argv.index("--")
+        argv, cmd = argv[:i], argv[i + 1:]
+    ap = argparse.ArgumentParser(prog="workers")
+    sub = ap.add_subparsers(dest="op", required=True)
+    r = sub.add_parser("run")
+    r.add_argument("--bot")
+    r.add_argument("--task")
+    r.add_argument("--repo")
+    li = sub.add_parser("list")
+    li.add_argument("--json", action="store_true")
+    li.add_argument("--all", action="store_true", help="include finished workers")
+    li.add_argument("--hours", type=float, default=24)
+    sub.add_parser("snapshot")
+    p = sub.add_parser("push")
+    p.add_argument("--ssh", required=True)
+    rc = sub.add_parser("receive")
+    rc.add_argument("--from", dest="src", required=True)
+    sub.add_parser("reap")
+    a = ap.parse_args(argv)
+    os.makedirs(root(), exist_ok=True)
+    if a.op == "run":
+        if not cmd:
+            ap.error("run needs a command after --")
+        return run(a, cmd)
+    if a.op == "list":
+        rows = local_live() + [{**e, "host": e.get("host", HOST)} for e in history(a.hours)] + remote()
+        if a.json:
+            print(json.dumps(rows, indent=1))
+        else:
+            show(rows, a.all)
+        return 1 if any(r["state"] == "dead" for r in rows) else 0
+    if a.op == "snapshot":
+        print(json.dumps(snapshot()))
+        return 0
+    if a.op == "push":
+        data = json.dumps(snapshot())
+        res = subprocess.run(["ssh", "-o", "BatchMode=yes", a.ssh, ".local/bin/workers", "receive", "--from", HOST],
+                             input=data, text=True, capture_output=True, timeout=60)
+        if res.returncode:
+            print(f"workers: push to {a.ssh} failed: {res.stderr.strip()[:300]}", file=sys.stderr)
+        return res.returncode
+    if a.op == "receive":
+        src = "".join(c for c in a.src if c.isalnum() or c in "-._")[:64] or "unknown"
+        data = json.loads(sys.stdin.read())
+        os.makedirs(os.path.join(root(), "hosts"), exist_ok=True)
+        write_json(os.path.join(root(), "hosts", f"{src}.json"), {**data, "host": src, "sent": time.time()})
+        return 0
+    if a.op == "reap":
+        n = 0
+        for e in local_live():
+            if e["state"] == "dead" and e.get("host") == HOST:
+                append_history({k: v for k, v in e.items() if k not in ("state", "why")} |
+                               {"ended": e["heartbeat"], "rc": "lost", "why": e["why"]})
+                os.remove(os.path.join(root(), "live", f"{HOST}-{e['pid']}.json"))
+                n += 1
+        print(f"workers: reaped {n} dead entr{'y' if n == 1 else 'ies'}")
+        return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

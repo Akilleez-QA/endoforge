@@ -138,6 +138,17 @@ def hook_states():
     return out
 
 
+def worker_rows():
+    """The worker registry (`workers list --json`): CLI workers on this host and every host that reports here."""
+    tool = os.path.join(os.path.dirname(os.path.realpath(__file__)), "workers")
+    tool = tool if os.path.exists(tool) else os.path.expanduser("~/.local/bin/workers")
+    try:
+        r = subprocess.run([sys.executable, tool, "list", "--json", "--hours", "0"], capture_output=True, text=True, timeout=30)
+        return [w for w in json.loads(r.stdout or "[]") if w.get("state") in ("running", "dead", "unknown")]
+    except (OSError, ValueError, subprocess.TimeoutExpired):
+        return []
+
+
 def status():
     blender, agents = processes()
     drain = None
@@ -146,7 +157,8 @@ def status():
             drain = fh.read().strip()
     return {"time": now(), "host": socket.gethostname(), "capacity": capacity(), "draining": drain,
             "heavy_jobs": heavy_jobs(),
-            "gpu_tickets": gpu_tickets(), "blender": blender, "agents": agents, "hooks": hook_states()}
+            "gpu_tickets": gpu_tickets(), "blender": blender, "agents": agents, "hooks": hook_states(),
+            "workers": worker_rows()}
 
 
 def in_flight(st):
@@ -155,6 +167,8 @@ def in_flight(st):
     left += [f"GPU ticket {t['name']}" for t in st["gpu_tickets"]]
     left += [f"blender pid {b['pid']} ({b['unit']})" for b in st["blender"]]
     left += [f"hook {h['name']}: {h['detail'] or 'busy'}" for h in st["hooks"] if h["busy"]]
+    left += [f"worker {w.get('bot')} pid {w.get('pid')} on {w.get('host')}: {w.get('task', '')[:60]}"
+             for w in st.get("workers", []) if w["state"] == "running" and w.get("host") == st["host"]]
     return left
 
 
@@ -163,6 +177,9 @@ def show(st):
           (f"DRAINING ({st['draining']})" if st["draining"] else f"capacity {st['capacity']} %"))
     for line in in_flight(st) or ["nothing in flight"]:
         print(f"  - {line}")
+    for w in st.get("workers", []):
+        if w["state"] != "running" or w.get("host") != st["host"]:
+            print(f"  worker {w['state'].upper()}: {w.get('bot')} pid {w.get('pid')} on {w.get('host')} ({w.get('why', '')})")
     by = {}
     for a in st["agents"]:
         by.setdefault((a["agent"], a["exec"]), []).append(a)
