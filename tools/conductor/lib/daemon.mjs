@@ -40,7 +40,7 @@ export async function conduct(file, { load, handlers = {}, tickMs = 5000, maxTic
     let s = loadState(job, file);
     if (s.phase === 'done') return s;
     if (s.stopped) {
-      await table.onStop?.({ job, file, state: s });
+      await table.onStop?.({ job, file, state: s, update: (fn) => updateState(job, file, fn) });
       s = updateState(job, file, (st) => transition(st, job, 'done', `stopped by ${st.stopped.by}`));
       emit(job, file, { kind: 'DONE', summary: `stopped by ${s.stopped.by}: ${s.stopped.why}`, data: { stopped: s.stopped } });
       return s;

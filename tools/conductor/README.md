@@ -23,6 +23,15 @@ It owns all the mechanism: the compiled-prompt launches, the collect gate, the p
 | `budget <job> [--launches N] [--iterations N]` | view or change it; raising it is spend and needs the user's words |
 | `stop <job> [--by] [--why]` | the daemon stops its lanes and ends in done, with a DONE event |
 
-Stages: (1) state, events and commands, with the phase loop (this PR); (2) launcher, collect gate and locks; (3) streaming loops with pluggable checks; (4) escalation packets and adopting a running job.
+Stages: (1) state, events and commands, with the phase loop; (2) launcher, collect gate and locks; (3) streaming loops with pluggable checks; (4) escalation packets and adopting a running job.
 
-Tests: `node test/state.test.mjs` (`make conductor-test`).
+**Launch** (`lib/launch.mjs`): every atom's prompt is compiled from the manifest (`tools/job/lib/compile.mjs`) and runs on a rotated login (Codex through codex-pool, Claude through `CLAUDE_CONFIG_DIR`). Each atom gets its own worktree of the integration HEAD and runs as a systemd unit in `heavy.slice` (or a plain child with `conductor.launcher: "local"`). The capacity dial sizes each wave, and the launch budget caps the total; a spent budget raises NEEDS-YOU.
+
+**Collect gate** (`lib/collect.mjs`, P-B, ported from `fanout.py`): one exclusive lock on the integration repo for the whole apply-gate-commit. For each atom it:
+1. diffs the atom's own files (new files included) and applies them;
+2. runs the gate (`atom.gate` or `conductor.gate`; 75 waits, 78 stops);
+3. commits, or reverts **only that atom** and writes the exact error to `gates/<atom>-i<iter>.gate.json`.
+
+The next prompt carries that error. After `conductor.maxIterations` the atom escalates by NEEDS-COORDINATOR with its history.
+
+Tests: `node test/state.test.mjs`, `node test/launch.test.mjs` (`make conductor-test`).
