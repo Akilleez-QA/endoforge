@@ -7,6 +7,7 @@ import path from 'node:path';
 import { INVARIANTS, GATES, gateIndex } from './invariants.mjs';
 import { KINDS, proxyKinds } from './kinds.mjs';
 import { confirmationOf } from './card.mjs';
+import { interfaceText, imports, duplicatedFacts } from './sources.mjs';
 
 export const SCHEMA = 'endoforge/job/1';
 export const VOLATILE = ['/tmp', '/var/tmp', '/dev/shm', '/run/user'];
@@ -108,6 +109,13 @@ const RULES = {
         if (missing.length) E('I15', `criterion ${c.id} needs ${missing.join(', ')}, which atom ${id}'s contract cannot express; widen the contract before the fan-out`);
       }
     }
+    // P-C: interfaces are read from source, never written from memory. Each declared interface must resolve, and an
+    // atom whose files import a contract or interface file must be given that file's interface in its prompt.
+    for (const itf of job.interfaces ?? []) if (!x.offline && interfaceText(job, itf) == null) E('I2', `interface ${itf.id}: ${itf.file} has no excerpt from ${itf.start}`);
+    if (!x.offline) for (const a of atoms) for (const k of job.contracts ?? []) {
+      const given = (job.interfaces ?? []).some((itf) => itf.file === k.path && ((a.interfaces ?? []).includes(itf.id) || (a.reads ?? []).includes(k.path) || imports(job, a, k.path)));
+      if (imports(job, a, k.path) && !given) E('I2', `atom ${a.id} imports contract ${k.path} but no interface quotes it (add interfaces: [{ id, file: "${k.path}", start }])`);
+    }
     if (!job.criticalPath || !ids.has(job.criticalPath)) E('I13', 'criticalPath must name the atom expected to be the long pole');
     for (const a of atoms) if ((a.speculate ?? 1) > 1 && a.id !== job.criticalPath) E('I13', `atom ${a.id} speculates but is not the critical path (${job.criticalPath})`);
     if (!job.rival) E('I13', 'rival: name the strongest rival approach and what would discriminate it');
@@ -189,6 +197,8 @@ export function validate(job, { gate = 'orchestrate', offline = false, volatile 
     gates[g.id] = found.length ? 'refused' : 'passed';
   }
   if (upto >= gateIndex('orchestrate') && (job.resources ?? {}).ownerBound !== true) warnings.push({ gate: 'orchestrate', inv: 'I8', msg: 'atoms are not bound to their owner (playbook gap G4); a stopped driver leaves them running' });
+  // P-A: a fact lives once. A value copied from its source into an owned file is a warning (derive it instead).
+  if (upto >= gateIndex('orient') && !offline) for (const d of duplicatedFacts(job)) warnings.push({ gate: 'orient', inv: 'I5', msg: `fact ${d.fact} is copied into ${d.file} (atom ${d.atom}: ${d.values.join(', ')}${d.count > 5 ? ', …' : ''}); derive it from its source` });
   for (const g of job.gates ?? []) if (g.criticalPath) warnings.push({ gate: 'decide', inv: 'I11', msg: `gate ${g.id} sits on the critical path; run it beside the loop if it can` });
   const checked = new Set(GATES.slice(0, upto + 1).map((g) => g.id));
   const status = Object.fromEntries(INVARIANTS.map((i) => [i.id,

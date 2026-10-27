@@ -50,6 +50,32 @@ The M rows are tracked gaps; what exists today is noted:
 - **M6 False claim of a pass.** Proofs need receipts, and prompts demand that only checks actually run are reported. There is no independent re-run.
 - **M7 Human review saturated.** There is no approved-atom registry and no daily packet.
 
+## First principles that generate the mistakes, and the tools that prevent them
+
+Craig: "i'm seeing alot of problems we dont have tooling built to prevent yet, first priciples are missing", and "it has to be universal, first principles only".
+
+Most of the run's 35 mistakes came from five generators. Each generator now has a preventing tool. The tools hold only universal mechanism; job specifics are data in the manifest, and `tools/lib/test/universal.test.mjs` keeps domain terms out of core code.
+
+| Principle | Generator | Preventing tool |
+|---|---|---|
+| **P-A Single source of truth:** every fact lives once; everything else derives from it | copying facts instead of referencing them | prompts quote sources (`tools/job/lib/compile.mjs`); `facts` in the manifest and a validator warning when a fact is copied into an owned file (`tools/job/lib/sources.mjs`); `knowledge add` writes facts found in a run back with their source (U3) |
+| **P-B Check each change the moment it is made** | recombination applying changes unchecked | the Conductor's collect gate: apply, then gate, then commit, or revert only that atom with the exact error (`tools/conductor/lib/collect.mjs`); one writer under a lock |
+| **P-C Interfaces are explicit and machine-checked** | describing interfaces in prose | `interfaces` quoted verbatim into prompts; the validator refuses an atom that imports a contract no interface quotes (`tools/job/lib/sources.mjs`) |
+| **P-D The pipeline is product code** | ad-hoc scripts on the critical path | the Conductor (`tools/conductor`): state machine, launcher, collect gate, streaming, escalation, adoption of running jobs, all tested with stub workers |
+| **P-E Errors are typed** | untyped exit paths | `tools/lib/errors.mjs` and `run-typed`: 75 waits with backoff, 78 stops, unscored is never a number |
+| **P-F Effects stay isolated and bounded** | shell one-liners with side effects | launch and stop only through unit helpers (`tools/conductor/lib/launch.mjs`); gap: agent lanes are not yet bound to the daemon's owner (G4) |
+| **P-G Capability fits the criterion** | contracts designed before the criteria | I15 in the validator (`satisfiedBy`, `requires`, `capabilities`) |
+
+Universal mechanisms from the live run, in the Conductor (`tools/conductor/README.md`):
+- **U1:** the same failure twice escalates instead of retrying.
+- **U2:** an observable target is measured (`measure`, `target`, `tolerance`).
+- **U3:** knowledge found during a run is written back with its source.
+- **U4:** checks run against the current versions of what the atom depends on (`dependsOn`).
+- **U5:** stable measures: a frozen item list, and checks run twice to catch their own noise.
+- **U6:** a per-item ratchet with a keep-list, and the revert of a pure regression.
+
+The Conductor replaces the coordinator model as the mechanism; the model is woken only by NEEDS-COORDINATOR, and the human only by NEEDS-YOU.
+
 ## The operating loop: iterate, measure, learn, improve the tool, repeat
 
 | Step | What it means | Enforced by |
@@ -215,7 +241,7 @@ node $B status "$C"; node $B lessons "$C"                         # while runnin
 
 ## Open questions (gaps with no enforcement yet)
 
-- **G1** Streaming recombination: a per-atom loop (land, apply, slice render and eval, then freeze or relaunch) and timed global evals. **Reference:** `/mnt/cold-steam/factory-scratch/mrton/beatloop.py` (used live on 2026-10-26, NOTES #29). It runs one thread per beat atom with no barriers:
+- **G1** Streaming recombination. **Built in the Conductor** (`tools/conductor`, PRs #404–#409); hill-climb fan-out mode still runs barrier rounds. **Reference:** `/mnt/cold-steam/factory-scratch/mrton/beatloop.py` (used live on 2026-10-26, NOTES #29). It runs one thread per beat atom with no barriers:
   1. collect the lane's owned files when it lands;
   2. render only that beat's stills through the GPU queue;
   3. run that beat's script-fidelity check;

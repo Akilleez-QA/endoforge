@@ -6,6 +6,7 @@
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { lessonsForAtom } from './lessons.mjs';
+import { interfacesFor, interfaceText } from './sources.mjs';
 
 const MAX_EXCERPT = 6000;
 const bullets = (xs) => xs.map((x) => `- ${x}`).join('\n');
@@ -51,6 +52,8 @@ export function compileAtom(job, id, { lessons = [], found = [], outputs = [], r
     P.push(`Source ${s.id}${s.primary ? ' (primary)' : ''} governs ${s.governs.join(', ')}: ${s.what}. Path: ${s.path}${ex ? `\n<<<${s.id}\n${ex}\n${s.id}>>>` : ' (read it before you start)'}`);
   }
   if ((job.truth ?? []).length) P.push(`Ground truth and tolerances (measure against these):\n${bullets(job.truth.map((t) => `${t.id}: ${t.what}, tolerance ${t.tolerance}. Path: ${t.path}`))}`);
+  const itfs = interfacesFor(job, a, { offline }).map((itf) => [itf, offline ? null : interfaceText(job, itf)]).filter(([, t]) => t);
+  if (itfs.length) P.push(`INTERFACES, verbatim from the source files (build to these exactly; never from memory):\n${itfs.map(([itf, t]) => `<<<${itf.id} (${itf.file})${itf.what ? `: ${itf.what}` : ''}\n${t}\n${itf.id}>>>`).join('\n')}`);
   P.push(`Your checks (they will be run; leave them passing):\n${bullets((a.checks ?? []).map((c) => `${c}: ${crit[c]?.statement ?? '?'} [${crit[c]?.check?.kind ?? '?'}${crit[c]?.check?.run ? `: ${crit[c].check.run}` : ''}]`))}`);
   P.push(`You own ONLY these paths; edit nothing else:\n${bullets(a.files ?? [])}${a.contract ? `\nYour contract with the other atoms: ${a.contract}` : ''}${a.capabilities?.length ? `\nYour contract can express: ${a.capabilities.join(', ')}. Use all of it the criteria need.` : ''}`);
   const owes = (job.criteria ?? []).filter((c) => (c.satisfiedBy ?? []).includes(id));

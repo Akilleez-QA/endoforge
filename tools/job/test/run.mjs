@@ -13,7 +13,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url)), BIN = path.join(HERE,
 const fx = (n) => JSON.parse(fs.readFileSync(path.join(HERE, '../fixtures', n), 'utf8'));
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'job-test-'));
 let fails = 0;
-for (const t of ['validate.test.mjs', 'card.test.mjs', 'compile.test.mjs', 'events.test.mjs', 'proofs.test.mjs']) { const r = spawnSync(process.execPath, [path.join(HERE, t)], { encoding: 'utf8' }); process.stdout.write(r.stdout); if (r.status !== 0) fails++; }
+for (const t of ['validate.test.mjs', 'card.test.mjs', 'compile.test.mjs', 'events.test.mjs', 'proofs.test.mjs', 'sources.test.mjs']) { const r = spawnSync(process.execPath, [path.join(HERE, t)], { encoding: 'utf8' }); process.stdout.write(r.stdout); if (r.status !== 0) fails++; }
 const test = (name, fn) => { try { fn(); console.log(`PASS ${name}`); } catch (e) { fails++; console.log(`FAIL ${name}: ${e.message}`); } };
 const OK = { ok: true };
 const at = (job, gate = 'orchestrate', o = {}) => validate(job, { gate, offline: true, health: OK, confirmation: OK, ...o });
