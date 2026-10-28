@@ -95,3 +95,10 @@ Start with Edition 3 (`sources/pdf/Endoforge-Edition-3.pdf`). It is the governin
 ## Playbooks
 
 - [PLAYBOOK-deadline-fanout.md](PLAYBOOK-deadline-fanout.md): atomize → parallelize → recombine for deadline runs, the operating loop (iterate, measure, learn, improve the tool, repeat), and what enforces each lesson (2026-10-26, from the a collaborator run).
+- [PLAYBOOK-film.md](PLAYBOOK-film.md): the film-production pipeline (whole-reference analysis → concept frames → prep (look bible, hero assets, lookdev) → council → frozen contracts and cue vocabulary → voice first → capability lanes → render passes → render stills → image gen + explicit upscale → keyframes → video fills between keyframes → drift and look gates → explicit video upscale → mix → reference-measured gates), what each gate measures, the generation rule (I20), measured throughput, pod and cost facts, the prep-stage decision, and each mistake mapped to its invariant and tool fix (2026-10-26, from the a collaborator run).
+
+## Foundations judged from Endoforge tools
+
+| Foundation | Judges | Producers here |
+|---|---|---|
+| Foundation Film (`foundations/film/` at the repository root) | `cinematic_gate`, `reference_bands`, `audio_gate`, `drift_verdict`, `cue_vocabulary_check`, `look_gate`: verdicts with Evidence over integer milli-unit measures | [`tools/film/`](../tools/film/README.md): `filmstats.py`, `filmgate.py`, `audiostats.py`, `audiotags.py`, `driftgate.py`, `lookgate.py`, `wan_i2v.py` |
