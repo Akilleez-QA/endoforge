@@ -11,7 +11,7 @@ Everything here waits rather than fails, and every limit is computed from the ma
 | `heavy.slice` | Shared ceilings for every heavy job. `heavy-run` writes it, and rewrites it when the hardware changes | MemoryHigh 45 % RAM (55G, throttles first), MemoryMax 58 % (71G, stops only slice jobs), CPUQuota 56 % of threads |
 | `gpu-queue.py` | Priority queue for GPU and browser jobs. At the head it starts only with GPU and system headroom; temporary trouble means wait, a fault latch means stop. A running job that has opened no NVIDIA device after 10 min (and is not under the automation guard) gives its slot back and keeps running | VRAM < 60 % and BAR1 < 50 % of the card's totals (the guard stops at 85 % and 75 %), RAM reserve and load as above |
 | `gpu-queue.py --est S` | Short lane: a job declared at `GPU_QUEUE_SHORT_SEC` (300 s) or less takes queue priority 0 and starts at the next gap between long jobs; a long ticket waiting `GPU_QUEUE_AGE_SEC` (600 s) is renamed into the same lane, arrival kept. The lane is in the ticket name, the only thing the browser guard reads, so every reader agrees on the head. `--stats [--hours 12]` reads `history.jsonl` (one line per job: wait, run, exit code) | short ≤ 300 s, ageing after 600 s |
-| `workers` | The CLI-worker registry: `workers run --bot SLUG -- cmd` registers a worker (host, bot, task, repo), heartbeats while it runs and records its end; `workers list` shows running, dead (process gone or no heartbeat) and finished workers on this host and every host that pushes here (`workers push --ssh <rig>` from the Grok box). Unknown bot slugs are refused. `fleet-disconnect status` includes it | lease 120 s, host stale after 180 s |
+| `workers` | The CLI-worker registry: `workers run --bot SLUG -- cmd` registers a worker (host, bot, task, repo), heartbeats while it runs and records its end; `workers list` shows running, dead (process gone or no heartbeat) and finished workers on this host and every host that pushes here (`workers push --ssh <rig>` from the Grok box). Unknown bot slugs are refused. `fleet-disconnect status` includes it. On exit `run` writes a change receipt (`workers list --receipts N`, `workers receipt ID`); a spawn-rate alarm refuses (75) a launch when this host saw 30 launches of the same bot and program in 60 s | lease 120 s, host stale after 180 s, `WORKERS_SPAWN_MAX` 30 per minute |
 | `memguard.py` | Everything not started through `heavy-run`. Reserved memory (memory.low, set on every ancestor up to `user.slice`) for the Claude app, the ChatGPT/Codex app and the desktop. Any other job past 8 % of RAM gets the per-job ceiling, and if unprotected jobs together pass 45 % of RAM the largest is held at its size. Nothing is killed | Claude 12 % (15 GB), Codex 6 % (7 GB), desktop 4 % (5 GB), total 25 % (31 GB); big job > 10 GB → MemoryHigh 28 GB |
 | `diskguard.py` | The system drive. Every 15 min: notify at 85 % and start the janitor (at most every 6 h). Nightly at 03:30 the janitor removes regenerable dirs (`node_modules`, `.turbo`, `.parcel-cache`, `.next`) from work folders idle 48 h, removes git worktrees that are clean and already on a remote branch, and prunes the uv, npm and pacman caches. A folder a process is using (working directory, executable, path argument or open file) is never touched. It looks at most 4 levels deep and never walks a whole tree | warn 85 %, critical 92 %, idle 48 h; idle IO, rm workers = threads / 8 (4), 2 GB |
 | `agent-guard.py` | A Claude Code PreToolUse hook on every Bash command (38 ms). Refuses, with the reason and the alternative: whole-tree `git stash` / `reset --hard` / `checkout .` / `restore .` / `clean -f` in a checkout with uncommitted changes (other sessions' work); `git add -A` with no paths or `git add .`; du / ncdu / `btrfs fi du` on a drive or big shared folder, and `find` there deeper than -maxdepth 4 (points to `plocate`). `AGENT_GUARD_OK=1` in front overrides; refusals log to `~/.local/state/agent-guard/refusals.jsonl`; anything unparseable is allowed | replayed on 12,009 real commands from 3 days: 1.97 % refused, all instances of the three patterns |
@@ -35,7 +35,30 @@ Everything here waits rather than fails, and every limit is computed from the ma
 - slot and headroom waits;
 - slice placement and nesting;
 - scheduler headroom;
-- the GPU queue: headroom, waiting out trouble, stopping on a fault.
+- the GPU queue: headroom, waiting out trouble, stopping on a fault;
+- the worker registry (`test/test_workers.py`): receipts without command or task text, keyed digests, the spawn gate
+  under a 20-launch burst, a retry loop and changing arguments, the redaction cases from the 2026-10-27 reviews, post-job
+  git that runs no job-planted fsmonitor, and death by signal reported without a Python core dump.
+
+**Change receipts** (`~/.local/state/workers/receipts/<host>-<pid>-<start>.json`, written by `workers run`, not by the
+model): bot, host, repo; HEAD and branch before and after, and `git diff --stat` of new commits and of the working
+tree; `rc` or `signal`; start, end, duration; the paths named in `WORKERS_EVIDENCE` (codex-task passes its run
+directory). No command or task text: the program's basename, the argument count, and HMAC-SHA256 digests of the
+command and the task under a random per-host key (`digest.key` in the registry directory, mode 0600). Two runs of one
+command on one host match, but a guessed secret cannot be checked against a receipt without that key. Never the
+environment.
+- The registry's live and history entries keep a task label: the task's first line, with secret shapes redacted (URL
+  credentials, Authorization and Bearer values, KEY/TOKEN/SECRET/PASS-style assignments and flags, `-p`, and known
+  token prefixes anywhere in a word), cut to 80 characters, plus the program name and argument count. **Limit:** a
+  secret written as free text (`the password is hunter2`, `use API key 4f9a1c2e`) cannot be recognised reliably and
+  stays in the label. Keep secrets out of task text; pass them through the environment or a file.
+- Post-job git runs with no fsmonitor, hooks, external diff, textconv or optional locks, and a 5 s timeout. A clean or
+  smudge filter the job defined in `.git/config` can still run (follow-up).
+- The spawn-rate alarm counts this bot's launches of one program (its basename, whatever the arguments), refused ones
+  included, and records each under one lock before any slow call. A burst or a retry loop is held to
+  `WORKERS_SPAWN_MAX` (30) per 60 s; a caller that keeps retrying stays refused until it pauses for 60 s.
+- A job killed by a signal is reported by dying of the same signal, except SIGKILL, SIGSTOP and the core-dumping
+  signals (SEGV, ABRT, QUIT...), which give exit 128 + N, so the registry never dumps a Python core.
 
 **ds9, the second heavy host** (2026-10-27, Craig: "thats the idea can you get it set up? study akilleez repo and configure it"):
 - ds9 is the X99 home server (Home Lab's; `aors/fleet.json` devices): Xeon E5-2699 v4, 44 threads, 188 GB, ZFS pools, and the home services (Immich, Home Assistant, Nextcloud, Netdata, Docker). It has no render GPU, so it takes CPU work: Blender builds and exports, CPU Cycles stills, photo pipelines, tests. GPU renders stay on main-rig's 4080.

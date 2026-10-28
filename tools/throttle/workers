@@ -7,6 +7,7 @@
     workers push --ssh HOST                                         send the snapshot to HOST (`workers receive` there)
     workers receive --from HOST                                     store a snapshot from stdin (the other end of push)
     workers reap                                                    move dead entries here into history
+    workers list --receipts N | workers receipt ID                  the last N change receipts, or one in full
 
 Written 2026-10-27 after "does grok bot have dead running computer use codex cli workers alive here?": nothing could
 answer. The Grok bot's Codex workers run on the Grok box, which main-rig cannot reach (the box SSHes out to the rig,
@@ -14,8 +15,9 @@ never the other way), and on main-rig only a process list existed: no bot, no ta
 dead. Now every launch through codex-guard.sh, codex-task or codex-pool registers here:
 
 - An entry <host>-<pid>.json in ~/.local/state/workers/live (WORKERS_DIR overrides the root): host, bot, pid, process
-  group, task (first line), repo, command, start time. Its mtime is the heartbeat, refreshed every WORKERS_BEAT seconds
-  (30) while the command runs. On exit the entry moves to history.jsonl with the exit code and run time.
+  group, task label (the task's first line, secret shapes redacted, at most 80 characters), repo, program name and
+  argument count, start time. Its mtime is the heartbeat, refreshed every WORKERS_BEAT seconds (30) while the command
+  runs. On exit the entry moves to history.jsonl with the exit code and run time.
 - Dead means the process is gone with its entry left behind (killed -9, crashed host, power loss), or the heartbeat is
   older than WORKERS_LEASE (120 s). A host whose snapshot is older than WORKERS_HOST_STALE (180 s) shows as not
   reporting: its workers are unknown, not alive.
@@ -24,10 +26,17 @@ dead. Now every launch through codex-guard.sh, codex-task or codex-pool register
 - --bot must be on the roster: aors/fleet.json bot slugs plus aors/branch-slugs.json lanes and aliases. An unknown name
   (`null`, an unset variable) is refused with exit 64. WORKERS_ALLOW_UNREGISTERED=1 registers it as `unknown` instead,
   for launchers that have not been given a slug yet.
+- On exit `run` writes a change receipt to receipts/<host>-<pid>-<start>.json: git HEAD, branch and diff --stat before
+  and after, exit, times, the program's name and argument count, keyed digests (HMAC-SHA256, per-host key in
+  digest.key, mode 0600) of the command and the task, and the evidence paths named in WORKERS_EVIDENCE (os.pathsep
+  separated). No command or task text and never the environment.
+- A spawn-rate alarm refuses (exit 75) a launch when this host already saw WORKERS_SPAWN_MAX (30) launches of the same
+  bot and program within 60 s, refused ones included.
 
 The registry reports; it never kills a worker. Exit status of `run` is the command's own.
 """
 import argparse, json, os, signal, socket, subprocess, sys, threading, time
+import fcntl, glob, hashlib, hmac, re                  # receipts, redaction and the spawn gate
 
 HOST = socket.gethostname()
 
@@ -109,21 +118,199 @@ def append_history(entry):
         fh.write(json.dumps(entry) + "\n")
 
 
+# ---- change receipts and redaction --------------------------------------------------------------------------------
+# A receipt holds no command or task text at all: the program's basename, the argument count and keyed digests. The
+# registry (live entries, history, snapshots pushed between hosts) keeps a short label, scrubbed by scrub_text().
+SEGS = (r"(?:api[-_]?key|access[-_]?key|private[-_]?key|key|token|secret|passw(?:or)?d|passphrase|pass|pwd|pw|credentials?|"
+        r"cookie|auth|authorization|session[-_]?id)")
+SECRET_NAME = re.compile(rf"(?i)(?<![A-Za-z0-9])(?:[A-Za-z0-9]+[-_.])*[A-Za-z0-9]*{SEGS}(?:[-_.][A-Za-z0-9]+)*$")
+VALUE = r"""("[^"]*"?|'[^']*'?|[^\s'"]+)"""
+REDACTIONS = [
+    # Authorization headers: everything after the name
+    (re.compile(r"(?i)\b((?:proxy-)?authorization\s*[:=])[^\n]*"), r"\1 [redacted]"),
+    (re.compile(r"(?i)\b(bearer|basic)(\s+|[:=])[^\s'\"]+"), r"\1 [redacted]"),
+    # curl -u user:password; a Slack incoming-webhook URL (the path is the secret)
+    (re.compile(r"(?<![^\s'\"(])(-u\s+|--user[=\s]+)[^\s'\":]+:[^\s'\"]+"), r"\1[redacted]"),
+    (re.compile(r"(?i)(hooks\.slack\.com/services/)[^\s'\"]+"), r"\1[redacted]"),
+    # user:password@ or token@ in a URL
+    (re.compile(r"(?i)\b([a-z][a-z0-9+.-]*://)[^/\s@'\"]+@"), r"\1[redacted]@"),
+    # NAME=value, NAME: value, "name": "value" for a secret-shaped name (api_key, OPENAI_KEY, X-Api-Key, password...)
+    (re.compile(rf"(?i)(?<![A-Za-z0-9])((?:[A-Za-z0-9]+[-_.])*[A-Za-z0-9]*{SEGS}(?:[-_.][A-Za-z0-9]+)*[\"']?\s*[:=]\s*)"
+                + VALUE), r"\1[redacted]"),
+    # --password hunter2, --api-key k inside one string; -p hunter2 and -phunter2 (mysql)
+    (re.compile(rf"(?i)(?<![^\s'\"(])(--?(?:[A-Za-z0-9]+[-_])*[A-Za-z0-9]*{SEGS}(?:[-_][A-Za-z0-9]+)*\s+)" + VALUE),
+     r"\1[redacted]"),
+    (re.compile(r"(?<![^\s'\"(])-p(\s+[^\s'\"]+|[^\s'\"]{3,})"), "-p [redacted]"),
+    # known token shapes, anywhere in a word: in a path, in quotes, in brackets
+    (re.compile(r"(?<![A-Za-z0-9])(?:gh[pousr]_|github_pat_|sk-ant-|sk-|[sr]k_(?:live|test)_|xox[abposr]-|hf_|glpat-|"
+                r"npm_|AIza|eyJ)[A-Za-z0-9_.+/=-]{6,}"), "[redacted]"),
+    (re.compile(r"(?<![A-Za-z0-9])(?:AKIA|ASIA)[A-Z0-9]{12,}"), "[redacted]"),
+    # a long unbroken run of mixed letters and digits
+    (re.compile(r"[A-Za-z0-9+=]{24,}"), lambda m: "[redacted]" if re.search(r"\d", m[0]) and re.search(
+        r"[A-Za-z]", m[0]) else m[0]),
+]
+
+
+def scrub_text(text):
+    """text with every secret shape above replaced by [redacted]."""
+    for pat, rep in REDACTIONS:
+        text = pat.sub(rep, text)
+    return text
+
+
+def secret_flag(word):
+    """A flag whose value is the next word: --password, --api-key, --token, -p."""
+    return word == "-p" or (word.startswith("-") and "=" not in word and bool(SECRET_NAME.search(word.lstrip("-"))))
+
+
+def scrub(cmd):
+    """The words with secret shapes redacted (and the word after a secret-named flag), each cut to 200 after."""
+    out, hide = [], False
+    for word in cmd:
+        out.append("[redacted]" if hide else scrub_text(word)[:200])
+        hide = secret_flag(word)
+    return out
+
+
+def digest_key():
+    """This host's random key for receipt digests (root()/digest.key, mode 0600), created once."""
+    path = os.path.join(root(), "digest.key")
+    os.makedirs(root(), exist_ok=True)
+    for _ in range(50):
+        try:
+            with open(path, "rb") as fh:
+                key = fh.read()
+            if len(key) == 32:
+                return key
+        except FileNotFoundError:
+            tmp = f"{path}.{os.getpid()}.tmp"
+            fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+            with os.fdopen(fd, "wb") as fh:
+                fh.write(os.urandom(32))
+            try:
+                os.link(tmp, path)                     # atomic: the first writer's key wins
+            except FileExistsError:
+                pass
+            os.unlink(tmp)
+            continue
+        time.sleep(0.01)                               # another writer is between link and write: never, but wait
+    raise OSError(f"no usable digest key at {path}")
+
+
+def digest(value):
+    """HMAC-SHA256 of the value under this host's key: two runs of one command match, and a guessed secret inside a
+    known command cannot be checked against a receipt without the key (a plain sha256 could be)."""
+    return hmac.new(digest_key(), json.dumps(value).encode(), hashlib.sha256).hexdigest()
+
+
+def git_state(repo):
+    """HEAD and branch of the job's repo. The job may have written its .git/config, so no fsmonitor, hooks, external
+    diff, textconv or optional locks run, each call stops after 5 s, and only in the caller's process. A clean or
+    smudge filter the job defined can still run on a worktree diff (follow-up)."""
+    def git(*args):
+        try:
+            r = subprocess.run(["git", "--no-optional-locks", "-c", "core.fsmonitor=", "-c", "core.hooksPath=/dev/null",
+                                "-c", "diff.external=", "-C", repo, *args], capture_output=True, text=True, timeout=5,
+                               stdin=subprocess.DEVNULL)
+            return r.stdout.strip() if r.returncode == 0 else None
+        except (OSError, subprocess.TimeoutExpired):
+            return None
+    head = git("rev-parse", "HEAD")
+    return head and {"head": head, "branch": git("rev-parse", "--abbrev-ref", "HEAD"), "git": git}
+
+
+def receipt(entry, before, after, status):
+    diff = {}
+    if before and after:
+        stat = lambda *a: (after["git"]("diff", "--no-ext-diff", "--no-textconv", "--stat", *a) or "").splitlines()[-60:]
+        if before["head"] != after["head"]:
+            diff["commits"] = stat(before["head"], after["head"])
+        diff["worktree"] = stat("HEAD")
+    evidence = [os.path.realpath(p) for p in os.environ.get("WORKERS_EVIDENCE", "").split(os.pathsep) if p]
+    side = lambda s: s and {"head": s["head"], "branch": s["branch"]}
+    cmd = entry["full_cmd"]
+    data = {"id": f"{HOST}-{entry['pid']}-{int(entry['started'])}", "bot": entry["bot"], "host": HOST,
+            "repo": entry["repo"], "program": os.path.basename(cmd[0]), "argc": len(cmd) - 1,
+            "cmd_hmac": digest(cmd), "task_hmac": digest(entry["full_task"]), "before": side(before),
+            "after": side(after), "diff_stat": diff, **status, "started": entry["started"], "ended": time.time(),
+            "duration": round(time.time() - entry["started"], 1), "peak_tasks": entry.get("peak_tasks"),
+            "tasks_cap": entry.get("tasks_cap"),
+            "evidence": [{"path": p, "exists": os.path.exists(p)} for p in evidence]}
+    d = os.path.join(root(), "receipts")
+    os.makedirs(d, exist_ok=True)
+    write_json(os.path.join(d, data["id"] + ".json"), data)
+    return data
+
+
+def spawn_gate(bot, program, limit, now=None):
+    """(attempts in the last 60 s, allowed): count this bot's launches of this program (its basename) on this host,
+    refused ones included, and record this one, all under one lock, so a burst of simultaneous launches or a retry
+    loop cannot get past the limit, and changing the arguments does not reset the count. Entries outside
+    [now - 60 s, now + 5 s] (a clock step) are dropped."""
+    now = time.time() if now is None else now
+    os.makedirs(root(), exist_ok=True)
+    with open(os.path.join(root(), "spawn.lock"), "a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        path = os.path.join(root(), f"spawns-{HOST}.json")
+        try:
+            with open(path) as fh:
+                rows = [r for r in json.load(fh) if now - 60 <= r[0] <= now + 5]
+        except (OSError, ValueError, TypeError, IndexError):
+            rows = []
+        n = sum(1 for r in rows if r[1] == bot and r[2] == program)
+        rows.append([now, bot, program, n < limit])
+        write_json(path, rows)
+    return n, n < limit
+
+
+# signals whose default action dumps core, and those that cannot be caught or re-raised from Python
+CORE = {getattr(signal, n) for n in ("SIGQUIT", "SIGILL", "SIGTRAP", "SIGABRT", "SIGBUS", "SIGFPE", "SIGSEGV",
+                                     "SIGXCPU", "SIGXFSZ", "SIGSYS") if hasattr(signal, n)}
+UNCATCHABLE = {signal.SIGKILL, signal.SIGSTOP}
+
+
+def die_like(rc):
+    """End as a child that ended with `rc` did: its exit code, or for death by signal N, by the same signal (callers see
+    it as such), except 128 + N for SIGKILL/SIGSTOP (Python cannot reset those) and for core-dumping signals (no
+    Python core dump)."""
+    if rc >= 0:
+        return rc
+    sig = -rc
+    if sig not in UNCATCHABLE | CORE:
+        signal.signal(sig, signal.SIG_DFL)
+        os.kill(os.getpid(), sig)
+    return 128 + sig
+
+
 def run(a, cmd):
     if os.environ.get("WORKERS_REGISTERED") == "1":
         # already inside a registered worker: run the command as it is, never a second entry or a nested wrapper
         os.execvp(cmd[0], cmd)
+    signal.signal(signal.SIGQUIT, lambda *_: sys.exit(128 + signal.SIGQUIT))   # never a Python core dump
+    # INT handled even if our caller ignored it (a background job of a shell script), so the job, in a session of its
+    # own and never reached by a terminal's Ctrl-C directly, starts with INT and QUIT at their defaults
+    signal.signal(signal.SIGINT, signal.default_int_handler)
     bot, err = check_bot(a.bot, roster())
     if err:
         print(f"workers: {err}; refusing to start", file=sys.stderr)
         return 64
+    program, limit = os.path.basename(cmd[0]), int(num("WORKERS_SPAWN_MAX", 30))
+    rate, ok = spawn_gate(bot, program, limit)                 # before any slow call (git, systemd)
+    if not ok:
+        print(f"workers: spawn-rate alarm: {rate} launches of {bot} {program} on {HOST} in 60 s "
+              f"(WORKERS_SPAWN_MAX {limit}); refusing, a launcher is probably looping", file=sys.stderr)
+        return 75
     live = os.path.join(root(), "live")
     os.makedirs(live, exist_ok=True)
-    task = ((a.task or (cmd[-1] if len(cmd) > 1 else "")).strip().splitlines() or [""])[0][:200]
+    full_task = a.task if a.task is not None else (cmd[-1] if len(cmd) > 1 else "")
+    task = scrub_text((full_task.strip().splitlines() or [""])[0])[:80]
+    repo = os.path.realpath(a.repo) if a.repo else os.getcwd()
+    before = git_state(repo)
+
     # the child and its descendants see WORKERS_REGISTERED=1, so a guard or launcher inside does not register again
     child = subprocess.Popen(cmd, start_new_session=True, env={**os.environ, "WORKERS_REGISTERED": "1", "WORKER_BOT": bot})
     entry = {"host": HOST, "bot": bot, "pid": child.pid, "pgid": child.pid, "wrapper": os.getpid(), "task": task,
-             "repo": os.path.realpath(a.repo) if a.repo else os.getcwd(), "cmd": [os.path.basename(cmd[0]), *cmd[1:3]],
+             "repo": repo, "cmd": [program], "argc": len(cmd) - 1,
              "started": time.time()}
     path = os.path.join(live, f"{HOST}-{child.pid}.json")
     write_json(path, entry)
@@ -137,19 +324,46 @@ def run(a, cmd):
                 write_json(path, entry)
 
     threading.Thread(target=beat, daemon=True).start()
-    for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP):
+    for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP, signal.SIGQUIT):
         signal.signal(sig, lambda s, _f: forward(child.pid, s))
     rc = child.wait()
     stop.set()
     append_history({**entry, "ended": time.time(), "ran": round(time.time() - entry["started"], 1), "rc": rc})
+
+    try:
+        status = {"rc": rc} if rc >= 0 else {"signal": signal.Signals(-rc).name}
+        receipt({**entry, "full_cmd": cmd, "full_task": full_task}, before, git_state(repo), status)
+    except Exception as exc:                          # a receipt never changes the run's outcome
+        print(f"workers: receipt not written ({exc})", file=sys.stderr)
     try:
         os.remove(path)
     except FileNotFoundError:
         pass
-    if rc < 0:                                        # killed by a signal: die by the same one, so callers see it
-        signal.signal(-rc, signal.SIG_DFL)
-        os.kill(os.getpid(), -rc)
-    return rc
+    return die_like(rc)                               # killed by a signal: die by the same one, so callers see it
+
+
+def list_receipts(n, as_json):
+    """The last n receipts; a file that is not a receipt (bad JSON, no id, not an object) is skipped with a note."""
+    rows = []
+    for f in sorted(glob.glob(os.path.join(root(), "receipts", "*.json")), key=os.path.getmtime)[-n:]:
+        try:
+            with open(f) as fh:
+                r = json.load(fh)
+            if not isinstance(r, dict) or not isinstance(r.get("id"), str):
+                raise ValueError("not a receipt")
+            rows.append(r)
+        except (OSError, ValueError) as exc:
+            print(f"workers: skipping unreadable receipt {os.path.basename(f)} ({exc})", file=sys.stderr)
+    if as_json:
+        print(json.dumps(rows, indent=1))
+        return 0
+    for r in rows:
+        end = r.get("signal") or f"rc {r.get('rc')}"
+        moved = str((r.get("before") or {}).get("head", ""))[:8] + ".." + str((r.get("after") or {}).get("head", ""))[:8]
+        dur = r.get("duration") if isinstance(r.get("duration"), (int, float)) else 0
+        print(f"  {r['id']:36} {str(r.get('bot', '?')):18} {end:8} {dur / 60:6.1f} min  "
+              f"peak {r.get('peak_tasks')}  {moved}  {r.get('program', '')} ({r.get('argc', '?')} args)")
+    return 0
 
 
 def local_live(now=None):
@@ -246,6 +460,8 @@ def main(argv=None):
     li.add_argument("--json", action="store_true")
     li.add_argument("--all", action="store_true", help="include finished workers")
     li.add_argument("--hours", type=float, default=24)
+    li.add_argument("--receipts", type=int, metavar="N", help="show the last N change receipts instead")
+    sub.add_parser("receipt").add_argument("id")
     sub.add_parser("snapshot")
     p = sub.add_parser("push")
     p.add_argument("--ssh", required=True)
@@ -260,6 +476,15 @@ def main(argv=None):
         if not cmd:
             ap.error("run needs a command after --")
         return run(a, cmd)
+    if a.op == "receipt":
+        path = os.path.join(root(), "receipts", os.path.basename(a.id).removesuffix(".json") + ".json")
+        if not os.path.exists(path):
+            print(f"workers: no receipt {a.id}", file=sys.stderr)
+            return 66
+        print(open(path).read())
+        return 0
+    if a.op == "list" and a.receipts:
+        return list_receipts(a.receipts, a.json)
     if a.op == "list":
         rows = local_live() + [{**e, "host": e.get("host", HOST)} for e in history(a.hours)] + remote()
         if a.json:
