@@ -88,11 +88,14 @@ echo "$(date -Is) slot=$slot mem=$mem pid=$$ $name" >> "$state/runs.log"
 # (a deliberate detached job), else the nearest scope (an app or terminal). A launcher whose owner is already gone (a
 # transient run-*.scope reparented to the user manager) is an orphan loop: refuse it.
 owner_unit() {
-  local p=$PPID unit comm scope="" scope_orphan=0 first=1
+  local p=$PPID unit comm scope="" scope_orphan=0 first=1 cg mgr="user@$(id -u).service/"
   while [ "${p:-0}" -gt 1 ]; do
     comm=$(cat /proc/$p/comm 2>/dev/null) || break
     [ "$comm" = systemd ] && break
-    unit=$(sed -n 's|^0::.*/||p' /proc/$p/cgroup 2>/dev/null)
+    # Only units of this user's own manager can be bound to. A process in a system unit (an ssh session where
+    # sshd does not register logins, 2026-10-27 on ds9: /system.slice/sshd.service) has no owner we can bind.
+    cg=$(sed -n 's|^0::||p' /proc/$p/cgroup 2>/dev/null)
+    case $cg in */$mgr*) unit=${cg##*/};; *) unit="";; esac
     case $unit in
       user@*.service|init.scope|heavy-*.scope) ;;
       *.service) echo "$unit"; return 0;;

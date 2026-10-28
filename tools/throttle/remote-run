@@ -1,0 +1,216 @@
+#!/usr/bin/env python3
+"""remote-run: run a heavy job on another host of ours, through that host's own heavy-run, at the same paths.
+
+    remote-run --host ds9 setup                       export this checkout's origin/main to the host and install the
+                                                      throttle tools there (heavy-run, workers, fleet-disconnect)
+    remote-run --host ds9 status                      the host's limits, load, memory and running heavy jobs
+    remote-run --host ds9 [--in PATH]... [--in-blend FILE]... [--out PATH]... [--cwd DIR] [--mem GB] [--name NAME] -- CMD...
+                                                      sync inputs, run CMD there under heavy-run, pull outputs back;
+                                                      --in-blend also syncs every external file the .blend uses
+
+Written 2026-10-27 when Craig asked to set up ds9 (the X99 home server: 44 threads, 188 GB, no render GPU) as a CPU
+worker for main-rig: "thats the idea can you get it set up? study akilleez repo and configure it". It follows the
+RunPod farm's pattern (media/nh3-kit/tools/farm: sync inputs, run over ssh, pull outputs to the same local path) for a
+host that is always ours and costs nothing, so there is no pod, spend or queue to manage:
+
+- Same paths. The host keeps the paths main-rig's jobs use (/home/user/..., /mnt/cold-steam/factory-scratch/...),
+  owned by the host's own user, so lane scripts with absolute paths run unchanged. The job sees HOME=/home/user;
+  heavy-run's own state stays in the host user's home, so its slots are shared with everything else on that host.
+- The host's limits. The job takes one of the host's heavy-run slots and runs in its heavy.slice, sized for that
+  machine, so the services a home server runs keep their headroom. memguard is not installed there: it protects the
+  desktop apps of a workstation, and it would retune the server's kernel.
+- Inputs and outputs. Each --in is rsynced (deltas) to the same absolute path before the run; each --out comes back
+  to the same local path after the run, even when the job fails. Paths must sit under REMOTE_RUN_ROOTS (default:
+  /home/user and /mnt/cold-steam/factory-scratch). ~/Projects/bud (Craig's private ABI files) never leaves
+  main-rig: any path under it is refused.
+- Owner binding. The remote job lives as long as this command: when remote-run ends or is killed, the ssh pipe
+  closes, the host side sends TERM to its heavy-run, and heavy-run stops the job's scope. The exit status is the
+  job's own (255 means ssh failed).
+"""
+import argparse, os, shlex, subprocess, sys, time
+
+HERE = os.path.dirname(os.path.realpath(__file__))
+ROOTS = [r for r in os.environ.get('REMOTE_RUN_ROOTS', '/home/user:/mnt/cold-steam/factory-scratch').split(':') if r]
+PRIVATE = [os.path.realpath(os.path.expanduser(p)) for p in
+           os.environ.get('REMOTE_RUN_PRIVATE', '~/Projects/bud').split(':') if p]
+TOOLS = ['heavy-run', 'workers', 'fleet-disconnect']
+CODE = '/home/user/Code/akilleez'
+SSH = ['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10']
+
+
+def say(*a):
+    print('remote-run:', *a, file=sys.stderr, flush=True)
+
+
+def under(path, root):
+    return path == root or path.startswith(root.rstrip('/') + '/')
+
+
+def check_path(path, cwd):
+    """Absolute, normalised path; refuses private files and anything outside the shared roots."""
+    full = os.path.normpath(os.path.join(cwd, os.path.expanduser(path)))
+    real = os.path.realpath(full)
+    for p in PRIVATE:
+        if under(full, p) or under(real, p):
+            raise SystemExit(f'remote-run: refusing {path}: private files never leave this machine ({p})')
+    if not any(under(full, r) for r in ROOTS):
+        raise SystemExit(f'remote-run: refusing {path}: not under a shared root ({", ".join(ROOTS)}; REMOTE_RUN_ROOTS)')
+    return full + ('/' if path.endswith('/') and not full.endswith('/') else '')
+
+
+def rsync(args, what, strict):
+    t = time.time()
+    # --omit-dir-times: --relative recreates the parents (/mnt, /home), whose times only root may set.
+    # --chmod=u+w: read-only sources (~/Projects/nh3-kit is r-x) must not arrive read-only, or the next sync cannot
+    # add files beside them (2026-10-27: the hall's IES profiles never reached ds9, and it rendered 37 % darker).
+    p = subprocess.run(['rsync', '-a', '--relative', '--omit-dir-times', '--chmod=u+w', '--mkpath', '--partial',
+                        '--timeout=300', '-e', ' '.join(SSH)] + args, capture_output=True, text=True)
+    if p.returncode and (strict or p.returncode not in (23, 24)):
+        # Inputs are strict: a job given part of its inputs renders something else without saying so.
+        raise SystemExit(f'remote-run: rsync {what} failed ({p.returncode}): {p.stderr.strip()[:400]}')
+    if p.returncode:
+        say(f'rsync {what}: partial ({p.returncode}): {p.stderr.strip()[:200]}')
+    return time.time() - t
+
+
+BLEND_DEPS = r'''
+import bpy, json, sys
+deps = set()
+def add(p):
+    if p: deps.add(bpy.path.abspath(p))
+for d in (bpy.data.images, bpy.data.sounds, bpy.data.fonts, bpy.data.movieclips):
+    for x in d:
+        if getattr(x, 'filepath', '') and not getattr(x, 'packed_file', None) and x.name != 'Bfont Regular':
+            add(x.filepath)
+for x in list(bpy.data.libraries) + list(bpy.data.cache_files) + list(bpy.data.volumes):
+    add(x.filepath)
+for owner in list(bpy.data.materials) + list(bpy.data.lights) + list(bpy.data.worlds) + list(bpy.data.node_groups):
+    nt = owner if owner.bl_rna.identifier.endswith('NodeTree') else getattr(owner, 'node_tree', None)
+    for n in (nt.nodes if nt else []):
+        if n.bl_idname in ('ShaderNodeTexIES', 'ShaderNodeScript') and getattr(n, 'mode', '') == 'EXTERNAL':
+            add(n.filepath)
+print('REMOTE_RUN_DEPS ' + json.dumps(sorted(deps)))
+'''
+
+
+def blend_deps(path):
+    """External files a .blend needs (images, IES profiles, libraries, caches, sounds, fonts), asked of Blender itself.
+    2026-10-27: the first ds9 benchmark rendered the hall without its two IES profiles (darker, ~42/255 off)."""
+    p = subprocess.run(['blender', '-b', '--factory-startup', path, '--python-expr', BLEND_DEPS],
+                       capture_output=True, text=True, timeout=600)
+    for line in p.stdout.splitlines():
+        if line.startswith('REMOTE_RUN_DEPS '):
+            import json
+            return [os.path.normpath(d) for d in json.loads(line[len('REMOTE_RUN_DEPS '):])]
+    raise SystemExit(f'remote-run: could not list the dependencies of {path}: {p.stderr.strip()[-300:]}')
+
+
+def driver(cwd, mem, name, cmd):
+    """Host-side script (passed as `bash -c`): run CMD under heavy-run in the background, send it TERM when our
+    stdin reaches EOF (remote-run ended or was killed), and exit with its status. Stdin carries nothing but that
+    owner link: a script sent on it would be read by the watcher too, which swallowed the script's last lines."""
+    hr = '"$HOME/.local/bin/heavy-run"'
+    job = ' '.join(['env', 'HOME=/home/user', 'bash', '-c', shlex.quote(cmd)])
+    return ('exec 3<&0\n'
+            f'cd {shlex.quote(cwd)} || exit 66\n'
+            f'XDG_STATE_HOME="$HOME/.local/state" XDG_CONFIG_HOME="$HOME/.config" {hr} --mem {int(mem)} '
+            f'--name {shlex.quote(name)} -- {job} </dev/null &\n'
+            'job=$!\n'
+            # builtin read only: a child (cat) would outlive `kill $watch` and hold the ssh channel open
+            '( while read -r -u 3 _; do :; done; kill -TERM $job 2>/dev/null ) >/dev/null 2>&1 &\n'
+            'watch=$!\n'
+            'wait $job; rc=$?\n'
+            'kill $watch 2>/dev/null\n'
+            'exit $rc\n')
+
+
+def run(a):
+    cwd = check_path(a.cwd or os.getcwd(), os.getcwd()).rstrip('/') or '/'
+    ins = [check_path(p, cwd) for p in a.inp]
+    for b in a.blend:
+        blend = check_path(b, cwd)
+        deps = blend_deps(blend)
+        missing = [d for d in deps if not os.path.exists(d)]
+        if missing:
+            say(f'{b}: {len(missing)} dependency file(s) missing here too, so the remote render matches this one: '
+                + ', '.join(missing[:5]))
+        ins += [blend] + [check_path(d, cwd) for d in deps if os.path.exists(d)]
+        say(f'{b}: {len(deps) - len(missing)} dependency file(s) added')
+    outs = [check_path(p, cwd) for p in a.out]
+    cmd = ' '.join(shlex.quote(c) for c in a.cmd) if len(a.cmd) > 1 else a.cmd[0]
+    name = a.name or 'remote'
+    t0 = time.time()
+    if ins:
+        missing = [p for p in ins if not os.path.exists(p.rstrip('/'))]
+        if missing:
+            raise SystemExit('remote-run: missing inputs: ' + ', '.join(missing))
+        dt = rsync([p.rstrip('/') for p in ins] + [f'{a.host}:/'], 'inputs', strict=True)
+        say(f'synced {len(ins)} input(s) to {a.host} in {dt:.1f} s')
+    subprocess.run(SSH + [a.host, 'mkdir -p ' + shlex.quote(cwd)], check=False)
+    p = subprocess.Popen(SSH + [a.host, 'bash -c ' + shlex.quote(driver(cwd, a.mem, name, cmd))],
+                         stdin=subprocess.PIPE)   # never written: the open pipe is the owner link
+    try:
+        rc = p.wait()
+    except KeyboardInterrupt:
+        p.stdin.close(); rc = p.wait(); rc = rc or 130
+    run_s = time.time() - t0
+    for o in outs:
+        rsync([f'{a.host}:{o}', '/'], f'output {o}', strict=False)
+    say(f'{name} on {a.host}: exit {rc}, {run_s:.0f} s run, outputs {len(outs)}')
+    return rc
+
+
+def setup(a):
+    """Export origin/main of this checkout to CODE on the host and install the throttle tools from it."""
+    repo = subprocess.run(['git', '-C', HERE, 'rev-parse', '--show-toplevel'], capture_output=True, text=True).stdout.strip()
+    subprocess.run(['git', '-C', repo, 'fetch', '-q', 'origin', 'main'], check=False)
+    rev = subprocess.run(['git', '-C', repo, 'rev-parse', 'origin/main'], capture_output=True, text=True, check=True).stdout.strip()
+    say(f'exporting origin/main {rev[:9]} to {a.host}:{CODE}')
+    new = CODE + '.new'
+    arc = subprocess.Popen(['git', '-C', repo, 'archive', '--format=tar', 'origin/main'], stdout=subprocess.PIPE)
+    unpack = (f'set -e; rm -rf {new}; mkdir -p {new}; tar -x -C {new}; echo {rev} > {new}/.exported-from; '
+              f'rm -rf {CODE}.old; if [ -d {CODE} ]; then mv {CODE} {CODE}.old; fi; mv {new} {CODE}; rm -rf {CODE}.old')
+    subprocess.run(SSH + [a.host, unpack], stdin=arc.stdout, check=True)
+    arc.wait()
+    t = CODE + '/forge/endoforge/tools/throttle'
+    install = ('set -e; mkdir -p "$HOME/.local/bin"; '
+               + ' '.join(f'install -m 0755 {t}/{x} "$HOME/.local/bin/{x}";' for x in TOOLS)
+               + ' "$HOME/.local/bin/heavy-run" --write-slice; "$HOME/.local/bin/heavy-run" --limits')
+    subprocess.run(SSH + [a.host, install], check=True)
+    return status(a)
+
+
+def status(a):
+    q = ('echo "host $(hostname): $(nproc) threads, load $(cut -d" " -f1-3 /proc/loadavg), '
+         '$(awk "/MemAvailable/{printf \\"%d\\", \\$2/1048576}" /proc/meminfo) GB available"; '
+         '"$HOME/.local/bin/heavy-run" --limits; '
+         'echo "code: $(cat ' + CODE + '/.exported-from 2>/dev/null || echo none)"; '
+         'systemctl --user list-units --no-legend --plain "heavy-*" | awk "{print \\"running: \\" \\$1}"')
+    return subprocess.run(SSH + [a.host, q]).returncode
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(prog='remote-run', description=__doc__.split('\n')[0])
+    ap.add_argument('--host', required=True)
+    ap.add_argument('--in', dest='inp', action='append', default=[])
+    ap.add_argument('--in-blend', dest='blend', action='append', default=[],
+                    help='a .blend input plus every external file it uses (images, IES, libraries, caches)')
+    ap.add_argument('--out', action='append', default=[])
+    ap.add_argument('--cwd')
+    ap.add_argument('--mem', type=float, default=16)
+    ap.add_argument('--name')
+    ap.add_argument('cmd', nargs=argparse.REMAINDER)
+    a = ap.parse_args(argv)
+    if a.cmd and a.cmd[0] == '--':
+        a.cmd = a.cmd[1:]
+    if a.cmd == ['setup']:
+        return setup(a)
+    if a.cmd == ['status']:
+        return status(a)
+    if not a.cmd:
+        ap.error('give setup, status, or -- CMD')
+    return run(a)
+
+
+if __name__ == '__main__':
+    sys.exit(main())

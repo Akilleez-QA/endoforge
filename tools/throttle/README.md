@@ -15,6 +15,7 @@ Everything here waits rather than fails, and every limit is computed from the ma
 | `memguard.py` | Everything not started through `heavy-run`. Reserved memory (memory.low, set on every ancestor up to `user.slice`) for the Claude app, the ChatGPT/Codex app and the desktop. Any other job past 8 % of RAM gets the per-job ceiling, and if unprotected jobs together pass 45 % of RAM the largest is held at its size. Nothing is killed | Claude 12 % (15 GB), Codex 6 % (7 GB), desktop 4 % (5 GB), total 25 % (31 GB); big job > 10 GB → MemoryHigh 28 GB |
 | `fleet-disconnect` | The agents' capacity dial and the disconnect protocol ([FLEET-DISCONNECT.md](FLEET-DISCONNECT.md)). `ramp N` gives agents N % of the above; `drain` (0 %) refuses new work before a reboot; `wait` reports what is still in flight; `resume` restores 100 % | heavy-run slots and load limit, heavy.slice CPUQuota, and the queue's VRAM, BAR1 and load limits, all × N % |
 | `throttle.mjs` | Endoforge scheduler: no new atom without headroom (one atom always runs) | reserve and load as above |
+| `remote-run` | A heavy job on another host of ours (ds9). Inputs are rsynced to the same absolute paths, the job runs under that host's own `heavy-run`, outputs come back to the same local paths, and the job stops when `remote-run` does. `--in-blend` also syncs every external file a `.blend` uses. `setup` exports `origin/main` there and installs `heavy-run`, `workers` and `fleet-disconnect` (not memguard) | the host's own limits; ds9: 3 slots, load < 38.5, 22 GB reserve, heavy.slice 109 GB / about 25 cores |
 
 **Where it is wired in**
 - `endoforge run` puts the whole run inside `heavy.slice`.
@@ -33,6 +34,13 @@ Everything here waits rather than fails, and every limit is computed from the ma
 - slice placement and nesting;
 - scheduler headroom;
 - the GPU queue: headroom, waiting out trouble, stopping on a fault.
+
+**ds9, the second heavy host** (2026-10-27, Craig: "thats the idea can you get it set up? study akilleez repo and configure it"):
+- ds9 is the X99 home server (Home Lab's; `aors/fleet.json` devices): Xeon E5-2699 v4, 44 threads, 188 GB, ZFS pools, and the home services (Immich, Home Assistant, Nextcloud, Netdata, Docker). It has no render GPU, so it takes CPU work: Blender builds and exports, CPU Cycles stills, photo pipelines, tests. GPU renders stay on main-rig's 4080.
+- Measured on the machinery-hall frame (Cycles 32 spp + OIDN, 1080p), seconds a frame: main-rig 4080 2.2; main-rig CPU (16 threads) 42; ds9 CPU inside its heavy.slice 86. Same pixels as main-rig (mean difference 0.05/255) once every input is there.
+- Access: `ssh ds9` (user `ds9`, main-rig's key; `Host ds9` in `~/.ssh/config`). The paths main-rig's jobs use exist there, owned by `ds9`: `/home/user/...` and `/mnt/cold-steam/factory-scratch/...`. Blender 5.2.2 (the same package as main-rig) is installed from the Omarchy mirror.
+- Run `remote-run --host ds9 setup` after merges to refresh its code and tools; `remote-run --host ds9 status` shows its load, limits and running jobs.
+- Lessons built in: ds9's ssh sessions are not in a user-manager unit, so `heavy-run` now binds only to units of the user's own manager; read-only sources (`~/Projects/nh3-kit`) used to arrive read-only and block the next sync, so copies arrive writable and a partial input sync stops the job; the first benchmark rendered the hall without its IES profiles (37 % darker), so `--in-blend` asks Blender for a file's dependencies. `~/Projects/bud` is refused by path.
 
 **Why memguard** (added after the 00:58 crash the same night): no real job had gone through `heavy-run` yet. A Kimodo job started as its own service with no cap grew to 15 GB, and the kernel failed allocations while the Claude app's own process group sat at 30.7 GB with no reserved memory. Craig: "how did that happen you just built fixes to prevent", "and codex".
 
