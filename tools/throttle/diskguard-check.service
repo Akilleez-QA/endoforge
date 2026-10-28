@@ -1,0 +1,8 @@
+# diskguard alarm: system drive use; at 85 % notify and start the janitor (see diskguard.py).
+[Unit]
+Description=diskguard check (system drive alarm)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 -B %h/.local/bin/diskguard check
+SuccessExitStatus=1

@@ -364,5 +364,60 @@ class QueueTests(unittest.TestCase):
         self.assertEqual(len(rows), 2)
         self.assertIn('short', out.getvalue()); self.assertIn('long', out.getvalue()); self.assertIn('failed 1', out.getvalue())
 
+
+class SlotUseTests(unittest.TestCase):
+    """A slot is for the GPU: a job that never opens it gives the slot back; GPU and guarded jobs keep it."""
+
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.ticket = os.path.join(self.tmp.name, 'job.ticket')
+        open(self.ticket, 'w').write('{}')
+        self.device = os.path.join(self.tmp.name, 'nvidia0')
+        open(self.device, 'w').write('')
+        self.old_device, queue.GPU_DEVICE = queue.GPU_DEVICE, self.device
+
+    def tearDown(self):
+        queue.GPU_DEVICE = self.old_device
+        self.tmp.cleanup()
+
+    def watch(self, cmd, grace=1):
+        """Run keep_alive while a child of this process runs `cmd`; report (ticket released, ticket on disk)."""
+        import subprocess, sys, threading
+        job = subprocess.Popen([sys.executable, '-c', cmd, self.device, 'browser_guard.py' if 'guard' in cmd else 'x'])
+        stopped = threading.Event()
+        done = threading.Event()
+        with mock.patch.object(queue, 'require_host'), contextlib.redirect_stderr(io.StringIO()):
+            t = threading.Thread(target=lambda: (queue.keep_alive(self.ticket, {'name': 't'}, 1, stopped, grace),
+                                                 done.set()))
+            t.start()
+            t.join(timeout=4)
+            stopped.set(); t.join()
+        job.kill(); job.wait()
+        return not os.path.exists(self.ticket), os.path.exists(self.ticket)
+
+    def test_cpu_only_job_releases_its_slot(self):
+        self.assertEqual(self.watch('import time; time.sleep(30)'), (True, False))
+
+    def test_job_holding_the_gpu_keeps_its_slot(self):
+        self.assertEqual(self.watch('import sys, time; f = open(sys.argv[1]); time.sleep(30)'), (False, True))
+
+    def test_guarded_job_keeps_its_slot(self):
+        self.assertEqual(self.watch('import time; guard = 1; time.sleep(30)'), (False, True))
+
+    def test_tree_includes_grandchildren(self):
+        import subprocess, sys
+        job = subprocess.Popen(['sh', '-c', 'sleep 30 & wait'])
+        try:
+            import time; time.sleep(0.3)
+            self.assertGreaterEqual(len(queue.process_tree(job.pid)), 2)
+        finally:
+            job.kill(); job.wait()
+
+    def test_grace_override_and_off_switch(self):
+        with mock.patch.dict(os.environ, {'GPU_QUEUE_IDLE_GRACE': '0'}):
+            self.assertEqual(queue.idle_grace(), 0)
+        with mock.patch.dict(os.environ, {'GPU_QUEUE_IDLE_GRACE': 'x'}):
+            self.assertEqual(queue.idle_grace(), 600)
+
 if __name__ == '__main__':
     unittest.main()

@@ -1,0 +1,14 @@
+# diskguard janitor: removes regenerable dirs and clean pushed worktrees from idle work folders (see diskguard.py).
+# Idle IO, one CPU per rm worker (diskguard.WORKERS: threads / 8), small memory ceiling: it must never be the thing
+# that slows the machine down.
+[Unit]
+Description=diskguard janitor (regenerable leftovers on the system drive)
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 -B %h/.local/bin/diskguard janitor --apply --worktrees
+Nice=19
+IOSchedulingClass=idle
+CPUQuota=400%
+MemoryHigh=2G
+TimeoutStartSec=3h

@@ -68,5 +68,5 @@ t('scheduler: off switch', headroom({ ENDOFORGE_THROTTLE: '0' }, { load1: 999, a
 t('scheduler: limits scale with this machine', limits({}).maxLoad > 0 && limits({}).reserveGb >= 8);
 process.exit(bad);
 " || fails=$((fails+1))
-(cd "$here" && python3 -B -m unittest -q test.test_gpu_queue test.test_memguard test.test_fleet_disconnect test.test_workers test.test_remote_run) || fails=$((fails+1))
+(cd "$here" && python3 -B -m unittest -q test.test_gpu_queue test.test_memguard test.test_fleet_disconnect test.test_workers test.test_remote_run test.test_diskguard test.test_agent_guard) || fails=$((fails+1))
 exit $fails

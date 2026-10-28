@@ -36,6 +36,12 @@ The fleet capacity dial (fleet-disconnect ramp, see FLEET-DISCONNECT.md) scales 
 only under N % of the VRAM, BAR1 and load limits. At 0 % (the drain before a reboot) no new ticket is taken and a
 waiting ticket is released: both exit 75, so the caller requeues after `fleet-disconnect resume`. A job already running
 is left to finish.
+
+A slot is for the GPU (2026-10-26: an EEVEE render with no GPU access held the only slot for 28 min while the 4080
+sat at 0 % and two lookdev jobs waited). If the job's process tree has opened no NVIDIA device after
+GPU_QUEUE_IDLE_GRACE seconds (default 600; 0 turns this off), its ticket is released so the next job starts; the job
+keeps running, and is told to use heavy-run for CPU work. Jobs under the automation guard (browser_guard.py: guarded
+browsers and gpu-workload-run, software or GPU) keep their slot, because the guard admits one at a time anyway.
 """
 import argparse, json, os, signal, subprocess, sys, tempfile, threading, time
 
@@ -153,8 +159,75 @@ def heartbeat(path, data):
     os.utime(path, None)
 
 
-def keep_alive(path, data, poll, stopped):
-    while not stopped.wait(poll):
+def process_tree(root, proc="/proc"):
+    """root and every descendant, from the parent links in /proc/<pid>/stat."""
+    children = {}
+    for d in os.listdir(proc):
+        if not d.isdigit():
+            continue
+        try:
+            with open(f"{proc}/{d}/stat") as fh:
+                ppid = int(fh.read().rsplit(")", 1)[1].split()[1])
+        except (OSError, ValueError, IndexError):
+            continue
+        children.setdefault(ppid, []).append(int(d))
+    out, todo = [], [root]
+    while todo:
+        pid = todo.pop()
+        out.append(pid)
+        todo += children.get(pid, [])
+    return out
+
+
+GPU_DEVICE = "/dev/nvidia"
+
+
+def gpu_use(pids, proc="/proc", device=None):
+    """'gpu' if a process holds an NVIDIA device open, 'guarded' if one runs under the automation guard, else None."""
+    for pid in pids:
+        try:
+            if b"browser_guard.py" in open(f"{proc}/{pid}/cmdline", "rb").read():
+                return "guarded"
+        except OSError:
+            continue
+        try:
+            fds = os.listdir(f"{proc}/{pid}/fd")
+        except OSError:
+            continue
+        for fd in fds:
+            try:
+                if os.readlink(f"{proc}/{pid}/fd/{fd}").startswith(device or GPU_DEVICE):
+                    return "gpu"
+            except OSError:
+                continue
+    return None
+
+
+def idle_grace():
+    try:
+        return float(os.environ.get("GPU_QUEUE_IDLE_GRACE", "600"))
+    except ValueError:
+        return 600.0
+
+
+def keep_alive(path, data, poll, stopped, grace=None):
+    """Heartbeat the running job's ticket. If the job (this process's children) has opened no NVIDIA device after
+    `grace` seconds and is not under the automation guard, release the ticket so the next job can start."""
+    grace = idle_grace() if grace is None else grace
+    start, watching = time.time(), grace > 0
+    while not stopped.wait(min(poll, grace) if watching else poll):
+        if watching:
+            if gpu_use(process_tree(os.getpid())):
+                watching = False                    # it uses the GPU (or the guard owns it): keep the slot
+            elif time.time() - start >= grace:
+                try:
+                    os.remove(path)
+                except FileNotFoundError:
+                    pass
+                print(f"gpu-queue: {data['name']} has not opened the GPU in {grace:.0f} s; its slot is released so "
+                      "the next job can start. It keeps running. Run CPU-only jobs through heavy-run, not the GPU "
+                      "queue.", file=sys.stderr, flush=True)
+                return
         heartbeat(path, data)
 
 
