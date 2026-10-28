@@ -1,0 +1,382 @@
+#!/usr/bin/env python3
+"""lane: run a long agent lane as a durable service that survives the desktop app, crashes, login limits and reboots,
+and never loses its work.
+
+    lane start  --job DIR --name NAME --brief FILE [--logins acct1,acct2] [--until ISO] [--model M]
+    lane status [--job DIR]...            every lane: state, unit, last activity, restarts, journal tail
+    lane stop   --job DIR --name NAME [--why TEXT]
+    lane watch                            the watchdog (lane-watch.timer, every 5 min): restart lanes whose service is
+                                          gone, notify on a stalled lane, a NEEDS-YOU or a failure
+    lane install                          install lane-watch.service and lane-watch.timer and enable the timer
+
+Written 2026-10-28 after the ABI set lane died with the Claude desktop app and nobody noticed for 5.5 hours. Craig:
+"thats horrible, we need a way to prevent that from ever happening again", "they should not lose any data no matter
+what". The lanes had run as subagents inside the app, so an app restart killed them, and a lane that was waiting on its
+own background job left no notice at all.
+
+How a lane is kept alive and complete:
+- It runs as a systemd user service, `lane-<job>-<name>`, outside the app (Restart=always), as headless Claude
+  (`claude -p --permission-mode bypassPermissions`) with its own session id.
+- Nothing lives only in a process. Every message and tool event streams into <job>/lanes/<name>/stream.jsonl as it
+  happens; the session transcript is copied to transcript.jsonl after every run; the lane is told to keep journal.md
+  (done, files, next step) after each step. Its files are in the job folder.
+- Any end without DONE resumes the same conversation (`claude --resume`) with a message to re-check disk and queues
+  first. A usage or spend limit moves the session to the next login (its transcript is copied into that login) and
+  resumes there; when every login is limited it waits and retries.
+- The lane ends only by writing DONE (finished) or NEEDS-YOU (a question for Craig; the watchdog notifies). A stop
+  by `lane stop` or the --until time ends it too.
+- The watchdog (a timer that is not part of any app) restarts any lane marked running whose service is gone (after a
+  reboot, transient services are), and notifies when a lane's stream has been quiet for LANE_STALE_MIN (30) minutes
+  while it holds no queued job, so a stall is seen in minutes, not hours.
+"""
+import argparse, datetime as dt, glob, json, os, re, shutil, subprocess, sys, time, uuid
+
+STATE_HOME = os.environ.get('XDG_STATE_HOME') or os.path.expanduser('~/.local/state')
+REGISTRY = os.path.join(STATE_HOME, 'lanes', 'registry.json')
+ACCTS = os.path.expanduser(os.environ.get('LANE_ACCOUNTS', '~/.claude-accts'))
+CLAUDE = os.environ.get('LANE_CLAUDE', 'claude')
+LIMIT_RE = re.compile(r'(spend limit|usage limit|rate limit|limit reached|credit balance|hit your .* limit)', re.I)
+STALE_MIN = float(os.environ.get('LANE_STALE_MIN', 30))
+MAX_CONTINUES = int(os.environ.get('LANE_MAX_CONTINUES', 40))
+
+RULES = """
+
+---
+How you run (the lane tool, {lane}):
+- You are a durable lane. Your session can be stopped at any moment (crash, app restart, a login limit, a reboot) and
+  resumed later with this same conversation. Never keep state only in your head.
+- After each meaningful step, append one dated line to {d}/journal.md: what you did, files written, what is next.
+- Run long jobs with blocking waits (Bash with a timeout, loops of at most 10 minutes) instead of ending your turn to
+  wait for them: nothing wakes you after your turn ends.
+- When the whole brief is finished, write {d}/DONE with a one-paragraph result, then end your turn.
+- If you are blocked on a decision only Craig can make, write the question to {d}/NEEDS-YOU and end your turn.
+- Ending your turn without DONE or NEEDS-YOU means "continue": you will be resumed and asked to carry on.
+"""
+RESUME = ("You were resumed by the lane tool after your previous run ended ({why}). First re-read {d}/journal.md and "
+          "check the disk and the job queues for work you had started (don't relaunch a duplicate), then carry on with "
+          "the brief. Same rules: journal after each step, DONE when finished, NEEDS-YOU only for Craig's decisions.")
+
+
+def now():
+    return dt.datetime.now().astimezone()
+
+
+def stamp():
+    return now().isoformat(timespec='seconds')
+
+
+def slug(text):
+    return re.sub(r'[^A-Za-z0-9_-]', '-', text).strip('-')[:60]
+
+
+def lane_dir(job, name):
+    return os.path.join(os.path.realpath(job), 'lanes', name)
+
+
+def unit_name(job, name):
+    return f'lane-{slug(os.path.basename(os.path.realpath(job)))}-{slug(name)}'
+
+
+def read_json(path, default):
+    try:
+        with open(path) as fh:
+            return json.load(fh)
+    except (OSError, ValueError):
+        return default
+
+
+def write_json(path, data):
+    tmp = f'{path}.tmp.{os.getpid()}'
+    with open(tmp, 'w') as fh:
+        json.dump(data, fh, indent=1)
+        fh.flush(); os.fsync(fh.fileno())
+    os.replace(tmp, path)
+
+
+def event(d, kind, **kw):
+    with open(os.path.join(d, 'events.jsonl'), 'a') as fh:
+        fh.write(json.dumps({'at': stamp(), 'event': kind, **kw}) + '\n')
+
+
+def notify(title, body):
+    """Desktop notification; never fails the caller."""
+    try:
+        subprocess.run(['notify-send', '-u', 'critical', '-a', 'lane', title, body], timeout=10,
+                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    except (OSError, subprocess.SubprocessError):
+        pass
+
+
+def transcript_slug(cwd):
+    return re.sub(r'[/.]', '-', cwd)
+
+
+def transcript_path(login, cwd, sid):
+    return os.path.join(ACCTS, login, 'projects', transcript_slug(cwd), f'{sid}.jsonl')
+
+
+def find_transcript(sid):
+    hits = glob.glob(os.path.join(ACCTS, '*', 'projects', '*', f'{sid}.jsonl'))
+    return max(hits, key=os.path.getmtime) if hits else None
+
+
+def unit_active(unit):
+    return subprocess.run(['systemctl', '--user', 'is-active', '--quiet', f'{unit}.service']).returncode == 0
+
+
+def register(job):
+    reg = read_json(REGISTRY, {'jobs': []})
+    job = os.path.realpath(job)
+    if job not in reg['jobs']:
+        reg['jobs'].append(job)
+        os.makedirs(os.path.dirname(REGISTRY), exist_ok=True)
+        write_json(REGISTRY, reg)
+
+
+def launch(job, name):
+    """Start (or restart) the lane's service. Its main process is `lane _run`."""
+    unit = unit_name(job, name)
+    subprocess.run(['systemctl', '--user', 'reset-failed', f'{unit}.service'], stderr=subprocess.DEVNULL)
+    env = [f'--setenv={k}={os.environ[k]}' for k in ('PATH', 'LANE_CLAUDE', 'LANE_ACCOUNTS', 'XDG_STATE_HOME',
+                                                       'LANE_MAX_CONTINUES') if k in os.environ]
+    r = subprocess.run(['systemd-run', '--user', f'--unit={unit}', '--collect', f'--working-directory={os.path.realpath(job)}',
+                        '-p', 'Restart=on-failure', '-p', 'RestartSec=60', '-p', 'StartLimitIntervalSec=0', *env,
+                        '--', sys.executable, os.path.realpath(__file__), '_run', '--job', os.path.realpath(job),
+                        '--name', name], capture_output=True, text=True)
+    if r.returncode:
+        raise SystemExit(f'lane: could not start {unit}: {r.stderr.strip()}')
+    return unit
+
+
+def cmd_start(a):
+    d = lane_dir(a.job, a.name)
+    st = read_json(os.path.join(d, 'state.json'), None)
+    if st and st.get('status') in ('running', 'waiting-limits'):
+        raise SystemExit(f'lane: {a.name} is already {st["status"]} ({st["unit"]}); `lane status` shows it')
+    os.makedirs(d, exist_ok=True)
+    shutil.copyfile(a.brief, os.path.join(d, 'brief.md'))
+    logins = [x for x in a.logins.split(',') if x]
+    for x in logins:
+        if not os.path.isdir(os.path.join(ACCTS, x)):
+            raise SystemExit(f'lane: no login folder {os.path.join(ACCTS, x)}')
+    st = {'name': a.name, 'job': os.path.realpath(a.job), 'unit': unit_name(a.job, a.name), 'session': str(uuid.uuid4()),
+          'logins': logins, 'login': logins[0], 'model': a.model, 'until': a.until, 'status': 'running',
+          'started': stamp(), 'runs': 0, 'continues': 0, 'crashes': 0, 'begun': False}
+    write_json(os.path.join(d, 'state.json'), st)
+    for f in ('DONE', 'NEEDS-YOU', 'STOP'):
+        if os.path.exists(os.path.join(d, f)):
+            os.rename(os.path.join(d, f), os.path.join(d, f'{f}.{int(time.time())}'))
+    register(a.job)
+    unit = launch(a.job, a.name)
+    event(d, 'started', unit=unit, session=st['session'], login=st['login'])
+    print(f'lane {a.name}: started {unit} (session {st["session"]}, login {st["login"]}); files in {d}')
+
+
+def run_once(d, st, why):
+    """One headless Claude run of the lane; returns (exit code, saw a limit message)."""
+    job, sid, login = st['job'], st['session'], st['login']
+    env = dict(os.environ, CLAUDE_CONFIG_DIR=os.path.join(ACCTS, login))
+    base = [CLAUDE, '-p', '--permission-mode', 'bypassPermissions', '--output-format', 'stream-json', '--verbose']
+    if st.get('model'):
+        base += ['--model', st['model']]
+    if st['begun']:
+        mine = transcript_path(login, job, sid)
+        if not os.path.exists(mine):   # the session moved logins (a limit): bring its transcript along
+            src = find_transcript(sid) or (os.path.join(d, 'transcript.jsonl') if os.path.exists(os.path.join(d, 'transcript.jsonl')) else None)
+            if src:
+                os.makedirs(os.path.dirname(mine), exist_ok=True)
+                shutil.copyfile(src, mine)
+        cmd, prompt = base + ['--resume', sid], RESUME.format(why=why, d=d)
+    else:
+        cmd = base + ['--session-id', sid]
+        prompt = open(os.path.join(d, 'brief.md')).read() + RULES.format(lane=st['name'], d=d)
+    limit = False
+    with open(os.path.join(d, 'stream.jsonl'), 'a') as out, open(os.path.join(d, 'run.log'), 'a') as err:
+        err.write(f'--- {stamp()} run {st["runs"] + 1} login {login} ({why})\n'); err.flush()
+        p = subprocess.Popen(cmd, cwd=job, env=env, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=err, text=True)
+        p.stdin.write(prompt); p.stdin.close()
+        for line in p.stdout:            # every event lands on disk as it happens
+            out.write(line); out.flush()
+            if LIMIT_RE.search(line) and ('"is_error":true' in line.replace(' ', '') or '"type":"result"' in line.replace(' ', '')):
+                limit = True
+        rc = p.wait()
+    t = find_transcript(sid)
+    if t:
+        shutil.copyfile(t, os.path.join(d, 'transcript.jsonl'))
+    if rc and not limit:
+        try:
+            tail = open(os.path.join(d, 'run.log')).read()[-2000:]
+            limit = bool(LIMIT_RE.search(tail))
+        except OSError:
+            pass
+    return rc, limit
+
+
+def cmd_run(a):
+    """The service's main process: run, resume, rotate logins, until DONE / NEEDS-YOU / STOP / until."""
+    d = lane_dir(a.job, a.name)
+    path = os.path.join(d, 'state.json')
+    why = 'service start'
+    limited = set()
+    while True:
+        st = read_json(path, None)
+        if not st:
+            raise SystemExit('lane: no state.json')
+        for flag, status in (('STOP', 'stopped'), ('DONE', 'done'), ('NEEDS-YOU', 'needs-you')):
+            if os.path.exists(os.path.join(d, flag)):
+                st['status'] = status; st['ended'] = stamp(); write_json(path, st)
+                event(d, status)
+                if status == 'needs-you':
+                    notify(f'Lane {st["name"]} needs you', open(os.path.join(d, flag)).read()[:300])
+                return 0
+        until = dt.datetime.fromisoformat(st['until']) if st.get('until') else None
+        if until and until.tzinfo is None:
+            until = until.astimezone()   # a time without a zone is local time
+        if until and now() >= until:
+            st['status'] = 'until-reached'; write_json(path, st); event(d, 'until-reached')
+            notify(f'Lane {st["name"]} stopped', f'its --until time {st["until"]} passed')
+            return 0
+        if st['continues'] >= MAX_CONTINUES:
+            st['status'] = 'needs-you'; write_json(path, st); event(d, 'too-many-continues')
+            notify(f'Lane {st["name"]} needs you', f'{MAX_CONTINUES} runs ended without DONE')
+            return 0
+        st['status'] = 'running'; st['runs'] += 1; write_json(path, st)
+        event(d, 'run', login=st['login'], why=why)
+        rc, limit = run_once(d, st, why)
+        st = read_json(path, st)
+        st['begun'] = True
+        if limit:
+            limited.add(st['login'])
+            free = [x for x in st['logins'] if x not in limited]
+            event(d, 'limit', login=st['login'], next=free[0] if free else None)
+            if free:
+                st['login'] = free[0]; why = f'login {sorted(limited)} hit a usage limit; moved to {free[0]}'
+            else:
+                st['status'] = 'waiting-limits'; write_json(path, st)
+                notify(f'Lane {st["name"]} waiting', 'every login is at its usage limit; retrying in 15 min')
+                time.sleep(int(os.environ.get('LANE_LIMIT_WAIT', 900))); limited.clear(); why = 'retry after limits'
+            write_json(path, st)
+            continue
+        if rc:
+            st['crashes'] += 1; write_json(path, st); event(d, 'crash', rc=rc)
+            why = f'previous run exited {rc}'
+            time.sleep(min(300, 15 * st['crashes']))
+            continue
+        if not any(os.path.exists(os.path.join(d, f)) for f in ('DONE', 'NEEDS-YOU', 'STOP')):
+            st['continues'] += 1; write_json(path, st)
+        why = 'previous run ended its turn without DONE'
+
+
+def cmd_stop(a):
+    d = lane_dir(a.job, a.name)
+    with open(os.path.join(d, 'STOP'), 'w') as fh:
+        fh.write(f'{stamp()} {a.why or ""}\n')
+    st = read_json(os.path.join(d, 'state.json'), {})
+    subprocess.run(['systemctl', '--user', 'stop', f'{st.get("unit", unit_name(a.job, a.name))}.service'])
+    st.update(status='stopped', ended=stamp()); write_json(os.path.join(d, 'state.json'), st)
+    event(d, 'stopped', why=a.why)
+    print(f'lane {a.name}: stopped')
+
+
+def lanes(jobs):
+    for job in jobs:
+        for p in sorted(glob.glob(os.path.join(job, 'lanes', '*', 'state.json'))):
+            yield os.path.dirname(p), read_json(p, {})
+
+
+def quiet_minutes(d):
+    try:
+        return (time.time() - os.path.getmtime(os.path.join(d, 'stream.jsonl'))) / 60
+    except OSError:
+        return None
+
+
+def holds_jobs(name):
+    """Does the lane have a heavy-run job or a GPU ticket of its own? Then quiet is waiting, not stalled."""
+    u = subprocess.run(['systemctl', '--user', 'list-units', '--no-legend', '--plain', 'heavy-*'], capture_output=True, text=True).stdout
+    return name in u
+
+
+def cmd_status(a):
+    jobs = [os.path.realpath(j) for j in a.job] or read_json(REGISTRY, {'jobs': []})['jobs']
+    for d, st in lanes(jobs):
+        q = quiet_minutes(d)
+        print(f'{st.get("name")}: {st.get("status")}  unit {"active" if unit_active(st.get("unit", "")) else "gone"}  '
+              f'login {st.get("login")}  runs {st.get("runs")}  crashes {st.get("crashes")}  '
+              f'quiet {"-" if q is None else f"{q:.0f} min"}  ({d})')
+        try:
+            print('   ' + open(os.path.join(d, 'journal.md')).read().strip().splitlines()[-1][:180])
+        except (OSError, IndexError):
+            pass
+
+
+def cmd_watch(a):
+    for job in read_json(REGISTRY, {'jobs': []})['jobs']:
+        for d, st in lanes([job]):
+            name, unit = st.get('name'), st.get('unit')
+            if st.get('status') not in ('running', 'waiting-limits'):
+                continue
+            if not unit_active(unit):
+                event(d, 'watchdog-restart', why='service gone')
+                notify(f'Lane {name} restarted', 'its service was gone (app restart, reboot or crash); resuming it')
+                launch(st['job'], name)
+                continue
+            q = quiet_minutes(d)
+            if q is not None and q > STALE_MIN and not holds_jobs(name):
+                last = read_json(os.path.join(d, 'watch.json'), {})
+                if time.time() - last.get('notified', 0) > 3600:
+                    notify(f'Lane {name} is quiet', f'no activity for {q:.0f} min and no queued job of its own')
+                    event(d, 'stale', minutes=round(q))
+                    write_json(os.path.join(d, 'watch.json'), {'notified': time.time()})
+
+
+UNIT = """[Unit]
+Description=lane watchdog: restart lanes whose service is gone, notify on stalls
+
+[Service]
+Type=oneshot
+ExecStart={py} {me} watch
+"""
+TIMER = """[Unit]
+Description=lane watchdog every 5 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=5min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+"""
+
+
+def cmd_install(a):
+    d = os.path.join(os.environ.get('XDG_CONFIG_HOME') or os.path.expanduser('~/.config'), 'systemd', 'user')
+    os.makedirs(d, exist_ok=True)
+    with open(os.path.join(d, 'lane-watch.service'), 'w') as fh:
+        fh.write(UNIT.format(py=sys.executable, me=os.path.realpath(__file__)))
+    with open(os.path.join(d, 'lane-watch.timer'), 'w') as fh:
+        fh.write(TIMER)
+    subprocess.run(['systemctl', '--user', 'daemon-reload'], check=True)
+    subprocess.run(['systemctl', '--user', 'enable', '--now', 'lane-watch.timer'], check=True)
+    print('lane-watch.timer enabled (every 5 min)')
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(prog='lane', description=__doc__.split('\n')[0])
+    sub = ap.add_subparsers(dest='cmd', required=True)
+    s = sub.add_parser('start'); s.add_argument('--job', required=True); s.add_argument('--name', required=True)
+    s.add_argument('--brief', required=True); s.add_argument('--logins', default='acct1,acct2,acct3')
+    s.add_argument('--until'); s.add_argument('--model')
+    s = sub.add_parser('status'); s.add_argument('--job', action='append', default=[])
+    s = sub.add_parser('stop'); s.add_argument('--job', required=True); s.add_argument('--name', required=True)
+    s.add_argument('--why')
+    sub.add_parser('watch'); sub.add_parser('install')
+    s = sub.add_parser('_run'); s.add_argument('--job', required=True); s.add_argument('--name', required=True)
+    a = ap.parse_args(argv)
+    return {'start': cmd_start, 'status': cmd_status, 'stop': cmd_stop, 'watch': cmd_watch,
+            'install': cmd_install, '_run': cmd_run}[a.cmd](a) or 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())

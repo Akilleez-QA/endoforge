@@ -60,6 +60,18 @@ environment.
 - A job killed by a signal is reported by dying of the same signal, except SIGKILL, SIGSTOP and the core-dumping
   signals (SEGV, ABRT, QUIT...), which give exit 128 + N, so the registry never dumps a Python core.
 
+**Lanes never die with the app, and never lose their work** (2026-10-28, `lane`). The ABI set lane ran as a subagent inside the Claude desktop app, died when the app restarted, and nobody noticed for 5.5 hours; a lane waiting on its own background job leaves no stopped notice. Craig: "thats horrible, we need a way to prevent that from ever happening again", "they should not lose any data no matter what". Any agent lane that runs longer than a few minutes is started with `lane start --job DIR --name NAME --brief FILE`, never as an in-app subagent:
+- The lane is a systemd user service (`lane-<job>-<name>`, Restart=on-failure) running headless Claude on the `~/.claude-accts` logins, outside the app.
+- Everything is on disk as it happens:
+  - every message and tool event in `<job>/lanes/<name>/stream.jsonl`;
+  - the session transcript copied to `transcript.jsonl` after each run;
+  - the lane's own `journal.md` (done, files, next step);
+  - `events.jsonl` (runs, crashes, limits, restarts).
+- Any end without `DONE` resumes the same conversation. A usage or spend limit moves the session, transcript and all, to the next login. The lane ends only with `DONE`, `NEEDS-YOU` (a desktop notification), `lane stop` or `--until`.
+- `lane-watch.timer` (every 5 min, part of no app) restarts a lane whose service is gone (an app restart, a reboot) and notifies when a lane has been quiet 30 min while holding no queued job.
+- `lane status` shows every lane: state, service, login, runs, crashes, minutes quiet and the last journal line.
+- Tested: a fake `claude` drives crash, early-turn, limit, DONE, NEEDS-YOU, STOP and --until paths (`test/test_lane.py`). Live on main-rig, a SIGKILLed lane came back through systemd, and a removed service came back through the watchdog, resuming the same session until DONE.
+
 **ds9, the second heavy host** (2026-10-27, Craig: "thats the idea can you get it set up? study akilleez repo and configure it"):
 - ds9 is the X99 home server (Home Lab's; `aors/fleet.json` devices): Xeon E5-2699 v4, 44 threads, 188 GB, ZFS pools, and the home services (Immich, Home Assistant, Nextcloud, Netdata, Docker). It has no render GPU, so it takes CPU work: Blender builds and exports, CPU Cycles stills, photo pipelines, tests. GPU renders stay on main-rig's 4080.
 - Measured on the machinery-hall frame (Cycles 32 spp + OIDN, 1080p), seconds a frame: main-rig 4080 2.2; main-rig CPU (16 threads) 42; ds9 CPU inside its heavy.slice 86. Same pixels as main-rig (mean difference 0.05/255) once every input is there.

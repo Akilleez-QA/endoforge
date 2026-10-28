@@ -7,6 +7,7 @@
 #   agent-guard  ~/.local/bin, registered as a Claude Code PreToolUse hook on Bash in ~/.claude/settings.json
 #   workers      ~/.local/bin (the CLI-worker registry: workers list shows running and dead workers on every host)
 #   remote-run   ~/.local/bin (run a heavy job on another host of ours, through its heavy-run; `remote-run --host H setup`)
+#   lane         ~/.local/bin, and lane-watch.timer (durable agent lanes that survive the app, crashes, login limits and reboots)
 set -euo pipefail
 here=$(cd "$(dirname "$0")" && pwd)
 install -m 0755 "$here/heavy-run" "$HOME/.local/bin/heavy-run"
@@ -27,6 +28,8 @@ if not any(h.get('command', '').endswith('agent-guard') for m in pre for h in m.
 PY
 install -m 0755 "$here/workers" "$HOME/.local/bin/workers"
 install -m 0755 "$here/remote-run" "$HOME/.local/bin/remote-run"
+install -m 0755 "$here/lane" "$HOME/.local/bin/lane"
+"$HOME/.local/bin/lane" install
 install -m 0644 "$here/memguard.service" "$HOME/.config/systemd/user/memguard.service"
 for u in diskguard-check.service diskguard-check.timer diskguard-janitor.service diskguard-janitor.timer; do
   install -m 0644 "$here/$u" "$HOME/.config/systemd/user/$u"
