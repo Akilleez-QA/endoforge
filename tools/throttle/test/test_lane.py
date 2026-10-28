@@ -31,7 +31,8 @@ tdir = os.path.join(os.environ['CLAUDE_CONFIG_DIR'], 'projects', re.sub(r'[/.]',
 os.makedirs(tdir, exist_ok=True)
 with open(os.path.join(tdir, sid + '.jsonl'), 'a') as fh:
     fh.write(json.dumps({'login': os.path.basename(os.environ['CLAUDE_CONFIG_DIR']), 'act': act,
-                         'resume': '--resume' in args, 'prompt': prompt[:40]}) + '\n')
+                         'resume': '--resume' in args, 'prompt': prompt[:40],
+                         'note': 'note from the coordinator' in prompt}) + '\n')
 print(json.dumps({'type': 'assistant', 'act': act}), flush=True)
 if act == 'crash':
     sys.exit(3)
@@ -118,6 +119,20 @@ class LaneRun(unittest.TestCase):
         with mock.patch.object(lane, 'MAX_CONTINUES', 2):
             st = self.play('turn', 'turn', 'turn')
         self.assertEqual(st['status'], 'needs-you')
+
+
+class Resume(LaneRun):
+    def test_a_resume_note_reaches_the_lane_once(self):
+        self.play('turn', 'done')
+        os.rename(self.d / 'DONE', self.d / 'DONE.old')
+        st = json.loads((self.d / 'state.json').read_text())
+        st.update(status='running', note='Stills on CPU only.')
+        lane.write_json(str(self.d / 'state.json'), st)
+        st = self.play('turn', 'done')
+        self.assertEqual(st['status'], 'done')
+        self.assertIsNone(st['note'])
+        self.assertEqual([x['note'] for x in self.transcript()], [False, False, True, False])
+        self.assertTrue(all(x['resume'] for x in self.transcript()[1:]))
 
 
 class Paths(unittest.TestCase):
