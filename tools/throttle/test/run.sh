@@ -69,4 +69,5 @@ t('scheduler: limits scale with this machine', limits({}).maxLoad > 0 && limits(
 process.exit(bad);
 " || fails=$((fails+1))
 (cd "$here" && python3 -B -m unittest -q test.test_gpu_queue test.test_memguard test.test_fleet_disconnect test.test_workers test.test_remote_run test.test_diskguard test.test_agent_guard test.test_lane) || fails=$((fails+1))
+(cd "$here" && python3 -B -m unittest -q test.test_lane_governor) || fails=$((fails+1))
 exit $fails

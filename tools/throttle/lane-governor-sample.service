@@ -1,0 +1,8 @@
+[Unit]
+Description=lane-governor: one sensor sample (app tree, sessions, load, PSI) for calibration
+
+[Service]
+Type=oneshot
+Nice=10
+IOSchedulingClass=idle
+ExecStart=%h/.local/bin/lane-governor sample

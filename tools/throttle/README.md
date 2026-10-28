@@ -18,6 +18,7 @@ Everything here waits rather than fails, and every limit is computed from the ma
 | `fleet-disconnect` | The agents' capacity dial and the disconnect protocol ([FLEET-DISCONNECT.md](FLEET-DISCONNECT.md)). `ramp N` gives agents N % of the above; `drain` (0 %) refuses new work before a reboot; `wait` reports what is still in flight; `resume` restores 100 % | heavy-run slots and load limit, heavy.slice CPUQuota, and the queue's VRAM, BAR1 and load limits, all × N % |
 | `throttle.mjs` | Endoforge scheduler: no new atom without headroom (one atom always runs) | reserve and load as above |
 | `remote-run` | A heavy job on another host of ours (ds9). Inputs are rsynced to the same absolute paths, the job runs under that host's own `heavy-run`, outputs come back to the same local paths, and the job stops when `remote-run` does. `--in-blend` also syncs every external file a `.blend` uses. `setup` exports `origin/main` there and installs `heavy-run`, `workers` and `fleet-disconnect` (not memguard) | the host's own limits; ds9: 3 slots, load < 38.5, 22 GB reserve, heavy.slice 109 GB / about 25 cores |
+| `lane-governor` | Admission for agent lanes (side sessions, subagents, scripted runs) inside the Claude app. Coordinators `acquire` a lane before starting or resuming one and wait in a queue; exit 75 means wait. Counts working sessions from the app log, lane tickets, and the app tree's RSS, growth and CLI count, plus memory and load. Calibrated on the app's own crash logs. Never stops running work | lanes min(threads/10, RAM/40 GB) (3), ≤ 8 CLIs, ≤ 6 cycle starts per 10 min and 60 s apart, tree growth < 7 % RAM per 2.5 min (8.7 GB), tree < 20 % (25 GB), reserve and load as above |
 
 **Where it is wired in**
 - `endoforge run` puts the whole run inside `heavy.slice`.
@@ -26,7 +27,7 @@ Everything here waits rather than fails, and every limit is computed from the ma
 - `media/nh3-kit/tools/gpu-queue.py` forwards to this queue.
 - `ENDOFORGE_THROTTLE=0` turns the Endoforge side off.
 
-**Overrides:** `HEAVY_SLOTS`, `HEAVY_RESERVE_GB`, `HEAVY_MAX_LOAD`, `HEAVY_MEM`, `ENDOFORGE_MAX_LOAD`, `ENDOFORGE_RESERVE_GB`, `GPU_QUEUE_VRAM_FRAC`, `GPU_QUEUE_BAR1_FRAC`, `GPU_QUEUE_RESERVE_GB`, `GPU_QUEUE_MAX_LOAD`.
+**Overrides:** `HEAVY_SLOTS`, `HEAVY_RESERVE_GB`, `HEAVY_MAX_LOAD`, `HEAVY_MEM`, `ENDOFORGE_MAX_LOAD`, `ENDOFORGE_RESERVE_GB`, `GPU_QUEUE_VRAM_FRAC`, `GPU_QUEUE_BAR1_FRAC`, `GPU_QUEUE_RESERVE_GB`, `GPU_QUEUE_MAX_LOAD`, and lane-governor's `LANE_*` (listed in its header).
 
 **Install** (once per machine; rerunning is safe): `forge/endoforge/tools/throttle/install.sh`. It puts `heavy-run` and `memguard` in `~/.local/bin`, sizes `heavy.slice`, reserves memory up to `user.slice` (sudo), and enables `memguard.service`. `heavy-run --limits` shows what this machine gets.
 
@@ -36,6 +37,7 @@ Everything here waits rather than fails, and every limit is computed from the ma
 - slice placement and nesting;
 - scheduler headroom;
 - the GPU queue: headroom, waiting out trouble, stopping on a fault;
+- the lane governor: limits, every gate, app-log sensors, crash replay, tickets, queue and hook;
 - the worker registry (`test/test_workers.py`): receipts without command or task text, keyed digests, the spawn gate
   under a 20-launch burst, a retry loop and changing arguments, the redaction cases from the 2026-10-27 reviews, post-job
   git that runs no job-planted fsmonitor, and death by signal reported without a Python core dump.
@@ -89,6 +91,14 @@ environment.
 - memguard stops any `heavy-run` job whose recorded owner is no longer active, and reports (with a desktop notification) big Blender or Python processes left running by a launcher that is gone. It never kills those.
 
 **Kernel headroom** (`memguard --install`, added after the Codex app's GPU process crashed at 01:22): the NVIDIA driver and Electron GPU processes failed large allocations while RAM was fragmented and the kernel's free pool was 66 MB. `/etc/sysctl.d/99-memguard.conf` now sets a free pool of 1 % of RAM (64 MB to 2 GB), reclaim that starts 1.5 % earlier, and proactive compaction 40.
+
+**Why lane-governor** (2026-10-26, after the Claude app's main process died silently at 19:03 with 142 processes and 22 GB, its third crash in four days; Craig: "we crashed, running too hard"). Every side session, subagent and their jobs run inside the app's process tree. The app logs a `[process-memory]` line every minute and a line for each session cycle, and `lane-governor calibrate` replays those logs. It found 13 in-boot unclean app exits since 09-22 (reboots and quick relaunches excluded) across about 43,000 healthy minutes.
+- No single number separates a crash from a busy healthy minute. Healthy minutes reached 49 GB, 292 processes and 7 working sessions, and some crashes came at 2-4 GB.
+- The policy as a whole does. Before 12 of the 13 exits it held at least once in the last 10 minutes, and it held 44 % of those minutes against 3.7 % of healthy minutes. A random healthy 10-minute window holds at least once 10 % of the time.
+- Per gate, as crash windows held, then crash minutes against healthy minutes: lanes 1/13, 7 % vs 0.1 %; CLIs 2/13, 10 % vs 0.4 %; burst 6/13, 25 % vs 1.6 %; growth 5/13, 5 % vs 1.0 %; tree 4/13, 7 % vs 0.4 %; memory 7/13, 14 % vs 0.6 %.
+- Growth thresholds of 5 %, 7 % and 9 % of RAM were tried with bursts of 4, 6 and 8. 7 % with 6 kept the most crash minutes per healthy minute held while still covering 12 of the 13.
+
+Usage, for a coordinator before it starts or resumes a lane: `T=$(lane-governor acquire --name audio-pass --kind subagent)`, start the lane, then `lane-governor release "$T"` when it reports back. Exit 75 means queue it and ask again later. `acquire` waits up to 540 s by default, which fits in one tool call. A `session` ticket counts only while the session starts (120 s); after that the app log shows it working. `lane-governor run --name N -- cmd` holds a lane for a scripted run. `lane-governor status` shows what holds. The once-a-minute `lane-governor-sample.timer` records the load, PSI and app-scope memory the app logs lack, so the next calibration can test those gates too. [`lane-governor.claude-hooks.json`](lane-governor.claude-hooks.json) is an opt-in Claude Code hook. It takes a ticket for every `Agent` and `start_session` call, blocks the call with the reason while the governor holds, and releases on `SubagentStop`. It is not installed by `install.sh`.
 
 **Why diskguard** (2026-10-26, Craig: "we need to clear up space on system drive and find out how to prevent it filling up so fast"): the 3.6 TB system drive reached 89 %. Every agent work folder installs its own `node_modules` (up to 5.6 GB) and nothing removed them: 2,837 work folders, 711 created in one day, 615 worktrees of one repo. The first survey ran three whole-tree scans at once and helped crash the Claude app, so diskguard measures with statvfs, looks a few levels deep, and runs at idle IO priority. Log: `~/.local/state/diskguard/janitor.jsonl`; dry run: `diskguard janitor --worktrees` (no `--apply`).
 

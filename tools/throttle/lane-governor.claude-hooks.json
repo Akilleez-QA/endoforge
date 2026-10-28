@@ -1,0 +1,11 @@
+{
+ "hooks": {
+  "PreToolUse": [
+   {"matcher": "Agent|Task|mcp__ccd_session__start_session",
+    "hooks": [{"type": "command", "command": "$HOME/.local/bin/lane-governor hook", "timeout": 30}]}
+  ],
+  "SubagentStop": [
+   {"hooks": [{"type": "command", "command": "$HOME/.local/bin/lane-governor hook", "timeout": 30}]}
+  ]
+ }
+}
