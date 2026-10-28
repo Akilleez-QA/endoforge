@@ -160,9 +160,21 @@ def run(a):
     return rc
 
 
+def repo_root():
+    """The akilleez checkout to export: this file's own checkout, else AKILLEEZ_ROOT or ~/Code/akilleez. The installed
+    copy lives in ~/.local/bin, outside any checkout (2026-10-27: its first `setup` ran git in an empty path)."""
+    for cand in (HERE, os.environ.get('AKILLEEZ_ROOT'), os.path.expanduser('~/Code/akilleez')):
+        if not cand:
+            continue
+        top = subprocess.run(['git', '-C', cand, 'rev-parse', '--show-toplevel'], capture_output=True, text=True).stdout.strip()
+        if top and os.path.isfile(os.path.join(top, 'aors', 'fleet.json')):   # any akilleez checkout: setup exports origin/main
+            return top
+    raise SystemExit('remote-run: no akilleez checkout found (set AKILLEEZ_ROOT)')
+
+
 def setup(a):
-    """Export origin/main of this checkout to CODE on the host and install the throttle tools from it."""
-    repo = subprocess.run(['git', '-C', HERE, 'rev-parse', '--show-toplevel'], capture_output=True, text=True).stdout.strip()
+    """Export origin/main of the akilleez checkout to CODE on the host and install the throttle tools from it."""
+    repo = repo_root()
     subprocess.run(['git', '-C', repo, 'fetch', '-q', 'origin', 'main'], check=False)
     rev = subprocess.run(['git', '-C', repo, 'rev-parse', 'origin/main'], capture_output=True, text=True, check=True).stdout.strip()
     say(f'exporting origin/main {rev[:9]} to {a.host}:{CODE}')

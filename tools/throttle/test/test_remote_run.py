@@ -75,6 +75,14 @@ class HostScript(unittest.TestCase):
             self.assertNotEqual(p.wait(timeout=20), 0)
 
 
+class Setup(unittest.TestCase):
+    def test_installed_copy_finds_the_checkout(self):
+        with tempfile.TemporaryDirectory() as outside:
+            with mock.patch.object(rr, 'HERE', outside):
+                with mock.patch.dict(os.environ, {'AKILLEEZ_ROOT': str(TOOL.parents[4])}):
+                    self.assertEqual(rr.repo_root(), str(TOOL.parents[4]))
+
+
 class Rsync(unittest.TestCase):
     def test_partial_input_sync_stops_the_job(self):
         with mock.patch.object(rr.subprocess, 'run', return_value=subprocess.CompletedProcess([], 23, '', 'x')):
