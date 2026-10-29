@@ -235,15 +235,15 @@ class QueueTests(unittest.TestCase):
              mock.patch.object(queue, 'status', return_value=(0, {})), \
              mock.patch.object(queue, 'headroom', return_value=None), \
              mock.patch.object(queue.threading, 'Thread', return_value=worker) as thread, \
-             mock.patch.object(queue.subprocess, 'call', return_value=0) as run:
-            def inspect_job(cmd):
+             mock.patch.object(queue, 'run_job', return_value=(0, {}, None)) as run:
+            def inspect_job(cmd, name):
                 paths = list(self.directory.glob('*.ticket'))
                 self.assertEqual(len(paths), 1)
                 data = json.loads(paths[0].read_text())
                 self.assertEqual(data['pid'], os.getpid())
                 self.assertEqual(data['pidns'], queue.pid_namespace())
                 worker.start.assert_called_once()
-                return 0
+                return 0, {}, None
             run.side_effect = inspect_job
             with contextlib.redirect_stderr(io.StringIO()):
                 self.assertEqual(queue.main(), 0)
@@ -282,7 +282,7 @@ class QueueTests(unittest.TestCase):
              mock.patch.object(queue, 'status', side_effect=lambda: next(states)), \
              mock.patch.object(queue, 'headroom', side_effect=lambda: next(rooms)), \
              mock.patch.object(queue.threading, 'Thread', return_value=mock.Mock()), \
-             mock.patch.object(queue.subprocess, 'call', return_value=0) as run, \
+             mock.patch.object(queue, 'run_job', return_value=(0, {}, None)) as run, \
              contextlib.redirect_stderr(io.StringIO()) as err:
             self.assertEqual(queue.main(), 0)
         run.assert_called_once()
@@ -292,7 +292,7 @@ class QueueTests(unittest.TestCase):
         with mock.patch.object(queue.sys, 'argv', ['gpu-queue.py', '--name', 'fixture', '--', 'example']), \
              mock.patch.object(queue.signal, 'signal'), \
              mock.patch.object(queue, 'status', return_value=(78, {'fault': True})), \
-             mock.patch.object(queue.subprocess, 'call') as run, contextlib.redirect_stderr(io.StringIO()):
+             mock.patch.object(queue, 'run_job') as run, contextlib.redirect_stderr(io.StringIO()):
             self.assertEqual(queue.main(), 78)
         run.assert_not_called()
         self.assertEqual([n for n in os.listdir(self.directory) if n.endswith('.ticket')], [])  # history.jsonl stays
@@ -310,7 +310,7 @@ class QueueTests(unittest.TestCase):
              mock.patch.object(queue, 'status', return_value=(0, {})), \
              mock.patch.object(queue, 'headroom', return_value=None), \
              mock.patch.object(queue.threading, 'Thread', return_value=mock.Mock()), \
-             mock.patch.object(queue.subprocess, 'call', side_effect=call or (lambda cmd: 0)), \
+             mock.patch.object(queue, 'run_job', side_effect=lambda cmd, name: ((call or (lambda c: 0))(cmd), {}, None)), \
              contextlib.redirect_stderr(io.StringIO()) as err:
             return queue.main(), err.getvalue()
 

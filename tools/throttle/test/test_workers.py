@@ -30,7 +30,8 @@ class WorkerTests(unittest.TestCase):
         repo.mkdir(parents=True)
         (repo / 'fleet.json').write_text(json.dumps({'bots': [{'slug': 'grok-bot'}, {'slug': 'chief-of-staff'}]}))
         (repo / 'branch-slugs.json').write_text(json.dumps({'lanes': ['claude-code'], 'aliases': {'cos': 'chief-of-staff'}}))
-        env = {'WORKERS_DIR': str(self.dir / 'state'), 'AKILLEEZ_ROOT': str(self.dir / 'repo'), 'WORKERS_BEAT': '0.05'}
+        env = {'WORKERS_DIR': str(self.dir / 'state'), 'AKILLEEZ_ROOT': str(self.dir / 'repo'), 'WORKERS_BEAT': '0.05',
+               'THROTTLE_SCOPE_TAG': f'thrtest{os.getpid()}-'}         # never the production scope names
         patcher = mock.patch.dict(os.environ, env)
         patcher.start()
         self.addCleanup(patcher.stop)

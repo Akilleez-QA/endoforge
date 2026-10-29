@@ -34,6 +34,11 @@ dead. Now every launch through codex-guard.sh, codex-task or codex-pool register
   bot and program within 60 s, refused ones included.
 
 The registry reports; it never kills a worker. Exit status of `run` is the command's own.
+
+Task cap (2026-10-27, after an unmerged codex-pool recursed to 465 processes and ~4,900 entries in 7 minutes with
+nothing bounding the process count): `run` starts the command in a transient systemd scope with TasksMax (threads count),
+bound to the caller's unit so stopping the caller still stops it, and never with weaker limits than the caller's (see
+capped() and the throttle README). If systemd-run itself fails, the job runs uncapped after a warning.
 """
 import argparse, json, os, signal, socket, subprocess, sys, threading, time
 import fcntl, glob, hashlib, hmac, re                  # receipts, redaction and the spawn gate
@@ -104,6 +109,203 @@ def forward(pgid, sig):
         os.killpg(pgid, sig)
     except ProcessLookupError:
         pass
+
+
+# ---- task caps (shared: gpu-queue.py imports these) ----------------------------------------------------------------
+import glob, re, shutil                                # task caps
+def tasks_max(prefix):
+    """(cap, mode). <PREFIX>_TASKS_MAX, else 128 tasks per CPU thread (min 1024). THROTTLE_TASKS: enforce (default),
+    log (run uncapped and say what the cap would be) or off."""
+    mode = os.environ.get("THROTTLE_TASKS", "enforce")
+    mode = mode if mode in ("enforce", "log", "off") else "enforce"
+    try:
+        cap = int(os.environ.get(f"{prefix}_TASKS_MAX") or 0)
+    except ValueError:
+        cap = 0
+    return (cap if cap > 0 else max(1024, 128 * (os.cpu_count() or 1))), mode
+
+
+def own_cgroup(pid="self"):
+    try:
+        with open(f"/proc/{pid}/cgroup") as fh:
+            return next((l[3:].strip() for l in fh if l.startswith("0::")), "")
+    except OSError:
+        return ""
+
+
+LIMIT_FILES = ("pids.max", "memory.max", "memory.high", "memory.swap.max")
+PROPS = {"pids.max": "TasksMax", "memory.max": "MemoryMax", "memory.high": "MemoryHigh",
+         "memory.swap.max": "MemorySwapMax", "cpu": "CPUQuota"}
+
+
+def chain_limits(cg):
+    """The tightest finite limits on cgroup `cg` and its ancestors below the user manager: pids.max, memory.max,
+    memory.high, memory.swap.max (bytes) and cpu (a CPUQuota percent); a key is missing when it is unlimited."""
+    parts, out = cg.strip("/").split("/"), {}
+    for i in range(len(parts), 0, -1):
+        if parts[i - 1].startswith("user@"):
+            break
+        d = "/sys/fs/cgroup/" + "/".join(parts[:i])
+        for key in LIMIT_FILES:
+            try:
+                with open(f"{d}/{key}") as fh:
+                    v = fh.read().strip()
+            except OSError:
+                continue
+            if v.isdigit():
+                out[key] = min(out.get(key, int(v)), int(v))
+        try:
+            with open(f"{d}/cpu.max") as fh:
+                quota, period = fh.read().split()
+            if quota.isdigit() and int(period) > 0:
+                pct = max(1, int(quota) * 100 // int(period))
+                out["cpu"] = min(out.get("cpu", pct), pct)
+        except (OSError, ValueError):
+            pass
+    return out
+
+
+def inherited_cap(cg):
+    """The tightest finite pids.max on cgroup `cg` or its ancestors below the user manager, else None."""
+    return chain_limits(cg).get("pids.max")
+
+
+def caller_slice(cg):
+    """The slice unit the cgroup sits in under the user manager (app.slice, heavy.slice...), else None."""
+    parts = cg.strip("/").split("/")
+    at = next((i for i, p in enumerate(parts) if p.startswith("user@")), None)
+    sl = [p for p in parts[at + 1:] if p.endswith(".slice")] if at is not None else []
+    return sl[-1] if sl else None
+
+
+def scope_trouble():
+    """None when systemd user scopes with a working pids controller are available, else why not."""
+    if not shutil.which("systemd-run"):
+        return "no systemd-run"
+    try:
+        if subprocess.run(["systemctl", "--user", "show-environment"], capture_output=True, timeout=5).returncode:
+            return "no systemd user manager"
+    except (OSError, subprocess.TimeoutExpired):
+        return "no systemd user manager"
+    uid = os.getuid()
+    try:
+        with open(f"/sys/fs/cgroup/user.slice/user-{uid}.slice/user@{uid}.service/cgroup.subtree_control") as fh:
+            return None if "pids" in fh.read().split() else "pids controller not delegated"
+    except OSError:
+        return "no cgroup v2 user manager"
+
+
+def warn_once(msg):
+    """Warn once per boot (a marker in XDG_RUNTIME_DIR), or every time where there is no runtime dir."""
+    rt = os.environ.get("XDG_RUNTIME_DIR")
+    marker = os.path.join(rt, "throttle-uncapped-warned") if rt and os.path.isdir(rt) else None
+    if marker and os.path.exists(marker):
+        return
+    print(msg, file=sys.stderr)
+    if marker:
+        open(marker, "a").close()
+
+
+def unit_name(prefix, name):
+    """A scope name no other run can hold: THROTTLE_SCOPE_TAG (tests), prefix, name, pid and 32 random bits."""
+    return (f"{os.environ.get('THROTTLE_SCOPE_TAG', '')}{prefix.lower().replace('_', '-')}-"
+            f"{re.sub(r'[^A-Za-z0-9_-]', '_', name)[:40]}-{os.getpid()}-{os.urandom(4).hex()}")
+
+
+def capped(cmd, prefix, name):
+    """(systemd-run argv up to and without `--`, or None to run cmd in place; info).
+
+    A job never gets weaker limits than its caller (2026-10-27 review, B1). Already under an equal or tighter task cap
+    (a nested launcher) it runs in place and shares that budget. Otherwise it gets a scope of its own in the caller's
+    slice, bound to the caller's unit, with TasksMax = the tighter of its cap and
+    the caller's, and the caller's finite MemoryMax, MemoryHigh, MemorySwapMax and CPUQuota copied onto it. The scope's
+    budget is its own: caller and job together can use up to twice the caller's limits. THROTTLE_TASKS=log adds no cap
+    of ours but still copies the caller's; =off runs in place. Without systemd user scopes it warns once and runs
+    uncapped. (heavy-run does the same in bash, always in heavy.slice.)"""
+    cap, mode = tasks_max(prefix)
+    if mode == "off":
+        return None, {"mode": "off"}
+    cg = own_cgroup()
+    lim = chain_limits(cg)
+    inherited = lim.get("pids.max")
+    if inherited is not None and inherited <= cap:
+        return None, {"mode": "inherited", "tasks_max": inherited}
+    why = scope_trouble()
+    if why:
+        warn_once(f"throttle: {name}: no task cap ({why}); running uncapped")
+        return None, {"mode": "uncapped", "why": why}
+    unit = unit_name(prefix, name)
+    bounds = [x for x in (cap if mode == "enforce" else None, inherited) if x is not None]
+    tasks = min(bounds) if bounds else None
+    copied = {PROPS[k]: v for k, v in lim.items() if k != "pids.max"}
+    argv = ["systemd-run", "--user", "--scope", "--quiet", f"--unit={unit}", "-p", f"TasksMax={tasks or 'infinity'}"]
+    argv += [a for k, v in copied.items() for a in ("-p", f"{k}={v}%" if k == "CPUQuota" else f"{k}={v}")]
+    target = caller_slice(cg)
+    if target:
+        argv.append(f"--slice={target}")
+    try:
+        if "--expand-environment" in subprocess.run(["systemd-run", "--help"], capture_output=True, text=True,
+                                                    timeout=5).stdout:
+            argv.append("--expand-environment=no")     # systemd 254+ would otherwise expand $VARS in the command
+    except (OSError, subprocess.TimeoutExpired):
+        pass
+    owner = cg.rsplit("/", 1)[-1]
+    if "/user@" in cg and owner.endswith((".service", ".scope")) and not owner.startswith(("user@", "init.scope")):
+        argv += ["-p", f"BindsTo={owner}", "-p", f"After={owner}"]
+    if mode == "log":
+        print(f"throttle: {name}: would cap at {cap} tasks (THROTTLE_TASKS=log)", file=sys.stderr)
+    return argv, {"mode": mode, "tasks_max": tasks if mode == "enforce" else cap, "unit": unit + ".scope",
+                  "slice": target, "copied": copied}
+
+
+def launch(cmd, prefix, name, **popen):
+    """(Popen, info): start cmd under capped(). If systemd-run itself fails (the bus went away, a unit it cannot
+    create) the job still runs, uncapped, after a one-line warning, and info says mode "fallback". The job tells us it
+    started by writing one byte to a pipe just before it execs, so its own exit status (1 included) is never mistaken
+    for systemd-run's."""
+    pre, info = capped(cmd, prefix, name)
+    bash = shutil.which("bash")
+    if pre is None or not bash:
+        return subprocess.Popen(pre + ["--", *cmd] if pre else cmd, **popen), info
+    r, w = os.pipe()
+    try:
+        proc = subprocess.Popen([*pre, "--", bash, "-c", f'printf . >&{w}; exec {w}>&-; exec "$@"', "throttle-job",
+                                 *cmd], pass_fds=(w,), **popen)
+    finally:
+        os.close(w)
+    try:
+        started = os.read(r, 1)                        # b"" once systemd-run is gone without starting the job
+    finally:
+        os.close(r)
+    if started:
+        return proc, info
+    rc = proc.wait()
+    if rc < 0:                                         # killed before the job started: report that as it is
+        return proc, info
+    print(f"throttle: {name}: systemd-run failed (exit {rc}); running uncapped", file=sys.stderr)
+    return subprocess.Popen(cmd, **popen), {**info, "mode": "fallback", "why": f"systemd-run exit {rc}", "unit": None}
+
+
+class PeakWatch(threading.Thread):
+    """Samples pids.peak of a launcher's scope once a second; .peak stays None when the job has no scope of its own."""
+    def __init__(self, info):
+        super().__init__(daemon=True)
+        self.unit, self.peak, self.done = info.get("unit"), None, threading.Event()
+
+    def run(self):
+        uid, path = os.getuid(), None
+        while self.unit and not self.done.wait(1 if path else 0.1):
+            path = path or next(iter(glob.glob(f"/sys/fs/cgroup/user.slice/user-{uid}.slice/user@{uid}.service/"
+                                               f"**/{self.unit}/pids.peak", recursive=True)), None)
+            try:
+                with open(path or "/nonexistent") as fh:
+                    self.peak = max(self.peak or 0, int(fh.read()))
+            except (OSError, ValueError):
+                pass
+
+    def stop(self):
+        self.done.set()
+        return self.peak
 
 
 def write_json(path, data):
@@ -308,11 +510,15 @@ def run(a, cmd):
     before = git_state(repo)
 
     # the child and its descendants see WORKERS_REGISTERED=1, so a guard or launcher inside does not register again
-    child = subprocess.Popen(cmd, start_new_session=True, env={**os.environ, "WORKERS_REGISTERED": "1", "WORKER_BOT": bot})
+    child, cap = launch(cmd, "WORKERS", bot, start_new_session=True,
+                        env={**os.environ, "WORKERS_REGISTERED": "1", "WORKER_BOT": bot})
+    watch = PeakWatch(cap)
+    watch.start()
     entry = {"host": HOST, "bot": bot, "pid": child.pid, "pgid": child.pid, "wrapper": os.getpid(), "task": task,
              "repo": repo, "cmd": [program], "argc": len(cmd) - 1,
              "started": time.time()}
     path = os.path.join(live, f"{HOST}-{child.pid}.json")
+    entry["tasks_cap"] = cap
     write_json(path, entry)
     stop = threading.Event()
 
@@ -327,6 +533,9 @@ def run(a, cmd):
     for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP, signal.SIGQUIT):
         signal.signal(sig, lambda s, _f: forward(child.pid, s))
     rc = child.wait()
+    entry["peak_tasks"] = peak = watch.stop()
+    if cap.get("mode") == "log" and peak and peak >= cap["tasks_max"]:
+        print(f"workers: {bot} peaked at {peak} tasks, over the {cap['tasks_max']} cap it would get", file=sys.stderr)
     stop.set()
     append_history({**entry, "ended": time.time(), "ran": round(time.time() - entry["started"], 1), "rc": rc})
 

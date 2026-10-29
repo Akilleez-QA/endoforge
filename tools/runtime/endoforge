@@ -206,9 +206,15 @@ fi
 wrapper+=(--unshare-ipc --unshare-uts --die-with-parent --setenv TMPDIR "$inst/tmp" --setenv ENDOFORGE_INSTANCE "$id" --chdir "$inst/tree/forge/endoforge" --)
 # The whole run (its atoms' Blender, video and build jobs) shares heavy.slice's memory and CPU ceilings (tools/throttle),
 # sized for this machine; ENDOFORGE_THROTTLE=0 or a host without systemd user units runs unthrottled.
+# heavy-run --scope-argv also gives the run a finite TasksMax of its own (the per-job cap), so a launcher inside it
+# (codex-pool -> workers run) runs in place and stays in heavy.slice; it rewrites the slice only when it changed.
 throttle=()
-if [[ ${ENDOFORGE_THROTTLE:-1} != 0 && -x $HOME/.local/bin/heavy-run ]] && "$HOME/.local/bin/heavy-run" --write-slice >/dev/null 2>&1; then
-  throttle=(systemd-run --user --scope --quiet --slice=heavy.slice --nice=10 --)
+hr=$HOME/.local/bin/heavy-run
+if [[ ${ENDOFORGE_THROTTLE:-1} != 0 && -x $hr ]]; then
+  if [[ $("$hr" --limits 2>/dev/null) == *tasks_job=* ]]; then mapfile -t throttle < <("$hr" --scope-argv 2>/dev/null)
+  elif "$hr" --write-slice >/dev/null 2>&1; then throttle=(systemd-run --user --scope --quiet --slice=heavy.slice --nice=10 --)   # an older heavy-run
+  fi
+  [[ ${throttle[-1]:-} == -- ]] || throttle=()
 fi
 spawn() {
   ( exec {lease}>&-; exec {slot}>&-; exec setsid "${throttle[@]}" "${wrapper[@]}" "$@" ) & pgid=$!; pgidStart=$(proc_start "$pgid") || pgidStart=; manifest

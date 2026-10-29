@@ -8,7 +8,8 @@ Everything here waits rather than fails, and every limit is computed from the ma
 | Piece | What it does | Scaled limits (32 threads, 124 GB rig) |
 |---|---|---|
 | `heavy-run` | Heavy CPU/RAM jobs take a slot, wait for memory and load headroom, then run in `heavy.slice` | slots RAM/48 GB (2), reserve 12 % RAM (14 GB), load < 0.875 × threads (28) |
-| `heavy.slice` | Shared ceilings for every heavy job. `heavy-run` writes it, and rewrites it when the hardware changes | MemoryHigh 45 % RAM (55G, throttles first), MemoryMax 58 % (71G, stops only slice jobs), CPUQuota 56 % of threads |
+| `heavy.slice` | Shared ceilings for every heavy job. `heavy-run` writes it from this machine's hardware only (no caller's `THROTTLE_TASKS` or `HEAVY_*` changes it), and rewrites and reloads it only when that changes | MemoryHigh 45 % RAM (55G, throttles first), MemoryMax 58 % (71G, stops only slice jobs), CPUQuota 56 % of threads, TasksMax 256 × threads (8192) |
+| Task caps | Every job `heavy-run`, `gpu-queue.py` or `workers run` starts runs in its own scope with TasksMax (threads count as tasks), bound to the caller's unit. A launcher already under an equal or tighter task cap runs the job in place, sharing that budget. Otherwise the job's scope goes in the caller's slice (`heavy-run`: `heavy.slice`) and copies the caller's tighter task, memory and CPU limits, so a nested job never has weaker limits than its caller, though caller and job each get their own budget. See **Task caps** below | 128 × threads per job, min 1024 (4096) |
 | `gpu-queue.py` | Priority queue for GPU and browser jobs. At the head it starts only with GPU and system headroom; temporary trouble means wait, a fault latch means stop. A running job that has opened no NVIDIA device after 10 min (and is not under the automation guard) gives its slot back and keeps running | VRAM < 60 % and BAR1 < 50 % of the card's totals (the guard stops at 85 % and 75 %), RAM reserve and load as above |
 | `gpu-queue.py --est S` | Short lane: a job declared at `GPU_QUEUE_SHORT_SEC` (300 s) or less takes queue priority 0 and starts at the next gap between long jobs; a long ticket waiting `GPU_QUEUE_AGE_SEC` (600 s) is renamed into the same lane, arrival kept. The lane is in the ticket name, the only thing the browser guard reads, so every reader agrees on the head. `--stats [--hours 12]` reads `history.jsonl` (one line per job: wait, run, exit code) | short ≤ 300 s, ageing after 600 s |
 | `workers` | The CLI-worker registry: `workers run --bot SLUG -- cmd` registers a worker (host, bot, task, repo), heartbeats while it runs and records its end; `workers list` shows running, dead (process gone or no heartbeat) and finished workers on this host and every host that pushes here (`workers push --ssh <rig>` from the Grok box). Unknown bot slugs are refused. `fleet-disconnect status` includes it. On exit `run` writes a change receipt (`workers list --receipts N`, `workers receipt ID`); a spawn-rate alarm refuses (75) a launch when this host saw 30 launches of the same bot and program in 60 s | lease 120 s, host stale after 180 s, `WORKERS_SPAWN_MAX` 30 per minute |
@@ -21,13 +22,13 @@ Everything here waits rather than fails, and every limit is computed from the ma
 | `lane-governor` | Admission for agent lanes (side sessions, subagents, scripted runs) inside the Claude app. Coordinators `acquire` a lane before starting or resuming one and wait in a queue; exit 75 means wait. Counts working sessions from the app log, lane tickets, and the app tree's RSS, growth and CLI count, plus memory and load. Calibrated on the app's own crash logs. Never stops running work | lanes min(threads/10, RAM/40 GB) (3), ≤ 8 CLIs, ≤ 6 cycle starts per 10 min and 60 s apart, tree growth < 7 % RAM per 2.5 min (8.7 GB), tree < 20 % (25 GB), reserve and load as above |
 
 **Where it is wired in**
-- `endoforge run` puts the whole run inside `heavy.slice`.
+- `endoforge run` puts the whole run inside `heavy.slice` with the per-job TasksMax (`heavy-run --scope-argv`), so the launchers inside it run in place.
 - `schedule.mjs` checks headroom before each new atom.
 - `media/nh3-kit/tools/blender-cpu` queues through `heavy-run`.
 - `media/nh3-kit/tools/gpu-queue.py` forwards to this queue.
 - `ENDOFORGE_THROTTLE=0` turns the Endoforge side off.
 
-**Overrides:** `HEAVY_SLOTS`, `HEAVY_RESERVE_GB`, `HEAVY_MAX_LOAD`, `HEAVY_MEM`, `ENDOFORGE_MAX_LOAD`, `ENDOFORGE_RESERVE_GB`, `GPU_QUEUE_VRAM_FRAC`, `GPU_QUEUE_BAR1_FRAC`, `GPU_QUEUE_RESERVE_GB`, `GPU_QUEUE_MAX_LOAD`, and lane-governor's `LANE_*` (listed in its header).
+**Overrides:** `HEAVY_TASKS_MAX`, `GPU_QUEUE_TASKS_MAX`, `WORKERS_TASKS_MAX`, `THROTTLE_TASKS`, `HEAVY_SLOTS`, `HEAVY_RESERVE_GB`, `HEAVY_MAX_LOAD`, `HEAVY_MEM`, `ENDOFORGE_MAX_LOAD`, `ENDOFORGE_RESERVE_GB`, `GPU_QUEUE_VRAM_FRAC`, `GPU_QUEUE_BAR1_FRAC`, `GPU_QUEUE_RESERVE_GB`, `GPU_QUEUE_MAX_LOAD`. For tests only: `THROTTLE_SLICE` (another slice for `heavy-run`'s jobs; nothing is written or reloaded for it) and `THROTTLE_SCOPE_TAG` (a prefix for scope names), and lane-governor's `LANE_*` (listed in its header).
 
 **Install** (once per machine; rerunning is safe): `forge/endoforge/tools/throttle/install.sh`. It puts `heavy-run` and `memguard` in `~/.local/bin`, sizes `heavy.slice`, reserves memory up to `user.slice` (sudo), and enables `memguard.service`. `heavy-run --limits` shows what this machine gets.
 
@@ -35,6 +36,16 @@ Everything here waits rather than fails, and every limit is computed from the ma
 - limit scaling for a rig, a laptop and a large box;
 - slot and headroom waits;
 - slice placement and nesting;
+- task caps, live (`test/test_caps.py`, inside a task cap of 2048 at most): a self-copying runaway (`test/forkbomb.sh`,
+  which ends itself at a deadline) under each launcher with a cap of 64 is held at 64 within about 0.3 s; a normal
+  command keeps its output, a literal `$HOME`, exit codes 0, 75 and 78 and death by SIGTERM; a nested job keeps its
+  caller's slice, task cap, MemoryMax and CPUQuota (the endoforge chain and log mode included); heavy-run refuses (78)
+  when systemd-run fails, the other two run uncapped, and a job's own exit 1 is not a fallback; gpu-queue's CLI reports
+  a signal death without a Python core dump and holds its ticket until an interrupted job has ended;
+- none of it touches production state: `heavy-run`'s jobs go to a per-run test slice (`THROTTLE_SLICE`, runtime
+  properties, removed on exit without a daemon-reload), scopes are named `thrtest<pid>-…`, no unit file is written, and
+  `run.sh` fails if the live `heavy.slice` changed. heavy.slice's own sizing is checked with `--print-slice` and a
+  `systemctl` shim;
 - scheduler headroom;
 - the GPU queue: headroom, waiting out trouble, stopping on a fault;
 - the lane governor: limits, every gate, app-log sensors, crash replay, tickets, queue and hook;
@@ -86,9 +97,40 @@ environment.
 **Jobs live and die with their owner** (2026-10-26, after a stopped hill-climb round left a 19.8 GB render running for 80 minutes; Craig: "a note is insufficient bake it into architecture"):
 - `heavy-run` binds each job to the unit that started it (`BindsTo=` the nearest ancestor service, else the app or terminal scope). As a service's own main process, it keeps the job inside that service. Stopping the owner stops the job either way.
 - A launcher whose owner is already gone (a transient `run-*.scope` reparented to the user manager) is refused with exit 75, so a stray loop cannot start new work.
-- A job ends when its main process ends (2026-10-27: photo2model's harvest was OOM-killed at 18:01, and its 10 idle worker processes kept the scope and its slot lock for 75 minutes, starving the ABI set lane). `heavy-run` stays as a small supervisor: it waits for the main process, then stops the job's scope, so anything the main process left behind is killed and the slot frees at once. The main process's exit status (137 for SIGKILL) passes through, stdin is passed on, and a TERM, INT or HUP to `heavy-run` stops its job. Only a SIGKILL to `heavy-run` itself skips this; the job then keeps its slot until it ends, as before.
+- A job ends when its main process ends (2026-10-27: photo2model's harvest was OOM-killed at 18:01, and its 10 idle worker processes kept the scope and its slot lock for 75 minutes, starving the ABI set lane). `heavy-run` stays as a small supervisor: it waits for the main process, then stops the job's scope, so anything the main process left behind is killed and the slot frees at once. The main process's exit status (137 for SIGKILL) passes through, and stdin is passed on. A TERM, INT, HUP or QUIT to `heavy-run` is passed to the job's main process, which gets 10 s to end before the scope is stopped; the job starts with INT and QUIT at their defaults. (A `heavy-run` that was itself started with INT or QUIT ignored, as a shell script's background job is, cannot catch them, and they stay ignored, as before.) Only a SIGKILL to `heavy-run` itself skips this; the job then keeps its slot (it inherits fd 9) until it ends, as before.
 - Hill-climb campaigns reject render commands wrapped in `systemd-run --scope`.
 - memguard stops any `heavy-run` job whose recorded owner is no longer active, and reports (with a desktop notification) big Blender or Python processes left running by a launcher that is gone. It never kills those.
+
+**Task caps** (2026-10-27: testing an unmerged branch made `codex-pool` recurse to 465 processes and about 4,900
+registry entries in 7 minutes; nothing bounded process count, `heavy.slice` TasksMax was `infinity`). The cap is a
+machine-wide backstop, not a loop detector: it is far above 465, so it would not have stopped that loop early. The
+registry's nesting refusal (`WORKERS_REGISTERED`) stops that loop.
+- Measured peaks on main-rig (32 threads), from the scope's `pids.peak`: Blender Cycles CPU render 72 tasks (5
+  processes); headless Chromium through `chromium-automation`, 6 live sites 216 (22); `codex exec` start-up with hooks
+  238 (9; the run stopped at the usage limit, so no tool calls); `node --test` over `foundations/engine/scripts` 458
+  (43; one child per thread); the running photo2model harvests in `heavy.slice` 112 and 143; the Codex app-server alone
+  45 threads. The largest is 11 % of the 4096 default, so the caps enforce by default.
+- A runaway reaches the cap and stays there: at 64 in 0.16 to 0.34 s (tests); at the 4096 default, measured once, in
+  2.3 s, holding at 4096 processes (load rose to 27 while forks were refused). The cap stops growth; it kills nothing.
+- Nesting: a job never gets weaker limits than its caller. Already under an equal or tighter task cap it runs in place.
+  Otherwise its scope copies the tightest finite TasksMax, MemoryMax, MemoryHigh, MemorySwapMax and CPUQuota on the
+  caller's cgroup chain; `workers` and `gpu-queue.py` put it in the caller's slice, `heavy-run` in `heavy.slice`. The
+  copy is a budget of its own, so caller and job together can use up to twice the caller's limits.
+- Staged roll-out: `THROTTLE_TASKS=log` adds no cap of ours and prints `would cap at N tasks`; `workers` and
+  `gpu-queue.py` record the job's peak (`peak_tasks` in `history.jsonl`) and warn when it would have hit the cap; for
+  `heavy-run` compare `heavy.slice` `pids.peak` with `heavy-run --limits`. `THROTTLE_TASKS=off` disables the per-job
+  caps. Neither changes `heavy.slice`, whose TasksMax always holds, and a nested job still keeps its caller's limits.
+- When the cap cannot be applied: without systemd user scopes or a delegated pids controller (a container, the Grok
+  box) `workers` and `gpu-queue.py` warn once per boot and run the job uncapped. If `systemd-run` itself fails (the bus
+  goes away, a unit it cannot create) they run it uncapped after a one-line warning, and history says `fallback`.
+  `heavy-run` never runs a job outside its slice on a host that has a user manager: if systemd-run fails, or the
+  manager does not answer, it refuses with 78 and a one-line reason (a heavy job inside the Claude app's scope is
+  worse than a refused job). Only on a host with no user manager at all does it run the job uncapped. The job touches
+  a marker just before it execs, so its own exit 1 is never taken for systemd-run's. Scope names carry the pid and 32
+  random bits, and `--expand-environment=no` keeps systemd 254+ from expanding `$` in arguments.
+- Signals: `gpu-queue.py` ends the way the job ended (its code, or death by the same signal; 128 + N for SIGKILL,
+  SIGSTOP and core-dumping signals, so no Python core dump). TERM, INT or HUP to `gpu-queue.py` reaches a running job,
+  and the ticket is released only after the job ends (a second signal kills it), so the next GPU job never overlaps it.
 
 **Kernel headroom** (`memguard --install`, added after the Codex app's GPU process crashed at 01:22): the NVIDIA driver and Electron GPU processes failed large allocations while RAM was fragmented and the kernel's free pool was 66 MB. `/etc/sysctl.d/99-memguard.conf` now sets a free pool of 1 % of RAM (64 MB to 2 GB), reclaim that starts 1.5 % earlier, and proactive compaction 40.
 

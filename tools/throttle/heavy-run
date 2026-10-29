@@ -2,7 +2,10 @@
 # heavy-run: throttle for heavy CPU/RAM jobs so a machine never runs out of memory (Endoforge tools/throttle).
 #   heavy-run [--mem GB] [--name NAME] -- command...   wait for a slot and headroom, then run in heavy.slice
 #   heavy-run --limits                                 print the limits sized for this machine
-#   heavy-run --write-slice                            (re)write heavy.slice for this machine and reload systemd
+#   heavy-run --write-slice                            write heavy.slice for this machine and reload, if it changed
+#   heavy-run --print-slice                            print the heavy.slice this machine gets
+#   heavy-run --scope-argv                             the systemd-run argv (one per line) for a whole run in the
+#                                                      slice with the per-job task cap (endoforge's run scope)
 # Every limit scales with the hardware (Craig, 2026-10-26: "it should scale itself to fit the hardware"):
 #   max load = 0.875 x threads; reserve = 12 % of RAM (min 8 GB); slots = RAM / 48 GB (1 .. threads / 8);
 #   heavy.slice MemoryHigh = 45 % of RAM, MemoryMax = 58 %, CPUQuota = 56 % of threads. HEAVY_* variables override
@@ -11,43 +14,71 @@
 # gets N % of the slots and starts only under N % of the load limit. It waits and never refuses, except at 0 % (the
 # drain before a reboot): then a new or waiting job exits 75, to be requeued after `fleet-disconnect resume`. Inside heavy.slice already (a nested call) it runs the command directly. The slice is
 # re-sized automatically when the machine's threads or RAM change.
+# Task caps (2026-10-27, nothing bounded process count when a launcher recursed): each job's scope gets TasksMax
+# HEAVY_TASKS_MAX (128 per thread, min 1024) and heavy.slice 256 per thread (min 2048). The slice is sized from this
+# machine's hardware only: no caller's environment (THROTTLE_TASKS, HEAVY_*) changes it. THROTTLE_TASKS=log adds no
+# job cap and says what it would be; =off adds none. Either way the job keeps its caller's limits: its scope
+# copies the tightest task, memory and CPU limits on heavy-run's own cgroup chain. If systemd-run cannot start the scope,
+# or this host's user manager stops answering, the job is refused (78), never run outside the slice. Only a host with
+# no systemd user manager at all (a container, the Grok box) runs the job uncapped, after a warning. THROTTLE_SLICE
+# names another slice (tests): heavy-run then never writes or reloads a unit.
 set -euo pipefail
-cpus=${HEAVY_THREADS:-$(nproc)} memgb=${HEAVY_RAM_GB:-$(awk '/^MemTotal/{printf "%d", $2/1048576}' /proc/meminfo)}
+trap 'exit 131' QUIT              # a QUIT before the job starts ends heavy-run without a core dump (the slot frees)
+hwcpus=$(nproc) hwmem=$(awk '/^MemTotal/{printf "%d", $2/1048576}' /proc/meminfo)
+cpus=${HEAVY_THREADS:-$hwcpus} memgb=${HEAVY_RAM_GB:-$hwmem}
 clamp() { local v=$1 lo=$2 hi=$3; ((v < lo)) && v=$lo; ((v > hi)) && v=$hi; echo "$v"; }
 maxload=${HEAVY_MAX_LOAD:-$(awk -v c="$cpus" 'BEGIN{printf "%.1f", c * 0.875}')}
 reserve=${HEAVY_RESERVE_GB:-$(clamp $((memgb * 12 / 100)) 8 $memgb)}
 slots=${HEAVY_SLOTS:-$(clamp $((memgb / 48)) 1 $(clamp $((cpus / 8)) 1 64))}
 high=$((memgb * 45 / 100)) max=$((memgb * 58 / 100)) quota=$((cpus * 56))
-stamp="# sized for threads=$cpus ram=${memgb}G"
+jobtasks=${HEAVY_TASKS_MAX:-$(clamp $((cpus * 128)) 1024 4194304)} slicetasks=$(clamp $((cpus * 256)) 2048 4194304)
+taskmode=${THROTTLE_TASKS:-enforce}
+case $taskmode in log|off) ;; *) taskmode=enforce;; esac
+tslice=${THROTTLE_SLICE:-heavy.slice}
 slice=${XDG_CONFIG_HOME:-$HOME/.config}/systemd/user/heavy.slice
-write_slice() {
-  mkdir -p "$(dirname "$slice")"
-  cat > "$slice.tmp" <<UNIT
-$stamp (heavy-run --write-slice; rewritten automatically when the hardware changes)
+slice_text() {   # from the hardware only (hwcpus, hwmem), never from the caller's environment
+  local c=$hwcpus m=$hwmem
+  cat <<UNIT
+# sized for threads=$c ram=${m}G tasks=$(clamp $((c * 256)) 2048 4194304) (heavy-run --write-slice; rewritten automatically when the hardware changes)
 # Shared lane for heavy jobs. MemoryHigh makes the kernel throttle and reclaim inside this slice first, so a big job
 # slows down instead of starving the desktop; MemoryMax stops only jobs in this slice.
 [Unit]
 Description=Heavy jobs (throttled lane, see heavy-run)
 
 [Slice]
-MemoryHigh=${high}G
-MemoryMax=${max}G
-MemorySwapMax=$((memgb / 8))G
-CPUQuota=${quota}%
+MemoryHigh=$((m * 45 / 100))G
+MemoryMax=$((m * 58 / 100))G
+MemorySwapMax=$((m / 8))G
+CPUQuota=$((c * 56))%
 CPUWeight=40
+TasksMax=$(clamp $((c * 256)) 2048 4194304)
 UNIT
-  mv "$slice.tmp" "$slice"; systemctl --user daemon-reload
 }
+# The first line starts with the older stamp, so older heavy-runs keep the file. Written and reloaded only when the
+# content changes, and only for the real heavy.slice: a THROTTLE_SLICE (a test's slice) is never written.
+write_slice() {
+  [ "$tslice" = heavy.slice ] || return 0
+  [ -f "$slice" ] && cmp -s <(slice_text) "$slice" && return 0
+  mkdir -p "$(dirname "$slice")"
+  slice_text > "$slice.tmp.$$" && mv "$slice.tmp.$$" "$slice" && systemctl --user daemon-reload
+}
+expand_no() { systemd-run --help 2>/dev/null | grep -q -- --expand-environment && echo --expand-environment=no; }
 case ${1:-} in
-  --limits) echo "threads=$cpus ram=${memgb}G max_load=$maxload reserve=${reserve}G slots=$slots slice_high=${high}G slice_max=${max}G cpu_quota=${quota}%"; exit 0;;
-  --write-slice) write_slice; echo "wrote $slice ($stamp)"; exit 0;;
+  --limits) echo "threads=$cpus ram=${memgb}G max_load=$maxload reserve=${reserve}G slots=$slots slice_high=${high}G slice_max=${max}G cpu_quota=${quota}% tasks_job=$jobtasks tasks_slice=$slicetasks"; exit 0;;
+  --write-slice) write_slice; echo "$slice: $(head -1 "$slice")"; exit 0;;
+  --print-slice) slice_text; exit 0;;
+  --scope-argv) write_slice >/dev/null 2>&1 || true
+    printf '%s\n' systemd-run --user --scope --quiet "--slice=$tslice" --nice=10 $(expand_no)
+    [ "$taskmode" = enforce ] && printf '%s\n' -p "TasksMax=$jobtasks"
+    printf '%s\n' --; exit 0;;
 esac
 mem=16 name=job
 while [ $# -gt 0 ]; do
   case $1 in --mem) mem=$2; shift 2;; --name) name=$2; shift 2;; --) shift; break;; *) break;; esac
 done
 [ $# -gt 0 ] || { echo "usage: heavy-run [--mem GB] [--name NAME] -- command... | --limits | --write-slice" >&2; exit 2; }
-if grep -q '/heavy.slice/' /proc/self/cgroup; then exec "$@"; fi
+if grep -qF "/$tslice/" /proc/self/cgroup; then exec "$@"; fi
+nosd=0; command -v systemd-run >/dev/null && systemctl --user show-environment >/dev/null 2>&1 || nosd=1
 fleet=${FLEET_STATE_DIR:-${XDG_STATE_HOME:-$HOME/.local/state}/fleet}
 capacity() { if [ -f "$fleet/DRAIN" ]; then echo 0; elif [ -f "$fleet/CAPACITY" ]; then awk 'NR==1{print int($1)}' "$fleet/CAPACITY"; else echo 100; fi; }
 draining() { [ "$(capacity)" -gt 0 ] && return 1; echo "heavy-run[$name]: refusing: the fleet is draining for a disconnect ($(cat "$fleet/DRAIN" "$fleet/CAPACITY" 2>/dev/null | head -c 200 | tr '\n' ' ')); requeue after fleet-disconnect resume" >&2; }
@@ -57,12 +88,12 @@ if [ "$pct" -lt 100 ]; then
   slots=$(( slots * pct / 100 )); [ "$slots" -lt 1 ] && slots=1
   maxload=$(awk -v m="$maxload" -v p="$pct" 'BEGIN{printf "%.1f", m * p / 100}')
 fi
-[ -f "$slice" ] && head -1 "$slice" | grep -qF "$stamp" || write_slice
+[ "$nosd" = 1 ] || write_slice
 mem=$(clamp "$mem" 1 $((memgb - reserve > 1 ? memgb - reserve : 1)))   # a job bigger than the machine still runs
 state=${XDG_STATE_HOME:-$HOME/.local/state}/heavy-run; mkdir -p "$state"
 say() { echo "heavy-run[$name]: $*" >&2; }
 start=$(date +%s) last=0
-while :; do                                                    # 1. a slot (fd 9 stays open for the job's lifetime)
+while :; do      # 1. a slot: fd 9 is held by heavy-run and inherited by the job, so it stays taken while either lives
   for i in $(seq 1 "$slots"); do
     exec 9>"$state/slot-$i.lock"
     if flock -n 9; then slot=$i; break 2; fi
@@ -111,11 +142,21 @@ owner_unit() {
   [ "$scope_orphan" = 1 ] && { echo "orphan:$scope"; return 0; }
   echo "$scope"
 }
+if [ "$nosd" = 1 ]; then
+  if [ -d "/sys/fs/cgroup/user.slice/user-$(id -u).slice/user@$(id -u).service" ]; then
+    say "refusing: this host's systemd user manager is not answering; the job was not run outside $tslice"; exit 78
+  fi
+  say "no systemd user manager: no heavy.slice and no task cap; running uncapped"
+  exec nice -n 10 "$@"
+fi
 self_unit=$(sed -n 's|^0::.*/||p' /proc/self/cgroup)
 if [[ $self_unit == *.service && $(cat /proc/$PPID/comm 2>/dev/null) == systemd ]]; then
   # heavy-run is a service's own main process (systemd-run --unit=… -- heavy-run …): keep the job inside that service,
   # so stopping the service stops the job. Moving out to a scope would leave the service empty and the job unowned.
   echo "$(date -Is) slot=$slot mem=$mem pid=$$ $name in $self_unit" >> "$state/runs.log"
+  cur=$(systemctl --user show "$self_unit" -p TasksMax --value)        # never loosen a tighter cap the service has
+  [ "$taskmode" = enforce ] && { [ "$cur" = infinity ] || [ "$cur" -gt "$jobtasks" ] 2>/dev/null; } &&
+    systemctl --user set-property --runtime "$self_unit" TasksMax="$jobtasks" 2>/dev/null || true
   exec nice -n 10 "$@"
 fi
 owner=$(owner_unit)
@@ -124,6 +165,24 @@ case $owner in
 esac
 bind=()
 [ -n "$owner" ] && bind=(-p "BindsTo=$owner" -p "After=$owner")
+# A job never gets weaker limits than its caller (2026-10-27 review, B1): the scope copies the tightest finite task,
+# memory and CPU limits on heavy-run's own cgroup chain (below the user manager), on top of heavy.slice's ceilings.
+lp= lm= lh= ls= lc=
+low() { local v=$2; [[ $v =~ ^[0-9]+$ ]] || return 0; [ -z "${!1}" ] || [ "$v" -lt "${!1}" ] && printf -v "$1" %s "$v"; return 0; }
+d=/sys/fs/cgroup$(sed -n 's|^0::||p' /proc/self/cgroup)
+while [ "$d" != /sys/fs/cgroup ] && [[ ${d##*/} != user@*.service ]]; do
+  low lp "$(cat "$d/pids.max" 2>/dev/null)"; low lm "$(cat "$d/memory.max" 2>/dev/null)"
+  low lh "$(cat "$d/memory.high" 2>/dev/null)"; low ls "$(cat "$d/memory.swap.max" 2>/dev/null)"
+  read -r q p 2>/dev/null < "$d/cpu.max" && [[ $q =~ ^[0-9]+$ ]] && low lc $(( q * 100 / p > 0 ? q * 100 / p : 1 ))
+  d=${d%/*}
+done
+tasks=; [ "$taskmode" = enforce ] && tasks=$jobtasks
+low tasks "$lp"
+props=()
+[ -n "$tasks" ] && props+=(-p "TasksMax=$tasks")
+[ -n "$lm" ] && props+=(-p "MemoryMax=$lm"); [ -n "$lh" ] && props+=(-p "MemoryHigh=$lh")
+[ -n "$ls" ] && props+=(-p "MemorySwapMax=$ls"); [ -n "$lc" ] && props+=(-p "CPUQuota=$lc%")
+[ "$taskmode" = log ] && say "would cap at $jobtasks tasks (THROTTLE_TASKS=log)"
 # --scope sets an absolute nice level; never lower an inherited value (that needs privilege).
 cur=$(ps -o ni= -p $$ | tr -d ' ')
 target=10
@@ -132,14 +191,35 @@ target=10
 # slot lock (fd 9), so workers orphaned by a killed main kept a slot for 75 minutes (2026-10-27: photo2model's
 # harvest was OOM-killed at 18:01 and its 10 idle workers starved the ABI set lane). So heavy-run stays as a small
 # supervisor: it waits for the main process, then stops the scope, which kills what is left and frees the slot.
-# A signal to heavy-run stops the job too. Stdin is passed through explicitly (a background job would get /dev/null).
-unit="heavy-${name//[^A-Za-z0-9_-]/_}-$$"
-systemd-run --user --scope --quiet --slice=heavy.slice --nice="$target" --unit="$unit" -p TimeoutStopSec=20 \
-  --description="heavy-run $name (owner ${owner:-none})" "${bind[@]}" -- "$@" <&0 &
-job=$!
+# A TERM, INT, HUP or QUIT to heavy-run is passed to the job's main process (which gets 10 s to end), then the scope is
+# stopped. Stdin is passed through explicitly (a background job would get /dev/null), and the job starts with INT and
+# QUIT at their defaults (a background job would ignore them). The job touches a marker just before it execs: without
+# it, systemd-run failed to start the scope, and heavy-run refuses (78) instead of running the job outside the slice.
+unit="${THROTTLE_SCOPE_TAG:-}heavy-${name//[^A-Za-z0-9_-]/_}-$$-$(od -An -N4 -tx4 /dev/urandom | tr -d ' \n')"
+started=$state/started-$$-$RANDOM; rm -f "$started"
+dflt=(); env --default-signal=INT true 2>/dev/null && dflt=(env --default-signal=INT,QUIT)
+job=
 stop_job() { systemctl --user stop "$unit.scope" 2>/dev/null || true; }
-trap 'trap - TERM INT HUP; kill -TERM "$job" 2>/dev/null; stop_job; exit 143' TERM INT HUP
+on_signal() {                     # set before the job starts, so a signal at any moment reaches it or its scope
+  trap '' TERM INT HUP QUIT       # repeats during the grace period are ignored; the scope stop below is the backstop
+  local rc=$((128 + $2))
+  if [ -n "$job" ]; then
+    kill -s "$1" "$job" 2>/dev/null
+    for _ in $(seq 100); do kill -0 "$job" 2>/dev/null || break; sleep 0.1; done
+    kill -0 "$job" 2>/dev/null || { wait "$job" 2>/dev/null; rc=$?; }
+  fi
+  stop_job; rm -f "$started"; exit "$rc"
+}
+trap 'on_signal TERM 15' TERM; trap 'on_signal INT 2' INT; trap 'on_signal HUP 1' HUP; trap 'on_signal QUIT 3' QUIT
+systemd-run --user --scope --quiet "--slice=$tslice" --nice="$target" --unit="$unit" -p TimeoutStopSec=20 \
+  --description="heavy-run $name (owner ${owner:-none})" "${bind[@]}" "${props[@]}" $(expand_no) \
+  -- "${dflt[@]}" "$BASH" -c ': > "$0" && exec "$@"' "$started" "$@" <&0 &
+job=$!
 rc=0; { wait "$job"; } 2>/dev/null || rc=$?
+if [ ! -e "$started" ] && [ "$rc" -gt 0 ] && [ "$rc" -lt 128 ]; then
+  say "refusing: systemd-run could not start the job's scope in $tslice (exit $rc); the job was not run"; exit 78
+fi
+rm -f "$started"
 cg=$(systemctl --user show "$unit.scope" -p ControlGroup --value 2>/dev/null || true)
 left=0
 [ -n "$cg" ] && [ -r "/sys/fs/cgroup$cg/cgroup.procs" ] && left=$(grep -c . "/sys/fs/cgroup$cg/cgroup.procs" 2>/dev/null || true)

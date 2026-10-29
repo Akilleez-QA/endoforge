@@ -37,13 +37,20 @@ only under N % of the VRAM, BAR1 and load limits. At 0 % (the drain before a reb
 waiting ticket is released: both exit 75, so the caller requeues after `fleet-disconnect resume`. A job already running
 is left to finish.
 
+Task cap (2026-10-27): the job runs in a transient systemd scope with TasksMax (GPU_QUEUE_TASKS_MAX, else 128 per CPU
+thread, min 1024), bound to the caller's unit; THROTTLE_TASKS=log only reports, =off skips it. The helpers live in the
+sibling `workers` file. Without systemd user scopes (or without that file) the job runs uncapped after one warning.
+Exit codes pass through (systemd-run --scope execs the job), and a job killed by signal N kills gpu-queue by N too;
+TERM, INT or HUP to gpu-queue reaches a running job; gpu-queue waits for it before it releases the ticket, and records its
+end. If systemd-run itself fails the job runs uncapped.
+
 A slot is for the GPU (2026-10-26: an EEVEE render with no GPU access held the only slot for 28 min while the 4080
 sat at 0 % and two lookdev jobs waited). If the job's process tree has opened no NVIDIA device after
 GPU_QUEUE_IDLE_GRACE seconds (default 600; 0 turns this off), its ticket is released so the next job starts; the job
 keeps running, and is told to use heavy-run for CPU work. Jobs under the automation guard (browser_guard.py: guarded
 browsers and gpu-workload-run, software or GPU) keep their slot, because the guard admits one at a time anyway.
 """
-import argparse, json, os, signal, subprocess, sys, tempfile, threading, time
+import argparse, importlib.machinery, importlib.util, json, os, signal, subprocess, sys, tempfile, threading, time
 
 
 def queue_dir():
@@ -395,7 +402,67 @@ def stats(hours=12.0, now=None, out=sys.stdout):
     return rows
 
 
+def taskcap():
+    """The task-cap helpers from the sibling `workers` file, or None (then jobs run uncapped)."""
+    path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "workers")
+    try:
+        loader = importlib.machinery.SourceFileLoader("throttle_workers", path)
+        mod = importlib.util.module_from_spec(importlib.util.spec_from_loader("throttle_workers", loader))
+        loader.exec_module(mod)
+        return mod
+    except (OSError, SyntaxError, ImportError):
+        return None
+
+
+TASKCAP = taskcap()
+
+
+JOB = {}          # the running job's Popen, so SIGTERM reaches it and its rc gets recorded
+
+
+def run_job(cmd, name):
+    """(rc, cap info, peak tasks): the job under its task cap."""
+    cap = TASKCAP
+    JOB["starting"] = True                             # a signal now is held until the job exists
+    if cap is None:
+        print(f"gpu-queue: {name}: task-cap helpers missing; running uncapped", file=sys.stderr)
+        JOB["proc"], info = subprocess.Popen(cmd), {"mode": "uncapped", "why": "no workers helpers"}
+    else:
+        JOB["proc"], info = cap.launch(cmd, "GPU_QUEUE", name)
+    JOB.pop("starting")
+    if JOB.get("pending"):
+        JOB["proc"].send_signal(JOB.pop("pending"))
+    if cap is None:
+        return JOB["proc"].wait(), info, None
+    watch = cap.PeakWatch(info)
+    watch.start()
+    rc = JOB["proc"].wait()
+    peak = watch.stop()
+    if info.get("mode") == "log" and peak and peak >= info["tasks_max"]:
+        print(f"gpu-queue: {name} peaked at {peak} tasks, over the {info['tasks_max']} cap it would get", file=sys.stderr)
+    return rc, info, peak
+
+
+def on_signal(release):
+    """TERM, INT, HUP or QUIT: a running job gets the same signal and main() waits for it to end (a second signal kills
+    it) before the ticket is released and its end recorded, so the next ticket never overlaps a job still running.
+    A waiting ticket is released at once (exit 128 + N)."""
+    def handler(sig, _frame):
+        if JOB.get("starting"):
+            JOB["pending"] = sig
+            return
+        proc = JOB.get("proc")
+        if proc is not None and proc.poll() is None:
+            JOB["signals"] = JOB.get("signals", 0) + 1
+            proc.send_signal(sig if JOB["signals"] == 1 else signal.SIGKILL)
+            return
+        release()
+        sys.exit(128 + sig)
+    return handler
+
+
 def main():
+    signal.signal(signal.SIGQUIT, lambda *_: sys.exit(128 + signal.SIGQUIT))   # never a Python core dump
     ap = argparse.ArgumentParser()
     if "--stats" in sys.argv[1:]:
         hours = float(sys.argv[sys.argv.index("--hours") + 1]) if "--hours" in sys.argv else 12.0
@@ -438,9 +505,10 @@ def main():
         except FileNotFoundError:
             pass
 
-    signal.signal(signal.SIGTERM, lambda *_: (release(), sys.exit(143)))
+    for sig in (signal.SIGTERM, signal.SIGINT, signal.SIGHUP, signal.SIGQUIT):
+        signal.signal(sig, on_signal(release))
     started, last_why = time.time(), None
-    run_at, rc = None, None
+    run_at, rc, cap, peak = None, None, None, None
     try:
         while True:
             drain = drain_reason()
@@ -481,7 +549,7 @@ def main():
         worker.start()
         print(f"gpu-queue: {a.name} running", file=sys.stderr, flush=True)
         run_at = time.time()
-        rc = subprocess.call(cmd)
+        rc, cap, peak = run_job(cmd, a.name)
         if rc == 75:
             print("gpu-queue: launcher still busy (75); job not run, requeue later", file=sys.stderr)
         return rc
@@ -490,8 +558,26 @@ def main():
         ended = time.time()
         record({"name": a.name, "priority": a.priority, "lane": lane, "est": a.est, "queued": arrival / 1e9,
                 "started": run_at, "ended": ended, "waited": round((run_at or ended) - arrival / 1e9, 1),
-                "ran": round(ended - run_at, 1) if run_at else 0, "rc": rc if run_at else "not run"})
+                "ran": round(ended - run_at, 1) if run_at else 0, "rc": rc if run_at else "not run",
+                "tasks_cap": cap, "peak_tasks": peak})
+
+
+CORE = {getattr(signal, n) for n in ("SIGQUIT", "SIGILL", "SIGTRAP", "SIGABRT", "SIGBUS", "SIGFPE", "SIGSEGV",
+                                     "SIGXCPU", "SIGXFSZ", "SIGSYS") if hasattr(signal, n)}
+
+
+def cli():
+    """main()'s exit: the job's code, or for a job killed by signal N death by the same signal, except 128 + N for
+    SIGKILL and SIGSTOP (Python cannot reset them) and the core-dumping signals (no Python core dump)."""
+    rc = main()
+    if isinstance(rc, int) and rc < 0:
+        sig = -rc
+        if sig not in CORE | {signal.SIGKILL, signal.SIGSTOP}:
+            signal.signal(sig, signal.SIG_DFL)
+            os.kill(os.getpid(), sig)
+        rc = 128 + sig
+    sys.exit(rc)
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    cli()
