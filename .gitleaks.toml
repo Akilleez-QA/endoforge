@@ -1,0 +1,13 @@
+title = "EndoForge gitleaks config"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Synthetic credentials used as fixtures by the secret-scrubbing tests"
+paths = ['''tools/throttle/test/test_workers\.py''']
+
+[[allowlists]]
+description = "Short message ids, run tokens and key digests in recorded receipts"
+targetRules = ["generic-api-key"]
+paths = ['''^experiments/.*/receipt/''', '''^campaigns/''', '''^tools/atomizer/ledger/''']
