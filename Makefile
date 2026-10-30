@@ -9,7 +9,11 @@ SCRATCH ?= /tmp/endoforge-mononoke-verify
 
 .PHONY: test check mononoke x1-test core-test
 
-test: check x1-test core-test mononoke
+test: check x1-test core-test ledger-test mononoke
+
+.PHONY: ledger-test
+ledger-test:
+	$(PYTHON) -B -m unittest tools.ledger.test_ledger -v
 
 check:
 	$(PYTHON) -I tools/check-docs.py
