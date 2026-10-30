@@ -55,7 +55,7 @@ fs.writeFileSync(path.join(home, '.claude-accts/pool.json'), '{}');
 const logins = discoverLogins({ home, env: {} });
 test('logins are discovered, not assumed (2 Codex + 3 Claude)', () => {
   assert.deepEqual(logins.codex, ['default', 'scubasteve']);
-  assert.deepEqual(logins.claude.map((a) => a.name), ['acct3', 'acct1', 'acct2']);
+  assert.deepEqual(logins.claude.map((a) => a.name), ['acct1', 'acct2', 'acct3']);
 });
 test('lanes rotate across every login, explicit engines first, no login idle', () => {
   const c = campaign();
