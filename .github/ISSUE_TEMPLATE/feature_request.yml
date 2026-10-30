@@ -1,0 +1,31 @@
+name: Feature request
+description: Propose an EndoForge improvement.
+title: '[Feature]: '
+body:
+  - type: markdown
+    attributes:
+      value: 'Keep examples synthetic and omit private data. Follow [CONTRIBUTING.md](https://github.com/Akilleez-QA/endoforge/blob/main/CONTRIBUTING.md) before starting larger work.'
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem and use case
+      description: Describe the unmet need and what you already tried.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+      description: Describe inputs, outputs, affected tools, and compatibility considerations.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and tradeoffs
+      description: Explain other approaches you considered.
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification
+      description: How could an independent check demonstrate the improvement?
