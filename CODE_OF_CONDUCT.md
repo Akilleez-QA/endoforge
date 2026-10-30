@@ -6,4 +6,4 @@ In short: be respectful, assume good faith, and keep discussion focused on the w
 
 ## Reporting
 
-Report unacceptable behavior to the maintainers at the contact address to be listed here before public release. Reports are handled confidentially.
+Report unacceptable behavior to craig@nh3.biz. Reports are handled confidentially.
