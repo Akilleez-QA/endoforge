@@ -1,6 +1,6 @@
 # Contributing to EndoForge
 
-Thanks for your interest. The project is preparing for an open-source release, and the contribution process may change before then.
+Thanks for your interest. Contributions are welcome.
 
 ## How to contribute
 
@@ -16,4 +16,4 @@ Read [docs/CONVENTIONS.md](docs/CONVENTIONS.md) before editing documents. Claims
 
 ## Licensing of contributions
 
-The project license has not been chosen yet. Contribution terms will be published with it.
+EndoForge is licensed under GPL-3.0-only. By submitting a contribution, you agree that it is licensed under the same terms.
