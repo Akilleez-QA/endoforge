@@ -9,7 +9,11 @@ SCRATCH ?= /tmp/endoforge-mononoke-verify
 
 .PHONY: test check mononoke x1-test core-test
 
-test: check x1-test core-test ledger-test engine-test mononoke
+test: check x1-test core-test ledger-test engine-test invariant-test mononoke
+
+.PHONY: invariant-test
+invariant-test:
+	cd ../.. && $(PYTHON) -B -m unittest forge.endoforge.tools.invariants.test_refrigeration -v
 
 .PHONY: engine-test
 engine-test:
