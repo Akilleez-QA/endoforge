@@ -1,15 +1,21 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Endoforge Ledger v0 record",
+  "title": "Endoforge Ledger v0/v1 record",
   "type": "object",
   "required": ["version", "id", "kind", "data"],
   "additionalProperties": false,
   "properties": {
-    "version": {"type": "integer", "enum": [0]},
+    "version": {"type": "integer", "enum": [0, 1]},
     "id": {"$ref": "#/$defs/text"},
     "kind": {"enum": ["task", "admitted_input", "frozen_evaluator", "candidate", "receipt"]},
-    "data": {"type": "object"}
+    "data": {"type": "object"},
+    "provenance": {"$ref": "#/$defs/provenance"},
+    "license": {"$ref": "#/$defs/license"}
   },
+  "allOf": [{"oneOf": [
+    {"properties": {"version": {"enum": [0]}, "provenance": false, "license": false}},
+    {"properties": {"version": {"enum": [1]}}, "required": ["provenance", "license"]}
+  ]}],
   "oneOf": [
     {"properties": {"kind": {"enum": ["task"]}, "data": {"$ref": "#/$defs/task"}}},
     {"properties": {"kind": {"enum": ["admitted_input"]}, "data": {"$ref": "#/$defs/admitted_input"}}},
@@ -19,9 +25,42 @@
   ],
   "$defs": {
     "text": {"type": "string", "minLength": 1},
+    "nonblank": {"type": "string", "minLength": 1, "pattern": "\\S"},
+    "provenance": {
+      "type": "object", "additionalProperties": false,
+      "required": ["origin", "upstream_identity", "upstream_version", "input_scopes", "derived_from"],
+      "properties": {
+        "origin": {"enum": ["authored", "generated", "imported", "pre-built-wasm"]},
+        "upstream_identity": {"$ref": "#/$defs/nonblank"},
+        "upstream_version": {"$ref": "#/$defs/nonblank"},
+        "input_scopes": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/nonblank"}},
+        "derived_from": {"type": "array", "uniqueItems": true, "items": {"$ref": "#/$defs/text"}},
+        "model": {
+          "type": "object", "additionalProperties": false, "required": ["identity", "version"],
+          "properties": {"identity": {"$ref": "#/$defs/nonblank"}, "version": {"$ref": "#/$defs/nonblank"}}
+        }
+      },
+      "oneOf": [
+        {"properties": {"origin": {"enum": ["generated"]}}, "required": ["model"]},
+        {"properties": {"origin": {"enum": ["authored", "imported", "pre-built-wasm"]}}}
+      ]
+    },
+    "license": {
+      "type": "object", "additionalProperties": false, "required": ["expression", "evidence_sha256"],
+      "properties": {
+        "expression": {"$ref": "#/$defs/nonblank"},
+        "evidence_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$", "minLength": 64, "maxLength": 64}
+      }
+    },
     "task": {
       "type": "object", "additionalProperties": false, "required": ["intent", "acceptance"],
-      "properties": {"intent": {"$ref": "#/$defs/text"}, "acceptance": {"$ref": "#/$defs/text"}}
+      "properties": {
+        "intent": {"$ref": "#/$defs/text"}, "acceptance": {"$ref": "#/$defs/text"},
+        "precommit": {
+          "type": "object", "additionalProperties": false, "required": ["no_unknown_licenses"],
+          "properties": {"no_unknown_licenses": {"type": "boolean"}}
+        }
+      }
     },
     "admitted_input": {
       "type": "object", "additionalProperties": false, "required": ["task", "content", "origin"],
