@@ -1,0 +1,6 @@
+{
+ "id": "code",
+ "proxyCheckKinds": ["eval", "critic"],
+ "splitByTests": true,
+ "requireCheckKinds": [{ "kind": "tests", "inv": "I3", "why": "a code job needs a tests criterion (the suite that must pass before and after)" }]
+}

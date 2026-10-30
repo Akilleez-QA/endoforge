@@ -1,0 +1,45 @@
+{
+  "schema": "endoforge/atoms/1",
+  "need": {
+    "id": "example",
+    "text": "Write one completion marker."
+  },
+  "acceptance": [
+    {
+      "id": "A1",
+      "statement": "The marker is present.",
+      "check": {
+        "kind": "manual"
+      }
+    }
+  ],
+  "atoms": [
+    {
+      "id": "complete",
+      "kind": "compose",
+      "contract": "Write a completion marker.",
+      "inputs": [],
+      "outputs": [
+        {
+          "name": "marker",
+          "path": "marker.txt"
+        }
+      ],
+      "verify": {
+        "kind": "manual"
+      },
+      "size": {
+        "work": 1,
+        "interface": 1
+      },
+      "worker": {
+        "model": "script",
+        "command": [
+          "sh",
+          "-c",
+          "echo complete > /out/marker.txt"
+        ]
+      }
+    }
+  ]
+}

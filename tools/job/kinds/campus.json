@@ -1,0 +1,6 @@
+{
+ "id": "campus",
+ "proxyCheckKinds": ["eval", "critic", "site-rules"],
+ "requiresTruth": { "inv": "I4", "pattern": "survey|lidar|photo|drawing|measure", "why": "the truth package must include survey evidence (LiDAR, photos, drawings or measurements)" },
+ "requireCheckField": [{ "kind": "site-rules", "field": "baseline", "inv": "I3", "why": "a campus job needs a site-rules check with its ratchet baseline" }]
+}

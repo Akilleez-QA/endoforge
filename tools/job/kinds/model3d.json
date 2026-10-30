@@ -1,0 +1,6 @@
+{
+ "id": "model3d",
+ "proxyCheckKinds": ["eval", "critic", "likeness"],
+ "measureReferencesGoverning": { "aspects": ["model", "character", "look", "geometry"], "checkKind": "likeness", "inv": "I3", "why": "add a likeness check against it" },
+ "requireAnyCheckKind": [{ "kinds": ["likeness", "eval"], "inv": "I3", "why": "a 3D model needs a likeness or dimension check" }]
+}

@@ -1,0 +1,14 @@
+{
+  "tiers": {
+    "light":     { "model": "gpt-6.1-sol", "effort": "low" },
+    "standard":  { "model": "gpt-6.1-sol", "effort": "medium" },
+    "deep":      { "model": "gpt-6-astra", "effort": "high", "fallback": { "model": "gpt-6.1-sol", "effort": "high" } },
+    "throwaway": { "model": "gpt-6-luna", "effort": "low", "scratch": true }
+  },
+  "default": "standard",
+  "escalation": ["light", "standard", "deep"],
+  "kindTier": { "interface": "light", "glue": "light", "contract": "standard", "tests": "standard", "kernel": "standard", "compose": "deep", "review": "deep" },
+  "keywords": { "deep": ["architecture", "architect", "refactor", "cross-file", "debug", "root cause", "verify", "verification", "review", "audit"], "light": ["rename", "typo", "format", "boilerplate", "mechanical", "copy", "lint"] },
+  "deepIfFilesOver": 6,
+  "deepIfPromptCharsOver": 24000
+}

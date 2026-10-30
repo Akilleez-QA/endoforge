@@ -1,0 +1,364 @@
+{
+ "schema": "endoforge/atoms/1",
+ "need": {
+  "id": "synthetic-fanout",
+  "text": "Synthetic need: one seed, eight independent parts, one composition; exists only to measure the scheduler."
+ },
+ "acceptance": [
+  {
+   "id": "A1",
+   "statement": "the composition holds all eight parts (16 lines)",
+   "check": {
+    "kind": "command",
+    "run": "test \"$(wc -l < /in/compose/all.txt)\" -eq 16"
+   }
+  },
+  {
+   "id": "A2",
+   "statement": "every part carries the seed",
+   "check": {
+    "kind": "command",
+    "run": "test \"$(grep -c '^seed$' /in/compose/all.txt)\" -eq 8"
+   }
+  }
+ ],
+ "atoms": [
+  {
+   "id": "src",
+   "kind": "data",
+   "title": "src",
+   "contract": "Synthetic atom src: run its command and write its declared outputs; nothing else.",
+   "inputs": [
+    {
+     "from": "need"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "seed",
+     "path": "seed.txt"
+    }
+   ],
+   "verify": "declared outputs exist and are non-empty",
+   "worker": {
+    "model": "script",
+    "command": [
+     "sh",
+     "-c",
+     "sleep 1; echo seed > /out/seed.txt"
+    ]
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "w1",
+   "kind": "kernel",
+   "title": "w1",
+   "contract": "Synthetic atom w1: run its command and write its declared outputs; nothing else.",
+   "inputs": [
+    {
+     "from": "src",
+     "output": "seed"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "part",
+     "path": "part.txt"
+    }
+   ],
+   "verify": "declared outputs exist and are non-empty",
+   "worker": {
+    "model": "script",
+    "command": [
+     "sh",
+     "-c",
+     "sleep 1; cat /in/src/seed.txt > /out/part.txt; echo w1 >> /out/part.txt"
+    ]
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "w2",
+   "kind": "kernel",
+   "title": "w2",
+   "contract": "Synthetic atom w2: run its command and write its declared outputs; nothing else.",
+   "inputs": [
+    {
+     "from": "src",
+     "output": "seed"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "part",
+     "path": "part.txt"
+    }
+   ],
+   "verify": "declared outputs exist and are non-empty",
+   "worker": {
+    "model": "script",
+    "command": [
+     "sh",
+     "-c",
+     "sleep 1; cat /in/src/seed.txt > /out/part.txt; echo w2 >> /out/part.txt"
+    ]
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "w3",
+   "kind": "kernel",
+   "title": "w3",
+   "contract": "Synthetic atom w3: run its command and write its declared outputs; nothing else.",
+   "inputs": [
+    {
+     "from": "src",
+     "output": "seed"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "part",
+     "path": "part.txt"
+    }
+   ],
+   "verify": "declared outputs exist and are non-empty",
+   "worker": {
+    "model": "script",
+    "command": [
+     "sh",
+     "-c",
+     "sleep 1; cat /in/src/seed.txt > /out/part.txt; echo w3 >> /out/part.txt"
+    ]
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "w4",
+   "kind": "kernel",
+   "title": "w4",
+   "contract": "Synthetic atom w4: run its command and write its declared outputs; nothing else.",
+   "inputs": [
+    {
+     "from": "src",
+     "output": "seed"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "part",
+     "path": "part.txt"
+    }
+   ],
+   "verify": "declared outputs exist and are non-empty",
+   "worker": {
+    "model": "script",
+    "command": [
+     "sh",
+     "-c",
+     "sleep 1; cat /in/src/seed.txt > /out/part.txt; echo w4 >> /out/part.txt"
+    ]
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "w5",
+   "kind": "kernel",
+   "title": "w5",
+   "contract": "Synthetic atom w5: run its command and write its declared outputs; nothing else.",
+   "inputs": [
+    {
+     "from": "src",
+     "output": "seed"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "part",
+     "path": "part.txt"
+    }
+   ],
+   "verify": "declared outputs exist and are non-empty",
+   "worker": {
+    "model": "script",
+    "command": [
+     "sh",
+     "-c",
+     "sleep 1; cat /in/src/seed.txt > /out/part.txt; echo w5 >> /out/part.txt"
+    ]
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "w6",
+   "kind": "kernel",
+   "title": "w6",
+   "contract": "Synthetic atom w6: run its command and write its declared outputs; nothing else.",
+   "inputs": [
+    {
+     "from": "src",
+     "output": "seed"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "part",
+     "path": "part.txt"
+    }
+   ],
+   "verify": "declared outputs exist and are non-empty",
+   "worker": {
+    "model": "script",
+    "command": [
+     "sh",
+     "-c",
+     "sleep 1; cat /in/src/seed.txt > /out/part.txt; echo w6 >> /out/part.txt"
+    ]
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "w7",
+   "kind": "kernel",
+   "title": "w7",
+   "contract": "Synthetic atom w7: run its command and write its declared outputs; nothing else.",
+   "inputs": [
+    {
+     "from": "src",
+     "output": "seed"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "part",
+     "path": "part.txt"
+    }
+   ],
+   "verify": "declared outputs exist and are non-empty",
+   "worker": {
+    "model": "script",
+    "command": [
+     "sh",
+     "-c",
+     "sleep 1; cat /in/src/seed.txt > /out/part.txt; echo w7 >> /out/part.txt"
+    ]
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "w8",
+   "kind": "kernel",
+   "title": "w8",
+   "contract": "Synthetic atom w8: run its command and write its declared outputs; nothing else.",
+   "inputs": [
+    {
+     "from": "src",
+     "output": "seed"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "part",
+     "path": "part.txt"
+    }
+   ],
+   "verify": "declared outputs exist and are non-empty",
+   "worker": {
+    "model": "script",
+    "command": [
+     "sh",
+     "-c",
+     "sleep 1; cat /in/src/seed.txt > /out/part.txt; echo w8 >> /out/part.txt"
+    ]
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "compose",
+   "kind": "compose",
+   "title": "compose",
+   "contract": "Synthetic atom compose: run its command and write its declared outputs; nothing else.",
+   "inputs": [
+    {
+     "from": "w1",
+     "output": "part"
+    },
+    {
+     "from": "w2",
+     "output": "part"
+    },
+    {
+     "from": "w3",
+     "output": "part"
+    },
+    {
+     "from": "w4",
+     "output": "part"
+    },
+    {
+     "from": "w5",
+     "output": "part"
+    },
+    {
+     "from": "w6",
+     "output": "part"
+    },
+    {
+     "from": "w7",
+     "output": "part"
+    },
+    {
+     "from": "w8",
+     "output": "part"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "all",
+     "path": "all.txt"
+    }
+   ],
+   "verify": "declared outputs exist and are non-empty",
+   "worker": {
+    "model": "script",
+    "command": [
+     "sh",
+     "-c",
+     "sleep 1; cat /in/w1/part.txt /in/w2/part.txt /in/w3/part.txt /in/w4/part.txt /in/w5/part.txt /in/w6/part.txt /in/w7/part.txt /in/w8/part.txt > /out/all.txt"
+    ]
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  }
+ ]
+}

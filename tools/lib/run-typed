@@ -1,0 +1,13 @@
+#!/usr/bin/env node
+// run-typed [--max-wait SEC] [--base SEC] -- <command …>
+// Runs the command under the Endoforge error taxonomy (tools/lib/errors.mjs): exit 75 (busy) waits and retries with
+// backoff up to --max-wait (default 600 s), then exits 75; exit 78 stops at once and loudly; anything else passes
+// through. For shell runners such as an eval round: `run-typed -- python3 gpu-queue.py … -- node plate.mjs …`.
+import { runTyped, EXIT } from './errors.mjs';
+const a = process.argv.slice(2), at = a.indexOf('--');
+if (at < 0 || at === a.length - 1) { console.error('usage: run-typed [--max-wait SEC] [--base SEC] -- <command …>'); process.exit(EXIT.USAGE); }
+const opt = (k, d) => { const i = a.slice(0, at).indexOf(k); return i < 0 ? d : Number(a[i + 1]); };
+const r = runTyped(a.slice(at + 1), { maxWaitMs: opt('--max-wait', 600) * 1000, baseMs: opt('--base', 2) * 1000, stdio: 'inherit', log: (m) => console.error(`run-typed: ${m}`) });
+if (r.kind === 'stop') console.error(`run-typed: STOP: ${a[at + 1]} exited 78; not retrying`);
+if (r.kind === 'transient') console.error(`run-typed: still busy after ${Math.round(r.waitedMs / 1000)} s; giving up with 75`);
+process.exit(r.status ?? EXIT.FAIL);
