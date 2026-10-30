@@ -1,0 +1,9 @@
+{
+  "schema": "endoforge/hardware-record/1",
+  "required": {"schema":"str", "id":"str", "created_at":"str", "commit":"str", "status":"str", "limits":"list", "identity":"dict", "controls":"dict", "receipts":"dict"},
+  "statuses": ["qualified", "qualified-with-limits", "failed"],
+  "identity": {"hostname":"str", "cpu_model":"str", "logical_cpus":"int", "physical_cores":"int", "ram_bytes":"int", "disks":"list", "os":"str", "kernel":"str", "firmware":"dict", "drivers":"dict", "toolchain":"dict", "boot_id":"str"},
+  "controls": ["affinity", "cgroup_controllers", "memory.max", "pids.max", "network_denial", "io.stat", "quiet_gate", "noise_baseline"],
+  "receipt_files": ["precommit.json", "before.json", "after.json", "controls.json"],
+  "reopen_on": ["kernel", "firmware", "drivers", "toolchain", "boot_id"]
+}
