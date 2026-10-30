@@ -13,7 +13,7 @@ test: check x1-test core-test ledger-test mononoke
 
 .PHONY: ledger-test
 ledger-test:
-	$(PYTHON) -B -m unittest tools.ledger.test_ledger tools.ledger.test_provenance -v
+	$(PYTHON) -B -m unittest tools.ledger.test_ledger tools.ledger.test_frozen tools.ledger.test_provenance -v
 
 check:
 	$(PYTHON) -I tools/check-docs.py
