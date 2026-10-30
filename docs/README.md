@@ -7,6 +7,11 @@ Write your own inputs in this directory. Use synthetic identifiers and local pat
 - [Requirements](requirements/requirements.md)
 - [Architecture](architecture/architecture.md)
 
+## Verification and configuration
+
+- [Verification matrix](verification/verification-matrix.md)
+- [Configuration management](configuration/configuration-management.md)
+
 ## Input example
 
 - [Independent check input](example.json)
