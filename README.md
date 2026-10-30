@@ -31,10 +31,10 @@ make test-optimized
 
 The lifecycle model is in `core/`; generic execution, ledger, evaluation, and scheduling utilities are in `tools/`. The example directories explain how to supply your own inputs. Generated evidence belongs outside the source tree. Public agent clients are optional; tests use synthetic inputs and stubs.
 
-## License
-
-This project is available under the GNU General Public License v3.0 only (GPL-3.0-only). If you want to use it to create a product or service under different terms, commercial licenses are available from Refrigeration.AI. Contact craig@nh3.biz. See [LICENSE](LICENSE).
-
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), and [SECURITY.md](SECURITY.md).
+
+## License
+
+This project is available under the GNU General Public License v3.0 only (GPL-3.0-only). If you want to use it to create a product or service under different terms, commercial licenses are available from Refrigeration.AI. Contact craig@nh3.biz.
