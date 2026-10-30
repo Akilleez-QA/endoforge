@@ -2,15 +2,18 @@ from contextlib import closing
 import hashlib
 import json
 from pathlib import Path
+import re
 import sqlite3
 
 
 SCHEMA = json.loads(Path(__file__).with_name("record.schema.json").read_text())
-TYPES = {"object": dict, "array": list, "string": str, "integer": int}
+TYPES = {"object": dict, "array": list, "string": str, "integer": int, "boolean": bool}
 REFERENCES = {"task", "admitted_input", "candidate", "frozen_evaluator"}
 
 
 def conforms(value, schema):
+    if isinstance(schema, bool):
+        return schema
     if "$ref" in schema:
         return conforms(value, SCHEMA["$defs"][schema["$ref"].split("/")[-1]])
     if "type" in schema and type(value) is not TYPES[schema["type"]]:
@@ -18,6 +21,12 @@ def conforms(value, schema):
     if "enum" in schema and value not in schema["enum"]:
         return False
     if "minLength" in schema and len(value) < schema["minLength"]:
+        return False
+    if "maxLength" in schema and len(value) > schema["maxLength"]:
+        return False
+    if "pattern" in schema and re.search(schema["pattern"], value) is None:
+        return False
+    if schema.get("uniqueItems") and len({encode(v) for v in value}) != len(value):
         return False
     if isinstance(value, dict):
         properties = schema.get("properties", {})
@@ -29,7 +38,8 @@ def conforms(value, schema):
             return False
     if "items" in schema and any(not conforms(v, schema["items"]) for v in value):
         return False
-    return "oneOf" not in schema or sum(conforms(value, s) for s in schema["oneOf"]) == 1
+    return (all(conforms(value, s) for s in schema.get("allOf", []))
+            and ("oneOf" not in schema or sum(conforms(value, s) for s in schema["oneOf"]) == 1))
 
 
 def encode(record):
@@ -40,9 +50,15 @@ def event_hash(seq, previous, body):
     return hashlib.sha256(f"{seq}:{previous}:{body}".encode("ascii")).hexdigest()
 
 
+def source_ids(record):
+    return {record["data"][field] for field in REFERENCES & record["data"].keys()} | set(
+        record.get("provenance", {}).get("derived_from", [])
+    )
+
+
 def validate(record, prior):
     if not conforms(record, SCHEMA):
-        raise ValueError("record does not conform to Ledger v0 schema")
+        raise ValueError("record does not conform to Ledger v0/v1 schema")
     if record["id"] in prior:
         raise ValueError("record identity already exists; rewrites are forbidden")
     data = record["data"]
@@ -52,6 +68,24 @@ def validate(record, prior):
             raise ValueError(f"{field} must reference an already durable {field} record")
         if field != "task" and target["data"]["task"] != data["task"]:
             raise ValueError(f"{field} belongs to a different task")
+    task_id = record["id"] if record["kind"] == "task" else data["task"]
+    task = record if record["kind"] == "task" else prior[task_id]
+    provenance = record.get("provenance", {})
+    for identity in source_ids(record):
+        source = prior.get(identity)
+        if source is None:
+            raise ValueError("lineage must reference an already durable record")
+        source_task = source["id"] if source["kind"] == "task" else source["data"]["task"]
+        if source_task != task_id:
+            raise ValueError("lineage belongs to a different task")
+        if record["version"] < source["version"]:
+            raise ValueError("lineage schema version cannot be downgraded")
+        if set(source.get("provenance", {}).get("input_scopes", [])) - set(provenance.get("input_scopes", [])):
+            raise ValueError("lineage input scopes cannot be removed")
+    if (task["data"].get("precommit", {}).get("no_unknown_licenses", False)
+            and (not provenance or (provenance["origin"] in ("imported", "pre-built-wasm")
+                 and record["license"]["expression"].strip().lower() == "unknown"))):
+        raise ValueError("precommit forbids unknown licenses")
     if record["kind"] == "receipt":
         candidate = prior[data["candidate"]]["data"]
         evaluator = prior[data["frozen_evaluator"]]["data"]
@@ -108,6 +142,25 @@ class Ledger:
     def records(self):
         with closing(self._connect()) as db:
             return list(self._read(db)[0].values())
+
+    def lineage(self, identity):
+        with closing(self._connect()) as db:
+            prior, _ = self._read(db)
+        if identity not in prior:
+            raise KeyError(identity)
+        pending, seen = [identity], set()
+        while pending:
+            current = pending.pop()
+            if current not in seen:
+                seen.add(current)
+                pending.extend(source_ids(prior[current]))
+        return [row if row["version"] == 1 else row | {"provenance_status": "provenance-unknown"}
+                for key, row in prior.items() if key in seen]
+
+    def admit(self, record):
+        if record.get("version") != 1:
+            raise ValueError("current admissions require schema version 1")
+        return self.append(record)
 
     def append(self, record):
         body = encode(record)
