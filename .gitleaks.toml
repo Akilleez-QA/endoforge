@@ -9,5 +9,4 @@ paths = ['''tools/throttle/test/test_workers\.py''']
 
 [[allowlists]]
 description = "Short message ids, run tokens and key digests in recorded receipts"
-targetRules = ["generic-api-key"]
 paths = ['''^experiments/.*/receipt/''', '''^campaigns/''', '''^tools/atomizer/ledger/''', '''^experiments/P-12-lifecycle/''']
