@@ -76,6 +76,10 @@ Editions 2 and 3 and the white paper were written outside this repository. The E
 
 GNU General Public License v3.0 only (SPDX: `GPL-3.0-only`). See [LICENSE](LICENSE).
 
+## Commercial licensing
+
+This project is available under the GNU General Public License v3.0 only (GPL-3.0-only). If you want to use it in a product or service under different terms, commercial licenses are available from Refrigeration.AI. Contact craig@nh3.biz.
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) and [SECURITY.md](SECURITY.md).
