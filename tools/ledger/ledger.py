@@ -46,6 +46,9 @@ def validate(record, prior):
     if record["id"] in prior:
         raise ValueError("record identity already exists; rewrites are forbidden")
     data = record["data"]
+    if record["kind"] == "frozen_evaluator":
+        from .frozen import validate_frozen
+        validate_frozen(record, prior)
     for field in REFERENCES & data.keys():
         target = prior.get(data[field])
         if target is None or target["kind"] != field:
@@ -61,6 +64,8 @@ def validate(record, prior):
             raise ValueError("precommit must identify the candidate")
         if data["precommit"]["oracle"] != data["frozen_evaluator"]:
             raise ValueError("precommit must identify the frozen evaluator")
+        if "freeze" in evaluator and data["precommit"]["oracle_version"] != evaluator["freeze"]["digest"]:
+            raise ValueError("precommit must identify the frozen evaluator digest")
         if data["outcome_state"] != "unobserved" and not data["observations"]:
             raise ValueError("an outcome requires observations")
 

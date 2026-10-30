@@ -31,7 +31,30 @@
       "type": "object", "additionalProperties": false, "required": ["task", "admitted_input", "content", "confirmed_by"],
       "properties": {
         "task": {"$ref": "#/$defs/text"}, "admitted_input": {"$ref": "#/$defs/text"},
-        "content": {"$ref": "#/$defs/text"}, "confirmed_by": {"$ref": "#/$defs/text"}
+        "content": {"$ref": "#/$defs/text"}, "confirmed_by": {"$ref": "#/$defs/text"},
+        "freeze": {"$ref": "#/$defs/freeze"}, "revision": {"$ref": "#/$defs/revision"}
+      }
+    },
+    "freeze": {
+      "type": "object", "additionalProperties": false,
+      "required": ["digest", "qualification", "synthesis_context"],
+      "properties": {
+        "digest": {"$ref": "#/$defs/text"}, "qualification": {"$ref": "#/$defs/text"},
+        "synthesis_context": {
+          "type": "object", "additionalProperties": false, "required": ["id", "candidate_blind", "inputs"],
+          "properties": {
+            "id": {"$ref": "#/$defs/text"}, "candidate_blind": {"enum": ["confirmed"]},
+            "inputs": {"type": "array", "items": {"$ref": "#/$defs/text"}}
+          }
+        }
+      }
+    },
+    "revision": {
+      "type": "object", "additionalProperties": false, "required": ["of", "reason", "evidence"],
+      "properties": {
+        "of": {"$ref": "#/$defs/text"},
+        "reason": {"enum": ["specification_correction", "independent_qualification"]},
+        "evidence": {"$ref": "#/$defs/text"}
       }
     },
     "candidate": {
