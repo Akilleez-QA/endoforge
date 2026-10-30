@@ -1,15 +1,10 @@
 # Verification matrix
 
-Requirement definitions are in commit `04df9779515d850d619a1ac58c32b76f62bd9162`
-on `fem/20261030-ef-5-requirements-design`. This independent branch does not
-contain that document. Read it with:
-
-```sh
-git show 04df9779515d850d619a1ac58c32b76f62bd9162:docs/requirements/requirements.md
-```
+Requirement definitions are in
+[docs/requirements/requirements.md](../requirements/requirements.md).
 
 The implementation baseline below is `3083a5a5c277d6caec99eba698f6040698751400`.
-The requirements branch changes documentation only. Results were observed locally
+Results were observed locally
 on 2026-10-30; they are not hosted CI status or live-provider qualification.
 T means test; I means inspection.
 
