@@ -30,7 +30,7 @@ mononoke:
 	bash docs/studies/mononoke/fetch-sources.sh $(SCRATCH)
 
 x1-test:
-	node --test campaigns/x1-spec-study/test/
+	node --test campaigns/x1-spec-study/test/*.test.mjs
 
 core-test:
 	cd ../.. && $(PYTHON) -B -m unittest tests.test_endoforge_lifecycle
