@@ -29,3 +29,5 @@ jobs:
         run: make engine-test
       - name: Atomizer tests
         run: make atomizer-test
+      - name: Hill-climb tests
+        run: node --test tools/hillclimb/test/
