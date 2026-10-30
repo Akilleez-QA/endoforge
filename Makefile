@@ -9,7 +9,11 @@ SCRATCH ?= /tmp/endoforge-mononoke-verify
 
 .PHONY: test check mononoke x1-test core-test
 
-test: check x1-test core-test ledger-test mononoke
+test: check x1-test core-test ledger-test engine-test mononoke
+
+.PHONY: engine-test
+engine-test:
+	node --test tools/engine/*.test.mjs
 
 .PHONY: ledger-test
 ledger-test:
