@@ -1,4 +1,42 @@
-# Endoforge
+# EndoForge
+
+EndoForge treats software creation as a runtime operation. A running system takes cheap model proposals and turns them into trusted, reusable capabilities, under rules that let the result be trusted without trusting whatever wrote it.
+
+The design is set out in [Edition 3](sources/pdf/Endoforge-Edition-3.pdf). In short:
+
+- **Proposals are cheap; trust is earned.** Models propose code. Independent checks, frozen evaluations and bounded verification decide whether it is accepted.
+- **Work runs in isolates.** Checks run inside warm WebAssembly isolates instead of cold processes, so each check is fast and contained.
+- **Passed capabilities are reused.** Once a capability passes, it becomes a function call instead of repeated work.
+- **Everything leaves a receipt.** Every run records what happened, what failed and what was learned.
+
+## Status
+
+Preproduction research code. Not ready for production use. See the repository guide below for current status.
+
+## Getting started
+
+Requirements: Python 3.11+ and Node.js 20+.
+
+```
+make check
+make x1-test
+make ledger-test
+make engine-test
+make atomizer-test
+```
+
+## License
+
+Not yet chosen. See [LICENSE](LICENSE).
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) and [SECURITY.md](SECURITY.md).
+
+---
+
+## Repository guide
+
 
 Software creation as a runtime operation: a running system that turns cheap model proposals into trusted, reusable capabilities, under rules that let the result be trusted without trusting the thing that wrote it.
 
