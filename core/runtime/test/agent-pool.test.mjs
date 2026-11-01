@@ -1,5 +1,3 @@
-// Local codex-pool launcher: PATH default for CODEX_POOL_BIN and stdin pass-through. A stub `codex` and synthetic
-// accounts only; no model, no credential contents, no real ~/.codex.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -12,8 +10,6 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'codex-pool-test-'));
 let failures = 0;
 const test = (name, fn) => { try { fn(); console.log(`PASS ${name}`); } catch (e) { failures++; console.log(`FAIL ${name}: ${e.message}`); } };
 
-// A stub codex that reports where it ran from, its account, its args and its stdin; RATE_LIMITED in an account makes
-// it fail like a rate-limited codex after reading stdin.
 function stub(dir, tag) {
   fs.mkdirSync(dir, { recursive: true });
   const p = path.join(dir, 'codex');
@@ -42,7 +38,6 @@ const run = (env, args, opts = {}) => spawnSync(process.execPath, [pool, ...args
 
 try {
   test('the codex child runs under the worker registry once; an old registry cannot make the pool recurse', () => {
-    // registry that did not spawned 465 nested pools. This stand-in never marks anything, like that old registry.
     const { root, env } = setup('registry');
     const bin = stub(path.join(root, 'bin'), 'reg');
     const fake = path.join(root, 'fake-workers');
@@ -93,7 +88,6 @@ try {
     assert.equal(r.stdout, 'bin=stub home=acct-a args=exec - -i a.png -i b.png stdin=fix beat b3\n');
   });
   test('a multi-day usage cap cools every account until its reset and is not re-probed', () => {
-    // for five days. The cap now holds each account until the time it names, and the pool exits 75 at once.
     const { root, env } = setup('capped');
     env.CODEX_POOL_BIN = stub(path.join(root, 'bin'), 'stub');
     const reset = new Date(Date.now() + 3 * 86400e3); reset.setSeconds(0, 0);
@@ -108,7 +102,7 @@ try {
       assert.equal(Number(fs.readFileSync(path.join(root, 'state', 'cooldown', name), 'utf8')), reset.getTime());
       assert.equal(fs.readFileSync(path.join(root, a, 'calls'), 'utf8'), 'run\n');
     }
-    r = run(env, ['exec', 'again'], { input: '' });       // a second launch is refused without touching codex
+    r = run(env, ['exec', 'again'], { input: '' });
     assert.equal(r.status, 75, r.stderr);
     assert.equal(fs.readFileSync(path.join(root, 'acct-a', 'calls'), 'utf8'), 'run\n');
   });

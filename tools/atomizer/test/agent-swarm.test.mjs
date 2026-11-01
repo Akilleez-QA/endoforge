@@ -7,9 +7,8 @@ import { workerCommand } from '../lib/workers.mjs';
 import { loadRouting, resolve } from '../lib/routing.mjs';
 import { validate } from '../lib/validate.mjs';
 const here = path.dirname(fileURLToPath(import.meta.url)), repo = path.resolve(here, '../../..');
-const pool = process.env.ENDOFORGE_CODEX_POOL || fileURLToPath(new URL('../../runtime/agent-pool.mjs', import.meta.url));
+const pool = process.env.ENDOFORGE_CODEX_POOL || fileURLToPath(new URL('../../../core/runtime/agent-pool.mjs', import.meta.url));
 if (!fs.existsSync(pool)) { console.log(`SKIP codex swarm: pool absent (${pool}); set ENDOFORGE_CODEX_POOL`); process.exit(0); }
-// Outside /tmp because the isolate overlays /tmp after mounting toolchains.
 const tmp = fs.mkdtempSync(path.join(here, 'swarm-'));
 const policy = JSON.parse(fs.readFileSync(path.join(here, '../policy.json'), 'utf8'));
 let failures = 0;
@@ -35,7 +34,6 @@ sleep 0.2
 printf '\x60\x60\x60text\\nmodel=%s effort=%s home=%s\\n\x60\x60\x60\\n' "$model" "$effort" "\${CODEX_HOME##*/}" > "$out"
 `, { mode: 0o755 });
   const atoms = kinds.map((kind, i) => ({ id: `a${i}`, kind, contract: 'Return the requested model evidence.', inputs: [], outputs: [{ name: 'result', path: 'result.txt' }], verify: { kind: 'manual' }, size: { work: 1, interface: 1 }, worker: { model: 'sonnet', tools: [], prompt: 'Return the result.' } }));
-  // A script join keeps each model atom tiny while satisfying the compose contract.
   atoms.push({ id: 'join', kind: 'compose', contract: 'Join the completed model evidence.', inputs: atoms.map((a) => ({ from: a.id })), outputs: [{ name: 'done', path: 'done.txt' }], verify: { kind: 'manual' }, size: { work: 1, interface: 1 }, worker: { model: 'script', command: ['sh', '-c', 'echo done > /out/done.txt'] } });
   const doc = { schema: 'endoforge/atoms/1', need: { id: name, text: 'Return model evidence.' }, acceptance: [{ id: 'A1', statement: 'Outputs exist.', check: { kind: 'manual' } }], atoms };
   assert.deepEqual(validate(doc, policy).errors, []);

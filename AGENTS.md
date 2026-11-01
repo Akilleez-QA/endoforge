@@ -10,10 +10,11 @@ Follow [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) and
 ## Repository boundaries
 
 - `core/` contains the Python lifecycle model, evidence ledger, and engine evaluator
-  and gates. It models proposals and decisions, stores linked evidence, and
-  evaluates candidates through caller-supplied host callbacks; it does not launch
-  agents or grant authority.
-- `tools/` contains execution, quality support, and scheduling utilities,
+  and gates, plus local agent execution pools in `core/runtime/`. It models
+  proposals and decisions, stores linked evidence, evaluates candidates through
+  caller-supplied host callbacks, and launches configured agent clients. Lifecycle
+  transitions validate references without granting authority.
+- `tools/` contains workflow orchestration, quality support, and scheduling utilities,
   including Python and JavaScript modules.
 - `tests/` exercises lifecycle behavior and the core boundary.
 - `campaigns/`, `experiments/`, and `docs/` provide guidance for supplying inputs.

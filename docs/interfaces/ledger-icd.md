@@ -4,8 +4,8 @@
 
 The engine core owns [the ledger package](../../core/ledger/__init__.py),
 [record schema](../../core/ledger/record.schema.json), and
-[frozen evaluator support](../../core/ledger/frozen.py). Execution callers remain
-under `tools/`. The move from `tools.ledger` to `core.ledger` changes module paths;
+[frozen evaluator support](../../core/ledger/frozen.py). Workflow callers remain
+under `tools/`; local execution pools are owned by `core/runtime/`. The move from `tools.ledger` to `core.ledger` changes module paths;
 it preserves behavior and does not migrate stored data.
 
 ## Python and command interfaces
@@ -34,7 +34,22 @@ JavaScript modules explicitly. `core` lifecycle exports remain unchanged.
 
 The Python module replaces `tools.engine.frozen`. JSON shapes, frozen identities,
 gate order, callback contracts, Pareto selection, and failure behavior are unchanged.
-No agent launcher or authority grant is added by this relocation.
+The engine relocation preserves its callback contracts and grants no authority.
+
+## Runtime interfaces
+
+Runtime callers now resolve `core/runtime/` instead of `tools/runtime/`.
+The move preserves arguments, environment variables, stdin forwarding, output,
+exit statuses, account slot handling, cooldowns, and failover behavior.
+
+| Interface | Contract |
+|---|---|
+| `core/runtime/agent-pool.mjs` | CLI for local client execution and pool status; selects `CODEX_POOL_BIN` or a client on PATH, with existing account, guard, state, and optional worker-registry configuration |
+| `core/runtime/stub-pool.mjs` | Replays `ENDOFORGE_STUB_REPLAY` outputs into the isolate output bind and launches `CODEX_POOL_BIN` using `ENDOFORGE_ISOLATE_SPEC` |
+
+Atomizer and hillclimb resolve the relocated launcher relative to their modules;
+explicit pool overrides retain precedence. `make runtime-test` invokes the relocated
+synthetic pool tests. Importing the Python `core` package does not launch a pool.
 
 ## Persistent data compatibility
 

@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-// Run an atoms.json DAG: every atom in its own isolate with only its declared inputs mounted; ready-queue scheduling with a concurrency limit.
-// usage: node schedule.mjs run <atoms.json> --run-dir <dir> [--concurrency 8] [--retries 1] [--timeout-ms 900000] [--policy tools/atomizer/policy.json] [--force]
 import fs from 'node:fs';
 import { openTrace, nowEpoch } from '../lib/trace.mjs';
 import { createHash } from 'node:crypto';
@@ -97,7 +95,7 @@ async function runAtom(atom) {
     const workerStart = nowEpoch(), workerBackend = isCodex ? 'codex' : atom.worker.model === 'script' ? 'script' : 'claude';
     let w, r, launchWallMs = 0;
     for (;;) {
-      const bin = process.env.ENDOFORGE_CODEX_POOL || fileURLToPath(new URL('../../runtime/agent-pool.mjs', import.meta.url));
+      const bin = process.env.ENDOFORGE_CODEX_POOL || fileURLToPath(new URL('../../../core/runtime/agent-pool.mjs', import.meta.url));
       if (isCodex) Object.assign(meta, { tier: sel.tier, tierReason: sel.reason, codexModel: sel.model, effort: sel.effort });
       if (isCodex && !fs.existsSync(bin)) {
         meta.reason = `codex-pool not found: ${bin}; set ENDOFORGE_CODEX_POOL`;
@@ -106,7 +104,7 @@ async function runAtom(atom) {
       w = workerCommand(doc, atom, staged, policy, REPO, sel);
       r = await runIsolated({ homeTemplate, mounts: [{ host: inDir, guest: '/in', mode: 'ro' }, { host: outDir, guest: '/out', mode: 'rw' }, { host: workDir, guest: '/work', mode: 'rw' }, ...atomBinds(atom, policy).mounts], toolchain: w.toolchain, cmd: w.cmd, stdin: w.stdin, cwd: '/work', timeoutMs: atomTimeoutMs(atom, policy, TIMEOUT),
         ...(isCodex ? { pool: { bin, env: { CODEX_POOL_TIER: sel.tier, ...(sel.tier === 'throwaway' ? { CODEX_POOL_THROWAWAY: '1' } : {}) } } } : {}) });
-      if (r.claudeAccount) meta.account = r.claudeAccount;  // which pool login served this attempt (name only)
+      if (r.claudeAccount) meta.account = r.claudeAccount;
       T.span('isolate.home', r.spawnEpoch - r.homeMs, r.spawnEpoch, { atom: atom.id, attempt });
       if (isCodex) {
         T.span('pool.acquire', r.spawnEpoch, r.tries[0]?.start ?? r.endEpoch, { atom: atom.id, attempt });
@@ -171,7 +169,7 @@ async function runAtom(atom) {
 }
 const t0 = Date.now();
 const running = new Map();
-let throttled = 0;                                   // headroom holds, for the receipt's lessons
+let throttled = 0;
 const ready = () => doc.atoms.filter((a) => state.get(a.id) === 'pending' && deps(a).every((d) => state.get(d) === 'done'));
 const blockDescendants = (id) => { for (const a of doc.atoms) if (state.get(a.id) === 'pending' && deps(a).includes(id)) { state.set(a.id, 'blocked'); emit('atom.blocked', { runId: RUN_ID, poolId: POOL_ID, need: doc.need.id, atom: a.id, by: id }); blockDescendants(a.id); } };
 const sample = () => T.mark('sched.sample', { running: running.size, ready: ready().length, done: [...state.values()].filter((s) => s === 'done').length });
@@ -187,7 +185,7 @@ try {
     }
     if (!running.size) break;
     const next = await Promise.race([...running.values(), ...(held ? [new Promise((r) => setTimeout(r, 15_000, null))] : [])]);
-    if (!next) continue;                               // recheck headroom
+    if (!next) continue;
     const { id, rec } = next;
     running.delete(id);
     state.set(id, rec.ok ? 'done' : 'failed');

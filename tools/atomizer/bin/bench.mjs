@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-// Repeated real or credential-free replay runs, with process-side and trace-side timing.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -37,7 +36,7 @@ const config = { atoms, n, concurrency: concurrency ?? null, mode, stubLatency, 
 for (let i = 1; i <= n; i++) {
   const dir = path.join(root, `rep-${i}`); fs.mkdirSync(dir);
   const repEnv = { ...env, ...(A['trace-ab'] ? { ENDOFORGE_TRACE: i % 2 ? '1' : '0' } : {}) };
-  const r = { dir, trace: repEnv.ENDOFORGE_TRACE !== '0', load: os.loadavg(), poolStatus: A.stub ? null : command(env.ENDOFORGE_CODEX_POOL || fileURLToPath(new URL('../../runtime/agent-pool.mjs', import.meta.url)), ['status']).stdout ?? null };
+  const r = { dir, trace: repEnv.ENDOFORGE_TRACE !== '0', load: os.loadavg(), poolStatus: A.stub ? null : command(env.ENDOFORGE_CODEX_POOL || fileURLToPath(new URL('../../../core/runtime/agent-pool.mjs', import.meta.url)), ['status']).stdout ?? null };
   const launch = (name, args) => {
     const fd = fs.openSync(path.join(dir, `${name}.log`), 'a'), t = nowEpoch();
     try { const child = spawnSync(process.execPath, [path.join(HERE, `${name}.mjs`), ...args], { cwd: REPO, env: repEnv, stdio: ['ignore', fd, fd] }); return { wallMs: nowEpoch() - t, exit: child.status, signal: child.signal, error: child.error?.message ?? null }; } finally { fs.closeSync(fd); }

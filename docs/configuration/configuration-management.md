@@ -69,6 +69,15 @@ request and response formats, and test expectations. The Git commit containing
 this section identifies the relocation baseline; local verification is recorded
 in the verification matrix.
 
+## Runtime relocation
+
+Local agent and stub pools, their README, and synthetic tests are controlled under
+`core/runtime/`. `sources/SHA256SUMS` records their digests; `make runtime-test`
+uses the relocated test path. Workflow callers resolve the new location while
+retaining explicit overrides. CLI, environment, pool state, and replay formats
+are unchanged. The Git commit containing this section identifies the relocation
+baseline; the verification matrix records local checks.
+
 ## Interface baseline
 
 No Cstack adapter or pinned cross-repository protocol is implemented in this
