@@ -18,8 +18,23 @@ it preserves behavior and does not migrate stored data.
 | `import core` | Preserve lifecycle exports without opening a ledger or loading execution integrations |
 
 `core.ledger` is a package marker; callers import the concrete modules explicitly.
-The [engine adapter](../../tools/engine/frozen.py) consumes these modules without
+The [engine adapter](../../core/engine/frozen.py) consumes these modules without
 changing its JSON request or response contract.
+
+## Engine interfaces
+
+The evaluator and gates now live under `core/engine/`; callers import the concrete
+JavaScript modules explicitly. `core` lifecycle exports remain unchanged.
+
+| Interface | Contract |
+|---|---|
+| `core/engine/evaluator.mjs` | Exports `requireFrozen`, `evaluateCandidates`, and `paretoFrontier`; host callbacks supply candidate operations and measurements |
+| `core/engine/gates.mjs` | Exports `GATE_ORDER`, individual gates, and `runUniversalGates`; preserves ordered first-failure results |
+| `python3 -B -m core.engine.frozen` | Reads a JSON request on stdin with `ledger`, `identity`, and `root`; emits `identity`, `digest`, and `bundle` on stdout |
+
+The Python module replaces `tools.engine.frozen`. JSON shapes, frozen identities,
+gate order, callback contracts, Pareto selection, and failure behavior are unchanged.
+No agent launcher or authority grant is added by this relocation.
 
 ## Persistent data compatibility
 

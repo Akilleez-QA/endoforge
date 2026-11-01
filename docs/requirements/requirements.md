@@ -3,6 +3,9 @@
 These requirements describe implemented behavior, not authority to execute work.
 Verification methods: T = test; I = inspection. Commands run from the repository root.
 The selected tests cover these behaviors; they do not qualify live model services.
+The core includes the evaluator and gates in `core/engine/`; host callbacks supply
+execution. The Python import boundary permits the engine adapter to use the core
+ledger, `pathlib`, and `sys` without loading it through `import core`.
 
 | ID | Requirement | Rationale | Verification |
 |---|---|---|---|

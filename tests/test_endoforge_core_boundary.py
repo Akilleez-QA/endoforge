@@ -38,6 +38,8 @@ class EndoforgeCoreBoundaryTests(unittest.TestCase):
                 allowed |= LEDGER_STDLIB
                 if path.name.startswith("test_"):
                     allowed |= LEDGER_TEST_ONLY
+            if path == CORE / "engine" / "frozen.py":
+                allowed |= {"core", "pathlib", "sys"}
             found, escapes = imports(path)
             with self.subTest(path=str(path.relative_to(ROOT))):
                 self.assertEqual(found - allowed, set())

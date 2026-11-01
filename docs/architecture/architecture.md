@@ -2,8 +2,8 @@
 
 ## Context
 
-EndoForge groups the Python lifecycle model and evidence ledger in the engine core,
-separate from execution utilities.
+EndoForge groups the Python lifecycle model, evidence ledger, and evaluator and
+gates in the engine core, separate from agent execution utilities.
 The [core](../../core/lifecycle.py) represents proposals and decision references;
 it does not issue external decisions, run agents, or activate artifacts in a host.
 See the [requirements](../requirements/requirements.md) for the tested boundaries.
@@ -16,7 +16,9 @@ See the [requirements](../requirements/requirements.md) for the tested boundarie
 | `core/__init__.py` | Public lifecycle exports without concrete integrations | [Boundary tests](../../tests/test_endoforge_core_boundary.py) |
 | `core/ledger/ledger.py` | Schema validation, durable references, SQLite records, and hash chaining | [Ledger tests](../../core/ledger/test_ledger.py) |
 | `core/ledger/frozen.py` | Freeze evaluator content and reject changed components | [Frozen evaluator tests](../../core/ledger/test_frozen.py) |
-| `tools/engine/evaluator.mjs` | Coordinate candidate evaluation with frozen checks and host callbacks | [Evaluator tests](../../tools/engine/evaluator.test.mjs) |
+| `core/engine/evaluator.mjs` | Coordinate candidate evaluation with frozen checks and host callbacks | [Evaluator tests](../../core/engine/evaluator.test.mjs) |
+| `core/engine/gates.mjs` | Apply schema, interface, bounds, determinism, and forbidden-effects gates in order | [Gate tests](../../core/engine/gates.test.mjs) |
+| `core/engine/frozen.py` | Verify frozen evaluator references through the core ledger | [Evaluator tests](../../core/engine/evaluator.test.mjs) |
 | `tools/runtime/` | Execution pool utilities separate from lifecycle state | [Runtime guidance](../../tools/runtime/README.md) |
 
 The [ledger ICD](../interfaces/ledger-icd.md) defines Python, CLI, and storage
@@ -44,6 +46,9 @@ records preserve evidence for callers to inspect; generation alone cannot author
 
 The core's standard library boundary, including scoped ledger and test allowlists,
 is enforced by import inspection and a fresh Python process in the boundary tests.
+The engine Python adapter alone may import `core`, `pathlib`, and `sys` in addition
+to the lifecycle allowlist. The JavaScript gates retain their explicit dependency
+on `tools/factory_quality/index.mjs`; host operations remain caller callbacks.
 Proposal digest binding and history replay reject stale decisions and hand-set states. Evaluator freezing prevents edited
 checks from being accepted as the original evaluation basis.
 

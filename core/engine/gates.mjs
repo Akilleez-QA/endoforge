@@ -1,4 +1,4 @@
-import { canonical, validateContract, validateSignature } from '../factory_quality/index.mjs';
+import { canonical, validateContract, validateSignature } from '../../tools/factory_quality/index.mjs';
 
 export const GATE_ORDER = Object.freeze(['schema', 'interface', 'bounds', 'determinism', 'forbidden_effects']);
 const ensure = (condition, reason) => { if (!condition) throw new Error(reason); };

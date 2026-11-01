@@ -58,6 +58,17 @@ SQLite layout, validation, and hash encoding remain unchanged. `make ledger-test
 runs the relocated tests; `make test` and `make test-optimized` also check engine
 callers and the scoped core import boundary.
 
+## Engine relocation
+
+Evaluator, gates, frozen-reference adapter, and their tests are controlled under
+`core/engine/`. Their digests are listed in `sources/SHA256SUMS`; `make engine-test`
+runs the relocated JavaScript tests. Python adapter invocation uses
+`core.engine.frozen`; JavaScript gates still import the shared quality helpers
+from `tools/factory_quality/index.mjs`. The move preserves evaluator policy,
+request and response formats, and test expectations. The Git commit containing
+this section identifies the relocation baseline; local verification is recorded
+in the verification matrix.
+
 ## Interface baseline
 
 No Cstack adapter or pinned cross-repository protocol is implemented in this
