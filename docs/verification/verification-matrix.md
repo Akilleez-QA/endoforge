@@ -112,3 +112,79 @@ caller-supplied synthetic identity invariant and reject failed or malformed
 checks before measurement. Test assertions and fixtures are unchanged.
 Logs and configured test evidence are outside the source tree under
 `/tmp/endoforge-domain.Kw3REq/`.
+
+## V8 workcell verification
+
+On 2026-11-01, the `v8-isolate-pool` working tree based on `4ede823` was checked
+with Python 3.14.8, Node.js 26.12.0, and an installed Node.js 22.23.3 binary.
+These are local results, not an observed Ubuntu/Python 3.12 CI run.
+All new tests are in
+[isolate-pool.test.mjs](../../core/runtime/test/isolate-pool.test.mjs).
+
+| Requirement | Method | Test evidence | Observed result |
+|---|---|---|---|
+| REQ-ISO-001 | T | Native evaluator parity; concurrency 1/4/16; lazy defaults | Pass; identical reports, all configured workcells active, size never exceeded |
+| REQ-ISO-002 | T | Real heap allocation fixture; reported generation limits; invalid configuration and heap override refusal | Pass; 24/4 MiB configured, `ERR_WORKER_OUT_OF_MEMORY` observed |
+| REQ-ISO-003 | T | Heap and explicit exit fixtures with simultaneous and queued successful jobs | Pass; failed jobs unknown, replacement thread IDs distinct, independent jobs complete |
+| REQ-ISO-004 | T | Python `Ledger.records()` replay, returned digest comparison, receipt tampering and subsequent admission refusal | Pass; 40 receipts across multiple workers, tampering detected; worker-loss receipts inconclusive |
+| REQ-ISO-005 | T | Close during queued work at sizes 1/4/16 | Pass; new submissions refused, all accepted jobs resolved, zero workers after close, same promise on repeated close |
+
+| Command | Actual result |
+|---|---|
+| `make check` | Exit 0; Markdown links and source digests verified |
+| `make isolate-test` | Exit 0; seven tests passed, including real heap exhaustion |
+| Node 22.23.3 `--test --experimental-test-isolation=none --test-reporter=spec core/runtime/test/isolate-pool.test.mjs` | Exit 0; seven tests passed in about 11 seconds |
+| `PYTHONOPTIMIZE=1 node --test --test-isolation=none --test-reporter=spec core/runtime/test/isolate-pool.test.mjs` | Exit 0; seven tests passed in about 11 seconds |
+| `timeout 40s make test ENDOFORGE_TEST_OUTPUT=/tmp/ef-isolate-test` | Exit 124; check, 18 lifecycle/boundary tests and 32 ledger tests passed; unchanged engine evaluator test stalled |
+| `timeout 40s make test-optimized ENDOFORGE_TEST_OUTPUT=/tmp/ef-isolate-optimized` | Exit 124; same completed checks and engine evaluator stall |
+
+The existing evaluator test uses `execFileSync` with stdin. A minimal independent
+Node/Python stdin reproducer also stalls in this execution sandbox and reports
+`EPERM` or `ETIMEDOUT`; asynchronous subprocess I/O works. New fixtures use
+asynchronous I/O. Existing test assertions, expected results, and source files
+were not changed. The two full-suite commands therefore did not qualify later
+Makefile targets. Logs are outside the source tree at `/tmp/ef-isolate-test.log`,
+`/tmp/ef-isolate-optimized.log`, `/tmp/ef-isolate-node22-final.log`, and
+`/tmp/ef-isolate-optimized-target.log`.
+
+## WASM ceiling and breach isolation verification
+
+On 2026-11-01, the rebased uncommitted pool was extended after reading
+[P-16](../../experiments/P-16-workerd-isolates/RESULT.md) and
+[P-17](../../experiments/P-17-workcell-gap/RESULT.md). The earlier workcell table
+remains historical. The checks below use Python 3.14.8, Node 26.12.0 and the
+installed Node 22.23.3 binary; they do not claim an observed ubuntu-latest run.
+
+| Requirement | Test evidence | Actual result |
+|---|---|---|
+| REQ-ISO-001 | Lazy default equals `os.availableParallelism()`; existing concurrency 1/4/16 and evaluator parity | Pass on Node 22.23.3 |
+| REQ-ISO-002, REQ-ISO-003, REQ-ISO-004 | Real JS heap exhaustion with a two-cell barrier; healthy neighbor held mid-job; queued replacement; full accepted/rejected reports and inconclusive breach receipt | Pass on Node 22.23.3 |
+| REQ-ISO-005 | Existing graceful close and FIFO tests unchanged | Pass on Node 22.23.3 |
+| REQ-ISO-006 | JS initial/maximum/grow (including shared memory and coercion), compile/Module/Instance/instantiate and streaming paths, exported and internal growth, unexported memory, imported memory, start growth, swallowed trap, omitted maxima, smaller native maxima, default 64 MiB and signed-LEB boundary | Pass on Node 22.23.3; 20 breach subtests |
+| REQ-ISO-006 | Unsupported SIMD, malformed bytes and externally compiled modules fail closed; empty and memory-only modules still execute | Pass on Node 22.23.3 |
+| REQ-DOCS-001 | `make check`; source digests and Markdown links | Exit 0; zero failures over 47 documents |
+
+Each WASM breach case uses two workers and a barrier before the failing operation;
+a healthy neighbor waits for release until the host receives the breached cell’s
+exit result. The queued replacement and neighbor must both reproduce the complete
+native evaluator report for a passing candidate and a forbidden-effects rejection.
+Their thread IDs differ from the failed cell and each other. WASM receipts bind
+the configured cap and explicit `ERR_WORKCELL_WASM_MEMORY_LIMIT` result. JS heap
+breaches independently require `ERR_WORKER_OUT_OF_MEMORY`. No existing assertions
+or expected results were changed. The small WASM fixtures are built from bytes
+in the test and need no downloaded compiler or runtime.
+
+| Command | Actual result |
+|---|---|
+| `make check` | Exit 0; zero link or source-digest failures over 47 documents |
+| `make isolate-test` (Node 26.12.0) | Exit 0; test file passed in about 26 seconds |
+| `make isolate-test` (Node 22.23.3 first on PATH) | Exit 0; test file passed in about 24 seconds |
+| Node 22.23.3 `--test --experimental-test-isolation=none --test-reporter=spec core/runtime/test/isolate-pool.test.mjs` | Exit 0; 33 tests passed, zero failed/skipped, about 23 seconds |
+
+Logs are outside the source tree: `/tmp/ef-pool-wasm-node22.log`,
+`/tmp/ef-pool-wasm-make.log`, and `/tmp/ef-pool-wasm-make-node22.log`.
+The isolated Make runners report one passing test file; the direct Node 22 run
+exposes its 33 constituent tests. A preliminary run with an invalid synthetic
+start-body length failed before the fixture was corrected; no existing expected
+results or assertions were changed. The full `make test`/`make test-optimized`
+suites were not rerun for this extension.

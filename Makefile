@@ -2,9 +2,9 @@ PYTHON ?= python3
 export PYTHONDONTWRITEBYTECODE := 1
 export ENDOFORGE_TEST_OUTPUT := $(CURDIR)/.test-work
 
-.PHONY: test test-optimized check core-test ledger-test engine-test atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test
+.PHONY: test test-optimized check core-test ledger-test engine-test isolate-test atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test
 
-test: check core-test ledger-test engine-test atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test
+test: check core-test ledger-test engine-test isolate-test atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test
 
 test-optimized:
 	PYTHONOPTIMIZE=1 $(MAKE) test PYTHON="$(PYTHON) -O"
@@ -20,6 +20,9 @@ ledger-test:
 
 engine-test:
 	node --test core/engine/*.test.mjs
+
+isolate-test:
+	node --test core/runtime/test/isolate-pool.test.mjs
 
 atomizer-test:
 	node tools/atomizer/test/trace.test.mjs
