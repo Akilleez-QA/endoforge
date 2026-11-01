@@ -32,7 +32,7 @@ Tests use synthetic inputs and stubs. Public agent clients are optional. Keep ge
 
 ## Documentation
 
-Start with the [documentation index](docs/README.md). Input examples are described in [campaigns](campaigns/README.md), [experiments](experiments/README.md), and [sources](sources/README.md).
+Start with the [documentation index](docs/README.md). Archived input placeholders are preserved in [campaigns](TODELETE/campaigns/README.md) and [experiments](TODELETE/experiments/README.md). The digest-checked source example remains in [sources](sources/README.md).
 
 ## Related projects
 
@@ -45,8 +45,8 @@ EndoForge is part of the Cstack family. See [Cstack](https://github.com/Akilleez
 | `core/` | Python lifecycle model |
 | `tools/` | Execution, ledger, evaluation, and scheduling utilities |
 | `tests/` | Lifecycle and core boundary tests |
-| `docs/` | Documentation and an input example |
-| `campaigns/`, `experiments/` | Input examples and guidance |
+| `docs/` | Documentation |
+| `TODELETE/` | Archived unused placeholders, preserving their original relative paths |
 | `sources/` | Source example and digest manifest |
 
 ## Contributing

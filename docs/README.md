@@ -1,6 +1,6 @@
 # Docs
 
-Write your own inputs in this directory. Use synthetic identifiers and local paths, and keep generated evidence outside the source tree. The example describes a minimal independent check.
+Use synthetic identifiers and local paths in documentation, and keep generated evidence outside the source tree. Unused placeholder inputs are archived under `TODELETE/`.
 
 ## Design and requirements
 
@@ -12,6 +12,6 @@ Write your own inputs in this directory. Use synthetic identifiers and local pat
 - [Verification matrix](verification/verification-matrix.md)
 - [Configuration management](configuration/configuration-management.md)
 
-## Input example
+## Archived placeholder
 
-- [Independent check input](example.json)
+- [Independent check placeholder](../TODELETE/docs/example.json)

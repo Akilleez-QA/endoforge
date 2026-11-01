@@ -28,6 +28,14 @@ are visible in its workflow; they do not define the runtime installed on a local
 machine. Capture actual runtime identity with `python3 --version`, `node --version`,
 `make --version`, and `bwrap --version` when collecting environment evidence.
 
+## Archived placeholders
+
+Unused filler inputs and their placeholder-only directory READMEs are preserved
+under `TODELETE/` at their original relative paths. These archives are not active
+input guidance. The source example remains in `sources/` because
+`tools/check-docs.py` reads it through the digest manifest during `make check`.
+The substantive atomizer example also remains at its existing path.
+
 ## Change and release process
 
 [Contributing](../../CONTRIBUTING.md) describes issue discussion for larger work,
