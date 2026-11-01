@@ -1,15 +1,4 @@
 #!/usr/bin/env node
-//   pick an account -> run the guard -> exec $CODEX_POOL_BIN with CODEX_HOME=<account> -> fail over on rate limits.
-// An account is a directory holding auth.json: CODEX_POOL_PRIMARY (~/.codex, logged as "default"), then each
-// subdirectory of CODEX_POOL_ACCOUNTS_DIR (~/.codex-accounts). Credentials are never opened; only auth.json's
-// presence is checked. At most CODEX_POOL_PER_ACCOUNT (2) launches per account at once, tracked by host-PID slot
-// directories in CODEX_POOL_STATE_DIR (~/.codex-pool); the least-loaded account goes first. A rate-limited account
-// cools down for the time its error names (default 300 s). Every try is one line in <state>/log.
-// The child is CODEX_POOL_BIN, or the first `codex` on PATH when it is unset (Endoforge sets it to its isolate). The
-// child inherits stdin, so a prompt can come on stdin (`codex exec -`); a regular-file stdin (`< prompt.txt`, systemd
-// StandardInput=file:) is reopened from its start for every try, so a failover retry sees the whole prompt.
-// Exits: the child's code; 75 when every account is cooling down or no slot frees within CODEX_POOL_WAIT (600 s);
-// the guard's code when CODEX_POOL_GUARD (a path, or "none") refuses the launch; 2 when no codex binary is found.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -23,8 +12,6 @@ const ACCOUNTS = E.CODEX_POOL_ACCOUNTS_DIR || path.join(HOME, '.codex-accounts')
 const PER = Number(E.CODEX_POOL_PER_ACCOUNT) || 2, WAIT_MS = (Number(E.CODEX_POOL_WAIT) || 600) * 1000;
 const GUARD = E.CODEX_POOL_GUARD || 'none';
 const RATE = /\b429\b|too many requests|rate[ _-]?limit|usage limit|quota exceeded/i;
-// When a limit lifts, in epoch ms, from the message (adapters/provider_policy.py parse_reset is the same rule): relative
-// saving applies; a missing year or date is the next such moment). null when the message names none.
 const UNITS = { s: 1, sec: 1, secs: 1, second: 1, seconds: 1, m: 60, min: 60, mins: 60, minute: 60, minutes: 60, h: 3600,
   hr: 3600, hrs: 3600, hour: 3600, hours: 3600, d: 86400, day: 86400, days: 86400 };
 const MONTHS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
@@ -70,8 +57,6 @@ function accounts() {
   return out;
 }
 
-// A slot is <slots>/<account>.<i> holding its owner's host PID; a dead owner's slot is reclaimed by rename, so only
-// one reclaimer wins.
 function held(name) {
   let n = 0;
   for (let i = 1; i <= PER; i++) {
@@ -94,7 +79,6 @@ function take(name) {
 }
 const coolUntil = (name) => { try { return Number(fs.readFileSync(path.join(COOL, name), 'utf8')) || 0; } catch { return 0; } };
 
-// The first executable `codex` on PATH that is not this script (a `codex` shim pointing back here would recurse).
 function codexOnPath() {
   let self = null;
   try { self = fs.realpathSync(fileURLToPath(import.meta.url)); } catch {}
@@ -105,7 +89,6 @@ function codexOnPath() {
   }
   return null;
 }
-// A regular file on fd 0 is reopened per try (fresh offset); anything else (a TTY, a pipe, /dev/null) is inherited.
 function stdinFor() {
   try { if (fs.fstatSync(0).isFile()) return fs.openSync('/proc/self/fd/0', 'r'); } catch {}
   return 'inherit';
@@ -143,7 +126,6 @@ async function main() {
     if (!ready.length) {
       const next = Math.min(...all.filter((a) => !tried.has(a.name)).map((a) => coolUntil(a.name)), Infinity);
       if (next === Infinity || next > deadline) {
-        // the earliest moment any account (tried this run or not) is usable again
         const lift = Math.min(...all.map((a) => coolUntil(a.name)));
         const hrs = (lift - now) / 3600e3;
         console.error(lift <= now + WAIT_MS ? 'codex-pool: all accounts exhausted (rate-limited or cooling down)'
@@ -168,7 +150,6 @@ async function main() {
       const r = await launch(bin, acct);
       const rate = r.code !== 0 && RATE.test(r.tail);
       if (rate) {
-        // cool down until the limit really lifts; 300 s only when the message names no reset (a five-day cap re-probed
         const until = resetAt(r.tail) ?? Date.now() + 300e3;
         fs.writeFileSync(path.join(COOL, acct.name), String(until));
         log({ account: acct.name, pid: process.pid, child: r.pid, exit: r.code, class: 'rate', failover: 'yes', until: new Date(until).toISOString() });

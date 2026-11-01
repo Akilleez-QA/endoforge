@@ -4,12 +4,13 @@ These requirements describe implemented behavior, not authority to execute work.
 Verification methods: T = test; I = inspection. Commands run from the repository root.
 The selected tests cover these behaviors; they do not qualify live model services.
 The core includes the evaluator and gates in `core/engine/`; host callbacks supply
-execution. The Python import boundary permits the engine adapter to use the core
+candidate operations. Local agent execution pools live in `core/runtime/` and are
+invoked explicitly by workflow callers. The Python import boundary permits the engine adapter to use the core
 ledger, `pathlib`, and `sys` without loading it through `import core`.
 
 | ID | Requirement | Rationale | Verification |
 |---|---|---|---|
-| REQ-CORE-001 | The core shall import only its scoped standard library allowlists and shall not load concrete integrations on import. | Keep execution outside the lifecycle model. | T: `make core-test`; `tests/test_endoforge_core_boundary.py`. |
+| REQ-CORE-001 | The Python core shall import only its scoped standard library allowlists and shall not load concrete integrations on import. | Keep execution outside the lifecycle model. | T: `make core-test`; `tests/test_endoforge_core_boundary.py`. |
 | REQ-LIFE-001 | The lifecycle shall refuse transitions outside its legal state graph. | Prevent skipped lifecycle stages. | T: `make core-test`; `tests/test_endoforge_lifecycle.py`, `TransitionTests`. |
 | REQ-LIFE-002 | Qualification shall require a passing receipt for the exact candidate under the frozen oracle. | Bind qualification to independently checked bytes. | T: `make core-test`; `tests/test_endoforge_lifecycle.py`, `TransitionTests`. |
 | REQ-LIFE-003 | Applying a transition shall require a decision bound to the current proposal digest and shall refuse reused decisions. | Prevent stale or replayed authorization references. | T: `make core-test`; `tests/test_endoforge_lifecycle.py`, `DecisionTests`. |

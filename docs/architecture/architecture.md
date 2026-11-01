@@ -3,9 +3,10 @@
 ## Context
 
 EndoForge groups the Python lifecycle model, evidence ledger, and evaluator and
-gates in the engine core, separate from agent execution utilities.
-The [core](../../core/lifecycle.py) represents proposals and decision references;
-it does not issue external decisions, run agents, or activate artifacts in a host.
+gates and local agent execution pools in the engine core.
+The [lifecycle model](../../core/lifecycle.py) represents proposals and decision
+references without issuing external decisions or activating artifacts in a host.
+The runtime launches configured agent clients; workflow orchestration stays in `tools/`.
 See the [requirements](../requirements/requirements.md) for the tested boundaries.
 
 ## Components
@@ -19,7 +20,7 @@ See the [requirements](../requirements/requirements.md) for the tested boundarie
 | `core/engine/evaluator.mjs` | Coordinate candidate evaluation with frozen checks and host callbacks | [Evaluator tests](../../core/engine/evaluator.test.mjs) |
 | `core/engine/gates.mjs` | Apply schema, interface, bounds, determinism, and forbidden-effects gates in order | [Gate tests](../../core/engine/gates.test.mjs) |
 | `core/engine/frozen.py` | Verify frozen evaluator references through the core ledger | [Evaluator tests](../../core/engine/evaluator.test.mjs) |
-| `tools/runtime/` | Execution pool utilities separate from lifecycle state | [Runtime guidance](../../tools/runtime/README.md) |
+| `core/runtime/` | Launch local agent clients and replay stub outputs, separate from lifecycle state | [Runtime guidance](../../core/runtime/README.md) |
 
 The [ledger ICD](../interfaces/ledger-icd.md) defines Python, CLI, and storage
 interfaces. Importing `core` keeps its lifecycle exports and does not load the ledger.
@@ -44,7 +45,7 @@ records preserve evidence for callers to inspect; generation alone cannot author
 
 ## Design decisions
 
-The core's standard library boundary, including scoped ledger and test allowlists,
+The Python core's standard library boundary, including scoped ledger and test allowlists,
 is enforced by import inspection and a fresh Python process in the boundary tests.
 The engine Python adapter alone may import `core`, `pathlib`, and `sys` in addition
 to the lifecycle allowlist. The JavaScript gates retain their explicit dependency

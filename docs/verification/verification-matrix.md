@@ -74,3 +74,21 @@ host failures, fresh finalist evaluation, and Pareto selection. The core boundar
 check grants imports only to the engine adapter's exact file path; lifecycle and
 ledger allowlists and import-isolation assertions remain in place. Full-suite logs
 and evidence are outside the source tree under `/tmp/endoforge-engine.MNFEVS/`.
+
+## Runtime relocation verification
+
+On 2026-11-01, the runtime relocation passed locally with Python 3.14.8,
+Node.js v26.13.0, and bubblewrap 0.13.1. The Git commit containing this section
+identifies the relocation baseline.
+
+| Scope | Command | Observed result |
+|---|---|---|
+| REQ-DOCS-001; runtime source digests and links | `make check` | Exit 0; no link or digest failures |
+| Full suite, including relocated pool tests and workflow callers | `make test ENDOFORGE_TEST_OUTPUT=/tmp/endoforge-runtime.IwV9kx/test` | Exit 0 |
+| Full suite with Python optimization | `make test-optimized ENDOFORGE_TEST_OUTPUT=/tmp/endoforge-runtime.IwV9kx/optimized` | Exit 0 |
+
+Pool tests retain their assertions for client selection, registry recursion
+prevention, stdin forwarding, cooldown refusal, and rate-limit failover.
+Only module paths and code comments changed in the touched JavaScript sources.
+Test expectations and fixtures are unchanged. Logs and configured test evidence
+are outside the source tree under `/tmp/endoforge-runtime.IwV9kx/`.

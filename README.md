@@ -6,7 +6,7 @@ EndoForge runs coding agents under independent checks and records their evidence
 
 ## Status
 
-Research software. The core contains the lifecycle model, evidence ledger, and engine evaluator and gates. The lifecycle model validates proposals, evidence, and decision references. The evaluator checks candidates through caller-supplied host callbacks; execution and scheduling utilities live under `tools/`. Interfaces may change; the core does not launch agents or grant authority.
+Research software. The core contains the lifecycle model, evidence ledger, engine evaluator and gates, and local agent execution pools. The lifecycle model validates proposals, evidence, and decision references. The evaluator checks candidates through caller-supplied host callbacks; runtime pools launch configured agent clients, while workflow orchestration and scheduling utilities live under `tools/`. Interfaces may change; lifecycle transitions validate references without granting authority.
 
 ## Quickstart
 
@@ -28,7 +28,7 @@ Tests use synthetic inputs and stubs. Public agent clients are optional. Keep ge
 | [Lifecycle model](core/lifecycle.py) | Validate artifact identities, state changes, evidence, and decision bindings |
 | [Ledger](core/ledger/ledger.py) | Store and validate linked evidence records |
 | [Evaluator](core/engine/evaluator.mjs) | Evaluate candidates against frozen checks |
-| [Runtime](tools/runtime/README.md) | Manage local execution pools |
+| [Runtime](core/runtime/README.md) | Manage local execution pools |
 
 ## Documentation
 
@@ -42,8 +42,8 @@ EndoForge is part of the Cstack family. See [Cstack](https://github.com/Akilleez
 
 | Path | Contents |
 |---|---|
-| `core/` | Lifecycle model, evidence ledger, engine evaluator and gates |
-| `tools/` | Execution, quality support, and scheduling utilities |
+| `core/` | Lifecycle model, evidence ledger, engine evaluator and gates, local execution pools |
+| `tools/` | Workflow orchestration, quality support, and scheduling utilities |
 | `tests/` | Lifecycle and core boundary tests |
 | `docs/` | Documentation |
 | `TODELETE/` | Archived unused placeholders, preserving their original relative paths |

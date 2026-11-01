@@ -33,7 +33,7 @@ hardware-test:
 	$(PYTHON) -B -m unittest tools.hardware_record.test_record -v
 
 runtime-test:
-	node tools/runtime/test/agent-pool.test.mjs
+	node core/runtime/test/agent-pool.test.mjs
 
 lib-test:
 	node tools/lib/test/errors.test.mjs
