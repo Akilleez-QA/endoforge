@@ -16,7 +16,7 @@ T means test; I means inspection.
 | REQ-LIFE-003 | T | `make core-test`; `tests/test_endoforge_lifecycle.py`, `DecisionTests` | Pass | `3083a5a` |
 | REQ-LIFE-004 | T | `make core-test`; `tests/test_endoforge_lifecycle.py`, `GenerationGrantsNothingTests` | Pass | `3083a5a` |
 | REQ-LIFE-005 | T | `make core-test`; `tests/test_endoforge_lifecycle.py`, `IdentityTests` | Pass | `3083a5a` |
-| REQ-LEDGER-001 | T | `make ledger-test`; `tools/ledger/test_frozen.py`, `FrozenTests.test_every_component_change_refuses_before_judging` | Pass | `3083a5a` |
+| REQ-LEDGER-001 | T | `make ledger-test`; `core/ledger/test_frozen.py`, `FrozenTests.test_every_component_change_refuses_before_judging` | Pass | `3083a5a` |
 | REQ-DOCS-001 | I | `make check`; inspect `tools/check-docs.py` | Pass: link existence and digest checks present | `3083a5a` |
 
 ## Reproduction
@@ -33,3 +33,24 @@ The full suite passed locally with the output override above. The override keeps
 generated evidence outside the source tree. The commit body records checks for
 this documentation change. `make test-optimized ENDOFORGE_TEST_OUTPUT=/tmp/endoforge-style-optimized`
 also passed locally on this documentation branch.
+
+
+## Ledger relocation verification
+
+On 2026-11-01, the relocation to `core/ledger/` passed the checks below locally
+with Python 3.14.8, Node.js 26.12.0, and bubblewrap 0.13.1. The source identity is
+the Git commit containing this section. Earlier baseline results above remain
+historical; ledger test paths now refer to their relocated equivalents.
+
+| Scope | Command | Observed result |
+|---|---|---|
+| REQ-DOCS-001 and relocated source digests | `make check` | Exit 0; no link or digest failures |
+| REQ-CORE-001, REQ-LIFE-001 through REQ-LIFE-005, REQ-LEDGER-001 | `make core-test ledger-test` | Exit 0; 18 lifecycle/boundary and 32 ledger tests passed |
+| Full suite, including engine callers | `make test ENDOFORGE_TEST_OUTPUT=/tmp/endoforge-ledger.KCM0Ow/test` | Exit 0 |
+| Full suite with Python optimization | `make test-optimized ENDOFORGE_TEST_OUTPUT=/tmp/endoforge-ledger.KCM0Ow/optimized` | Exit 0 |
+
+The scoped import check retains the lifecycle allowlist and permits only the
+ledger's standard library dependencies plus test-only dependencies under the
+ledger package. Ledger test assertions and fixtures are unchanged; subprocess
+imports and the CLI module name use `core.ledger`. Output and logs were kept
+outside the source tree under `/tmp/endoforge-ledger.KCM0Ow/`.

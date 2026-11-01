@@ -2,8 +2,8 @@ import json
 from pathlib import Path
 import sys
 
-from tools.ledger.frozen import FrozenEvaluators
-from tools.ledger.ledger import Ledger
+from core.ledger.frozen import FrozenEvaluators
+from core.ledger.ledger import Ledger
 
 
 def main():

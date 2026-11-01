@@ -6,7 +6,7 @@ EndoForge runs coding agents under independent checks and records their evidence
 
 ## Status
 
-Research software. The lifecycle model validates proposals, evidence, and decision references. Execution and evaluation utilities live separately under `tools/`. Interfaces may change; the core does not execute agents or grant authority.
+Research software. The core contains the lifecycle model and evidence ledger. The lifecycle model validates proposals, evidence, and decision references. Execution and evaluation utilities live separately under `tools/`. Interfaces may change; the core does not execute agents or grant authority.
 
 ## Quickstart
 
@@ -26,7 +26,7 @@ Tests use synthetic inputs and stubs. Public agent clients are optional. Keep ge
 | Component | Purpose |
 |---|---|
 | [Lifecycle model](core/lifecycle.py) | Validate artifact identities, state changes, evidence, and decision bindings |
-| [Ledger](tools/ledger/ledger.py) | Store and validate linked evidence records |
+| [Ledger](core/ledger/ledger.py) | Store and validate linked evidence records |
 | [Evaluator](tools/engine/evaluator.mjs) | Evaluate candidates against frozen checks |
 | [Runtime](tools/runtime/README.md) | Manage local execution pools |
 
@@ -42,8 +42,8 @@ EndoForge is part of the Cstack family. See [Cstack](https://github.com/Akilleez
 
 | Path | Contents |
 |---|---|
-| `core/` | Python lifecycle model |
-| `tools/` | Execution, ledger, evaluation, and scheduling utilities |
+| `core/` | Python lifecycle model and evidence ledger |
+| `tools/` | Execution, evaluation, and scheduling utilities |
 | `tests/` | Lifecycle and core boundary tests |
 | `docs/` | Documentation |
 | `TODELETE/` | Archived unused placeholders, preserving their original relative paths |

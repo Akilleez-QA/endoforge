@@ -6,6 +6,7 @@ Use synthetic identifiers and local paths in documentation, and keep generated e
 
 - [Requirements](requirements/requirements.md)
 - [Architecture](architecture/architecture.md)
+- [Ledger interface control document](interfaces/ledger-icd.md)
 
 ## Verification and configuration
 
