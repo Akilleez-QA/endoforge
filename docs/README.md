@@ -7,6 +7,10 @@ Use synthetic identifiers and local paths in documentation, and keep generated e
 - [Requirements](requirements/requirements.md)
 - [Architecture](architecture/architecture.md)
 
+## Interface control
+
+- [Cstack](icd/icd-cstack.md)
+
 ## Verification and configuration
 
 - [Verification matrix](verification/verification-matrix.md)
