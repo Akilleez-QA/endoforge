@@ -61,3 +61,16 @@ records are present, and this document does not create new integration behavior.
 - An implemented Cstack bridge or pinned Cstack protocol.
 - Decision issuance or host activation inside the core.
 - Qualification of live model services by the synthetic repository tests.
+
+## Domain ownership
+
+Film utilities and the refrigeration invariant adapter are preserved unchanged
+under `TODELETE/tools/film/` and `TODELETE/tools/invariants/`. Their destination
+repositories are foundation-film and foundation-refrigeration, respectively;
+the cross-repository transfers are handled separately. They are outside the
+active engine and workflow tools.
+
+The evaluator calls `port.invariant` for names in the frozen configuration.
+Callers own the registry and domain dependencies. The job invariant catalog
+contains workflow rules and imports no refrigeration implementation. Existing
+engine tests use a synthetic identity invariant, including failure propagation.

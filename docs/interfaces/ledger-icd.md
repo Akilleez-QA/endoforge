@@ -65,3 +65,19 @@ activation authority, and lifecycle transitions do not automatically append reco
 relocated CLI. `make core-test` checks the scoped standard library boundary and
 import isolation. `make engine-test` exercises the engine adapter and its callers.
 See the [verification matrix](../verification/verification-matrix.md).
+
+## Caller-supplied invariant checks
+
+The existing evaluator callback is
+`port.invariant(name, candidate, bundle, round)`. Frozen
+`configuration.invariants` selects unique check names; the caller resolves each
+name through a plain registry of functions supplied by its foundation. For
+example, a caller can define `const registry = { identity: checkIdentity }` and
+implement the callback with `registry[name](candidate, bundle, round)`.
+No registry loader or domain package is imported by the engine.
+
+Each check returns `{ passed: boolean, reason: string }` with a nonempty reason.
+A false verdict rejects the candidate before measurement; malformed evidence
+also rejects it. A thrown callback, including an unresolved registry name,
+stops evaluation with `outcome_unknown`. Callers must preserve the existing
+frozen evaluator identity and evidence contracts.

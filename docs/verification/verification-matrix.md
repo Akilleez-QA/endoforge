@@ -92,3 +92,23 @@ prevention, stdin forwarding, cooldown refusal, and rate-limit failover.
 Only module paths and code comments changed in the touched JavaScript sources.
 Test expectations and fixtures are unchanged. Logs and configured test evidence
 are outside the source tree under `/tmp/endoforge-runtime.IwV9kx/`.
+
+## Domain extraction verification
+
+On 2026-11-01, domain extraction was checked locally with Python 3.14.8,
+Node.js v26.13.0, GNU Make 4.4.1, and bubblewrap 0.13.1. The Git commit
+containing this section identifies the extraction baseline.
+
+| Scope | Command | Observed result |
+|---|---|---|
+| REQ-DOCS-001; archived source paths and digests | `make check` | Exit 0; zero link or digest failures |
+| Full suite, including REQ-DOMAIN-001 synthetic identity invariant checks | `make test ENDOFORGE_TEST_OUTPUT=/tmp/endoforge-domain.Kw3REq/test` | Exit 0 |
+| Full suite with Python optimization, including caller invariant checks | `make test-optimized ENDOFORGE_TEST_OUTPUT=/tmp/endoforge-domain.Kw3REq/optimized` | Exit 0 |
+
+Inspection of Makefile, core, workflow modules, and tests found no imports or
+execution references to the archived film utilities or refrigeration adapter.
+All ten files are byte-preserving renames. Existing engine tests exercise the
+caller-supplied synthetic identity invariant and reject failed or malformed
+checks before measurement. Test assertions and fixtures are unchanged.
+Logs and configured test evidence are outside the source tree under
+`/tmp/endoforge-domain.Kw3REq/`.
