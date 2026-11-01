@@ -155,8 +155,8 @@ class LedgerTests(unittest.TestCase):
     def test_process_exit_before_and_after_commit(self):
         script = """
 import os, sqlite3, sys
-from tools.ledger.ledger import Ledger
-from tools.ledger.test_ledger import chain
+from core.ledger.ledger import Ledger
+from core.ledger.test_ledger import chain
 class Interrupted(sqlite3.Connection):
     def execute(self, sql, *args):
         result = super().execute(sql, *args)

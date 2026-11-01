@@ -24,8 +24,8 @@ function fixture(t, configure = () => {}) {
   const reference = { ledger: join(directory, 'ledger.sqlite'), root };
   reference.identity = execFileSync('python3', ['-B', '-c', `
 import json, sys
-from tools.ledger.ledger import Ledger
-from tools.ledger.frozen import FrozenEvaluators
+from core.ledger.ledger import Ledger
+from core.ledger.frozen import FrozenEvaluators
 request = json.load(sys.stdin)
 ledger = Ledger(request['ledger'])
 for kind, identity, data in [('task', 't1', dict(intent='Identity', acceptance='x preserved')),

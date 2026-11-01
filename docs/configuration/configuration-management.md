@@ -19,7 +19,7 @@ release mechanism in this repository.
 |---|---|---|
 | Source examples | [Digest manifest](../../sources/SHA256SUMS), checked by `make check` | Covers listed sources, not the entire checkout |
 | Lifecycle model | Git revision and `make core-test` | Decision references are supplied by the caller |
-| Evaluator files and configuration | [Frozen evaluator](../../tools/ledger/frozen.py), tested by `make ledger-test` | Requires callers to use the freeze and evaluation path |
+| Evaluator files and configuration | [Frozen evaluator](../../core/ledger/frozen.py), tested by `make ledger-test` | Requires callers to use the freeze and evaluation path |
 | Execution policy and routing | [Policy](../../tools/atomizer/policy.json) and [routing](../../tools/atomizer/routing.json) tracked in Git | Local tool paths and model names are not immutable dependency pins |
 | CI environment | [Workflow](../../.github/workflows/ci.yml) selects Python and Node versions | Action major-version references and OS packages are not content pins |
 
@@ -48,6 +48,15 @@ the changelog with the chosen SemVer and date, and associate the approved tag
 with that SHA. This is release guidance, not a claim that a release or tag exists.
 No release workflow is present under `.github/workflows/` at this baseline.
 This documentation pass creates local commits only.
+
+## Ledger relocation
+
+The ledger package and its schema are controlled under `core/ledger/`;
+`sources/SHA256SUMS` includes their digests using paths relative to `sources/`.
+The package move changes Python import and CLI module paths only. Record versions,
+SQLite layout, validation, and hash encoding remain unchanged. `make ledger-test`
+runs the relocated tests; `make test` and `make test-optimized` also check engine
+callers and the scoped core import boundary.
 
 ## Interface baseline
 

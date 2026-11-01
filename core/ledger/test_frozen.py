@@ -138,7 +138,7 @@ class FrozenTests(unittest.TestCase):
         manifest = self.manifest | {"revision": dict(of=self.frozen["id"], reason="independent_qualification", evidence="i1")}
         path = self.root / "manifest.json"
         path.write_text(json.dumps(manifest))
-        result = subprocess.run([sys.executable, "-B", "-m", "tools.ledger.frozen", "freeze",
+        result = subprocess.run([sys.executable, "-B", "-m", "core.ledger.frozen", "freeze",
                                  self.ledger.path, str(self.tree), str(path)], capture_output=True, text=True, timeout=10)
         self.assertEqual(result.returncode, 0, result.stderr)
         frozen = self.ledger.records()[-1]
