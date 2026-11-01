@@ -1,4 +1,4 @@
-# Docs
+# Documentation
 
 Use synthetic identifiers and local paths in documentation, and keep generated evidence outside the source tree. Unused placeholder inputs are archived under `TODELETE/`.
 
@@ -16,6 +16,10 @@ Use synthetic identifiers and local paths in documentation, and keep generated e
 
 - [Verification matrix](verification/verification-matrix.md)
 - [Configuration management](configuration/configuration-management.md)
+
+## How-to guides
+
+- [Run local checks](guides/how-to/local-checks.md)
 
 ## Archived placeholder
 
