@@ -85,3 +85,14 @@ checkout. `core/lifecycle.py` mentions an external bridge in a docstring, but
 only models decision references. There is no Cstack ICD to version here.
 Recheck with `rg -n -i 'cstack|endoforgeport' core tools tests` before documenting
 an interface contract in a later change.
+
+## Domain extraction
+
+Film utilities are archived at `TODELETE/tools/film/` for transfer to
+foundation-film. The refrigeration adapter and its README are archived at
+`TODELETE/tools/invariants/` for transfer to foundation-refrigeration. These
+are byte-preserving Git moves; the destination repository changes are separate.
+The digest manifest records all ten archived files at their new paths.
+Neither the Makefile nor engine or workflow modules reference these adapters.
+Engine checks remain caller-supplied, with synthetic identity checks in tests.
+The Git commit containing this section identifies this extraction baseline.
