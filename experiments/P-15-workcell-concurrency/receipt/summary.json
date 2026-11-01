@@ -1,0 +1,564 @@
+{
+ "baseP95": 46.02243599999929,
+ "stop": {
+  "N": 50,
+  "reason": "p95 952.2 ms > 10x baseline 46.0 ms"
+ },
+ "steps": [
+  {
+   "N": 1,
+   "reps": [
+    {
+     "N": 1,
+     "rep": 1,
+     "code": 0,
+     "killed": null,
+     "stderr": "",
+     "before": {
+      "loadavg": [
+       4.01,
+       4.01,
+       4.32
+      ],
+      "codexProcs": 20
+     },
+     "after": {
+      "loadavg": [
+       4.39,
+       4.09,
+       4.34
+      ],
+      "codexProcs": 20
+     },
+     "peakRss": 524521472,
+     "minAvail": 79870619648,
+     "memTotal": 134143905792,
+     "alive": 1,
+     "spawnErrors": 0,
+     "allReadyMs": 223.88693,
+     "ready": {
+      "n": 1,
+      "median": 223.875459,
+      "p95": 223.875459,
+      "min": 223.875459,
+      "max": 223.875459
+     },
+     "readySelf": {
+      "n": 1,
+      "median": 211.29674300000002,
+      "p95": 211.29674300000002,
+      "min": 211.29674300000002,
+      "max": 211.29674300000002
+     },
+     "lat": {
+      "n": 411,
+      "median": 36.83440899999914,
+      "p95": 45.53606100000002,
+      "min": 19.84621899999911,
+      "max": 185.94915699999999
+     },
+     "runMs": 15012.968223,
+     "correct": 411,
+     "accepted": 319,
+     "incorrect": 0,
+     "badChain": 0,
+     "wrong": {},
+     "hostRss": 57958400,
+     "perIsolateRss": 466563072,
+     "correctPerS": 27.376331841583756,
+     "acceptedPerS": 21.248296490183012
+    },
+    {
+     "N": 1,
+     "rep": 2,
+     "code": 0,
+     "killed": null,
+     "stderr": "",
+     "before": {
+      "loadavg": [
+       4.39,
+       4.09,
+       4.34
+      ],
+      "codexProcs": 20
+     },
+     "after": {
+      "loadavg": [
+       3.99,
+       4.02,
+       4.31
+      ],
+      "codexProcs": 20
+     },
+     "peakRss": 578449408,
+     "minAvail": 79710105600,
+     "memTotal": 134143905792,
+     "alive": 1,
+     "spawnErrors": 0,
+     "allReadyMs": 206.414907,
+     "ready": {
+      "n": 1,
+      "median": 206.399919,
+      "p95": 206.399919,
+      "min": 206.399919,
+      "max": 206.399919
+     },
+     "readySelf": {
+      "n": 1,
+      "median": 193.806836,
+      "p95": 193.806836,
+      "min": 193.806836,
+      "max": 193.806836
+     },
+     "lat": {
+      "n": 410,
+      "median": 36.870616999999584,
+      "p95": 46.02243599999929,
+      "min": 19.804730999999265,
+      "max": 196.83538099999998
+     },
+     "runMs": 15012.319135,
+     "correct": 410,
+     "accepted": 318,
+     "incorrect": 0,
+     "badChain": 0,
+     "wrong": {},
+     "hostRss": 57933824,
+     "perIsolateRss": 520515584,
+     "correctPerS": 27.31090355281073,
+     "acceptedPerS": 21.18260324339954
+    },
+    {
+     "N": 1,
+     "rep": 3,
+     "code": 0,
+     "killed": null,
+     "stderr": "",
+     "before": {
+      "loadavg": [
+       3.99,
+       4.02,
+       4.31
+      ],
+      "codexProcs": 20
+     },
+     "after": {
+      "loadavg": [
+       4.29,
+       4.08,
+       4.33
+      ],
+      "codexProcs": 20
+     },
+     "peakRss": 559927296,
+     "minAvail": 79605784576,
+     "memTotal": 134143905792,
+     "alive": 1,
+     "spawnErrors": 0,
+     "allReadyMs": 201.192858,
+     "ready": {
+      "n": 1,
+      "median": 201.17986399999998,
+      "p95": 201.17986399999998,
+      "min": 201.17986399999998,
+      "max": 201.17986399999998
+     },
+     "readySelf": {
+      "n": 1,
+      "median": 189.177861,
+      "p95": 189.177861,
+      "min": 189.177861,
+      "max": 189.177861
+     },
+     "lat": {
+      "n": 415,
+      "median": 36.518842000000404,
+      "p95": 45.09500000000003,
+      "min": 19.24176299999999,
+      "max": 189.47816999999998
+     },
+     "runMs": 15016.596078999999,
+     "correct": 415,
+     "accepted": 322,
+     "incorrect": 0,
+     "badChain": 0,
+     "wrong": {},
+     "hostRss": 57901056,
+     "perIsolateRss": 502026240,
+     "correctPerS": 27.63608995119459,
+     "acceptedPerS": 21.442942082613637
+    }
+   ]
+  },
+  {
+   "N": 10,
+   "reps": [
+    {
+     "N": 10,
+     "rep": 1,
+     "code": 0,
+     "killed": null,
+     "stderr": "",
+     "before": {
+      "loadavg": [
+       4.29,
+       4.08,
+       4.33
+      ],
+      "codexProcs": 20
+     },
+     "after": {
+      "loadavg": [
+       7.55,
+       4.8,
+       4.56
+      ],
+      "codexProcs": 20
+     },
+     "peakRss": 3058839552,
+     "minAvail": 73623801856,
+     "memTotal": 134143905792,
+     "alive": 10,
+     "spawnErrors": 0,
+     "allReadyMs": 476.205559,
+     "ready": {
+      "n": 10,
+      "median": 459.307567,
+      "p95": 476.200359,
+      "min": 456.730401,
+      "max": 476.200359
+     },
+     "readySelf": {
+      "n": 10,
+      "median": 440.00317600000005,
+      "p95": 455.36346799999995,
+      "min": 424.325415,
+      "max": 455.36346799999995
+     },
+     "lat": {
+      "n": 1939,
+      "median": 62.31457000000046,
+      "p95": 170.7819670000008,
+      "min": 24.10583399999996,
+      "max": 372.78590299999996
+     },
+     "runMs": 15151.982292,
+     "correct": 1939,
+     "accepted": 1504,
+     "incorrect": 0,
+     "badChain": 0,
+     "wrong": {},
+     "hostRss": 57913344,
+     "perIsolateRss": 300092620.8,
+     "correctPerS": 127.97005452044121,
+     "acceptedPerS": 99.26093965897039
+    },
+    {
+     "N": 10,
+     "rep": 2,
+     "code": 0,
+     "killed": null,
+     "stderr": "",
+     "before": {
+      "loadavg": [
+       7.55,
+       4.8,
+       4.56
+      ],
+      "codexProcs": 20
+     },
+     "after": {
+      "loadavg": [
+       9.3,
+       5.32,
+       4.73
+      ],
+      "codexProcs": 20
+     },
+     "peakRss": 3386662912,
+     "minAvail": 77946662912,
+     "memTotal": 134143905792,
+     "alive": 10,
+     "spawnErrors": 0,
+     "allReadyMs": 596.57693,
+     "ready": {
+      "n": 10,
+      "median": 575.946152,
+      "p95": 596.5662209999999,
+      "min": 519.6271389999999,
+      "max": 596.5662209999999
+     },
+     "readySelf": {
+      "n": 10,
+      "median": 537.445484,
+      "p95": 565.9010920000001,
+      "min": 481.06774999999993,
+      "max": 565.9010920000001
+     },
+     "lat": {
+      "n": 2298,
+      "median": 61.7196929999991,
+      "p95": 100.53220099999999,
+      "min": 24.811407000000145,
+      "max": 406.59061999999994
+     },
+     "runMs": 15044.915977,
+     "correct": 2298,
+     "accepted": 1783,
+     "incorrect": 0,
+     "badChain": 0,
+     "wrong": {},
+     "hostRss": 57970688,
+     "perIsolateRss": 332869222.4,
+     "correctPerS": 152.74262770979115,
+     "acceptedPerS": 118.51179512905033
+    },
+    {
+     "N": 10,
+     "rep": 3,
+     "code": 0,
+     "killed": null,
+     "stderr": "",
+     "before": {
+      "loadavg": [
+       9.3,
+       5.32,
+       4.73
+      ],
+      "codexProcs": 20
+     },
+     "after": {
+      "loadavg": [
+       10.87,
+       5.86,
+       4.92
+      ],
+      "codexProcs": 20
+     },
+     "peakRss": 3530977280,
+     "minAvail": 77704273920,
+     "memTotal": 134143905792,
+     "alive": 10,
+     "spawnErrors": 0,
+     "allReadyMs": 467.627638,
+     "ready": {
+      "n": 10,
+      "median": 451.91987,
+      "p95": 467.61999299999997,
+      "min": 410.02184,
+      "max": 467.61999299999997
+     },
+     "readySelf": {
+      "n": 10,
+      "median": 430.94386,
+      "p95": 436.040504,
+      "min": 392.16585499999997,
+      "max": 436.040504
+     },
+     "lat": {
+      "n": 2319,
+      "median": 60.97602800000004,
+      "p95": 97.41009100000156,
+      "min": 23.489336999999978,
+      "max": 379.51741999999996
+     },
+     "runMs": 15050.876651999999,
+     "correct": 2319,
+     "accepted": 1797,
+     "incorrect": 0,
+     "badChain": 0,
+     "wrong": {},
+     "hostRss": 57909248,
+     "perIsolateRss": 347306803.2,
+     "correctPerS": 154.07740383626393,
+     "acceptedPerS": 119.39503867777762
+    }
+   ]
+  },
+  {
+   "N": 50,
+   "reps": [
+    {
+     "N": 50,
+     "rep": 1,
+     "code": 0,
+     "killed": null,
+     "stderr": "",
+     "before": {
+      "loadavg": [
+       10.87,
+       5.86,
+       4.92
+      ],
+      "codexProcs": 20
+     },
+     "after": {
+      "loadavg": [
+       24.65,
+       9.32,
+       6.08
+      ],
+      "codexProcs": 20
+     },
+     "peakRss": 13076545536,
+     "minAvail": 69759725568,
+     "memTotal": 134143905792,
+     "alive": 50,
+     "spawnErrors": 0,
+     "allReadyMs": 2176.6147659999997,
+     "ready": {
+      "n": 50,
+      "median": 2162.2902329999997,
+      "p95": 2176.1636369999997,
+      "min": 1811.02752,
+      "max": 2176.606742
+     },
+     "readySelf": {
+      "n": 50,
+      "median": 2036.1306989999998,
+      "p95": 2098.552547,
+      "min": 1788.685048,
+      "max": 2132.5056630000004
+     },
+     "lat": {
+      "n": 1526,
+      "median": 463.66233100000136,
+      "p95": 952.1889169999995,
+      "min": 55.25751700000001,
+      "max": 1481.2746469999997
+     },
+     "runMs": 15368.083337,
+     "correct": 1526,
+     "accepted": 1185,
+     "incorrect": 0,
+     "badChain": 0,
+     "wrong": {},
+     "hostRss": 57999360,
+     "perIsolateRss": 260370923.52,
+     "correctPerS": 99.29670255795803,
+     "acceptedPerS": 77.1078588015598
+    },
+    {
+     "N": 50,
+     "rep": 2,
+     "code": 0,
+     "killed": null,
+     "stderr": "",
+     "before": {
+      "loadavg": [
+       24.65,
+       9.32,
+       6.08
+      ],
+      "codexProcs": 20
+     },
+     "after": {
+      "loadavg": [
+       33.94,
+       12.44,
+       7.17
+      ],
+      "codexProcs": 20
+     },
+     "peakRss": 13374562304,
+     "minAvail": 68268027904,
+     "memTotal": 134143905792,
+     "alive": 50,
+     "spawnErrors": 0,
+     "allReadyMs": 2086.139796,
+     "ready": {
+      "n": 50,
+      "median": 2023.830017,
+      "p95": 2085.521726,
+      "min": 1600.482782,
+      "max": 2086.130108
+     },
+     "readySelf": {
+      "n": 50,
+      "median": 1811.0590379999999,
+      "p95": 1892.902313,
+      "min": 1559.611103,
+      "max": 1912.7815810000002
+     },
+     "lat": {
+      "n": 1236,
+      "median": 598.2856779999993,
+      "p95": 1054.9589889999988,
+      "min": 54.14640900000086,
+      "max": 1526.6862199999996
+     },
+     "runMs": 15413.235156,
+     "correct": 1236,
+     "accepted": 960,
+     "incorrect": 0,
+     "badChain": 0,
+     "wrong": {},
+     "hostRss": 57937920,
+     "perIsolateRss": 266332487.68,
+     "correctPerS": 80.19082220508749,
+     "acceptedPerS": 62.284133751524266
+    },
+    {
+     "N": 50,
+     "rep": 3,
+     "code": 0,
+     "killed": null,
+     "stderr": "",
+     "before": {
+      "loadavg": [
+       33.94,
+       12.44,
+       7.17
+      ],
+      "codexProcs": 20
+     },
+     "after": {
+      "loadavg": [
+       38.92,
+       14.59,
+       7.96
+      ],
+      "codexProcs": 20
+     },
+     "peakRss": 13237772288,
+     "minAvail": 68885815296,
+     "memTotal": 134143905792,
+     "alive": 50,
+     "spawnErrors": 0,
+     "allReadyMs": 2175.695617,
+     "ready": {
+      "n": 50,
+      "median": 2115.720794,
+      "p95": 2163.057111,
+      "min": 1425.964794,
+      "max": 2175.6856589999998
+     },
+     "readySelf": {
+      "n": 50,
+      "median": 1926.3215939999998,
+      "p95": 1985.3646629999998,
+      "min": 1390.380103,
+      "max": 1986.420969
+     },
+     "lat": {
+      "n": 1360,
+      "median": 539.4292399999995,
+      "p95": 1053.7696130000004,
+      "min": 55.58485500000006,
+      "max": 1770.5555489999997
+     },
+     "runMs": 15306.110814999998,
+     "correct": 1360,
+     "accepted": 1055,
+     "incorrect": 0,
+     "badChain": 0,
+     "wrong": {},
+     "hostRss": 57958400,
+     "perIsolateRss": 263596277.76,
+     "correctPerS": 88.85340086961862,
+     "acceptedPerS": 68.92671905694681
+    }
+   ]
+  }
+ ]
+}
