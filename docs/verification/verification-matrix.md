@@ -54,3 +54,23 @@ ledger's standard library dependencies plus test-only dependencies under the
 ledger package. Ledger test assertions and fixtures are unchanged; subprocess
 imports and the CLI module name use `core.ledger`. Output and logs were kept
 outside the source tree under `/tmp/endoforge-ledger.KCM0Ow/`.
+
+## Engine relocation verification
+
+On 2026-11-01, the engine relocation was checked locally with Python 3.14.8,
+Node.js 26.12.0, and bubblewrap 0.13.1. The source baseline is the Git commit
+containing this section. Earlier results above remain historical.
+
+| Scope | Command | Observed result |
+|---|---|---|
+| REQ-DOCS-001; engine source digests and links | `make check` | Exit 0; no link or digest failures |
+| REQ-CORE-001 and lifecycle boundaries; evaluator and gates | `make core-test engine-test` | Exit 0; 18 lifecycle/boundary and 19 engine tests passed |
+| Full suite, including relocated evaluator and frozen adapter | `make test ENDOFORGE_TEST_OUTPUT=/tmp/endoforge-engine.MNFEVS/test` | Exit 0 |
+| Full suite with Python optimization | `make test-optimized ENDOFORGE_TEST_OUTPUT=/tmp/endoforge-engine.MNFEVS/optimized` | Exit 0 |
+
+The relocated evaluator and gate tests and Python adapter are byte-for-byte
+unchanged. Engine tests exercise fixed gate order, frozen-content drift refusal,
+host failures, fresh finalist evaluation, and Pareto selection. The core boundary
+check grants imports only to the engine adapter's exact file path; lifecycle and
+ledger allowlists and import-isolation assertions remain in place. Full-suite logs
+and evidence are outside the source tree under `/tmp/endoforge-engine.MNFEVS/`.

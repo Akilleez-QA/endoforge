@@ -9,7 +9,7 @@ const copy = value => structuredClone(value);
 
 export function requireFrozen(reference) {
   return new Promise((resolve, reject) => {
-    const child = execFile('python3', ['-B', '-m', 'tools.engine.frozen'], {
+    const child = execFile('python3', ['-B', '-m', 'core.engine.frozen'], {
       cwd: fileURLToPath(new URL('../../', import.meta.url)), timeout: 10000, maxBuffer: 16 * 1024 * 1024,
     }, (error, stdout) => {
       if (error) return reject(new Error('frozen evaluator verification failed'));

@@ -19,7 +19,7 @@ ledger-test:
 	$(PYTHON) -B -m unittest core.ledger.test_ledger core.ledger.test_frozen core.ledger.test_provenance -v
 
 engine-test:
-	node --test tools/engine/*.test.mjs
+	node --test core/engine/*.test.mjs
 
 atomizer-test:
 	node tools/atomizer/test/trace.test.mjs
