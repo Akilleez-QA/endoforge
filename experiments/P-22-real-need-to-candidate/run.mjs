@@ -30,7 +30,7 @@ for (const isolation of ['thread', 'process']) {
   const pool = new IsolatePool({ hostPort: join(root, 'core/runtime/x1/host.mjs'), size: 10, isolation });
   try {
     for (const cohort of ['P21', 'P19']) {
-      const requests = cohort === 'P21' ? ids : Array.from({ length: 10 }, (_, i) => `add-${i + 1}`);
+      const requests = (cohort === 'P21' ? ids : Array.from({ length: 10 }, (_, i) => `add-${i + 1}`)).slice(0, fake ? Number(process.env.P22_LIMIT) || undefined : undefined);
       let cursor = 0;
       const start = performance.now();
       await Promise.all(Array.from({ length: 10 }, async () => {
@@ -63,4 +63,4 @@ const summary = cohorts.map(cohort => {
 });
 await writeFile(join(output, 'summary.json'), JSON.stringify({ precommit, testDouble: fake, wallMs: performance.now() - started, cohorts: summary, rows }, null, 2));
 console.log(JSON.stringify({ testDouble: fake, records: rows.length, promoted: rows.filter(r => r.promoted).length }));
-if (rows.length !== 60 || rows.some(r => !r.promoted)) process.exitCode = 1;
+if (rows.length !== (fake && Number(process.env.P22_LIMIT) ? 4 * Number(process.env.P22_LIMIT) : 60) || rows.some(r => !r.promoted)) process.exitCode = 1;

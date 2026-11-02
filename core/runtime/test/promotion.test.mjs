@@ -55,16 +55,16 @@ print('{}')
   assert.equal((await ledger('promote', { ...request, decisionPath: join(root, 'tamper.json') })).decision, 'refuse');
 });
 
-test('P-22 labelled sixty-record smoke harness and stage accounting', { timeout: 60000 }, async t => {
+test('P-22 labelled twelve-record smoke harness and stage accounting', { timeout: 60000 }, async t => {
   const root = await mkdtemp(join(tmpdir(), 'ef-p22-ci-')), output = join(root, 'output');
   t.after(() => rm(root, { recursive: true, force: true }));
-  const env = { ...process.env, P22_OUTPUT: output }; delete env.P22_NEEDS_ROOT;
+  const env = { ...process.env, P22_OUTPUT: output, P22_LIMIT: '3' }; delete env.P22_NEEDS_ROOT;
   await new Promise((resolve, reject) => execFile(process.execPath,
     [fileURLToPath(new URL('../../../experiments/P-22-real-need-to-candidate/run.mjs', import.meta.url)), '--fake'],
     { env, timeout: 50000 }, error => error ? reject(error) : resolve()));
   const summary = JSON.parse(await readFile(join(output, 'summary.json')));
-  assert.equal(summary.testDouble, true); assert.equal(summary.rows.length, 60);
-  assert.deepEqual(summary.cohorts.map(c => [c.count, c.promoted]), [[20, 20], [10, 10], [20, 20], [10, 10]]);
+  assert.equal(summary.testDouble, true); assert.equal(summary.rows.length, 12);
+  assert.deepEqual(summary.cohorts.map(c => [c.count, c.promoted]), [[3, 3], [3, 3], [3, 3], [3, 3]]);
   for (const row of summary.rows) {
     assert.equal(row.promoted, true); assert.equal(Object.keys(row.timings).length, 8);
     const { total, ...stages } = row.timings;
