@@ -4,6 +4,7 @@ import { basename, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { configuration, hash } from './host.mjs';
 import { ledger } from './ledger.mjs';
+import { fillExpected } from './reference.mjs';
 const schema = JSON.parse(await readFile(new URL('./glue.schema.json', import.meta.url)));
 export const glueRules = [
   'Every export of kernel.ts has exactly one glue.exports entry, and glue describes no other names.',
@@ -34,6 +35,7 @@ export function effortFor(need, setting = 'auto') {
 }
 export const reviewRule = 'Send no message before writing. Before your edit, silently check every case in tests.json against the contract and your code, and fix any mismatch. Then write all your files in one single edit and reply with only the word done.';
 export const exactRule = 'Before that edit, silently derive every numeric expect in tests.json step by step from the formula in CONTRACT.md, carrying at least 12 significant digits, and write the value you derived; never write a rounded or estimated value with a tolerance tighter than its error.';
+export const referenceRule = 'Also write reference.js: plain JavaScript that defines one function per kernel export, with the same name and parameters, computing exactly the formula in CONTRACT.md in double precision with only Math and Number, and throwing an Error for every expectError case. In tests.json omit expect from every value test; the supervisor runs reference.js in a sandbox and writes each expect from its result. Never write an expected value yourself.';
 export const terseRule = 'Send no message before writing. Write all your files in one single edit. After that edit, reply with only the word done.';
 export const stableOrder = ['instructions', 'glueRules', 'glueSchema', 'glueTemplate', 'stage'];
 export function promptFor(prompt, env) {
@@ -45,6 +47,7 @@ function invoke(directory, prompt, env, timeout, { resume = null, effort = null 
   const mode = env.ENDOFORGE_CODEX_TERSE ?? 'exact';
   if (mode === 'review') prompt = { ...prompt, instructions: `${prompt.instructions} ${reviewRule}` };
   if (mode === 'exact') prompt = { ...prompt, instructions: `${prompt.instructions} ${terseRule}${prompt.stage === 'specification' ? ` ${exactRule}` : ''}` };
+  if (mode === 'reference') prompt = { ...prompt, instructions: `${prompt.instructions} ${terseRule}${prompt.stage === 'specification' ? ` ${referenceRule}` : ''}` };
   if (mode === '1') prompt = { ...prompt, instructions: `${prompt.instructions} ${terseRule}` };
   const argv = env.ENDOFORGE_CODEX_CMD?.startsWith('[') ? JSON.parse(env.ENDOFORGE_CODEX_CMD) : [env.ENDOFORGE_CODEX_CMD];
   if (!argv?.length || !argv.every(x => typeof x === 'string' && x) || !env.CODEX_HOME) throw Error('ENDOFORGE_CODEX_CMD and CODEX_HOME required');
@@ -75,13 +78,19 @@ export async function generate({ need, directory, env = process.env, timeout = 6
   const reference = { ledger: join(directory, 'ledger.sqlite'), root };
   const id = basename(directory);
   const effort = effortFor(need, env.ENDOFORGE_CODEX_EFFORT || 'auto'), session = env.ENDOFORGE_CODEX_SESSION || 'resume', warm = session === 'resume', packed = session === 'packed';
+  const evaluated = (env.ENDOFORGE_CODEX_TERSE ?? 'exact') === 'reference', specNames = evaluated ? ['CONTRACT.md', 'reference.js', 'tests.json'] : ['CONTRACT.md', 'tests.json'];
   const start = performance.now();
   const thread = await invoke(workspace, { stage: 'specification', need, id, instructions:
     'The workspace starts empty; do not explore it or run commands. Write only CONTRACT.md and tests.json, CONTRACT.md under 40 lines. Do not write kernel.ts or glue.json yet. Define a pure bounded AssemblyScript kernel, explicit assumptions, exports and numeric tests. tests.json is a nonempty array of {name,fn,args,expect,tol?} or {name,fn,args,expectError:true}. Include boundary and trap cases. For every number result, state in CONTRACT.md the decimal places to show. These files will be frozen before implementation.', glueRules }, env, left(), { effort });
   const names = (await readdir(workspace)).sort();
-  if (JSON.stringify(names) !== JSON.stringify(['CONTRACT.md', 'tests.json'])) throw Error('code or unexpected files before freeze');
+  if (JSON.stringify(names) !== JSON.stringify(specNames)) throw Error('code or unexpected files before freeze');
   const files = Object.fromEntries(await Promise.all(names.map(async n => [n, await read(workspace, n)])));
-  const tests = JSON.parse(files['tests.json']);
+  let tests = JSON.parse(files['tests.json']);
+  if (evaluated && Array.isArray(tests)) {
+    tests = await fillExpected(files['reference.js'], tests);
+    files['tests.json'] = JSON.stringify(tests, null, 2);
+    await writeFile(join(workspace, 'tests.json'), files['tests.json']);
+  }
   if (!files['CONTRACT.md'].trim() || !Array.isArray(tests) || !tests.length) throw Error('contract and nonempty tests required');
   const generatedSpecMs = performance.now() - start, freezeStart = performance.now();
   files['frozen.sha256'] = JSON.stringify({ contract: hash(files['CONTRACT.md']), tests: hash(files['tests.json']) });
