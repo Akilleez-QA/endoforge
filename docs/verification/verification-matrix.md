@@ -344,3 +344,34 @@ pipeline, 18 lifecycle/boundary and 32 ledger tests passed. Full-suite success
 is not claimed. Final pipeline validation includes the sixty-record harness,
 all eight timing fields and non-overlapping stage sums. A separate fake-generator
 run using real AssemblyScript 0.28.20 promoted successfully in both pool modes.
+## Trusted compiler maximum verification — 2026-11-02 UTC
+
+Node 26.12.0, existing assertions and expected results unchanged.
+The new [toolchain tests](../../core/runtime/test/isolate-toolchain.test.mjs)
+use synthetic compiler bytes without downloading a compiler.
+
+| Requirement | Evidence | Actual result |
+|---|---|---|
+| REQ-ISO-006, REQ-ISO-008 | Trusted binary through compile, Module, Instance, instantiate and streaming paths in both modes; growth beyond supplied maximum; existing smaller maximum | Pass; native maximum supplied before execution, smaller declared maximum preserved |
+| REQ-ISO-004, REQ-ISO-008 | Copied supervisor policy and receipt observations; candidate-supplied policy with mismatched binary; replacement | Pass; original cap recorded, forged trust rejected and replacement healthy |
+| REQ-ISO-008 | Invalid names/digests/caps and duplicate policy entries | Pass; refused before dispatch |
+| REQ-ISO-001–007 | `make isolate-test` | Pass; all three test files, exit 0; new file rerun after adding existing-maximum coverage also exit 0 |
+| REQ-DOCS-001 | `make check` | Pass; 0 failures over 57 documents |
+
+A real pinned AssemblyScript 0.28.20 smoke run under the guard compiled a
+synthetic identity kernel (57 bytes) and returned 7 for input 7. Binaryen's
+existing 65,536-page maximum remains intact; only the digest-pinned `f64_pow`
+helper receives 16 pages. [P-20](../../experiments/P-20-pool-speed-rerun/RESULT.md)
+appends the full compile/residency rerun and policy-bearing receipts.
+
+`make test ENDOFORGE_TEST_OUTPUT=/tmp/ef-as-maxmem-tests` passed 18 core and
+32 ledger tests, then stalled in the engine test stage and was interrupted
+(exit 130). A direct synthetic `spawnSync` diagnostic returned `EPERM` with
+status 0 and child output. Full-suite success is not claimed; the sandbox's
+synchronous subprocess limitation does not affect the measured asynchronous
+pool/ledger path. Verification logs are retained with the dated P-20 receipts.
+
+`timeout --signal=INT --kill-after=5s 90s make test-optimized ENDOFORGE_TEST_OUTPUT=/tmp/ef-as-maxmem-tests-optimized`
+also passed 18 core and 32 ledger tests, then timed out at the engine stage
+(exit 124). The evaluator file was canceled with a pending promise; the gates
+file passed. Later Make targets were not reached in either full-suite run.

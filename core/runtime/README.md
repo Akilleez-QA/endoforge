@@ -94,11 +94,10 @@ through 4096 MiB, default 64; the ceiling applies to each linear memory created 
 that workcell. It is separate from the JS heap limits and does not bound the sum
 of multiple memories or total RSS.
 
-Module memories without declared maxima, including imports, and declarations or
+Untrusted module memories without declared maxima, including imports, and declarations or
 JS descriptors with initial/maximum above the ceiling terminate the cell before
-allocation. Module declaration limits are preserved, never supplied or raised.
-This changes the previous omitted-maximum rewriting behavior. JS Memory
-descriptors still default to the ceiling; V8’s native maximum remains a backstop. JS `grow()` checks the requested size before calling V8. Checked
+allocation. Existing module declaration limits are preserved, never raised.
+JS Memory descriptors still default to the ceiling; V8’s native maximum remains a backstop. JS `grow()` checks the requested size before calling V8. Checked
 modules receive appended growth helpers and a mutable breach flag; each original
 `memory.grow` calls its helper, which checks the requested size and traps after
 setting the flag if the configured ceiling would be exceeded. Helpers preserve
@@ -107,6 +106,23 @@ internal name and invoked once after flag registration. The flag is checked befo
 any evaluator result is returned, including when a host callback catches the trap.
 Flags remain internal implementation evidence and must not be modified by ports.
 The appended exports are visible to module/instance reflection.
+
+The supervisor may declare `trustedWasmModules: [{name, sha256, maximumPages}]`
+when constructing the pool. A matching original binary receives that explicit
+maximum only where a memory declaration omits one, before compilation or
+allocation. Each cap must fit `wasmMemoryMaxMb`; initial sizes must fit the cap.
+Names label the policy; SHA-256 of the complete original bytes establishes the
+match. Candidate inputs and `portOptions` cannot add trust. The supervisor copies
+the policy into every result and ledger observation, including worker losses.
+An empty policy is the default. All binary parsing, growth instrumentation and
+unsupported-feature checks still apply. This is a toolchain compatibility policy,
+not authority for arbitrary candidate modules.
+
+[AssemblyScript toolchain helper](../../experiments/assemblyscript-toolchain.mjs)
+pins the AssemblyScript 0.28.20 `f64_pow` helper to 16 pages (1 MiB).
+Binaryen already declares 65,536 pages; kernel output retains `--maximumMemory 16`.
+The [P-20 harness](../../experiments/P-20-pool-speed-rerun/run.mjs) supplies the
+policy before importing the compiler in each workcell and during supervisor builds.
 
 A breach sends `ERR_WORKCELL_WASM_MEMORY_LIMIT` to the pool and exits that worker.
 The host waits for exit, emits `outcome_unknown` with `reason: 'limit'`, appends

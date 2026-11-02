@@ -1,3 +1,5 @@
+import { createHash } from 'node:crypto';
+
 const pageBytes = 65536;
 const leb = value => {
   const bytes = [];
@@ -35,7 +37,21 @@ class Reader {
   name() { return this.take(this.uint()); }
 }
 
-export function installWasmLimit(maxMb, breach) {
+export function trustedWasmPolicy(entries, maxMb) {
+  if (!Array.isArray(entries)) throw new TypeError('trustedWasmModules must be an array');
+  const names = new Set(), hashes = new Set();
+  return Object.freeze(entries.map(({ name, sha256, maximumPages }) => {
+    if (typeof name !== 'string' || !/^[a-zA-Z0-9._-]{1,100}$/.test(name) ||
+        typeof sha256 !== 'string' || !/^[a-f0-9]{64}$/.test(sha256) ||
+        !Number.isSafeInteger(maximumPages) || maximumPages < 1 || maximumPages > maxMb * 16 ||
+        names.has(name) || hashes.has(sha256)) throw new TypeError('invalid trustedWasmModules entry');
+    names.add(name); hashes.add(sha256);
+    return Object.freeze({ name, sha256, maximumPages });
+  }));
+}
+
+export function installWasmLimit(maxMb, breach, trustedWasmModules = []) {
+  const trustedModules = new Map(trustedWasmPolicy(trustedWasmModules, maxMb).map(entry => [entry.sha256, entry]));
   const native = Object.fromEntries(Object.getOwnPropertyNames(WebAssembly).map(key => [key, WebAssembly[key]]));
   const cap = maxMb * 1024 * 1024 / pageBytes;
   const modules = new WeakMap();
@@ -50,14 +66,14 @@ export function installWasmLimit(maxMb, breach) {
       else if (flag.value) fail();
     }
   };
-  const memoryType = reader => {
+  const memoryType = (reader, trusted) => {
     const kind = reader.uint();
     if (kind > 3) unsupported();
     const initial = reader.uint();
-    if (!(kind & 1)) fail();
-    const maximum = reader.uint();
-    if (initial > cap || maximum > cap) fail();
-    return [...leb(kind), ...leb(initial), ...leb(maximum)];
+    if (!(kind & 1) && !trusted) fail();
+    const maximum = kind & 1 ? reader.uint() : trusted.maximumPages;
+    if (initial > maximum || initial > cap || maximum > cap) fail();
+    return [...leb(kind | 1), ...leb(initial), ...leb(maximum)];
   };
   const valueType = reader => {
     const type = reader.byte();
@@ -68,6 +84,7 @@ export function installWasmLimit(maxMb, breach) {
       ? new Uint8Array(source.buffer, source.byteOffset, source.byteLength).slice()
       : new Uint8Array(source).slice();
     if (!native.validate(bytes)) throw new native.CompileError('invalid wasm module');
+    const trusted = trustedModules.size ? trustedModules.get(createHash('sha256').update(bytes).digest('hex')) : undefined;
     const reader = new Reader(bytes);
     const header = reader.take(8);
     const sections = new Map();
@@ -96,7 +113,7 @@ export function installWasmLimit(maxMb, breach) {
         imports.name(); imports.name();
         const kind = imports.byte(), prefix = imports.bytes.slice(start, imports.offset);
         if (kind === 2) {
-          entries.push([...prefix, ...memoryType(imports)]);
+          entries.push([...prefix, ...memoryType(imports, trusted)]);
           memories++;
           continue;
         }
@@ -116,7 +133,7 @@ export function installWasmLimit(maxMb, breach) {
     if (sections.has(5)) {
       const memory = new Reader(Uint8Array.from(sections.get(5)));
       const entries = [];
-      for (let i = memory.uint(); i; i--) { entries.push(memoryType(memory)); memories++; }
+      for (let i = memory.uint(); i; i--) { entries.push(memoryType(memory, trusted)); memories++; }
       sections.set(5, vector(entries));
     }
     if (!memories) return { bytes, flag: null, start: null };
