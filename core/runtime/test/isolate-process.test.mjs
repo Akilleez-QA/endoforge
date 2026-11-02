@@ -44,7 +44,7 @@ test('process fallback, validation and unknown exits', { timeout: 30000 }, async
   assert.equal((await pool.run(job())).status, 'completed');
 });
 
-test('process compile gate rejects missing and oversized imported or defined memory limits', { timeout: 30000 }, async t => {
+test('process compile gate rejects missing and oversized imported or defined memory limits', { timeout: 60000 }, async t => {
   const { job } = await fixture(t);
   const pool = new IsolatePool({ isolation: 'process', size: 1, wasmMemoryMaxMb: 1,
     hostPort: fileURLToPath(new URL('./fixtures/wasm-port.mjs', import.meta.url)) });

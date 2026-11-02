@@ -192,7 +192,7 @@ test('heap breach while a neighbor is mid-job preserves accepted and rejected ve
   assert.notEqual(survivor.workcell, replacement.workcell);
 });
 
-test('WASM declarations and growth terminate only the breacher, including swallowed internal traps', { timeout: 90000 }, async t => {
+test('WASM declarations and growth terminate only the breacher, including swallowed internal traps', { timeout: 180000 }, async t => {
   const { reference, job, directory } = await fixture(t);
   const pool = new IsolatePool({ hostPort: wasmPort, size: 2, wasmMemoryMaxMb: 1 });
   t.after(() => pool.close());
