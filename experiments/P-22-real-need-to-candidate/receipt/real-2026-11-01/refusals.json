@@ -1,0 +1,165 @@
+[
+ {
+  "isolation": "process",
+  "id": "C-005",
+  "decision": "refuse",
+  "reason": "unverified chain or incomplete passing pool evidence",
+  "failedGates": {
+   "G7_glue": "additionalChargeGrams: number result without precision; totalChargeGrams: number result without precision"
+  }
+ },
+ {
+  "isolation": "process",
+  "id": "C-006",
+  "decision": "refuse",
+  "reason": "unverified chain or incomplete passing pool evidence",
+  "failedGates": {
+   "G4_tests": null,
+   "G7_glue": "maximumChargeG: number result without precision"
+  }
+ },
+ {
+  "isolation": "process",
+  "id": "C-007",
+  "decision": "refuse",
+  "reason": "unverified chain or incomplete passing pool evidence",
+  "failedGates": {
+   "G7_glue": "deltaFToC: number result without precision; referenceDeviationF: number result without precision"
+  }
+ },
+ {
+  "isolation": "process",
+  "id": "CC-001",
+  "decision": "refuse",
+  "reason": "unverified chain or incomplete passing pool evidence",
+  "failedGates": {
+   "G7_glue": "targetSuperheatK: number result without precision; targetSuctionTemperatureC: number result without precision; superheatDeviationK: number result without precision"
+  }
+ },
+ {
+  "isolation": "process",
+  "id": "CC-007",
+  "decision": "refuse",
+  "reason": "unverified chain or incomplete passing pool evidence",
+  "failedGates": {
+   "G7_glue": "recirculationRatio: number result without precision"
+  }
+ },
+ {
+  "isolation": "process",
+  "id": "CC-009",
+  "decision": "refuse",
+  "reason": "unverified chain or incomplete passing pool evidence",
+  "failedGates": {
+   "G4_tests": null
+  }
+ },
+ {
+  "isolation": "process",
+  "id": "CC-011",
+  "decision": "refuse",
+  "reason": "unverified chain or incomplete passing pool evidence",
+  "failedGates": {
+   "G7_glue": "r22Cost: number result without precision"
+  }
+ },
+ {
+  "isolation": "process",
+  "id": "CC-014",
+  "decision": "refuse",
+  "reason": "unverified chain or incomplete passing pool evidence",
+  "failedGates": {
+   "G4_tests": null
+  }
+ },
+ {
+  "isolation": "process",
+  "id": "CC-022",
+  "decision": "refuse",
+  "reason": "unverified chain or incomplete passing pool evidence",
+  "failedGates": {
+   "G7_glue": "pressureDropPsi: number result without precision"
+  }
+ },
+ {
+  "isolation": "process",
+  "id": "CC-026",
+  "decision": "refuse",
+  "reason": "unverified chain or incomplete passing pool evidence",
+  "failedGates": {
+   "G7_glue": "dischargePressurePsig: number result without precision"
+  }
+ },
+ {
+  "isolation": "process",
+  "id": "CC-027",
+  "decision": "refuse",
+  "reason": "unverified chain or incomplete passing pool evidence",
+  "failedGates": {
+   "G7_glue": "subcoolingF: number result without precision"
+  }
+ },
+ {
+  "isolation": "thread",
+  "id": "C-005",
+  "decision": "refuse",
+  "reason": "unverified chain or incomplete passing pool evidence",
+  "failedGates": {
+   "G7_glue": "additionalChargeG: number result without precision; totalChargeG: number result without precision"
+  }
+ },
+ {
+  "isolation": "thread",
+  "id": "C-006",
+  "decision": "refuse",
+  "reason": "unverified chain or incomplete passing pool evidence",
+  "failedGates": {
+   "G7_glue": "maximumChargeG: number result without precision; chargeMarginG: number result without precision"
+  }
+ },
+ {
+  "isolation": "thread",
+  "id": "CC-001",
+  "decision": "refuse",
+  "reason": "unverified chain or incomplete passing pool evidence",
+  "failedGates": {
+   "G7_glue": "targetFromRoomC: number result without precision; targetFromDesignC: number result without precision; targetFromDesignF: number result without precision"
+  }
+ },
+ {
+  "isolation": "thread",
+  "id": "CC-009",
+  "decision": "refuse",
+  "reason": "unverified chain or incomplete passing pool evidence",
+  "failedGates": {
+   "G7_glue": "inventoryLb: number result without precision"
+  }
+ },
+ {
+  "isolation": "thread",
+  "id": "CC-011",
+  "decision": "refuse",
+  "reason": "unverified chain or incomplete passing pool evidence",
+  "failedGates": {
+   "G7_glue": "r22CostUsd: number result without precision"
+  }
+ },
+ {
+  "isolation": "thread",
+  "id": "CC-026",
+  "decision": "refuse",
+  "reason": "unverified chain or incomplete passing pool evidence",
+  "failedGates": {
+   "G7_glue": "dischargePressurePsig: number result without precision"
+  }
+ },
+ {
+  "isolation": "thread",
+  "id": "CC-027",
+  "decision": "refuse",
+  "reason": "unverified chain or incomplete passing pool evidence",
+  "failedGates": {
+   "G7_glue": "subcoolingF: number result without precision; deviationF: number result without precision"
+  }
+ }
+]
