@@ -38,6 +38,13 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Fixed
 
+- Synthetic atomizer fan-out timing now disables host headroom throttling for
+  that scheduler invocation. The fixture sleeps rather than consuming a core;
+  inherited load and memory limits could serialize its independent workers on
+  small runners despite concurrency 9. The >2x speedup and six-second wall
+  assertions, receipt timing and rounding, and production throttling are
+  unchanged. See the [verification matrix](docs/verification/verification-matrix.md)
+  for two-core before/after measurements.
 - Node 22 X1 test discovery by passing explicit test-file paths in
   [PR #3](https://github.com/Akilleez-QA/endoforge/pull/3).
   This is a historical fix; the current Makefile has no X1 test target.
