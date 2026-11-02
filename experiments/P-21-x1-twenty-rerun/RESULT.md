@@ -4,40 +4,40 @@ Precommit: [PRECOMMIT.md](PRECOMMIT.md), sha256 in [receipt/precommit.sha256](re
 
 ## Headline
 
-| | 2026-10-17 loop 0 | 2026-10-18 atomizer direct | 2026-11-01 (this run) |
-|---|---|---|---|
-| Worker | fresh Claude agent per request | Claude Sonnet, one per request | Codex CLI (scubasteve), effort medium |
-| Concurrency | sequential | pool of 10 | pool of 10 |
-| Median s | 96.5 | 29.4 | 59.4 |
-| p95 s | 146.2 | 53.7 | 83.6 |
-| Gated (G1-G7) | 19/20 (CC-001 failed) | 18/20 (C-006, CC-026 failed) | 20/20 |
-| Whole set wall s | not measured as a set | 101 | 147.2 |
-| Tokens | not recorded | 77,599 output | 401,547 input+output (Codex total) |
+| | 2026-10-17 loop 0 | 2026-10-18 atomizer direct | 2026-11-01 (this run) | 2026-11-02 ([P-28](../P-28-p21-nov2/RESULT.md)) |
+|---|---|---|---|---|
+| Worker | fresh Claude agent per request | Claude Sonnet, one per request | Codex CLI (scubasteve), effort medium | Codex CLI (scubasteve), effort auto, full runNeed pipeline in a pre-warmed thread pool |
+| Concurrency | sequential | pool of 10 | pool of 10 | pool of 10 |
+| Median s | 96.5 | 29.4 | 59.4 | 72.6 |
+| p95 s | 146.2 | 53.7 | 83.6 | 94.4 |
+| Gated (G1-G7) | 19/20 (CC-001 failed) | 18/20 (C-006, CC-026 failed) | 20/20 | 16/20 promoted (CC-025, CC-036, C-012 refused; C-007 generate failed) |
+| Whole set wall s | not measured as a set | 101 | 147.2 | 168.3 |
+| Tokens | not recorded | 77,599 output | 401,547 input+output (Codex total) | not recorded |
 
 Per-request seconds (clock starts before the request is read; stops after the seven gates; 2026-11-01 includes an independent harness re-gate, median 0.57 s):
 
-| Request | Oct 17 | Oct 18 | Nov 1 |
-|---|---|---|---|
-| CC-036 | 60.5 | 22.7 | 41.5 |
-| C-015 | 58.5 | 29.2 | 45.6 |
-| CC-025 | 73.9 | 25.1 | 45.8 |
-| CC-011 | 74.2 | 17.7 | 47.4 |
-| C-019 | 85.0 | 32.3 | 50.8 |
-| CC-002 | 93.7 | 29.4 | 58.5 |
-| C-016 | 96.5 | 24.4 | 58.5 |
-| CC-014 | 74.0 | 27.7 | 59.4 |
-| C-007 | 79.5 | 30.8 | 64.3 |
-| CC-027 | 76.2 | 26.7 | 66.9 |
-| CC-007 | 105.7 | 29.1 | 54.7 |
-| CC-001 | 99.1 (not gated) | 29.8 | 68.0 |
-| CC-022 | 127.1 | 37.1 | 52.4 |
-| CC-026 | 126.4 | 55.0 (not gated) | 63.8 |
-| CC-013 | 146.2 | 27.8 | 65.6 |
-| C-005 | 113.4 | 45.2 | 83.6 |
-| C-006 | 131.8 | 46.3 (not gated) | 72.0 |
-| C-010 | 128.6 | 53.7 | 74.1 |
-| C-012 | 106.5 | 34.2 | 96.7 |
-| CC-009 | 161.6 | 37.8 | 80.2 |
+| Request | Oct 17 | Oct 18 | Nov 1 | Nov 2 ([P-28](../P-28-p21-nov2/RESULT.md)) |
+|---|---|---|---|---|
+| CC-036 | 60.5 | 22.7 | 41.5 | 55.6 (not promoted) |
+| C-015 | 58.5 | 29.2 | 45.6 | 80.7 |
+| CC-025 | 73.9 | 25.1 | 45.8 | 51.3 (not promoted) |
+| CC-011 | 74.2 | 17.7 | 47.4 | 61.7 |
+| C-019 | 85.0 | 32.3 | 50.8 | 78.3 |
+| CC-002 | 93.7 | 29.4 | 58.5 | 69.5 |
+| C-016 | 96.5 | 24.4 | 58.5 | 69.3 |
+| CC-014 | 74.0 | 27.7 | 59.4 | 69.6 |
+| C-007 | 79.5 | 30.8 | 64.3 | 50.1 (not promoted) |
+| CC-027 | 76.2 | 26.7 | 66.9 | 81.6 |
+| CC-007 | 105.7 | 29.1 | 54.7 | 70.0 |
+| CC-001 | 99.1 (not gated) | 29.8 | 68.0 | 76.4 |
+| CC-022 | 127.1 | 37.1 | 52.4 | 61.8 |
+| CC-026 | 126.4 | 55.0 (not gated) | 63.8 | 85.5 |
+| CC-013 | 146.2 | 27.8 | 65.6 | 72.6 |
+| C-005 | 113.4 | 45.2 | 83.6 | 95.5 |
+| C-006 | 131.8 | 46.3 (not gated) | 72.0 | 86.9 |
+| C-010 | 128.6 | 53.7 | 74.1 | 84.0 |
+| C-012 | 106.5 | 34.2 | 96.7 | 94.4 (not promoted) |
+| CC-009 | 161.6 | 37.8 | 80.2 | 86.7 |
 
 ## Reading
 
