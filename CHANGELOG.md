@@ -6,6 +6,13 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Added
 
+- Bounded V8 isolate workcells in `core/runtime/`, configurable worker heap limits,
+  replacement after worker loss, and host-appended receipts using the existing
+  ledger schema and hash chain. Core-count default sizing follows P-15/P-17.
+  A separate 64 MiB default WASM linear-memory ceiling checks declarations and
+  JS/internal growth, with explicit worker-local limit outcomes. `make isolate-test`
+  covers evaluator parity, concurrency at 1/4/16, tampering, heap/WASM breaches
+  during neighboring work, replacement, and shutdown.
 - GPL-3.0-only license, contribution and conduct guidance, security policy,
   GitHub Actions CI, and secret-scanning configuration in
   [PR #1](https://github.com/Akilleez-QA/endoforge/pull/1).

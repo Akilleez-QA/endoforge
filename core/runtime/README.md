@@ -5,3 +5,152 @@ Generic utilities for independent local workflows. Supply your own inputs and ou
 Run agent-pool.mjs with an explicitly configured client and account directories. It supports public Codex CLI invocations and checks account-marker presence without reading credential contents.
 
 Worker-registry integration requires WORKERS_BIN explicitly; no host registry is discovered automatically.
+
+## V8 isolate workcells
+
+[IsolatePool](isolate-pool.mjs) schedules real
+[evaluateCandidates](../engine/evaluator.mjs) calls inside Node workers through
+[isolate-workcell.mjs](isolate-workcell.mjs). Each workcell executes one batch at a
+time, including the real gates and frozen-content checks. Callers provide a host
+port module exporting `createPort(options)` and durable ledger inputs, not replacement
+contracts in the runtime. The bounded FIFO pool defaults to available CPU parallelism;
+workers are created on demand and retained until `close()`.
+[P-15](../../experiments/P-15-workcell-concurrency/RESULT.md) showed contention at
+large widths; [P-17](../../experiments/P-17-workcell-gap/RESULT.md) measured a
+throughput plateau at 20–32 workcells, with 28 best on 28 pinned cores. These
+synthetic probes support sizing throughput pools to available cores, rather than
+using P-15’s latency-driven width of 10. Latency-sensitive callers can set a smaller
+`size`; the probes do not establish an optimum for every workload.
+
+```js
+import { IsolatePool } from './core/runtime/isolate-pool.mjs';
+const pool = new IsolatePool({ hostPort: '/tmp/example/host-port.mjs', size: 4,
+  resourceLimits: { maxOldGenerationSizeMb: 128, maxYoungGenerationSizeMb: 16 },
+  wasmMemoryMaxMb: 64 });
+try {
+  const result = await pool.run({ reference, candidates, receipts, portOptions: {} });
+  console.log(result.report, result.receipts);
+} finally {
+  await pool.close();
+}
+```
+
+Here `reference`, `candidates`, and receipt templates come from the caller's durable
+ledger. The [ICD](../../docs/interfaces/ledger-icd.md#v8-workcell-pool-interface)
+defines all fields and failure states; the
+`synthetic fixture` demonstrates their construction.
+[isolate-ledger.mjs](isolate-ledger.mjs) invokes Python's existing `Ledger` validation
+and append implementation on the host. Every batch produces one receipt per
+candidate, preserving candidate/oracle binding without changing the schema.
+Unknown worker outcomes produce inconclusive receipts and never a retry or a pass.
+Keep ledger files and other generated evidence outside the source tree.
+
+Run `make isolate-test` for native evaluator parity, multi-isolate chain verification
+and tampering, concurrency at 1/4/16, real heap exhaustion, WASM declaration and
+growth breaches, worker exit, replacement, frozen drift, and graceful shutdown.
+Both memory breach tests hold a healthy neighbor mid-job and verify complete
+accepted/rejected reports after the breached cell exits and is replaced. Tests use
+local synthetic ports and Python;
+they require no model service, compiler download, or WebAssembly runtime package.
+
+## Source basis and limits
+
+The R02 scheduling rule is one JavaScript job at a time per isolate, with CPU
+parallelism supplied by multiple workers. V8 may use internal helper threads.
+The P-15 and P-17 probes inform scheduling only: their synthetic contracts and
+private hash encodings are not runtime implementations or qualification evidence.
+[P-16](../../experiments/P-16-workerd-isolates/RESULT.md) found that standalone
+workerd killed every isolate on a JS heap breach and accepted 256 MiB of WASM
+memory despite a 128 MiB heap flag. This pool instead uses Node’s worker-local
+heap termination and a separate in-workcell WASM ceiling; its own tests establish
+neighbor survival, rather than inferring it from workerd or from throughput.
+
+V8 source inspected read-only at `~/work/ref/v8`, commit
+`b13350f841bb1b868a2490bf554945d0e580fba2`:
+`include/v8-isolate.h`, `ResourceConstraints` and `AddNearHeapLimitCallback`, specify
+old/young generation limits and near-limit callbacks. `src/heap/heap.cc`,
+`Heap::CheckHeapLimitReached` and `Heap::InvokeNearHeapLimitCallback`, show that a
+callback may increase the limit and an unresolved limit can cause fatal OOM.
+Those V8 primitives alone do not establish worker-local recovery.
+
+Node v22.21.0's
+[doc/api/worker_threads.md](https://github.com/nodejs/node/blob/v22.21.0/doc/api/worker_threads.md)
+defines worker heap limits and termination. Its
+[src/node_worker.cc](https://github.com/nodejs/node/blob/v22.21.0/src/node_worker.cc),
+`Worker::UpdateResourceConstraints` and `Worker::NearHeapLimit`, supplies the embedding:
+separate isolates, generation constraints, and `ERR_WORKER_OUT_OF_MEMORY` shutdown.
+The pool waits for exit before replacement. Heap flags that override these limits
+are refused. Limits exclude ArrayBuffers, native allocations, and total RSS;
+global OOM or native process crashes can still terminate the host. Host modules are
+trusted code with normal Node privileges. Workcells are not an OS sandbox.
+
+## WebAssembly memory enforcement
+
+[isolate-wasm.mjs](isolate-wasm.mjs) patches the worker’s `WebAssembly.Memory`,
+`Memory.prototype.grow`, `compile`, `Module`, `instantiate`, and `Instance` before
+importing the host port. `compileStreaming` and `instantiateStreaming` buffer their
+responses and use the same checked path. `wasmMemoryMaxMb` is an integer from 1
+through 4096 MiB, default 64; the ceiling applies to each linear memory created in
+that workcell. It is separate from the JS heap limits and does not bound the sum
+of multiple memories or total RSS.
+
+Memory declarations and JS descriptors with an initial or explicit maximum above
+the ceiling terminate the workcell before allocation. Missing maxima are replaced
+with the ceiling, including imported memory types, so V8’s native maximum remains
+a backstop. JS `grow()` checks the requested size before calling V8. Checked
+modules receive appended growth helpers and a mutable breach flag; each original
+`memory.grow` calls its helper, which checks the requested size and traps after
+setting the flag if the configured ceiling would be exceeded. Helpers preserve
+existing function/global indices. A start function is exported under a unique
+internal name and invoked once after flag registration. The flag is checked before
+any evaluator result is returned, including when a host callback catches the trap.
+Flags remain internal implementation evidence and must not be modified by ports.
+The appended exports are visible to module/instance reflection.
+
+A breach sends `ERR_WORKCELL_WASM_MEMORY_LIMIT` to the pool and exits that worker.
+The host waits for exit, emits `outcome_unknown` with `reason: 'limit'`, appends
+inconclusive receipts, and replaces only that workcell. Heap exhaustion uses
+`ERR_WORKER_OUT_OF_MEMORY` through the same exit/replacement path. Neither lost job
+is retried. A smaller module-declared maximum retains normal WASM failure behavior:
+`memory.grow` can return -1 below the configured ceiling without being a pool breach.
+
+The binary guard supports wasm32 scalar functions, ordinary reference types,
+bulk memory, imported/defined memories, and shared memory declarations. Unsupported
+features in memory-bearing modules (including SIMD, atomics, GC types, exceptions,
+and memory64) fail closed with a compilation error; there is no unchecked fallback.
+Modules without memories need no growth instrumentation. Modules transferred from
+outside the workcell cannot be instantiated: they must be compiled locally through
+the guard. Ports are trusted Node code and must use this realm’s checked API;
+new realms, native addons, or other workers can bypass JavaScript wrappers and are
+outside this interface. No Wasmtime dependency is introduced.
+
+The WebAssembly specification was inspected read-only at `~/work/ref/spec`, commit
+`6057acdb1a213f85369c64454c078a15f11ac4b1` (short `6057acdb1a21`):
+
+- `document/core/syntax/types.rst`, **Limits** and **Memory Types**: memory limits
+  use pages; an omitted maximum permits growth to any valid size.
+- `document/core/exec/runtime.rst`, **Memory Instances**: a page is 65536 bytes.
+- `document/core/exec/instructions.rst`, **memory.grow**: growth must fail beyond
+  a declared maximum and failure returns -1; resource shortages may also fail.
+  See the [core specification](https://webassembly.github.io/spec/core/exec/instructions.html#exec-memory-grow).
+- `document/core/binary/types.rst`, **Limits** and **Memory Types**, and
+  `document/core/binary/modules.rst`, **Import**, **Memory**, **Start**, and **Code**
+  sections: encodings used for checking limits and appending instrumentation.
+- `document/js-api/index.bs`, **Memory**, **grow the memory buffer**, and
+  **Memory.grow**: JS growth failure throws `RangeError`, unlike the instruction’s
+  -1 result. See the [JS API specification](https://webassembly.github.io/spec/js-api/#dom-memory-grow).
+
+V8 source at `~/work/ref/v8`, commit
+`b13350f841bb1b868a2490bf554945d0e580fba2` (short `b13350f841bb`), supplies the
+implementation cross-check:
+
+- `src/wasm/wasm-js.cc`, `WebAssemblyMemory` and `WebAssemblyMemoryGrowImpl`:
+  descriptor handling and the JS maximum-size check/`RangeError` path.
+- `src/wasm/wasm-objects.cc`, `WasmMemoryObject::Grow`: compares requested pages
+  with the memory’s maximum and returns -1 before growth if exceeded.
+- `src/runtime/runtime-wasm.cc`, `Runtime_WasmMemoryGrow`: the instruction runtime
+  delegates to `WasmMemoryObject::Grow` and returns its result.
+
+These pinned references explain memory semantics; they do not claim that the
+installed Node binary was built from this V8 checkout. Tests use the installed
+Node runtime to demonstrate actual worker-local enforcement.
