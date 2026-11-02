@@ -1,0 +1,38 @@
+{
+  "artifactVerification": {
+    "command": "python3 -B experiments/P-19-need-to-candidate/verify.py",
+    "exitCode": 0,
+    "output": "60 raw runs; 120 independent chain hash replays; 60 artifact hashes; all percentiles verified"
+  },
+  "refrigerationAcceptance": {
+    "command": "PYTHON=\"$HOME/work/cstack-venv-tmp/bin/python\" bash tools/e2e_refrigeration.sh",
+    "cwd": "../cstack",
+    "exitCode": 0,
+    "output": {
+      "approval_id": "5aecab5ba8f346278201e8e9a56fd68d",
+      "endoforge_implemented": true,
+      "ledger_events": [
+        "precommit",
+        "precommit",
+        "outcome"
+      ],
+      "verify_chain": true
+    }
+  },
+  "implementationLines": 306,
+  "repositoryChecks": "repository-checks.json",
+  "sandboxObservation": {
+    "node": "v26.12.0",
+    "operation": "execFileSync('python3', ['-B', '-c', 'print(1)'])",
+    "exitCode": 1,
+    "error": "spawnSync python3 EPERM",
+    "childStdout": "1\n",
+    "boundary": "Observed sandbox restriction; no permissions escalation available"
+  },
+  "additionalChecks": [
+    "Experiment Markdown file targets exist",
+    "No expanded HOME path in experiment artifacts",
+    "Precommit SHA-256 unchanged",
+    "git diff --check passed"
+  ]
+}
