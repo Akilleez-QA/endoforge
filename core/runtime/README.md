@@ -233,6 +233,22 @@ The returned candidate grants no promotion. CI uses the explicitly labelled
 [fake Codex script](test/fixtures/x1/fake-codex.mjs), which always authors addition;
 it is a test double and supplies no evidence of live synthesis quality.
 
+`ENDOFORGE_CODEX_TERSE=scalar` opts into the exact prompt plus a finite numeric
+scalar boundary rule. The default remains `exact`. Before freeze, scalar mode
+drops tests containing nonnumeric or non-finite arguments and fractional
+`expectError` inputs at explicitly typed integer parameter positions. Signature
+types such as `n: i32`, `n: int`, and `n: integer` are recognized; untyped or
+ambiguous prose is not inferred. Retained expectations and tolerances are unchanged.
+Every function identified in signatures or original tests must retain a value
+test, or generation fails before freeze. The request's `scalar-filter.json`
+records dropped ids (name or index when no id exists), count, reasons and functions
+missing value tests, including coverage failures. Successful generation and
+pipeline results also include `scalarFilter`; implementation receives the filtered
+frozen specification. This addresses unrepresentable inputs at the WASM boundary
+without changing gates. [P-42 precommit](../../experiments/P-42-scalar/PRECOMMIT.md)
+defines the prospective comparison; its copied harness uses `P22_OUTPUT` outside
+the checkout and `ENDOFORGE_CODEX_TERSE=exact` or `scalar` for each arm.
+
 [x1/pipeline.mjs](x1/pipeline.mjs) connects generation, supervisor compilation,
 pool evaluation, receipt storage and local promotion. POODO currently supplies
 instructions, not a callable approval API. EndoForge's `ledger('promote', request)`

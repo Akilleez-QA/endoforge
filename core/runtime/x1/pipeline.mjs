@@ -24,8 +24,10 @@ export async function runNeed(options) {
 }
 async function attempt({ need, directory, pool, env = process.env, compiler = env.ENDOFORGE_ASC_CMD, deadline = Infinity }) {
   const timings = Object.fromEntries(['generate', 'freeze', 'compile', 'gate', 'ledger', 'promote'].map(k => [k, null]));
+  let scalarFilter;
   try {
     const generated = await generate({ need, directory, env, check: failures(compiler), deadline });
+    scalarFilter = generated.scalarFilter;
     Object.assign(timings, generated.timings);
     let start = performance.now();
     const candidate = { ...generated.candidate, compiled: await compile(generated.candidate.files, compiler) };
@@ -42,6 +44,9 @@ async function attempt({ need, directory, pool, env = process.env, compiler = en
       receipt: { id: result.receipts[0].record.id, hash: result.receipts[0].hash }, decisionPath: join(directory, 'promotion.json') });
     timings.promote = performance.now() - start;
     return { promoted: decision.decision === 'promote', candidate: identity, receipt: decision.receipt,
-      decision: decision.sha256, testDouble: generated.testDouble, timings };
-  } catch { return { promoted: false, error: 'pipeline stage failed; inspect local artifacts', testDouble: env.ENDOFORGE_CODEX_TEST_DOUBLE === '1', timings }; }
+      decision: decision.sha256, testDouble: generated.testDouble, timings, ...(scalarFilter ? { scalarFilter } : {}) };
+  } catch (error) {
+    scalarFilter ??= error?.scalarFilter;
+    return { promoted: false, error: 'pipeline stage failed; inspect local artifacts', testDouble: env.ENDOFORGE_CODEX_TEST_DOUBLE === '1', timings, ...(scalarFilter ? { scalarFilter } : {}) };
+  }
 }

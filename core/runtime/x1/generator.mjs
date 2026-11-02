@@ -5,6 +5,7 @@ import { performance } from 'node:perf_hooks';
 import { configuration, hash } from './host.mjs';
 import { ledger } from './ledger.mjs';
 import { fillExpected } from './reference.mjs';
+import { filterScalarTests } from './scalar.mjs';
 const schema = JSON.parse(await readFile(new URL('./glue.schema.json', import.meta.url)));
 export const glueRules = [
   'Every export of kernel.ts has exactly one glue.exports entry, and glue describes no other names.',
@@ -35,6 +36,7 @@ export function effortFor(need, setting = 'auto') {
 }
 export const reviewRule = 'Send no message before writing. Before your edit, silently check every case in tests.json against the contract and your code, and fix any mismatch. Then write all your files in one single edit and reply with only the word done.';
 export const exactRule = 'Before that edit, silently derive every numeric expect in tests.json step by step from the formula in CONTRACT.md, carrying at least 12 significant digits, and write the value you derived; never write a rounded or estimated value with a tolerance tighter than its error.';
+export const scalarRule = 'Every exported function takes and returns only finite numbers (integer or float scalars); no arrays, strings, null, booleans or objects at the boundary. expectError tests use only finite numeric inputs. Integer parameters are only tested with integer values.';
 export const referenceRule = 'Also write reference.js: plain JavaScript that defines one function per kernel export, with the same name and parameters, computing exactly the formula in CONTRACT.md in double precision with only Math and Number, and throwing an Error for every expectError case. In tests.json omit expect from every value test; the supervisor runs reference.js in a sandbox and writes each expect from its result. Never write an expected value yourself.';
 export const terseRule = 'Send no message before writing. Write all your files in one single edit. After that edit, reply with only the word done.';
 export const stableOrder = ['instructions', 'glueRules', 'glueSchema', 'glueTemplate', 'stage'];
@@ -46,7 +48,7 @@ export function promptFor(prompt, env) {
 function invoke(directory, prompt, env, timeout, { resume = null, effort = null } = {}) {
   const mode = env.ENDOFORGE_CODEX_TERSE ?? 'exact';
   if (mode === 'review') prompt = { ...prompt, instructions: `${prompt.instructions} ${reviewRule}` };
-  if (mode === 'exact') prompt = { ...prompt, instructions: `${prompt.instructions} ${terseRule}${prompt.stage === 'specification' ? ` ${exactRule}` : ''}` };
+  if (mode === 'exact' || mode === 'scalar') prompt = { ...prompt, instructions: `${prompt.instructions} ${terseRule}${prompt.stage === 'specification' ? ` ${exactRule}${mode === 'scalar' ? ` ${scalarRule}` : ''}` : ''}` };
   if (mode === 'reference') prompt = { ...prompt, instructions: `${prompt.instructions} ${terseRule}${prompt.stage === 'specification' ? ` ${referenceRule}` : ''}` };
   if (mode === '1') prompt = { ...prompt, instructions: `${prompt.instructions} ${terseRule}` };
   const argv = env.ENDOFORGE_CODEX_CMD?.startsWith('[') ? JSON.parse(env.ENDOFORGE_CODEX_CMD) : [env.ENDOFORGE_CODEX_CMD];
@@ -86,6 +88,18 @@ export async function generate({ need, directory, env = process.env, timeout = 6
   if (JSON.stringify(names) !== JSON.stringify(specNames)) throw Error('code or unexpected files before freeze');
   const files = Object.fromEntries(await Promise.all(names.map(async n => [n, await read(workspace, n)])));
   let tests = JSON.parse(files['tests.json']);
+  const scalar = env.ENDOFORGE_CODEX_TERSE === 'scalar';
+  let scalarFilter;
+  if (scalar && Array.isArray(tests)) {
+    const filtered = filterScalarTests(files['CONTRACT.md'], tests);
+    tests = filtered.tests; scalarFilter = filtered.report;
+    await writeFile(join(directory, 'scalar-filter.json'), JSON.stringify(scalarFilter, null, 2));
+    if (!tests.length || scalarFilter.missingValueTests.length) throw Object.assign(Error('scalar specification requires value tests for every function'), { scalarFilter });
+    if (scalarFilter.droppedCount) {
+      files['tests.json'] = JSON.stringify(tests, null, 2);
+      await writeFile(join(workspace, 'tests.json'), files['tests.json']);
+    }
+  }
   if (evaluated && Array.isArray(tests)) {
     tests = await fillExpected(files['reference.js'], tests);
     files['tests.json'] = JSON.stringify(tests, null, 2);
@@ -117,6 +131,7 @@ export async function generate({ need, directory, env = process.env, timeout = 6
   }
   JSON.parse(files['glue.json']);
   return { candidate: { id, files }, reference, digest: frozen.digest,
+    ...(scalarFilter ? { scalarFilter } : {}),
     testDouble: env.ENDOFORGE_CODEX_TEST_DOUBLE === '1',
     session: { effort: effort ?? 'default', resumed: Boolean(warm && thread), packed }, repaired,
     timings: { generate: generatedSpecMs + performance.now() - codeStart, freeze: freezeMs } };

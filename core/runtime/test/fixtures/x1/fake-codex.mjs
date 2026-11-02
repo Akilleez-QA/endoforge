@@ -9,6 +9,8 @@ const terse = JSON.stringify(request).includes('reply with only the word done');
 if (process.env.FAKE_CODEX_DELAY_MS && !terse) await new Promise(r => setTimeout(r, Number(process.env.FAKE_CODEX_DELAY_MS)));
 if (request.stage === 'specification') {
   for (const name of ['CONTRACT.md', 'tests.json']) writeFileSync(name, c.files[name]);
+  if (process.env.FAKE_CODEX_CONTRACT) writeFileSync('CONTRACT.md', process.env.FAKE_CODEX_CONTRACT);
+  if (process.env.FAKE_CODEX_TESTS) writeFileSync('tests.json', process.env.FAKE_CODEX_TESTS);
   if (process.env.FAKE_CODEX_MODE === 'reference') {
     writeFileSync('reference.js', 'function add(a, b) { if (a > 10) throw Error("range"); return a + b; }');
     writeFileSync('tests.json', JSON.stringify([{ name: 'add', fn: 'add', args: [2, 3], expect: 99 }, { name: 'high', fn: 'add', args: [11, 0], expectError: true }]));
