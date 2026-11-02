@@ -10,7 +10,15 @@ const failures = compiler => async candidate => {
   if (result.promotable) return null;
   return { gates: Object.fromEntries(Object.entries(result.gates).filter(([, gate]) => !gate.ok)), tests: (result.tests || []).filter(test => !test.pass).slice(0, 20) };
 };
-export async function runNeed({ need, directory, pool, env = process.env, compiler = env.ENDOFORGE_ASC_CMD }) {
+export async function runNeed(options) {
+  const env = options.env ?? process.env;
+  if (env.ENDOFORGE_CODEX_TERSE !== 'fallback') return attempt(options);
+  const first = await attempt({ ...options, env: { ...env, ENDOFORGE_CODEX_TERSE: '1' } });
+  if (first.promoted) return { ...first, retried: false };
+  const second = await attempt({ ...options, directory: `${options.directory}-retry`, env: { ...env, ENDOFORGE_CODEX_TERSE: '0' } });
+  return { ...second, retried: true, first: { promoted: false, timings: first.timings } };
+}
+async function attempt({ need, directory, pool, env = process.env, compiler = env.ENDOFORGE_ASC_CMD }) {
   const timings = Object.fromEntries(['generate', 'freeze', 'compile', 'gate', 'ledger', 'promote'].map(k => [k, null]));
   try {
     const generated = await generate({ need, directory, env, check: failures(compiler) });
