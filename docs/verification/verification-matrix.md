@@ -200,6 +200,12 @@ of 39 after it. CI now runs the repository tests on Node 22 and 26. On Node 26 e
 compile-gate test has a 60 s timeout and the WASM breach test, which replaces a cell
 per case, has a 180 s timeout.
 
+Workcells now skip the startup wait when the bundled undici major version is 8
+or later; Node 26.12.0 bundles undici 8.11.2 and Node 22.23.3 bundles undici
+6.28.1, which still waits. On main-rig, `isolate-pool.test.mjs` and
+`isolate-process.test.mjs` together took 99 s on Node 26.12.0 before the change
+and 26 s after it, passing 39 of 39; Node 22.23.3 passed 39 of 39 in 25 s.
+
 ## Process workcell verification
 
 The `v8-process-workcells` working tree was checked locally with Node 26.12.0
