@@ -1,0 +1,1003 @@
+{
+  "precommit": "9c3e517e7bdc9f2a093da6b0a09f82c021e99372f2ccb7ed8b6d0390f4ac56e0",
+  "N": 30,
+  "started": "2026-11-02T00:30:01.920Z",
+  "loadBefore": [
+    9.5,
+    9.04,
+    8.26
+  ],
+  "runs": [
+    {
+      "index": 1,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1426.696256,
+        "freeze": 61.717623,
+        "synthetic_generation": 61.79247099999998,
+        "pool_evaluate_and_append": 407.15076999999997,
+        "verify_chains": 68.43596599999978,
+        "synthetic_promotion": 0.36247099999991406,
+        "shutdown": 1.5772909999996045
+      },
+      "totalMs": 2028.3629260000002,
+      "passed": true
+    },
+    {
+      "index": 1,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1401.1953760000001,
+        "freeze": 59.94558999999981,
+        "synthetic_generation": 56.69156299999986,
+        "pool_evaluate_and_append": 358.40127200000006,
+        "verify_chains": 70.13087499999983,
+        "synthetic_promotion": 0.21668099999988044,
+        "shutdown": 4.577738999999838
+      },
+      "totalMs": 1951.296719,
+      "passed": true
+    },
+    {
+      "index": 2,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1337.0261159999995,
+        "freeze": 65.42103000000043,
+        "synthetic_generation": 70.46792800000003,
+        "pool_evaluate_and_append": 387.15043499999956,
+        "verify_chains": 64.1098520000005,
+        "synthetic_promotion": 0.16177000000061525,
+        "shutdown": 0.9842529999996259
+      },
+      "totalMs": 1925.4564330000003,
+      "passed": true
+    },
+    {
+      "index": 2,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1376.5635080000002,
+        "freeze": 57.478047999999944,
+        "synthetic_generation": 64.28780999999981,
+        "pool_evaluate_and_append": 393.2579020000003,
+        "verify_chains": 68.78291600000011,
+        "synthetic_promotion": 0.1628919999993741,
+        "shutdown": 3.1953889999995226
+      },
+      "totalMs": 1963.8453610000006,
+      "passed": true
+    },
+    {
+      "index": 3,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1322.687766,
+        "freeze": 68.6024010000001,
+        "synthetic_generation": 63.76456999999937,
+        "pool_evaluate_and_append": 373.2047359999997,
+        "verify_chains": 65.20111099999849,
+        "synthetic_promotion": 0.1793420000012702,
+        "shutdown": 1.1090739999999641
+      },
+      "totalMs": 1894.9027049999995,
+      "passed": true
+    },
+    {
+      "index": 3,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1331.1433110000016,
+        "freeze": 57.11125700000048,
+        "synthetic_generation": 59.09719500000028,
+        "pool_evaluate_and_append": 402.60012500000084,
+        "verify_chains": 68.46299199999885,
+        "synthetic_promotion": 0.17636700000002747,
+        "shutdown": 3.350384999999733
+      },
+      "totalMs": 1922.0490100000006,
+      "passed": true
+    },
+    {
+      "index": 4,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1367.948391,
+        "freeze": 64.3025660000003,
+        "synthetic_generation": 63.121148000000176,
+        "pool_evaluate_and_append": 349.3248679999997,
+        "verify_chains": 61.811642000000575,
+        "synthetic_promotion": 0.18205699999998615,
+        "shutdown": 1.2342459999999846
+      },
+      "totalMs": 1908.028069,
+      "passed": true
+    },
+    {
+      "index": 4,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1342.7061539999995,
+        "freeze": 58.958887999999206,
+        "synthetic_generation": 67.15859400000045,
+        "pool_evaluate_and_append": 424.55137000000104,
+        "verify_chains": 65.96010399999977,
+        "synthetic_promotion": 0.16520600000148988,
+        "shutdown": 3.501205000000482
+      },
+      "totalMs": 1963.1298989999996,
+      "passed": true
+    },
+    {
+      "index": 5,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1356.2986220000003,
+        "freeze": 58.042921000000206,
+        "synthetic_generation": 55.612859999997454,
+        "pool_evaluate_and_append": 353.95564600000216,
+        "verify_chains": 64.4014270000007,
+        "synthetic_promotion": 0.2639889999991283,
+        "shutdown": 1.5961060000008729
+      },
+      "totalMs": 1890.297462999999,
+      "passed": true
+    },
+    {
+      "index": 5,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1303.9266070000012,
+        "freeze": 65.16357900000003,
+        "synthetic_generation": 67.64343100000042,
+        "pool_evaluate_and_append": 418.1871739999988,
+        "verify_chains": 72.91606499999762,
+        "synthetic_promotion": 0.36919399999896996,
+        "shutdown": 6.736716999999771
+      },
+      "totalMs": 1935.087695000002,
+      "passed": true
+    },
+    {
+      "index": 6,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1354.472135,
+        "freeze": 62.81184199999916,
+        "synthetic_generation": 64.42995900000096,
+        "pool_evaluate_and_append": 387.9205629999997,
+        "verify_chains": 64.66604500000176,
+        "synthetic_promotion": 0.18148699999801465,
+        "shutdown": 1.0916419999994105
+      },
+      "totalMs": 1935.7253120000023,
+      "passed": true
+    },
+    {
+      "index": 6,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1331.453676000001,
+        "freeze": 65.57655099999829,
+        "synthetic_generation": 61.457933999998204,
+        "pool_evaluate_and_append": 476.3563959999992,
+        "verify_chains": 70.24660900000163,
+        "synthetic_promotion": 0.20776399999886053,
+        "shutdown": 5.732617000001483
+      },
+      "totalMs": 2011.4138669999993,
+      "passed": true
+    },
+    {
+      "index": 7,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1363.359489999999,
+        "freeze": 65.98577799999839,
+        "synthetic_generation": 63.215087000000494,
+        "pool_evaluate_and_append": 356.9891669999997,
+        "verify_chains": 63.19663199999923,
+        "synthetic_promotion": 0.1489160000019183,
+        "shutdown": 1.1844439999986207
+      },
+      "totalMs": 1914.1562169999997,
+      "passed": true
+    },
+    {
+      "index": 7,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1316.5071419999986,
+        "freeze": 60.75164399999994,
+        "synthetic_generation": 64.33652299999812,
+        "pool_evaluate_and_append": 389.9788010000011,
+        "verify_chains": 62.57707399999708,
+        "synthetic_promotion": 0.15463699999963865,
+        "shutdown": 3.173957999999402
+      },
+      "totalMs": 1897.5424550000025,
+      "passed": true
+    },
+    {
+      "index": 8,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1299.7864799999988,
+        "freeze": 65.55717200000072,
+        "synthetic_generation": 58.768239000000904,
+        "pool_evaluate_and_append": 379.26724900000045,
+        "verify_chains": 65.82062099999894,
+        "synthetic_promotion": 0.18246799999906216,
+        "shutdown": 1.2378129999997327
+      },
+      "totalMs": 1870.6875269999982,
+      "passed": true
+    },
+    {
+      "index": 8,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1316.2477910000016,
+        "freeze": 62.40762899999754,
+        "synthetic_generation": 61.15121200000067,
+        "pool_evaluate_and_append": 393.1123649999972,
+        "verify_chains": 67.54078599999775,
+        "synthetic_promotion": 0.16755099999863887,
+        "shutdown": 4.417069999999512
+      },
+      "totalMs": 1905.1263560000007,
+      "passed": true
+    },
+    {
+      "index": 9,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1312.897602000001,
+        "freeze": 59.695504999999685,
+        "synthetic_generation": 59.0997529999986,
+        "pool_evaluate_and_append": 347.765116999999,
+        "verify_chains": 61.419427999997424,
+        "synthetic_promotion": 0.1275859999950626,
+        "shutdown": 1.0247380000000703
+      },
+      "totalMs": 1842.104256999999,
+      "passed": true
+    },
+    {
+      "index": 9,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1284.5194809999957,
+        "freeze": 63.05613900000026,
+        "synthetic_generation": 58.12823300000309,
+        "pool_evaluate_and_append": 387.5915509999977,
+        "verify_chains": 62.753709000004164,
+        "synthetic_promotion": 0.1761160000023665,
+        "shutdown": 3.7983539999986533
+      },
+      "totalMs": 1860.1236370000042,
+      "passed": true
+    },
+    {
+      "index": 10,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1311.9676489999983,
+        "freeze": 58.69121400000586,
+        "synthetic_generation": 56.38332100000116,
+        "pool_evaluate_and_append": 376.9334979999985,
+        "verify_chains": 63.63311699999758,
+        "synthetic_promotion": 0.14304500000434928,
+        "shutdown": 0.9655689999999595
+      },
+      "totalMs": 1868.7929409999997,
+      "passed": true
+    },
+    {
+      "index": 10,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1275.8838479999977,
+        "freeze": 58.51290400000289,
+        "synthetic_generation": 58.31577900000411,
+        "pool_evaluate_and_append": 369.963665999996,
+        "verify_chains": 63.55453999999736,
+        "synthetic_promotion": 0.17250999999669148,
+        "shutdown": 3.8351719999991474
+      },
+      "totalMs": 1830.306985999996,
+      "passed": true
+    },
+    {
+      "index": 11,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1300.5897179999956,
+        "freeze": 64.02245599999878,
+        "synthetic_generation": 60.005677000001015,
+        "pool_evaluate_and_append": 356.41569300000265,
+        "verify_chains": 64.69944899999973,
+        "synthetic_promotion": 0.18249800000194227,
+        "shutdown": 0.9772890000022016
+      },
+      "totalMs": 1846.9880269999994,
+      "passed": true
+    },
+    {
+      "index": 11,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1352.554508000001,
+        "freeze": 64.45630900000106,
+        "synthetic_generation": 76.21507500000007,
+        "pool_evaluate_and_append": 432.79622100000415,
+        "verify_chains": 66.46158199999627,
+        "synthetic_promotion": 0.15426600000500912,
+        "shutdown": 4.801612000002933
+      },
+      "totalMs": 1997.5054760000057,
+      "passed": true
+    },
+    {
+      "index": 12,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1309.6703740000012,
+        "freeze": 60.08050400000502,
+        "synthetic_generation": 58.426620999998704,
+        "pool_evaluate_and_append": 378.49396200000047,
+        "verify_chains": 61.130559999997786,
+        "synthetic_promotion": 0.15693999999348307,
+        "shutdown": 0.9702069999984815
+      },
+      "totalMs": 1868.9979060000041,
+      "passed": true
+    },
+    {
+      "index": 12,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1302.083007000001,
+        "freeze": 60.641522999998415,
+        "synthetic_generation": 61.65801500000089,
+        "pool_evaluate_and_append": 387.67301600000064,
+        "verify_chains": 69.69492900000478,
+        "synthetic_promotion": 0.18617499999527354,
+        "shutdown": 6.013796999999613
+      },
+      "totalMs": 1888.0316019999955,
+      "passed": true
+    },
+    {
+      "index": 13,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1337.1602340000027,
+        "freeze": 65.08765599999606,
+        "synthetic_generation": 62.86342699999659,
+        "pool_evaluate_and_append": 387.3604320000013,
+        "verify_chains": 78.50917199999822,
+        "synthetic_promotion": 0.15927499999816064,
+        "shutdown": 1.3230200000034529
+      },
+      "totalMs": 1932.5387740000006,
+      "passed": true
+    },
+    {
+      "index": 13,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1338.0923640000037,
+        "freeze": 96.19116500000382,
+        "synthetic_generation": 80.44601700000203,
+        "pool_evaluate_and_append": 363.76244600000064,
+        "verify_chains": 60.71579799999745,
+        "synthetic_promotion": 0.20649300000513904,
+        "shutdown": 3.81541599999764
+      },
+      "totalMs": 1943.3146879999986,
+      "passed": true
+    },
+    {
+      "index": 14,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1604.3742190000048,
+        "freeze": 70.75061100000312,
+        "synthetic_generation": 66.51955599999928,
+        "pool_evaluate_and_append": 379.7285090000005,
+        "verify_chains": 61.55371000000014,
+        "synthetic_promotion": 0.16255100000125822,
+        "shutdown": 1.103253000001132
+      },
+      "totalMs": 2184.261679000003,
+      "passed": true
+    },
+    {
+      "index": 14,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1368.0169069999974,
+        "freeze": 72.77758500000346,
+        "synthetic_generation": 66.09621200000402,
+        "pool_evaluate_and_append": 596.6936540000024,
+        "verify_chains": 64.25068299999839,
+        "synthetic_promotion": 0.1677399999971385,
+        "shutdown": 3.2324660000012955
+      },
+      "totalMs": 2171.3074599999964,
+      "passed": true
+    },
+    {
+      "index": 15,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1395.0630949999977,
+        "freeze": 55.82717300000513,
+        "synthetic_generation": 58.62552500000311,
+        "pool_evaluate_and_append": 359.34935199999745,
+        "verify_chains": 71.89387599999463,
+        "synthetic_promotion": 0.15286399999604328,
+        "shutdown": 1.1598779999985709
+      },
+      "totalMs": 1942.1692540000004,
+      "passed": true
+    },
+    {
+      "index": 15,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1496.8342919999996,
+        "freeze": 71.22333500000241,
+        "synthetic_generation": 65.72905999999784,
+        "pool_evaluate_and_append": 437.244786999996,
+        "verify_chains": 80.44434999999794,
+        "synthetic_promotion": 0.1301309999980731,
+        "shutdown": 4.234721000000718
+      },
+      "totalMs": 2155.929028999999,
+      "passed": true
+    },
+    {
+      "index": 16,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1408.3023580000008,
+        "freeze": 59.8767119999975,
+        "synthetic_generation": 66.20154399999592,
+        "pool_evaluate_and_append": 408.49992100000236,
+        "verify_chains": 65.64928099999815,
+        "synthetic_promotion": 0.1726799999960349,
+        "shutdown": 1.1027429999958258
+      },
+      "totalMs": 2009.8990399999966,
+      "passed": true
+    },
+    {
+      "index": 16,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1373.417330999997,
+        "freeze": 70.7548850000021,
+        "synthetic_generation": 73.32717799999955,
+        "pool_evaluate_and_append": 520.1109389999983,
+        "verify_chains": 69.58966700000019,
+        "synthetic_promotion": 0.1596449999997276,
+        "shutdown": 6.824278000000049
+      },
+      "totalMs": 2114.2631089999995,
+      "passed": true
+    },
+    {
+      "index": 17,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1445.6105020000032,
+        "freeze": 60.861432999998215,
+        "synthetic_generation": 68.38995499999874,
+        "pool_evaluate_and_append": 473.7577040000033,
+        "verify_chains": 69.20871000000625,
+        "synthetic_promotion": 0.13588199999503559,
+        "shutdown": 0.9083519999985583
+      },
+      "totalMs": 2118.9413159999967,
+      "passed": true
+    },
+    {
+      "index": 17,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1413.947331000003,
+        "freeze": 64.8157060000085,
+        "synthetic_generation": 58.558047000013175,
+        "pool_evaluate_and_append": 442.0235229999962,
+        "verify_chains": 72.03056600000127,
+        "synthetic_promotion": 1.5096060000068974,
+        "shutdown": 3.023838999986765
+      },
+      "totalMs": 2055.9897070000006,
+      "passed": true
+    },
+    {
+      "index": 18,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1307.2703420000034,
+        "freeze": 54.45571999999811,
+        "synthetic_generation": 59.975932000001194,
+        "pool_evaluate_and_append": 362.62832699999854,
+        "verify_chains": 71.01255899999524,
+        "synthetic_promotion": 0.1683409999968717,
+        "shutdown": 1.020208999994793
+      },
+      "totalMs": 1856.5978830000095,
+      "passed": true
+    },
+    {
+      "index": 18,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1360.9253339999996,
+        "freeze": 61.20038900000509,
+        "synthetic_generation": 60.54360299999826,
+        "pool_evaluate_and_append": 352.30634900000587,
+        "verify_chains": 64.07873900000413,
+        "synthetic_promotion": 0.16925300000002608,
+        "shutdown": 3.3372700000036275
+      },
+      "totalMs": 1902.6441710000072,
+      "passed": true
+    },
+    {
+      "index": 19,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1269.97159500001,
+        "freeze": 60.9357880000025,
+        "synthetic_generation": 61.3823049999919,
+        "pool_evaluate_and_append": 373.13494499999797,
+        "verify_chains": 66.42497300000105,
+        "synthetic_promotion": 0.16861199999402743,
+        "shutdown": 1.1785930000041844
+      },
+      "totalMs": 1833.2675119999913,
+      "passed": true
+    },
+    {
+      "index": 19,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1284.7733000000007,
+        "freeze": 57.410780000005616,
+        "synthetic_generation": 57.90725000000384,
+        "pool_evaluate_and_append": 410.9470699999947,
+        "verify_chains": 74.35914400000183,
+        "synthetic_promotion": 0.1697239999921294,
+        "shutdown": 5.222480999989784
+      },
+      "totalMs": 1890.8880400000053,
+      "passed": true
+    },
+    {
+      "index": 20,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1371.0691729999962,
+        "freeze": 93.83706099999836,
+        "synthetic_generation": 68.99180499999784,
+        "pool_evaluate_and_append": 471.1771949999966,
+        "verify_chains": 68.08585600000515,
+        "synthetic_promotion": 0.1642240000073798,
+        "shutdown": 1.2278730000107316
+      },
+      "totalMs": 2074.6934489999985,
+      "passed": true
+    },
+    {
+      "index": 20,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1417.593286999996,
+        "freeze": 61.74400299999979,
+        "synthetic_generation": 61.269854000012856,
+        "pool_evaluate_and_append": 501.39170799999556,
+        "verify_chains": 80.63417200000549,
+        "synthetic_promotion": 0.23052700000698678,
+        "shutdown": 5.598697000008542
+      },
+      "totalMs": 2128.549530999997,
+      "passed": true
+    },
+    {
+      "index": 21,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1389.9346749999968,
+        "freeze": 77.85862100000668,
+        "synthetic_generation": 70.71831000001112,
+        "pool_evaluate_and_append": 419.0668699999951,
+        "verify_chains": 65.50958500000706,
+        "synthetic_promotion": 0.178539999993518,
+        "shutdown": 1.2788589999981923
+      },
+      "totalMs": 2024.631739999997,
+      "passed": true
+    },
+    {
+      "index": 21,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1429.8662900000054,
+        "freeze": 70.79334800000652,
+        "synthetic_generation": 73.08692500001052,
+        "pool_evaluate_and_append": 413.5339010000025,
+        "verify_chains": 67.61124600000039,
+        "synthetic_promotion": 0.15427600000111852,
+        "shutdown": 4.1245079999935115
+      },
+      "totalMs": 2059.2782309999893,
+      "passed": true
+    },
+    {
+      "index": 22,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1429.3151030000008,
+        "freeze": 61.680203000010806,
+        "synthetic_generation": 57.54743999999482,
+        "pool_evaluate_and_append": 358.4233380000078,
+        "verify_chains": 62.71783399999549,
+        "synthetic_promotion": 0.1461799999960931,
+        "shutdown": 1.1906049999961397
+      },
+      "totalMs": 1971.0965930000093,
+      "passed": true
+    },
+    {
+      "index": 22,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1298.8923759999889,
+        "freeze": 57.519767999998294,
+        "synthetic_generation": 57.17127299999993,
+        "pool_evaluate_and_append": 403.47596799999883,
+        "verify_chains": 82.70696699999098,
+        "synthetic_promotion": 0.2576569999946514,
+        "shutdown": 3.1365979999973206
+      },
+      "totalMs": 1903.2347230000014,
+      "passed": true
+    },
+    {
+      "index": 23,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1371.944008999999,
+        "freeze": 61.98690899999929,
+        "synthetic_generation": 59.86693399999058,
+        "pool_evaluate_and_append": 365.97032500000205,
+        "verify_chains": 57.62980100000277,
+        "synthetic_promotion": 0.1508789999934379,
+        "shutdown": 1.0206190000026254
+      },
+      "totalMs": 1918.6309610000026,
+      "passed": true
+    },
+    {
+      "index": 23,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1269.4429979999986,
+        "freeze": 61.03108799998881,
+        "synthetic_generation": 62.47398000000976,
+        "pool_evaluate_and_append": 377.77721400000155,
+        "verify_chains": 61.97717099999136,
+        "synthetic_promotion": 0.14153199999418575,
+        "shutdown": 3.046881999995094
+      },
+      "totalMs": 1835.9550549999985,
+      "passed": true
+    },
+    {
+      "index": 24,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1299.7200080000039,
+        "freeze": 54.721495000005234,
+        "synthetic_generation": 56.79710900000646,
+        "pool_evaluate_and_append": 331.33896199999435,
+        "verify_chains": 58.647995999999694,
+        "synthetic_promotion": 0.17350099999748636,
+        "shutdown": 1.21433899999829
+      },
+      "totalMs": 1802.6775269999926,
+      "passed": true
+    },
+    {
+      "index": 24,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1251.3694279999909,
+        "freeze": 65.43617400000221,
+        "synthetic_generation": 61.85478299998795,
+        "pool_evaluate_and_append": 383.28933099999267,
+        "verify_chains": 61.642319000005955,
+        "synthetic_promotion": 0.17744899999524932,
+        "shutdown": 3.2217649999947753
+      },
+      "totalMs": 1827.0825680000125,
+      "passed": true
+    },
+    {
+      "index": 25,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1273.9594639999996,
+        "freeze": 61.33158299999195,
+        "synthetic_generation": 58.38717099999485,
+        "pool_evaluate_and_append": 360.2180789999984,
+        "verify_chains": 69.83115099999122,
+        "synthetic_promotion": 0.2114010000077542,
+        "shutdown": 1.0965799999976298
+      },
+      "totalMs": 1825.151785000009,
+      "passed": true
+    },
+    {
+      "index": 25,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1316.446100000001,
+        "freeze": 79.07307300000684,
+        "synthetic_generation": 59.990339999989374,
+        "pool_evaluate_and_append": 421.9501290000044,
+        "verify_chains": 76.33596500000567,
+        "synthetic_promotion": 0.15645999999833293,
+        "shutdown": 3.154141000006348
+      },
+      "totalMs": 1957.1784690000059,
+      "passed": true
+    },
+    {
+      "index": 26,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1397.1878270000016,
+        "freeze": 67.96710899999016,
+        "synthetic_generation": 64.46283000000403,
+        "pool_evaluate_and_append": 409.751688999997,
+        "verify_chains": 69.21784399999888,
+        "synthetic_promotion": 0.1566000000020722,
+        "shutdown": 1.080549999998766
+      },
+      "totalMs": 2009.9050270000007,
+      "passed": true
+    },
+    {
+      "index": 26,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1384.7762610000063,
+        "freeze": 65.85182100000384,
+        "synthetic_generation": 63.72745800000848,
+        "pool_evaluate_and_append": 443.6095549999882,
+        "verify_chains": 80.48876200000814,
+        "synthetic_promotion": 0.17144700000062585,
+        "shutdown": 3.571652999991784
+      },
+      "totalMs": 2042.276184000002,
+      "passed": true
+    },
+    {
+      "index": 27,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1350.8673199999903,
+        "freeze": 64.97070900000108,
+        "synthetic_generation": 61.0422050000052,
+        "pool_evaluate_and_append": 372.86536100000376,
+        "verify_chains": 73.7362090000097,
+        "synthetic_promotion": 0.230887999990955,
+        "shutdown": 2.643624999996973
+      },
+      "totalMs": 1926.4511119999952,
+      "passed": true
+    },
+    {
+      "index": 27,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1456.0092050000094,
+        "freeze": 79.17494799999986,
+        "synthetic_generation": 70.39082299999427,
+        "pool_evaluate_and_append": 470.24150600000576,
+        "verify_chains": 66.40023400000064,
+        "synthetic_promotion": 0.25751700000546407,
+        "shutdown": 5.22434400000202
+      },
+      "totalMs": 2147.7994439999893,
+      "passed": true
+    },
+    {
+      "index": 28,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1338.9672770000034,
+        "freeze": 58.37537599999632,
+        "synthetic_generation": 65.52748799999245,
+        "pool_evaluate_and_append": 422.6057599999913,
+        "verify_chains": 83.0631859999994,
+        "synthetic_promotion": 0.1916250000067521,
+        "shutdown": 1.5199140000040643
+      },
+      "totalMs": 1970.4400579999929,
+      "passed": true
+    },
+    {
+      "index": 28,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1503.2337320000079,
+        "freeze": 65.74945899999875,
+        "synthetic_generation": 62.64588199999707,
+        "pool_evaluate_and_append": 391.4579929999891,
+        "verify_chains": 68.8518919999915,
+        "synthetic_promotion": 0.17369199999666307,
+        "shutdown": 3.6124090000084834
+      },
+      "totalMs": 2095.817639999994,
+      "passed": true
+    },
+    {
+      "index": 29,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1408.1685980000038,
+        "freeze": 63.19170199999644,
+        "synthetic_generation": 64.43665699999838,
+        "pool_evaluate_and_append": 377.1634119999944,
+        "verify_chains": 64.89657900000748,
+        "synthetic_promotion": 0.1396989999921061,
+        "shutdown": 1.1872979999898234
+      },
+      "totalMs": 1979.2474019999936,
+      "passed": true
+    },
+    {
+      "index": 29,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1460.1920259999897,
+        "freeze": 61.76196400000481,
+        "synthetic_generation": 65.37144699999772,
+        "pool_evaluate_and_append": 396.14526400000614,
+        "verify_chains": 72.65590400001383,
+        "synthetic_promotion": 0.24820899999758694,
+        "shutdown": 4.6564110000035726
+      },
+      "totalMs": 2061.1821869999985,
+      "passed": true
+    },
+    {
+      "index": 30,
+      "isolation": "thread",
+      "stages": {
+        "cstack_intake": 1385.7159759999922,
+        "freeze": 73.93752700000186,
+        "synthetic_generation": 72.57763899999554,
+        "pool_evaluate_and_append": 361.456091,
+        "verify_chains": 65.08882299999823,
+        "synthetic_promotion": 0.15166999999200925,
+        "shutdown": 1.0815829999919515
+      },
+      "totalMs": 1960.0786480000097,
+      "passed": true
+    },
+    {
+      "index": 30,
+      "isolation": "process",
+      "stages": {
+        "cstack_intake": 1357.9956469999888,
+        "freeze": 59.505315000002156,
+        "synthetic_generation": 62.11174999999639,
+        "pool_evaluate_and_append": 438.00956799999403,
+        "verify_chains": 112.9877070000075,
+        "synthetic_promotion": 0.18496199999935925,
+        "shutdown": 3.5772239999932935
+      },
+      "totalMs": 2034.448915999994,
+      "passed": true
+    }
+  ],
+  "architecturalSuccess": false,
+  "standIns": [
+    "candidate generation",
+    "promotion authority/local selection"
+  ],
+  "finished": "2026-11-02T00:31:59.560Z",
+  "loadAfter": [
+    8.49,
+    8.87,
+    8.29
+  ],
+  "modes": {
+    "thread": {
+      "count": 30,
+      "metrics": {
+        "cstack_intake": {
+          "p50": 1354.472135,
+          "p95": 1445.6105020000032
+        },
+        "freeze": {
+          "p50": 61.98690899999929,
+          "p95": 77.85862100000668
+        },
+        "synthetic_generation": {
+          "p50": 61.79247099999998,
+          "p95": 70.71831000001112
+        },
+        "pool_evaluate_and_append": {
+          "p50": 373.2047359999997,
+          "p95": 471.1771949999966
+        },
+        "verify_chains": {
+          "p50": 65.08882299999823,
+          "p95": 78.50917199999822
+        },
+        "synthetic_promotion": {
+          "p50": 0.1642240000073798,
+          "p95": 0.2639889999991283
+        },
+        "shutdown": {
+          "p50": 1.1090739999999641,
+          "p95": 1.5961060000008729
+        },
+        "totalMs": {
+          "p50": 1925.4564330000003,
+          "p95": 2118.9413159999967
+        }
+      },
+      "bottleneck": "cstack_intake",
+      "screenPassed": false
+    },
+    "process": {
+      "count": 30,
+      "metrics": {
+        "cstack_intake": {
+          "p50": 1342.7061539999995,
+          "p95": 1496.8342919999996
+        },
+        "freeze": {
+          "p50": 62.40762899999754,
+          "p95": 79.17494799999986
+        },
+        "synthetic_generation": {
+          "p50": 62.11174999999639,
+          "p95": 76.21507500000007
+        },
+        "pool_evaluate_and_append": {
+          "p50": 403.47596799999883,
+          "p95": 520.1109389999983
+        },
+        "verify_chains": {
+          "p50": 68.78291600000011,
+          "p95": 82.70696699999098
+        },
+        "synthetic_promotion": {
+          "p50": 0.17250999999669148,
+          "p95": 0.36919399999896996
+        },
+        "shutdown": {
+          "p50": 3.7983539999986533,
+          "p95": 6.736716999999771
+        },
+        "totalMs": {
+          "p50": 1957.1784690000059,
+          "p95": 2155.929028999999
+        }
+      },
+      "bottleneck": "cstack_intake",
+      "screenPassed": false
+    }
+  }
+}

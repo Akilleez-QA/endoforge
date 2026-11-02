@@ -1,0 +1,2211 @@
+{
+  "index": 26,
+  "isolation": "thread",
+  "directory": "/tmp/ef-p19-k6Wh3J",
+  "stages": {
+    "cstack_intake": 1397.1878270000016,
+    "freeze": 67.96710899999016,
+    "synthetic_generation": 64.46283000000403,
+    "pool_evaluate_and_append": 409.751688999997,
+    "verify_chains": 69.21784399999888,
+    "synthetic_promotion": 0.1566000000020722,
+    "shutdown": 1.080549999998766
+  },
+  "result": {
+    "status": "completed",
+    "reason": null,
+    "report": {
+      "stage": "completed",
+      "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+      "evaluator_digest": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+      "attempts": [
+        {
+          "candidate": "f9e9aeafac6a0f364cc93ec0346456d10a2cd0d3a2d28790d8654a4572b862f6",
+          "round": 0,
+          "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+          "evaluator_digest": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+          "stage": "passed",
+          "firstFailure": null,
+          "results": [
+            {
+              "check": "schema",
+              "passed": true,
+              "reason": "contract and gate input conform to version 1"
+            },
+            {
+              "check": "interface",
+              "passed": true,
+              "reason": "observed name, types, units and domains match the contract"
+            },
+            {
+              "check": "bounds",
+              "passed": true,
+              "reason": "both fresh runs completed within wall, memory and fuel limits"
+            },
+            {
+              "check": "determinism",
+              "passed": true,
+              "reason": "repeat outputs, refusals and effects match exactly"
+            },
+            {
+              "check": "forbidden_effects",
+              "passed": true,
+              "reason": "static scan and both runtime traces contain only allowed effects"
+            },
+            {
+              "check": "invariant:exact_addition",
+              "passed": true,
+              "reason": "Executable outputs compared with six frozen exact Math observations"
+            },
+            {
+              "check": "residual",
+              "passed": true,
+              "reason": "Executable outputs compared with six frozen exact Math observations"
+            }
+          ],
+          "metrics": {
+            "sourceBytes": 11
+          }
+        },
+        {
+          "candidate": "9416eb4a2631df1e2358e3f3b465a5f63b417d72ac7300a90cfa0f79d4be3222",
+          "round": 0,
+          "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+          "evaluator_digest": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+          "stage": "rejected",
+          "firstFailure": "invariant:exact_addition",
+          "results": [
+            {
+              "check": "schema",
+              "passed": true,
+              "reason": "contract and gate input conform to version 1"
+            },
+            {
+              "check": "interface",
+              "passed": true,
+              "reason": "observed name, types, units and domains match the contract"
+            },
+            {
+              "check": "bounds",
+              "passed": true,
+              "reason": "both fresh runs completed within wall, memory and fuel limits"
+            },
+            {
+              "check": "determinism",
+              "passed": true,
+              "reason": "repeat outputs, refusals and effects match exactly"
+            },
+            {
+              "check": "forbidden_effects",
+              "passed": true,
+              "reason": "static scan and both runtime traces contain only allowed effects"
+            },
+            {
+              "check": "invariant:exact_addition",
+              "passed": false,
+              "reason": "Executable outputs compared with six frozen exact Math observations"
+            }
+          ],
+          "metrics": null
+        },
+        {
+          "candidate": "f9e9aeafac6a0f364cc93ec0346456d10a2cd0d3a2d28790d8654a4572b862f6",
+          "round": 1,
+          "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+          "evaluator_digest": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+          "stage": "passed",
+          "firstFailure": null,
+          "results": [
+            {
+              "check": "schema",
+              "passed": true,
+              "reason": "contract and gate input conform to version 1"
+            },
+            {
+              "check": "interface",
+              "passed": true,
+              "reason": "observed name, types, units and domains match the contract"
+            },
+            {
+              "check": "bounds",
+              "passed": true,
+              "reason": "both fresh runs completed within wall, memory and fuel limits"
+            },
+            {
+              "check": "determinism",
+              "passed": true,
+              "reason": "repeat outputs, refusals and effects match exactly"
+            },
+            {
+              "check": "forbidden_effects",
+              "passed": true,
+              "reason": "static scan and both runtime traces contain only allowed effects"
+            },
+            {
+              "check": "invariant:exact_addition",
+              "passed": true,
+              "reason": "Executable outputs compared with six frozen exact Math observations"
+            },
+            {
+              "check": "residual",
+              "passed": true,
+              "reason": "Executable outputs compared with six frozen exact Math observations"
+            }
+          ],
+          "metrics": {
+            "sourceBytes": 11
+          }
+        }
+      ],
+      "frontier": [
+        "f9e9aeafac6a0f364cc93ec0346456d10a2cd0d3a2d28790d8654a4572b862f6"
+      ]
+    },
+    "workcell": 26,
+    "resourceLimits": {
+      "maxYoungGenerationSizeMb": 16,
+      "maxOldGenerationSizeMb": 128,
+      "codeRangeSizeMb": 0,
+      "stackSizeMb": 4
+    },
+    "wasmMemoryMaxMb": 64,
+    "isolation": "thread",
+    "cgroup": "not_applicable",
+    "receipts": [
+      {
+        "record": {
+          "version": 0,
+          "kind": "receipt",
+          "id": "receipt-0",
+          "data": {
+            "task": "task",
+            "candidate": "f9e9aeafac6a0f364cc93ec0346456d10a2cd0d3a2d28790d8654a4572b862f6",
+            "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+            "precommit": {
+              "observable": "exact addition",
+              "acceptance_boundary": "all frozen checks pass",
+              "oracle": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+              "oracle_version": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+              "artifact_identity": "f9e9aeafac6a0f364cc93ec0346456d10a2cd0d3a2d28790d8654a4572b862f6",
+              "environment": {
+                "isolation": "thread"
+              },
+              "failure_meaning": "reject candidate",
+              "stop_condition": "one batch"
+            },
+            "delivery_state": "finished",
+            "outcome_state": "passed",
+            "observations": [
+              {
+                "status": "completed",
+                "reason": null,
+                "report": {
+                  "stage": "completed",
+                  "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+                  "evaluator_digest": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+                  "attempts": [
+                    {
+                      "candidate": "f9e9aeafac6a0f364cc93ec0346456d10a2cd0d3a2d28790d8654a4572b862f6",
+                      "round": 0,
+                      "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+                      "evaluator_digest": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+                      "stage": "passed",
+                      "firstFailure": null,
+                      "results": [
+                        {
+                          "check": "schema",
+                          "passed": true,
+                          "reason": "contract and gate input conform to version 1"
+                        },
+                        {
+                          "check": "interface",
+                          "passed": true,
+                          "reason": "observed name, types, units and domains match the contract"
+                        },
+                        {
+                          "check": "bounds",
+                          "passed": true,
+                          "reason": "both fresh runs completed within wall, memory and fuel limits"
+                        },
+                        {
+                          "check": "determinism",
+                          "passed": true,
+                          "reason": "repeat outputs, refusals and effects match exactly"
+                        },
+                        {
+                          "check": "forbidden_effects",
+                          "passed": true,
+                          "reason": "static scan and both runtime traces contain only allowed effects"
+                        },
+                        {
+                          "check": "invariant:exact_addition",
+                          "passed": true,
+                          "reason": "Executable outputs compared with six frozen exact Math observations"
+                        },
+                        {
+                          "check": "residual",
+                          "passed": true,
+                          "reason": "Executable outputs compared with six frozen exact Math observations"
+                        }
+                      ],
+                      "metrics": {
+                        "sourceBytes": 11
+                      }
+                    },
+                    {
+                      "candidate": "9416eb4a2631df1e2358e3f3b465a5f63b417d72ac7300a90cfa0f79d4be3222",
+                      "round": 0,
+                      "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+                      "evaluator_digest": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+                      "stage": "rejected",
+                      "firstFailure": "invariant:exact_addition",
+                      "results": [
+                        {
+                          "check": "schema",
+                          "passed": true,
+                          "reason": "contract and gate input conform to version 1"
+                        },
+                        {
+                          "check": "interface",
+                          "passed": true,
+                          "reason": "observed name, types, units and domains match the contract"
+                        },
+                        {
+                          "check": "bounds",
+                          "passed": true,
+                          "reason": "both fresh runs completed within wall, memory and fuel limits"
+                        },
+                        {
+                          "check": "determinism",
+                          "passed": true,
+                          "reason": "repeat outputs, refusals and effects match exactly"
+                        },
+                        {
+                          "check": "forbidden_effects",
+                          "passed": true,
+                          "reason": "static scan and both runtime traces contain only allowed effects"
+                        },
+                        {
+                          "check": "invariant:exact_addition",
+                          "passed": false,
+                          "reason": "Executable outputs compared with six frozen exact Math observations"
+                        }
+                      ],
+                      "metrics": null
+                    },
+                    {
+                      "candidate": "f9e9aeafac6a0f364cc93ec0346456d10a2cd0d3a2d28790d8654a4572b862f6",
+                      "round": 1,
+                      "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+                      "evaluator_digest": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+                      "stage": "passed",
+                      "firstFailure": null,
+                      "results": [
+                        {
+                          "check": "schema",
+                          "passed": true,
+                          "reason": "contract and gate input conform to version 1"
+                        },
+                        {
+                          "check": "interface",
+                          "passed": true,
+                          "reason": "observed name, types, units and domains match the contract"
+                        },
+                        {
+                          "check": "bounds",
+                          "passed": true,
+                          "reason": "both fresh runs completed within wall, memory and fuel limits"
+                        },
+                        {
+                          "check": "determinism",
+                          "passed": true,
+                          "reason": "repeat outputs, refusals and effects match exactly"
+                        },
+                        {
+                          "check": "forbidden_effects",
+                          "passed": true,
+                          "reason": "static scan and both runtime traces contain only allowed effects"
+                        },
+                        {
+                          "check": "invariant:exact_addition",
+                          "passed": true,
+                          "reason": "Executable outputs compared with six frozen exact Math observations"
+                        },
+                        {
+                          "check": "residual",
+                          "passed": true,
+                          "reason": "Executable outputs compared with six frozen exact Math observations"
+                        }
+                      ],
+                      "metrics": {
+                        "sourceBytes": 11
+                      }
+                    }
+                  ],
+                  "frontier": [
+                    "f9e9aeafac6a0f364cc93ec0346456d10a2cd0d3a2d28790d8654a4572b862f6"
+                  ]
+                },
+                "workcell": 26,
+                "resourceLimits": {
+                  "maxYoungGenerationSizeMb": 16,
+                  "maxOldGenerationSizeMb": 128,
+                  "codeRangeSizeMb": 0,
+                  "stackSizeMb": 4
+                },
+                "wasmMemoryMaxMb": 64,
+                "isolation": "thread",
+                "cgroup": "not_applicable"
+              }
+            ]
+          }
+        },
+        "hash": "4a461987e4ed4c8ba513ce2cc19b7eaa80d9bbcef0957c4643e8a7895ebe9d5e"
+      },
+      {
+        "record": {
+          "version": 0,
+          "kind": "receipt",
+          "id": "receipt-1",
+          "data": {
+            "task": "task",
+            "candidate": "9416eb4a2631df1e2358e3f3b465a5f63b417d72ac7300a90cfa0f79d4be3222",
+            "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+            "precommit": {
+              "observable": "exact addition",
+              "acceptance_boundary": "all frozen checks pass",
+              "oracle": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+              "oracle_version": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+              "artifact_identity": "9416eb4a2631df1e2358e3f3b465a5f63b417d72ac7300a90cfa0f79d4be3222",
+              "environment": {
+                "isolation": "thread"
+              },
+              "failure_meaning": "reject candidate",
+              "stop_condition": "one batch"
+            },
+            "delivery_state": "finished",
+            "outcome_state": "failed",
+            "observations": [
+              {
+                "status": "completed",
+                "reason": null,
+                "report": {
+                  "stage": "completed",
+                  "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+                  "evaluator_digest": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+                  "attempts": [
+                    {
+                      "candidate": "f9e9aeafac6a0f364cc93ec0346456d10a2cd0d3a2d28790d8654a4572b862f6",
+                      "round": 0,
+                      "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+                      "evaluator_digest": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+                      "stage": "passed",
+                      "firstFailure": null,
+                      "results": [
+                        {
+                          "check": "schema",
+                          "passed": true,
+                          "reason": "contract and gate input conform to version 1"
+                        },
+                        {
+                          "check": "interface",
+                          "passed": true,
+                          "reason": "observed name, types, units and domains match the contract"
+                        },
+                        {
+                          "check": "bounds",
+                          "passed": true,
+                          "reason": "both fresh runs completed within wall, memory and fuel limits"
+                        },
+                        {
+                          "check": "determinism",
+                          "passed": true,
+                          "reason": "repeat outputs, refusals and effects match exactly"
+                        },
+                        {
+                          "check": "forbidden_effects",
+                          "passed": true,
+                          "reason": "static scan and both runtime traces contain only allowed effects"
+                        },
+                        {
+                          "check": "invariant:exact_addition",
+                          "passed": true,
+                          "reason": "Executable outputs compared with six frozen exact Math observations"
+                        },
+                        {
+                          "check": "residual",
+                          "passed": true,
+                          "reason": "Executable outputs compared with six frozen exact Math observations"
+                        }
+                      ],
+                      "metrics": {
+                        "sourceBytes": 11
+                      }
+                    },
+                    {
+                      "candidate": "9416eb4a2631df1e2358e3f3b465a5f63b417d72ac7300a90cfa0f79d4be3222",
+                      "round": 0,
+                      "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+                      "evaluator_digest": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+                      "stage": "rejected",
+                      "firstFailure": "invariant:exact_addition",
+                      "results": [
+                        {
+                          "check": "schema",
+                          "passed": true,
+                          "reason": "contract and gate input conform to version 1"
+                        },
+                        {
+                          "check": "interface",
+                          "passed": true,
+                          "reason": "observed name, types, units and domains match the contract"
+                        },
+                        {
+                          "check": "bounds",
+                          "passed": true,
+                          "reason": "both fresh runs completed within wall, memory and fuel limits"
+                        },
+                        {
+                          "check": "determinism",
+                          "passed": true,
+                          "reason": "repeat outputs, refusals and effects match exactly"
+                        },
+                        {
+                          "check": "forbidden_effects",
+                          "passed": true,
+                          "reason": "static scan and both runtime traces contain only allowed effects"
+                        },
+                        {
+                          "check": "invariant:exact_addition",
+                          "passed": false,
+                          "reason": "Executable outputs compared with six frozen exact Math observations"
+                        }
+                      ],
+                      "metrics": null
+                    },
+                    {
+                      "candidate": "f9e9aeafac6a0f364cc93ec0346456d10a2cd0d3a2d28790d8654a4572b862f6",
+                      "round": 1,
+                      "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+                      "evaluator_digest": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+                      "stage": "passed",
+                      "firstFailure": null,
+                      "results": [
+                        {
+                          "check": "schema",
+                          "passed": true,
+                          "reason": "contract and gate input conform to version 1"
+                        },
+                        {
+                          "check": "interface",
+                          "passed": true,
+                          "reason": "observed name, types, units and domains match the contract"
+                        },
+                        {
+                          "check": "bounds",
+                          "passed": true,
+                          "reason": "both fresh runs completed within wall, memory and fuel limits"
+                        },
+                        {
+                          "check": "determinism",
+                          "passed": true,
+                          "reason": "repeat outputs, refusals and effects match exactly"
+                        },
+                        {
+                          "check": "forbidden_effects",
+                          "passed": true,
+                          "reason": "static scan and both runtime traces contain only allowed effects"
+                        },
+                        {
+                          "check": "invariant:exact_addition",
+                          "passed": true,
+                          "reason": "Executable outputs compared with six frozen exact Math observations"
+                        },
+                        {
+                          "check": "residual",
+                          "passed": true,
+                          "reason": "Executable outputs compared with six frozen exact Math observations"
+                        }
+                      ],
+                      "metrics": {
+                        "sourceBytes": 11
+                      }
+                    }
+                  ],
+                  "frontier": [
+                    "f9e9aeafac6a0f364cc93ec0346456d10a2cd0d3a2d28790d8654a4572b862f6"
+                  ]
+                },
+                "workcell": 26,
+                "resourceLimits": {
+                  "maxYoungGenerationSizeMb": 16,
+                  "maxOldGenerationSizeMb": 128,
+                  "codeRangeSizeMb": 0,
+                  "stackSizeMb": 4
+                },
+                "wasmMemoryMaxMb": 64,
+                "isolation": "thread",
+                "cgroup": "not_applicable"
+              }
+            ]
+          }
+        },
+        "hash": "a2ab8e69177164ea13783acf7507390181e5fc2e935554831b3888903701a159"
+      }
+    ]
+  },
+  "verification": {
+    "engine_chain": true,
+    "cstack_chain": true,
+    "engine_records": [
+      {
+        "data": {
+          "acceptance": "Six frozen exact tests",
+          "intent": "Integer addition"
+        },
+        "id": "task",
+        "kind": "task",
+        "version": 0
+      },
+      {
+        "data": {
+          "content": "[{\"id\": \"case-0\", \"inputs\": {\"a\": 0, \"b\": 0}, \"expected\": 0}, {\"id\": \"case-1\", \"inputs\": {\"a\": 2, \"b\": 3}, \"expected\": 5}, {\"id\": \"case-2\", \"inputs\": {\"a\": -4, \"b\": 3}, \"expected\": -1}, {\"id\": \"case-3\", \"inputs\": {\"a\": 10, \"b\": -10}, \"expected\": 0}, {\"id\": \"case-4\", \"inputs\": {\"a\": -10, \"b\": -10}, \"expected\": -20}, {\"id\": \"case-5\", \"inputs\": {\"a\": 10, \"b\": 10}, \"expected\": 20}]",
+          "origin": "cstack Math observations",
+          "task": "task"
+        },
+        "id": "input",
+        "kind": "admitted_input",
+        "version": 0
+      },
+      {
+        "data": {
+          "admitted_input": "input",
+          "confirmed_by": "P-19 precommit",
+          "content": "{\"configuration\":{\"gateInput\":{\"allowedEffects\":[],\"cases\":[{\"id\":\"case-0\",\"inputs\":{\"a\":0,\"b\":0}},{\"id\":\"case-1\",\"inputs\":{\"a\":2,\"b\":3}},{\"id\":\"case-2\",\"inputs\":{\"a\":-4,\"b\":3}},{\"id\":\"case-3\",\"inputs\":{\"a\":10,\"b\":-10}},{\"id\":\"case-4\",\"inputs\":{\"a\":-10,\"b\":-10}},{\"id\":\"case-5\",\"inputs\":{\"a\":10,\"b\":10}}],\"contract\":{\"refusals\":[],\"signature\":{\"inputs\":[{\"domain\":[-10,10],\"path\":\"a\",\"type\":\"number\",\"unit\":\"1\"},{\"domain\":[-10,10],\"path\":\"b\",\"type\":\"number\",\"unit\":\"1\"}],\"name\":\"add\",\"output\":{\"type\":\"number\",\"unit\":\"1\"},\"version\":1},\"sources\":[\"cstack pinned exact_scalar\"],\"tolerance\":0,\"version\":1},\"limits\":{\"fuel\":100,\"memoryBytes\":67108864,\"wallMs\":1000},\"version\":1},\"invariants\":[\"exact_addition\"],\"objectives\":{\"sourceBytes\":\"min\"}},\"files\":{\"port.mjs\":\"696d706f7274207b207265616446696c6553796e63207d2066726f6d20276e6f64653a6673273b0a696d706f7274207b206a6f696e207d2066726f6d20276e6f64653a70617468273b0a696d706f7274207b2063726561746548617368207d2066726f6d20276e6f64653a63727970746f273b0a696d706f7274207b2072756e496e4e6577436f6e74657874207d2066726f6d20276e6f64653a766d273b0a0a6578706f727420636f6e7374207369676e6174757265203d207b2076657273696f6e3a20312c206e616d653a2027616464272c0a2020696e707574733a205b2761272c202762275d2e6d61702870617468203d3e20287b20706174682c20747970653a20276e756d626572272c20756e69743a202731272c20646f6d61696e3a205b2d31302c2031305d207d29292c0a20206f75747075743a207b20747970653a20276e756d626572272c20756e69743a20273127207d207d3b0a0a6578706f72742066756e6374696f6e20637265617465506f7274287b206469726563746f7279207d29207b0a2020636f6e7374207465737473203d204a534f4e2e7061727365287265616446696c6553796e63286e65772055524c28272e2f74657374732e6a736f6e272c20696d706f72742e6d6574612e75726c2929293b0a2020636f6e737420736f75726365203d2063616e646964617465203d3e207b0a20202020636f6e7374206279746573203d207265616446696c6553796e63286a6f696e286469726563746f72792c2063616e646964617465292c20277574663827293b0a202020206966202863726561746548617368282773686132353627292e757064617465286279746573292e6469676573742827686578272920213d3d2063616e64696461746529207468726f77204572726f72282763616e646964617465206279746573206368616e67656427293b0a2020202069662028212f5e5c28612c625c293d3e615b2b2d5d625c6e242f2e746573742862797465732929207468726f77204572726f722827756e737570706f727465642065787072657373696f6e206772616d6d617227293b0a2020202072657475726e2062797465733b0a20207d3b0a2020636f6e73742065786563757465203d202863616e6469646174652c20696e7075747329203d3e2072756e496e4e6577436f6e74657874286028247b736f757263652863616e646964617465297d2928247b696e707574732e617d2c247b696e707574732e627d29602c207b7d2c207b2074696d656f75743a20313030207d293b0a2020636f6e737420636865636b203d2063616e646964617465203d3e20287b207061737365643a2074657374732e65766572792874203d3e20657865637574652863616e6469646174652c20742e696e7075747329203d3d3d20742e6578706563746564292c0a20202020726561736f6e3a202745786563757461626c65206f75747075747320636f6d70617265642077697468207369782066726f7a656e206578616374204d617468206f62736572766174696f6e7327207d293b0a202072657475726e207b0a2020202064657363726962652863616e64696461746529207b20736f757263652863616e646964617465293b2072657475726e207369676e61747572653b207d2c0a2020202072756e2863616e6469646174652c20636173657329207b0a202020202020636f6e7374207374617274203d20706572666f726d616e63652e6e6f7728292c2068656170203d2070726f636573732e6d656d6f7279557361676528292e68656170557365643b0a202020202020636f6e7374206f757470757473203d2063617365732e6d61702874203d3e20287b206361736549643a20742e69642c2076616c75653a20657865637574652863616e6469646174652c20742e696e7075747329207d29293b0a20202020202072657475726e207b207374617475733a2027636f6d706c65746564272c206f7574707574732c0a202020202020202075736167653a207b2077616c6c4d733a20706572666f726d616e63652e6e6f772829202d2073746172742c206d656d6f727942797465733a204d6174682e6d617828302c2070726f636573732e6d656d6f7279557361676528292e6865617055736564202d2068656170292c206675656c3a2063617365732e6c656e677468207d2c20656666656374733a205b5d207d3b0a202020207d2c0a202020207363616e456666656374732863616e64696461746529207b20736f757263652863616e646964617465293b2072657475726e205b5d3b207d2c0a20202020696e76617269616e74286e616d652c2063616e64696461746529207b20696620286e616d6520213d3d202765786163745f6164646974696f6e2729207468726f77204572726f722827556e6b6e6f776e20696e76617269616e7427293b2072657475726e20636865636b2863616e646964617465293b207d2c0a20202020726573696475616c3a20636865636b2c0a202020206d6561737572653a2063616e646964617465203d3e20287b20736f7572636542797465733a204275666665722e627974654c656e67746828736f757263652863616e6469646174652929207d292c0a20207d3b0a7d0a\",\"tests.json\":\"5b7b226964223a2022636173652d30222c2022696e70757473223a207b2261223a20302c202262223a20307d2c20226578706563746564223a20307d2c207b226964223a2022636173652d31222c2022696e70757473223a207b2261223a20322c202262223a20337d2c20226578706563746564223a20357d2c207b226964223a2022636173652d32222c2022696e70757473223a207b2261223a202d342c202262223a20337d2c20226578706563746564223a202d317d2c207b226964223a2022636173652d33222c2022696e70757473223a207b2261223a2031302c202262223a202d31307d2c20226578706563746564223a20307d2c207b226964223a2022636173652d34222c2022696e70757473223a207b2261223a202d31302c202262223a202d31307d2c20226578706563746564223a202d32307d2c207b226964223a2022636173652d35222c2022696e70757473223a207b2261223a2031302c202262223a2031307d2c20226578706563746564223a2032307d5d\"},\"invariant_version\":\"1\",\"residual\":\"All six exact additions match\"}",
+          "freeze": {
+            "digest": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+            "qualification": "Precommitted addition and subtraction controls; results not yet observed",
+            "synthesis_context": {
+              "candidate_blind": "confirmed",
+              "id": "context",
+              "inputs": [
+                "input"
+              ]
+            }
+          },
+          "task": "task"
+        },
+        "id": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+        "kind": "frozen_evaluator",
+        "version": 0
+      },
+      {
+        "data": {
+          "admitted_input": "input",
+          "content": "(a,b)=>a+b\n",
+          "proposer": "synthetic preauthored stand-in",
+          "task": "task"
+        },
+        "id": "f9e9aeafac6a0f364cc93ec0346456d10a2cd0d3a2d28790d8654a4572b862f6",
+        "kind": "candidate",
+        "version": 0
+      },
+      {
+        "data": {
+          "admitted_input": "input",
+          "content": "(a,b)=>a-b\n",
+          "proposer": "synthetic preauthored stand-in",
+          "task": "task"
+        },
+        "id": "9416eb4a2631df1e2358e3f3b465a5f63b417d72ac7300a90cfa0f79d4be3222",
+        "kind": "candidate",
+        "version": 0
+      },
+      {
+        "data": {
+          "candidate": "f9e9aeafac6a0f364cc93ec0346456d10a2cd0d3a2d28790d8654a4572b862f6",
+          "delivery_state": "finished",
+          "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+          "observations": [
+            {
+              "cgroup": "not_applicable",
+              "isolation": "thread",
+              "reason": null,
+              "report": {
+                "attempts": [
+                  {
+                    "candidate": "f9e9aeafac6a0f364cc93ec0346456d10a2cd0d3a2d28790d8654a4572b862f6",
+                    "evaluator_digest": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+                    "firstFailure": null,
+                    "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+                    "metrics": {
+                      "sourceBytes": 11
+                    },
+                    "results": [
+                      {
+                        "check": "schema",
+                        "passed": true,
+                        "reason": "contract and gate input conform to version 1"
+                      },
+                      {
+                        "check": "interface",
+                        "passed": true,
+                        "reason": "observed name, types, units and domains match the contract"
+                      },
+                      {
+                        "check": "bounds",
+                        "passed": true,
+                        "reason": "both fresh runs completed within wall, memory and fuel limits"
+                      },
+                      {
+                        "check": "determinism",
+                        "passed": true,
+                        "reason": "repeat outputs, refusals and effects match exactly"
+                      },
+                      {
+                        "check": "forbidden_effects",
+                        "passed": true,
+                        "reason": "static scan and both runtime traces contain only allowed effects"
+                      },
+                      {
+                        "check": "invariant:exact_addition",
+                        "passed": true,
+                        "reason": "Executable outputs compared with six frozen exact Math observations"
+                      },
+                      {
+                        "check": "residual",
+                        "passed": true,
+                        "reason": "Executable outputs compared with six frozen exact Math observations"
+                      }
+                    ],
+                    "round": 0,
+                    "stage": "passed"
+                  },
+                  {
+                    "candidate": "9416eb4a2631df1e2358e3f3b465a5f63b417d72ac7300a90cfa0f79d4be3222",
+                    "evaluator_digest": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+                    "firstFailure": "invariant:exact_addition",
+                    "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+                    "metrics": null,
+                    "results": [
+                      {
+                        "check": "schema",
+                        "passed": true,
+                        "reason": "contract and gate input conform to version 1"
+                      },
+                      {
+                        "check": "interface",
+                        "passed": true,
+                        "reason": "observed name, types, units and domains match the contract"
+                      },
+                      {
+                        "check": "bounds",
+                        "passed": true,
+                        "reason": "both fresh runs completed within wall, memory and fuel limits"
+                      },
+                      {
+                        "check": "determinism",
+                        "passed": true,
+                        "reason": "repeat outputs, refusals and effects match exactly"
+                      },
+                      {
+                        "check": "forbidden_effects",
+                        "passed": true,
+                        "reason": "static scan and both runtime traces contain only allowed effects"
+                      },
+                      {
+                        "check": "invariant:exact_addition",
+                        "passed": false,
+                        "reason": "Executable outputs compared with six frozen exact Math observations"
+                      }
+                    ],
+                    "round": 0,
+                    "stage": "rejected"
+                  },
+                  {
+                    "candidate": "f9e9aeafac6a0f364cc93ec0346456d10a2cd0d3a2d28790d8654a4572b862f6",
+                    "evaluator_digest": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+                    "firstFailure": null,
+                    "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+                    "metrics": {
+                      "sourceBytes": 11
+                    },
+                    "results": [
+                      {
+                        "check": "schema",
+                        "passed": true,
+                        "reason": "contract and gate input conform to version 1"
+                      },
+                      {
+                        "check": "interface",
+                        "passed": true,
+                        "reason": "observed name, types, units and domains match the contract"
+                      },
+                      {
+                        "check": "bounds",
+                        "passed": true,
+                        "reason": "both fresh runs completed within wall, memory and fuel limits"
+                      },
+                      {
+                        "check": "determinism",
+                        "passed": true,
+                        "reason": "repeat outputs, refusals and effects match exactly"
+                      },
+                      {
+                        "check": "forbidden_effects",
+                        "passed": true,
+                        "reason": "static scan and both runtime traces contain only allowed effects"
+                      },
+                      {
+                        "check": "invariant:exact_addition",
+                        "passed": true,
+                        "reason": "Executable outputs compared with six frozen exact Math observations"
+                      },
+                      {
+                        "check": "residual",
+                        "passed": true,
+                        "reason": "Executable outputs compared with six frozen exact Math observations"
+                      }
+                    ],
+                    "round": 1,
+                    "stage": "passed"
+                  }
+                ],
+                "evaluator_digest": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+                "frontier": [
+                  "f9e9aeafac6a0f364cc93ec0346456d10a2cd0d3a2d28790d8654a4572b862f6"
+                ],
+                "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+                "stage": "completed"
+              },
+              "resourceLimits": {
+                "codeRangeSizeMb": 0,
+                "maxOldGenerationSizeMb": 128,
+                "maxYoungGenerationSizeMb": 16,
+                "stackSizeMb": 4
+              },
+              "status": "completed",
+              "wasmMemoryMaxMb": 64,
+              "workcell": 26
+            }
+          ],
+          "outcome_state": "passed",
+          "precommit": {
+            "acceptance_boundary": "all frozen checks pass",
+            "artifact_identity": "f9e9aeafac6a0f364cc93ec0346456d10a2cd0d3a2d28790d8654a4572b862f6",
+            "environment": {
+              "isolation": "thread"
+            },
+            "failure_meaning": "reject candidate",
+            "observable": "exact addition",
+            "oracle": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+            "oracle_version": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+            "stop_condition": "one batch"
+          },
+          "task": "task"
+        },
+        "id": "receipt-0",
+        "kind": "receipt",
+        "version": 0
+      },
+      {
+        "data": {
+          "candidate": "9416eb4a2631df1e2358e3f3b465a5f63b417d72ac7300a90cfa0f79d4be3222",
+          "delivery_state": "finished",
+          "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+          "observations": [
+            {
+              "cgroup": "not_applicable",
+              "isolation": "thread",
+              "reason": null,
+              "report": {
+                "attempts": [
+                  {
+                    "candidate": "f9e9aeafac6a0f364cc93ec0346456d10a2cd0d3a2d28790d8654a4572b862f6",
+                    "evaluator_digest": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+                    "firstFailure": null,
+                    "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+                    "metrics": {
+                      "sourceBytes": 11
+                    },
+                    "results": [
+                      {
+                        "check": "schema",
+                        "passed": true,
+                        "reason": "contract and gate input conform to version 1"
+                      },
+                      {
+                        "check": "interface",
+                        "passed": true,
+                        "reason": "observed name, types, units and domains match the contract"
+                      },
+                      {
+                        "check": "bounds",
+                        "passed": true,
+                        "reason": "both fresh runs completed within wall, memory and fuel limits"
+                      },
+                      {
+                        "check": "determinism",
+                        "passed": true,
+                        "reason": "repeat outputs, refusals and effects match exactly"
+                      },
+                      {
+                        "check": "forbidden_effects",
+                        "passed": true,
+                        "reason": "static scan and both runtime traces contain only allowed effects"
+                      },
+                      {
+                        "check": "invariant:exact_addition",
+                        "passed": true,
+                        "reason": "Executable outputs compared with six frozen exact Math observations"
+                      },
+                      {
+                        "check": "residual",
+                        "passed": true,
+                        "reason": "Executable outputs compared with six frozen exact Math observations"
+                      }
+                    ],
+                    "round": 0,
+                    "stage": "passed"
+                  },
+                  {
+                    "candidate": "9416eb4a2631df1e2358e3f3b465a5f63b417d72ac7300a90cfa0f79d4be3222",
+                    "evaluator_digest": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+                    "firstFailure": "invariant:exact_addition",
+                    "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+                    "metrics": null,
+                    "results": [
+                      {
+                        "check": "schema",
+                        "passed": true,
+                        "reason": "contract and gate input conform to version 1"
+                      },
+                      {
+                        "check": "interface",
+                        "passed": true,
+                        "reason": "observed name, types, units and domains match the contract"
+                      },
+                      {
+                        "check": "bounds",
+                        "passed": true,
+                        "reason": "both fresh runs completed within wall, memory and fuel limits"
+                      },
+                      {
+                        "check": "determinism",
+                        "passed": true,
+                        "reason": "repeat outputs, refusals and effects match exactly"
+                      },
+                      {
+                        "check": "forbidden_effects",
+                        "passed": true,
+                        "reason": "static scan and both runtime traces contain only allowed effects"
+                      },
+                      {
+                        "check": "invariant:exact_addition",
+                        "passed": false,
+                        "reason": "Executable outputs compared with six frozen exact Math observations"
+                      }
+                    ],
+                    "round": 0,
+                    "stage": "rejected"
+                  },
+                  {
+                    "candidate": "f9e9aeafac6a0f364cc93ec0346456d10a2cd0d3a2d28790d8654a4572b862f6",
+                    "evaluator_digest": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+                    "firstFailure": null,
+                    "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+                    "metrics": {
+                      "sourceBytes": 11
+                    },
+                    "results": [
+                      {
+                        "check": "schema",
+                        "passed": true,
+                        "reason": "contract and gate input conform to version 1"
+                      },
+                      {
+                        "check": "interface",
+                        "passed": true,
+                        "reason": "observed name, types, units and domains match the contract"
+                      },
+                      {
+                        "check": "bounds",
+                        "passed": true,
+                        "reason": "both fresh runs completed within wall, memory and fuel limits"
+                      },
+                      {
+                        "check": "determinism",
+                        "passed": true,
+                        "reason": "repeat outputs, refusals and effects match exactly"
+                      },
+                      {
+                        "check": "forbidden_effects",
+                        "passed": true,
+                        "reason": "static scan and both runtime traces contain only allowed effects"
+                      },
+                      {
+                        "check": "invariant:exact_addition",
+                        "passed": true,
+                        "reason": "Executable outputs compared with six frozen exact Math observations"
+                      },
+                      {
+                        "check": "residual",
+                        "passed": true,
+                        "reason": "Executable outputs compared with six frozen exact Math observations"
+                      }
+                    ],
+                    "round": 1,
+                    "stage": "passed"
+                  }
+                ],
+                "evaluator_digest": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+                "frontier": [
+                  "f9e9aeafac6a0f364cc93ec0346456d10a2cd0d3a2d28790d8654a4572b862f6"
+                ],
+                "frozen_evaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+                "stage": "completed"
+              },
+              "resourceLimits": {
+                "codeRangeSizeMb": 0,
+                "maxOldGenerationSizeMb": 128,
+                "maxYoungGenerationSizeMb": 16,
+                "stackSizeMb": 4
+              },
+              "status": "completed",
+              "wasmMemoryMaxMb": 64,
+              "workcell": 26
+            }
+          ],
+          "outcome_state": "failed",
+          "precommit": {
+            "acceptance_boundary": "all frozen checks pass",
+            "artifact_identity": "9416eb4a2631df1e2358e3f3b465a5f63b417d72ac7300a90cfa0f79d4be3222",
+            "environment": {
+              "isolation": "thread"
+            },
+            "failure_meaning": "reject candidate",
+            "observable": "exact addition",
+            "oracle": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+            "oracle_version": "21d0c9933cf9ffbbf8d229a842bde45171bb6513c3e802439792d739289064ed",
+            "stop_condition": "one batch"
+          },
+          "task": "task"
+        },
+        "id": "receipt-1",
+        "kind": "receipt",
+        "version": 0
+      }
+    ],
+    "engine_hashes": {
+      "task": "2268af5e3d66032b4253fdb61587adf0ce5135fe9be6410b6aa4465e987c72e3",
+      "input": "894726ba626ef7e75f7c8be4d13cfb34b13aa2ce04be1d30a0ec4e5066cfb6f5",
+      "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56": "9e6792927c47933c0a574b21676aca58ca5e492df42de695e7c447a61578fe7b",
+      "f9e9aeafac6a0f364cc93ec0346456d10a2cd0d3a2d28790d8654a4572b862f6": "9d9ffaf96e6662c4503e660b58a2ca49e48a3ca8b31707e1caf71248428bfa3d",
+      "9416eb4a2631df1e2358e3f3b465a5f63b417d72ac7300a90cfa0f79d4be3222": "c1711b2bba0ac6c1540ad6657ef05e07dbee5a041993fd091a4e50223b5f1a2e",
+      "receipt-0": "4a461987e4ed4c8ba513ce2cc19b7eaa80d9bbcef0957c4643e8a7895ebe9d5e",
+      "receipt-1": "a2ab8e69177164ea13783acf7507390181e5fc2e935554831b3888903701a159"
+    },
+    "witnessed_records": [
+      {
+        "goal_id": "synthetic-math",
+        "kind": "precommit",
+        "payload": {
+          "grant_id": "local-synthetic-math",
+          "precommitment": {
+            "expected_observation": "Exact integer 0",
+            "failure_meaning": "Integration behavior does not match the pinned contract.",
+            "oracle_id": "synthetic-exact-check",
+            "oracle_version": "1",
+            "success_boundary": "Only the supplied synthetic request; no proof or goal closure."
+          },
+          "request": {
+            "arguments": {
+              "domain": "Q",
+              "operands": [
+                {
+                  "denominator": 1,
+                  "numerator": 0
+                },
+                {
+                  "denominator": 1,
+                  "numerator": 0
+                }
+              ],
+              "operation": "add"
+            },
+            "capability_id": "foundation_math",
+            "decision_id": "decision-0",
+            "goal_id": "synthetic-math",
+            "goal_revision": 1,
+            "operation": "exact_scalar",
+            "request_id": "request-0",
+            "required_evidence": "tool_observation",
+            "schema": "poodo.capability-request/0.1"
+          },
+          "request_sha256": "66d3e8e9c13c81ff508f2388052779613b32628b3f5b1e524109cccc90d72529"
+        },
+        "previous_id": null,
+        "record_id": "bcdde3251c1fdc2e2f50a0e392de978ba8984eb689eb9e8a26e0d16a4e09b816",
+        "schema": "poodo.endoforge-record/0.1",
+        "session_id": "ce4c9a91b8cb4633bfa25273ca7891bd"
+      },
+      {
+        "goal_id": "synthetic-math",
+        "kind": "precommit",
+        "payload": {
+          "grant_id": "local-synthetic-math",
+          "precommitment": {
+            "expected_observation": "Exact integer 5",
+            "failure_meaning": "Integration behavior does not match the pinned contract.",
+            "oracle_id": "synthetic-exact-check",
+            "oracle_version": "1",
+            "success_boundary": "Only the supplied synthetic request; no proof or goal closure."
+          },
+          "request": {
+            "arguments": {
+              "domain": "Q",
+              "operands": [
+                {
+                  "denominator": 1,
+                  "numerator": 2
+                },
+                {
+                  "denominator": 1,
+                  "numerator": 3
+                }
+              ],
+              "operation": "add"
+            },
+            "capability_id": "foundation_math",
+            "decision_id": "decision-1",
+            "goal_id": "synthetic-math",
+            "goal_revision": 1,
+            "operation": "exact_scalar",
+            "request_id": "request-1",
+            "required_evidence": "tool_observation",
+            "schema": "poodo.capability-request/0.1"
+          },
+          "request_sha256": "906a30a1637a8d724e2b9734bb461d5d4b19c8321bfba9da3744ec97e4444b42"
+        },
+        "previous_id": "bcdde3251c1fdc2e2f50a0e392de978ba8984eb689eb9e8a26e0d16a4e09b816",
+        "record_id": "b25116144abd3aeae1289f02ecb443bbb62c875d21843825c2964316396c589f",
+        "schema": "poodo.endoforge-record/0.1",
+        "session_id": "ce4c9a91b8cb4633bfa25273ca7891bd"
+      },
+      {
+        "goal_id": "synthetic-math",
+        "kind": "precommit",
+        "payload": {
+          "grant_id": "local-synthetic-math",
+          "precommitment": {
+            "expected_observation": "Exact integer -1",
+            "failure_meaning": "Integration behavior does not match the pinned contract.",
+            "oracle_id": "synthetic-exact-check",
+            "oracle_version": "1",
+            "success_boundary": "Only the supplied synthetic request; no proof or goal closure."
+          },
+          "request": {
+            "arguments": {
+              "domain": "Q",
+              "operands": [
+                {
+                  "denominator": 1,
+                  "numerator": -4
+                },
+                {
+                  "denominator": 1,
+                  "numerator": 3
+                }
+              ],
+              "operation": "add"
+            },
+            "capability_id": "foundation_math",
+            "decision_id": "decision-2",
+            "goal_id": "synthetic-math",
+            "goal_revision": 1,
+            "operation": "exact_scalar",
+            "request_id": "request-2",
+            "required_evidence": "tool_observation",
+            "schema": "poodo.capability-request/0.1"
+          },
+          "request_sha256": "7930bd62fa7bd865220ce51d4b4f8c2630eb398a75d340feecff4581851367a0"
+        },
+        "previous_id": "b25116144abd3aeae1289f02ecb443bbb62c875d21843825c2964316396c589f",
+        "record_id": "eb687974742978ffdc5845f6576b9a0304bce2485ac09240e0003aa2ae3b995a",
+        "schema": "poodo.endoforge-record/0.1",
+        "session_id": "ce4c9a91b8cb4633bfa25273ca7891bd"
+      },
+      {
+        "goal_id": "synthetic-math",
+        "kind": "precommit",
+        "payload": {
+          "grant_id": "local-synthetic-math",
+          "precommitment": {
+            "expected_observation": "Exact integer 0",
+            "failure_meaning": "Integration behavior does not match the pinned contract.",
+            "oracle_id": "synthetic-exact-check",
+            "oracle_version": "1",
+            "success_boundary": "Only the supplied synthetic request; no proof or goal closure."
+          },
+          "request": {
+            "arguments": {
+              "domain": "Q",
+              "operands": [
+                {
+                  "denominator": 1,
+                  "numerator": 10
+                },
+                {
+                  "denominator": 1,
+                  "numerator": -10
+                }
+              ],
+              "operation": "add"
+            },
+            "capability_id": "foundation_math",
+            "decision_id": "decision-3",
+            "goal_id": "synthetic-math",
+            "goal_revision": 1,
+            "operation": "exact_scalar",
+            "request_id": "request-3",
+            "required_evidence": "tool_observation",
+            "schema": "poodo.capability-request/0.1"
+          },
+          "request_sha256": "176c2baf9153a60e892c21f32d7138d6f13ac7d950975449b0187923a7dfcc2a"
+        },
+        "previous_id": "eb687974742978ffdc5845f6576b9a0304bce2485ac09240e0003aa2ae3b995a",
+        "record_id": "54d12d41f2371bc1e088e10bd7103888831488afca2942db60b1b8c505adc89c",
+        "schema": "poodo.endoforge-record/0.1",
+        "session_id": "ce4c9a91b8cb4633bfa25273ca7891bd"
+      },
+      {
+        "goal_id": "synthetic-math",
+        "kind": "precommit",
+        "payload": {
+          "grant_id": "local-synthetic-math",
+          "precommitment": {
+            "expected_observation": "Exact integer -20",
+            "failure_meaning": "Integration behavior does not match the pinned contract.",
+            "oracle_id": "synthetic-exact-check",
+            "oracle_version": "1",
+            "success_boundary": "Only the supplied synthetic request; no proof or goal closure."
+          },
+          "request": {
+            "arguments": {
+              "domain": "Q",
+              "operands": [
+                {
+                  "denominator": 1,
+                  "numerator": -10
+                },
+                {
+                  "denominator": 1,
+                  "numerator": -10
+                }
+              ],
+              "operation": "add"
+            },
+            "capability_id": "foundation_math",
+            "decision_id": "decision-4",
+            "goal_id": "synthetic-math",
+            "goal_revision": 1,
+            "operation": "exact_scalar",
+            "request_id": "request-4",
+            "required_evidence": "tool_observation",
+            "schema": "poodo.capability-request/0.1"
+          },
+          "request_sha256": "736d20690fe19feb60c8cf909ef97f90b2a335e822a2b0d22778b3c1a7e1b66d"
+        },
+        "previous_id": "54d12d41f2371bc1e088e10bd7103888831488afca2942db60b1b8c505adc89c",
+        "record_id": "bde684da33351879373f0c73c1aceabf2f1006b247b62088f58d2d9d1d4e0d6e",
+        "schema": "poodo.endoforge-record/0.1",
+        "session_id": "ce4c9a91b8cb4633bfa25273ca7891bd"
+      },
+      {
+        "goal_id": "synthetic-math",
+        "kind": "precommit",
+        "payload": {
+          "grant_id": "local-synthetic-math",
+          "precommitment": {
+            "expected_observation": "Exact integer 20",
+            "failure_meaning": "Integration behavior does not match the pinned contract.",
+            "oracle_id": "synthetic-exact-check",
+            "oracle_version": "1",
+            "success_boundary": "Only the supplied synthetic request; no proof or goal closure."
+          },
+          "request": {
+            "arguments": {
+              "domain": "Q",
+              "operands": [
+                {
+                  "denominator": 1,
+                  "numerator": 10
+                },
+                {
+                  "denominator": 1,
+                  "numerator": 10
+                }
+              ],
+              "operation": "add"
+            },
+            "capability_id": "foundation_math",
+            "decision_id": "decision-5",
+            "goal_id": "synthetic-math",
+            "goal_revision": 1,
+            "operation": "exact_scalar",
+            "request_id": "request-5",
+            "required_evidence": "tool_observation",
+            "schema": "poodo.capability-request/0.1"
+          },
+          "request_sha256": "196c496b5f05d5484e651bf563a279cb0272e0cce8b70817840a898f20865380"
+        },
+        "previous_id": "bde684da33351879373f0c73c1aceabf2f1006b247b62088f58d2d9d1d4e0d6e",
+        "record_id": "8759f6d55cbe3bd67010c2bbb396719cb05bc95f3cd300254fe8409625232bf3",
+        "schema": "poodo.endoforge-record/0.1",
+        "session_id": "ce4c9a91b8cb4633bfa25273ca7891bd"
+      },
+      {
+        "goal_id": "synthetic-math",
+        "kind": "precommit",
+        "payload": {
+          "grant_id": "local-synthetic-math",
+          "precommitment": {
+            "expected_observation": "Exact integer 0",
+            "failure_meaning": "Integration behavior does not match the pinned contract.",
+            "oracle_id": "synthetic-exact-check",
+            "oracle_version": "1",
+            "success_boundary": "Only the supplied synthetic request; no proof or goal closure."
+          },
+          "request": {
+            "arguments": {
+              "domain": "Q",
+              "operands": [
+                {
+                  "denominator": 1,
+                  "numerator": 0
+                },
+                {
+                  "denominator": 1,
+                  "numerator": 0
+                }
+              ],
+              "operation": "add"
+            },
+            "capability_id": "foundation_math",
+            "decision_id": "decision-0",
+            "goal_id": "synthetic-math",
+            "goal_revision": 1,
+            "operation": "exact_scalar",
+            "request_id": "request-0",
+            "required_evidence": "tool_observation",
+            "schema": "poodo.capability-request/0.1"
+          },
+          "request_sha256": "66d3e8e9c13c81ff508f2388052779613b32628b3f5b1e524109cccc90d72529"
+        },
+        "previous_id": "8759f6d55cbe3bd67010c2bbb396719cb05bc95f3cd300254fe8409625232bf3",
+        "record_id": "dd6fa10beb2aea22cdea99f54d127aa6634fe2fcce13b374ad28671129b9b931",
+        "schema": "poodo.endoforge-record/0.1",
+        "session_id": "ce4c9a91b8cb4633bfa25273ca7891bd"
+      },
+      {
+        "goal_id": "synthetic-math",
+        "kind": "outcome",
+        "payload": {
+          "assessment": "exact_scalar_result",
+          "attempt_id": "attempt-1",
+          "capability_id": "foundation_math",
+          "decision_id": "decision-0",
+          "epistemic_status": "observed",
+          "execution_certainty": "responded",
+          "execution_status": "completed",
+          "formal_proof": false,
+          "goal_id": "synthetic-math",
+          "goal_revision": 1,
+          "inventory_sha256": "7df9574ee6788e55bb51aec8ebf858e958c252808ec3f4c217e43f598c961ba9",
+          "limitations": [
+            "Original receipt preserved without accepting its assumptions as true.",
+            "No formal proof, actual geometry, general theorem, or automatic goal acceptance.",
+            "Pinned files and receipt hashes are not signatures or a hostile-code sandbox."
+          ],
+          "operation": "exact_scalar",
+          "raw_result": {
+            "isError": false,
+            "structuredContent": {
+              "assessment": "exact_scalar_result",
+              "formal_proof": false,
+              "receipt": {
+                "artifacts": {
+                  "backend_source_sha256": "146ec4fc9fca0c3400331c06595894fd9cb6a23668abae5c7b8d196e06bad54e",
+                  "input_sha256": "542cde2bb7153459ae6331bb853054f17cad00b965fb11a4241a7a1df491aa1c",
+                  "request_sha256": "542cde2bb7153459ae6331bb853054f17cad00b965fb11a4241a7a1df491aa1c",
+                  "result_sha256": "025d1af9491f3ae00ce53c97c1d0b4382021cdcc0c11bed4924e9aa105d696f1"
+                },
+                "backend": {
+                  "adapter_version": "0.1.0",
+                  "name": "python.fractions.Fraction",
+                  "version": "3.14.8"
+                },
+                "error": null,
+                "input": {
+                  "domain": "Q",
+                  "operands": [
+                    {
+                      "denominator": 1,
+                      "numerator": 0
+                    },
+                    {
+                      "denominator": 1,
+                      "numerator": 0
+                    }
+                  ],
+                  "operation": "add"
+                },
+                "kind": "exact_computation",
+                "request": {
+                  "domain": "Q",
+                  "operands": [
+                    {
+                      "denominator": 1,
+                      "numerator": 0
+                    },
+                    {
+                      "denominator": 1,
+                      "numerator": 0
+                    }
+                  ],
+                  "operation": "add"
+                },
+                "result": {
+                  "denominator": 1,
+                  "domain": "Q",
+                  "numerator": 0
+                },
+                "schema_version": "1.0",
+                "scope": {
+                  "claim": "Only this explicit finite arithmetic request in its declared domain.",
+                  "evidence_level": "exact_computation",
+                  "formal_proof": false,
+                  "integer_division": "exact only; nonintegral results are domain errors",
+                  "limits": {
+                    "absolute_exponent": 10000,
+                    "input_bits": 4096,
+                    "result_bits": 12000
+                  },
+                  "zero_to_zero": "undefined by this tool's contract"
+                },
+                "status": "success"
+              },
+              "runtime_goal_acceptance": false,
+              "tool": "exact_scalar"
+            }
+          },
+          "request_id": "request-0",
+          "request_sha256": "66d3e8e9c13c81ff508f2388052779613b32628b3f5b1e524109cccc90d72529",
+          "runtime_goal_acceptance": false,
+          "schema": "poodo.capability-result/0.1",
+          "scope": "Exact supplied structured inputs, within the named v014 tool's declared domain and bounds.",
+          "source_manifest_sha256": "23219ba772c84796c007eee75458afc499b6ac257b154e78cf3068e41bfdb9a2"
+        },
+        "previous_id": "dd6fa10beb2aea22cdea99f54d127aa6634fe2fcce13b374ad28671129b9b931",
+        "record_id": "877b7cce1667bf3fc14308f24101f1a2e45e7293f7352fb0aa633588f502fd99",
+        "schema": "poodo.endoforge-record/0.1",
+        "session_id": "ce4c9a91b8cb4633bfa25273ca7891bd"
+      },
+      {
+        "goal_id": "synthetic-math",
+        "kind": "precommit",
+        "payload": {
+          "grant_id": "local-synthetic-math",
+          "precommitment": {
+            "expected_observation": "Exact integer 5",
+            "failure_meaning": "Integration behavior does not match the pinned contract.",
+            "oracle_id": "synthetic-exact-check",
+            "oracle_version": "1",
+            "success_boundary": "Only the supplied synthetic request; no proof or goal closure."
+          },
+          "request": {
+            "arguments": {
+              "domain": "Q",
+              "operands": [
+                {
+                  "denominator": 1,
+                  "numerator": 2
+                },
+                {
+                  "denominator": 1,
+                  "numerator": 3
+                }
+              ],
+              "operation": "add"
+            },
+            "capability_id": "foundation_math",
+            "decision_id": "decision-1",
+            "goal_id": "synthetic-math",
+            "goal_revision": 1,
+            "operation": "exact_scalar",
+            "request_id": "request-1",
+            "required_evidence": "tool_observation",
+            "schema": "poodo.capability-request/0.1"
+          },
+          "request_sha256": "906a30a1637a8d724e2b9734bb461d5d4b19c8321bfba9da3744ec97e4444b42"
+        },
+        "previous_id": "877b7cce1667bf3fc14308f24101f1a2e45e7293f7352fb0aa633588f502fd99",
+        "record_id": "f3aef52926b9a1ed0641bab9f84e67a504fa11ea320826843e28b17334ce024c",
+        "schema": "poodo.endoforge-record/0.1",
+        "session_id": "ce4c9a91b8cb4633bfa25273ca7891bd"
+      },
+      {
+        "goal_id": "synthetic-math",
+        "kind": "outcome",
+        "payload": {
+          "assessment": "exact_scalar_result",
+          "attempt_id": "attempt-2",
+          "capability_id": "foundation_math",
+          "decision_id": "decision-1",
+          "epistemic_status": "observed",
+          "execution_certainty": "responded",
+          "execution_status": "completed",
+          "formal_proof": false,
+          "goal_id": "synthetic-math",
+          "goal_revision": 1,
+          "inventory_sha256": "7df9574ee6788e55bb51aec8ebf858e958c252808ec3f4c217e43f598c961ba9",
+          "limitations": [
+            "Original receipt preserved without accepting its assumptions as true.",
+            "No formal proof, actual geometry, general theorem, or automatic goal acceptance.",
+            "Pinned files and receipt hashes are not signatures or a hostile-code sandbox."
+          ],
+          "operation": "exact_scalar",
+          "raw_result": {
+            "isError": false,
+            "structuredContent": {
+              "assessment": "exact_scalar_result",
+              "formal_proof": false,
+              "receipt": {
+                "artifacts": {
+                  "backend_source_sha256": "146ec4fc9fca0c3400331c06595894fd9cb6a23668abae5c7b8d196e06bad54e",
+                  "input_sha256": "c97f1fbe251de09b4333732d0f08c6702fa01ba938d787b12ee953243c8330b8",
+                  "request_sha256": "c97f1fbe251de09b4333732d0f08c6702fa01ba938d787b12ee953243c8330b8",
+                  "result_sha256": "c355a448264d93115cf891066516ae8c053d22e0b58571c30356ec9bff9105b6"
+                },
+                "backend": {
+                  "adapter_version": "0.1.0",
+                  "name": "python.fractions.Fraction",
+                  "version": "3.14.8"
+                },
+                "error": null,
+                "input": {
+                  "domain": "Q",
+                  "operands": [
+                    {
+                      "denominator": 1,
+                      "numerator": 2
+                    },
+                    {
+                      "denominator": 1,
+                      "numerator": 3
+                    }
+                  ],
+                  "operation": "add"
+                },
+                "kind": "exact_computation",
+                "request": {
+                  "domain": "Q",
+                  "operands": [
+                    {
+                      "denominator": 1,
+                      "numerator": 2
+                    },
+                    {
+                      "denominator": 1,
+                      "numerator": 3
+                    }
+                  ],
+                  "operation": "add"
+                },
+                "result": {
+                  "denominator": 1,
+                  "domain": "Q",
+                  "numerator": 5
+                },
+                "schema_version": "1.0",
+                "scope": {
+                  "claim": "Only this explicit finite arithmetic request in its declared domain.",
+                  "evidence_level": "exact_computation",
+                  "formal_proof": false,
+                  "integer_division": "exact only; nonintegral results are domain errors",
+                  "limits": {
+                    "absolute_exponent": 10000,
+                    "input_bits": 4096,
+                    "result_bits": 12000
+                  },
+                  "zero_to_zero": "undefined by this tool's contract"
+                },
+                "status": "success"
+              },
+              "runtime_goal_acceptance": false,
+              "tool": "exact_scalar"
+            }
+          },
+          "request_id": "request-1",
+          "request_sha256": "906a30a1637a8d724e2b9734bb461d5d4b19c8321bfba9da3744ec97e4444b42",
+          "runtime_goal_acceptance": false,
+          "schema": "poodo.capability-result/0.1",
+          "scope": "Exact supplied structured inputs, within the named v014 tool's declared domain and bounds.",
+          "source_manifest_sha256": "23219ba772c84796c007eee75458afc499b6ac257b154e78cf3068e41bfdb9a2"
+        },
+        "previous_id": "f3aef52926b9a1ed0641bab9f84e67a504fa11ea320826843e28b17334ce024c",
+        "record_id": "4dbd6616463cdbe9501ee3ac99f5b8b2f7c8bbcbeba3dd59f8657c15f9bcfe31",
+        "schema": "poodo.endoforge-record/0.1",
+        "session_id": "ce4c9a91b8cb4633bfa25273ca7891bd"
+      },
+      {
+        "goal_id": "synthetic-math",
+        "kind": "precommit",
+        "payload": {
+          "grant_id": "local-synthetic-math",
+          "precommitment": {
+            "expected_observation": "Exact integer -1",
+            "failure_meaning": "Integration behavior does not match the pinned contract.",
+            "oracle_id": "synthetic-exact-check",
+            "oracle_version": "1",
+            "success_boundary": "Only the supplied synthetic request; no proof or goal closure."
+          },
+          "request": {
+            "arguments": {
+              "domain": "Q",
+              "operands": [
+                {
+                  "denominator": 1,
+                  "numerator": -4
+                },
+                {
+                  "denominator": 1,
+                  "numerator": 3
+                }
+              ],
+              "operation": "add"
+            },
+            "capability_id": "foundation_math",
+            "decision_id": "decision-2",
+            "goal_id": "synthetic-math",
+            "goal_revision": 1,
+            "operation": "exact_scalar",
+            "request_id": "request-2",
+            "required_evidence": "tool_observation",
+            "schema": "poodo.capability-request/0.1"
+          },
+          "request_sha256": "7930bd62fa7bd865220ce51d4b4f8c2630eb398a75d340feecff4581851367a0"
+        },
+        "previous_id": "4dbd6616463cdbe9501ee3ac99f5b8b2f7c8bbcbeba3dd59f8657c15f9bcfe31",
+        "record_id": "8904eb51eaf45e7f42445a87dba3457522f27b62829f8bc8a66e1e2a3e112a34",
+        "schema": "poodo.endoforge-record/0.1",
+        "session_id": "ce4c9a91b8cb4633bfa25273ca7891bd"
+      },
+      {
+        "goal_id": "synthetic-math",
+        "kind": "outcome",
+        "payload": {
+          "assessment": "exact_scalar_result",
+          "attempt_id": "attempt-3",
+          "capability_id": "foundation_math",
+          "decision_id": "decision-2",
+          "epistemic_status": "observed",
+          "execution_certainty": "responded",
+          "execution_status": "completed",
+          "formal_proof": false,
+          "goal_id": "synthetic-math",
+          "goal_revision": 1,
+          "inventory_sha256": "7df9574ee6788e55bb51aec8ebf858e958c252808ec3f4c217e43f598c961ba9",
+          "limitations": [
+            "Original receipt preserved without accepting its assumptions as true.",
+            "No formal proof, actual geometry, general theorem, or automatic goal acceptance.",
+            "Pinned files and receipt hashes are not signatures or a hostile-code sandbox."
+          ],
+          "operation": "exact_scalar",
+          "raw_result": {
+            "isError": false,
+            "structuredContent": {
+              "assessment": "exact_scalar_result",
+              "formal_proof": false,
+              "receipt": {
+                "artifacts": {
+                  "backend_source_sha256": "146ec4fc9fca0c3400331c06595894fd9cb6a23668abae5c7b8d196e06bad54e",
+                  "input_sha256": "e674268873e6410a3bb9483c5cae72b31e6101c92a450563f7a734781109ec25",
+                  "request_sha256": "e674268873e6410a3bb9483c5cae72b31e6101c92a450563f7a734781109ec25",
+                  "result_sha256": "73760546384011041db2d4c5f88ded7f8465e2903fb4e3d7bf9cfc648276afde"
+                },
+                "backend": {
+                  "adapter_version": "0.1.0",
+                  "name": "python.fractions.Fraction",
+                  "version": "3.14.8"
+                },
+                "error": null,
+                "input": {
+                  "domain": "Q",
+                  "operands": [
+                    {
+                      "denominator": 1,
+                      "numerator": -4
+                    },
+                    {
+                      "denominator": 1,
+                      "numerator": 3
+                    }
+                  ],
+                  "operation": "add"
+                },
+                "kind": "exact_computation",
+                "request": {
+                  "domain": "Q",
+                  "operands": [
+                    {
+                      "denominator": 1,
+                      "numerator": -4
+                    },
+                    {
+                      "denominator": 1,
+                      "numerator": 3
+                    }
+                  ],
+                  "operation": "add"
+                },
+                "result": {
+                  "denominator": 1,
+                  "domain": "Q",
+                  "numerator": -1
+                },
+                "schema_version": "1.0",
+                "scope": {
+                  "claim": "Only this explicit finite arithmetic request in its declared domain.",
+                  "evidence_level": "exact_computation",
+                  "formal_proof": false,
+                  "integer_division": "exact only; nonintegral results are domain errors",
+                  "limits": {
+                    "absolute_exponent": 10000,
+                    "input_bits": 4096,
+                    "result_bits": 12000
+                  },
+                  "zero_to_zero": "undefined by this tool's contract"
+                },
+                "status": "success"
+              },
+              "runtime_goal_acceptance": false,
+              "tool": "exact_scalar"
+            }
+          },
+          "request_id": "request-2",
+          "request_sha256": "7930bd62fa7bd865220ce51d4b4f8c2630eb398a75d340feecff4581851367a0",
+          "runtime_goal_acceptance": false,
+          "schema": "poodo.capability-result/0.1",
+          "scope": "Exact supplied structured inputs, within the named v014 tool's declared domain and bounds.",
+          "source_manifest_sha256": "23219ba772c84796c007eee75458afc499b6ac257b154e78cf3068e41bfdb9a2"
+        },
+        "previous_id": "8904eb51eaf45e7f42445a87dba3457522f27b62829f8bc8a66e1e2a3e112a34",
+        "record_id": "7128571ca50a9ff0d6f3b86a15372bf2a9c524fbd4b1ce89c3d5a5f363526fb7",
+        "schema": "poodo.endoforge-record/0.1",
+        "session_id": "ce4c9a91b8cb4633bfa25273ca7891bd"
+      },
+      {
+        "goal_id": "synthetic-math",
+        "kind": "precommit",
+        "payload": {
+          "grant_id": "local-synthetic-math",
+          "precommitment": {
+            "expected_observation": "Exact integer 0",
+            "failure_meaning": "Integration behavior does not match the pinned contract.",
+            "oracle_id": "synthetic-exact-check",
+            "oracle_version": "1",
+            "success_boundary": "Only the supplied synthetic request; no proof or goal closure."
+          },
+          "request": {
+            "arguments": {
+              "domain": "Q",
+              "operands": [
+                {
+                  "denominator": 1,
+                  "numerator": 10
+                },
+                {
+                  "denominator": 1,
+                  "numerator": -10
+                }
+              ],
+              "operation": "add"
+            },
+            "capability_id": "foundation_math",
+            "decision_id": "decision-3",
+            "goal_id": "synthetic-math",
+            "goal_revision": 1,
+            "operation": "exact_scalar",
+            "request_id": "request-3",
+            "required_evidence": "tool_observation",
+            "schema": "poodo.capability-request/0.1"
+          },
+          "request_sha256": "176c2baf9153a60e892c21f32d7138d6f13ac7d950975449b0187923a7dfcc2a"
+        },
+        "previous_id": "7128571ca50a9ff0d6f3b86a15372bf2a9c524fbd4b1ce89c3d5a5f363526fb7",
+        "record_id": "fbda2eee94e4450a79bebe78fb348dc4c994432c908293c64f6c1be46d0e54ed",
+        "schema": "poodo.endoforge-record/0.1",
+        "session_id": "ce4c9a91b8cb4633bfa25273ca7891bd"
+      },
+      {
+        "goal_id": "synthetic-math",
+        "kind": "outcome",
+        "payload": {
+          "assessment": "exact_scalar_result",
+          "attempt_id": "attempt-4",
+          "capability_id": "foundation_math",
+          "decision_id": "decision-3",
+          "epistemic_status": "observed",
+          "execution_certainty": "responded",
+          "execution_status": "completed",
+          "formal_proof": false,
+          "goal_id": "synthetic-math",
+          "goal_revision": 1,
+          "inventory_sha256": "7df9574ee6788e55bb51aec8ebf858e958c252808ec3f4c217e43f598c961ba9",
+          "limitations": [
+            "Original receipt preserved without accepting its assumptions as true.",
+            "No formal proof, actual geometry, general theorem, or automatic goal acceptance.",
+            "Pinned files and receipt hashes are not signatures or a hostile-code sandbox."
+          ],
+          "operation": "exact_scalar",
+          "raw_result": {
+            "isError": false,
+            "structuredContent": {
+              "assessment": "exact_scalar_result",
+              "formal_proof": false,
+              "receipt": {
+                "artifacts": {
+                  "backend_source_sha256": "146ec4fc9fca0c3400331c06595894fd9cb6a23668abae5c7b8d196e06bad54e",
+                  "input_sha256": "17106c2f918c9897700624bc4f1fdde5db78b2dee821db46563a7859af21b6ca",
+                  "request_sha256": "17106c2f918c9897700624bc4f1fdde5db78b2dee821db46563a7859af21b6ca",
+                  "result_sha256": "025d1af9491f3ae00ce53c97c1d0b4382021cdcc0c11bed4924e9aa105d696f1"
+                },
+                "backend": {
+                  "adapter_version": "0.1.0",
+                  "name": "python.fractions.Fraction",
+                  "version": "3.14.8"
+                },
+                "error": null,
+                "input": {
+                  "domain": "Q",
+                  "operands": [
+                    {
+                      "denominator": 1,
+                      "numerator": 10
+                    },
+                    {
+                      "denominator": 1,
+                      "numerator": -10
+                    }
+                  ],
+                  "operation": "add"
+                },
+                "kind": "exact_computation",
+                "request": {
+                  "domain": "Q",
+                  "operands": [
+                    {
+                      "denominator": 1,
+                      "numerator": 10
+                    },
+                    {
+                      "denominator": 1,
+                      "numerator": -10
+                    }
+                  ],
+                  "operation": "add"
+                },
+                "result": {
+                  "denominator": 1,
+                  "domain": "Q",
+                  "numerator": 0
+                },
+                "schema_version": "1.0",
+                "scope": {
+                  "claim": "Only this explicit finite arithmetic request in its declared domain.",
+                  "evidence_level": "exact_computation",
+                  "formal_proof": false,
+                  "integer_division": "exact only; nonintegral results are domain errors",
+                  "limits": {
+                    "absolute_exponent": 10000,
+                    "input_bits": 4096,
+                    "result_bits": 12000
+                  },
+                  "zero_to_zero": "undefined by this tool's contract"
+                },
+                "status": "success"
+              },
+              "runtime_goal_acceptance": false,
+              "tool": "exact_scalar"
+            }
+          },
+          "request_id": "request-3",
+          "request_sha256": "176c2baf9153a60e892c21f32d7138d6f13ac7d950975449b0187923a7dfcc2a",
+          "runtime_goal_acceptance": false,
+          "schema": "poodo.capability-result/0.1",
+          "scope": "Exact supplied structured inputs, within the named v014 tool's declared domain and bounds.",
+          "source_manifest_sha256": "23219ba772c84796c007eee75458afc499b6ac257b154e78cf3068e41bfdb9a2"
+        },
+        "previous_id": "fbda2eee94e4450a79bebe78fb348dc4c994432c908293c64f6c1be46d0e54ed",
+        "record_id": "32c8fa93ab7405fa224154807c40704dccff26031bad5f4c51fd2d61445e0db5",
+        "schema": "poodo.endoforge-record/0.1",
+        "session_id": "ce4c9a91b8cb4633bfa25273ca7891bd"
+      },
+      {
+        "goal_id": "synthetic-math",
+        "kind": "precommit",
+        "payload": {
+          "grant_id": "local-synthetic-math",
+          "precommitment": {
+            "expected_observation": "Exact integer -20",
+            "failure_meaning": "Integration behavior does not match the pinned contract.",
+            "oracle_id": "synthetic-exact-check",
+            "oracle_version": "1",
+            "success_boundary": "Only the supplied synthetic request; no proof or goal closure."
+          },
+          "request": {
+            "arguments": {
+              "domain": "Q",
+              "operands": [
+                {
+                  "denominator": 1,
+                  "numerator": -10
+                },
+                {
+                  "denominator": 1,
+                  "numerator": -10
+                }
+              ],
+              "operation": "add"
+            },
+            "capability_id": "foundation_math",
+            "decision_id": "decision-4",
+            "goal_id": "synthetic-math",
+            "goal_revision": 1,
+            "operation": "exact_scalar",
+            "request_id": "request-4",
+            "required_evidence": "tool_observation",
+            "schema": "poodo.capability-request/0.1"
+          },
+          "request_sha256": "736d20690fe19feb60c8cf909ef97f90b2a335e822a2b0d22778b3c1a7e1b66d"
+        },
+        "previous_id": "32c8fa93ab7405fa224154807c40704dccff26031bad5f4c51fd2d61445e0db5",
+        "record_id": "d471ccf65bdf524916894f17f37acd85282e96b044a008f56004c47826fe34c6",
+        "schema": "poodo.endoforge-record/0.1",
+        "session_id": "ce4c9a91b8cb4633bfa25273ca7891bd"
+      },
+      {
+        "goal_id": "synthetic-math",
+        "kind": "outcome",
+        "payload": {
+          "assessment": "exact_scalar_result",
+          "attempt_id": "attempt-5",
+          "capability_id": "foundation_math",
+          "decision_id": "decision-4",
+          "epistemic_status": "observed",
+          "execution_certainty": "responded",
+          "execution_status": "completed",
+          "formal_proof": false,
+          "goal_id": "synthetic-math",
+          "goal_revision": 1,
+          "inventory_sha256": "7df9574ee6788e55bb51aec8ebf858e958c252808ec3f4c217e43f598c961ba9",
+          "limitations": [
+            "Original receipt preserved without accepting its assumptions as true.",
+            "No formal proof, actual geometry, general theorem, or automatic goal acceptance.",
+            "Pinned files and receipt hashes are not signatures or a hostile-code sandbox."
+          ],
+          "operation": "exact_scalar",
+          "raw_result": {
+            "isError": false,
+            "structuredContent": {
+              "assessment": "exact_scalar_result",
+              "formal_proof": false,
+              "receipt": {
+                "artifacts": {
+                  "backend_source_sha256": "146ec4fc9fca0c3400331c06595894fd9cb6a23668abae5c7b8d196e06bad54e",
+                  "input_sha256": "e7414521aa0c3c1b7b530c0c7a5c5cbaf515095169963c8e02baf5ecae36b494",
+                  "request_sha256": "e7414521aa0c3c1b7b530c0c7a5c5cbaf515095169963c8e02baf5ecae36b494",
+                  "result_sha256": "9f4997188e355c922be2b85030920d66b8eaa19b623941cf873a95e1379fd190"
+                },
+                "backend": {
+                  "adapter_version": "0.1.0",
+                  "name": "python.fractions.Fraction",
+                  "version": "3.14.8"
+                },
+                "error": null,
+                "input": {
+                  "domain": "Q",
+                  "operands": [
+                    {
+                      "denominator": 1,
+                      "numerator": -10
+                    },
+                    {
+                      "denominator": 1,
+                      "numerator": -10
+                    }
+                  ],
+                  "operation": "add"
+                },
+                "kind": "exact_computation",
+                "request": {
+                  "domain": "Q",
+                  "operands": [
+                    {
+                      "denominator": 1,
+                      "numerator": -10
+                    },
+                    {
+                      "denominator": 1,
+                      "numerator": -10
+                    }
+                  ],
+                  "operation": "add"
+                },
+                "result": {
+                  "denominator": 1,
+                  "domain": "Q",
+                  "numerator": -20
+                },
+                "schema_version": "1.0",
+                "scope": {
+                  "claim": "Only this explicit finite arithmetic request in its declared domain.",
+                  "evidence_level": "exact_computation",
+                  "formal_proof": false,
+                  "integer_division": "exact only; nonintegral results are domain errors",
+                  "limits": {
+                    "absolute_exponent": 10000,
+                    "input_bits": 4096,
+                    "result_bits": 12000
+                  },
+                  "zero_to_zero": "undefined by this tool's contract"
+                },
+                "status": "success"
+              },
+              "runtime_goal_acceptance": false,
+              "tool": "exact_scalar"
+            }
+          },
+          "request_id": "request-4",
+          "request_sha256": "736d20690fe19feb60c8cf909ef97f90b2a335e822a2b0d22778b3c1a7e1b66d",
+          "runtime_goal_acceptance": false,
+          "schema": "poodo.capability-result/0.1",
+          "scope": "Exact supplied structured inputs, within the named v014 tool's declared domain and bounds.",
+          "source_manifest_sha256": "23219ba772c84796c007eee75458afc499b6ac257b154e78cf3068e41bfdb9a2"
+        },
+        "previous_id": "d471ccf65bdf524916894f17f37acd85282e96b044a008f56004c47826fe34c6",
+        "record_id": "d960fe07f0ea882bb7068bf7ac7f8c5d23b6d229ad52d8c3d53e13437558abdb",
+        "schema": "poodo.endoforge-record/0.1",
+        "session_id": "ce4c9a91b8cb4633bfa25273ca7891bd"
+      },
+      {
+        "goal_id": "synthetic-math",
+        "kind": "precommit",
+        "payload": {
+          "grant_id": "local-synthetic-math",
+          "precommitment": {
+            "expected_observation": "Exact integer 20",
+            "failure_meaning": "Integration behavior does not match the pinned contract.",
+            "oracle_id": "synthetic-exact-check",
+            "oracle_version": "1",
+            "success_boundary": "Only the supplied synthetic request; no proof or goal closure."
+          },
+          "request": {
+            "arguments": {
+              "domain": "Q",
+              "operands": [
+                {
+                  "denominator": 1,
+                  "numerator": 10
+                },
+                {
+                  "denominator": 1,
+                  "numerator": 10
+                }
+              ],
+              "operation": "add"
+            },
+            "capability_id": "foundation_math",
+            "decision_id": "decision-5",
+            "goal_id": "synthetic-math",
+            "goal_revision": 1,
+            "operation": "exact_scalar",
+            "request_id": "request-5",
+            "required_evidence": "tool_observation",
+            "schema": "poodo.capability-request/0.1"
+          },
+          "request_sha256": "196c496b5f05d5484e651bf563a279cb0272e0cce8b70817840a898f20865380"
+        },
+        "previous_id": "d960fe07f0ea882bb7068bf7ac7f8c5d23b6d229ad52d8c3d53e13437558abdb",
+        "record_id": "7d5ab1f9f8751ca7f83cc586a0a95a4f6e0e022b6ca78b65383f80c4cd7412fc",
+        "schema": "poodo.endoforge-record/0.1",
+        "session_id": "ce4c9a91b8cb4633bfa25273ca7891bd"
+      },
+      {
+        "goal_id": "synthetic-math",
+        "kind": "outcome",
+        "payload": {
+          "assessment": "exact_scalar_result",
+          "attempt_id": "attempt-6",
+          "capability_id": "foundation_math",
+          "decision_id": "decision-5",
+          "epistemic_status": "observed",
+          "execution_certainty": "responded",
+          "execution_status": "completed",
+          "formal_proof": false,
+          "goal_id": "synthetic-math",
+          "goal_revision": 1,
+          "inventory_sha256": "7df9574ee6788e55bb51aec8ebf858e958c252808ec3f4c217e43f598c961ba9",
+          "limitations": [
+            "Original receipt preserved without accepting its assumptions as true.",
+            "No formal proof, actual geometry, general theorem, or automatic goal acceptance.",
+            "Pinned files and receipt hashes are not signatures or a hostile-code sandbox."
+          ],
+          "operation": "exact_scalar",
+          "raw_result": {
+            "isError": false,
+            "structuredContent": {
+              "assessment": "exact_scalar_result",
+              "formal_proof": false,
+              "receipt": {
+                "artifacts": {
+                  "backend_source_sha256": "146ec4fc9fca0c3400331c06595894fd9cb6a23668abae5c7b8d196e06bad54e",
+                  "input_sha256": "95b3e25d64116624640ecb6cb93f3deb2b0420895d6b439e8c1fb823bcfcd836",
+                  "request_sha256": "95b3e25d64116624640ecb6cb93f3deb2b0420895d6b439e8c1fb823bcfcd836",
+                  "result_sha256": "e80e8c5cb765f42a58e22eeb7a93e83382641ac1ba9192a4dbd482294dd9d82d"
+                },
+                "backend": {
+                  "adapter_version": "0.1.0",
+                  "name": "python.fractions.Fraction",
+                  "version": "3.14.8"
+                },
+                "error": null,
+                "input": {
+                  "domain": "Q",
+                  "operands": [
+                    {
+                      "denominator": 1,
+                      "numerator": 10
+                    },
+                    {
+                      "denominator": 1,
+                      "numerator": 10
+                    }
+                  ],
+                  "operation": "add"
+                },
+                "kind": "exact_computation",
+                "request": {
+                  "domain": "Q",
+                  "operands": [
+                    {
+                      "denominator": 1,
+                      "numerator": 10
+                    },
+                    {
+                      "denominator": 1,
+                      "numerator": 10
+                    }
+                  ],
+                  "operation": "add"
+                },
+                "result": {
+                  "denominator": 1,
+                  "domain": "Q",
+                  "numerator": 20
+                },
+                "schema_version": "1.0",
+                "scope": {
+                  "claim": "Only this explicit finite arithmetic request in its declared domain.",
+                  "evidence_level": "exact_computation",
+                  "formal_proof": false,
+                  "integer_division": "exact only; nonintegral results are domain errors",
+                  "limits": {
+                    "absolute_exponent": 10000,
+                    "input_bits": 4096,
+                    "result_bits": 12000
+                  },
+                  "zero_to_zero": "undefined by this tool's contract"
+                },
+                "status": "success"
+              },
+              "runtime_goal_acceptance": false,
+              "tool": "exact_scalar"
+            }
+          },
+          "request_id": "request-5",
+          "request_sha256": "196c496b5f05d5484e651bf563a279cb0272e0cce8b70817840a898f20865380",
+          "runtime_goal_acceptance": false,
+          "schema": "poodo.capability-result/0.1",
+          "scope": "Exact supplied structured inputs, within the named v014 tool's declared domain and bounds.",
+          "source_manifest_sha256": "23219ba772c84796c007eee75458afc499b6ac257b154e78cf3068e41bfdb9a2"
+        },
+        "previous_id": "7d5ab1f9f8751ca7f83cc586a0a95a4f6e0e022b6ca78b65383f80c4cd7412fc",
+        "record_id": "d202cbc8fcabb8e86e0c77fca7d4d39477658d1a1dd7dc2a6e69e5bf29525bda",
+        "schema": "poodo.endoforge-record/0.1",
+        "session_id": "ce4c9a91b8cb4633bfa25273ca7891bd"
+      }
+    ]
+  },
+  "output": {
+    "candidate": "f9e9aeafac6a0f364cc93ec0346456d10a2cd0d3a2d28790d8654a4572b862f6",
+    "frozenEvaluator": "evr:8aee6a4e2ea080b35c2a49d1a4ffe189a93ae3483ebc2ed24a026301219d1a56",
+    "synthetic": true,
+    "realPromotion": false,
+    "authority": "No POODO lifecycle decision issuer is wired",
+    "artifact": "selected.mjs"
+  },
+  "tests": [
+    {
+      "id": "case-0",
+      "inputs": {
+        "a": 0,
+        "b": 0
+      },
+      "expected": 0
+    },
+    {
+      "id": "case-1",
+      "inputs": {
+        "a": 2,
+        "b": 3
+      },
+      "expected": 5
+    },
+    {
+      "id": "case-2",
+      "inputs": {
+        "a": -4,
+        "b": 3
+      },
+      "expected": -1
+    },
+    {
+      "id": "case-3",
+      "inputs": {
+        "a": 10,
+        "b": -10
+      },
+      "expected": 0
+    },
+    {
+      "id": "case-4",
+      "inputs": {
+        "a": -10,
+        "b": -10
+      },
+      "expected": -20
+    },
+    {
+      "id": "case-5",
+      "inputs": {
+        "a": 10,
+        "b": 10
+      },
+      "expected": 20
+    }
+  ],
+  "passed": true,
+  "totalMs": 2009.9050270000007
+}
