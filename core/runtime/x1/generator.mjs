@@ -62,7 +62,7 @@ export async function generate({ need, directory, env = process.env, timeout = 6
   await mkdir(workspace); await mkdir(root);
   const reference = { ledger: join(directory, 'ledger.sqlite'), root };
   const id = basename(directory);
-  const effort = effortFor(need, env.ENDOFORGE_CODEX_EFFORT || 'auto'), warm = (env.ENDOFORGE_CODEX_SESSION || 'resume') === 'resume';
+  const effort = effortFor(need, env.ENDOFORGE_CODEX_EFFORT || 'auto'), session = env.ENDOFORGE_CODEX_SESSION || 'resume', warm = session === 'resume', packed = session === 'packed';
   const start = performance.now();
   const thread = await invoke(workspace, { stage: 'specification', need, id, instructions:
     'The workspace starts empty; do not explore it or run commands. Write only CONTRACT.md and tests.json, CONTRACT.md under 40 lines. Do not write kernel.ts or glue.json yet. Define a pure bounded AssemblyScript kernel, explicit assumptions, exports and numeric tests. tests.json is a nonempty array of {name,fn,args,expect,tol?} or {name,fn,args,expectError:true}. Include boundary and trap cases. For every number result, state in CONTRACT.md the decimal places to show. These files will be frozen before implementation.', glueRules }, env, timeout, { effort });
@@ -79,7 +79,7 @@ export async function generate({ need, directory, env = process.env, timeout = 6
   const frozen = await ledger('freeze', { reference, need, configuration });
   reference.identity = frozen.identity;
   const freezeMs = performance.now() - freezeStart, codeStart = performance.now();
-  await invoke(workspace, { stage: 'implementation', need, id, glueSchema: schema, glueRules, glueTemplate, instructions:
+  await invoke(workspace, { stage: 'implementation', need, id, ...(packed ? { frozen: { 'CONTRACT.md': files['CONTRACT.md'], 'tests.json': files['tests.json'] } } : {}), glueSchema: schema, glueRules, glueTemplate, instructions:
     'You already wrote the frozen CONTRACT.md and tests.json; read them only if not in context. Do not run compilers, tests or other commands; the supervisor compiles and gates. Write kernel.ts and glue.json only. Do not change CONTRACT.md, tests.json or frozen.sha256. Use AssemblyScript 0.28.20, runtime stub, no imports except env.abort, explicit bounded memory. The compiler runs with --noAssert, which deletes assert() calls, so never use assert; make every expectError case trap with an explicit if (condition) abort() or throw. Implement all frozen tests and the closed glue schema; glue.id must equal id. glue.json must satisfy every rule in glueRules; glueTemplate shows the shape. No compiler or other output files.' }, env, timeout, { effort, resume: warm ? thread : null });
   for (const [name, text] of Object.entries(files)) if (await read(workspace, name) !== text) throw Error('frozen specification changed during generation');
   if (JSON.stringify((await readdir(workspace)).sort()) !== JSON.stringify([...Object.keys(files), 'kernel.ts', 'glue.json'].sort())) throw Error('unexpected implementation files');
@@ -97,6 +97,6 @@ export async function generate({ need, directory, env = process.env, timeout = 6
   JSON.parse(files['glue.json']);
   return { candidate: { id, files }, reference, digest: frozen.digest,
     testDouble: env.ENDOFORGE_CODEX_TEST_DOUBLE === '1',
-    session: { effort: effort ?? 'default', resumed: Boolean(warm && thread) }, repaired,
+    session: { effort: effort ?? 'default', resumed: Boolean(warm && thread), packed }, repaired,
     timings: { generate: generatedSpecMs + performance.now() - codeStart, freeze: freezeMs } };
 }

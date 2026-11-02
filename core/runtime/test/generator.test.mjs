@@ -50,14 +50,14 @@ test('warm session resumes the specification thread and low effort applies only 
   const env = { ...process.env, ENDOFORGE_CODEX_CMD: JSON.stringify([process.execPath, fake]),
     CODEX_HOME: join(root, 'nonexistent-account'), ENDOFORGE_CODEX_TEST_DOUBLE: '1', FAKE_CODEX_RECORD: record };
   const warm = await generate({ need: 'integer add(a,b)', directory: join(root, 'warm'), env });
-  assert.deepEqual(warm.session, { effort: 'low', resumed: true });
+  assert.deepEqual(warm.session, { effort: 'low', resumed: true, packed: false });
   const first = JSON.parse(await readFile(`${record}.specification.json`, 'utf8')).argv;
   const second = JSON.parse(await readFile(`${record}.implementation.json`, 'utf8')).argv;
   assert(first.includes('model_reasoning_effort="low"') && !first.includes('resume'));
   assert.deepEqual(second.slice(0, 2), ['exec', 'resume']);
   assert(second.includes('00000000-0000-4000-8000-000000000001'));
   const cold = await generate({ need: 'integer add(a,b)', directory: join(root, 'cold'), env: { ...env, ENDOFORGE_CODEX_SESSION: 'fresh', ENDOFORGE_CODEX_EFFORT: 'default' } });
-  assert.deepEqual(cold.session, { effort: 'default', resumed: false });
+  assert.deepEqual(cold.session, { effort: 'default', resumed: false, packed: false });
   assert(!JSON.parse(await readFile(`${record}.implementation.json`, 'utf8')).argv.includes('resume'));
   assert.equal(effortFor('x'.repeat(401)), null);
   assert.equal(effortFor("# R\n## The request, in the requester's words\n\n> How much does R-22 cost\n\n## Other\n" + 'y'.repeat(2000)), 'low');
@@ -94,4 +94,17 @@ test('terse turns append one rule to every stage only when opted in', async t =>
   for (const stage of ['specification', 'implementation']) assert(!JSON.parse(await readFile(`${record}.${stage}.json`, 'utf8')).instructions.includes(terseRule));
   await generate({ need: 'integer add(a,b)', directory: join(root, 'on'), env: { ...env, ENDOFORGE_CODEX_TERSE: '1' } });
   for (const stage of ['specification', 'implementation']) assert(JSON.parse(await readFile(`${record}.${stage}.json`, 'utf8')).instructions.endsWith(terseRule));
+});
+test('packed session starts implementation fresh with the frozen files in the prompt', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'ef-generator-packed-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const record = join(root, 'request');
+  const env = { ...process.env, ENDOFORGE_CODEX_CMD: JSON.stringify([process.execPath, fake]),
+    CODEX_HOME: join(root, 'nonexistent-account'), ENDOFORGE_CODEX_TEST_DOUBLE: '1', FAKE_CODEX_RECORD: record, ENDOFORGE_CODEX_SESSION: 'packed' };
+  const out = await generate({ need: 'integer add(a,b)', directory: join(root, 'packed'), env });
+  assert.equal(out.session.packed, true);
+  const request = JSON.parse(await readFile(`${record}.implementation.json`, 'utf8'));
+  assert(!request.argv.includes('resume'));
+  assert.equal(request.frozen['tests.json'], out.candidate.files['tests.json']);
+  assert.equal(request.frozen['CONTRACT.md'], out.candidate.files['CONTRACT.md']);
 });
