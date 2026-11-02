@@ -1,0 +1,35 @@
+{
+ "promotable": true,
+ "gates": {
+  "G1_frozen": {
+   "ok": true
+  },
+  "G2_compiles": {
+   "ok": true,
+   "wasmBytes": 236,
+   "wasmSha256": "f1441bb304a785cf8579d7bb144425b036058e18f164c3b17f582973a6349efc"
+  },
+  "G3_exports": {
+   "ok": true,
+   "exports": [
+    "mayDisplayApproved",
+    "expectedConfirmer"
+   ]
+  },
+  "G4_tests": {
+   "ok": true,
+   "passed": 38,
+   "total": 38
+  },
+  "G6_bounded": {
+   "ok": true,
+   "maxMs": 0.032352
+  },
+  "G5_deterministic": {
+   "ok": true
+  },
+  "G7_glue": {
+   "ok": true
+  }
+ }
+}
