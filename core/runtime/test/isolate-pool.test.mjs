@@ -201,13 +201,15 @@ test('WASM declarations and growth terminate only the breacher, including swallo
     { action: 'initial' }, { action: 'maximum' }, { action: 'grow' }, { action: 'grow-coercion' }, { action: 'shared-grow' },
     ...['compile', 'module', 'module-constructor', 'instantiate', 'instance', 'instantiate-module', 'compile-streaming', 'instantiate-streaming']
       .map(action => ({ action, bytes: wasmMemory({ maximum: 17 }) })),
-    { action: 'instantiate', bytes: wasmMemory({ initial: 17 }) },
-    { action: 'instantiate', bytes: wasmMemory(), exportGrow: true },
-    { action: 'instantiate', bytes: wasmMemory(), swallow: true },
+    { action: 'instantiate', bytes: wasmMemory({ initial: 17, maximum: 17 }) },
+    { action: 'compile', bytes: wasmMemory() },
+    { action: 'instantiate', bytes: wasmMemory({ imported: true }), imports: true },
+    { action: 'instantiate', bytes: wasmMemory({ maximum: 16 }), exportGrow: true },
+    { action: 'instantiate', bytes: wasmMemory({ maximum: 16 }), swallow: true },
     { action: 'instance', bytes: wasmMemory({ maximum: 16 }) },
-    { action: 'instance', bytes: wasmMemory({ exportMemory: false }) },
-    { action: 'instantiate-module', bytes: wasmMemory({ imported: true }), imports: true },
-    { action: 'instantiate', bytes: wasmMemory({ start: true }) },
+    { action: 'instance', bytes: wasmMemory({ maximum: 16, exportMemory: false }) },
+    { action: 'instantiate-module', bytes: wasmMemory({ maximum: 16, imported: true }), imports: true },
+    { action: 'instantiate', bytes: wasmMemory({ maximum: 16, start: true }) },
   ];
   for (const [index, options] of cases.entries()) {
     await t.test(`${index}: ${options.action}`, async () => {
@@ -215,8 +217,8 @@ test('WASM declarations and growth terminate only the breacher, including swallo
       const barrier = join(directory, `wasm-barrier-${index}`);
       mkdirSync(barrier);
       const failedJob = pool.run(job(['pass'], { ...options, barrier, participants: 2 }));
-      const survivorJob = pool.run(job(['pass', 'effects'], { barrier, participants: 2, release, action: 'instance', bytes: wasmMemory(), pages: 1, checkMemory: 2 }));
-      const replacementJob = pool.run(job(['pass', 'effects'], { action: 'instance', bytes: wasmMemory(), pages: 1 }));
+      const survivorJob = pool.run(job(['pass', 'effects'], { barrier, participants: 2, release, action: 'instance', bytes: wasmMemory({ maximum: 16 }), pages: 1, checkMemory: 2 }));
+      const replacementJob = pool.run(job(['pass', 'effects'], { action: 'instance', bytes: wasmMemory({ maximum: 16 }), pages: 1 }));
       const failed = await failedJob;
       writeFileSync(release, 'go');
       const [survivor, replacement] = await Promise.all([survivorJob, replacementJob]);
@@ -240,25 +242,27 @@ test('WASM declarations and growth terminate only the breacher, including swallo
   }
 });
 
-test('WASM default cap, omitted maxima and smaller native maxima preserve bounded execution', { timeout: 30000 }, async t => {
+test('WASM default cap rejects omitted maxima; explicit smaller maxima preserve bounded execution', { timeout: 30000 }, async t => {
   const { job } = await fixture(t);
   const pool = new IsolatePool({ hostPort: wasmPort, size: 1 });
   t.after(() => pool.close());
   const bounded = await pool.run(job(['pass'], { action: 'instantiate', bytes: wasmMemory(), pages: 1023, checkMemory: 1024 }));
-  assert.equal(bounded.status, 'completed');
+  assert.equal(bounded.status, 'outcome_unknown');
   assert.equal(bounded.wasmMemoryMaxMb, 64);
+  const explicit = await pool.run(job(['pass'], { action: 'instantiate', bytes: wasmMemory({ maximum: 1024 }), pages: 1023, checkMemory: 1024 }));
+  assert.equal(explicit.status, 'completed');
   const smaller = await pool.run(job(['pass'], { action: 'instance', bytes: wasmMemory({ maximum: 2 }), pages: 2, expectedOldPages: -1, checkMemory: 1 }));
   assert.equal(smaller.status, 'completed');
-  assert.equal(smaller.workcell, bounded.workcell);
+  assert.notEqual(smaller.workcell, bounded.workcell);
 });
 
 test('WASM cap encoding handles signed LEB boundaries', { timeout: 30000 }, async t => {
   const { job } = await fixture(t);
   const pool = new IsolatePool({ hostPort: wasmPort, size: 1, wasmMemoryMaxMb: 4 });
   t.after(() => pool.close());
-  const result = await pool.run(job(['pass'], { action: 'instantiate', bytes: wasmMemory(), pages: 63, checkMemory: 64 }));
+  const result = await pool.run(job(['pass'], { action: 'instantiate', bytes: wasmMemory({ maximum: 64 }), pages: 63, checkMemory: 64 }));
   assert.equal(result.status, 'completed');
-  const breached = await pool.run(job(['pass'], { action: 'instance', bytes: wasmMemory(), pages: 64 }));
+  const breached = await pool.run(job(['pass'], { action: 'instance', bytes: wasmMemory({ maximum: 64 }), pages: 64 }));
   assert.equal(breached.reason, 'limit');
   assert.equal(breached.error, 'ERR_WORKCELL_WASM_MEMORY_LIMIT');
 });
@@ -282,7 +286,7 @@ test('WASM guard refuses unsupported, malformed and externally compiled modules 
     assert.equal(result.report.attempts[0].firstFailure, 'interface');
     assert.equal(result.receipts[0].record.data.outcome_state, 'inconclusive');
   }
-  for (const bytes of [header, [...header, ...wasmSection(5, [1, 0, 1])]]) {
+  for (const bytes of [header, [...header, ...wasmSection(5, [1, 1, 1, 16])]]) {
     const result = await pool.run(job(['pass'], { action: 'instantiate', bytes }));
     assert.equal(result.status, 'completed');
     assert.deepEqual(result.report.frontier, ['pass']);

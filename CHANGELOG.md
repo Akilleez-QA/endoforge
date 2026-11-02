@@ -6,6 +6,10 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Added
 
+- Optional process-per-workcell isolation with fork/IPC, V8 heap limits, detected
+  cgroup v2 limits and supervisor-written rejection receipts. P-18 records N=8
+  heap/WASM breaches in both modes; process tests cover parity and ledger replay.
+
 - Bounded V8 isolate workcells in `core/runtime/`, configurable worker heap limits,
   replacement after worker loss, and host-appended receipts using the existing
   ledger schema and hash chain. Core-count default sizing follows P-15/P-17.
@@ -21,6 +25,9 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
   These were plans for later moves; neither planning file is in the current tree.
 
 ### Changed
+
+- WASM compilation now rejects missing module memory maxima instead of supplying
+  them; explicit limits and existing growth instrumentation remain enforced.
 
 - Public-facing README rewrite in
   [PR #2](https://github.com/Akilleez-QA/endoforge/pull/2).

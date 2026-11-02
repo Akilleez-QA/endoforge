@@ -22,7 +22,7 @@ engine-test:
 	node --test core/engine/*.test.mjs
 
 isolate-test:
-	node --test core/runtime/test/isolate-pool.test.mjs
+	node --test core/runtime/test/isolate-pool.test.mjs core/runtime/test/isolate-process.test.mjs
 
 atomizer-test:
 	node tools/atomizer/test/trace.test.mjs

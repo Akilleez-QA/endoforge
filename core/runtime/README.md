@@ -9,7 +9,7 @@ Worker-registry integration requires WORKERS_BIN explicitly; no host registry is
 ## V8 isolate workcells
 
 [IsolatePool](isolate-pool.mjs) schedules real
-[evaluateCandidates](../engine/evaluator.mjs) calls inside Node workers through
+[evaluateCandidates](../engine/evaluator.mjs) calls inside Node thread or process workcells through
 [isolate-workcell.mjs](isolate-workcell.mjs). Each workcell executes one batch at a
 time, including the real gates and frozen-content checks. Callers provide a host
 port module exporting `createPort(options)` and durable ledger inputs, not replacement
@@ -24,7 +24,7 @@ using P-15’s latency-driven width of 10. Latency-sensitive callers can set a s
 
 ```js
 import { IsolatePool } from './core/runtime/isolate-pool.mjs';
-const pool = new IsolatePool({ hostPort: '/tmp/example/host-port.mjs', size: 4,
+const pool = new IsolatePool({ hostPort: '/tmp/example/host-port.mjs', size: 4, isolation: 'process',
   resourceLimits: { maxOldGenerationSizeMb: 128, maxYoungGenerationSizeMb: 16 },
   wasmMemoryMaxMb: 64 });
 try {
@@ -61,8 +61,8 @@ The P-15 and P-17 probes inform scheduling only: their synthetic contracts and
 private hash encodings are not runtime implementations or qualification evidence.
 [P-16](../../experiments/P-16-workerd-isolates/RESULT.md) found that standalone
 workerd killed every isolate on a JS heap breach and accepted 256 MiB of WASM
-memory despite a 128 MiB heap flag. This pool instead uses Node’s worker-local
-heap termination and a separate in-workcell WASM ceiling; its own tests establish
+memory despite a 128 MiB heap flag. This pool uses Node’s worker-local
+heap termination by default, or one forked Node process per cell, plus a separate in-workcell WASM ceiling; its own tests establish
 neighbor survival, rather than inferring it from workerd or from throughput.
 
 V8 source inspected read-only at `~/work/ref/v8`, commit
@@ -81,7 +81,7 @@ defines worker heap limits and termination. Its
 separate isolates, generation constraints, and `ERR_WORKER_OUT_OF_MEMORY` shutdown.
 The pool waits for exit before replacement. Heap flags that override these limits
 are refused. Limits exclude ArrayBuffers, native allocations, and total RSS;
-global OOM or native process crashes can still terminate the host. Host modules are
+global OOM can still terminate the host, as can native crashes in thread mode. Host modules are
 trusted code with normal Node privileges. Workcells are not an OS sandbox.
 
 ## WebAssembly memory enforcement
@@ -94,10 +94,11 @@ through 4096 MiB, default 64; the ceiling applies to each linear memory created 
 that workcell. It is separate from the JS heap limits and does not bound the sum
 of multiple memories or total RSS.
 
-Memory declarations and JS descriptors with an initial or explicit maximum above
-the ceiling terminate the workcell before allocation. Missing maxima are replaced
-with the ceiling, including imported memory types, so V8’s native maximum remains
-a backstop. JS `grow()` checks the requested size before calling V8. Checked
+Module memories without declared maxima, including imports, and declarations or
+JS descriptors with initial/maximum above the ceiling terminate the cell before
+allocation. Module declaration limits are preserved, never supplied or raised.
+This changes the previous omitted-maximum rewriting behavior. JS Memory
+descriptors still default to the ceiling; V8’s native maximum remains a backstop. JS `grow()` checks the requested size before calling V8. Checked
 modules receive appended growth helpers and a mutable breach flag; each original
 `memory.grow` calls its helper, which checks the requested size and traps after
 setting the flag if the configured ceiling would be exceeded. Helpers preserve
@@ -109,8 +110,10 @@ The appended exports are visible to module/instance reflection.
 
 A breach sends `ERR_WORKCELL_WASM_MEMORY_LIMIT` to the pool and exits that worker.
 The host waits for exit, emits `outcome_unknown` with `reason: 'limit'`, appends
-inconclusive receipts, and replaces only that workcell. Heap exhaustion uses
-`ERR_WORKER_OUT_OF_MEMORY` through the same exit/replacement path. Neither lost job
+inconclusive receipts, and replaces only that workcell. Heap exhaustion in thread mode uses
+`ERR_WORKER_OUT_OF_MEMORY` through the same exit/replacement path. Process mode
+returns `rejected` with reason `heap` or `wasm_memory`, and supervisor-appended
+`finished`/`failed` receipts; other exits remain inconclusive. Neither lost job
 is retried. A smaller module-declared maximum retains normal WASM failure behavior:
 `memory.grow` can return -1 below the configured ceiling without being a pool breach.
 
@@ -154,3 +157,34 @@ implementation cross-check:
 These pinned references explain memory semantics; they do not claim that the
 installed Node binary was built from this V8 checkout. Tests use the installed
 Node runtime to demonstrate actual worker-local enforcement.
+
+## Process workcells
+
+`isolation: 'process'` forks one Node child per cell with the same configured
+old/young values passed as `--max-old-space-size` and `--max-semi-space-size`.
+V8's young generation can include several semi-spaces; these are heap settings,
+not RSS quotas. The child uses V8's fatal heap-limit exit; it does not install
+`v8.setHeapSnapshotNearHeapLimit`, which is a snapshot API, or a native callback.
+At pinned V8 commit `b13350f841bb`, `include/v8-isolate.h`
+`AddNearHeapLimitCallback` and `src/heap/heap.cc`
+`Heap::InvokeNearHeapLimitCallback`/`Heap::CheckHeapLimitReached` explain the path:
+a callback can raise the limit; an unresolved limit calls fatal OOM. The
+supervisor recognizes V8's fatal heap diagnostic on stderr, waits for child
+close, records rejection, and replaces only that child. It retains no heap dump
+or stderr transcript. The installed Node build is not identified by that V8 pin.
+
+Process mode tries the current cgroup v2 delegation, or `cgroupRoot`, before
+dispatching any job. `cgroupLimits: {memoryMax: 268435456,
+cpuMax: '100000 100000', pidsMax: 64}` controls bytes, quota/period and tasks.
+The [ICD](../../docs/interfaces/ledger-icd.md#v8-workcell-pool-interface) defines
+defaults and setup side effects. Root privileges are never requested. A delegated
+root must expose memory/cpu/pids and writable migration/controller files; a
+populated shared desktop cgroup is insufficient. A suitably delegated user
+scope or empty writable `cgroupRoot` can supply this. Setup follows the kernel's
+[no-internal-process constraint](https://docs.kernel.org/admin-guide/cgroup-v2.html#no-internal-process-constraint).
+Each attached child gets its own group with `memory.max`, `memory.oom.group=1`,
+`cpu.max` and `pids.max`. Failure records `cgroup: 'unavailable'`; V8 limits and
+the WASM gate still apply. Cgroup OOM kills without V8 diagnostics remain unknown
+and are not mislabeled as JS heap exhaustion. Host ports remain trusted Node code.
+[P-18](../../experiments/P-18-pool-breach/RESULT.md) records N=8 breach results
+for both modes, including the unavailable-delegation limitation.

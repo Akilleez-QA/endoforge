@@ -90,21 +90,22 @@ lifecycle exports or ledger schema fields and does not change the Cstack pin.
 
 | Operation or field | Contract |
 |---|---|
-| `new IsolatePool({hostPort, size, resourceLimits, wasmMemoryMaxMb})` | `hostPort` is a filesystem module path resolved relative to the caller's working directory. `size` is a positive safe integer, default `os.availableParallelism()`. Workers are created on demand, at most `size`. |
-| `resourceLimits` | Only `maxOldGenerationSizeMb` and `maxYoungGenerationSizeMb` are accepted, positive safe integers, defaults 128/16 MiB. Heap command-line overrides in `execArgv` or `NODE_OPTIONS` are refused. |
-| `wasmMemoryMaxMb` | Integer 1–4096 MiB, default 64. Applies to each workcell linear memory, separately from heap limits; oversized initial/maximum declarations and growth terminate the workcell. Missing maxima are bounded. Applies to checked JS APIs and instrumented wasm32 `memory.grow`, including start functions. |
+| `new IsolatePool({hostPort, size, resourceLimits, wasmMemoryMaxMb, isolation, cgroupRoot, cgroupLimits})` | `hostPort` is a filesystem module path resolved relative to the caller's working directory. `size` is a positive safe integer, default `os.availableParallelism()`. Workcells are created on demand, at most `size`; `isolation` is `thread` (default) or `process` (one Node fork per cell). |
+| `resourceLimits` | Only `maxOldGenerationSizeMb` and `maxYoungGenerationSizeMb` are accepted, positive safe integers, defaults 128/16 MiB. Process mode maps these values to `--max-old-space-size` and `--max-semi-space-size`. Heap command-line overrides in `execArgv` or `NODE_OPTIONS` are refused. |
+| `wasmMemoryMaxMb` | Integer 1–4096 MiB, default 64. Applies to each workcell linear memory, separately from heap limits; oversized initial/maximum declarations and growth terminate the workcell. Module memories without declared maxima are rejected; declaration limits are never supplied or raised. JS Memory descriptors retain their bounded default maximum. Applies to checked JS APIs and instrumented wasm32 `memory.grow`, including start functions. |
+| `cgroupRoot`, `cgroupLimits` | Process mode detects the current cgroup v2 subtree or uses `cgroupRoot`. Limits are `{memoryMax, cpuMax, pidsMax}`: positive bytes, a quota/period string (or `max PERIOD`), and positive task count. Defaults: `max(256, old + 3*young + 128)` MiB, `"100000 100000"`, 64. Successful attachment sets `memory.oom.group=1`; results record `cgroup: "enabled"` and the configured limits, otherwise `"unavailable"`. Thread mode reports `"not_applicable"`. No privilege escalation. |
 | Host module | Exports async or synchronous `createPort(portOptions)`, imported inside each worker. A new port is created per job; module state persists per workcell. The port supplies the existing real evaluator callbacks. |
 | `run({reference, candidates, receipts, portOptions})` | Returns a promise. Inputs must be structured-cloneable. `reference` is the evaluator's `{ledger, identity, root}`. `candidates` is a nonempty ordered list of unique durable candidate identities. |
 | `receipts` input | One full v0/v1 ledger receipt template per candidate in candidate order. Each has a globally unique `id`, durable task/candidate/frozen references, and caller-supplied precommit, provenance/license where required. Its oracle and digest must match `reference.identity`. The host validates templates before dispatch. |
-| Result | `{status, reason, report, workcell, resourceLimits, wasmMemoryMaxMb, receipts}`. `report` is the unmodified `evaluateCandidates` report, or null when none returned. `status` is `completed` or `outcome_unknown`; completed reports may contain rejected candidates. `workcell` is the Node thread ID. |
-| Worker loss | Returns `outcome_unknown`, null report, `reason: 'limit'` for `ERR_WORKER_OUT_OF_MEMORY` or `ERR_WORKCELL_WASM_MEMORY_LIMIT`, otherwise `worker_exit`, plus `error` code and `exitCode`. Replacement starts after exit. Lost jobs are never retried automatically. Import, factory and evaluator exceptions return unknown with their message. |
-| `receipts` output | Array of `{record, hash}` from actual Python `Ledger.append`. The host serializes ledger operations; SQLite validates and chains records even across pools. Observations contain the batch result, including thread ID, configured limits, and report. |
+| Result | `{status, reason, report, workcell, isolation, cgroup, resourceLimits, wasmMemoryMaxMb, receipts}`. `report` is the unmodified `evaluateCandidates` report, or null when none returned. `status` is `completed`, `outcome_unknown`, or process-limit `rejected`; completed reports may contain rejected candidates. `workcell` is the Node thread ID or child PID, scoped to this pool lifetime. |
+| Worker loss | In process mode a V8 fatal heap diagnostic yields `rejected`/`heap`; the WASM guard IPC marker or reserved exit 18 yields `rejected`/`wasm_memory`. Other exits (including unclassified OS kills) remain unknown. Thread mode returns `outcome_unknown`, null report, `reason: 'limit'` for `ERR_WORKER_OUT_OF_MEMORY` or `ERR_WORKCELL_WASM_MEMORY_LIMIT`, otherwise `worker_exit`, plus `error` code and `exitCode`. Replacement starts after exit. Lost jobs are never retried automatically. Import, factory and evaluator exceptions return unknown with their message. |
+| `receipts` output | Array of `{record, hash}` from actual Python `Ledger.append`. The host serializes ledger operations; SQLite validates and chains records even across pools. Observations contain the batch result, including workcell identity, configured limits, and report. |
 | `stats` | Snapshot `{size, workers, busy, queued}`; queued includes submissions awaiting receipt validation. |
 | `close()` | Idempotent promise; refuses new submissions, drains accepted work and receipt writes, then terminates workers. There is no forced cancellation or wall-time deadline. |
 
 The pool replaces template delivery/outcome states and observations. Unknown
 batch outcomes yield `outcome_unknown`/`inconclusive` for every candidate.
-Otherwise any rejected attempt yields `failed`; candidates with only passed
+A process-limit rejection yields `finished`/`failed` for the whole batch, recording the limit without inventing evaluator attempts. Otherwise any rejected attempt yields `failed`; candidates with only passed
 attempts yield `passed`; candidates without attempts yield `unobserved`.
 Passing checks does not imply Pareto frontier membership or activation authority.
 Template validation errors reject before dispatch. A ledger append failure
@@ -112,21 +113,20 @@ rejects the job with `error.result` carrying the evaluation result. A batch's
 receipt appends are individually durable, not an atomic batch; inspect the ledger
 before reconciling an interrupted write. The Python bridge retains the existing
 `python3` dependency and uses the repository root as its working directory.
-Workers start with empty `execArgv` so host-only command-line and test-runner
+Threads start with empty `execArgv`; processes receive only their two heap flags so host-only command-line and test-runner
 flags are not forwarded as worker flags; environment options still apply.
 
 Heap limits cover V8-managed old/young generations. The WASM limit is enforced
 inside the worker before port import through checked Memory/Module/Instance,
 compile/instantiate and streaming APIs. A WASM breach message is diagnostic;
-the job resolves only after worker exit. Its null report and inconclusive receipts
+the job resolves only after worker exit. Its null report and mode-specific failed/inconclusive receipts
 prevent a swallowed growth trap from establishing a passing verdict. Smaller
 module maxima retain native -1 instruction failure semantics below the pool cap.
 Memory-bearing binaries outside the guard’s supported scalar wasm32 subset fail
 closed, and modules compiled outside the workcell are refused. Instrumentation
 adds exports reserved for breach detection and start invocation; ports must not
 modify them. Streaming APIs buffer the response before compilation.
-Neither limit bounds the sum of multiple linear memories, ordinary buffers,
+Without enabled cgroups neither limit bounds the sum of multiple linear memories, ordinary buffers,
 native allocations, subprocesses, or total process RSS.
-Trusted host ports share process privileges; process-wide failures are outside
-worker replacement guarantees. Source rationale and pinned references are in the
+Trusted host ports retain normal Node privileges; thread mode shares process-wide failures. Process mode contains child exits, but does not protect the supervisor against global OOM or privileged/malicious ports. Cgroup setup requires delegated memory/cpu/pids controllers and writable migration files. If the delegated root contains only this supervisor, setup moves it to an unbounded supervisor leaf before enabling controllers; it never moves other processes. That leaf remains for the enclosing scope to reclaim. Workcell cgroups are cleaned up after child exit on a best-effort basis. Source rationale and pinned references are in the
 [runtime guidance](../../core/runtime/README.md).

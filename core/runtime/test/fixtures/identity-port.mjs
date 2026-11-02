@@ -11,7 +11,7 @@ export const signature = { version: 1, name: 'identity',
 export async function createPort({ barrier, participants, release } = {}) {
   const deadline = Date.now() + 20000;
   if (barrier) {
-    await writeFile(join(barrier, String(threadId)), 'ready');
+    await writeFile(join(barrier, `${process.pid}-${threadId}`), 'ready');
     while ((await readdir(barrier)).length < participants) {
       if (Date.now() > deadline) throw new Error('fixture barrier timed out');
       await setTimeout(10);
