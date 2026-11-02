@@ -17,8 +17,8 @@ export async function runNeed(options) {
   const first = await attempt({ ...options, env: { ...env, ENDOFORGE_CODEX_TERSE: '1' } });
   if (first.promoted) return { ...first, retried: false };
   const budget = Number(env.ENDOFORGE_RETRY_BUDGET_MS) || Infinity, elapsed = performance.now() - begin;
-  if (first.error) return { ...first, retried: false, retrySkipped: 'stage-error' };
   if (elapsed >= budget) return { ...first, retried: false, retrySkipped: 'budget' };
+  if (first.error) return { ...first, retried: false, retrySkipped: 'stage-error' };
   const second = await attempt({ ...options, directory: `${options.directory}-retry`, env: { ...env, ENDOFORGE_CODEX_TERSE: '0' } });
   return { ...second, retried: true, first: { promoted: false, timings: first.timings } };
 }
