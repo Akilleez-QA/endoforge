@@ -309,7 +309,7 @@ memory, readiness upper bounds and a single shared host still apply.
 
 ## Addendum 2026-11-01: earliest baselines inside IsolatePool
 
-The precommit amendment is in `PRECOMMIT.md`; its sha256 is f1376cda… The receipt is in `receipt/addendum-2026-11-01/summary.json`. The run used Node v22.23.3 on the main-rig 7950X (32 threads, Linux 7.2.8) under `flock /tmp/ef-bench.lock`. Load average was 2.3–7.1, on a shared desktop. Three earlier invocations stopped in setup, before any timing was produced, because of harness bugs: the asc library path was used as the CLI, the frozen reference was empty, and jobs had no receipts. The harness was fixed and committed each time, and no numbers from those invocations exist.
+The precommit amendment is in `PRECOMMIT.md`; its sha256 is f1376cdac284181c506ee156b1888d46cf6c7891316e42815d2df0db89a29028. The receipt is in `receipt/addendum-2026-11-01/summary.json`. The run used Node v22.23.3 on the main-rig 7950X (32 threads, Linux 7.2.8) under `flock /tmp/ef-bench.lock`. Load average was 0.7 at start and 2.9 at end, on a shared desktop. Three earlier invocations stopped in setup, before any timing was produced, because of harness bugs: the asc library path was used as the CLI, the frozen reference was empty, and jobs had no receipts. The harness was fixed and committed each time, and no numbers from those invocations exist.
 
 | Probe | Original (date, host) | Addendum thread | Addendum process |
 |---|---|---|---|
