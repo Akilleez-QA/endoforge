@@ -411,6 +411,14 @@ also passed 18 core and 32 ledger tests, then timed out at the engine stage
 (exit 124). The evaluator file was canceled with a pending promise; the gates
 file passed. Later Make targets were not reached in either full-suite run.
 
+## Workcell pre-warm verification
+
+REQ-ISO-009: `isolate-pool.test.mjs` checks that a default pool has no workcells before
+its first job, that `prewarm: true` with `ready()` yields `size` workcells that serve a job
+without spawning more, that a non-boolean `prewarm` is refused and that `ready()` rejects
+after `close()`. On main-rig the pool and process suites passed 40 of 40 on Node 22.23.3
+and 26.12.0. Spawn-cost measurements are in P-26.
+
 ## Persistent batched ledger bridge verification — 2026-11-02 UTC
 
 | Requirement | Case | Expected result |

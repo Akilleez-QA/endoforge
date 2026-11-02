@@ -294,6 +294,23 @@ test('WASM guard refuses unsupported, malformed and externally compiled modules 
   }
 });
 
+test('prewarm spawns every workcell before the first job and stays lazy by default', { timeout: 30000 }, async t => {
+  const { job } = await fixture(t);
+  assert.throws(() => new IsolatePool({ hostPort, size: 2, prewarm: 'yes' }), /prewarm must be boolean/);
+  const lazy = new IsolatePool({ hostPort, size: 2 });
+  t.after(() => lazy.close());
+  assert.equal(lazy.stats.workers, 0);
+  const pool = new IsolatePool({ hostPort, size: 2, prewarm: true });
+  t.after(() => pool.close());
+  await pool.ready();
+  assert.equal(pool.stats.workers, 2);
+  const result = await pool.run(job(['pass']));
+  assert.deepEqual(result.report.frontier, ['pass']);
+  assert.equal(pool.stats.workers, 2);
+  await pool.close();
+  await assert.rejects(pool.ready(), /closing/);
+});
+
 test('64 concurrent jobs at width 16 remain verifiable by a fresh Ledger', { timeout: 60000 }, async t => {
   const { reference, job } = await fixture(t);
   const pool = new IsolatePool({ hostPort, size: 16 });
