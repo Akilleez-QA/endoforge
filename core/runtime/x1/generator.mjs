@@ -42,9 +42,10 @@ export function promptFor(prompt, env) {
   return Object.fromEntries([...first, ...Object.keys(prompt).filter(k => !first.includes(k))].map(k => [k, prompt[k]]));
 }
 function invoke(directory, prompt, env, timeout, { resume = null, effort = null } = {}) {
-  if (env.ENDOFORGE_CODEX_TERSE === 'review') prompt = { ...prompt, instructions: `${prompt.instructions} ${reviewRule}` };
-  if (env.ENDOFORGE_CODEX_TERSE === 'exact') prompt = { ...prompt, instructions: `${prompt.instructions} ${terseRule}${prompt.stage === 'specification' ? ` ${exactRule}` : ''}` };
-  if (env.ENDOFORGE_CODEX_TERSE === '1') prompt = { ...prompt, instructions: `${prompt.instructions} ${terseRule}` };
+  const mode = env.ENDOFORGE_CODEX_TERSE ?? 'exact';
+  if (mode === 'review') prompt = { ...prompt, instructions: `${prompt.instructions} ${reviewRule}` };
+  if (mode === 'exact') prompt = { ...prompt, instructions: `${prompt.instructions} ${terseRule}${prompt.stage === 'specification' ? ` ${exactRule}` : ''}` };
+  if (mode === '1') prompt = { ...prompt, instructions: `${prompt.instructions} ${terseRule}` };
   const argv = env.ENDOFORGE_CODEX_CMD?.startsWith('[') ? JSON.parse(env.ENDOFORGE_CODEX_CMD) : [env.ENDOFORGE_CODEX_CMD];
   if (!argv?.length || !argv.every(x => typeof x === 'string' && x) || !env.CODEX_HOME) throw Error('ENDOFORGE_CODEX_CMD and CODEX_HOME required');
   const tuning = effort ? ['-c', `model_reasoning_effort="${effort}"`] : [];
