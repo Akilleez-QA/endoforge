@@ -322,6 +322,11 @@ double and checks the rules, template and G7 kinds they cover. Root cause of the
 P-22 G7 refusals: the schema leaves precision optional while G7 requires it for
 number results, and generation received only the schema.
 
+REQ-GEN-003: `generator.test.mjs` checks the resumed thread id, effort flags and the
+fresh/default fallback through recorded client arguments. One real add(a,b) smoke on
+2026-11-01 took 92.4 s before the no-exploration instruction and 42.6 s (low) / 41.7 s
+(default) after; a single run each, not a measurement.
+
 REQ-GEN-001: `make pipeline-test` includes a labelled executable test double,
 two-stage generation, durable oracle creation, frozen hashes, absence of code in
 the oracle, early-code/drift/nonzero-exit refusals and missing configuration.
