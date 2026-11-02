@@ -349,6 +349,10 @@ the recorded implementation instructions forbid `assert` and require an explicit
 `abort()` or `throw` trap. Root cause from P-24: 43 of 45 G4 refusals used `assert(`,
 0 of 34 promotions did, independent of session resume and effort.
 
+REQ-GEN-005: `generator.test.mjs` checks that with self-check off no check runs and no
+repair is made, and that with it on a failing check resumes the specification thread
+once with the failures, the repaired glue is used and `repaired` is true.
+
 REQ-GEN-001: `make pipeline-test` includes a labelled executable test double,
 two-stage generation, durable oracle creation, frozen hashes, absence of code in
 the oracle, early-code/drift/nonzero-exit refusals and missing configuration.
