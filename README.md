@@ -1,6 +1,8 @@
+![EndoForge social preview](.github/assets/social-preview.png)
+
 # EndoForge
 
-EndoForge runs coding agents under independent checks and records their evidence
+In-isolate software workshop for running many coding agents with fast checks, caching and evidence receipts
 
 <img src="https://img.shields.io/badge/license-GPL--3.0--only-2400FF?style=flat-square&labelColor=000000" alt="License: GPL-3.0-only">
 
@@ -32,11 +34,11 @@ Tests use synthetic inputs and stubs. Public agent clients are optional. Keep ge
 
 ## Documentation
 
-Start with the [documentation index](docs/README.md). Archived input placeholders are preserved in [campaigns](TODELETE/campaigns/README.md) and [experiments](TODELETE/experiments/README.md). The digest-checked source example remains in [sources](sources/README.md).
+Start with the [documentation index](docs/README.md) and [local check guide](docs/guides/how-to/local-checks.md). Archived input placeholders are preserved in [campaigns](TODELETE/campaigns/README.md) and [experiments](TODELETE/experiments/README.md). The digest-checked source example remains in [sources](sources/README.md).
 
 ## Related projects
 
-EndoForge is part of the Cstack family. See [Cstack](https://github.com/Akilleez-QA/cstack) and [poodo](https://github.com/Akilleez-QA/poodo). This repository does not implement the external Cstack bridge.
+[Cstack](https://github.com/Akilleez-QA/cstack) and [poodo](https://github.com/Akilleez-QA/poodo) are related projects. This repository does not implement the external Cstack bridge.
 
 ## Layout
 
@@ -59,4 +61,4 @@ Report vulnerabilities as described in [SECURITY.md](SECURITY.md).
 
 ## License
 
-This project is available under the GNU General Public License v3.0 only (GPL-3.0-only). If you want to use it to create a product or service under different terms, commercial licenses are available from Refrigeration.AI. Contact craig@nh3.biz. See [LICENSE](LICENSE).
+This project is available under the GNU General Public License v3.0 only (GPL-3.0-only). If you want to use it to create a product or service under different terms, commercial licenses are available from Refrigeration.AI. Contact craig@nh3.biz.
