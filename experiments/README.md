@@ -17,7 +17,7 @@ precommit hashed before measurement and a result that states what it does not sh
 | [P-23](P-23-generator-rerun/PRECOMMIT.md) | Contract-up-front generator, resumed sessions and auto effort: 0 precision refusals, about 2x faster, but only 26/60 promoted (G4 regression) | [RESULT.md](P-23-generator-rerun/RESULT.md) |
 | [P-24](P-24-g4-ablation/PRECOMMIT.md) | Session x effort ablation on the P-21 cohort: neither factor raises G4; 43/45 G4 refusals use `assert(`, 0/34 promotions do | [RESULT.md](P-24-g4-ablation/RESULT.md) |
 | [P-25](P-25-pool-ledger/PRECOMMIT.md) | Supervisor ledger confirmed as the pool limit (L1); persistent batched ledger bridge raises width-16 throughput from 11.89 to 152.9 checks/s with full chain verification | [RESULT.md](P-25-pool-ledger/RESULT.md) |
-| [P-26](P-26-cell-spawn/PRECOMMIT.md) | Cell spawn and instantiate overhead: Node 26 spawn 2 s to 63–73 ms (S1 pass); pre-warm halves first-job latency but the lazy ledger bridge start keeps it above 1.2x the second job (S2 miss) | [RESULT.md](P-26-cell-spawn/RESULT.md) |
+| [P-26](P-26-cell-spawn/PRECOMMIT.md) | Cell spawn and instantiate overhead: Node 26 spawn 2 s to 63–73 ms (S1 pass); pre-warm halves first-job latency but the lazy ledger bridge start keeps it above 1.2x the second job (S2 miss); with the bridge started in ready() (Nov 2) first job 9.9–13.0 ms against about 1 ms, S2 still a miss | [RESULT.md](P-26-cell-spawn/RESULT.md) |
 | [P-27](P-27-g4-fix/PRECOMMIT.md) | P-23 re-run after the no-assert generator fix: 57/60 promoted, 0/60 kernels use `assert(`, every total p50 within 20% of P-23 | [RESULT.md](P-27-g4-fix/RESULT.md) |
 
 Rebuild P-15 dependencies with `setup.sh` in its directory; `node_modules` is not committed.

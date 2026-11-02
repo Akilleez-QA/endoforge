@@ -63,6 +63,8 @@ import json, os, select, sys
 from core.ledger.ledger import Ledger, validate
 ${operation}
 paths = {}
+sys.stdout.write(json.dumps(dict(id=0, result='ready')) + '\\n')
+sys.stdout.flush()
 buffer = b''
 while True:
     chunk = os.read(0, 65536)
@@ -122,6 +124,7 @@ export class LedgerBridge {
   #next = 0;
   #failure;
   #exit;
+  #started;
 
   request(action, job, result) {
     if (this.#failure) return Promise.reject(this.#failure);
@@ -131,6 +134,15 @@ export class LedgerBridge {
       input = JSON.stringify({ id, action,
         job: { reference: job.reference, candidates: job.candidates, receipts: job.receipts }, result }) + '\n';
     } catch (error) { return Promise.reject(error); }
+    this.start().catch(() => {});
+    return new Promise((resolve, reject) => {
+      this.#pending.set(id, { resolve, reject, action });
+      this.#child.stdin.write(input);
+    });
+  }
+
+  start() {
+    if (this.#failure) return Promise.reject(this.#failure);
     if (!this.#child) {
       const child = this.#child = spawn('python3', ['-B', '-c', persistentBridge], {
         cwd: fileURLToPath(new URL('../../', import.meta.url)), stdio: ['pipe', 'pipe', 'pipe'],
@@ -157,11 +169,9 @@ export class LedgerBridge {
           else pending.resolve(response.result);
         } catch (error) { fail(error); child.kill(); }
       });
+      this.#started = new Promise((resolve, reject) => this.#pending.set(0, { resolve, reject, action: 'start' }));
     }
-    return new Promise((resolve, reject) => {
-      this.#pending.set(id, { resolve, reject, action });
-      this.#child.stdin.write(input);
-    });
+    return this.#started;
   }
 
   async close() {

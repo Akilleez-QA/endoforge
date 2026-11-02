@@ -428,4 +428,5 @@ and 26.12.0. Spawn-cost measurements are in P-26.
 | REQ-ISO-010 | Bridge process killed with work pending | Pass; pending and later requests reject, no respawn |
 | REQ-ISO-010 | Stored row tampered after caching | Pass; next read rejects the chain |
 | REQ-ISO-010 | One invalid request inside a batch | Pass; only that request fails and the others commit |
+| REQ-ISO-009 | Bridge process after `ready()` with prewarm, none on a lazy pool | Pass; one bridge before the first job and none respawned by it; `start()` memoized and rejects after close |
 

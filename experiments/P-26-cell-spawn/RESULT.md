@@ -45,3 +45,20 @@ Instantiate overhead stays at roughly 40–55 µs per call, small next to spawn 
 - Behaviour with pools wider than one cell, or under concurrent load.
 - Variance across runs: one run per Node version, 10 reps (3 for instantiate).
 - Hardware other than main-rig.
+
+## Addendum 2026-11-02: ledger bridge started in `ready()` (PR #53)
+
+Same harness, protocol and S2 rule, unchanged; receipts in `receipt/after2-node22-2026-11-02` and `receipt/after2-node26-2026-11-02`. Prior rows above are not edited.
+
+| Node | Mode | Pre-warm | First ms | Second ms | First / second | S2 (<= 1.2x) |
+|---|---|---|---|---|---|---|
+| 22 | thread | yes | 9.9 | 0.9 | 11.0x | miss |
+| 22 | process | yes | 9.9 | 0.9 | 11.0x | miss |
+| 26 | thread | yes | 11.6 | 1.1 | 10.5x | miss |
+| 26 | process | yes | 13.0 | 1.3 | 10.0x | miss |
+
+Starting the bridge in `ready()` cut pre-warmed first-job latency from 42.9–47.6 ms to 9.9–13.0 ms (about 4x), and S2 still misses. About 3–6 ms of what remains is the in-cell first gate. The rest is the bridge's first open of the ledger path (`Ledger(path)`, the sqlite connect and the first full chain read), which is still lazy. Pre-warm ready time is 56–64 ms, up from 44–69 ms. The target is not revised.
+
+### What it does not show
+- Whether opening the ledger path during `ready()` would close S2; that would need the path before the first job, which `ready()` does not have.
+- More than one run per Node version, or pools wider than one cell.

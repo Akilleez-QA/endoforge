@@ -420,3 +420,25 @@ print(json.dumps([r['id'] for r in rows if r['kind'] == 'receipt']))
 `, { ledger: reference.ledger });
   assert.deepEqual(receipts, [good.receipts[0].id]);
 });
+
+test('prewarm ready() starts the ledger bridge; lazy pools start it on first request', { timeout: 30000 }, async t => {
+  const { job } = await fixture(t);
+  const bridges = () => readFileSync(`/proc/self/task/${process.pid}/children`, 'utf8').trim().split(/\s+/).filter(Boolean)
+    .filter(pid => { try { return readFileSync(`/proc/${pid}/comm`, 'utf8').trim() === 'python3'; } catch { return false; } });
+  const lazy = new IsolatePool({ hostPort, size: 1 });
+  t.after(() => lazy.close());
+  assert.equal(bridges().length, 0);
+  const warm = new IsolatePool({ hostPort, size: 1, prewarm: true });
+  t.after(() => warm.close());
+  await warm.ready();
+  assert.equal(bridges().length, 1);
+  assert.equal((await warm.run(job())).status, 'completed');
+  assert.equal(bridges().length, 1);
+  const bridge = new LedgerBridge();
+  const first = bridge.start();
+  assert.equal(bridge.start(), first);
+  assert.equal(await first, 'ready');
+  await bridge.close();
+  await assert.rejects(bridge.start(), /closed/);
+});
+
