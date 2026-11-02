@@ -130,8 +130,9 @@ class Ledger:
         db.execute("PRAGMA synchronous=FULL")
         return db
 
-    def _read(self, db):
+    def _read(self, db, cache=None):
         prior, previous = {}, "0" * 64
+        verified, reusable = [], True
         for expected, (seq, identity, body, link, digest) in enumerate(
             db.execute("SELECT seq, id, body, previous, hash FROM records ORDER BY seq"), 1
         ):
@@ -140,8 +141,14 @@ class Ledger:
             record = json.loads(body)
             if record["id"] != identity or encode(record) != body:
                 raise ValueError(f"ledger identity or encoding failed at sequence {seq}")
-            validate(record, prior)
+            entry = (seq, digest, body)
+            reusable = reusable and cache is not None and len(cache) >= expected and cache[expected - 1] == entry
+            if not reusable:
+                validate(record, prior)
+            verified.append(entry)
             prior[identity], previous = record, digest
+        if cache is not None:
+            cache[:] = verified
         return prior, previous
 
     def records(self):
@@ -167,15 +174,20 @@ class Ledger:
             raise ValueError("current admissions require schema version 1")
         return self.append(record)
 
-    def append(self, record):
+    def _append(self, db, record, prior, previous):
         body = encode(record)
         record = json.loads(body)
+        validate(record, prior)
+        seq = len(prior) + 1
+        digest = event_hash(seq, previous, body)
+        db.execute("INSERT INTO records VALUES (?, ?, ?, ?, ?)",
+                   (seq, record["id"], body, previous, digest))
+        prior[record["id"]] = record
+        return digest
+
+    def append(self, record):
         with closing(self._connect()) as db, db:
             db.execute("BEGIN IMMEDIATE")
             prior, previous = self._read(db)
-            validate(record, prior)
-            seq = len(prior) + 1
-            digest = event_hash(seq, previous, body)
-            db.execute("INSERT INTO records VALUES (?, ?, ?, ?, ?)",
-                       (seq, record["id"], body, previous, digest))
+            digest = self._append(db, record, prior, previous)
         return digest

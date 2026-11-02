@@ -39,7 +39,7 @@ printf '\x60\x60\x60text\\nmodel=%s effort=%s home=%s\\n\x60\x60\x60\\n' "$model
   assert.deepEqual(validate(doc, policy).errors, []);
   const input = path.join(root, 'atoms.json'), output = path.join(root, 'run'); fs.writeFileSync(input, JSON.stringify(doc));
   const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith('CODEX_POOL_') && !k.startsWith('ENDOFORGE_') && k !== 'CODEX_HOME'));
-  Object.assign(env, { ENDOFORGE_CODEX_POOL: pool, CODEX_POOL_PRIMARY: homes[0], CODEX_POOL_ACCOUNTS_DIR: path.join(root, 'accts'), CODEX_POOL_STATE_DIR: path.join(root, 'pool-state'), CODEX_POOL_GUARD: 'none', CODEX_POOL_WAIT: '30', ATOMIZER_LEDGER_DIR: path.join(root, 'ledger'), ENDOFORGE_WORKER: 'codex', ENDOFORGE_TOOLCHAIN_CODEX: prefix });
+  Object.assign(env, { ENDOFORGE_CODEX_POOL: pool, CODEX_POOL_PRIMARY: homes[0], CODEX_POOL_ACCOUNTS_DIR: path.join(root, 'accts'), CODEX_POOL_STATE_DIR: path.join(root, 'pool-state'), CODEX_POOL_GUARD: 'none', CODEX_POOL_WAIT: '30', ATOMIZER_LEDGER_DIR: path.join(root, 'ledger'), ENDOFORGE_WORKER: 'codex', ENDOFORGE_TOOLCHAIN_CODEX: prefix, ENDOFORGE_THROTTLE: '0' });
   if (guard) { env.CODEX_POOL_GUARD = path.join(root, 'guard'); fs.writeFileSync(env.CODEX_POOL_GUARD, `#!/bin/sh\nexit ${guard}\n`, { mode: 0o755 }); }
   const result = spawnSync(process.execPath, [path.join(here, '../bin/schedule.mjs'), 'run', input, '--run-dir', output, '--no-augment', ...extra], { env, encoding: 'utf8', timeout: 60_000 });
   assert.ifError(result.error);
