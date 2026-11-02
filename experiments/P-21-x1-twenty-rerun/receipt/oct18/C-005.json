@@ -1,0 +1,37 @@
+{
+ "runDir": "$HOME/Work/endoforge/tools/atomizer/work/baseline-20/runs/C-005",
+ "need": "C-005",
+ "atoms": 1,
+ "concurrency": 1,
+ "statuses": {
+  "direct": "done"
+ },
+ "plan": {
+  "waves": {
+   "0": [
+    "direct"
+   ]
+  },
+  "total": 3,
+  "critical": 3,
+  "criticalPath": [
+   "direct"
+  ],
+  "speedupBound": 1,
+  "width": 1
+ },
+ "wallMs": 45152,
+ "sumAtomWallMs": 45136,
+ "criticalPathWallMs": 45136,
+ "realizedSpeedup": 1,
+ "tokens": {
+  "input": 12,
+  "output": 5363,
+  "cacheRead": 69178,
+  "cacheCreate": 13145,
+  "calls": 1
+ },
+ "allDone": true,
+ "runId": "run-C-005-20261018T064430Z-a70335",
+ "poolId": "baseline-20"
+}

@@ -1,0 +1,1108 @@
+{
+  "at": "2026-10-17T18:57:32.886Z",
+  "promotionRule": "promoted = gated (G1–G7 re-run here) AND persona-accepted (persona.json with no reject); accept-with-change -> promoted-pending-change",
+  "counts": {
+    "folders": 20,
+    "gated": 19,
+    "promoted": 0,
+    "promotedWithAssumption": 3,
+    "promotedPendingChange": 15,
+    "gatedRejectedByPersona": 1,
+    "gatedUnreviewed": 0,
+    "underdetermined": 0,
+    "rejected": 1,
+    "unverified": 0,
+    "unfinished": 0,
+    "personaVerdicts": {
+      "accept": 16,
+      "acceptWithChange": 24,
+      "reject": 1
+    }
+  },
+  "workingSeconds": {
+    "n": 20,
+    "median": 96.545,
+    "p95": 146.248,
+    "min": 58.55,
+    "max": 161.605,
+    "under600": 20,
+    "voids": 4
+  },
+  "rows": [
+    {
+      "id": "C-005",
+      "gated": true,
+      "verified": true,
+      "outcome": "promoted-with-assumption",
+      "status": "promoted-pending-change",
+      "reasons": [],
+      "persona": {
+        "at": "2026-10-17T19:30:00Z",
+        "reviewer": "persona-review agent (fresh, blind to worker reasoning), 2026-10-17",
+        "calls": 8,
+        "personas": [
+          "technician",
+          "field-service-contractor"
+        ],
+        "accept": 0,
+        "acceptWithChange": 2,
+        "reject": 0,
+        "changes": [
+          "technician: make `additionalChargeGrams` the headline, state the pre-charge assumption, and return a distinct result (or trap with message) for runs shorter than the pre-charge instead of 0.",
+          "field-service-contractor: add an `oemGramsPerMetre` override (0 = use the estimate) and label the estimate as such."
+        ]
+      },
+      "usage": "lineSetHoldupGrams(lengthM, liquidPipe, suctionPipe, ref) e.g. lineSetHoldupGrams(1, 1, 3, 1) -> 21.66 g (1 m, 1/4 in liquid + 1/2 in suction, R410A); additionalChargeGrams(1, 5, 1, 1) -> 0 g (inside 5 m pre-charge); additionalChargeGrams(6, 5, 1, 1) -> 18.29 g. Pipe codes 1=1/4,2=3/8,3=1/2,4=5/8,5=3/4 in; ref codes 1=R410A,2=R32,3=R134a,4=R22,5=R404A,6=R407C.",
+      "question": "Which unit model (hence nameplate refrigerant type) is this, and what are the OEM additional-charge rule (g/m for the 1/4 in liquid line) and pre-charged line length? Assumed R410A and 5 m pre-charge.",
+      "rounds": 1,
+      "self": {
+        "complete": true,
+        "composable": true,
+        "residual": 7,
+        "underdetermined": true,
+        "notes": "Refrigerant type cannot be derived: the model is redacted, so 'what type' is taken as an input code (1=R410A assumed). Mass is a geometric estimate (ACR tube ID x liquid density at 40 C, plus suction vapour at 5 C); the OEM manual's g/m rule wins when available. Under the 5 m pre-charge assumption a 1 m run needs 0 g additional; the line set itself holds about 21.7 g of R410A."
+      },
+      "frozen": {
+        "contract": "b0ba9a01e240179685092c93466916fa874207b4ac55d82fae1aace3694e46db",
+        "tests": "dc0b7b7a559660c9eaeee39e3b2ceae6219d37d794aed12886672d9bae623b13",
+        "at": "2026-10-17T18:10:38.253Z"
+      },
+      "seconds": 113.399,
+      "voids": 0,
+      "gates": {
+        "G1_frozen": true,
+        "G2_compiles": true,
+        "G3_exports": true,
+        "G4_tests": true,
+        "G6_bounded": true,
+        "G5_deterministic": true,
+        "G7_glue": true
+      },
+      "gateFailures": [],
+      "tests": "12/12",
+      "wasmSha256": "bc5bd05968a22f7a45b71141313077f488d8c11084461a13e8ad8de48d891c98",
+      "wasmBytes": 920,
+      "glueSha256": "cc3c3124e1da29241294be17faaca4c821f862887024c2550260d831fcefc554"
+    },
+    {
+      "id": "C-006",
+      "gated": true,
+      "verified": true,
+      "outcome": "promoted-with-assumption",
+      "status": "promoted-pending-change",
+      "reasons": [],
+      "persona": {
+        "at": "2026-10-17T14:56:13-04:00",
+        "reviewer": "fresh blind persona-review agent, 2026-10-17 (re-run review)",
+        "calls": 15,
+        "personas": [
+          "technician",
+          "field-service-contractor"
+        ],
+        "accept": 1,
+        "acceptWithChange": 1,
+        "reject": 0,
+        "changes": [
+          "technician: Add a refusal path for a remote (split) commercial system: a condensing unit with remote evaporator, such as a walk-in, is what a technician usually means by 'system', and none of codes 0-2 covers it. As returned, that technician is handed the 494 g self-contained cap with no code to say 'not this'. Add a code or trap that says the three codes do not cover remote/split systems and names the standard section to read instead (IEC/UL 60335-2-89 remote-system annex, ASHRAE 15). Also: a non-integer classCode (0.5) is silently treated as code 0 and prints '(?)'; it should trap."
+        ]
+      },
+      "usage": "node factory/try.mjs C-006 maxChargeR290 0 0 0 -> 494 g R290 per refrigerant circuit (self-contained commercial appliance, IEC 60335-2-89:2019 / UL 60335-2-89:2021); maxChargeR290 1 0 0 -> 150 g (older edition / household); maxChargeR290 2 20 2 -> 338 g (IEC 60335-2-40 room formula, wall unit, 20 m2); minRoomAreaR290 338 2 -> 20.0 m2 minimum room floor area; maxChargeR290 3 0 0 -> refused: Unknown equipment class; use 0 ... 1 ... or 2 ...; every answer also prints the assumption, the A3 flammability/standard note and the class question.",
+      "question": "What kind of equipment is it: a self-contained commercial appliance listed to the current IEC/UL 60335-2-89 (code 0), an older-edition or household unit (code 1), or an air conditioner / comfort-cooling unit installed in an occupied room (code 2, give the room floor area and mount height)?",
+      "rounds": 1,
+      "self": {
+        "complete": true,
+        "composable": false,
+        "residual": 15,
+        "underdetermined": true,
+        "notes": "Re-run after the persona rejection. The default (code 0) is now the fixed self-contained commercial appliance cap of IEC/UL 60335-2-89 current edition, 13 x LFL = 494 g per circuit (the '500 g' figure); code 1 is the 150 g older-edition/household cap; the IEC 60335-2-40 / EN 378 room-area formula is the explicit alternative (code 2) with mount codes 0-3 and is never applied by default. Each code's label names the standard and jurisdiction (IEC vs UL/US); the notes field carries the A3 flammability note. The request does not say which class applies, so the capability is promoted with the stated assumption and the class question. minRoomAreaR290 is the inverse of the room formula for the technician who already knows the charge. Gates G1-G7 passed in round 1 with 15/15 tests. The edition split (150 g vs 494 g) is exposed as codes 0/1 rather than guessed; code 0 reports 494 g (13 x LFL) rather than the rounded 500 g."
+      },
+      "frozen": {
+        "contract": "22bdc1401ede75583d769e42b2b6b1dc756b24e3a8bcab8c1ee82ec4d2f7841c",
+        "tests": "4335cab1772da523d71ef30f060c566c6416e619dae0dae43430032fc4bd2e0d",
+        "at": "2026-10-17T18:52:59.410Z"
+      },
+      "seconds": 131.755,
+      "voids": 1,
+      "gates": {
+        "G1_frozen": true,
+        "G2_compiles": true,
+        "G3_exports": true,
+        "G4_tests": true,
+        "G6_bounded": true,
+        "G5_deterministic": true,
+        "G7_glue": true
+      },
+      "gateFailures": [],
+      "tests": "15/15",
+      "wasmSha256": "3975e5ca20a69703d7ccee8ba257e31ce47b8d3f2524fd848d4c0df096816bbb",
+      "wasmBytes": 6843,
+      "glueSha256": "d63a3bda0d4d062380c46ec23651574109ddc771d1b40fa077dc44e1fdca564e"
+    },
+    {
+      "id": "C-007",
+      "gated": true,
+      "verified": true,
+      "outcome": "promoted-with-assumption",
+      "status": "promoted-pending-change",
+      "reasons": [],
+      "persona": {
+        "at": "2026-10-17T19:30:00Z",
+        "reviewer": "persona-review agent (fresh, blind to worker reasoning), 2026-10-17",
+        "calls": 8,
+        "personas": [
+          "technician",
+          "field-service-contractor"
+        ],
+        "accept": 0,
+        "acceptWithChange": 2,
+        "reject": 0,
+        "changes": [
+          "technician: when the reading exceeds a plausibility ceiling for subcooling (say 30 F), return a distinct code \"probably a subcooler ΔT, not subcooling\" rather than HIGH.",
+          "field-service-contractor: take the band as parameters like CC-027 does, and merge C-007 with CC-027 (A5)."
+        ]
+      },
+      "usage": "classifySubcooling(45) -> 2 (HIGH; 0=LOW <5F, 1=NORMAL 5-20F, 2=HIGH >20F); isSubcoolingNormal(45) -> false; subcoolingDeviation(45) -> 25 (F above the normal ceiling); subcoolingCtoF(25) -> 45; negative input traps.",
+      "question": "Is the 45-degree 'sub cooler delta' the subcooling (saturated liquid temperature minus liquid-line temperature, in F), or the temperature drop across a dedicated subcooler heat exchanger, and for what refrigerant/equipment?",
+      "rounds": 1,
+      "self": {
+        "complete": true,
+        "composable": true,
+        "residual": 5,
+        "underdetermined": true,
+        "notes": "Contract names observable, inputs with conflict rule, one executable test per behaviour, failure meaning (trap = refusal; no ask path), and no effects. Required behaviour depends on three facts the request lacks (meaning of 'delta', unit, refrigerant/OEM band); generated against the stated assumption (subcooling, F, generic 5-20 F TXV band). Shape is a plain threshold-band classifier; all residual is parametric."
+      },
+      "frozen": {
+        "contract": "268f90ae8ce8ebe8c9dbfd67eb50d1eb90dd2f1df3df3ae0b104cf6d50ce6f21",
+        "tests": "b8d66e332e2081e8adcb0ab4b1705f0b3af1e294d3c41b3265e5d7555b249ee5",
+        "at": "2026-10-17T18:08:23.612Z"
+      },
+      "seconds": 79.541,
+      "voids": 0,
+      "gates": {
+        "G1_frozen": true,
+        "G2_compiles": true,
+        "G3_exports": true,
+        "G4_tests": true,
+        "G6_bounded": true,
+        "G5_deterministic": true,
+        "G7_glue": true
+      },
+      "gateFailures": [],
+      "tests": "16/16",
+      "wasmSha256": "4f9b17467028c661ec853ae5135218af0fefdf3fba94f98d0971bddfaf1f3bf3",
+      "wasmBytes": 398,
+      "glueSha256": "2325bf94b484151ec0b5f082edb652ef46cf60934a5a00a8ef38e43c6e7f3ae0"
+    },
+    {
+      "id": "C-010",
+      "gated": true,
+      "verified": true,
+      "outcome": "promoted-with-assumption",
+      "status": "promoted-pending-change",
+      "reasons": [],
+      "persona": {
+        "at": "2026-10-17T19:30:00Z",
+        "reviewer": "persona-review agent (fresh, blind to worker reasoning), 2026-10-17",
+        "calls": 8,
+        "personas": [
+          "plant-manager",
+          "supervisor",
+          "new-admin"
+        ],
+        "accept": 1,
+        "acceptWithChange": 2,
+        "reject": 0,
+        "changes": [
+          "plant-manager: bind the viewer's `tzOffsetMin` and use the `*Tz` variants as the default path.",
+          "new-admin: the bound timezone appears once on the Demo page (\"Demo day: America/Los_Angeles\")."
+        ]
+      },
+      "usage": "rollDate(anchorMs, offsetDays, timeOfDayMs) -> ms, e.g. rollDate(1792244933000, -3, 32400000) = 1791968400000 (2026-10-14T09:00Z for a session anchored 2026-10-17T13:48:53Z); dayOffset(anchorMs, dateMs) -> whole UTC days, e.g. dayOffset(1792244933000, 1792454400001) = 3; dayStart(ms); *Tz variants take tzOffsetMin (minutes east of UTC) as the last arg.",
+      "question": "Does 'the current day' mean the UTC calendar day (assumed; C-386 says 'stable across midnight UTC') or the demo viewer's local calendar day? If local, which fixed tzOffsetMin should be bound?",
+      "rounds": 1,
+      "self": {
+        "complete": true,
+        "composable": true,
+        "residual": 9,
+        "underdetermined": true,
+        "notes": "Request is a process rule (anchor now once per session; dates roll with the anchor day) modelled as pure ms-since-epoch arithmetic. Anchor capture is a host binding (read the clock once at session start and pass anchorMs). Day basis assumed UTC calendar day; *Tz variants let the open question be resolved by binding tzOffsetMin rather than rewriting. Gates passed in round 1 (16/16, deterministic, 970-byte wasm)."
+      },
+      "frozen": {
+        "contract": "0582861f78039212d70e43f84855e795714049cf1bbddde06bf45a62dce95094",
+        "tests": "99aa523452d830daa83843984a81d2bce0ca8d663afffbdf0896121d6553c778",
+        "at": "2026-10-17T18:09:09.677Z"
+      },
+      "seconds": 128.61,
+      "voids": 0,
+      "gates": {
+        "G1_frozen": true,
+        "G2_compiles": true,
+        "G3_exports": true,
+        "G4_tests": true,
+        "G6_bounded": true,
+        "G5_deterministic": true,
+        "G7_glue": true
+      },
+      "gateFailures": [],
+      "tests": "16/16",
+      "wasmSha256": "911ee504eaadba9f1b695765324066747a5f5842851fd0526246cd869f2d536f",
+      "wasmBytes": 970,
+      "glueSha256": "e74627eb5a9c51953eb471df7da6270ab3ae8f89f0ddf165a909fea062160486"
+    },
+    {
+      "id": "C-012",
+      "gated": true,
+      "verified": true,
+      "outcome": "promoted-with-assumption",
+      "status": "promoted-pending-change",
+      "reasons": [],
+      "persona": {
+        "at": "2026-10-17T19:30:00Z",
+        "reviewer": "persona-review agent (fresh, blind to worker reasoning), 2026-10-17",
+        "calls": 9,
+        "personas": [
+          "plant-manager",
+          "new-admin"
+        ],
+        "accept": 1,
+        "acceptWithChange": 1,
+        "reject": 0,
+        "changes": [
+          "new-admin: a pre-write report (found / replaced / remaining / suspicious) and a confirm step; `isNeutralized` alone is not a gate I can operate."
+        ]
+      },
+      "usage": "genericId(0) -> 1 (first person seen becomes Person-1); mappingConsistent(3,3,3) -> true; mappingConsistent(3,2,3) -> false; isNeutralized(0) -> true; inScope(2) -> true; replacementsExpected(17) -> 17",
+      "question": "Does \"names\" mean people only, and should every name found (not just the two that triggered the request) be replaced with a numbered generic identifier (Person-1, Person-2, ... in first-appearance order)?",
+      "rounds": 1,
+      "self": {
+        "complete": true,
+        "composable": true,
+        "residual": 6,
+        "underdetermined": true,
+        "notes": "Request is a redaction rule with no denylist, no identifier format and an ambiguous scope (\"both\" vs \"keep names out\"). Contract pins: all people names in scope, Person-<n> labels, dense first-appearance numbering, bijection check, zero-remaining check. Kernel covers the checkable numeric core; name detection and string substitution are the existing sweep plus a library replace. All 14 tests passed in round 1."
+      },
+      "frozen": {
+        "contract": "405c3f92ef6e3bc9c1674760440139f5a510a0993249366770e654077cffb236",
+        "tests": "4aadc1444c8a2c28ab1789abdbc70b876e0e9131a4128a8fc1b86844aa36dc73",
+        "at": "2026-10-17T18:10:18.857Z"
+      },
+      "seconds": 106.544,
+      "voids": 0,
+      "gates": {
+        "G1_frozen": true,
+        "G2_compiles": true,
+        "G3_exports": true,
+        "G4_tests": true,
+        "G6_bounded": true,
+        "G5_deterministic": true,
+        "G7_glue": true
+      },
+      "gateFailures": [],
+      "tests": "14/14",
+      "wasmSha256": "5c66947677c7d4dcdcddf5c5a009fd4f7cfad0c97707f346ba54ed4c82c8debc",
+      "wasmBytes": 208,
+      "glueSha256": "0cd5343f959691266d87ab776eabe02f674ddbe4d33820c3005cbab7c3d46a1e"
+    },
+    {
+      "id": "C-015",
+      "gated": true,
+      "verified": true,
+      "outcome": "promoted-with-assumption",
+      "status": "promoted-pending-change",
+      "reasons": [],
+      "persona": {
+        "at": "2026-10-17T19:30:00Z",
+        "reviewer": "persona-review agent (fresh, blind to worker reasoning), 2026-10-17",
+        "calls": 7,
+        "personas": [
+          "psm-coordinator",
+          "plant-manager",
+          "new-admin"
+        ],
+        "accept": 1,
+        "acceptWithChange": 2,
+        "reject": 0,
+        "changes": [
+          "psm-coordinator: return (or accompany) the deny with the qualification identifier and make the qualification-matches-action check part of the kernel, not a caller promise.",
+          "new-admin: ship the action→qualification table as a visible, editable record and define the day basis."
+        ]
+      },
+      "usage": "decide(action, hasRoleRight, qualRecorded, qualExpiresDay, asOfDay) with action 0=other/1=waiver/2=MOC, flags 0|1, expiry day or -1; e.g. decide(1,1,0,-1,100) -> 2 (DENY_NO_QUALIFICATION), decide(2,1,1,200,100) -> 0 (ALLOW), decide(1,1,1,99,100) -> 3 (DENY_QUALIFICATION_EXPIRED)",
+      "question": "Does an expired or revoked recorded qualification satisfy the floor, or only a currently valid one (and must it be specific to waiver vs MOC)?",
+      "rounds": 1,
+      "self": {
+        "complete": true,
+        "composable": true,
+        "residual": 7,
+        "underdetermined": true,
+        "notes": "Pure decision function over integer codes. Role right is necessary for every action; for waiver (1) and MOC approval (2) a recorded qualification is additionally required. Assumption pinned by tests: a qualification counts only while qualExpiresDay >= asOfDay (or -1 = no expiry); the caller passes the qualification flag relevant to the action. Unknown action codes trap. Gates passed on round 1."
+      },
+      "frozen": {
+        "contract": "32c51824f54b2a69bd31e2ae399baacd97c4aadf37c5ab3b17950c6c692ef0e2",
+        "tests": "eec8d2e9bd9631483a2ea612152d5b6d2bbffc95b8e7415d75636ee44db8bbdf",
+        "at": "2026-10-17T18:08:08.194Z"
+      },
+      "seconds": 58.55,
+      "voids": 0,
+      "gates": {
+        "G1_frozen": true,
+        "G2_compiles": true,
+        "G3_exports": true,
+        "G4_tests": true,
+        "G6_bounded": true,
+        "G5_deterministic": true,
+        "G7_glue": true
+      },
+      "gateFailures": [],
+      "tests": "11/11",
+      "wasmSha256": "f2b1c0da9031adf8a14e482fe9ee6df343fbefc918bcd644a0e6da65a7fa1666",
+      "wasmBytes": 117,
+      "glueSha256": "8933b364b69eb344b449773b534faafc56b0d721f13b6548cf325ecc328f297f"
+    },
+    {
+      "id": "C-016",
+      "gated": true,
+      "verified": true,
+      "outcome": "promoted-with-assumption",
+      "status": "promoted-pending-change",
+      "reasons": [],
+      "persona": {
+        "at": "2026-10-17T19:30:00Z",
+        "reviewer": "persona-review agent (fresh, blind to worker reasoning), 2026-10-17",
+        "calls": 8,
+        "personas": [
+          "psm-coordinator",
+          "plant-manager",
+          "supervisor"
+        ],
+        "accept": 1,
+        "acceptWithChange": 2,
+        "reject": 0,
+        "changes": [
+          "psm-coordinator: absent confirmer → UNASSIGNED (distinct code), surfaced to the Unowned count; add a withdrawn/rejected state.",
+          "plant-manager: same change"
+        ]
+      },
+      "usage": "displayStatus(requested, confirmed, confirmBuilt) -> 0 NOT_REQUESTED | 1 REQUESTED | 2 APPROVED, e.g. displayStatus(1,1,0) -> 1; nameToShow(1,1,0,2) -> 2 (code of who must confirm; 0 unrecorded -> 1 owner); labelAllowed(1,1,0,2) -> false",
+      "question": "When an approval/verification record has no expected confirmer recorded, should the UI name the owner (assumed) or show 'unassigned'?",
+      "rounds": 1,
+      "self": {
+        "complete": true,
+        "composable": true,
+        "residual": 8,
+        "underdetermined": true,
+        "notes": "Pure label-decision kernel: APPROVED (2) is only reachable when confirmBuilt=1 and confirmed=1; otherwise a requested record is REQUESTED (1) and nameToShow returns the recorded confirmer code, falling back to owner (1) when none is recorded (assumption pinned by test). Rejected/withdrawn waivers are not modelled; invalid flags trap."
+      },
+      "frozen": {
+        "contract": "eef71663f8277172a95b82914fb973a7e02de4d030668fe6f477c948e01de13f",
+        "tests": "fc2276e8efd29e6cc529dde86f5ecdaa05474db2ae508d4b17c6028121429c0a",
+        "at": "2026-10-17T18:08:41.692Z"
+      },
+      "seconds": 96.545,
+      "voids": 0,
+      "gates": {
+        "G1_frozen": true,
+        "G2_compiles": true,
+        "G3_exports": true,
+        "G4_tests": true,
+        "G6_bounded": true,
+        "G5_deterministic": true,
+        "G7_glue": true
+      },
+      "gateFailures": [],
+      "tests": "14/14",
+      "wasmSha256": "ec5b2f16466e802a5d6f5ee398e1f785413e0f84a49fc73d0e5d4d35fb63ee1a",
+      "wasmBytes": 364,
+      "glueSha256": "6f6367559f72718cf7f24c9e9cb7a29145fae4ed1926135bb52e2f2dfe498b7b"
+    },
+    {
+      "id": "C-019",
+      "gated": true,
+      "verified": true,
+      "outcome": "promoted-with-assumption",
+      "status": "promoted-pending-change",
+      "reasons": [],
+      "persona": {
+        "at": "2026-10-17T19:30:00Z",
+        "reviewer": "persona-review agent (fresh, blind to worker reasoning), 2026-10-17",
+        "calls": 10,
+        "personas": [
+          "operator",
+          "psm-coordinator"
+        ],
+        "accept": 0,
+        "acceptWithChange": 2,
+        "reject": 0,
+        "changes": [
+          "operator: bind each code to the plan's reaction text and the escalation contact, and treat implausible-low readings as a distinct code.",
+          "psm-coordinator: threshold and band are read from a cited plan record, not typed by the caller."
+        ]
+      },
+      "usage": "isOverCapacity(psig, thresholdPsig) e.g. isOverCapacity(150, 140) -> true, isOverCapacity(140, 140) -> false; isOverCapacityDefault(141) -> true; isNh3LevelAdequate(levelPct, lowPct, highPct) e.g. isNh3LevelAdequate(50, 30, 70) -> true; reactionCode(psig, threshold, levelPct, lowPct, highPct) e.g. reactionCode(150, 140, 90, 30, 70) -> 3 (0 normal, 1 over capacity, 2 NH3 inadequate, 3 both/escalate)",
+      "question": "What measures 'NH3 level in condensers' at the site (sight-glass %, receiver level %, or another indicator), and what low/high values count as adequate? The kernel takes the band as caller parameters, assumed an inclusive 0..100 % span.",
+      "rounds": 1,
+      "self": {
+        "complete": true,
+        "composable": true,
+        "residual": 4,
+        "underdetermined": true,
+        "notes": "Over-capacity check is fully determined by the request (strict > 140 psig, threshold parameterized with a 140 default). The NH3 'adequate' criterion is not in the request; it is encoded as a caller-supplied inclusive band in % of indicator span. Invalid readings (negative psig, level outside 0..100, inverted band, non-finite) trap rather than guess. Reaction code: 0 normal, 1 over capacity only, 2 NH3 inadequate only, 3 both (escalate). Gates passed on round 1."
+      },
+      "frozen": {
+        "contract": "d90f3022be40a262f01dcb570395191d6f9b2de0dc530d7aeff5cb6052921363",
+        "tests": "49f23f887f12ca7f34a7d0e2e75799c2fadb4f077c4997673569fd33da4ccd26",
+        "at": "2026-10-17T18:08:18.092Z"
+      },
+      "seconds": 85.011,
+      "voids": 2,
+      "gates": {
+        "G1_frozen": true,
+        "G2_compiles": true,
+        "G3_exports": true,
+        "G4_tests": true,
+        "G6_bounded": true,
+        "G5_deterministic": true,
+        "G7_glue": true
+      },
+      "gateFailures": [],
+      "tests": "16/16",
+      "wasmSha256": "12ec1da2a231da757776b0acfa465162d5592520bb1ba1c622d659268c8778a8",
+      "wasmBytes": 663,
+      "glueSha256": "b649409fca06f88667568ca253946b5be2db1fba0bcc26232a9947fe3a5ed4cc"
+    },
+    {
+      "id": "CC-001",
+      "gated": false,
+      "verified": false,
+      "outcome": "rejected",
+      "status": "rejected",
+      "reasons": [],
+      "persona": null,
+      "usage": "superheatTargetF(roomTempF, basis) with basis 0 = evaporator/TXV, 1 = compressor-inlet total: superheatTargetF(-10, 0) -> 5 (band superheatTargetLowF/HighF 4..6); superheatTargetF(35, 0) -> 10; superheatTargetC(-20, 0) -> 2.78 K; isSuperheatOnTargetF(5.5, -10, 0) -> true",
+      "question": "What is the room (box) temperature, and is the target for evaporator-outlet (TXV) superheat or compressor-inlet total superheat?",
+      "rounds": 1,
+      "self": {
+        "complete": true,
+        "composable": true,
+        "residual": 7,
+        "underdetermined": true,
+        "notes": "Request is underdetermined (message cut off before the room temperature; superheat basis and metering device not stated). Contract and kernel built against the stated assumption (evaporator superheat, TXV, room temp as argument). Gates G1/G2/G3/G5/G6 pass; G4 15/16. The single failing test, 'NaN room temp traps', is a test-authoring defect: tests.json cannot carry NaN, the null placeholder is coerced to +0 F by the wasm JS API, and 0 F is a legitimate low-temp box temperature (correctly returns 5). The kernel does trap on real NaN, out-of-range temps and unknown basis codes. Repairing by trapping on exactly 0 F would hide a valid input, so no further rounds were spent. Would have been promoted-with-assumption had the test been expressed as an out-of-range value."
+      },
+      "frozen": {
+        "contract": "4de7bc17a34e9063afcdee1762155bc6891d5b7e0d6d323cd313f36d3e7f6894",
+        "tests": "0335453b1ff63a8aaaec0184142f32e7a1ee9e65684b25a340b522cc31107f3c",
+        "at": "2026-10-17T18:08:23.774Z"
+      },
+      "seconds": 99.138,
+      "voids": 0,
+      "gates": {
+        "G1_frozen": true,
+        "G2_compiles": true,
+        "G3_exports": true,
+        "G4_tests": false,
+        "G6_bounded": true,
+        "G5_deterministic": true,
+        "G7_glue": false
+      },
+      "gateFailures": [
+        "G4_tests: failed",
+        "G7_glue: no glue.json"
+      ],
+      "tests": "15/16",
+      "wasmSha256": "b2f97c28a67a8b7be6fcb6393ab5f1ec2b70d757850b29c5f24b6ab97f10e776",
+      "wasmBytes": 1170,
+      "glueSha256": null
+    },
+    {
+      "id": "CC-002",
+      "gated": true,
+      "verified": true,
+      "outcome": "promoted-with-assumption",
+      "status": "promoted-pending-change",
+      "reasons": [],
+      "persona": {
+        "at": "2026-10-17T19:30:00Z",
+        "reviewer": "persona-review agent (fresh, blind to worker reasoning), 2026-10-17",
+        "calls": 7,
+        "personas": [
+          "technician",
+          "field-service-contractor"
+        ],
+        "accept": 1,
+        "acceptWithChange": 1,
+        "reject": 0,
+        "changes": [
+          "technician: one dew-point kernel (merge with CC-013) and drop the academic question."
+        ]
+      },
+      "usage": "dewPointF(60, 60) -> 46.1 (deg F, +/-0.5); dewPointC(20, 50) -> 9.3 (deg C); RH outside (0,100] traps.",
+      "question": "Which saturation-vapour-pressure relation or chart should the dew point follow (Magnus/Alduchov-Eskridge assumed; ASHRAE Hyland-Wexler differs by under 0.2 F in the room range)?",
+      "rounds": 1,
+      "self": {
+        "complete": true,
+        "composable": true,
+        "residual": 4,
+        "underdetermined": true,
+        "notes": "Observable, inputs, per-behaviour tests, failure meaning and effects all stated. Residual assertions: stated-case value, Celsius variant, saturation pin, freezing boundary (monotone/below-dry-bulb is a domain invariant; RH range check is a universal gate). The only open fact is the saturation relation; it is below the 0.5 F tolerance so the capability is usable under the pinned Magnus assumption."
+      },
+      "frozen": {
+        "contract": "9bbc344c8f3c743b76f7ef375cbce004ce2fea0c46e0006bb6406f959d77e72e",
+        "tests": "c8ff7b3686911c2f824fc2be62d8aa30b53b6ae38febfbaba6f987f0760a6427",
+        "at": "2026-10-17T18:10:16.922Z"
+      },
+      "seconds": 93.688,
+      "voids": 0,
+      "gates": {
+        "G1_frozen": true,
+        "G2_compiles": true,
+        "G3_exports": true,
+        "G4_tests": true,
+        "G6_bounded": true,
+        "G5_deterministic": true,
+        "G7_glue": true
+      },
+      "gateFailures": [],
+      "tests": "9/9",
+      "wasmSha256": "4b533b3561901f1c4e1e378011b2ba485cc34d954784c60039963847bfe459d2",
+      "wasmBytes": 5077,
+      "glueSha256": "a415114d8a5e59e3505e0236749ad1eefe43a46ba2996d9ff943d158df6a371a"
+    },
+    {
+      "id": "CC-007",
+      "gated": true,
+      "verified": true,
+      "outcome": "promoted-with-assumption",
+      "status": "promoted-pending-change",
+      "reasons": [],
+      "persona": {
+        "at": "2026-10-17T19:30:00Z",
+        "reviewer": "persona-review agent (fresh, blind to worker reasoning), 2026-10-17",
+        "calls": 7,
+        "personas": [
+          "technician",
+          "field-service-contractor"
+        ],
+        "accept": 1,
+        "acceptWithChange": 1,
+        "reject": 0,
+        "changes": [
+          "technician: the model-only path returns a message (why, and what to supply), and the recorded question offers \"did you mean Vi?\"."
+        ]
+      },
+      "usage": "try.mjs CC-007 recirculationRatio 12 3 -> 4 (pumped/evaporated); recirculationRatioFromLoad 1.0 300 1200 -> 4 (kg/s, kW, kJ/kg); recirculationRatioFromQuality 0.25 -> 4; recirculationRatioFromCompressorModel 0 -> traps (model alone insufficient)",
+      "question": "What are the pumped liquid mass flow and the evaporator load (or evaporator-outlet vapor quality) of the overfeed system this Frick SCS 46TH-DN-LB-HC-6EC6-GG-GR package serves? The compressor designation alone carries no recirculation data.",
+      "rounds": 2,
+      "self": {
+        "complete": true,
+        "composable": true,
+        "residual": 6,
+        "underdetermined": true,
+        "notes": "Recirculation ratio is a property of the pumped liquid-overfeed system (pump flow vs vaporized flow), not of the compressor; the request names only a compressor model, so no number can be given from the stated inputs. Contract adopts n = m_pumped / m_evap (ASHRAE/IIAR, n >= 1) and exposes three ways to compute it from system quantities plus an executable refusal for the model-only query. Round 1 failed only on an AssemblyScript compile error (missing return after unreachable)."
+      },
+      "frozen": {
+        "contract": "2071d06d9a214d12e0bf1944ef800b079e63c505fc6031c9d3dbd5c563962cf0",
+        "tests": "569cdfa8053d49c7e6d58d5e48855c4468d56e73348fac6e326d3d56aefa1054",
+        "at": "2026-10-17T18:08:31.603Z"
+      },
+      "seconds": 105.703,
+      "voids": 0,
+      "gates": {
+        "G1_frozen": true,
+        "G2_compiles": true,
+        "G3_exports": true,
+        "G4_tests": true,
+        "G6_bounded": true,
+        "G5_deterministic": true,
+        "G7_glue": true
+      },
+      "gateFailures": [],
+      "tests": "11/11",
+      "wasmSha256": "93c451be05fdca001e9655d6d275b2b51cb973df1ba0e4bdecf20b896f9be26a",
+      "wasmBytes": 343,
+      "glueSha256": "a75a38578fb35481dc4d4f33f69e849cca9457f85b0a4dda0260c55621fafdc5"
+    },
+    {
+      "id": "CC-009",
+      "gated": true,
+      "verified": true,
+      "outcome": "promoted-with-assumption",
+      "status": "promoted-pending-change",
+      "reasons": [],
+      "persona": {
+        "at": "2026-10-17T19:30:00Z",
+        "reviewer": "persona-review agent (fresh, blind to worker reasoning), 2026-10-17",
+        "calls": 9,
+        "personas": [
+          "psm-coordinator",
+          "field-service-contractor"
+        ],
+        "accept": 0,
+        "acceptWithChange": 2,
+        "reject": 0,
+        "changes": [
+          "psm-coordinator: trap outside the fit range, print the fill-fraction source, and surface the P/T inconsistency on the headline call.",
+          "field-service-contractor: range guard and source"
+        ]
+      },
+      "usage": "nh3EvapInventoryLb(16, 1, -2) -> about 530.6 lb of ammonia (volume ft3, feedCode 1=bottom-feed/2=top-feed, operating temp F); general form evapInventoryLb(16, 0.8, 41.43, 0.1047) -> 530.6; nh3SatTempF(inHgVacToPsia(5)) -> about -34 F",
+      "question": "Which refrigerant and which liquid-fill basis apply, and is the evaporating condition -2 F or 5 inHg vacuum (for ammonia these are 28.5 psia vs 12.2 psia / about -34 F, so they cannot both hold)?",
+      "rounds": 2,
+      "self": {
+        "complete": true,
+        "composable": false,
+        "residual": 6,
+        "underdetermined": true,
+        "notes": "Request names no refrigerant, no fill-fraction table, and gives a suction pressure inconsistent with the operating temperature. Kernel assumes R-717, 0.80 liquid by volume for bottom-feed recirculated (0.30 top-feed), densities at -2 F from polynomial fits valid -40..40 F; recirculation ratio does not enter. nh3SatTempF exposes the P/T inconsistency. Round 1 was a compile error only (uninitialized local); round 2 passed 11/11."
+      },
+      "frozen": {
+        "contract": "a933869c0aea638c3fe54c875871cc6e2e98e9e34c514c2648854113ad328c3f",
+        "tests": "399c0bbd26aee55882640596aa518777ced273f15da7effc59f3cc47ea7328a2",
+        "at": "2026-10-17T18:11:11.440Z"
+      },
+      "seconds": 161.605,
+      "voids": 0,
+      "gates": {
+        "G1_frozen": true,
+        "G2_compiles": true,
+        "G3_exports": true,
+        "G4_tests": true,
+        "G6_bounded": true,
+        "G5_deterministic": true,
+        "G7_glue": true
+      },
+      "gateFailures": [],
+      "tests": "11/11",
+      "wasmSha256": "60c56cd9114be8ed2fdcef40759ce04efd4857986761a6a0cffc28fb0ec5bbb2",
+      "wasmBytes": 7929,
+      "glueSha256": "84f9b2ca24d89511ab903551e93e816b37117626bddf3e6d7425ecef7d3f9286"
+    },
+    {
+      "id": "CC-011",
+      "gated": true,
+      "verified": false,
+      "outcome": "promoted-with-assumption",
+      "status": "gated-rejected-by-persona",
+      "reasons": [],
+      "persona": {
+        "at": "2026-10-17T14:56:13-04:00",
+        "reviewer": "fresh blind persona-review agent, 2026-10-17 (re-run review)",
+        "calls": 15,
+        "personas": [
+          "technician",
+          "field-service-contractor"
+        ],
+        "accept": 1,
+        "acceptWithChange": 0,
+        "reject": 1,
+        "changes": [
+          "technician: The technician asked for a price mid-job and holds neither a supplier quote nor a dated price band, so the recorded question ('what is your price source') is one they cannot answer; every export needs the figure the technician was asking for as its input. Dividing a quote they do not have by 15 is not something they would use, and no kernel-side change supplies a price. The honest refusal is correct; the capability is simply not for this requester."
+        ]
+      },
+      "usage": "node factory/try.mjs CC-011 perPoundFromTotal 900 15 -> perPoundFromTotal(quoteUsd = 900 USD, lb = 15 lb) -> 60.00 USD/lb (plus the assumption, the excludes-tax/deposit and R-22 phase-out note, and the price-source question); node factory/try.mjs CC-011 quoteBand 900 15 40 80 -> 1 = within the band, inclusive at both ends; node factory/try.mjs CC-011 quoteTotalFromPerPound 60 15 -> 900.00 USD; perPoundFromTotal 900 0 -> refused: Pounds must be greater than zero and the quoted total cannot be negative; ...",
+      "question": "What is your price source: which supplier's quote, dated when, and is it virgin stockpile or certified reclaimed R-22?",
+      "rounds": 1,
+      "self": {
+        "complete": true,
+        "composable": true,
+        "residual": 4,
+        "underdetermined": true,
+        "notes": "The request as asked (what 15 lb of pure R-22 costs) needs a dated, named price source that a kernel cannot hold, so it is underdetermined; the contract, tests and kernel are built for the honest capability, a quote check: USD/lb from a quoted total (headline), job total from a quoted USD/lb, and a below/within/above band check against the requester's own dated record. No market price is embedded. The notes print 'excludes tax and cylinder deposit' and the R-22 phase-out (no virgin production or import in the US since 2020; 'pure' means stockpile or certified reclaim) with every answer, per the persona findings. Residual counts behaviours 1-4 of the contract; behaviour 5 (input refusal) is a universal gate."
+      },
+      "frozen": {
+        "contract": "ce059d1ac125f531d5419118340c5504275874556e6b0a9657c73b6310e20e77",
+        "tests": "69aec2bdcdea6d34621e7c9c0315508d58d73f563a29a0c8e7fab56938e1165c",
+        "at": "2026-10-17T18:52:27.205Z"
+      },
+      "seconds": 74.158,
+      "voids": 1,
+      "gates": {
+        "G1_frozen": true,
+        "G2_compiles": true,
+        "G3_exports": true,
+        "G4_tests": true,
+        "G6_bounded": true,
+        "G5_deterministic": true,
+        "G7_glue": true
+      },
+      "gateFailures": [],
+      "tests": "16/16",
+      "wasmSha256": "e8329e9444b9d49b8426d9a9024ed6712e6e02a59c698d9db39717fde8677bd4",
+      "wasmBytes": 431,
+      "glueSha256": "a76a94b18b2d81be6bfe7d7227ccc5a9380030318c63ccda472aa8459dad2b81"
+    },
+    {
+      "id": "CC-013",
+      "gated": true,
+      "verified": true,
+      "outcome": "promoted-with-assumption",
+      "status": "promoted-pending-change",
+      "reasons": [],
+      "persona": {
+        "at": "2026-10-17T19:30:00Z",
+        "reviewer": "persona-review agent (fresh, blind to worker reasoning), 2026-10-17",
+        "calls": 9,
+        "personas": [
+          "technician",
+          "field-service-contractor"
+        ],
+        "accept": 1,
+        "acceptWithChange": 1,
+        "reject": 0,
+        "changes": [
+          "technician: default prints \"frost point, ASHRAE convention\" and the question is dropped or rephrased as \"which meter\"."
+        ]
+      },
+      "usage": "dewPointF(dryBulbF, rhPercent, basis) with basis 0 = ASHRAE (RH over ice below 32 F), 1 = RH and dew point over liquid water, 2 = RH over water, frost point; e.g. dewPointF(-10, 50, 0) -> -22.3 (F); dewPointF(70, 50, 0) -> 50.5; RH outside (0,100] or unknown basis traps.",
+      "question": "Is the 50 % RH relative to saturation over ice (ASHRAE psychrometric convention, typical HVAC meters; answer -22.3 F) or over liquid water (meteorological convention; answer -23.6 F, or -18.3 F if a frost point is wanted)?",
+      "rounds": 1,
+      "self": {
+        "complete": true,
+        "composable": false,
+        "residual": 3,
+        "underdetermined": true,
+        "notes": "Request names only -10 F and 50 % RH. Dew point below freezing depends on the RH basis (ice vs water), which the request does not state; contract assumes ASHRAE (Hyland-Wexler over ice below 32 F) as basis code 0 and exposes the alternatives as codes 1 and 2 instead of choosing silently. All gates passed on the first run: 11/11 tests, deterministic, max 0.23 ms per call. No host capability for saturation vapour pressure is known in this kit, so it is not composable from existing parts."
+      },
+      "frozen": {
+        "contract": "62a11d6b4f4f1e857688ab23a60bb30d2d647b468be8d18d435e2ea5a8cd2022",
+        "tests": "90fae006d2d954c3461d0e6f650a786053325faf0e9fea64f6fdc1c4baab2948",
+        "at": "2026-10-17T18:10:45.968Z"
+      },
+      "seconds": 146.248,
+      "voids": 0,
+      "gates": {
+        "G1_frozen": true,
+        "G2_compiles": true,
+        "G3_exports": true,
+        "G4_tests": true,
+        "G6_bounded": true,
+        "G5_deterministic": true,
+        "G7_glue": true
+      },
+      "gateFailures": [],
+      "tests": "11/11",
+      "wasmSha256": "54cc7d6c627e8004a255fa74170eb0486649be60f45501a6cfd1cff1404cce7b",
+      "wasmBytes": 7920,
+      "glueSha256": "1736a72dd13a0762b9cc9b2d795307dfad6605e528b26e7e165c8522000712ac"
+    },
+    {
+      "id": "CC-014",
+      "gated": true,
+      "verified": true,
+      "outcome": "promoted-with-assumption",
+      "status": "promoted-with-assumption",
+      "reasons": [],
+      "persona": {
+        "at": "2026-10-17T19:30:00Z",
+        "reviewer": "persona-review agent (fresh, blind to worker reasoning), 2026-10-17",
+        "calls": 9,
+        "personas": [
+          "technician",
+          "field-service-contractor"
+        ],
+        "accept": 2,
+        "acceptWithChange": 0,
+        "reject": 0,
+        "changes": []
+      },
+      "usage": "liquidOutFraction(3) -> 0.6667 (2/3 of the liquid fed leaves as liquid); liquidOutPerEvaporated(3) -> 2; liquidOutFromFeed(30, 3) -> 20 (same unit as feed); liquidOutFromLoad(100, 1200, 3) -> 0.1667 kg/s for 100 kW load and 1200 kJ/kg latent heat; vaporFractionOfFeed(3) -> 0.3333",
+      "question": "Does '3:1' mean liquid fed ÷ liquid evaporated (circulation number, assumed: 2/3 of feed returns as liquid), or liquid returned ÷ evaporated? And what is the evaporator load or pump feed rate (and refrigerant), so an absolute flow can be given?",
+      "rounds": 1,
+      "self": {
+        "complete": true,
+        "composable": true,
+        "residual": 5,
+        "underdetermined": true,
+        "notes": "The question states only the ratio, so only a proportional answer is fully determined: at 3:1, 1/3 of the fed liquid evaporates and 2/3 leaves as liquid (2x the evaporated mass flow). Absolute flow needs feed rate or load + latent heat, exposed as optional functions. Assumption pinned: recirculation rate = feed/evaporated per ASHRAE/IIAR convention. All f64 arguments, no integer codes; invalid inputs (n<1, negative feed, non-positive latent heat) trap."
+      },
+      "frozen": {
+        "contract": "9c3951b5a203819fc2915e5e638985e4b87ffaa6945027c14459f6216416b826",
+        "tests": "d46cb5cbc4a2bd78cf838cb93c3da8068a77527b4dd9913ddce0a69d5c73c296",
+        "at": "2026-10-17T18:09:58.270Z"
+      },
+      "seconds": 74.039,
+      "voids": 0,
+      "gates": {
+        "G1_frozen": true,
+        "G2_compiles": true,
+        "G3_exports": true,
+        "G4_tests": true,
+        "G6_bounded": true,
+        "G5_deterministic": true,
+        "G7_glue": true
+      },
+      "gateFailures": [],
+      "tests": "11/11",
+      "wasmSha256": "0fee55c736fe13068287c5460da9d1732b979de78ebee332cdfb9b5987c6636a",
+      "wasmBytes": 511,
+      "glueSha256": "ad66a5bab87d77b7612ffd2c554b8207a9a9cf071ea7aedc5124f96d359611a6"
+    },
+    {
+      "id": "CC-022",
+      "gated": true,
+      "verified": true,
+      "outcome": "promoted-with-assumption",
+      "status": "promoted-pending-change",
+      "reasons": [],
+      "persona": {
+        "at": "2026-10-17T19:30:00Z",
+        "reviewer": "persona-review agent (fresh, blind to worker reasoning), 2026-10-17",
+        "calls": 10,
+        "personas": [
+          "technician",
+          "field-service-contractor"
+        ],
+        "accept": 1,
+        "acceptWithChange": 1,
+        "reject": 0,
+        "changes": [
+          "technician: print the verdict with the refrigerant/temperature where it does hold; add the ammonia and current HFO blends."
+        ]
+      },
+      "usage": "claimHoldsEverywhere(3.47, 0.10) -> false (the universal 'true or false' answer); psiPerDegF(4, 75) -> 3.54 psi/F for R-410A at 75 F; claimHolds(4, 75, 3.47, 0.05) -> true; satPressurePsig(4, 40) -> 118.1 psig (refrigerant codes 1=R-22, 2=R-134a, 3=R-404A, 4=R-410A)",
+      "question": "Which refrigerant, and at what saturation temperature (suction or discharge side), was the 3.47 psi per degree F figure quoted?",
+      "rounds": 1,
+      "self": {
+        "complete": true,
+        "composable": true,
+        "residual": 16,
+        "underdetermined": true,
+        "notes": "The claim is a saturation P-T chart slope, which depends on refrigerant and saturation temperature; the request names neither. Stated assumption: refrigerants limited to R-22/R-134a/R-404A/R-410A (codes 1-4) over -40..120 F, embedded chart values (+/-2%), log-linear interpolation. As a universal statement the claim is FALSE; it holds approximately for R-410A near 70-80 F and R-404A near 100-110 F. Gates passed on the first run."
+      },
+      "frozen": {
+        "contract": "410bfcc9e4c8ffbb13d04e08fa38664d88587cc675e6c884bbccf9d5d26f89a3",
+        "tests": "3e42d32f3b8e317a3d905044c840331710e2642fe7cbad5ac4faa59814152319",
+        "at": "2026-10-17T18:08:53.531Z"
+      },
+      "seconds": 127.086,
+      "voids": 0,
+      "gates": {
+        "G1_frozen": true,
+        "G2_compiles": true,
+        "G3_exports": true,
+        "G4_tests": true,
+        "G6_bounded": true,
+        "G5_deterministic": true,
+        "G7_glue": true
+      },
+      "gateFailures": [],
+      "tests": "16/16",
+      "wasmSha256": "ad6fdb263dd8e65ba67d5aac50d211f75516504e8dc62c4d0de59d89a8fe202c",
+      "wasmBytes": 8496,
+      "glueSha256": "f6c9bbb7d442bae50fd94c0710443899006015affbe42ef7eb85ff1ccd05ea83"
+    },
+    {
+      "id": "CC-025",
+      "gated": true,
+      "verified": true,
+      "outcome": "promoted-with-assumption",
+      "status": "promoted-with-assumption",
+      "reasons": [],
+      "persona": {
+        "at": "2026-10-17T19:30:00Z",
+        "reviewer": "persona-review agent (fresh, blind to worker reasoning), 2026-10-17",
+        "calls": 7,
+        "personas": [
+          "technician",
+          "field-service-contractor"
+        ],
+        "accept": 2,
+        "acceptWithChange": 0,
+        "reject": 0,
+        "changes": []
+      },
+      "usage": "kwToHp(6.2) -> 8.3144 hp; kwToHpWithEfficiency(6.2, 0.9) -> 7.483 hp; hpToKw(10) -> 7.457 kW",
+      "question": "Is 6.2 kW the motor's mechanical output (direct conversion) or its electrical input (then what motor efficiency applies), and is mechanical hp (745.7 W) or metric hp (735.5 W) wanted?",
+      "rounds": 1,
+      "self": {
+        "complete": true,
+        "composable": true,
+        "residual": 5,
+        "underdetermined": true,
+        "notes": "Phase and voltage are context only and do not enter a kW-to-hp conversion. Assumed direct conversion with 1 hp = 0.7457 kW (mechanical), pinned by tests; an efficiency form is exported for the electrical-input reading. Gates passed first round (11/11, deterministic, 293-byte wasm)."
+      },
+      "frozen": {
+        "contract": "6b9e552ebc2dc4e0886d9811c48aa5cda3f4b9df2635a1bc2dfc953a37bd120f",
+        "tests": "48537690b7666715b033279dc0749f124adb1e937e96d02a10eeba5d7b8aee2a",
+        "at": "2026-10-17T18:09:56.235Z"
+      },
+      "seconds": 73.86,
+      "voids": 0,
+      "gates": {
+        "G1_frozen": true,
+        "G2_compiles": true,
+        "G3_exports": true,
+        "G4_tests": true,
+        "G6_bounded": true,
+        "G5_deterministic": true,
+        "G7_glue": true
+      },
+      "gateFailures": [],
+      "tests": "11/11",
+      "wasmSha256": "b1be039cf02e418c0e7532b8966f7643f0e61faad23576d7bab329d105ad5189",
+      "wasmBytes": 293,
+      "glueSha256": "149a780d6e9a30646dc031048f90d4162d59ca8d96a9ccd1c8a9e37b25dc6832"
+    },
+    {
+      "id": "CC-026",
+      "gated": true,
+      "verified": true,
+      "outcome": "promoted-with-assumption",
+      "status": "promoted-pending-change",
+      "reasons": [],
+      "persona": {
+        "at": "2026-10-17T19:30:00Z",
+        "reviewer": "persona-review agent (fresh, blind to worker reasoning), 2026-10-17",
+        "calls": 10,
+        "personas": [
+          "technician",
+          "field-service-contractor"
+        ],
+        "accept": 0,
+        "acceptWithChange": 2,
+        "reject": 0,
+        "changes": [
+          "technician: message on the above-critical path and a discharge-temperature warning band.",
+          "field-service-contractor: cite the P-T reference (manufacturer dew-point card, edition) in the contract and the output, and state dew vs bubble."
+        ]
+      },
+      "usage": "dischargePsig(100) -> 241 psig (R448A dew point at 100 F condensing); dischargeSuperheatF(220, 241) -> 120 F superheat; aboveCritical(220) -> true (no saturation pressure exists at 220 F); dischargePsig(220) traps",
+      "question": "What is the rack's condensing (saturated discharge) temperature or head pressure at the time of the 220 F reading, and which R448A P-T reference (dew-point card) is the authority? A superheated 220 F discharge temperature alone does not fix a pressure; 220 F is above the R448A critical temperature.",
+      "rounds": 1,
+      "self": {
+        "complete": true,
+        "composable": true,
+        "residual": 4,
+        "underdetermined": true,
+        "notes": "Kernel answers the stated assumption: dew-point saturation pressure from a supplied condensing temperature plus discharge superheat at a given pressure, with a guard that flags 220 F as above-critical (no saturation pressure). The R448A dew table is assumed from domain memory, not from a named reference, so values may differ a few psi from a manufacturer card."
+      },
+      "frozen": {
+        "contract": "fa71f3b63f0ee81c2ccecdb3bf60b81511fede59cb84d0cede370da4a5afd0d2",
+        "tests": "a05815eaa3639cb32527b2c985ef0608eb4b0141ca0ede75df14c1d806d2355a",
+        "at": "2026-10-17T18:08:49.077Z"
+      },
+      "seconds": 126.436,
+      "voids": 0,
+      "gates": {
+        "G1_frozen": true,
+        "G2_compiles": true,
+        "G3_exports": true,
+        "G4_tests": true,
+        "G6_bounded": true,
+        "G5_deterministic": true,
+        "G7_glue": true
+      },
+      "gateFailures": [],
+      "tests": "12/12",
+      "wasmSha256": "9592a6407d05cea92b04caa05d4b9c27d302a67e3883959bcb465b9273d2e12a",
+      "wasmBytes": 9633,
+      "glueSha256": "dceb6807292dd0f64661b6d0cc33048774d2395cd4987e5dc73e2f8a854ba19c"
+    },
+    {
+      "id": "CC-027",
+      "gated": true,
+      "verified": true,
+      "outcome": "promoted-with-assumption",
+      "status": "promoted-pending-change",
+      "reasons": [],
+      "persona": {
+        "at": "2026-10-17T19:30:00Z",
+        "reviewer": "persona-review agent (fresh, blind to worker reasoning), 2026-10-17",
+        "calls": 8,
+        "personas": [
+          "technician",
+          "field-service-contractor"
+        ],
+        "accept": 0,
+        "acceptWithChange": 2,
+        "reject": 0,
+        "changes": [
+          "technician: add a stage input or at least print \"charge verification is in high stage\" with the verdict; the default target must be labelled as a guess.",
+          "field-service-contractor: the default path must print the assumed target (A4) or not be the default."
+        ]
+      },
+      "usage": "verdictDefault(20) -> 2 (high: likely overcharge or liquid-line restriction); verdict(20, 18, 3) -> 0 when the chart target is 18 F; subcooling(105, 85) -> 20; deviation(20, 10) -> 10",
+      "question": "What target subcooling and tolerance does this unit's Carrier charging chart / data plate specify for the installed outdoor-indoor combination? (Assumed 10 F +/- 3 F for a TXV straight-cool unit.)",
+      "rounds": 1,
+      "self": {
+        "complete": true,
+        "composable": true,
+        "residual": 5,
+        "underdetermined": true,
+        "notes": "Request is a diagnostic read of 20 F subcooling on a Carrier 2-stage TXV AC. Kernel reduces it to a band check against an OEM target; the OEM target is not in the request, so a stated default (10 +/- 3 F) is pinned by test and the chart value overrides it when supplied. Codes: 0 within, 1 low, 2 high. Refrigerant identity is irrelevant to the kernel (saturated temp is an input)."
+      },
+      "frozen": {
+        "contract": "22152d0cce92302d42c6e8388681a0828b7dab9d4f68700f01d26f99796756f4",
+        "tests": "8617504a66a809aae61e6c3dc2159d83eed2f01e64f22fc3ced964a1a4b3d74c",
+        "at": "2026-10-17T18:08:17.033Z"
+      },
+      "seconds": 76.23,
+      "voids": 0,
+      "gates": {
+        "G1_frozen": true,
+        "G2_compiles": true,
+        "G3_exports": true,
+        "G4_tests": true,
+        "G6_bounded": true,
+        "G5_deterministic": true,
+        "G7_glue": true
+      },
+      "gateFailures": [],
+      "tests": "11/11",
+      "wasmSha256": "fdac4f53f93cfdb169e1704054c552462ab5d7e1a2f8af22510983314482eaf5",
+      "wasmBytes": 219,
+      "glueSha256": "5a265231db7be35913b2fc8f9854f6c2f49fe6345f89f16c4cf9a4a5c5d10155"
+    },
+    {
+      "id": "CC-036",
+      "gated": true,
+      "verified": true,
+      "outcome": "promoted-with-assumption",
+      "status": "promoted-with-assumption",
+      "reasons": [],
+      "persona": {
+        "at": "2026-10-17T19:30:00Z",
+        "reviewer": "persona-review agent (fresh, blind to worker reasoning), 2026-10-17",
+        "calls": 7,
+        "personas": [
+          "technician",
+          "field-service-contractor"
+        ],
+        "accept": 2,
+        "acceptWithChange": 0,
+        "reject": 0,
+        "changes": []
+      },
+      "usage": "kwToHp(kw, hpCode) with hpCode 0=mechanical, 1=metric, 2=electrical: kwToHp(6.2, 0) -> 8.3143 hp; inverse hpToKw(8.3143, 0) -> 6.2 kW",
+      "question": "Which horsepower is meant: mechanical/imperial (745.699872 W), metric PS (735.49875 W) or electrical (746 W)? Assumed mechanical, giving 8.31 hp for 6.2 kW.",
+      "rounds": 1,
+      "self": {
+        "complete": true,
+        "composable": true,
+        "residual": 6,
+        "underdetermined": true,
+        "notes": "Horsepower definition is not stated in the request; mechanical hp assumed and pinned by a test (0.745699872 kW -> 1 hp). Metric and electrical definitions are selectable by integer code 1 and 2. Negative power and unknown codes trap. Inverse hpToKw exported. Gates passed first run."
+      },
+      "frozen": {
+        "contract": "fd2e167205b542863d25fa79ad1e873318e37a00af57804ab14afeabf0f38362",
+        "tests": "d0cbe9e74600a6f800d06b86a4064d8dbe6042fb0943d462095ef96be7525bb8",
+        "at": "2026-10-17T18:09:51.366Z"
+      },
+      "seconds": 60.504,
+      "voids": 0,
+      "gates": {
+        "G1_frozen": true,
+        "G2_compiles": true,
+        "G3_exports": true,
+        "G4_tests": true,
+        "G6_bounded": true,
+        "G5_deterministic": true,
+        "G7_glue": true
+      },
+      "gateFailures": [],
+      "tests": "9/9",
+      "wasmSha256": "c32c136e95c0c9397844fbeb29e4ffe89cc06edec1917101e4da759668c6b02e",
+      "wasmBytes": 247,
+      "glueSha256": "f45835ba05bb8ec3fcd9c21ea7c26b290cc1372ad7705fc5ad7758b74385e1be"
+    }
+  ]
+}

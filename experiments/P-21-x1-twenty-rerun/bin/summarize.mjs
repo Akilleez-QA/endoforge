@@ -1,0 +1,15 @@
+import fs from "node:fs";
+const R = new URL("../receipt/", import.meta.url).pathname;
+const q = (a, p) => { const s = [...a].sort((x, y) => x - y); return s[Math.ceil(p * s.length) - 1]; };
+const nov = fs.readFileSync(R + "rows.jsonl", "utf8").trim().split("\n").map((l) => JSON.parse(l));
+const o17 = JSON.parse(fs.readFileSync(R + "oct17-factory-summary.json", "utf8")).rows;
+const ids = nov.map((r) => r.id);
+const o18 = Object.fromEntries(ids.map((id) => [id, JSON.parse(fs.readFileSync(R + `oct18/${id}.json`, "utf8"))]));
+const o18g = { "C-006": false, "CC-026": false };
+const rows = ids.map((id) => { const a = o17.find((r) => r.id === id); const n = nov.find((r) => r.id === id); return { id, oct17S: a.seconds, oct17Gated: a.gated, oct18S: o18[id].wallMs / 1000, oct18Gated: o18g[id] ?? true, oct18OutTok: o18[id].tokens.output, nov1S: n.totalS, nov1Gated: n.regatePromotable, nov1Tok: +n.tokens }; });
+const col = (k) => rows.map((r) => r[k]);
+const sum = (a) => a.reduce((x, y) => x + y, 0);
+const set = JSON.parse(fs.readFileSync(R + "set.json", "utf8"));
+const out = { rows, oct17: { median: q(col("oct17S"), 0.5), p95: q(col("oct17S"), 0.95), gated: col("oct17Gated").filter(Boolean).length }, oct18: { median: q(col("oct18S"), 0.5), p95: q(col("oct18S"), 0.95), gated: col("oct18Gated").filter(Boolean).length, setWallS: 101, outputTokens: sum(col("oct18OutTok")) }, nov1: { median: q(col("nov1S"), 0.5), p95: q(col("nov1S"), 0.95), gated: col("nov1Gated").filter(Boolean).length, setWallS: set.setWallS, totalTokens: sum(col("nov1Tok")), regateMedianS: q(nov.map((r) => r.regateS), 0.5) } };
+fs.writeFileSync(R + "summary.json", JSON.stringify(out, null, 1) + "\n");
+console.log(JSON.stringify(out, null, 1));
