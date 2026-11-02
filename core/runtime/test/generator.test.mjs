@@ -4,7 +4,7 @@ import { mkdtemp, rm, readFile, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { generate, glueRules, glueTemplate, effortFor, terseRule, promptFor } from '../x1/generator.mjs';
+import { generate, glueRules, glueTemplate, effortFor, terseRule, reviewRule, promptFor } from '../x1/generator.mjs';
 import { runGates } from '../x1/gates.mjs';
 import { hash } from '../x1/host.mjs';
 const fake = fileURLToPath(new URL('./fixtures/x1/fake-codex.mjs', import.meta.url));
@@ -114,4 +114,16 @@ test('stable prefix puts the fixed prompt fields before the request fields only 
   const stable = promptFor(prompt, { ENDOFORGE_CODEX_PREFIX: 'stable' });
   assert.deepEqual(Object.keys(stable), ['instructions', 'glueRules', 'glueSchema', 'stage', 'need', 'id']);
   assert.deepEqual(stable, prompt);
+});
+test('reviewed terse turns append the review rule to every stage', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'ef-generator-review-'));
+  t.after(() => rm(root, { recursive: true, force: true }));
+  const record = join(root, 'request');
+  const env = { ...process.env, ENDOFORGE_CODEX_CMD: JSON.stringify([process.execPath, fake]),
+    CODEX_HOME: join(root, 'nonexistent-account'), ENDOFORGE_CODEX_TEST_DOUBLE: '1', FAKE_CODEX_RECORD: record, ENDOFORGE_CODEX_TERSE: 'review' };
+  await generate({ need: 'integer add(a,b)', directory: join(root, 'on'), env });
+  for (const stage of ['specification', 'implementation']) {
+    const { instructions } = JSON.parse(await readFile(`${record}.${stage}.json`, 'utf8'));
+    assert(instructions.endsWith(reviewRule) && !instructions.includes(terseRule));
+  }
 });

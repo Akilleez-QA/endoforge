@@ -32,6 +32,7 @@ export function effortFor(need, setting = 'auto') {
   const words = need.match(/## The request, in the requester's words\s+([\s\S]*?)(\n## |$)/);
   return (words ? words[1] : need).trim().length <= 400 ? 'low' : null;
 }
+export const reviewRule = 'Send no message before writing. Before your edit, silently check every case in tests.json against the contract and your code, and fix any mismatch. Then write all your files in one single edit and reply with only the word done.';
 export const terseRule = 'Send no message before writing. Write all your files in one single edit. After that edit, reply with only the word done.';
 export const stableOrder = ['instructions', 'glueRules', 'glueSchema', 'glueTemplate', 'stage'];
 export function promptFor(prompt, env) {
@@ -40,6 +41,7 @@ export function promptFor(prompt, env) {
   return Object.fromEntries([...first, ...Object.keys(prompt).filter(k => !first.includes(k))].map(k => [k, prompt[k]]));
 }
 function invoke(directory, prompt, env, timeout, { resume = null, effort = null } = {}) {
+  if (env.ENDOFORGE_CODEX_TERSE === 'review') prompt = { ...prompt, instructions: `${prompt.instructions} ${reviewRule}` };
   if (env.ENDOFORGE_CODEX_TERSE === '1') prompt = { ...prompt, instructions: `${prompt.instructions} ${terseRule}` };
   const argv = env.ENDOFORGE_CODEX_CMD?.startsWith('[') ? JSON.parse(env.ENDOFORGE_CODEX_CMD) : [env.ENDOFORGE_CODEX_CMD];
   if (!argv?.length || !argv.every(x => typeof x === 'string' && x) || !env.CODEX_HOME) throw Error('ENDOFORGE_CODEX_CMD and CODEX_HOME required');
