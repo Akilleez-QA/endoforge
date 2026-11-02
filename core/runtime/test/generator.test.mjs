@@ -4,7 +4,7 @@ import { mkdtemp, rm, readFile, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { generate, glueRules, glueTemplate, effortFor, terseRule } from '../x1/generator.mjs';
+import { generate, glueRules, glueTemplate, effortFor, terseRule, promptFor } from '../x1/generator.mjs';
 import { runGates } from '../x1/gates.mjs';
 import { hash } from '../x1/host.mjs';
 const fake = fileURLToPath(new URL('./fixtures/x1/fake-codex.mjs', import.meta.url));
@@ -107,4 +107,11 @@ test('packed session starts implementation fresh with the frozen files in the pr
   assert(!request.argv.includes('resume'));
   assert.equal(request.frozen['tests.json'], out.candidate.files['tests.json']);
   assert.equal(request.frozen['CONTRACT.md'], out.candidate.files['CONTRACT.md']);
+});
+test('stable prefix puts the fixed prompt fields before the request fields only when opted in', () => {
+  const prompt = { stage: 'implementation', need: 'n', id: 'i', glueSchema: {}, glueRules: [], instructions: 'x' };
+  assert.deepEqual(Object.keys(promptFor(prompt, {})), Object.keys(prompt));
+  const stable = promptFor(prompt, { ENDOFORGE_CODEX_PREFIX: 'stable' });
+  assert.deepEqual(Object.keys(stable), ['instructions', 'glueRules', 'glueSchema', 'stage', 'need', 'id']);
+  assert.deepEqual(stable, prompt);
 });
