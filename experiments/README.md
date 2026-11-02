@@ -15,5 +15,8 @@ precommit hashed before measurement and a result that states what it does not sh
 | [P-20 addendum](P-20-pool-speed-rerun/RESULT.md#addendum-2026-11-01-earliest-baselines-inside-isolatepool) | P-01/P-02/P-05 and 10-29 ramp re-measured through IsolatePool; P-05 blocked by WASM guard | [receipt](P-20-pool-speed-rerun/receipt/addendum-2026-11-01/summary.json) |
 | [P-22](P-22-real-need-to-candidate/README.md) | Real generation, pool gates and local qualification: 41/60 promoted; generation is ~99% of latency | [RESULT.md](P-22-real-need-to-candidate/RESULT.md) |
 | [P-23](P-23-generator-rerun/PRECOMMIT.md) | Contract-up-front generator, resumed sessions and auto effort: 0 precision refusals, about 2x faster, but only 26/60 promoted (G4 regression) | [RESULT.md](P-23-generator-rerun/RESULT.md) |
+| [P-24](P-24-g4-ablation/PRECOMMIT.md) | Session x effort ablation on the P-21 cohort: neither factor raises G4; 43/45 G4 refusals use `assert(`, 0/34 promotions do | [RESULT.md](P-24-g4-ablation/RESULT.md) |
+| [P-25](P-25-pool-ledger/PRECOMMIT.md) | Supervisor ledger confirmed as the pool limit (L1); persistent batched ledger bridge raises width-16 throughput from 11.89 to 152.9 checks/s with full chain verification | [RESULT.md](P-25-pool-ledger/RESULT.md) |
+| [P-27](P-27-g4-fix/PRECOMMIT.md) | P-23 re-run after the no-assert generator fix: 57/60 promoted, 0/60 kernels use `assert(`, every total p50 within 20% of P-23 | [RESULT.md](P-27-g4-fix/RESULT.md) |
 
 Rebuild P-15 dependencies with `setup.sh` in its directory; `node_modules` is not committed.

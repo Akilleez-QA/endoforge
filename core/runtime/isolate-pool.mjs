@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { Worker } from 'node:worker_threads';
 import { fork } from 'node:child_process';
 import { attachCgroup, prepareCgroup, releaseCgroup } from './isolate-cgroup.mjs';
-import { ledgerRequest } from './isolate-ledger.mjs';
+import { LedgerBridge } from './isolate-ledger.mjs';
 import { trustedWasmPolicy } from './isolate-wasm.mjs';
 
 const positive = value => Number.isSafeInteger(value) && value > 0;
@@ -22,16 +22,18 @@ export class IsolatePool {
   #cells = new Set();
   #queue = [];
   #pending = new Set();
-  #ledger = Promise.resolve();
+  #ledger = new LedgerBridge();
   #closing = false;
   #stopping = false;
   #closed;
+  #warm;
 
   constructor({ hostPort, size = availableParallelism(), resourceLimits = {}, wasmMemoryMaxMb = 64,
-    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [] } = {}) {
+    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], prewarm = false } = {}) {
     if (!['thread', 'process'].includes(isolation)) throw new TypeError('isolation must be thread or process');
     if (cgroupRoot !== undefined && (typeof cgroupRoot !== 'string' || !cgroupRoot)) throw new TypeError('cgroupRoot path required');
     if (!positive(size)) throw new TypeError('positive integer pool size required');
+    if (typeof prewarm !== 'boolean') throw new TypeError('prewarm must be boolean');
     if (typeof hostPort !== 'string' || !hostPort) throw new TypeError('hostPort module path required');
     if (!positive(wasmMemoryMaxMb) || wasmMemoryMaxMb > 4096) {
       throw new TypeError('wasmMemoryMaxMb must be an integer from 1 to 4096');
@@ -56,6 +58,15 @@ export class IsolatePool {
     if (Object.keys(this.#cgroupLimits).length !== 3 || !positive(memoryMax) || !positive(pidsMax) ||
         typeof cpuMax !== 'string' || !/^(max|[1-9]\d*) [1-9]\d*$/.test(cpuMax)) throw new TypeError('invalid cgroupLimits');
     this.#cgroupRoot = isolation === 'process' ? prepareCgroup(cgroupRoot) : null;
+    if (prewarm) this.ready().catch(() => {});
+  }
+
+  ready() {
+    if (this.#closing) return Promise.reject(new Error('isolate pool is closing'));
+    return this.#warm ||= (async () => {
+      while (this.#cells.size < this.#size) this.#spawn();
+      if (!(await Promise.all([...this.#cells].map(cell => cell.started))).every(Boolean)) throw new Error('workcell exited before ready');
+    })();
   }
 
   get stats() {
@@ -64,9 +75,7 @@ export class IsolatePool {
   }
 
   #persist(action, job, result) {
-    const pending = this.#ledger.then(() => ledgerRequest(action, job, result));
-    this.#ledger = pending.catch(() => {});
-    return pending;
+    return this.#ledger.request(action, job, result);
   }
 
   run(input) {
@@ -116,8 +125,10 @@ export class IsolatePool {
       worker.postMessage = message => worker.send(message, error => { if (error) { cell.error = error; worker.kill(); } });
       worker.terminate = () => new Promise(resolve => { worker.once('close', resolve); worker.kill(); });
     }
+    cell.started = new Promise(resolve => { cell.markStarted = resolve; });
     this.#cells.add(cell);
     worker.on('message', result => {
+      if (result?.type === 'ready') return cell.markStarted(true);
       if (!cell.job) return;
       if (result.type === 'limit') {
         cell.error = { code: result.error };
@@ -131,6 +142,7 @@ export class IsolatePool {
     worker.on('error', error => { cell.error = error; });
     worker.on(subprocess ? 'close' : 'exit', (code, signal) => {
       this.#cells.delete(cell);
+      cell.markStarted(false);
       releaseCgroup(directory);
       if (subprocess && code === 18) cell.error = { code: 'ERR_WORKCELL_WASM_MEMORY_LIMIT' };
       const limited = ['ERR_WORKER_OUT_OF_MEMORY', 'ERR_WORKCELL_WASM_MEMORY_LIMIT'].includes(cell.error?.code);
@@ -179,6 +191,7 @@ export class IsolatePool {
     this.#closing = true;
     return this.#closed ||= (async () => {
       await Promise.allSettled([...this.#pending]);
+      await this.#ledger.close();
       this.#stopping = true;
       await Promise.all([...this.#cells].map(cell => cell.worker.terminate()));
     })();
