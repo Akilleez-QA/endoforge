@@ -43,6 +43,7 @@ from core.ledger.frozen import FrozenEvaluators
 r = json.load(sys.stdin)
 p = Path(r['directory'])
 (p / 'frozen').mkdir()
+(p / 'frozen' / 'residual.txt').write_text('timing only')
 ledger = Ledger(p / 'ledger.sqlite')
 ledger.append(dict(version=0, kind='task', id='task', data=dict(intent='P-20 addendum', acceptance='timing only')))
 ledger.append(dict(version=0, kind='admitted_input', id='input', data=dict(task='task', content='timing probe', origin='synthetic')))
