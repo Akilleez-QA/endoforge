@@ -4,10 +4,16 @@ import { generate } from './generator.mjs';
 import { compile } from './compiler.mjs';
 import { ledger, receipt } from './ledger.mjs';
 import { hash } from './host.mjs';
+import { runGates } from './gates.mjs';
+const failures = compiler => async candidate => {
+  const result = runGates({ ...candidate, compiled: await compile(candidate.files, compiler) });
+  if (result.promotable) return null;
+  return { gates: Object.fromEntries(Object.entries(result.gates).filter(([, gate]) => !gate.ok)), tests: (result.tests || []).filter(test => !test.pass).slice(0, 20) };
+};
 export async function runNeed({ need, directory, pool, env = process.env, compiler = env.ENDOFORGE_ASC_CMD }) {
   const timings = Object.fromEntries(['generate', 'freeze', 'compile', 'gate', 'ledger', 'promote'].map(k => [k, null]));
   try {
-    const generated = await generate({ need, directory, env });
+    const generated = await generate({ need, directory, env, check: failures(compiler) });
     Object.assign(timings, generated.timings);
     let start = performance.now();
     const candidate = { ...generated.candidate, compiled: await compile(generated.candidate.files, compiler) };

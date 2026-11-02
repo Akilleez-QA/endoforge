@@ -149,8 +149,8 @@ unsupported binaries remain fail-closed. Compiler callers and host modules are t
 
 ## Candidate generator interface
 
-`generate({need, directory, env?, timeout?})` returns `{candidate, reference,
-digest, testDouble, timings}`. Directory must not exist. Candidate has `{id, files}`;
+`generate({need, directory, env?, timeout?, check?})` returns `{candidate, reference,
+digest, testDouble, session, repaired, timings}`. With `ENDOFORGE_SELF_CHECK=1`, `check({id, files})` returns gate failures or null; failures trigger one resumed `repair` stage. Directory must not exist. Candidate has `{id, files}`;
 its id is the directory basename. Two stdin JSON prompts describe the specification
 and implementation stages, including the glue schema. The executable/optional prefix
 argv comes from `ENDOFORGE_CODEX_CMD`; `CODEX_HOME` is required and passed unchanged.

@@ -52,7 +52,7 @@ function invoke(directory, prompt, env, timeout, { resume = null, effort = null 
     child.stdin.end(JSON.stringify(prompt));
   });
 }
-export async function generate({ need, directory, env = process.env, timeout = 600000 }) {
+export async function generate({ need, directory, env = process.env, timeout = 600000, check = null }) {
   if (typeof need !== 'string' || !need.trim()) throw Error('nonempty need required');
   if (!Number.isSafeInteger(timeout) || timeout <= 0) throw Error('positive generation timeout required');
   await mkdir(directory);
@@ -82,9 +82,19 @@ export async function generate({ need, directory, env = process.env, timeout = 6
   for (const [name, text] of Object.entries(files)) if (await read(workspace, name) !== text) throw Error('frozen specification changed during generation');
   if (JSON.stringify((await readdir(workspace)).sort()) !== JSON.stringify([...Object.keys(files), 'kernel.ts', 'glue.json'].sort())) throw Error('unexpected implementation files');
   for (const name of ['kernel.ts', 'glue.json']) files[name] = await read(workspace, name);
+  let repaired = false;
+  const failures = env.ENDOFORGE_SELF_CHECK === '1' && check && thread ? await check({ id, files: { ...files } }) : null;
+  if (failures) {
+    await invoke(workspace, { stage: 'repair', id, failures, instructions:
+      'The supervisor compiled your kernel.ts and ran the frozen gates on it; failures are listed. Fix kernel.ts and glue.json only so every frozen test and gate passes. Do not change CONTRACT.md, tests.json or frozen.sha256 and do not run commands.' }, env, timeout, { effort, resume: thread });
+    for (const [name, text] of Object.entries(files)) if (!['kernel.ts', 'glue.json'].includes(name) && await read(workspace, name) !== text) throw Error('frozen specification changed during repair');
+    if (JSON.stringify((await readdir(workspace)).sort()) !== JSON.stringify(Object.keys(files).sort())) throw Error('unexpected repair files');
+    for (const name of ['kernel.ts', 'glue.json']) files[name] = await read(workspace, name);
+    repaired = true;
+  }
   JSON.parse(files['glue.json']);
   return { candidate: { id, files }, reference, digest: frozen.digest,
     testDouble: env.ENDOFORGE_CODEX_TEST_DOUBLE === '1',
-    session: { effort: effort ?? 'default', resumed: Boolean(warm && thread) },
+    session: { effort: effort ?? 'default', resumed: Boolean(warm && thread) }, repaired,
     timings: { generate: generatedSpecMs + performance.now() - codeStart, freeze: freezeMs } };
 }
