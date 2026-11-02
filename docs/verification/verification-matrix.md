@@ -298,3 +298,19 @@ The full-suite attempts used native I/O without the adapter and therefore did
 not qualify later Makefile targets. Their logs are `make-test.log` and
 `make-test-optimized.log`; the focused target log is `make-atomizer.log`, all
 under the evidence directory above. No assertion was changed to obtain a pass.
+## X1 gate host port
+
+REQ-X1-001: `make pipeline-test` exercises native/pool parity in thread and
+process modes with in-repo minimal WASM addition/subtraction fixtures. It checks
+positive G1–G7 verdicts and independent expected refusal gates for frozen drift,
+compile failure, missing export, incorrect result and closed glue violations.
+The fixture WASM is precompiled; these CI checks do not qualify an installed asc.
+The port is derived from P-21's unchanged X1 gate runner; timing values are
+observations and are excluded from equality. Source bindings and frozen host
+bytes are checked on every residual invocation, including finalist evaluation.
+
+Local validation: `make check` and `make pipeline-test` passed on Node 26.12.0.
+An additional supervisor run with AssemblyScript 0.28.20 compared all six fixture
+variants against the unchanged P-21 `gate.mjs`: every G1–G7 boolean matched.
+WASM hashes differ because the port compiler declares a 64-MiB memory maximum;
+parity concerns verdicts and outputs, not timestamps or compiled byte identity.

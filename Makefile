@@ -4,7 +4,7 @@ export ENDOFORGE_TEST_OUTPUT := $(CURDIR)/.test-work
 
 .PHONY: test test-optimized check core-test ledger-test engine-test isolate-test atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test
 
-test: check core-test ledger-test engine-test isolate-test atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test
+test: pipeline-test check core-test ledger-test engine-test isolate-test atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test
 
 test-optimized:
 	PYTHONOPTIMIZE=1 $(MAKE) test PYTHON="$(PYTHON) -O"
@@ -50,3 +50,7 @@ portability-test:
 factory-state-test:
 	$(PYTHON) -B -m tools.factory_campaign.test_state
 	$(PYTHON) -B -m tools.factory_campaign.test_model_journal
+
+.PHONY: pipeline-test
+pipeline-test:
+	node --test core/runtime/test/x1.test.mjs

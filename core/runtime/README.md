@@ -188,3 +188,17 @@ the WASM gate still apply. Cgroup OOM kills without V8 diagnostics remain unknow
 and are not mislabeled as JS heap exhaustion. Host ports remain trusted Node code.
 [P-18](../../experiments/P-18-pool-breach/RESULT.md) records N=8 breach results
 for both modes, including the unavailable-delegation limitation.
+
+## X1 host port
+
+[x1/host.mjs](x1/host.mjs) runs the seven X1 gates as the real evaluator's
+residual check in either workcell mode. Universal gates validate the host envelope;
+they do not claim to infer an AssemblyScript signature or scan arbitrary effects.
+[x1/compiler.mjs](x1/compiler.mjs) compiles on the supervisor with a 60-second
+watchdog, bounded diagnostic output and `--maximumMemory 1024` (64 MiB). Set
+`ENDOFORGE_ASC_CMD` to the AssemblyScript 0.28.20 `asc` executable. Compilation
+is outside the workcell heap quota. Candidate identity binds source, glue, frozen
+checks and compiler bytes; the port checks source and frozen implementation bindings.
+Original WASM exports exclude guard helpers; the closed glue schema preserves X1 constraints.
+G6 retains X1's observed 2000-ms call boundary, not a preemptive CPU watchdog.
+Host ports are trusted; workcells are not an OS sandbox.

@@ -130,3 +130,16 @@ Without enabled cgroups neither limit bounds the sum of multiple linear memories
 native allocations, subprocesses, or total process RSS.
 Trusted host ports retain normal Node privileges; thread mode shares process-wide failures. Process mode contains child exits, but does not protect the supervisor against global OOM or privileged/malicious ports. Cgroup setup requires delegated memory/cpu/pids controllers and writable migration files. If the delegated root contains only this supervisor, setup moves it to an unbounded supervisor leaf before enabling controllers; it never moves other processes. That leaf remains for the enclosing scope to reclaim. Workcell cgroups are cleaned up after child exit on a best-effort basis. Source rationale and pinned references are in the
 [runtime guidance](../../core/runtime/README.md).
+
+## X1 host interface
+
+`x1/host.mjs:createPort({candidates})` maps SHA-256 of `JSON.stringify(candidate)`
+to `{id, files, compiled}`. `files` contains CONTRACT.md, tests.json, frozen.sha256,
+kernel.ts and glue.json text. `compiled` contains source SHA-256 and base64 WASM,
+or an error. The frozen tree includes contract, tests, freeze record and exact
+host/gates/schema bytes. `x1/compiler.mjs:compile(files, executable)` supplies
+that compilation evidence on the supervisor. The residual reason carries the
+complete X1 result, including per-gate verdicts and observed test durations.
+G4/G5/G6 operate on two fresh WASM instances, with the original X1 comparisons.
+The additional compiler memory maximum satisfies the pool's existing WASM guard;
+unsupported binaries remain fail-closed. Compiler callers and host modules are trusted.

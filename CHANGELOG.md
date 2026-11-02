@@ -6,6 +6,9 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Added
 
+- X1 G1–G7 host port through the real thread/process evaluator, supervisor
+  compiler and closed glue schema with local parity/refusal fixtures.
+
 - Optional process-per-workcell isolation with fork/IPC, V8 heap limits, detected
   cgroup v2 limits and supervisor-written rejection receipts. P-18 records N=8
   heap/WASM breaches in both modes; process tests cover parity and ledger replay.
