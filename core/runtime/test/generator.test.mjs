@@ -36,6 +36,8 @@ test('implementation prompt carries the G7 glue rules and a conforming template'
   const implementation = JSON.parse(await readFile(`${record}.implementation.json`, 'utf8'));
   assert.deepEqual(implementation.glueRules, glueRules);
   assert.deepEqual(implementation.glueTemplate, glueTemplate);
+  const compiler = await readFile(new URL('../x1/compiler.mjs', import.meta.url), 'utf8');
+  assert(compiler.includes("'--noAssert'") && /--noAssert[^.]*never use assert[^.]*abort\(\) or throw/.test(implementation.instructions));
   const gates = await readFile(new URL('../x1/gates.mjs', import.meta.url), 'utf8');
   for (const kind of ['number', 'code', 'boolean']) assert(gates.includes(`r.kind === '${kind}'`) && glueRules.some(rule => rule.includes(`kind ${kind}`)));
   for (const x of glueTemplate.exports) if (x.result.kind === 'number') assert(Number.isInteger(x.result.precision));

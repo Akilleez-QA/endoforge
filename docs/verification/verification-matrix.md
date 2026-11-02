@@ -254,7 +254,7 @@ not a guarantee that accounts for throttling or harness overhead.
 The inherited headroom guard can hold ready workers when host load exceeds
 1.8 under two-CPU affinity, or available memory falls below its reserve. That
 makes the timing assertion depend on host conditions and earlier suite work.
-Only this fan-out scheduler invocation now sets `ENDOFORGE_THROTTLE=0`.
+This fan-out scheduler invocation and the agent-swarm test scheduler invocations set `ENDOFORGE_THROTTLE=0`; the account-spread case otherwise ran one worker at a time after heavy earlier suite work and used a single account.
 Production headroom policy, fixtures, and every existing assertion are unchanged.
 
 `realizedSpeedup` rounds `sumAtomWallMs / wallMs` to two decimal places.
@@ -344,6 +344,11 @@ fresh/default fallback through recorded client arguments. One real add(a,b) smok
 2026-11-01 took 92.4 s before the no-exploration instruction and 42.6 s (low) / 41.7 s
 (default) after; a single run each, not a measurement.
 
+REQ-GEN-004: `generator.test.mjs` checks that `compiler.mjs` passes `--noAssert` and that
+the recorded implementation instructions forbid `assert` and require an explicit
+`abort()` or `throw` trap. Root cause from P-24: 43 of 45 G4 refusals used `assert(`,
+0 of 34 promotions did, independent of session resume and effort.
+
 REQ-GEN-001: `make pipeline-test` includes a labelled executable test double,
 two-stage generation, durable oracle creation, frozen hashes, absence of code in
 the oracle, early-code/drift/nonzero-exit refusals and missing configuration.
@@ -413,3 +418,14 @@ its first job, that `prewarm: true` with `ready()` yields `size` workcells that 
 without spawning more, that a non-boolean `prewarm` is refused and that `ready()` rejects
 after `close()`. On main-rig the pool and process suites passed 40 of 40 on Node 22.23.3
 and 26.12.0. Spawn-cost measurements are in P-26.
+
+## Persistent batched ledger bridge verification — 2026-11-02 UTC
+
+| Requirement | Case | Expected result |
+|---|---|---|
+| REQ-ISO-010 | 64 jobs at width 16 through one pool | Pass; every receipt present and the chain verifies from a fresh Ledger |
+| REQ-ISO-010 | Second writer appends between pool batches | Pass; pool appends chain after the external record |
+| REQ-ISO-010 | Bridge process killed with work pending | Pass; pending and later requests reject, no respawn |
+| REQ-ISO-010 | Stored row tampered after caching | Pass; next read rejects the chain |
+| REQ-ISO-010 | One invalid request inside a batch | Pass; only that request fails and the others commit |
+
