@@ -33,6 +33,12 @@ export function effortFor(need, setting = 'auto') {
   return (words ? words[1] : need).trim().length <= 400 ? 'low' : null;
 }
 export const terseRule = 'Send no message before writing. Write all your files in one single edit. After that edit, reply with only the word done.';
+export const stableOrder = ['instructions', 'glueRules', 'glueSchema', 'glueTemplate', 'stage'];
+export function promptFor(prompt, env) {
+  if (env.ENDOFORGE_CODEX_PREFIX !== 'stable') return prompt;
+  const first = stableOrder.filter(k => k in prompt);
+  return Object.fromEntries([...first, ...Object.keys(prompt).filter(k => !first.includes(k))].map(k => [k, prompt[k]]));
+}
 function invoke(directory, prompt, env, timeout, { resume = null, effort = null } = {}) {
   if (env.ENDOFORGE_CODEX_TERSE === '1') prompt = { ...prompt, instructions: `${prompt.instructions} ${terseRule}` };
   const argv = env.ENDOFORGE_CODEX_CMD?.startsWith('[') ? JSON.parse(env.ENDOFORGE_CODEX_CMD) : [env.ENDOFORGE_CODEX_CMD];
@@ -51,7 +57,7 @@ function invoke(directory, prompt, env, timeout, { resume = null, effort = null 
       resolve(started?.thread_id ?? null);
     });
     child.stdin.on('error', () => {});
-    child.stdin.end(JSON.stringify(prompt));
+    child.stdin.end(JSON.stringify(promptFor(prompt, env)));
   });
 }
 export async function generate({ need, directory, env = process.env, timeout = 600000, check = null }) {
