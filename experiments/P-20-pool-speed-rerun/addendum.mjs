@@ -51,7 +51,7 @@ frozen = FrozenEvaluators(ledger).freeze(p / 'frozen', task='task', admitted_inp
     qualification='timing only', synthesis_context=dict(id='context', candidate_blind='confirmed', inputs=['input']),
     configuration=r['configuration'], residual='timing only', invariant_version='1')
 ledger.append(dict(version=0, kind='candidate', id='probe', data=dict(task='task', admitted_input='input', content='timing probe', proposer='synthetic')))
-print(json.dumps(dict(ledger=str(p / 'ledger.sqlite'), root=str(p / 'frozen'), identity=frozen['id'])))
+print(json.dumps(dict(ledger=str(p / 'ledger.sqlite'), root=str(p / 'frozen'), identity=frozen['id'], digest=frozen['data']['freeze']['digest'])))
 `;
 const configuration = { gateInput: { version: 1, contract: { version: 1, signature: { version: 1, name: 'probe', inputs: [], output: { type: 'number', unit: '1' } }, refusals: [], tolerance: 0, sources: ['timing'] },
   cases: [{ id: 'c0', inputs: {} }], limits: { wallMs: 1000, memoryBytes: 1048576, fuel: 1000 }, allowedEffects: [] }, invariants: [], objectives: { cost: 'min' } };
@@ -60,7 +60,12 @@ const reference = () => { const directory = fs.mkdtempSync(path.join(scratch, 'r
   return JSON.parse(execFileSync('python3', ['-B', '-c', fixture], { cwd: root, input: JSON.stringify({ directory, configuration }) })); };
 async function run(pool, ref, portOptions) {
   const out = path.join(scratch, `job-${++jobs}.json`), start = performance.now();
-  const result = await pool.run({ reference: ref, candidates: ['probe'], portOptions: { ...portOptions, out } });
+  const { digest: version, ...reference } = ref;
+  const receipts = [{ version: 0, kind: 'receipt', id: `job-${jobs}`, data: { task: 'task', candidate: 'probe', frozen_evaluator: reference.identity,
+    precommit: { observable: 'timing', acceptance_boundary: 'timing only', oracle: reference.identity, oracle_version: version, artifact_identity: 'probe',
+      environment: { runtime: 'workcell' }, failure_meaning: 'none', stop_condition: 'measured' },
+    delivery_state: 'running', outcome_state: 'unobserved', observations: [] } }];
+  const result = await pool.run({ reference, candidates: ['probe'], portOptions: { ...portOptions, out }, receipts });
   const poolMs = performance.now() - start;
   if (!fs.existsSync(out)) return { poolMs, error: result.reason ?? result.status };
   return { poolMs, reason: result.reason, ...JSON.parse(fs.readFileSync(out, 'utf8')) };
