@@ -11,6 +11,10 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ["22", "26"]
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-python@v5
@@ -18,7 +22,7 @@ jobs:
           python-version: "3.12"
       - uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: ${{ matrix.node }}
       - name: Install test dependencies
         run: sudo apt-get update && sudo apt-get install -y age bubblewrap
       - name: Repository tests

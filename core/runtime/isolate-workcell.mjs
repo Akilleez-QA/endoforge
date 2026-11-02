@@ -8,6 +8,7 @@ const send = result => parentPort ? parentPort.postMessage(result) : process.sen
 const metadata = { workcell: parentPort ? threadId : process.pid,
   resourceLimits: parentPort ? resourceLimits : options.resourceLimits, wasmMemoryMaxMb };
 const nativeInstantiate = WebAssembly.instantiate;
+let undiciTimer;
 await Promise.race([new Promise(resolve => {
   WebAssembly.instantiate = (...args) => {
     WebAssembly.instantiate = nativeInstantiate;
@@ -16,7 +17,8 @@ await Promise.race([new Promise(resolve => {
     return pending;
   };
   void globalThis.Response;
-}), new Promise(resolve => setTimeout(resolve, 2000).unref())]);
+}), new Promise(resolve => { undiciTimer = setTimeout(resolve, 2000); })]);
+clearTimeout(undiciTimer);
 WebAssembly.instantiate = nativeInstantiate;
 const checkWasm = installWasmLimit(wasmMemoryMaxMb, error => {
   send({ type: 'limit', error });

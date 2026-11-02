@@ -189,6 +189,15 @@ start-body length failed before the fixture was corrected; no existing expected
 results or assertions were changed. The full `make test`/`make test-optimized`
 suites were not rerun for this extension.
 
+## Node 26 workcell startup verification
+
+Node 26.12.0 does not lazily instantiate undici WebAssembly when
+`globalThis.Response` is read. The previous unreferenced startup timer let the
+event loop empty, so every workcell exited with code 13. On main-rig,
+`isolate-pool.test.mjs` and `isolate-process.test.mjs` failed 38 of 39 on Node
+26.12.0 before the change and passed 39 of 39 after it. Node 22.23.3 passed 39
+of 39 after it. CI now runs the repository tests on Node 22 and 26.
+
 ## Process workcell verification
 
 The `v8-process-workcells` working tree was checked locally with Node 26.12.0
