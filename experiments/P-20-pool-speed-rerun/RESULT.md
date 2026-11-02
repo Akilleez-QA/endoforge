@@ -306,3 +306,35 @@ not causal speedup or production qualification. The full evaluator, repeated
 frozen checks and durable Python ledger remain different from the old pipelines.
 All earlier limits concerning synthetic residuals, sampled RSS, external WASM
 memory, readiness upper bounds and a single shared host still apply.
+
+## Addendum 2026-11-01: earliest baselines inside IsolatePool
+
+The precommit amendment is in `PRECOMMIT.md`; its sha256 is f1376cdac284181c506ee156b1888d46cf6c7891316e42815d2df0db89a29028. The receipt is in `receipt/addendum-2026-11-01/summary.json`. The run used Node v22.23.3 on the main-rig 7950X (32 threads, Linux 7.2.8) under `flock /tmp/ef-bench.lock`. Load average was 0.7 at start and 2.9 at end, on a shared desktop. Three earlier invocations stopped in setup, before any timing was produced, because of harness bugs: the asc library path was used as the CLI, the frozen reference was empty, and jobs had no receipts. The harness was fixed and committed each time, and no numbers from those invocations exist.
+
+| Probe | Original (date, host) | Addendum thread | Addendum process |
+|---|---|---|---|
+| P-01 V8 instantiate, stub 1 page, µs median / p95 | 18.6 / 34.8 (2026-10-14, Node 26.8.1, direct) | 47.9 / 91.7 | 48.5 / 93.9 |
+| P-01 bytes per live instance (RSS), K=5,000 | 11,325 | 9,332–9,594 | 10,066–10,171 |
+| P-02 `import` of asc in a fresh cell, ms | 359 host / 292 bwrap (2026-10-17) | 1,817–2,040 | 1,805–1,901 |
+| P-02 clean kernel compile, ms median (p95) | 51.1 (71.3), passes 1–2 host | cold 45.1 (108.1), warm 41.4 (56.6) | cold 45.5 (80.3), warm 39.9 (42.2) |
+| P-02 kernels compiled / 20 | 17 (3 type errors by design) | 17 | 17 |
+| P-05 tsc-rs WASM in Node, 5 / 50 files, ms | 43.8 / 87.5 (2026-10-17) | blocked: cell terminated `limit` | blocked: `wasm_memory` |
+| P-05 native tsc-rs `--singleThreaded`, 5 / 50 files, ms median (outside pool) | 19.8 / 56.6 | 15.8 / 36.0 (one series) | same |
+| Ramp bwrap isofix checks/s at 1 / 4 / 8 / 16 / 32 / 48 | 28.8 / 106.1 / 200.5 / 280.0 / 324.4 / 282.3 (2026-10-29, direct) | 7.7 / 10.8 / 11.1 / 11.2 / 10.9 / 10.4 | 8.6 / 11.8 / 11.6 / 11.5 / 11.1 / 10.3 |
+| Ramp in-cell check latency p50, ms | 35–164 | 40–43 | 34–35 |
+| Ramp direct serial check p50, ms | 35 | 38.1 (20 checks) | same |
+
+Observations:
+
+- Instantiation inside a workcell was about 2.6× the original median, but the Node version and the load both differ.
+- The asc cold import is about 5× slower in a workcell than in the original worker, while the steady compile time matches or improves.
+- Pool throughput flattens at about 11 jobs/s from width 4 upward, while the in-cell check stays at about 35–43 ms. Each job's pool latency grows linearly with width, so the ceiling sits outside the cell. The per-job ledger prepare/append is serialized by the host. Throughput is about 25× below the direct 10-29 ramp at width 16–32.
+- The P-05 tsc-rs module defines its own memory. The workcell guard terminated the cell in every rep, in both modes. Per the precommit, the guard was not weakened. Measuring this arm in the pool needs a supervisor trust entry (REQ-ISO-008) for that module.
+- Wasmtime (P-01) and workerd (P-05) are not reproduced, by design. Their numbers are quoted above only from the originals. The cold tsc ramp was not repeated.
+
+### What it does not show
+
+- Cause. The Node version (26.8.1 vs 22.23.3), load, kernel and guard instrumentation all changed together.
+- That the ~11 jobs/s ceiling comes from the ledger. That is inferred from latency growing with width, not isolated.
+- P-05 WASM timings in the pool, because they are blocked.
+- A quiet host, or variance beyond three pools per arm and one ramp per width.

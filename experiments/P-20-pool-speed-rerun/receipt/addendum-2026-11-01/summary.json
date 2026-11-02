@@ -1,0 +1,3236 @@
+{
+ "precommit": "f1376cdac284181c506ee156b1888d46cf6c7891316e42815d2df0db89a29028",
+ "node": "v22.23.3",
+ "kernel": "7.2.8-9-omarchy",
+ "cpu": "AMD Ryzen 9 7950X 16-Core Processor",
+ "cores": 32,
+ "kernelWasmSha256": "914084c4d88dd65e9963a2fa892cc37301f6fa926935de77f4ef77d7ef2a8dc5",
+ "before": {
+  "at": "2026-11-02T04:31:48.168Z",
+  "loadavg": [
+   0.73,
+   1.57,
+   3.38
+  ],
+  "memAvailable": 85126156288
+ },
+ "arms": [
+  {
+   "arm": "p01",
+   "mode": "thread",
+   "reps": [
+    {
+     "rep": 1,
+     "cold": {
+      "poolMs": 1802.454013,
+      "reason": "measured",
+      "workload": "p01",
+      "cell": 3410281,
+      "cellMs": 1691.981374,
+      "instantiateUs": {
+       "n": 2000,
+       "median": 48.82,
+       "p95": 89.576,
+       "min": 15.198,
+       "max": 1006.014
+      },
+      "resident": {
+       "100": {
+        "live": 100,
+        "bytesPerInstanceRss": 13434.88,
+        "bytesPerInstanceArrayBuffers": 48
+       },
+       "1000": {
+        "live": 1000,
+        "bytesPerInstanceRss": 9158.656,
+        "bytesPerInstanceArrayBuffers": 48
+       },
+       "5000": {
+        "live": 5000,
+        "bytesPerInstanceRss": 9594.4704,
+        "bytesPerInstanceArrayBuffers": 48
+       }
+      }
+     },
+     "warm": null
+    },
+    {
+     "rep": 2,
+     "cold": {
+      "poolMs": 1818.5142380000002,
+      "reason": "measured",
+      "workload": "p01",
+      "cell": 3410281,
+      "cellMs": 1681.76797,
+      "instantiateUs": {
+       "n": 2000,
+       "median": 47.478,
+       "p95": 91.7,
+       "min": 13.284,
+       "max": 973.013
+      },
+      "resident": {
+       "100": {
+        "live": 100,
+        "bytesPerInstanceRss": 5242.88,
+        "bytesPerInstanceArrayBuffers": 48
+       },
+       "1000": {
+        "live": 1000,
+        "bytesPerInstanceRss": 9961.472,
+        "bytesPerInstanceArrayBuffers": 48
+       },
+       "5000": {
+        "live": 5000,
+        "bytesPerInstanceRss": 9542.0416,
+        "bytesPerInstanceArrayBuffers": 48
+       }
+      }
+     },
+     "warm": null
+    },
+    {
+     "rep": 3,
+     "cold": {
+      "poolMs": 1815.008272,
+      "reason": "measured",
+      "workload": "p01",
+      "cell": 3410281,
+      "cellMs": 1703.939518,
+      "instantiateUs": {
+       "n": 2000,
+       "median": 47.858,
+       "p95": 94.014,
+       "min": 13.445,
+       "max": 1345.593
+      },
+      "resident": {
+       "100": {
+        "live": 100,
+        "bytesPerInstanceRss": 7864.32,
+        "bytesPerInstanceArrayBuffers": 48
+       },
+       "1000": {
+        "live": 1000,
+        "bytesPerInstanceRss": 8912.896,
+        "bytesPerInstanceArrayBuffers": 48
+       },
+       "5000": {
+        "live": 5000,
+        "bytesPerInstanceRss": 9332.3264,
+        "bytesPerInstanceArrayBuffers": 48
+       }
+      }
+     },
+     "warm": null
+    }
+   ],
+   "at": {
+    "at": "2026-11-02T04:31:53.882Z",
+    "loadavg": [
+     0.83,
+     1.58,
+     3.37
+    ],
+    "memAvailable": 84690386944
+   }
+  },
+  {
+   "arm": "p02",
+   "mode": "thread",
+   "reps": [
+    {
+     "rep": 1,
+     "cold": {
+      "poolMs": 3023.333482000001,
+      "reason": "measured",
+      "workload": "p02",
+      "cell": 3410281,
+      "cellMs": 2922.065465,
+      "importMs": 1904.592592,
+      "heapUsed": 76910560,
+      "rss": 360398848,
+      "runs": [
+       {
+        "name": "k00",
+        "ok": true,
+        "wallMs": 158.226909,
+        "parse": 73.063037,
+        "initialize": 7.905257,
+        "compile": 13.641575,
+        "optimize": 52.058273,
+        "emit": 4.6685
+       },
+       {
+        "name": "k01",
+        "ok": true,
+        "wallMs": 76.477766,
+        "parse": 50.055703,
+        "initialize": 3.768552,
+        "compile": 2.20772,
+        "optimize": 18.981698,
+        "emit": 0.351731
+       },
+       {
+        "name": "k02",
+        "ok": true,
+        "wallMs": 94.238523,
+        "parse": 69.087282,
+        "initialize": 5.290252,
+        "compile": 2.673273,
+        "optimize": 15.514314,
+        "emit": 0.452799
+       },
+       {
+        "name": "k03",
+        "ok": true,
+        "wallMs": 51.88947,
+        "parse": 27.773532,
+        "initialize": 3.198406,
+        "compile": 2.122552,
+        "optimize": 17.27644,
+        "emit": 0.407866
+       },
+       {
+        "name": "k04",
+        "ok": true,
+        "wallMs": 44.867239,
+        "parse": 21.395114,
+        "initialize": 2.94127,
+        "compile": 2.065136,
+        "optimize": 17.376935,
+        "emit": 0.394661
+       },
+       {
+        "name": "k05",
+        "ok": false,
+        "wallMs": 30.794785,
+        "parse": 24.773291,
+        "initialize": 2.657584,
+        "compile": 2.372055,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k06",
+        "ok": true,
+        "wallMs": 43.393007,
+        "parse": 20.313425,
+        "initialize": 2.092036,
+        "compile": 2.059526,
+        "optimize": 17.880529,
+        "emit": 0.306658
+       },
+       {
+        "name": "k07",
+        "ok": true,
+        "wallMs": 42.830616,
+        "parse": 24.416535,
+        "initialize": 2.011116,
+        "compile": 1.393271,
+        "optimize": 13.491798,
+        "emit": 0.42655
+       },
+       {
+        "name": "k08",
+        "ok": true,
+        "wallMs": 39.090666,
+        "parse": 20.675366,
+        "initialize": 1.933803,
+        "compile": 1.518213,
+        "optimize": 13.86064,
+        "emit": 0.274098
+       },
+       {
+        "name": "k09",
+        "ok": true,
+        "wallMs": 38.470427,
+        "parse": 20.168773,
+        "initialize": 1.907885,
+        "compile": 1.426052,
+        "optimize": 13.946791,
+        "emit": 0.352694
+       },
+       {
+        "name": "k10",
+        "ok": true,
+        "wallMs": 45.693039,
+        "parse": 24.747543,
+        "initialize": 2.280405,
+        "compile": 1.674833,
+        "optimize": 15.791609,
+        "emit": 0.381657
+       },
+       {
+        "name": "k11",
+        "ok": false,
+        "wallMs": 25.241146,
+        "parse": 21.226966,
+        "initialize": 1.841311,
+        "compile": 1.590327,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k12",
+        "ok": true,
+        "wallMs": 45.118825,
+        "parse": 22.720281,
+        "initialize": 3.635346,
+        "compile": 1.629449,
+        "optimize": 16.329114,
+        "emit": 0.291329
+       },
+       {
+        "name": "k13",
+        "ok": true,
+        "wallMs": 41.277718,
+        "parse": 21.430554,
+        "initialize": 1.854846,
+        "compile": 1.46809,
+        "optimize": 15.807658,
+        "emit": 0.279909
+       },
+       {
+        "name": "k14",
+        "ok": true,
+        "wallMs": 41.169157,
+        "parse": 19.862294,
+        "initialize": 1.79762,
+        "compile": 1.612828,
+        "optimize": 16.83413,
+        "emit": 0.365457
+       },
+       {
+        "name": "k15",
+        "ok": true,
+        "wallMs": 43.526274,
+        "parse": 22.39033,
+        "initialize": 1.730987,
+        "compile": 1.485842,
+        "optimize": 17.047946,
+        "emit": 0.325904
+       },
+       {
+        "name": "k16",
+        "ok": true,
+        "wallMs": 41.785099,
+        "parse": 19.824156,
+        "initialize": 1.949772,
+        "compile": 1.799795,
+        "optimize": 17.326662,
+        "emit": 0.419007
+       },
+       {
+        "name": "k17",
+        "ok": false,
+        "wallMs": 24.640994,
+        "parse": 19.706373,
+        "initialize": 2.519949,
+        "compile": 1.861229,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k18",
+        "ok": true,
+        "wallMs": 43.654312,
+        "parse": 21.585446,
+        "initialize": 2.060107,
+        "compile": 1.601928,
+        "optimize": 17.207903,
+        "emit": 0.365116
+       },
+       {
+        "name": "k19",
+        "ok": true,
+        "wallMs": 44.449274,
+        "parse": 21.256792,
+        "initialize": 1.984748,
+        "compile": 2.327161,
+        "optimize": 17.825767,
+        "emit": 0.385354
+       }
+      ]
+     },
+     "warm": {
+      "poolMs": 827.6189979999999,
+      "reason": "measured",
+      "workload": "p02",
+      "cell": 3410281,
+      "cellMs": 750.650401,
+      "importMs": null,
+      "heapUsed": 60414280,
+      "rss": 361709568,
+      "runs": [
+       {
+        "name": "k00",
+        "ok": true,
+        "wallMs": 38.884434,
+        "parse": 21.656174,
+        "initialize": 3.524691,
+        "compile": 1.207908,
+        "optimize": 11.749799,
+        "emit": 0.23223
+       },
+       {
+        "name": "k01",
+        "ok": true,
+        "wallMs": 36.352914,
+        "parse": 19.370283,
+        "initialize": 2.493811,
+        "compile": 1.17156,
+        "optimize": 12.537569,
+        "emit": 0.357502
+       },
+       {
+        "name": "k02",
+        "ok": true,
+        "wallMs": 38.432688,
+        "parse": 20.906976,
+        "initialize": 1.945124,
+        "compile": 1.438014,
+        "optimize": 13.16418,
+        "emit": 0.516106
+       },
+       {
+        "name": "k03",
+        "ok": true,
+        "wallMs": 42.889525,
+        "parse": 25.203752,
+        "initialize": 1.779116,
+        "compile": 1.116148,
+        "optimize": 13.350806,
+        "emit": 0.259681
+       },
+       {
+        "name": "k04",
+        "ok": true,
+        "wallMs": 36.972321,
+        "parse": 19.2849,
+        "initialize": 1.906713,
+        "compile": 1.173283,
+        "optimize": 13.924098,
+        "emit": 0.265171
+       },
+       {
+        "name": "k05",
+        "ok": false,
+        "wallMs": 22.935374,
+        "parse": 18.412256,
+        "initialize": 1.920418,
+        "compile": 1.985439,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k06",
+        "ok": true,
+        "wallMs": 40.635008,
+        "parse": 21.262004,
+        "initialize": 1.802069,
+        "compile": 1.293667,
+        "optimize": 15.315407,
+        "emit": 0.403257
+       },
+       {
+        "name": "k07",
+        "ok": true,
+        "wallMs": 34.714649,
+        "parse": 18.811639,
+        "initialize": 1.677608,
+        "compile": 0.972472,
+        "optimize": 12.547768,
+        "emit": 0.25369
+       },
+       {
+        "name": "k08",
+        "ok": true,
+        "wallMs": 38.71435,
+        "parse": 21.12472,
+        "initialize": 2.799417,
+        "compile": 1.182732,
+        "optimize": 12.797271,
+        "emit": 0.376598
+       },
+       {
+        "name": "k09",
+        "ok": true,
+        "wallMs": 41.427646,
+        "parse": 22.77216,
+        "initialize": 2.713879,
+        "compile": 1.353537,
+        "optimize": 13.5095,
+        "emit": 0.257517
+       },
+       {
+        "name": "k10",
+        "ok": true,
+        "wallMs": 35.495295,
+        "parse": 18.785474,
+        "initialize": 1.677368,
+        "compile": 1.11159,
+        "optimize": 13.159382,
+        "emit": 0.317418
+       },
+       {
+        "name": "k11",
+        "ok": false,
+        "wallMs": 29.037951,
+        "parse": 25.852427,
+        "initialize": 1.627025,
+        "compile": 1.123461,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k12",
+        "ok": true,
+        "wallMs": 37.633988,
+        "parse": 18.990804,
+        "initialize": 1.919997,
+        "compile": 1.45738,
+        "optimize": 14.515785,
+        "emit": 0.279137
+       },
+       {
+        "name": "k13",
+        "ok": true,
+        "wallMs": 40.570839,
+        "parse": 21.516937,
+        "initialize": 1.859075,
+        "compile": 1.144851,
+        "optimize": 15.061335,
+        "emit": 0.380275
+       },
+       {
+        "name": "k14",
+        "ok": true,
+        "wallMs": 41.252652,
+        "parse": 20.920008,
+        "initialize": 2.004995,
+        "compile": 1.282667,
+        "optimize": 15.909196,
+        "emit": 0.607195
+       },
+       {
+        "name": "k15",
+        "ok": true,
+        "wallMs": 41.026173,
+        "parse": 20.683955,
+        "initialize": 2.277419,
+        "compile": 1.28967,
+        "optimize": 15.974848,
+        "emit": 0.320113
+       },
+       {
+        "name": "k16",
+        "ok": true,
+        "wallMs": 43.126965,
+        "parse": 20.642558,
+        "initialize": 2.585941,
+        "compile": 1.539373,
+        "optimize": 16.165842,
+        "emit": 0.31826
+       },
+       {
+        "name": "k17",
+        "ok": false,
+        "wallMs": 23.693919,
+        "parse": 20.000713,
+        "initialize": 1.978846,
+        "compile": 1.317301,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k18",
+        "ok": true,
+        "wallMs": 42.094912,
+        "parse": 20.758642,
+        "initialize": 1.753589,
+        "compile": 1.80313,
+        "optimize": 17.026616,
+        "emit": 0.325373
+       },
+       {
+        "name": "k19",
+        "ok": true,
+        "wallMs": 44.39797,
+        "parse": 23.88422,
+        "initialize": 1.702154,
+        "compile": 1.716029,
+        "optimize": 16.21349,
+        "emit": 0.312729
+       }
+      ]
+     }
+    },
+    {
+     "rep": 2,
+     "cold": {
+      "poolMs": 2975.2834169999987,
+      "reason": "measured",
+      "workload": "p02",
+      "cell": 3410281,
+      "cellMs": 2865.638739,
+      "importMs": 1817.042981,
+      "heapUsed": 92940160,
+      "rss": 377626624,
+      "runs": [
+       {
+        "name": "k00",
+        "ok": true,
+        "wallMs": 194.006964,
+        "parse": 98.001157,
+        "initialize": 10.936192,
+        "compile": 20.419103,
+        "optimize": 53.648339,
+        "emit": 4.731437
+       },
+       {
+        "name": "k01",
+        "ok": true,
+        "wallMs": 81.292057,
+        "parse": 54.938505,
+        "initialize": 3.710024,
+        "compile": 2.088149,
+        "optimize": 19.016102,
+        "emit": 0.35039
+       },
+       {
+        "name": "k02",
+        "ok": true,
+        "wallMs": 91.787442,
+        "parse": 68.421415,
+        "initialize": 3.79426,
+        "compile": 1.967976,
+        "optimize": 15.976261,
+        "emit": 0.452038
+       },
+       {
+        "name": "k03",
+        "ok": true,
+        "wallMs": 51.696192,
+        "parse": 28.168452,
+        "initialize": 3.098441,
+        "compile": 2.19641,
+        "optimize": 17.114689,
+        "emit": 0.39409
+       },
+       {
+        "name": "k04",
+        "ok": true,
+        "wallMs": 42.782277,
+        "parse": 20.162337,
+        "initialize": 2.377516,
+        "compile": 2.050149,
+        "optimize": 17.169131,
+        "emit": 0.394701
+       },
+       {
+        "name": "k05",
+        "ok": false,
+        "wallMs": 29.453441,
+        "parse": 21.005248,
+        "initialize": 2.739205,
+        "compile": 3.38404,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k06",
+        "ok": true,
+        "wallMs": 42.405358,
+        "parse": 19.127861,
+        "initialize": 2.436915,
+        "compile": 2.009994,
+        "optimize": 17.720773,
+        "emit": 0.348035
+       },
+       {
+        "name": "k07",
+        "ok": true,
+        "wallMs": 41.962528,
+        "parse": 22.401318,
+        "initialize": 3.001551,
+        "compile": 1.405103,
+        "optimize": 13.412862,
+        "emit": 0.473367
+       },
+       {
+        "name": "k08",
+        "ok": true,
+        "wallMs": 39.596033,
+        "parse": 19.806708,
+        "initialize": 1.810084,
+        "compile": 1.51688,
+        "optimize": 15.251568,
+        "emit": 0.326545
+       },
+       {
+        "name": "k09",
+        "ok": true,
+        "wallMs": 40.159918,
+        "parse": 20.905463,
+        "initialize": 1.897807,
+        "compile": 1.411836,
+        "optimize": 14.687934,
+        "emit": 0.406303
+       },
+       {
+        "name": "k10",
+        "ok": true,
+        "wallMs": 41.390608,
+        "parse": 21.887083,
+        "initialize": 1.972875,
+        "compile": 1.703136,
+        "optimize": 14.528689,
+        "emit": 0.399992
+       },
+       {
+        "name": "k11",
+        "ok": false,
+        "wallMs": 26.898187,
+        "parse": 22.786293,
+        "initialize": 1.903376,
+        "compile": 1.511891,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k12",
+        "ok": true,
+        "wallMs": 44.348448,
+        "parse": 24.583637,
+        "initialize": 1.769419,
+        "compile": 1.594904,
+        "optimize": 15.599543,
+        "emit": 0.289216
+       },
+       {
+        "name": "k13",
+        "ok": true,
+        "wallMs": 40.800104,
+        "parse": 21.215892,
+        "initialize": 1.761794,
+        "compile": 1.475784,
+        "optimize": 15.581169,
+        "emit": 0.283505
+       },
+       {
+        "name": "k14",
+        "ok": true,
+        "wallMs": 41.743983,
+        "parse": 20.621838,
+        "initialize": 1.745805,
+        "compile": 1.58165,
+        "optimize": 16.732762,
+        "emit": 0.36164
+       },
+       {
+        "name": "k15",
+        "ok": true,
+        "wallMs": 42.979251,
+        "parse": 21.952858,
+        "initialize": 1.928934,
+        "compile": 1.502865,
+        "optimize": 16.714899,
+        "emit": 0.3346
+       },
+       {
+        "name": "k16",
+        "ok": true,
+        "wallMs": 41.784488,
+        "parse": 20.490568,
+        "initialize": 1.775539,
+        "compile": 1.720077,
+        "optimize": 16.883572,
+        "emit": 0.414528
+       },
+       {
+        "name": "k17",
+        "ok": false,
+        "wallMs": 28.795983,
+        "parse": 22.298291,
+        "initialize": 4.116568,
+        "compile": 1.74328,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k18",
+        "ok": true,
+        "wallMs": 41.550084,
+        "parse": 19.297646,
+        "initialize": 2.412119,
+        "compile": 1.536598,
+        "optimize": 17.269096,
+        "emit": 0.333518
+       },
+       {
+        "name": "k19",
+        "ok": true,
+        "wallMs": 42.657205,
+        "parse": 19.479769,
+        "initialize": 1.913746,
+        "compile": 2.289933,
+        "optimize": 17.970365,
+        "emit": 0.325032
+       }
+      ]
+     },
+     "warm": {
+      "poolMs": 818.8064279999999,
+      "reason": "measured",
+      "workload": "p02",
+      "cell": 3410281,
+      "cellMs": 741.202885,
+      "importMs": null,
+      "heapUsed": 58733704,
+      "rss": 378097664,
+      "runs": [
+       {
+        "name": "k00",
+        "ok": true,
+        "wallMs": 38.209194,
+        "parse": 22.62297,
+        "initialize": 1.803702,
+        "compile": 1.120856,
+        "optimize": 11.871465,
+        "emit": 0.233944
+       },
+       {
+        "name": "k01",
+        "ok": true,
+        "wallMs": 37.627636,
+        "parse": 20.046584,
+        "initialize": 2.471098,
+        "compile": 1.584396,
+        "optimize": 12.68925,
+        "emit": 0.359055
+       },
+       {
+        "name": "k02",
+        "ok": true,
+        "wallMs": 39.085527,
+        "parse": 20.550324,
+        "initialize": 1.819201,
+        "compile": 1.625301,
+        "optimize": 13.966126,
+        "emit": 0.611342
+       },
+       {
+        "name": "k03",
+        "ok": true,
+        "wallMs": 43.104133,
+        "parse": 25.491658,
+        "initialize": 1.827816,
+        "compile": 1.246639,
+        "optimize": 13.516082,
+        "emit": 0.305716
+       },
+       {
+        "name": "k04",
+        "ok": true,
+        "wallMs": 37.16516,
+        "parse": 19.451073,
+        "initialize": 1.782282,
+        "compile": 1.187861,
+        "optimize": 13.969653,
+        "emit": 0.292031
+       },
+       {
+        "name": "k05",
+        "ok": false,
+        "wallMs": 25.973604,
+        "parse": 21.001989,
+        "initialize": 3.176115,
+        "compile": 1.345913,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k06",
+        "ok": true,
+        "wallMs": 39.467004,
+        "parse": 18.813921,
+        "initialize": 3.097969,
+        "compile": 1.377772,
+        "optimize": 15.406865,
+        "emit": 0.354267
+       },
+       {
+        "name": "k07",
+        "ok": true,
+        "wallMs": 36.25327,
+        "parse": 18.608399,
+        "initialize": 1.913866,
+        "compile": 1.509637,
+        "optimize": 13.417549,
+        "emit": 0.316316
+       },
+       {
+        "name": "k08",
+        "ok": true,
+        "wallMs": 43.078776,
+        "parse": 24.618786,
+        "initialize": 3.906277,
+        "compile": 1.399062,
+        "optimize": 12.254024,
+        "emit": 0.377329
+       },
+       {
+        "name": "k09",
+        "ok": true,
+        "wallMs": 38.355685,
+        "parse": 20.263953,
+        "initialize": 1.870646,
+        "compile": 1.622496,
+        "optimize": 13.483572,
+        "emit": 0.250414
+       },
+       {
+        "name": "k10",
+        "ok": true,
+        "wallMs": 35.564604,
+        "parse": 18.991438,
+        "initialize": 1.703616,
+        "compile": 1.070794,
+        "optimize": 13.162928,
+        "emit": 0.25859
+       },
+       {
+        "name": "k11",
+        "ok": false,
+        "wallMs": 24.275247,
+        "parse": 20.705922,
+        "initialize": 1.793804,
+        "compile": 1.261658,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k12",
+        "ok": true,
+        "wallMs": 38.797765,
+        "parse": 20.858715,
+        "initialize": 1.82417,
+        "compile": 1.234808,
+        "optimize": 14.165366,
+        "emit": 0.277043
+       },
+       {
+        "name": "k13",
+        "ok": true,
+        "wallMs": 41.50518,
+        "parse": 20.822134,
+        "initialize": 3.898934,
+        "compile": 0.903714,
+        "optimize": 14.853731,
+        "emit": 0.374023
+       },
+       {
+        "name": "k14",
+        "ok": true,
+        "wallMs": 38.776504,
+        "parse": 18.638075,
+        "initialize": 2.20759,
+        "compile": 1.076203,
+        "optimize": 15.818068,
+        "emit": 0.597537
+       },
+       {
+        "name": "k15",
+        "ok": true,
+        "wallMs": 38.254768,
+        "parse": 18.982707,
+        "initialize": 1.591388,
+        "compile": 1.0906,
+        "optimize": 15.902644,
+        "emit": 0.311006
+       },
+       {
+        "name": "k16",
+        "ok": true,
+        "wallMs": 42.733757,
+        "parse": 23.117922,
+        "initialize": 1.552267,
+        "compile": 1.232524,
+        "optimize": 16.018268,
+        "emit": 0.311187
+       },
+       {
+        "name": "k17",
+        "ok": false,
+        "wallMs": 22.737047,
+        "parse": 19.40005,
+        "initialize": 1.908316,
+        "compile": 1.081845,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k18",
+        "ok": true,
+        "wallMs": 39.375515,
+        "parse": 18.339281,
+        "initialize": 2.114808,
+        "compile": 1.56002,
+        "optimize": 16.671188,
+        "emit": 0.322978
+       },
+       {
+        "name": "k19",
+        "ok": true,
+        "wallMs": 40.348788,
+        "parse": 20.175369,
+        "initialize": 1.778134,
+        "compile": 1.321639,
+        "optimize": 16.219,
+        "emit": 0.360548
+       }
+      ]
+     }
+    },
+    {
+     "rep": 3,
+     "cold": {
+      "poolMs": 3393.385628,
+      "reason": "measured",
+      "workload": "p02",
+      "cell": 3410281,
+      "cellMs": 3277.903072,
+      "importMs": 2040.254005,
+      "heapUsed": 93343384,
+      "rss": 323784704,
+      "runs": [
+       {
+        "name": "k00",
+        "ok": true,
+        "wallMs": 179.554608,
+        "parse": 86.486713,
+        "initialize": 8.945314,
+        "compile": 14.174312,
+        "optimize": 58.103103,
+        "emit": 4.958096
+       },
+       {
+        "name": "k01",
+        "ok": true,
+        "wallMs": 81.813855,
+        "parse": 54.233724,
+        "initialize": 3.992498,
+        "compile": 2.21866,
+        "optimize": 19.686415,
+        "emit": 0.356852
+       },
+       {
+        "name": "k02",
+        "ok": true,
+        "wallMs": 108.066976,
+        "parse": 80.030466,
+        "initialize": 5.670847,
+        "compile": 2.214233,
+        "optimize": 18.416572,
+        "emit": 0.455654
+       },
+       {
+        "name": "k03",
+        "ok": true,
+        "wallMs": 58.291913,
+        "parse": 33.752592,
+        "initialize": 3.650884,
+        "compile": 2.168688,
+        "optimize": 17.486639,
+        "emit": 0.416632
+       },
+       {
+        "name": "k04",
+        "ok": true,
+        "wallMs": 60.410368,
+        "parse": 33.81284,
+        "initialize": 4.873609,
+        "compile": 2.327342,
+        "optimize": 18.00505,
+        "emit": 0.418876
+       },
+       {
+        "name": "k05",
+        "ok": false,
+        "wallMs": 41.247834,
+        "parse": 29.275929,
+        "initialize": 4.241048,
+        "compile": 3.64888,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k06",
+        "ok": true,
+        "wallMs": 52.161175,
+        "parse": 23.226868,
+        "initialize": 2.41784,
+        "compile": 2.130667,
+        "optimize": 22.479129,
+        "emit": 0.481983
+       },
+       {
+        "name": "k07",
+        "ok": true,
+        "wallMs": 53.997797,
+        "parse": 31.918514,
+        "initialize": 3.846237,
+        "compile": 1.472448,
+        "optimize": 15.028786,
+        "emit": 0.442219
+       },
+       {
+        "name": "k08",
+        "ok": true,
+        "wallMs": 41.754362,
+        "parse": 21.256052,
+        "initialize": 2.480516,
+        "compile": 1.728292,
+        "optimize": 15.135213,
+        "emit": 0.283034
+       },
+       {
+        "name": "k09",
+        "ok": true,
+        "wallMs": 55.525457,
+        "parse": 26.562263,
+        "initialize": 3.994041,
+        "compile": 2.215495,
+        "optimize": 21.278765,
+        "emit": 0.536414
+       },
+       {
+        "name": "k10",
+        "ok": true,
+        "wallMs": 49.23377,
+        "parse": 27.267133,
+        "initialize": 2.550837,
+        "compile": 1.764259,
+        "optimize": 16.603293,
+        "emit": 0.390463
+       },
+       {
+        "name": "k11",
+        "ok": false,
+        "wallMs": 31.102627,
+        "parse": 26.45608,
+        "initialize": 2.16414,
+        "compile": 1.708706,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k12",
+        "ok": true,
+        "wallMs": 58.557095,
+        "parse": 35.706874,
+        "initialize": 3.141781,
+        "compile": 2.397913,
+        "optimize": 16.268964,
+        "emit": 0.305867
+       },
+       {
+        "name": "k13",
+        "ok": true,
+        "wallMs": 53.268666,
+        "parse": 31.932807,
+        "initialize": 2.733504,
+        "compile": 1.587592,
+        "optimize": 16.071787,
+        "emit": 0.347283
+       },
+       {
+        "name": "k14",
+        "ok": true,
+        "wallMs": 52.571505,
+        "parse": 25.951895,
+        "initialize": 2.597222,
+        "compile": 1.773936,
+        "optimize": 20.58547,
+        "emit": 0.530192
+       },
+       {
+        "name": "k15",
+        "ok": true,
+        "wallMs": 52.540097,
+        "parse": 29.286366,
+        "initialize": 2.886728,
+        "compile": 1.709568,
+        "optimize": 17.655241,
+        "emit": 0.338557
+       },
+       {
+        "name": "k16",
+        "ok": true,
+        "wallMs": 48.368928,
+        "parse": 25.76147,
+        "initialize": 2.230322,
+        "compile": 1.851741,
+        "optimize": 17.501186,
+        "emit": 0.452238
+       },
+       {
+        "name": "k17",
+        "ok": false,
+        "wallMs": 43.084066,
+        "parse": 38.197934,
+        "initialize": 2.212309,
+        "compile": 1.863573,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k18",
+        "ok": true,
+        "wallMs": 50.936245,
+        "parse": 24.363138,
+        "initialize": 3.124369,
+        "compile": 1.621515,
+        "optimize": 20.388716,
+        "emit": 0.577119
+       },
+       {
+        "name": "k19",
+        "ok": true,
+        "wallMs": 64.454993,
+        "parse": 34.005731,
+        "initialize": 2.175821,
+        "compile": 3.257506,
+        "optimize": 23.686396,
+        "emit": 0.466053
+       }
+      ]
+     },
+     "warm": {
+      "poolMs": 1059.7983190000014,
+      "reason": "measured",
+      "workload": "p02",
+      "cell": 3410281,
+      "cellMs": 968.702797,
+      "importMs": null,
+      "heapUsed": 75151664,
+      "rss": 327045120,
+      "runs": [
+       {
+        "name": "k00",
+        "ok": true,
+        "wallMs": 52.856352,
+        "parse": 30.081068,
+        "initialize": 3.473897,
+        "compile": 2.052462,
+        "optimize": 16.013349,
+        "emit": 0.379363
+       },
+       {
+        "name": "k01",
+        "ok": true,
+        "wallMs": 53.915655,
+        "parse": 32.637334,
+        "initialize": 2.18605,
+        "compile": 1.370549,
+        "optimize": 16.537571,
+        "emit": 0.537937
+       },
+       {
+        "name": "k02",
+        "ok": true,
+        "wallMs": 56.56855,
+        "parse": 38.502434,
+        "initialize": 2.349814,
+        "compile": 1.38723,
+        "optimize": 13.19625,
+        "emit": 0.486021
+       },
+       {
+        "name": "k03",
+        "ok": true,
+        "wallMs": 46.273025,
+        "parse": 27.640936,
+        "initialize": 2.071588,
+        "compile": 1.216264,
+        "optimize": 14.45413,
+        "emit": 0.298994
+       },
+       {
+        "name": "k04",
+        "ok": true,
+        "wallMs": 50.046607,
+        "parse": 27.172695,
+        "initialize": 4.990316,
+        "compile": 1.223898,
+        "optimize": 15.778254,
+        "emit": 0.288435
+       },
+       {
+        "name": "k05",
+        "ok": false,
+        "wallMs": 26.851581,
+        "parse": 21.193506,
+        "initialize": 2.924699,
+        "compile": 2.214603,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k06",
+        "ok": true,
+        "wallMs": 43.552835,
+        "parse": 22.094642,
+        "initialize": 2.093178,
+        "compile": 2.019271,
+        "optimize": 16.496044,
+        "emit": 0.364946
+       },
+       {
+        "name": "k07",
+        "ok": true,
+        "wallMs": 51.697586,
+        "parse": 31.403515,
+        "initialize": 3.05466,
+        "compile": 1.675284,
+        "optimize": 14.52957,
+        "emit": 0.381707
+       },
+       {
+        "name": "k08",
+        "ok": true,
+        "wallMs": 57.753356,
+        "parse": 34.566695,
+        "initialize": 3.219996,
+        "compile": 1.741206,
+        "optimize": 17.180382,
+        "emit": 0.4267
+       },
+       {
+        "name": "k09",
+        "ok": true,
+        "wallMs": 54.74374,
+        "parse": 29.14396,
+        "initialize": 6.143202,
+        "compile": 1.756936,
+        "optimize": 16.67731,
+        "emit": 0.256645
+       },
+       {
+        "name": "k10",
+        "ok": true,
+        "wallMs": 45.134205,
+        "parse": 27.336429,
+        "initialize": 2.038016,
+        "compile": 1.242502,
+        "optimize": 13.718948,
+        "emit": 0.265291
+       },
+       {
+        "name": "k11",
+        "ok": false,
+        "wallMs": 30.841082,
+        "parse": 26.081916,
+        "initialize": 3.009175,
+        "compile": 1.270825,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k12",
+        "ok": true,
+        "wallMs": 56.160855,
+        "parse": 33.368289,
+        "initialize": 5.011245,
+        "compile": 1.701673,
+        "optimize": 15.230038,
+        "emit": 0.277544
+       },
+       {
+        "name": "k13",
+        "ok": true,
+        "wallMs": 45.116382,
+        "parse": 23.917346,
+        "initialize": 3.252716,
+        "compile": 1.171631,
+        "optimize": 15.691353,
+        "emit": 0.397587
+       },
+       {
+        "name": "k14",
+        "ok": true,
+        "wallMs": 50.121596,
+        "parse": 21.46596,
+        "initialize": 1.94286,
+        "compile": 1.332709,
+        "optimize": 23.487407,
+        "emit": 1.363205
+       },
+       {
+        "name": "k15",
+        "ok": true,
+        "wallMs": 56.564914,
+        "parse": 31.491364,
+        "initialize": 2.577496,
+        "compile": 1.971883,
+        "optimize": 19.218068,
+        "emit": 0.322006
+       },
+       {
+        "name": "k16",
+        "ok": true,
+        "wallMs": 51.422255,
+        "parse": 29.233442,
+        "initialize": 3.290607,
+        "compile": 1.51123,
+        "optimize": 16.502506,
+        "emit": 0.329671
+       },
+       {
+        "name": "k17",
+        "ok": false,
+        "wallMs": 30.17047,
+        "parse": 24.777927,
+        "initialize": 2.974241,
+        "compile": 1.954391,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k18",
+        "ok": true,
+        "wallMs": 60.363692,
+        "parse": 34.38668,
+        "initialize": 2.654328,
+        "compile": 2.174739,
+        "optimize": 20.144323,
+        "emit": 0.411252
+       },
+       {
+        "name": "k19",
+        "ok": true,
+        "wallMs": 48.122252,
+        "parse": 27.056549,
+        "initialize": 2.056951,
+        "compile": 1.552888,
+        "optimize": 16.638107,
+        "emit": 0.328629
+       }
+      ]
+     }
+    }
+   ],
+   "at": {
+    "at": "2026-11-02T04:32:06.134Z",
+    "loadavg": [
+     2.31,
+     1.85,
+     3.43
+    ],
+    "memAvailable": 84694831104
+   }
+  },
+  {
+   "arm": "p05",
+   "mode": "thread",
+   "reps": [
+    {
+     "rep": 1,
+     "cold": {
+      "poolMs": 284.8770420000001,
+      "error": "limit"
+     },
+     "warm": {
+      "poolMs": 259.7164449999982,
+      "error": "limit"
+     }
+    },
+    {
+     "rep": 2,
+     "cold": {
+      "poolMs": 287.7477710000021,
+      "error": "limit"
+     },
+     "warm": {
+      "poolMs": 246.68777500000215,
+      "error": "limit"
+     }
+    },
+    {
+     "rep": 3,
+     "cold": {
+      "poolMs": 295.7460110000029,
+      "error": "limit"
+     },
+     "warm": {
+      "poolMs": 245.35604799999783,
+      "error": "limit"
+     }
+    }
+   ],
+   "at": {
+    "at": "2026-11-02T04:32:07.880Z",
+    "loadavg": [
+     2.31,
+     1.85,
+     3.43
+    ],
+    "memAvailable": 84652351488
+   }
+  },
+  {
+   "arm": "ramp",
+   "mode": "thread",
+   "ramp": [
+    {
+     "parallel": 1,
+     "checks": 78,
+     "fails": 0,
+     "checksPerS": 7.720720233626919,
+     "poolMs": {
+      "n": 78,
+      "p50": 128.2599740000005,
+      "p95": 142.92178099999728,
+      "max": 148.43786900000123
+     },
+     "checkMs": {
+      "n": 78,
+      "p50": 41.310882,
+      "p95": 47.076484,
+      "max": 49.095485
+     },
+     "load": 4.04
+    },
+    {
+     "parallel": 4,
+     "checks": 112,
+     "fails": 0,
+     "checksPerS": 10.799077298526607,
+     "poolMs": {
+      "n": 112,
+      "p50": 358.5714599999992,
+      "p95": 432.8362760000018,
+      "max": 444.4606349999958
+     },
+     "checkMs": {
+      "n": 112,
+      "p50": 43.444237,
+      "p95": 49.05422,
+      "max": 54.74263
+     },
+     "load": 5.8
+    },
+    {
+     "parallel": 8,
+     "checks": 119,
+     "fails": 0,
+     "checksPerS": 11.107602321176042,
+     "poolMs": {
+      "n": 119,
+      "p50": 721.7532040000006,
+      "p95": 761.309715000003,
+      "max": 770.6055669999987
+     },
+     "checkMs": {
+      "n": 119,
+      "p50": 41.259328,
+      "p95": 49.033603,
+      "max": 52.668388
+     },
+     "load": 7.1
+    },
+    {
+     "parallel": 16,
+     "checks": 128,
+     "fails": 0,
+     "checksPerS": 11.222454283103117,
+     "poolMs": {
+      "n": 128,
+      "p50": 1458.2867960000003,
+      "p95": 1579.1843269999954,
+      "max": 1592.6606479999973
+     },
+     "checkMs": {
+      "n": 128,
+      "p50": 39.745255,
+      "p95": 43.955766,
+      "max": 46.668772
+     },
+     "load": 6.54
+    },
+    {
+     "parallel": 32,
+     "checks": 129,
+     "fails": 0,
+     "checksPerS": 10.927709275857026,
+     "poolMs": {
+      "n": 129,
+      "p50": 2786.9924230000033,
+      "p95": 3194.966137999989,
+      "max": 3219.0150920000015
+     },
+     "checkMs": {
+      "n": 129,
+      "p50": 39.605316,
+      "p95": 43.801191,
+      "max": 45.779977
+     },
+     "load": 5.83
+    },
+    {
+     "parallel": 48,
+     "checks": 144,
+     "fails": 0,
+     "checksPerS": 10.389840059798535,
+     "poolMs": {
+      "n": 144,
+      "p50": 4493.875906999994,
+      "p95": 5038.350343999991,
+      "max": 5083.585156999994
+     },
+     "checkMs": {
+      "n": 144,
+      "p50": 40.119901,
+      "p95": 44.255253,
+      "max": 46.980384
+     },
+     "load": 4.94
+    }
+   ],
+   "at": {
+    "at": "2026-11-02T04:33:24.773Z",
+    "loadavg": [
+     4.94,
+     3.12,
+     3.77
+    ],
+    "memAvailable": 84076179456
+   }
+  },
+  {
+   "arm": "p01",
+   "mode": "process",
+   "reps": [
+    {
+     "rep": 1,
+     "cold": {
+      "poolMs": 1793.6393390000012,
+      "reason": "measured",
+      "workload": "p01",
+      "cell": 3421491,
+      "cellMs": 1659.029146,
+      "instantiateUs": {
+       "n": 2000,
+       "median": 47.127,
+       "p95": 93.914,
+       "min": 14.787,
+       "max": 2218.431
+      },
+      "resident": {
+       "100": {
+        "live": 100,
+        "bytesPerInstanceRss": 10485.76,
+        "bytesPerInstanceArrayBuffers": 48
+       },
+       "1000": {
+        "live": 1000,
+        "bytesPerInstanceRss": 9814.016,
+        "bytesPerInstanceArrayBuffers": 48
+       },
+       "5000": {
+        "live": 5000,
+        "bytesPerInstanceRss": 10171.1872,
+        "bytesPerInstanceArrayBuffers": 48
+       }
+      }
+     },
+     "warm": null
+    },
+    {
+     "rep": 2,
+     "cold": {
+      "poolMs": 1804.6737529999955,
+      "reason": "measured",
+      "workload": "p01",
+      "cell": 3421629,
+      "cellMs": 1674.006026,
+      "instantiateUs": {
+       "n": 2000,
+       "median": 48.6,
+       "p95": 92.251,
+       "min": 14.457,
+       "max": 2293.891
+      },
+      "resident": {
+       "100": {
+        "live": 100,
+        "bytesPerInstanceRss": 13107.2,
+        "bytesPerInstanceArrayBuffers": 48
+       },
+       "1000": {
+        "live": 1000,
+        "bytesPerInstanceRss": 10469.376,
+        "bytesPerInstanceArrayBuffers": 48
+       },
+       "5000": {
+        "live": 5000,
+        "bytesPerInstanceRss": 10118.7584,
+        "bytesPerInstanceArrayBuffers": 48
+       }
+      }
+     },
+     "warm": null
+    },
+    {
+     "rep": 3,
+     "cold": {
+      "poolMs": 1813.315705000001,
+      "reason": "measured",
+      "workload": "p01",
+      "cell": 3421696,
+      "cellMs": 1679.956038,
+      "instantiateUs": {
+       "n": 2000,
+       "median": 48.55,
+       "p95": 96.318,
+       "min": 15.118,
+       "max": 2510.241
+      },
+      "resident": {
+       "100": {
+        "live": 100,
+        "bytesPerInstanceRss": 13107.2,
+        "bytesPerInstanceArrayBuffers": 48
+       },
+       "1000": {
+        "live": 1000,
+        "bytesPerInstanceRss": 9654.272,
+        "bytesPerInstanceArrayBuffers": 48
+       },
+       "5000": {
+        "live": 5000,
+        "bytesPerInstanceRss": 10066.3296,
+        "bytesPerInstanceArrayBuffers": 48
+       }
+      }
+     },
+     "warm": null
+    }
+   ],
+   "at": {
+    "at": "2026-11-02T04:33:30.381Z",
+    "loadavg": [
+     4.7,
+     3.1,
+     3.76
+    ],
+    "memAvailable": 83749912576
+   }
+  },
+  {
+   "arm": "p02",
+   "mode": "process",
+   "reps": [
+    {
+     "rep": 1,
+     "cold": {
+      "poolMs": 2950.471464000002,
+      "reason": "measured",
+      "workload": "p02",
+      "cell": 3421771,
+      "cellMs": 2818.633306,
+      "importMs": 1804.876285,
+      "heapUsed": 107980232,
+      "rss": 485564416,
+      "runs": [
+       {
+        "name": "k00",
+        "ok": true,
+        "wallMs": 160.896895,
+        "parse": 76.553972,
+        "initialize": 7.630209,
+        "compile": 13.363523,
+        "optimize": 52.215126,
+        "emit": 4.914998
+       },
+       {
+        "name": "k01",
+        "ok": true,
+        "wallMs": 78.195778,
+        "parse": 50.377498,
+        "initialize": 4.03119,
+        "compile": 2.730259,
+        "optimize": 19.316584,
+        "emit": 0.341403
+       },
+       {
+        "name": "k02",
+        "ok": true,
+        "wallMs": 60.420621,
+        "parse": 38.25088,
+        "initialize": 3.187286,
+        "compile": 1.803783,
+        "optimize": 15.891467,
+        "emit": 0.445596
+       },
+       {
+        "name": "k03",
+        "ok": true,
+        "wallMs": 49.391563,
+        "parse": 25.780665,
+        "initialize": 2.679646,
+        "compile": 2.066289,
+        "optimize": 17.519484,
+        "emit": 0.597127
+       },
+       {
+        "name": "k04",
+        "ok": true,
+        "wallMs": 47.887377,
+        "parse": 23.496197,
+        "initialize": 4.157835,
+        "compile": 2.108547,
+        "optimize": 17.040747,
+        "emit": 0.393088
+       },
+       {
+        "name": "k05",
+        "ok": false,
+        "wallMs": 30.056866,
+        "parse": 23.601945,
+        "initialize": 2.539195,
+        "compile": 2.769182,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k06",
+        "ok": true,
+        "wallMs": 46.702891,
+        "parse": 22.718244,
+        "initialize": 2.027728,
+        "compile": 2.130237,
+        "optimize": 18.666309,
+        "emit": 0.299515
+       },
+       {
+        "name": "k07",
+        "ok": true,
+        "wallMs": 43.022712,
+        "parse": 22.168562,
+        "initialize": 2.536861,
+        "compile": 1.411475,
+        "optimize": 15.621026,
+        "emit": 0.419929
+       },
+       {
+        "name": "k08",
+        "ok": true,
+        "wallMs": 42.294392,
+        "parse": 23.836823,
+        "initialize": 2.011036,
+        "compile": 1.528002,
+        "optimize": 13.848602,
+        "emit": 0.274739
+       },
+       {
+        "name": "k09",
+        "ok": true,
+        "wallMs": 61.25104,
+        "parse": 24.542476,
+        "initialize": 20.059651,
+        "compile": 1.388623,
+        "optimize": 14.038764,
+        "emit": 0.358034
+       },
+       {
+        "name": "k10",
+        "ok": true,
+        "wallMs": 42.122564,
+        "parse": 21.597132,
+        "initialize": 3.253579,
+        "compile": 1.741778,
+        "optimize": 14.632915,
+        "emit": 0.370396
+       },
+       {
+        "name": "k11",
+        "ok": false,
+        "wallMs": 26.267404,
+        "parse": 22.352447,
+        "initialize": 1.846211,
+        "compile": 1.509147,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k12",
+        "ok": true,
+        "wallMs": 38.942201,
+        "parse": 19.683396,
+        "initialize": 1.696133,
+        "compile": 1.453684,
+        "optimize": 15.373478,
+        "emit": 0.286942
+       },
+       {
+        "name": "k13",
+        "ok": true,
+        "wallMs": 41.032925,
+        "parse": 21.282742,
+        "initialize": 1.898598,
+        "compile": 1.517602,
+        "optimize": 15.515351,
+        "emit": 0.284717
+       },
+       {
+        "name": "k14",
+        "ok": true,
+        "wallMs": 42.921525,
+        "parse": 21.219409,
+        "initialize": 1.825373,
+        "compile": 1.616896,
+        "optimize": 17.158225,
+        "emit": 0.355298
+       },
+       {
+        "name": "k15",
+        "ok": true,
+        "wallMs": 40.77125,
+        "parse": 19.218303,
+        "initialize": 1.743771,
+        "compile": 1.542528,
+        "optimize": 17.507232,
+        "emit": 0.325894
+       },
+       {
+        "name": "k16",
+        "ok": true,
+        "wallMs": 46.525453,
+        "parse": 24.511081,
+        "initialize": 1.577373,
+        "compile": 1.677168,
+        "optimize": 17.809702,
+        "emit": 0.422904
+       },
+       {
+        "name": "k17",
+        "ok": false,
+        "wallMs": 24.632765,
+        "parse": 20.466667,
+        "initialize": 1.825352,
+        "compile": 1.803041,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k18",
+        "ok": true,
+        "wallMs": 42.752341,
+        "parse": 21.002388,
+        "initialize": 1.758519,
+        "compile": 1.480593,
+        "optimize": 17.529062,
+        "emit": 0.327286
+       },
+       {
+        "name": "k19",
+        "ok": true,
+        "wallMs": 46.996195,
+        "parse": 22.095882,
+        "initialize": 3.627522,
+        "compile": 2.087178,
+        "optimize": 18.397592,
+        "emit": 0.364786
+       }
+      ]
+     },
+     "warm": {
+      "poolMs": 821.5107569999964,
+      "reason": "measured",
+      "workload": "p02",
+      "cell": 3421771,
+      "cellMs": 744.769363,
+      "importMs": null,
+      "heapUsed": 95248464,
+      "rss": 504741888,
+      "runs": [
+       {
+        "name": "k00",
+        "ok": true,
+        "wallMs": 35.042845,
+        "parse": 19.427314,
+        "initialize": 1.886135,
+        "compile": 1.258622,
+        "optimize": 11.783315,
+        "emit": 0.245354
+       },
+       {
+        "name": "k01",
+        "ok": true,
+        "wallMs": 37.708104,
+        "parse": 19.803743,
+        "initialize": 3.161758,
+        "compile": 1.173465,
+        "optimize": 12.767729,
+        "emit": 0.379584
+       },
+       {
+        "name": "k02",
+        "ok": true,
+        "wallMs": 42.213903,
+        "parse": 25.54997,
+        "initialize": 1.720739,
+        "compile": 1.162535,
+        "optimize": 12.853869,
+        "emit": 0.479339
+       },
+       {
+        "name": "k03",
+        "ok": true,
+        "wallMs": 42.390631,
+        "parse": 25.533713,
+        "initialize": 1.607068,
+        "compile": 1.054104,
+        "optimize": 13.409478,
+        "emit": 0.267225
+       },
+       {
+        "name": "k04",
+        "ok": true,
+        "wallMs": 38.60726,
+        "parse": 20.928776,
+        "initialize": 1.779828,
+        "compile": 1.158146,
+        "optimize": 14.056978,
+        "emit": 0.274819
+       },
+       {
+        "name": "k05",
+        "ok": false,
+        "wallMs": 24.542708,
+        "parse": 20.084622,
+        "initialize": 2.538423,
+        "compile": 1.52715,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k06",
+        "ok": true,
+        "wallMs": 41.427816,
+        "parse": 21.725348,
+        "initialize": 2.114087,
+        "compile": 1.138219,
+        "optimize": 15.672772,
+        "emit": 0.362702
+       },
+       {
+        "name": "k07",
+        "ok": true,
+        "wallMs": 35.657114,
+        "parse": 19.572007,
+        "initialize": 1.779498,
+        "compile": 0.963656,
+        "optimize": 12.638159,
+        "emit": 0.30242
+       },
+       {
+        "name": "k08",
+        "ok": true,
+        "wallMs": 40.986418,
+        "parse": 22.245684,
+        "initialize": 4.158005,
+        "compile": 1.109165,
+        "optimize": 12.502888,
+        "emit": 0.401464
+       },
+       {
+        "name": "k09",
+        "ok": true,
+        "wallMs": 36.965037,
+        "parse": 19.690573,
+        "initialize": 1.679682,
+        "compile": 1.012355,
+        "optimize": 13.615119,
+        "emit": 0.260623
+       },
+       {
+        "name": "k10",
+        "ok": true,
+        "wallMs": 40.362893,
+        "parse": 23.820112,
+        "initialize": 1.541446,
+        "compile": 0.971871,
+        "optimize": 13.292311,
+        "emit": 0.263778
+       },
+       {
+        "name": "k11",
+        "ok": false,
+        "wallMs": 24.790517,
+        "parse": 21.750084,
+        "initialize": 1.626224,
+        "compile": 1.042372,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k12",
+        "ok": true,
+        "wallMs": 38.176552,
+        "parse": 19.494052,
+        "initialize": 1.806889,
+        "compile": 1.333441,
+        "optimize": 14.780529,
+        "emit": 0.286641
+       },
+       {
+        "name": "k13",
+        "ok": true,
+        "wallMs": 37.97606,
+        "parse": 19.224696,
+        "initialize": 1.653363,
+        "compile": 1.004812,
+        "optimize": 15.16431,
+        "emit": 0.389462
+       },
+       {
+        "name": "k14",
+        "ok": true,
+        "wallMs": 40.766621,
+        "parse": 20.891115,
+        "initialize": 1.807159,
+        "compile": 1.123912,
+        "optimize": 15.865649,
+        "emit": 0.606524
+       },
+       {
+        "name": "k15",
+        "ok": true,
+        "wallMs": 38.685655,
+        "parse": 19.272191,
+        "initialize": 1.646501,
+        "compile": 1.119084,
+        "optimize": 15.900103,
+        "emit": 0.322387
+       },
+       {
+        "name": "k16",
+        "ok": true,
+        "wallMs": 39.003976,
+        "parse": 19.443596,
+        "initialize": 1.613289,
+        "compile": 1.275814,
+        "optimize": 15.933485,
+        "emit": 0.321847
+       },
+       {
+        "name": "k17",
+        "ok": false,
+        "wallMs": 25.706625,
+        "parse": 22.38548,
+        "initialize": 1.773987,
+        "compile": 1.123402,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k18",
+        "ok": true,
+        "wallMs": 41.381251,
+        "parse": 20.965528,
+        "initialize": 1.594916,
+        "compile": 1.554631,
+        "optimize": 16.518349,
+        "emit": 0.325113
+       },
+       {
+        "name": "k19",
+        "ok": true,
+        "wallMs": 42.110622,
+        "parse": 22.312348,
+        "initialize": 1.612518,
+        "compile": 1.331968,
+        "optimize": 16.117105,
+        "emit": 0.326184
+       }
+      ]
+     }
+    },
+    {
+     "rep": 2,
+     "cold": {
+      "poolMs": 3018.077265,
+      "reason": "measured",
+      "workload": "p02",
+      "cell": 3421912,
+      "cellMs": 2889.655537,
+      "importMs": 1857.460721,
+      "heapUsed": 109143016,
+      "rss": 478998528,
+      "runs": [
+       {
+        "name": "k00",
+        "ok": true,
+        "wallMs": 156.955522,
+        "parse": 71.715389,
+        "initialize": 7.799683,
+        "compile": 13.914043,
+        "optimize": 52.472263,
+        "emit": 4.701011
+       },
+       {
+        "name": "k01",
+        "ok": true,
+        "wallMs": 80.258602,
+        "parse": 54.151088,
+        "initialize": 3.747243,
+        "compile": 2.151837,
+        "optimize": 18.857363,
+        "emit": 0.342275
+       },
+       {
+        "name": "k02",
+        "ok": true,
+        "wallMs": 63.341944,
+        "parse": 41.509058,
+        "initialize": 3.162941,
+        "compile": 1.810656,
+        "optimize": 15.55872,
+        "emit": 0.439835
+       },
+       {
+        "name": "k03",
+        "ok": true,
+        "wallMs": 50.424437,
+        "parse": 27.133781,
+        "initialize": 2.55802,
+        "compile": 2.145786,
+        "optimize": 17.381258,
+        "emit": 0.390814
+       },
+       {
+        "name": "k04",
+        "ok": true,
+        "wallMs": 48.618,
+        "parse": 23.329816,
+        "initialize": 5.266819,
+        "compile": 1.966213,
+        "optimize": 17.011803,
+        "emit": 0.392647
+       },
+       {
+        "name": "k05",
+        "ok": false,
+        "wallMs": 31.471127,
+        "parse": 26.119909,
+        "initialize": 2.267071,
+        "compile": 2.149833,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k06",
+        "ok": true,
+        "wallMs": 45.495654,
+        "parse": 22.130144,
+        "initialize": 1.947228,
+        "compile": 2.062682,
+        "optimize": 18.284021,
+        "emit": 0.305737
+       },
+       {
+        "name": "k07",
+        "ok": true,
+        "wallMs": 43.340491,
+        "parse": 22.924993,
+        "initialize": 3.721366,
+        "compile": 1.400314,
+        "optimize": 13.989413,
+        "emit": 0.432671
+       },
+       {
+        "name": "k08",
+        "ok": true,
+        "wallMs": 43.520244,
+        "parse": 25.087986,
+        "initialize": 1.957167,
+        "compile": 1.804554,
+        "optimize": 13.54562,
+        "emit": 0.279337
+       },
+       {
+        "name": "k09",
+        "ok": true,
+        "wallMs": 64.438426,
+        "parse": 44.917645,
+        "initialize": 2.163369,
+        "compile": 1.503807,
+        "optimize": 14.503375,
+        "emit": 0.366199
+       },
+       {
+        "name": "k10",
+        "ok": true,
+        "wallMs": 42.206149,
+        "parse": 21.353791,
+        "initialize": 2.103318,
+        "compile": 1.682958,
+        "optimize": 16.148874,
+        "emit": 0.37227
+       },
+       {
+        "name": "k11",
+        "ok": false,
+        "wallMs": 26.889527,
+        "parse": 23.116438,
+        "initialize": 1.706433,
+        "compile": 1.492405,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k12",
+        "ok": true,
+        "wallMs": 40.83071,
+        "parse": 21.216223,
+        "initialize": 1.710349,
+        "compile": 1.477929,
+        "optimize": 15.665158,
+        "emit": 0.284708
+       },
+       {
+        "name": "k13",
+        "ok": true,
+        "wallMs": 44.42462,
+        "parse": 24.536419,
+        "initialize": 1.809363,
+        "compile": 1.640079,
+        "optimize": 15.645412,
+        "emit": 0.285489
+       },
+       {
+        "name": "k14",
+        "ok": true,
+        "wallMs": 44.038805,
+        "parse": 22.263677,
+        "initialize": 1.74856,
+        "compile": 1.609152,
+        "optimize": 17.329402,
+        "emit": 0.349057
+       },
+       {
+        "name": "k15",
+        "ok": true,
+        "wallMs": 45.792334,
+        "parse": 23.736475,
+        "initialize": 1.914026,
+        "compile": 1.511801,
+        "optimize": 17.849606,
+        "emit": 0.32388
+       },
+       {
+        "name": "k16",
+        "ok": true,
+        "wallMs": 47.670726,
+        "parse": 25.367791,
+        "initialize": 1.95848,
+        "compile": 2.049448,
+        "optimize": 17.305838,
+        "emit": 0.433894
+       },
+       {
+        "name": "k17",
+        "ok": false,
+        "wallMs": 24.09595,
+        "parse": 19.833286,
+        "initialize": 2.015565,
+        "compile": 1.707113,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k18",
+        "ok": true,
+        "wallMs": 42.707008,
+        "parse": 20.588709,
+        "initialize": 2.868806,
+        "compile": 1.43543,
+        "optimize": 16.81547,
+        "emit": 0.333888
+       },
+       {
+        "name": "k19",
+        "ok": true,
+        "wallMs": 45.156968,
+        "parse": 22.648127,
+        "initialize": 2.251472,
+        "compile": 1.887327,
+        "optimize": 17.591928,
+        "emit": 0.33453
+       }
+      ]
+     },
+     "warm": {
+      "poolMs": 828.5597260000068,
+      "reason": "measured",
+      "workload": "p02",
+      "cell": 3421912,
+      "cellMs": 750.141574,
+      "importMs": null,
+      "heapUsed": 92261928,
+      "rss": 479526912,
+      "runs": [
+       {
+        "name": "k00",
+        "ok": true,
+        "wallMs": 35.432909,
+        "parse": 19.184457,
+        "initialize": 2.417259,
+        "compile": 1.237303,
+        "optimize": 11.781481,
+        "emit": 0.230848
+       },
+       {
+        "name": "k01",
+        "ok": true,
+        "wallMs": 39.347532,
+        "parse": 21.461656,
+        "initialize": 1.977214,
+        "compile": 2.052593,
+        "optimize": 12.919761,
+        "emit": 0.349858
+       },
+       {
+        "name": "k02",
+        "ok": true,
+        "wallMs": 38.949064,
+        "parse": 21.274496,
+        "initialize": 1.713455,
+        "compile": 1.212246,
+        "optimize": 13.821221,
+        "emit": 0.460673
+       },
+       {
+        "name": "k03",
+        "ok": true,
+        "wallMs": 40.330703,
+        "parse": 22.996363,
+        "initialize": 1.706973,
+        "compile": 1.074241,
+        "optimize": 13.761891,
+        "emit": 0.262897
+       },
+       {
+        "name": "k04",
+        "ok": true,
+        "wallMs": 39.092479,
+        "parse": 20.392023,
+        "initialize": 1.884793,
+        "compile": 1.157494,
+        "optimize": 14.95932,
+        "emit": 0.272766
+       },
+       {
+        "name": "k05",
+        "ok": false,
+        "wallMs": 24.386258,
+        "parse": 19.853558,
+        "initialize": 2.769953,
+        "compile": 1.334813,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k06",
+        "ok": true,
+        "wallMs": 41.791461,
+        "parse": 22.219185,
+        "initialize": 2.082239,
+        "compile": 1.162464,
+        "optimize": 15.58019,
+        "emit": 0.353365
+       },
+       {
+        "name": "k07",
+        "ok": true,
+        "wallMs": 36.587708,
+        "parse": 20.418177,
+        "initialize": 1.809143,
+        "compile": 1.002427,
+        "optimize": 12.641876,
+        "emit": 0.269981
+       },
+       {
+        "name": "k08",
+        "ok": true,
+        "wallMs": 40.708584,
+        "parse": 23.324258,
+        "initialize": 3.241637,
+        "compile": 1.008048,
+        "optimize": 12.246183,
+        "emit": 0.365848
+       },
+       {
+        "name": "k09",
+        "ok": true,
+        "wallMs": 36.601002,
+        "parse": 20.120145,
+        "initialize": 1.671968,
+        "compile": 1.012215,
+        "optimize": 12.981224,
+        "emit": 0.247008
+       },
+       {
+        "name": "k10",
+        "ok": true,
+        "wallMs": 39.415698,
+        "parse": 22.498574,
+        "initialize": 2.029441,
+        "compile": 0.972131,
+        "optimize": 13.199208,
+        "emit": 0.251326
+       },
+       {
+        "name": "k11",
+        "ok": false,
+        "wallMs": 24.671958,
+        "parse": 19.673295,
+        "initialize": 2.517295,
+        "compile": 1.884082,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k12",
+        "ok": true,
+        "wallMs": 39.193226,
+        "parse": 19.86708,
+        "initialize": 3.016871,
+        "compile": 1.263091,
+        "optimize": 14.168454,
+        "emit": 0.31337
+       },
+       {
+        "name": "k13",
+        "ok": true,
+        "wallMs": 39.774924,
+        "parse": 20.652829,
+        "initialize": 2.048095,
+        "compile": 1.117881,
+        "optimize": 14.916972,
+        "emit": 0.376517
+       },
+       {
+        "name": "k14",
+        "ok": true,
+        "wallMs": 40.73344,
+        "parse": 21.019617,
+        "initialize": 1.676717,
+        "compile": 1.204843,
+        "optimize": 15.809686,
+        "emit": 0.614689
+       },
+       {
+        "name": "k15",
+        "ok": true,
+        "wallMs": 40.86849,
+        "parse": 20.55621,
+        "initialize": 2.495054,
+        "compile": 1.082385,
+        "optimize": 15.983899,
+        "emit": 0.317809
+       },
+       {
+        "name": "k16",
+        "ok": true,
+        "wallMs": 39.372078,
+        "parse": 19.729219,
+        "initialize": 1.584577,
+        "compile": 1.207969,
+        "optimize": 16.124659,
+        "emit": 0.307399
+       },
+       {
+        "name": "k17",
+        "ok": false,
+        "wallMs": 28.433698,
+        "parse": 25.290537,
+        "initialize": 1.626353,
+        "compile": 1.078178,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k18",
+        "ok": true,
+        "wallMs": 42.585031,
+        "parse": 20.283698,
+        "initialize": 3.508681,
+        "compile": 1.543371,
+        "optimize": 16.498983,
+        "emit": 0.312489
+       },
+       {
+        "name": "k19",
+        "ok": true,
+        "wallMs": 41.611457,
+        "parse": 21.439728,
+        "initialize": 1.837094,
+        "compile": 1.320085,
+        "optimize": 16.26506,
+        "emit": 0.313441
+       }
+      ]
+     }
+    },
+    {
+     "rep": 3,
+     "cold": {
+      "poolMs": 3043.6693749999977,
+      "reason": "measured",
+      "workload": "p02",
+      "cell": 3422111,
+      "cellMs": 2912.474847,
+      "importMs": 1901.182696,
+      "heapUsed": 109418880,
+      "rss": 478486528,
+      "runs": [
+       {
+        "name": "k00",
+        "ok": true,
+        "wallMs": 157.342652,
+        "parse": 72.345651,
+        "initialize": 7.609411,
+        "compile": 13.524772,
+        "optimize": 52.774823,
+        "emit": 5.057842
+       },
+       {
+        "name": "k01",
+        "ok": true,
+        "wallMs": 78.375963,
+        "parse": 50.628661,
+        "initialize": 4.019999,
+        "compile": 3.21651,
+        "optimize": 18.808342,
+        "emit": 0.3401
+       },
+       {
+        "name": "k02",
+        "ok": true,
+        "wallMs": 61.739225,
+        "parse": 38.86671,
+        "initialize": 3.065651,
+        "compile": 2.123324,
+        "optimize": 16.231648,
+        "emit": 0.509604
+       },
+       {
+        "name": "k03",
+        "ok": true,
+        "wallMs": 50.504297,
+        "parse": 27.378422,
+        "initialize": 2.510662,
+        "compile": 2.122693,
+        "optimize": 17.196616,
+        "emit": 0.396014
+       },
+       {
+        "name": "k04",
+        "ok": true,
+        "wallMs": 48.083731,
+        "parse": 23.369677,
+        "initialize": 4.097312,
+        "compile": 2.084473,
+        "optimize": 17.482075,
+        "emit": 0.385385
+       },
+       {
+        "name": "k05",
+        "ok": false,
+        "wallMs": 31.269644,
+        "parse": 23.989947,
+        "initialize": 4.122469,
+        "compile": 2.174961,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k06",
+        "ok": true,
+        "wallMs": 45.055238,
+        "parse": 21.616683,
+        "initialize": 1.987994,
+        "compile": 2.029571,
+        "optimize": 18.389857,
+        "emit": 0.317378
+       },
+       {
+        "name": "k07",
+        "ok": true,
+        "wallMs": 41.761546,
+        "parse": 22.569391,
+        "initialize": 2.113276,
+        "compile": 1.566963,
+        "optimize": 14.084359,
+        "emit": 0.430468
+       },
+       {
+        "name": "k08",
+        "ok": true,
+        "wallMs": 40.807869,
+        "parse": 22.738407,
+        "initialize": 1.938702,
+        "compile": 1.566723,
+        "optimize": 13.478467,
+        "emit": 0.265392
+       },
+       {
+        "name": "k09",
+        "ok": true,
+        "wallMs": 59.900608,
+        "parse": 41.334724,
+        "initialize": 1.82417,
+        "compile": 1.416445,
+        "optimize": 14.047821,
+        "emit": 0.359576
+       },
+       {
+        "name": "k10",
+        "ok": true,
+        "wallMs": 41.335396,
+        "parse": 21.968735,
+        "initialize": 1.928123,
+        "compile": 1.655447,
+        "optimize": 14.882177,
+        "emit": 0.379333
+       },
+       {
+        "name": "k11",
+        "ok": false,
+        "wallMs": 27.199111,
+        "parse": 23.444847,
+        "initialize": 1.712373,
+        "compile": 1.495872,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k12",
+        "ok": true,
+        "wallMs": 39.262455,
+        "parse": 20.001976,
+        "initialize": 1.63514,
+        "compile": 1.464583,
+        "optimize": 15.45533,
+        "emit": 0.287312
+       },
+       {
+        "name": "k13",
+        "ok": true,
+        "wallMs": 41.848487,
+        "parse": 21.677137,
+        "initialize": 1.828789,
+        "compile": 1.530487,
+        "optimize": 15.976765,
+        "emit": 0.295708
+       },
+       {
+        "name": "k14",
+        "ok": true,
+        "wallMs": 43.55001,
+        "parse": 21.099639,
+        "initialize": 1.723974,
+        "compile": 2.847707,
+        "optimize": 16.78851,
+        "emit": 0.349778
+       },
+       {
+        "name": "k15",
+        "ok": true,
+        "wallMs": 41.557067,
+        "parse": 20.732967,
+        "initialize": 1.726259,
+        "compile": 1.472239,
+        "optimize": 16.873016,
+        "emit": 0.325243
+       },
+       {
+        "name": "k16",
+        "ok": true,
+        "wallMs": 44.51652,
+        "parse": 22.671294,
+        "initialize": 1.57565,
+        "compile": 1.697566,
+        "optimize": 17.632193,
+        "emit": 0.418516
+       },
+       {
+        "name": "k17",
+        "ok": false,
+        "wallMs": 24.620904,
+        "parse": 20.521492,
+        "initialize": 1.831214,
+        "compile": 1.731579,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k18",
+        "ok": true,
+        "wallMs": 46.495828,
+        "parse": 22.769363,
+        "initialize": 3.23775,
+        "compile": 1.85617,
+        "optimize": 17.389834,
+        "emit": 0.395052
+       },
+       {
+        "name": "k19",
+        "ok": true,
+        "wallMs": 45.527845,
+        "parse": 22.328624,
+        "initialize": 2.513387,
+        "compile": 2.017047,
+        "optimize": 17.710478,
+        "emit": 0.328038
+       }
+      ]
+     },
+     "warm": {
+      "poolMs": 828.0592060000054,
+      "reason": "measured",
+      "workload": "p02",
+      "cell": 3422111,
+      "cellMs": 753.444432,
+      "importMs": null,
+      "heapUsed": 98883184,
+      "rss": 499388416,
+      "runs": [
+       {
+        "name": "k00",
+        "ok": true,
+        "wallMs": 36.895509,
+        "parse": 20.893542,
+        "initialize": 1.856691,
+        "compile": 1.307102,
+        "optimize": 11.859236,
+        "emit": 0.235126
+       },
+       {
+        "name": "k01",
+        "ok": true,
+        "wallMs": 37.695041,
+        "parse": 21.090809,
+        "initialize": 1.747669,
+        "compile": 1.185006,
+        "optimize": 12.906406,
+        "emit": 0.356551
+       },
+       {
+        "name": "k02",
+        "ok": true,
+        "wallMs": 40.573244,
+        "parse": 23.564305,
+        "initialize": 1.748149,
+        "compile": 1.26814,
+        "optimize": 13.087221,
+        "emit": 0.469991
+       },
+       {
+        "name": "k03",
+        "ok": true,
+        "wallMs": 42.784742,
+        "parse": 25.521099,
+        "initialize": 1.726349,
+        "compile": 1.074952,
+        "optimize": 13.645115,
+        "emit": 0.258339
+       },
+       {
+        "name": "k04",
+        "ok": true,
+        "wallMs": 39.501628,
+        "parse": 21.776455,
+        "initialize": 1.770812,
+        "compile": 1.118372,
+        "optimize": 14.158416,
+        "emit": 0.264511
+       },
+       {
+        "name": "k05",
+        "ok": false,
+        "wallMs": 25.044248,
+        "parse": 20.568005,
+        "initialize": 2.733816,
+        "compile": 1.321979,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k06",
+        "ok": true,
+        "wallMs": 39.868247,
+        "parse": 20.088085,
+        "initialize": 2.188916,
+        "compile": 1.118502,
+        "optimize": 15.66074,
+        "emit": 0.354306
+       },
+       {
+        "name": "k07",
+        "ok": true,
+        "wallMs": 36.216901,
+        "parse": 20.04116,
+        "initialize": 1.859655,
+        "compile": 1.006535,
+        "optimize": 12.682121,
+        "emit": 0.255243
+       },
+       {
+        "name": "k08",
+        "ok": true,
+        "wallMs": 40.03195,
+        "parse": 21.905371,
+        "initialize": 3.938138,
+        "compile": 1.076385,
+        "optimize": 12.322193,
+        "emit": 0.366149
+       },
+       {
+        "name": "k09",
+        "ok": true,
+        "wallMs": 40.432513,
+        "parse": 19.937542,
+        "initialize": 1.777864,
+        "compile": 1.195755,
+        "optimize": 16.586786,
+        "emit": 0.260693
+       },
+       {
+        "name": "k10",
+        "ok": true,
+        "wallMs": 38.722805,
+        "parse": 22.056321,
+        "initialize": 1.553399,
+        "compile": 1.034527,
+        "optimize": 13.253259,
+        "emit": 0.31806
+       },
+       {
+        "name": "k11",
+        "ok": false,
+        "wallMs": 23.898555,
+        "parse": 20.533821,
+        "initialize": 1.66177,
+        "compile": 1.091923,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k12",
+        "ok": true,
+        "wallMs": 38.683252,
+        "parse": 20.665304,
+        "initialize": 1.691044,
+        "compile": 1.278229,
+        "optimize": 14.27897,
+        "emit": 0.273226
+       },
+       {
+        "name": "k13",
+        "ok": true,
+        "wallMs": 41.351807,
+        "parse": 19.591472,
+        "initialize": 2.716755,
+        "compile": 2.911786,
+        "optimize": 15.156806,
+        "emit": 0.375105
+       },
+       {
+        "name": "k14",
+        "ok": true,
+        "wallMs": 41.374629,
+        "parse": 19.909442,
+        "initialize": 2.721713,
+        "compile": 1.868282,
+        "optimize": 15.848508,
+        "emit": 0.594121
+       },
+       {
+        "name": "k15",
+        "ok": true,
+        "wallMs": 41.625033,
+        "parse": 20.849555,
+        "initialize": 3.013244,
+        "compile": 1.086293,
+        "optimize": 15.925982,
+        "emit": 0.308481
+       },
+       {
+        "name": "k16",
+        "ok": true,
+        "wallMs": 40.811615,
+        "parse": 19.716947,
+        "initialize": 2.319588,
+        "compile": 1.986071,
+        "optimize": 15.977737,
+        "emit": 0.308151
+       },
+       {
+        "name": "k17",
+        "ok": false,
+        "wallMs": 26.235435,
+        "parse": 21.963082,
+        "initialize": 2.299861,
+        "compile": 1.515999,
+        "optimize": 0,
+        "emit": 0
+       },
+       {
+        "name": "k18",
+        "ok": true,
+        "wallMs": 40.89498,
+        "parse": 19.908787,
+        "initialize": 1.934445,
+        "compile": 1.613961,
+        "optimize": 16.636198,
+        "emit": 0.370828
+       },
+       {
+        "name": "k19",
+        "ok": true,
+        "wallMs": 40.417966,
+        "parse": 19.891383,
+        "initialize": 1.971804,
+        "compile": 1.356964,
+        "optimize": 16.293593,
+        "emit": 0.372791
+       }
+      ]
+     }
+    }
+   ],
+   "at": {
+    "at": "2026-11-02T04:33:42.073Z",
+    "loadavg": [
+     4.21,
+     3.05,
+     3.73
+    ],
+    "memAvailable": 84103954432
+   }
+  },
+  {
+   "arm": "p05",
+   "mode": "process",
+   "reps": [
+    {
+     "rep": 1,
+     "cold": {
+      "poolMs": 279.34680100000696,
+      "error": "wasm_memory"
+     },
+     "warm": {
+      "poolMs": 245.58085100000608,
+      "error": "wasm_memory"
+     }
+    },
+    {
+     "rep": 2,
+     "cold": {
+      "poolMs": 296.96998800001165,
+      "error": "wasm_memory"
+     },
+     "warm": {
+      "poolMs": 209.66314499999862,
+      "error": "wasm_memory"
+     }
+    },
+    {
+     "rep": 3,
+     "cold": {
+      "poolMs": 265.31683399999747,
+      "error": "wasm_memory"
+     },
+     "warm": {
+      "poolMs": 213.1438039999921,
+      "error": "wasm_memory"
+     }
+    }
+   ],
+   "at": {
+    "at": "2026-11-02T04:33:43.701Z",
+    "loadavg": [
+     4.21,
+     3.05,
+     3.73
+    ],
+    "memAvailable": 84181557248
+   }
+  },
+  {
+   "arm": "ramp",
+   "mode": "process",
+   "ramp": [
+    {
+     "parallel": 1,
+     "checks": 87,
+     "fails": 0,
+     "checksPerS": 8.622645265479552,
+     "poolMs": {
+      "n": 87,
+      "p50": 114.90535499999532,
+      "p95": 124.89471799999592,
+      "max": 127.77200899999298
+     },
+     "checkMs": {
+      "n": 87,
+      "p50": 33.836431,
+      "p95": 35.369341,
+      "max": 36.405261
+     },
+     "load": 3.66
+    },
+    {
+     "parallel": 4,
+     "checks": 121,
+     "fails": 0,
+     "checksPerS": 11.794689397935876,
+     "poolMs": {
+      "n": 121,
+      "p50": 336.71692299999995,
+      "p95": 376.2545519999985,
+      "max": 382.1322849999997
+     },
+     "checkMs": {
+      "n": 121,
+      "p50": 33.899929,
+      "p95": 35.723628,
+      "max": 37.171783
+     },
+     "load": 3.41
+    },
+    {
+     "parallel": 8,
+     "checks": 121,
+     "fails": 0,
+     "checksPerS": 11.578090077881805,
+     "poolMs": {
+      "n": 121,
+      "p50": 697.695269000018,
+      "p95": 763.9894469999999,
+      "max": 770.7669560000068
+     },
+     "checkMs": {
+      "n": 121,
+      "p50": 33.845729,
+      "p95": 36.054643,
+      "max": 40.702767
+     },
+     "load": 3.12
+    },
+    {
+     "parallel": 16,
+     "checks": 128,
+     "fails": 0,
+     "checksPerS": 11.49675691904644,
+     "poolMs": {
+      "n": 128,
+      "p50": 1364.2677869999898,
+      "p95": 1561.8749059999827,
+      "max": 1570.0233759999974
+     },
+     "checkMs": {
+      "n": 128,
+      "p50": 33.746486,
+      "p95": 35.406263,
+      "max": 37.693181
+     },
+     "load": 3.18
+    },
+    {
+     "parallel": 32,
+     "checks": 132,
+     "fails": 0,
+     "checksPerS": 11.083916431985497,
+     "poolMs": {
+      "n": 132,
+      "p50": 2737.876436999999,
+      "p95": 3159.567498999997,
+      "max": 3197.8274039999815
+     },
+     "checkMs": {
+      "n": 132,
+      "p50": 33.824381,
+      "p95": 35.569416,
+      "max": 36.487106
+     },
+     "load": 3.34
+    },
+    {
+     "parallel": 48,
+     "checks": 144,
+     "fails": 0,
+     "checksPerS": 10.302034324031215,
+     "poolMs": {
+      "n": 144,
+      "p50": 4583.926431,
+      "p95": 5052.217275000003,
+      "max": 5069.362012000027
+     },
+     "checkMs": {
+      "n": 144,
+      "p50": 34.884167,
+      "p95": 38.804181,
+      "max": 42.755123
+     },
+     "load": 2.93
+    }
+   ],
+   "at": {
+    "at": "2026-11-02T04:35:00.229Z",
+    "loadavg": [
+     2.93,
+     2.91,
+     3.62
+    ],
+    "memAvailable": 84116598784
+   }
+  }
+ ],
+ "native": {
+  "p05SingleThreaded": {
+   "five": {
+    "n": 20,
+    "p50": 15.774654000008013,
+    "p95": 17.300963000016054,
+    "max": 17.70466000001761
+   },
+   "fifty": {
+    "n": 20,
+    "p50": 36.02338900000905,
+    "p95": 38.167290999990655,
+    "max": 38.92427499999758
+   }
+  },
+  "rampCheckDirect": {
+   "n": 20,
+   "p50": 38.073297999973875,
+   "p95": 39.28532299998915,
+   "max": 39.683992999984184
+  }
+ },
+ "after": {
+  "at": "2026-11-02T04:35:02.209Z",
+  "loadavg": [
+   2.93,
+   2.91,
+   3.62
+  ],
+  "memAvailable": 83995951104
+ }
+}

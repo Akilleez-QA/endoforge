@@ -9,7 +9,7 @@ const metadata = { workcell: parentPort ? threadId : process.pid,
   resourceLimits: parentPort ? resourceLimits : options.resourceLimits, wasmMemoryMaxMb };
 const nativeInstantiate = WebAssembly.instantiate;
 let undiciTimer;
-await Promise.race([new Promise(resolve => {
+if (Number(process.versions.undici?.split('.')[0]) < 8) await Promise.race([new Promise(resolve => {
   WebAssembly.instantiate = (...args) => {
     WebAssembly.instantiate = nativeInstantiate;
     const pending = nativeInstantiate(...args);
@@ -40,3 +40,4 @@ const checkWasm = installWasmLimit(wasmMemoryMaxMb, error => {
       report: null, ...metadata });
   }
 });
+send({ type: 'ready' });

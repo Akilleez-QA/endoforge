@@ -1,0 +1,797 @@
+{
+  "precommit": "1ab7e8107b7cf22f46cb27a24833d730a05acc23c102019623808f211e6c011b",
+  "testDouble": false,
+  "wallMs": 196784.236731,
+  "cohorts": [
+    {
+      "isolation": "thread",
+      "cohort": "P21",
+      "wallMs": 136848.458297,
+      "count": 20,
+      "promoted": 18,
+      "stages": {
+        "read": {
+          "n": 20,
+          "p50": 0.6926290000000108,
+          "p95": 0.7309600000000103
+        },
+        "generate": {
+          "n": 20,
+          "p50": 66079.741426,
+          "p95": 87201.34879399999
+        },
+        "freeze": {
+          "n": 20,
+          "p50": 199.6940969999996,
+          "p95": 219.3092719999986
+        },
+        "compile": {
+          "n": 20,
+          "p50": 672.150959000006,
+          "p95": 793.0974100000021
+        },
+        "gate": {
+          "n": 20,
+          "p50": 224.6564980000112,
+          "p95": 251.8026830000017
+        },
+        "ledger": {
+          "n": 20,
+          "p50": 94.89433300000383,
+          "p95": 104.94457200000761
+        },
+        "promote": {
+          "n": 20,
+          "p50": 54.7853380000015,
+          "p95": 60.072755999994115
+        },
+        "total": {
+          "n": 20,
+          "p50": 67256.59491100001,
+          "p95": 88461.81846499999
+        }
+      }
+    },
+    {
+      "isolation": "thread",
+      "cohort": "P19",
+      "wallMs": 59843.100152,
+      "count": 10,
+      "promoted": 10,
+      "stages": {
+        "read": {
+          "n": 10,
+          "p50": 0.00008999998681247234,
+          "p95": 0.0005609999934677035
+        },
+        "generate": {
+          "n": 10,
+          "p50": 48723.797295,
+          "p95": 58838.973329
+        },
+        "freeze": {
+          "n": 10,
+          "p50": 189.3988820000086,
+          "p95": 199.35346199999913
+        },
+        "compile": {
+          "n": 10,
+          "p50": 475.84034500000416,
+          "p95": 539.7300010000181
+        },
+        "gate": {
+          "n": 10,
+          "p50": 193.6882699999842,
+          "p95": 223.08355999999912
+        },
+        "ledger": {
+          "n": 10,
+          "p50": 84.79449700002442,
+          "p95": 88.66848500000197
+        },
+        "promote": {
+          "n": 10,
+          "p50": 44.22050999998464,
+          "p95": 53.751542999991216
+        },
+        "total": {
+          "n": 10,
+          "p50": 49670.581148,
+          "p95": 59842.686130999995
+        }
+      }
+    }
+  ],
+  "rows": [
+    {
+      "id": "CC-025",
+      "isolation": "thread",
+      "cohort": "P21",
+      "promoted": false,
+      "candidate": "0f8d9b57ab67a552e38407b3ebe91fc1d4b4df79f36f16c909a85e437eb76da8",
+      "receipt": {
+        "id": "receipt",
+        "hash": "3146ea654c0398b60cd2b7d9b20fa9eade734401131587d8e70592c331c72d1f"
+      },
+      "decision": "527926992b7f3eb3792c886112bb6e2f5e8c4625a95a6db6d76478ae7ee5d3c2",
+      "testDouble": false,
+      "timings": {
+        "generate": 47374.433548,
+        "freeze": 184.11912099999972,
+        "compile": 587.4939210000011,
+        "gate": 89.24659599999723,
+        "ledger": 91.56790500000352,
+        "promote": 41.090329999999085,
+        "read": 0.6911959999999908,
+        "total": 48384.529355000006
+      }
+    },
+    {
+      "id": "CC-001",
+      "isolation": "thread",
+      "cohort": "P21",
+      "promoted": true,
+      "candidate": "a33cbf7b08d566dc087a7293c89bc364318a99b76ece765f99a9b2e9ac9804ea",
+      "receipt": {
+        "id": "receipt",
+        "hash": "c4290735e2edf4f2e28339a42f9716412f6fa4fff130cf644cfbb67cd009f2c6"
+      },
+      "decision": "9c3dd0b2a569188903132ac89ac006b39e053522089dd3de6bcaddd5192135e2",
+      "testDouble": false,
+      "timings": {
+        "generate": 51427.959858,
+        "freeze": 192.1380100000024,
+        "compile": 593.9728429999959,
+        "gate": 208.20810700000584,
+        "ledger": 93.59505599999102,
+        "promote": 59.38496699999814,
+        "read": 0.7025669999999877,
+        "total": 52614.208009999995
+      }
+    },
+    {
+      "id": "CC-026",
+      "isolation": "thread",
+      "cohort": "P21",
+      "promoted": true,
+      "candidate": "f057e198b66df931383574153d09b6d3595f2fb06ee096219d8b2f97d8fb3ee5",
+      "receipt": {
+        "id": "receipt",
+        "hash": "11ab0266cfc179405e7e9c93a941ced8cee84e6a6ea61e82d08a497075b53467"
+      },
+      "decision": "744f015d1c8d929b68a0c77698522767b49ba850d82c48b925aca74c5c8d04ea",
+      "testDouble": false,
+      "timings": {
+        "generate": 54717.27232799999,
+        "freeze": 202.07423600000038,
+        "compile": 793.0974100000021,
+        "gate": 232.0179050000006,
+        "ledger": 102.18968699999823,
+        "promote": 41.72169399999984,
+        "read": 0.7143690000000049,
+        "total": 56170.629352
+      }
+    },
+    {
+      "id": "CC-014",
+      "isolation": "thread",
+      "cohort": "P21",
+      "promoted": true,
+      "candidate": "822a157dc37d07177d76656f4ba1c329ff983ca94783133323da21fab81df638",
+      "receipt": {
+        "id": "receipt",
+        "hash": "6de4ba6f26b5f12e8bf6ecf5eb7fe1691b24390ad573065c92a6e3bc6c100cc5"
+      },
+      "decision": "79195a9af36f813f0a4809ae17b662b3de0566042829268a5a26e9738355230f",
+      "testDouble": false,
+      "timings": {
+        "generate": 54909.206548999995,
+        "freeze": 185.97248899999977,
+        "compile": 827.1171739999991,
+        "gate": 229.01455800000258,
+        "ledger": 99.19892200000322,
+        "promote": 47.211648999997124,
+        "read": 0.6920680000000061,
+        "total": 56306.296415
+      }
+    },
+    {
+      "id": "C-019",
+      "isolation": "thread",
+      "cohort": "P21",
+      "promoted": true,
+      "candidate": "0558023f1a56fbbfb0fa42be688d352d33e0d621bbf3576f3c8731e426f08b79",
+      "receipt": {
+        "id": "receipt",
+        "hash": "08c1226b60c26ffdb87f28decc8917b7998f9ec6926e18045101561055a9ab46"
+      },
+      "decision": "4a308d301b6c5465ff2e13802222aa1249249ceb90928d81fd76ff5d87498e71",
+      "testDouble": false,
+      "timings": {
+        "generate": 56434.513064000006,
+        "freeze": 201.45111699999688,
+        "compile": 689.9858669999958,
+        "gate": 213.086593,
+        "ledger": 87.2998329999973,
+        "promote": 41.70533400000568,
+        "read": 0.6913760000000053,
+        "total": 57685.427314
+      }
+    },
+    {
+      "id": "C-007",
+      "isolation": "thread",
+      "cohort": "P21",
+      "promoted": true,
+      "candidate": "0a15ced6fc5b3095d91c9c3505699eb023b45703f30301679667151171a45963",
+      "receipt": {
+        "id": "receipt",
+        "hash": "f3a1545912332377c7173e7e8c48435f6a4b50d9b49d538ce986fa7500218dc0"
+      },
+      "decision": "89ab5c5635cf93b8acc22e5176972ee012a1abfa452174d0935e02d6ed8f82cc",
+      "testDouble": false,
+      "timings": {
+        "generate": 61032.951455,
+        "freeze": 217.7894049999959,
+        "compile": 566.9642000000022,
+        "gate": 212.08331599999656,
+        "ledger": 96.17772100000002,
+        "promote": 55.661849999996775,
+        "read": 0.6912159999999972,
+        "total": 62214.185203
+      }
+    },
+    {
+      "id": "CC-022",
+      "isolation": "thread",
+      "cohort": "P21",
+      "promoted": true,
+      "candidate": "be0f02b386b36fceed7a8793812777d8667cbd6c20470fd9d37b7f4ce9175e42",
+      "receipt": {
+        "id": "receipt",
+        "hash": "c8e12f97383cf4cca29139e5892d681fac841de873d98ea907e582adf9e8a733"
+      },
+      "decision": "eeb92d567c5b3fc631f3378ea44d047768cbf6d6a02e4524f52bb4f193d3e96c",
+      "testDouble": false,
+      "timings": {
+        "generate": 61590.92075899999,
+        "freeze": 201.97150600000168,
+        "compile": 589.6992390000014,
+        "gate": 228.35858699999517,
+        "ledger": 94.89433300000383,
+        "promote": 57.025957999998354,
+        "read": 0.7164730000000077,
+        "total": 62849.099846
+      }
+    },
+    {
+      "id": "CC-036",
+      "isolation": "thread",
+      "cohort": "P21",
+      "promoted": true,
+      "candidate": "4e6d43f4ef20d78051365a968b3c364cae1b897797ff4c6d42dfba32a34ecc44",
+      "receipt": {
+        "id": "receipt",
+        "hash": "c2ac1dfb9dcfe03b1dcce6f1306aa2c60bc33308c695325b24131fc57ebed4e5"
+      },
+      "decision": "78f1e8c061a6bb702c683b32e2e451ddea5b6fd94db23f2eb69c97f41d669803",
+      "testDouble": false,
+      "timings": {
+        "generate": 64037.720551,
+        "freeze": 220.36963600000308,
+        "compile": 722.8237399999998,
+        "gate": 265.7945469999977,
+        "ledger": 113.81903199999942,
+        "promote": 64.52579199999309,
+        "read": 0.7658950000000004,
+        "total": 65436.364372000004
+      }
+    },
+    {
+      "id": "CC-011",
+      "isolation": "thread",
+      "cohort": "P21",
+      "promoted": true,
+      "candidate": "8c593c7b1ddd30c49eee3158f73498b8ad048d5cf9d39fc3833fb4241192c5a6",
+      "receipt": {
+        "id": "receipt",
+        "hash": "f8c86bc1c0c82b1ab4d4a9fd2f84a87ad859e2a04849902819cb89b2c7f13c54"
+      },
+      "decision": "f5aeef22f243842ba1d9c62baa03dd408bb5c79f3fac5f155418a698a2ffcb76",
+      "testDouble": false,
+      "timings": {
+        "generate": 66079.741426,
+        "freeze": 191.34167799999705,
+        "compile": 595.1904749999958,
+        "gate": 225.93418499999098,
+        "ledger": 99.97564700001385,
+        "promote": 58.849549999999,
+        "read": 0.7309600000000103,
+        "total": 67256.59491100001
+      }
+    },
+    {
+      "id": "C-016",
+      "isolation": "thread",
+      "cohort": "P21",
+      "promoted": true,
+      "candidate": "79afb4ec8c48c5b19355f384242431fddb587934b36300fd93ca5f549c54b88f",
+      "receipt": {
+        "id": "receipt",
+        "hash": "87cd67b34da5663597ebbbe5b4ee3bbff6c4ebd73492ab547a42fb8b15daf644"
+      },
+      "decision": "6d0e471b0261a5337c59687169ca8cfec27d54a8f1c293a55775b17b0f41023d",
+      "testDouble": false,
+      "timings": {
+        "generate": 67100.80598899999,
+        "freeze": 205.2145690000034,
+        "compile": 774.2452900000062,
+        "gate": 224.6564980000112,
+        "ledger": 85.29386999999406,
+        "promote": 52.402885999996215,
+        "read": 0.6983189999999979,
+        "total": 68484.968727
+      }
+    },
+    {
+      "id": "C-015",
+      "isolation": "thread",
+      "cohort": "P21",
+      "promoted": true,
+      "candidate": "2854c8cd8ef8076d651249bb84e3927a4b80f46ab87a597e2d1c06ecf0db64a7",
+      "receipt": {
+        "id": "receipt",
+        "hash": "159653e90173bd63b76e02dbb0c4c95f69577a32937b60e7d2a970948135ff91"
+      },
+      "decision": "565408e34c0fb470ee51ed6da6dd908f85dbb77a222818c115709d014ecbdbfc",
+      "testDouble": false,
+      "timings": {
+        "generate": 68709.49920800001,
+        "freeze": 191.36865699999908,
+        "compile": 752.3784650000016,
+        "gate": 224.1100609999994,
+        "ledger": 104.94457200000761,
+        "promote": 54.97199600000749,
+        "read": 0.4720080000000024,
+        "total": 70038.624826
+      }
+    },
+    {
+      "id": "CC-007",
+      "isolation": "thread",
+      "cohort": "P21",
+      "promoted": true,
+      "candidate": "97e2f846afeb356de2db3a7982f1e7ef0590ec615a6e6794f125c5db9004a952",
+      "receipt": {
+        "id": "receipt",
+        "hash": "910331be78a4f309175d0471b4b2a2ce2bc2e33131c43ba61cb8aa801f6de195"
+      },
+      "decision": "60e456c60daedd585f7b54b74de61bf7a73f38e96812a02efa0708d408c98148",
+      "testDouble": false,
+      "timings": {
+        "generate": 70990.158208,
+        "freeze": 202.18217600000207,
+        "compile": 635.7197489999962,
+        "gate": 251.8026830000017,
+        "ledger": 95.6077110000042,
+        "promote": 47.18788399999903,
+        "read": 0.7049609999999973,
+        "total": 72268.984663
+      }
+    },
+    {
+      "id": "C-012",
+      "isolation": "thread",
+      "cohort": "P21",
+      "promoted": false,
+      "candidate": "2b0396866d39c43cdfd3a220c7ca9f053b902487cb797d8e7a8ddea60796af4e",
+      "receipt": {
+        "id": "receipt",
+        "hash": "8095683b9471b32ad1bb7c27db0b4bf5fdd20cd67c70eb6cb14285284000b760"
+      },
+      "decision": "8de430f1dd9bda4b7057a0bd97489eead97fa336e48a024a4afeb4d8063bd593",
+      "testDouble": false,
+      "timings": {
+        "generate": 71198.64100399999,
+        "freeze": 191.79598300000362,
+        "compile": 741.6508159999939,
+        "gate": 97.78741499999887,
+        "ledger": 90.30846099999326,
+        "promote": 56.73494599999685,
+        "read": 0.7087190000000021,
+        "total": 72428.311304
+      }
+    },
+    {
+      "id": "CC-002",
+      "isolation": "thread",
+      "cohort": "P21",
+      "promoted": true,
+      "candidate": "d606183a1b876cefca87ef4df6f76faa91642b8d193af59db2a22f388dbeead6",
+      "receipt": {
+        "id": "receipt",
+        "hash": "24ab5ea107a40a0944c3450ad8ca524c95b1170891634cf7bdea0d758b696f50"
+      },
+      "decision": "450e1361dfe9eaf07e9d3cc3324fbc9a266001f1ef58d029c67977e874d38de6",
+      "testDouble": false,
+      "timings": {
+        "generate": 73444.40436,
+        "freeze": 219.3092719999986,
+        "compile": 672.150959000006,
+        "gate": 239.4096159999899,
+        "ledger": 90.97067200002493,
+        "promote": 44.474044999995385,
+        "read": 0.6947619999999972,
+        "total": 74746.91356599999
+      }
+    },
+    {
+      "id": "CC-027",
+      "isolation": "thread",
+      "cohort": "P21",
+      "promoted": true,
+      "candidate": "512a6234e69f02e7e0f480eb00795bbf35908de66d60fc7a0e39d77746a3ff0d",
+      "receipt": {
+        "id": "receipt",
+        "hash": "8a8985aa6141fc71be0fd0001733a5ae6c6b00cd102605c85300d11355aa23f9"
+      },
+      "decision": "f686469b3c2b7a918c1f698db3be133389fa96e45473fb343b5e3a0b7952a54f",
+      "testDouble": false,
+      "timings": {
+        "generate": 80776.43041599999,
+        "freeze": 199.6940969999996,
+        "compile": 730.3781589999999,
+        "gate": 237.6058800000028,
+        "ledger": 100.37692100000277,
+        "promote": 60.072755999994115,
+        "read": 0.6926290000000108,
+        "total": 82118.283115
+      }
+    },
+    {
+      "id": "C-005",
+      "isolation": "thread",
+      "cohort": "P21",
+      "promoted": true,
+      "candidate": "dec2172883e3f8e66c8ffe15ac898a21a19a30aa3733fdd24d60a9ee7972e7c2",
+      "receipt": {
+        "id": "receipt",
+        "hash": "e25a627b55a9f328223b9986e9f435367064ba813d1419b3f256923c1f642270"
+      },
+      "decision": "aa93505887fbc12780d884f9aad950339d86e57cf392066d721526d75e4c2c17",
+      "testDouble": false,
+      "timings": {
+        "generate": 96191.36547499997,
+        "freeze": 200.62253300000157,
+        "compile": 551.7537719999964,
+        "gate": 196.02185000000463,
+        "ledger": 82.77062399999704,
+        "promote": 46.70501600000716,
+        "read": 0.7102610000000027,
+        "total": 97339.701238
+      }
+    },
+    {
+      "id": "C-006",
+      "isolation": "thread",
+      "cohort": "P21",
+      "promoted": true,
+      "candidate": "2d58e722bfd1fc1e990499eae524625a1b2fc3832b9bda6937eca820d30e9b9a",
+      "receipt": {
+        "id": "receipt",
+        "hash": "36e877ea7e25cef87c602b3a9c74c10cd0831198fa4da8e7179707b6fbfc87c9"
+      },
+      "decision": "dca628570f7faaa938f91116922c9d48d68b739f0d025df649ecc97073e18c64",
+      "testDouble": false,
+      "timings": {
+        "generate": 65554.57851,
+        "freeze": 180.39389399999345,
+        "compile": 581.3253229999973,
+        "gate": 237.29717000000528,
+        "ledger": 85.25156099999731,
+        "promote": 54.7853380000015,
+        "read": 0.1381169999949634,
+        "total": 66694.572546
+      }
+    },
+    {
+      "id": "CC-013",
+      "isolation": "thread",
+      "cohort": "P21",
+      "promoted": true,
+      "candidate": "79e2968301c3fcab0d1ae6850d22ede72a489051a4b7e48756fe1744847ec725",
+      "receipt": {
+        "id": "receipt",
+        "hash": "876fe272c8f623ee865735569450fe43d5ffa64381d2651e9a9755453b90386c"
+      },
+      "decision": "bd0699a33e44b3fa2f3b4819ab34d5f8eeb3b140d3c5c0c0f824843852f2dedb",
+      "testDouble": false,
+      "timings": {
+        "generate": 66379.531406,
+        "freeze": 194.32519299999694,
+        "compile": 657.0908640000125,
+        "gate": 198.27475900000718,
+        "ledger": 92.00379300001077,
+        "promote": 55.51130800000101,
+        "read": 0.19938099999853875,
+        "total": 67577.36562200001
+      }
+    },
+    {
+      "id": "CC-009",
+      "isolation": "thread",
+      "cohort": "P21",
+      "promoted": true,
+      "candidate": "0a9a13f724dbe0d3608cf6f369cf6f8f06410101ea324270d269d339ad5b15b7",
+      "receipt": {
+        "id": "receipt",
+        "hash": "e081b81a2406976f5f234ef7b647e722ca5e0eb3c773393749746261d38b7647"
+      },
+      "decision": "11d7dbeda405f8fbf9f5563c1b9aa2516a4bab1c5ca03737c74996b33abeb738",
+      "testDouble": false,
+      "timings": {
+        "generate": 78950.46724300002,
+        "freeze": 202.6376569999993,
+        "compile": 681.273010999983,
+        "gate": 230.05432299998938,
+        "ledger": 96.91071100000408,
+        "promote": 53.495879000023706,
+        "read": 0.10980399999971269,
+        "total": 80215.35513299999
+      }
+    },
+    {
+      "id": "C-010",
+      "isolation": "thread",
+      "cohort": "P21",
+      "promoted": true,
+      "candidate": "7c2f3d3c28ad0b02ce05735e0be78a4a192b42d3014a5f5c9e98e35290e5533e",
+      "receipt": {
+        "id": "receipt",
+        "hash": "2109ea6af1772db43f0bee8543b1d0b107b9315187c2490aac6769938e849168"
+      },
+      "decision": "ef8c6b593c9b27d92a1c8dd794f69eb923de09d990bcf92da7f768dc045ad954",
+      "testDouble": false,
+      "timings": {
+        "generate": 87201.34879399999,
+        "freeze": 185.6507649999985,
+        "compile": 692.4837579999876,
+        "gate": 224.23297199999797,
+        "ledger": 98.0120820000302,
+        "promote": 59.1672499999986,
+        "read": 0.4873569999981555,
+        "total": 88461.81846499999
+      }
+    },
+    {
+      "id": "add-6",
+      "isolation": "thread",
+      "cohort": "P19",
+      "promoted": true,
+      "candidate": "de670fcfa49e2b319a2e5dac00e79b4f2cde85834ed5061ba95a4dd7ecebb030",
+      "receipt": {
+        "id": "receipt",
+        "hash": "a700df0793ae921ac6ef488075b3fa5c51aea196314cd75f7a5edaa943fbcc59"
+      },
+      "decision": "c2ce8c0fbb2785396f7ba22c3e609481d2e23167dc5b137503b1c33ee6a70fa0",
+      "testDouble": false,
+      "timings": {
+        "generate": 42131.36960199999,
+        "freeze": 189.3988820000086,
+        "compile": 452.1049280000152,
+        "gate": 203.6641810000001,
+        "ledger": 86.1307739999902,
+        "promote": 45.4888299999875,
+        "read": 0.00007999999797903001,
+        "total": 43116.398990000016
+      }
+    },
+    {
+      "id": "add-2",
+      "isolation": "thread",
+      "cohort": "P19",
+      "promoted": true,
+      "candidate": "d0e43993cf2748cc08f974711c649f2bca1d7ca2863e3f87d5f6f8ad893e3797",
+      "receipt": {
+        "id": "receipt",
+        "hash": "51fd948df5998711d9721eec33538142f06528e273dfacb42616ef4298cb7b72"
+      },
+      "decision": "bcfb24c32ba6840a25964dd01ffeb1b9f9d83dd47fcb9b2f912c5b7bf5ee034a",
+      "testDouble": false,
+      "timings": {
+        "generate": 43236.27411300002,
+        "freeze": 198.48620899999514,
+        "compile": 539.7300010000181,
+        "gate": 212.7007229999872,
+        "ledger": 84.79449700002442,
+        "promote": 51.52583200001391,
+        "read": 0.0001999999803956598,
+        "total": 44352.960765999975
+      }
+    },
+    {
+      "id": "add-3",
+      "isolation": "thread",
+      "cohort": "P19",
+      "promoted": true,
+      "candidate": "a5a41cbb07311d4940a04801bfd8d97548f29e17e7dbe3d9de61fc219565d02d",
+      "receipt": {
+        "id": "receipt",
+        "hash": "af4f6906ed862e5187cfb1d1b34979de73ff5561b06f4ab81d76fb881d81d853"
+      },
+      "decision": "f52c4906e02a801230e38af4b971f4580bbcc81c8725a5b0c1f40b5d3929daf4",
+      "testDouble": false,
+      "timings": {
+        "generate": 43347.46536099998,
+        "freeze": 193.59234400000423,
+        "compile": 499.69830300001195,
+        "gate": 223.08355999999912,
+        "ledger": 88.66848500000197,
+        "promote": 53.751542999991216,
+        "read": 0.0000900000159163028,
+        "total": 44420.040425000014
+      }
+    },
+    {
+      "id": "add-1",
+      "isolation": "thread",
+      "cohort": "P19",
+      "promoted": true,
+      "candidate": "68fc08cef6908d437f4af1b95b4673bbd70e28b1056bdca2aa8ca93bdf9146c1",
+      "receipt": {
+        "id": "receipt",
+        "hash": "724f2c2d7e48326cb586fa2319837e51d604f0b7094055584428e15b551e87e5"
+      },
+      "decision": "bd878ae87e09752da66a9bf81a2615ecaf55af3c0cc6a5941cb02e458b5c8ee5",
+      "testDouble": false,
+      "timings": {
+        "generate": 44588.73338999998,
+        "freeze": 189.22335600000224,
+        "compile": 478.9969689999998,
+        "gate": 191.58637000000454,
+        "ledger": 81.44872299997951,
+        "promote": 44.67586799999117,
+        "read": 0.0005609999934677035,
+        "total": 45616.170468
+      }
+    },
+    {
+      "id": "add-4",
+      "isolation": "thread",
+      "cohort": "P19",
+      "promoted": true,
+      "candidate": "b13e330f0430db86dc52d308a77af85131fb3587b438fcaf7983e7548d417e4c",
+      "receipt": {
+        "id": "receipt",
+        "hash": "57de0db331ea767fc85cdcd37d41c9d6b46dd5c063821921e26413beac47c3ae"
+      },
+      "decision": "e93d72d1d3844fc85b0c363752c0babcaf3e3df01c474287e41216fb86a7dccf",
+      "testDouble": false,
+      "timings": {
+        "generate": 48723.797295,
+        "freeze": 192.94598200000473,
+        "compile": 450.3313659999985,
+        "gate": 179.95423800000572,
+        "ledger": 81.50837500000489,
+        "promote": 40.81934299998102,
+        "read": 0.00008999998681247234,
+        "total": 49670.581148
+      }
+    },
+    {
+      "id": "add-7",
+      "isolation": "thread",
+      "cohort": "P19",
+      "promoted": true,
+      "candidate": "40a8f60476a507e6f8edccf767b99a6a624ce2a14fc22123eca44eab40f2b907",
+      "receipt": {
+        "id": "receipt",
+        "hash": "df44beb1098c6c8603fc9f1a3b3fde62311db1f57e6b19d22fa501928e93c5ca"
+      },
+      "decision": "d90d84e2fb859c031cfe7cda6348fbb4f5239f8d15b9de594b8d5c7fb869c345",
+      "testDouble": false,
+      "timings": {
+        "generate": 49559.050969,
+        "freeze": 188.99862700002268,
+        "compile": 475.84034500000416,
+        "gate": 199.99585500001558,
+        "ledger": 85.16042800000287,
+        "promote": 43.81812199999695,
+        "read": 0.0002099999983329326,
+        "total": 50564.154171
+      }
+    },
+    {
+      "id": "add-8",
+      "isolation": "thread",
+      "cohort": "P19",
+      "promoted": true,
+      "candidate": "f2243485a3a5b1417ed5dd6614b2c643fe6188bc34874d064c1b10f52209569f",
+      "receipt": {
+        "id": "receipt",
+        "hash": "11d09220c80e0e0d9ad7b0c0c6e74877cff3912f0f9870a07149a42fc5f119c4"
+      },
+      "decision": "8e7dfd22a117441f52e322f9f92af2289ff7b2f02beaace29fb84fb3037dd6b0",
+      "testDouble": false,
+      "timings": {
+        "generate": 49873.14209400001,
+        "freeze": 188.1015390000248,
+        "compile": 452.8713320000097,
+        "gate": 193.29543999998714,
+        "ledger": 85.23951499999384,
+        "promote": 42.76479300000938,
+        "read": 0.00008000002708286047,
+        "total": 50871.34002
+      }
+    },
+    {
+      "id": "add-9",
+      "isolation": "thread",
+      "cohort": "P19",
+      "promoted": true,
+      "candidate": "cea3a3f0f430a4d96e0b4f0899eda97dad3ea7927d55195f37f52b1c64051983",
+      "receipt": {
+        "id": "receipt",
+        "hash": "903102e9c3a4bf07b8012d9f746f805589841b3c7862d27da6e2c25248bd7eda"
+      },
+      "decision": "5989193e44a91a7ef7a38d21349f3a9299642bc095c0dbb48050e0e6fa9c370a",
+      "testDouble": false,
+      "timings": {
+        "generate": 50661.47863700002,
+        "freeze": 193.93106400000397,
+        "compile": 473.5905190000194,
+        "gate": 203.66554300001008,
+        "ledger": 87.27160499998718,
+        "promote": 45.77918100001989,
+        "read": 0.00008999998681247234,
+        "total": 51683.83358800001
+      }
+    },
+    {
+      "id": "add-10",
+      "isolation": "thread",
+      "cohort": "P19",
+      "promoted": true,
+      "candidate": "cb5118c95c4666d9c7a818e996137513a3c952e2b44b0bf6a47bffdb01b3c6e9",
+      "receipt": {
+        "id": "receipt",
+        "hash": "9cccdfb21a9dbfa52ad2b4d6abb174510fe8260866fe87adb6bb349d617c1091"
+      },
+      "decision": "2b9aba5364a976a460ca60ad8d7572417d56b3b61dcdc91fb9089f93857b343a",
+      "testDouble": false,
+      "timings": {
+        "generate": 57544.94075799998,
+        "freeze": 199.35346199999913,
+        "compile": 478.53944500000216,
+        "gate": 191.86761200000183,
+        "ledger": 83.37058899999829,
+        "promote": 44.22050999998464,
+        "read": 0.00007999999797903001,
+        "total": 58568.219022000005
+      }
+    },
+    {
+      "id": "add-5",
+      "isolation": "thread",
+      "cohort": "P19",
+      "promoted": true,
+      "candidate": "ef7f133e5bfbecb5b78ecc1800ff1b2a853bcff0564cdf4fcabcece80870be29",
+      "receipt": {
+        "id": "receipt",
+        "hash": "f5d5dd294215eb76d1f2cdb0f25f065b55876cd644b2f6e4377c5692cac45572"
+      },
+      "decision": "1a5e427192220e2cb6e0abd673e0cd73e8149037704529d668c944318f803765",
+      "testDouble": false,
+      "timings": {
+        "generate": 58838.973329,
+        "freeze": 188.69994200000656,
+        "compile": 488.6782579999999,
+        "gate": 193.6882699999842,
+        "ledger": 84.44191200003843,
+        "promote": 42.65853499999503,
+        "read": 0.00027000001864507794,
+        "total": 59842.686130999995
+      }
+    }
+  ]
+}

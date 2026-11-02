@@ -1,10 +1,11 @@
 import assert from 'node:assert/strict';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { availableParallelism } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { IsolatePool } from '../isolate-pool.mjs';
+import { LedgerBridge } from '../isolate-ledger.mjs';
 import { evaluateCandidates } from '../../engine/evaluator.mjs';
 import { createPort } from './fixtures/identity-port.mjs';
 import { fixture, hostPort, python } from './fixtures/ledger-fixture.mjs';
@@ -292,3 +293,152 @@ test('WASM guard refuses unsupported, malformed and externally compiled modules 
     assert.deepEqual(result.report.frontier, ['pass']);
   }
 });
+
+test('prewarm spawns every workcell before the first job and stays lazy by default', { timeout: 30000 }, async t => {
+  const { job } = await fixture(t);
+  assert.throws(() => new IsolatePool({ hostPort, size: 2, prewarm: 'yes' }), /prewarm must be boolean/);
+  const lazy = new IsolatePool({ hostPort, size: 2 });
+  t.after(() => lazy.close());
+  assert.equal(lazy.stats.workers, 0);
+  const pool = new IsolatePool({ hostPort, size: 2, prewarm: true });
+  t.after(() => pool.close());
+  await pool.ready();
+  assert.equal(pool.stats.workers, 2);
+  const result = await pool.run(job(['pass']));
+  assert.deepEqual(result.report.frontier, ['pass']);
+  assert.equal(pool.stats.workers, 2);
+  await pool.close();
+  await assert.rejects(pool.ready(), /closing/);
+});
+
+test('64 concurrent jobs at width 16 remain verifiable by a fresh Ledger', { timeout: 60000 }, async t => {
+  const { reference, job } = await fixture(t);
+  const pool = new IsolatePool({ hostPort, size: 16 });
+  t.after(() => pool.close());
+  const results = await Promise.all(Array.from({ length: 64 }, () => pool.run(job())));
+  assert.equal(results.flatMap(result => result.receipts).length, 64);
+  const verified = await python(`
+import json, sys
+from core.ledger.ledger import Ledger
+rows = Ledger(json.load(sys.stdin)['ledger']).records()
+print(json.dumps(sum(r['kind'] == 'receipt' for r in rows)))
+`, { ledger: reference.ledger });
+  assert.equal(verified, 64);
+});
+
+test('a second writer between batches extends the verified chain', async t => {
+  const { reference, job } = await fixture(t);
+  const pool = new IsolatePool({ hostPort, size: 1 });
+  const other = new IsolatePool({ hostPort, size: 1 });
+  t.after(() => Promise.all([pool.close(), other.close()]));
+  const first = await pool.run(job());
+  const external = await other.run(job());
+  const last = await pool.run(job());
+  const verified = await python(`
+import json, sqlite3, sys
+from core.ledger.ledger import Ledger
+r = json.load(sys.stdin)
+Ledger(r['ledger']).records()
+with sqlite3.connect(r['ledger']) as db:
+    rows = list(db.execute('SELECT previous, hash FROM records ORDER BY seq DESC LIMIT 3'))
+print(json.dumps(rows))
+`, { ledger: reference.ledger });
+  assert.equal(verified[0][1], last.receipts[0].hash);
+  assert.equal(verified[0][0], external.receipts[0].hash);
+  assert.equal(verified[1][0], first.receipts[0].hash);
+});
+
+test('bridge death rejects pending runs and all later requests without respawning', async t => {
+  const { job } = await fixture(t);
+  const pool = new IsolatePool({ hostPort, size: 1 });
+  t.after(() => pool.close());
+  const pending = Array.from({ length: 8 }, () => pool.run(job()));
+  const settled = Promise.allSettled(pending);
+  const children = readFileSync(`/proc/self/task/${process.pid}/children`, 'utf8').trim().split(/\s+/);
+  const bridges = children.filter(pid => readFileSync(`/proc/${pid}/comm`, 'utf8').trim() === 'python3');
+  assert.equal(bridges.length, 1);
+  process.kill(Number(bridges[0]), 'SIGKILL');
+  const results = await settled;
+  assert(results.every(result => result.status === 'rejected'));
+  for (const result of results) assert.match(result.reason.message, /bridge failed/);
+  await assert.rejects(pool.run(job()), /bridge failed/);
+});
+
+test('schema-invalid tampering with a recomputed chain invalidates the validation cache', async t => {
+  const { reference, job } = await fixture(t);
+  const pool = new IsolatePool({ hostPort, size: 1 });
+  t.after(() => pool.close());
+  await pool.run(job());
+  await python(`
+import json, sqlite3, sys
+from core.ledger.ledger import encode, event_hash
+with sqlite3.connect(json.load(sys.stdin)['ledger']) as db:
+    db.execute('DROP TRIGGER no_update')
+    previous = '0' * 64
+    for seq, body in list(db.execute('SELECT seq, body FROM records ORDER BY seq')):
+        record = json.loads(body)
+        if seq == 1:
+            record['data']['acceptance'] = 17
+        body = encode(record)
+        digest = event_hash(seq, previous, body)
+        db.execute('UPDATE records SET body=?, previous=?, hash=? WHERE seq=?', (body, previous, digest, seq))
+        previous = digest
+print('{}')
+`, { ledger: reference.ledger });
+  await assert.rejects(pool.run(job()), /schema/);
+});
+
+test('a failing request leaves neighboring requests in its batch usable', async t => {
+  const { job } = await fixture(t);
+  const pool = new IsolatePool({ hostPort, size: 4 });
+  t.after(() => pool.close());
+  const bad = job();
+  bad.receipts[0].data.precommit.oracle_version = 'wrong';
+  const results = await Promise.allSettled([pool.run(job()), pool.run(bad), pool.run(job())]);
+  assert.deepEqual(results.map(result => result.status), ['fulfilled', 'rejected', 'fulfilled']);
+  assert.match(results[1].reason.message, /digest/);
+  assert.equal((await pool.run(job())).receipts.length, 1);
+});
+
+test('a request failing after its first insert rolls back its entire savepoint', async t => {
+  const { reference, job } = await fixture(t);
+  const bridge = new LedgerBridge();
+  t.after(() => bridge.close());
+  const bad = job(['pass', 'effects']), good = job();
+  const results = await Promise.allSettled([
+    bridge.request('append', bad, { status: 'completed', report: { attempts: [
+      { candidate: 'pass', stage: 'passed' }, { candidate: 'effects' },
+    ] } }),
+    bridge.request('append', good, { status: 'completed', report: { attempts: [{ candidate: 'pass', stage: 'passed' }] } }),
+  ]);
+  assert.deepEqual(results.map(result => result.status), ['rejected', 'fulfilled']);
+  const receipts = await python(`
+import json, sys
+from core.ledger.ledger import Ledger
+rows = Ledger(json.load(sys.stdin)['ledger']).records()
+print(json.dumps([r['id'] for r in rows if r['kind'] == 'receipt']))
+`, { ledger: reference.ledger });
+  assert.deepEqual(receipts, [good.receipts[0].id]);
+});
+
+test('prewarm ready() starts the ledger bridge; lazy pools start it on first request', { timeout: 30000 }, async t => {
+  const { job } = await fixture(t);
+  const bridges = () => readFileSync(`/proc/self/task/${process.pid}/children`, 'utf8').trim().split(/\s+/).filter(Boolean)
+    .filter(pid => { try { return readFileSync(`/proc/${pid}/comm`, 'utf8').trim() === 'python3'; } catch { return false; } });
+  const lazy = new IsolatePool({ hostPort, size: 1 });
+  t.after(() => lazy.close());
+  assert.equal(bridges().length, 0);
+  const warm = new IsolatePool({ hostPort, size: 1, prewarm: true });
+  t.after(() => warm.close());
+  await warm.ready();
+  assert.equal(bridges().length, 1);
+  assert.equal((await warm.run(job())).status, 'completed');
+  assert.equal(bridges().length, 1);
+  const bridge = new LedgerBridge();
+  const first = bridge.start();
+  assert.equal(bridge.start(), first);
+  assert.equal(await first, 'ready');
+  await bridge.close();
+  await assert.rejects(bridge.start(), /closed/);
+});
+
