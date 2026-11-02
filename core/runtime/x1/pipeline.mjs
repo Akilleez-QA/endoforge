@@ -4,10 +4,28 @@ import { generate } from './generator.mjs';
 import { compile } from './compiler.mjs';
 import { ledger, receipt } from './ledger.mjs';
 import { hash } from './host.mjs';
-export async function runNeed({ need, directory, pool, env = process.env, compiler = env.ENDOFORGE_ASC_CMD }) {
+import { runGates } from './gates.mjs';
+const failures = compiler => async candidate => {
+  const result = runGates({ ...candidate, compiled: await compile(candidate.files, compiler) });
+  if (result.promotable) return null;
+  return { gates: Object.fromEntries(Object.entries(result.gates).filter(([, gate]) => !gate.ok)), tests: (result.tests || []).filter(test => !test.pass).slice(0, 20) };
+};
+export async function runNeed(options) {
+  const env = options.env ?? process.env;
+  if (env.ENDOFORGE_CODEX_TERSE !== 'fallback') return attempt(options);
+  const begin = Date.now(), budget = Number(env.ENDOFORGE_RETRY_BUDGET_MS) || Infinity;
+  const first = await attempt({ ...options, env: { ...env, ENDOFORGE_CODEX_TERSE: '1' } });
+  if (first.promoted) return { ...first, retried: false };
+  const elapsed = Date.now() - begin;
+  if (elapsed >= budget) return { ...first, retried: false, retrySkipped: 'budget' };
+  if (first.error) return { ...first, retried: false, retrySkipped: 'stage-error' };
+  const second = await attempt({ ...options, directory: `${options.directory}-retry`, env: { ...env, ENDOFORGE_CODEX_TERSE: '0' }, deadline: begin + budget });
+  return { ...second, retried: true, retryCancelled: !second.promoted && Date.now() >= begin + budget, first: { promoted: false, timings: first.timings } };
+}
+async function attempt({ need, directory, pool, env = process.env, compiler = env.ENDOFORGE_ASC_CMD, deadline = Infinity }) {
   const timings = Object.fromEntries(['generate', 'freeze', 'compile', 'gate', 'ledger', 'promote'].map(k => [k, null]));
   try {
-    const generated = await generate({ need, directory, env });
+    const generated = await generate({ need, directory, env, check: failures(compiler), deadline });
     Object.assign(timings, generated.timings);
     let start = performance.now();
     const candidate = { ...generated.candidate, compiled: await compile(generated.candidate.files, compiler) };

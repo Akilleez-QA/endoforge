@@ -99,3 +99,47 @@ Write receipt/summary.json, raw per-rep records and RESULT.md with old numbers
 quoted from each old RESULT.md, one row per width, both modes, readiness and
 memory metrics, load observations, failures, and "What it does not show".
 No claims of causal speedup, quiet-host equivalence, or production qualification.
+
+## Amendment 2026-11-01: earliest baselines (P-01, P-02, P-05, 2026-10-29 ramp)
+
+Written before any addendum measurement, smoke run, or setup. The original
+precommit digest is kept in `receipt/precommit-original.sha256`; this amended
+file's digest replaces `receipt/precommit.sha256`. Nothing above is changed.
+
+Question: how do the earliest timing probes compare when their workloads run
+inside `IsolatePool` workcells, separately in thread and process mode?
+
+Mapping. Each workload runs inside the workcell's `createPort` (harness
+`addendum.mjs`, port `addendum-port.mjs`), writes its timings, then throws, so
+the pool records `outcome_unknown` and the evaluator is not exercised. Old
+sources are read by path from the old checkout and the 2026-10-29 load-test
+directory, given by environment variables; nothing is copied in.
+
+- P-01: P-01 `kernel.ts`, stub runtime, 1 initial page, plus `--maximumMemory 16`
+  (the pool refuses undeclared maxima). Compile once, 50 untimed instances,
+  2,000 timed `new WebAssembly.Instance`, then live K=100/1,000/5,000 with
+  `initState(0)` and gc before/after; bytes per instance from RSS and
+  arrayBuffers. Pool size 1, default limits. Three fresh pools per mode.
+- P-02: cold `import` of AssemblyScript 0.28.20 inside a fresh workcell, then
+  the 20 P-02 kernels compiled with P-02's flags plus the same memory flags;
+  asc phase timers recorded. A second job in the same cell gives warm numbers.
+  Limits 1024/16 MiB heap, 4096 MiB WASM, trusted f64-pow module as P-20.
+  Three fresh pools per mode.
+- P-05: the Node arm only (tsc-rs WASM `core.js` + `ts_rust.size.wasm` from the
+  lab cache, lab `host.mjs` `runOnce`, indexed fs), 5-file and 50-file overlays
+  from P-05's generator, 3 warm + 20 timed per project, cold then warm job,
+  same limits as P-02, three fresh pools per mode. Native tsc-rs
+  `--singleThreaded` re-run outside the pool, same projects on /dev/shm.
+- 2026-10-29 ramp: the identical bwrap isofix unit-test command, launched from
+  inside a workcell per job; pool width = parallel 1/4/8/16/32/48, width warmup
+  jobs, then a 10 s closed loop. Report successful checks/s, pool latency and
+  in-cell check latency p50/p95, failures. Also 20 direct serial checks.
+
+Not reproduced, by design: Wasmtime (P-01) and workerd (P-05) arms, because
+neither runtime is the pool under test; their old numbers are quoted only.
+Cold tsc ramp is not repeated (no pool mapping). If a dependency is missing or
+the pool's WASM guard refuses a module, record it as a blocker; do not weaken
+the guard. No retries, no tuning. Hold `flock /tmp/ef-bench.lock` for every
+invocation including smoke runs. Results go to `receipt/addendum-<date>/` and an
+old-old vs new table with original dates in RESULT.md, with "What it does not
+show". No causal or quiet-host claims.

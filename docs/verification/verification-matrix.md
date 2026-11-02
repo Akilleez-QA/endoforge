@@ -200,6 +200,12 @@ of 39 after it. CI now runs the repository tests on Node 22 and 26. On Node 26 e
 compile-gate test has a 60 s timeout and the WASM breach test, which replaces a cell
 per case, has a 180 s timeout.
 
+Workcells now skip the startup wait when the bundled undici major version is 8
+or later; Node 26.12.0 bundles undici 8.11.2 and Node 22.23.3 bundles undici
+6.28.1, which still waits. On main-rig, `isolate-pool.test.mjs` and
+`isolate-process.test.mjs` together took 99 s on Node 26.12.0 before the change
+and 26 s after it, passing 39 of 39; Node 22.23.3 passed 39 of 39 in 25 s.
+
 ## Process workcell verification
 
 The `v8-process-workcells` working tree was checked locally with Node 26.12.0
@@ -248,7 +254,7 @@ not a guarantee that accounts for throttling or harness overhead.
 The inherited headroom guard can hold ready workers when host load exceeds
 1.8 under two-CPU affinity, or available memory falls below its reserve. That
 makes the timing assertion depend on host conditions and earlier suite work.
-Only this fan-out scheduler invocation now sets `ENDOFORGE_THROTTLE=0`.
+This fan-out scheduler invocation and the agent-swarm test scheduler invocations set `ENDOFORGE_THROTTLE=0`; the account-spread case otherwise ran one worker at a time after heavy earlier suite work and used a single account.
 Production headroom policy, fixtures, and every existing assertion are unchanged.
 
 `realizedSpeedup` rounds `sumAtomWallMs / wallMs` to two decimal places.
@@ -338,6 +344,15 @@ fresh/default fallback through recorded client arguments. One real add(a,b) smok
 2026-11-01 took 92.4 s before the no-exploration instruction and 42.6 s (low) / 41.7 s
 (default) after; a single run each, not a measurement.
 
+REQ-GEN-004: `generator.test.mjs` checks that `compiler.mjs` passes `--noAssert` and that
+the recorded implementation instructions forbid `assert` and require an explicit
+`abort()` or `throw` trap. Root cause from P-24: 43 of 45 G4 refusals used `assert(`,
+0 of 34 promotions did, independent of session resume and effort.
+
+REQ-GEN-005: `generator.test.mjs` checks that with self-check off no check runs and no
+repair is made, and that with it on a failing check resumes the specification thread
+once with the failures, the repaired glue is used and `repaired` is true.
+
 REQ-GEN-001: `make pipeline-test` includes a labelled executable test double,
 two-stage generation, durable oracle creation, frozen hashes, absence of code in
 the oracle, early-code/drift/nonzero-exit refusals and missing configuration.
@@ -399,3 +414,23 @@ pool/ledger path. Verification logs are retained with the dated P-20 receipts.
 also passed 18 core and 32 ledger tests, then timed out at the engine stage
 (exit 124). The evaluator file was canceled with a pending promise; the gates
 file passed. Later Make targets were not reached in either full-suite run.
+
+## Workcell pre-warm verification
+
+REQ-ISO-009: `isolate-pool.test.mjs` checks that a default pool has no workcells before
+its first job, that `prewarm: true` with `ready()` yields `size` workcells that serve a job
+without spawning more, that a non-boolean `prewarm` is refused and that `ready()` rejects
+after `close()`. On main-rig the pool and process suites passed 40 of 40 on Node 22.23.3
+and 26.12.0. Spawn-cost measurements are in P-26.
+
+## Persistent batched ledger bridge verification — 2026-11-02 UTC
+
+| Requirement | Case | Expected result |
+|---|---|---|
+| REQ-ISO-010 | 64 jobs at width 16 through one pool | Pass; every receipt present and the chain verifies from a fresh Ledger |
+| REQ-ISO-010 | Second writer appends between pool batches | Pass; pool appends chain after the external record |
+| REQ-ISO-010 | Bridge process killed with work pending | Pass; pending and later requests reject, no respawn |
+| REQ-ISO-010 | Stored row tampered after caching | Pass; next read rejects the chain |
+| REQ-ISO-010 | One invalid request inside a batch | Pass; only that request fails and the others commit |
+| REQ-ISO-009 | Bridge process after `ready()` with prewarm, none on a lazy pool | Pass; one bridge before the first job and none respawned by it; `start()` memoized and rejects after close |
+
