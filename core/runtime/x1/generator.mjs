@@ -32,7 +32,9 @@ export function effortFor(need, setting = 'auto') {
   const words = need.match(/## The request, in the requester's words\s+([\s\S]*?)(\n## |$)/);
   return (words ? words[1] : need).trim().length <= 400 ? 'low' : null;
 }
+export const terseRule = 'Send no message before writing. Write all your files in one single edit. After that edit, reply with only the word done.';
 function invoke(directory, prompt, env, timeout, { resume = null, effort = null } = {}) {
+  if (env.ENDOFORGE_CODEX_TERSE === '1') prompt = { ...prompt, instructions: `${prompt.instructions} ${terseRule}` };
   const argv = env.ENDOFORGE_CODEX_CMD?.startsWith('[') ? JSON.parse(env.ENDOFORGE_CODEX_CMD) : [env.ENDOFORGE_CODEX_CMD];
   if (!argv?.length || !argv.every(x => typeof x === 'string' && x) || !env.CODEX_HOME) throw Error('ENDOFORGE_CODEX_CMD and CODEX_HOME required');
   const tuning = effort ? ['-c', `model_reasoning_effort="${effort}"`] : [];
