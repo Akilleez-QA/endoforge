@@ -40,3 +40,4 @@ const checkWasm = installWasmLimit(wasmMemoryMaxMb, error => {
       report: null, ...metadata });
   }
 });
+send({ type: 'ready' });
