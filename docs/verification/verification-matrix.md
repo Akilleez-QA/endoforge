@@ -325,3 +325,22 @@ it. No live Codex generation is run in the sandbox. Client sandbox behavior and
 semantic quality of authored acceptance tests remain outside this fixture's claim.
 `make check`, `make core-test` (18 tests) and `make pipeline-test` passed locally
 on Node 26.12.0/Python 3.14.8 after adding the generator.
+
+## Local promotion and P-22
+
+REQ-PROMOTE-001: `make pipeline-test` and `PYTHONOPTIMIZE=1 make pipeline-test` passed locally.
+Both modes exercise generated candidate → compile test double → real evaluator →
+hash-chain receipt → persisted qualification decision. Refusals cover actual bad
+glue, wrong receipt hash, each of seven failed gate booleans in passing-shaped
+ledger evidence and chain tampering. Existing tests/expected results are unchanged.
+P-22's first fake run completed 60/60 records/promotions at concurrency ten;
+this qualifies wiring, not live generation, compiler correctness or real latency.
+
+`make check` passed (60 documents); `make isolate-test` passed both existing
+suites after optional timing support; direct `node core/engine/gates.test.mjs`
+passed all ten tests. Normal and optimized `timeout 60s make test` attempts
+(with external output overrides) exited 124 at unchanged evaluator tests, after
+pipeline, 18 lifecycle/boundary and 32 ledger tests passed. Full-suite success
+is not claimed. Final pipeline validation includes the sixty-record harness,
+all eight timing fields and non-overlapping stage sums. A separate fake-generator
+run using real AssemblyScript 0.28.20 promoted successfully in both pool modes.
