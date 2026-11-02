@@ -43,3 +43,13 @@ node experiments/P-20-pool-speed-rerun/inspect-compiler.mjs
 [Verification receipts](receipt/verification.json) record completed checks and
 full-suite interruptions. The benchmark does not bypass frozen verification or
 durable ledger validation.
+
+For the compiler-cap rerun, set `P20_ARMS=compile,residency` with a fresh external
+`P20_RECEIPT` directory. This selects complete arm sweeps with the original widths,
+windows and stop rules. The supervisor supplies the pinned
+[compiler policy](../assemblyscript-toolchain.mjs) before compiler import; the
+1 MiB helper cap is recorded in summary, per-job receipts and ledger observations.
+Binaryen retains its existing 4096 MiB maximum; kernels retain 16 pages.
+Keep the original receipts and append rerun evidence in a dated subdirectory.
+The dated [receipt manifest](receipt/rerun-2026-11-02/receipts.sha256) can be
+checked with `sha256sum -c receipts.sha256` from that receipt directory.

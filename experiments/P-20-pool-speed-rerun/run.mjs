@@ -2,12 +2,14 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { fileURLToPath, pathToFileURL } from 'node:url';
+import { fileURLToPath } from 'node:url';
 import { execFile, spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { threadId } from 'node:worker_threads';
 import { setTimeout as delay } from 'node:timers/promises';
 import { IsolatePool } from '../../core/runtime/isolate-pool.mjs';
+import { installWasmLimit } from '../../core/runtime/isolate-wasm.mjs';
+import { compile, loadCompiler, trustedWasmModules } from '../assemblyscript-toolchain.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url)), root = path.resolve(here, '../..');
 const old = path.resolve(here, '../P-15-workcell-concurrency');
@@ -22,20 +24,10 @@ for (const name of ['k00', 'k01']) {
   const c = candidates.find(c => c.name === name);
   candidates.push({ ...c, id: `${name}-effect`, source: c.source + '\n@external("env", "clock") declare function clock(): f64;\nexport function tick(): f64 { return clock(); }\n', expect: 'reject:forbidden_effects' });
 }
-let compiler, prepared, peakHeap = 0;
-async function compile(c, ascPath) {
-  compiler ||= await import(pathToFileURL(ascPath));
-  const files = {}, overlay = { [`${c.name}.ts`]: c.source };
-  const result = await compiler.main([`${c.name}.ts`, '-O3', '--runtime', 'stub', '--noColors', '--initialMemory', '1',
-    '--maximumMemory', '16', '--noAssert', '--outFile', 'out.wasm'], {
-    stdout: compiler.createMemoryStream(), stderr: compiler.createMemoryStream(),
-    readFile: name => overlay[name] ?? null, writeFile: (name, data) => { files[name] = data; }, listFiles: () => [],
-  });
-  return result.error ? null : files['out.wasm'];
-}
+let prepared, peakHeap = 0;
 export async function createPort(options) {
   const { arm, ascPath, wasm, ready, telemetry, release } = options;
-  if (arm !== 'precompiled') compiler ||= await import(pathToFileURL(ascPath));
+  if (arm !== 'precompiled') await loadCompiler(ascPath);
   else if (!prepared) {
     prepared = new Map();
     for (const c of candidates) prepared.set(c.id, c.expect === 'reject:compile' ? null : await WebAssembly.compile(fs.readFileSync(path.join(wasm, `${c.id}.wasm`))));
@@ -146,6 +138,7 @@ async function repetition(config) {
   } }] });
   const baselineRss = rss(process.pid), samples = [], jobs = [], before = environment();
   const pool = new IsolatePool({ hostPort: fileURLToPath(import.meta.url), size: N, isolation: mode,
+    trustedWasmModules: arm === 'precompiled' ? [] : trustedWasmModules,
     resourceLimits: { maxOldGenerationSizeMb: arm === 'precompiled' ? 128 : 1024, maxYoungGenerationSizeMb: 16 }, wasmMemoryMaxMb: arm === 'precompiled' ? 64 : 4096 });
   let abort, warmError, peakRss = baselineRss;
   const failures = [];
@@ -167,7 +160,8 @@ async function repetition(config) {
     assert.equal(result.receipts.length, 1); assert.equal(receipt.record.data.candidate, c.id);
     assert.equal(receipt.record.data.outcome_state, accepted ? 'passed' : 'failed');
     assert.equal(receipt.record.data.frozen_evaluator, reference.identity);
-    jobs.push({ id: receipt.record.id, candidate: c.id, warmup, accepted, ms, hash: receipt.hash, workcell: result.workcell, cgroup: result.cgroup });
+    jobs.push({ id: receipt.record.id, candidate: c.id, warmup, accepted, ms, hash: receipt.hash, workcell: result.workcell, cgroup: result.cgroup,
+      trustedWasmModules: receipt.record.data.observations[0].trustedWasmModules });
     } catch (e) { failures.push({ candidate: c.id, status: result.status, reason: result.reason, error: result.error, report: result.report }); throw e; }
   };
   let runMs, readiness, allReadyMs, error = null;
@@ -218,6 +212,7 @@ async function main() {
   assert(!fs.existsSync(path.join(receipt, 'summary.json')) || !json(path.join(receipt, 'summary.json')).sweeps.length, 'use a fresh P20_RECEIPT directory');
   const scratch = fs.mkdtempSync('/tmp/ef-p20-run-'), ascPath = process.env.P20_ASC ?? '/tmp/ef-p20-setup/p15/node_modules/assemblyscript/dist/asc.js';
   const wasm = path.join(scratch, 'wasm'); fs.mkdirSync(wasm);
+  installWasmLimit(4096, error => { throw new Error(error); }, trustedWasmModules);
   const build = [];
   for (const c of candidates) {
     const bytes = await compile(c, ascPath); assert.equal(Boolean(bytes), c.expect !== 'reject:compile');
@@ -226,9 +221,11 @@ async function main() {
   }
   fs.mkdirSync(path.join(receipt, 'raw'), { recursive: true });
   const summary = { precommit: digest, started: new Date().toISOString(), node: process.version, kernel: os.release(), cpu: os.cpus()[0].model,
-    affinity: '0-27', assemblyscript: '0.28.20', binaryen: '131.0.0-nightly.20260721', build, sweeps: [] };
+    affinity: '0-27', assemblyscript: '0.28.20', binaryen: '131.0.0-nightly.20260721', trustedWasmModules, build, sweeps: [] };
   save(path.join(receipt, 'summary.json'), summary);
-  for (const arm of ['compile', 'residency', 'precompiled']) for (const mode of ['thread', 'process']) {
+  const arms = process.env.P20_ARMS?.split(',') ?? ['compile', 'residency', 'precompiled'];
+  assert(arms.length && arms.every(arm => ['compile', 'residency', 'precompiled'].includes(arm)));
+  for (const arm of arms) for (const mode of ['thread', 'process']) {
     const sweep = { arm, mode, before: environment(), reps: [], stop: null }; summary.sweeps.push(sweep);
     const widths = arm === 'residency' ? [100, 150, 200] : arm === 'precompiled' ? [1, 10, 20, 50] : [1, 10, 12, 16, 20, 24, 28, 32, 40, 50];
     let perCell = 0;

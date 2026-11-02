@@ -6,6 +6,7 @@ import { Worker } from 'node:worker_threads';
 import { fork } from 'node:child_process';
 import { attachCgroup, prepareCgroup, releaseCgroup } from './isolate-cgroup.mjs';
 import { ledgerRequest } from './isolate-ledger.mjs';
+import { trustedWasmPolicy } from './isolate-wasm.mjs';
 
 const positive = value => Number.isSafeInteger(value) && value > 0;
 
@@ -14,6 +15,7 @@ export class IsolatePool {
   #hostPort;
   #limits;
   #wasmMemoryMaxMb;
+  #trustedWasmModules;
   #isolation;
   #cgroupRoot;
   #cgroupLimits;
@@ -26,7 +28,7 @@ export class IsolatePool {
   #closed;
 
   constructor({ hostPort, size = availableParallelism(), resourceLimits = {}, wasmMemoryMaxMb = 64,
-    isolation = 'thread', cgroupRoot, cgroupLimits = {} } = {}) {
+    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [] } = {}) {
     if (!['thread', 'process'].includes(isolation)) throw new TypeError('isolation must be thread or process');
     if (cgroupRoot !== undefined && (typeof cgroupRoot !== 'string' || !cgroupRoot)) throw new TypeError('cgroupRoot path required');
     if (!positive(size)) throw new TypeError('positive integer pool size required');
@@ -46,6 +48,7 @@ export class IsolatePool {
     this.#hostPort = pathToFileURL(resolve(hostPort)).href;
     this.#limits = Object.freeze(limits);
     this.#wasmMemoryMaxMb = wasmMemoryMaxMb;
+    this.#trustedWasmModules = trustedWasmPolicy(trustedWasmModules, wasmMemoryMaxMb);
     this.#isolation = isolation;
     this.#cgroupLimits = Object.freeze({ memoryMax: Math.max(256, limits.maxOldGenerationSizeMb + 3 * limits.maxYoungGenerationSizeMb + 128) * 1048576,
       cpuMax: '100000 100000', pidsMax: 64, ...cgroupLimits });
@@ -92,12 +95,13 @@ export class IsolatePool {
   #spawn() {
     const subprocess = this.#isolation === 'process';
     const entry = new URL('./isolate-workcell.mjs', import.meta.url);
-    const worker = subprocess ? fork(entry, [JSON.stringify({ wasmMemoryMaxMb: this.#wasmMemoryMaxMb, resourceLimits: this.#limits })], {
+    const policy = { wasmMemoryMaxMb: this.#wasmMemoryMaxMb, trustedWasmModules: this.#trustedWasmModules };
+    const worker = subprocess ? fork(entry, [JSON.stringify({ ...policy, resourceLimits: this.#limits })], {
       execArgv: [`--max-old-space-size=${this.#limits.maxOldGenerationSizeMb}`, `--max-semi-space-size=${this.#limits.maxYoungGenerationSizeMb}`],
       serialization: 'advanced', stdio: ['ignore', 'ignore', 'pipe', 'ipc'],
     }) : new Worker(entry, {
       resourceLimits: this.#limits, execArgv: [],
-      workerData: { wasmMemoryMaxMb: this.#wasmMemoryMaxMb },
+      workerData: policy,
     });
     const directory = subprocess ? attachCgroup(worker.pid, this.#cgroupRoot, this.#cgroupLimits) : null;
     const cell = { worker, id: subprocess ? worker.pid : worker.threadId, job: null, error: null,
@@ -161,6 +165,7 @@ export class IsolatePool {
   }
 
   async #finish(job, result) {
+    result = { ...result, trustedWasmModules: this.#trustedWasmModules };
     try {
       const evaluated = performance.now();
       const receipts = await this.#persist('append', job.data, result);

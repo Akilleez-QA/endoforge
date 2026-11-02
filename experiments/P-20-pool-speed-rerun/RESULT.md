@@ -194,3 +194,115 @@ One machine, one lifetime, three reps per completed point; no randomization,
 confidence intervals, model service, production qualification, quiet-host
 comparison, or new memory-breach containment claim. See P-18 for containment.
 No commit or push was performed.
+
+## 2026-11-02 UTC — explicit compiler maximum rerun
+
+The supervisor now supplies a maximum only to the complete-binary SHA-256 match
+for `assemblyscript-0.28.20-f64-pow`: 16 pages (1 MiB), digest
+`24982099e4fafe2b0779b0d4cb7a78b8264ebd3890e3c8d75b6d54a3e333e189`.
+Binaryen already declares 65,536 pages (4096 MiB); its maximum is preserved.
+Kernel builds still declare 16 pages. Unmatched no-maximum modules remain rejected.
+The policy is fixed by the supervisor before compiler import, never by candidate
+input, and is recorded in every ledger observation and published job record.
+
+Only compile and residency were selected with `P20_ARMS=compile,residency`;
+original widths, three repetitions, timing windows, affinity, lock and stop rules
+were retained. Compilation remains inside each workcell. Kernel source and WASM
+hashes match the original P-20 build exactly. The original precommit and all old
+numbers above are unchanged. See the dated [plan](receipt/rerun-2026-11-02/rerun-plan.json),
+[summary](receipt/rerun-2026-11-02/summary.json),
+[source hashes](receipt/rerun-2026-11-02/modules.sha256),
+[dependency hashes](receipt/rerun-2026-11-02/dependencies.sha256) and
+[setup](receipt/rerun-2026-11-02/setup.json).
+
+UTC measurement: 2026-11-02T01:15:20.268Z to 2026-11-02T02:40:22.570Z; v26.12.0, AMD Ryzen 9 7950X 16-Core Processor,
+kernel 7.2.8-9-omarchy; cores 0–27. Shared desktop, no quiet gate.
+An initial partial sweep completed two N=1 thread repetitions before interruption:
+a hash-lookup cleanup changed guard source during the third repetition startup. The
+[partial receipts](receipt/rerun-2026-11-02/interrupted/summary.json) are retained
+and excluded below. The final sweep used the frozen source hashes throughout.
+
+Completed points report medians across the successful repetitions shown; three
+were planned per point. Latency p50/p95 and
+ready p50/all-ready are medians of per-repetition statistics; readiness remains
+a submission-to-port-ready upper bound. Heap is median cell maximum-sampled JS
+heap; RSS/cell subtracts supervisor baseline and includes direct Python children.
+Warmups are excluded from throughput. RSS and heap use MiB.
+
+| Arm | N | Mode | reps | accepted/s (range) | latency p50 / p95 ms | RSS/cell | heap/cell | ready p50 / all ms |
+|---|---|---|---|---|---|---|---|---|
+| compile | 1 | thread | 3 | 2.30 (2.27–2.30) | 372.63 / 400.58 | 557.8 | 82.0 | ≤ 1998 / 2006 |
+| compile | 10 | thread | 3 | 5.39 (5.31–5.50) | 1579.37 / 1801.55 | 508.4 | 79.7 | ≤ 5419 / 5687 |
+| compile | 12 | thread | 3 | 4.89 (4.83–4.91) | 2020.88 / 2388.38 | 499.3 | 80.9 | ≤ 6698 / 6979 |
+| compile | 16 | thread | 3 | 4.21 (4.16–4.25) | 3073.12 / 3814.02 | 483.0 | 78.6 | ≤ 8772 / 9244 |
+| compile | 20 | thread | 3 | 3.44 (3.43–3.47) | 4306.78 / 5797.03 | 491.6 | 73.0 | ≤ 10957 / 11631 |
+| compile | 24 | thread | 3 | 2.87 (2.84–2.96) | 6102.25 / 8243.78 | 470.9 | 72.5 | ≤ 13439 / 15223 |
+| compile | 28 | thread | 3 | 2.55 (2.51–2.58) | 7993.92 / 11126.22 | 458.2 | 70.8 | ≤ 15812 / 17738 |
+| compile | 32 | thread | 3 | 2.32 (1.87–2.35) | 9316.80 / 14665.21 | 480.2 | 63.5 | ≤ 16900 / 19816 |
+| compile | 40 | thread | 3 | 1.85 (1.71–1.86) | 14216.87 / 22297.51 | 422.9 | 61.9 | ≤ 20741 / 24817 |
+| compile | 50 | thread | 3 | 1.52 (1.46–1.52) | 21724.84 / 28321.16 | 404.2 | 61.1 | ≤ 25156 / 31369 |
+| compile | 1 | process | 3 | 2.26 (2.22–2.29) | 378.29 / 417.67 | 648.0 | 63.5 | ≤ 2147 / 2154 |
+| compile | 10 | process | 3 | 7.27 (7.26–7.28) | 1094.93 / 1374.28 | 611.7 | 63.3 | ≤ 5396 / 5648 |
+| compile | 12 | process | 3 | 7.20 (7.11–7.22) | 1327.34 / 1629.92 | 618.5 | 64.0 | ≤ 6489 / 6847 |
+| compile | 16 | process | 3 | 7.13 (7.07–7.13) | 1763.32 / 2147.82 | 602.4 | 62.7 | ≤ 8619 / 9087 |
+| compile | 20 | process | 3 | 6.87 (6.86–6.90) | 2190.72 / 2757.03 | 587.3 | 62.2 | ≤ 10593 / 11193 |
+| compile | 24 | process | 3 | 6.80 (6.77–6.84) | 2620.42 / 3322.90 | 573.5 | 49.7 | ≤ 12690 / 13532 |
+| compile | 28 | process | 3 | 6.72 (6.20–6.81) | 3161.23 / 3808.39 | 550.7 | 62.7 | ≤ 14529 / 15687 |
+| compile | 32 | process | 3 | 6.78 (6.73–6.80) | 3684.66 / 4366.65 | 550.8 | 47.9 | ≤ 16435 / 18105 |
+| compile | 40 | process | 3 | 6.62 (5.77–6.69) | 4657.24 / 5610.70 | 560.2 | 47.3 | ≤ 19756 / 23203 |
+| compile | 50 | process | 3 | 6.46 (6.46–6.47) | 5713.78 / 6866.19 | 560.9 | 48.0 | ≤ 24513 / 29266 |
+| residency | 100 | thread | 3 | 0.67 (0.64–0.67) | 100408.24 / 115837.70 | 270.3 | 54.4 | ≤ 42040 / 63922 |
+| residency | 150 | thread | 3 | 0.46 (0.42–0.46) | 213893.58 / 250388.09 | 222.9 | 53.2 | ≤ 68336 / 109466 |
+| residency | 200 | thread | 0 | not run (stop) | — | — | — | — |
+| residency | 100 | process | 3 | 5.13 (4.99–5.27) | 11027.60 / 14787.46 | 508.8 | 48.3 | ≤ 42050 / 65758 |
+| residency | 150 | process | 0 | not run (stop) | — | — | — | — |
+| residency | 200 | process | 0 | not run (stop) | — | — | — | — |
+
+Stops and outcomes:
+
+- compile / thread: 30 recorded repetitions; all planned points completed.
+- compile / process: 30 recorded repetitions; all planned points completed.
+- residency / thread: 6 recorded repetitions; stop at N=200: projected memory floor.
+- residency / process: 3 recorded repetitions; stop at N=150: projected memory floor.
+- Peak median compile accepted-correct/s, thread: N=10, 5.39.
+- Peak median compile accepted-correct/s, process: N=10, 7.27.
+
+The P-15 latency comparison uses ten times the new N=1 median p95; the
+P-17 full curve remains measured even after crossing that reference threshold.
+thread: threshold 4005.76 ms; first measured crossing N=20.
+process: threshold 4176.74 ms; first measured crossing N=32.
+
+The 69 completed repetitions have 9823 reconciled, Python-revalidated durable
+receipts, including warmups; 7375 timed correct completions include
+5878 accepts. All completed job records carry the configured compiler cap.
+Process cgroup delegation was unavailable. Both residency stops were projections;
+no final-sweep repetition failed or was aborted. The summary records both stops.
+
+| Sweep | load 1m before → after | MemFree GiB before → after | MemAvailable GiB before → after | visible other-heavy before → after |
+|---|---|---|---|---|
+| compile thread | 1.48 → 23.47 | 4.11 → 19.83 | 78.65 → 77.89 | 0 → 0 |
+| compile process | 23.47 → 45.00 | 19.83 → 25.25 | 77.89 → 78.17 | 0 → 0 |
+| residency thread | 45.00 → 16.24 | 25.25 → 28.73 | 78.17 → 70.37 | 0 → 0 |
+| residency process | 16.24 → 80.09 | 28.73 → 51.66 | 70.37 → 70.58 | 0 → 0 |
+
+Minimum retained memory sample: 26.23 GiB MemAvailable.
+Supervisor snapshots consistently saw one external Codex process in this execution's PID namespace;
+counts do not establish desktop-wide load. Full-suite checks overlapped early
+N=1 preparation; they stalled at engine evaluation. Later points ran without
+repository checks. Ascending widths and sequential modes retain load drift.
+
+`make check` and `make isolate-test` passed. Final toolchain tests passed in both
+modes, including cap enforcement, preserved maxima, receipt metadata, forged
+candidate policy and replacement. Existing assertions/expected results were not edited.
+Both full-suite attempts passed 18 core and 32 ledger tests, then stalled at the
+engine stage: regular interrupted (130), optimized timed out (124). A synthetic
+`spawnSync` diagnostic reproduced `EPERM` despite status 0 and child output.
+Full-suite success is not claimed. See [verification](receipt/rerun-2026-11-02/verification.json)
+and its logs. The real compiler smoke compiled a 57-byte identity kernel under
+the guard and returned 7 for input 7.
+
+These results establish compiler compatibility under an explicit bounded policy,
+not causal speedup or production qualification. The full evaluator, repeated
+frozen checks and durable Python ledger remain different from the old pipelines.
+All earlier limits concerning synthetic residuals, sampled RSS, external WASM
+memory, readiness upper bounds and a single shared host still apply.

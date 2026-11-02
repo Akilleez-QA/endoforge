@@ -7,10 +7,21 @@ const { wasmMemoryMaxMb } = options;
 const send = result => parentPort ? parentPort.postMessage(result) : process.send(result);
 const metadata = { workcell: parentPort ? threadId : process.pid,
   resourceLimits: parentPort ? resourceLimits : options.resourceLimits, wasmMemoryMaxMb };
+const nativeInstantiate = WebAssembly.instantiate;
+await Promise.race([new Promise(resolve => {
+  WebAssembly.instantiate = (...args) => {
+    WebAssembly.instantiate = nativeInstantiate;
+    const pending = nativeInstantiate(...args);
+    pending.then(resolve, resolve);
+    return pending;
+  };
+  void globalThis.Response;
+}), new Promise(resolve => setTimeout(resolve, 2000).unref())]);
+WebAssembly.instantiate = nativeInstantiate;
 const checkWasm = installWasmLimit(wasmMemoryMaxMb, error => {
   send({ type: 'limit', error });
   process.exit(18);
-});
+}, options.trustedWasmModules);
 
 (parentPort || process).on('message', async ({ reference, candidates, hostPort, portOptions }) => {
   try {
