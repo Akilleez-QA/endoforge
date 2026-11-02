@@ -317,6 +317,11 @@ parity concerns verdicts and outputs, not timestamps or compiled byte identity.
 
 ## Generator adapter
 
+REQ-GEN-002: `generator.test.mjs` records the request sent to the labelled test
+double and checks the rules, template and G7 kinds they cover. Root cause of the
+P-22 G7 refusals: the schema leaves precision optional while G7 requires it for
+number results, and generation received only the schema.
+
 REQ-GEN-001: `make pipeline-test` includes a labelled executable test double,
 two-stage generation, durable oracle creation, frozen hashes, absence of code in
 the oracle, early-code/drift/nonzero-exit refusals and missing configuration.
