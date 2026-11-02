@@ -1,3 +1,4 @@
+import { performance } from 'node:perf_hooks';
 import { availableParallelism } from 'node:os';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -75,9 +76,9 @@ export class IsolatePool {
           new Set(data.candidates).size !== data.candidates.length) throw new Error('unique candidates required');
     } catch (error) { return Promise.reject(error); }
     const promise = new Promise((resolve, reject) => {
-      const job = { data, resolve, reject, ready: false };
+      const job = { data, resolve, reject, ready: false, started: performance.now() };
       this.#queue.push(job);
-      this.#persist('prepare', data).then(() => { job.ready = true; this.#pump(); }, error => {
+      this.#persist('prepare', data).then(() => { job.prepared = performance.now(); job.ready = true; this.#pump(); }, error => {
         this.#queue.splice(this.#queue.indexOf(job), 1);
         reject(error);
         this.#pump();
@@ -160,7 +161,12 @@ export class IsolatePool {
   }
 
   async #finish(job, result) {
-    try { job.resolve({ ...result, receipts: await this.#persist('append', job.data, result) }); }
+    try {
+      const evaluated = performance.now();
+      const receipts = await this.#persist('append', job.data, result);
+      const timings = { gate: evaluated - job.prepared, ledger: job.prepared - job.started + performance.now() - evaluated };
+      job.resolve({ ...result, receipts, ...(job.data.timing === true ? { timings } : {}) });
+    }
     catch (error) { error.result = result; job.reject(error); }
   }
 

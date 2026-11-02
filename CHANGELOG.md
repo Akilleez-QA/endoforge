@@ -6,6 +6,9 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Added
 
+- Local promotion decisions with verified chain/receipt and complete X1 pool
+  evidence, plus P-22 prospective harness and explicit test-double validation.
+
 - Environment-configured two-stage Codex generation with durable freeze before
   implementation and labelled CI test doubles; no account discovery or auth reads.
 

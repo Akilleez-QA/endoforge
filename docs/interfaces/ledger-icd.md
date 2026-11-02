@@ -156,3 +156,22 @@ Default timeout is 600 seconds per session. Nonzero exits/timeouts refuse withou
 retaining client transcripts. Freeze timing includes durable oracle registration;
 generate timing sums the two client sessions and their output validation.
 `ENDOFORGE_CODEX_TEST_DOUBLE=1` explicitly marks synthetic smoke runs.
+
+## Local promotion interface for POODO
+
+`x1/ledger.mjs:ledger('promote', {reference, candidate, receipt: {id, hash},
+decisionPath})` replays the existing Python ledger under a SQLite write lock,
+checks exact candidate/oracle/receipt bindings and both complete evaluator rounds,
+and verifies each G1–G7 verdict. It exclusively writes and fsyncs a version-1
+JSON decision with issuer `endoforge.local.x1`, policy `X1-G1-G7/v1`, scope
+`qualification`, candidate/oracle/receipt identities, and `decision: promote|refuse`.
+Promotion adds evaluator digest and chain tip; refusal records a reason. `sha256`
+hashes the other fields as sorted compact JSON. Existing output paths fail closed.
+This is a local trusted-host policy, not a POODO-issued lifecycle authorization or
+signature. POODO has no callable approval API today; neither sibling repo changes.
+
+`IsolatePool.run({...job, timing:true})` additionally returns host monotonic
+`timings: {gate, ledger}`. Gate spans receipt-preflight completion through worker
+result delivery, including FIFO wait/startup and frozen verification. Ledger sums
+preflight and append including serialization wait. Timing metadata is returned
+outside the persisted observation and does not change verdicts or receipt schemas.

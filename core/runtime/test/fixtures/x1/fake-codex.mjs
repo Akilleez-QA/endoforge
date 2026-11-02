@@ -9,6 +9,6 @@ if (request.stage === 'specification') {
 } else {
   const glue = JSON.parse(c.files['glue.json']); glue.id = request.id;
   writeFileSync('kernel.ts', c.files['kernel.ts']);
-  writeFileSync('glue.json', JSON.stringify(glue));
+  writeFileSync('glue.json', process.env.FAKE_CODEX_MODE === 'glue' ? '{}' : JSON.stringify(glue));
   if (process.env.FAKE_CODEX_MODE === 'drift') writeFileSync('tests.json', '[]');
 }

@@ -53,4 +53,4 @@ factory-state-test:
 
 .PHONY: pipeline-test
 pipeline-test:
-	node --test core/runtime/test/x1.test.mjs core/runtime/test/generator.test.mjs
+	node --test core/runtime/test/x1.test.mjs core/runtime/test/generator.test.mjs core/runtime/test/promotion.test.mjs

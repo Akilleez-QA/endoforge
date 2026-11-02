@@ -216,3 +216,13 @@ The executable is trusted and Codex enforces its own workspace-write sandbox.
 The returned candidate grants no promotion. CI uses the explicitly labelled
 [fake Codex script](test/fixtures/x1/fake-codex.mjs), which always authors addition;
 it is a test double and supplies no evidence of live synthesis quality.
+
+[x1/pipeline.mjs](x1/pipeline.mjs) connects generation, supervisor compilation,
+pool evaluation, receipt storage and local promotion. POODO currently supplies
+instructions, not a callable approval API. EndoForge's `ledger('promote', request)`
+is the interface for a future POODO caller; it persists an exclusive qualification
+decision bound to candidate, oracle, receipt hash and verified chain tip. It refuses
+incomplete rounds, any failed X1 gate or chain/hash mismatch. It does not activate
+artifacts. Host and ledger writers are trusted; the hash chain is not a signature
+or an external witness. [P-22](../../experiments/P-22-real-need-to-candidate/README.md)
+provides the sixty-request harness and prospective measurement protocol.
