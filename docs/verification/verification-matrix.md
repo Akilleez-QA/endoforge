@@ -197,7 +197,8 @@ event loop empty, so every workcell exited with code 13. On main-rig,
 `isolate-pool.test.mjs` and `isolate-process.test.mjs` failed 38 of 39 on Node
 26.12.0 before the change and passed 39 of 39 after it. Node 22.23.3 passed 39
 of 39 after it. CI now runs the repository tests on Node 22 and 26. On Node 26 each workcell start costs the full 2 s wait, so the process
-compile-gate test, which replaces cells after each refusal, has a 60 s timeout.
+compile-gate test has a 60 s timeout and the WASM breach test, which replaces a cell
+per case, has a 180 s timeout.
 
 ## Process workcell verification
 
