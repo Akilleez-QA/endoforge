@@ -65,7 +65,8 @@ export class IsolatePool {
     if (this.#closing) return Promise.reject(new Error('isolate pool is closing'));
     return this.#warm ||= (async () => {
       while (this.#cells.size < this.#size) this.#spawn();
-      if (!(await Promise.all([...this.#cells].map(cell => cell.started))).every(Boolean)) throw new Error('workcell exited before ready');
+      const [started] = await Promise.all([Promise.all([...this.#cells].map(cell => cell.started)), this.#ledger.start()]);
+      if (!started.every(Boolean)) throw new Error('workcell exited before ready');
     })();
   }
 
