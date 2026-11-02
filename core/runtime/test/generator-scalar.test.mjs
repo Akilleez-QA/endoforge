@@ -25,7 +25,7 @@ async function setup(t) {
     FAKE_CODEX_CONTRACT: contract, FAKE_CODEX_TESTS: testsText };
   return { root, env };
 }
-test('scalar filters before freeze, preserves retained expectations, and supplies the filtered specification to implementation', async t => {
+test('scalar filters before freeze, preserves retained expectations', async t => {
   const { root, env } = await setup(t), directory = join(root, 'request');
   const out = await generate({ need: 'scalar functions', directory, env });
   const kept = JSON.parse(testsText).slice(0, 5).filter(t => t.name !== 'fractional');
@@ -39,7 +39,7 @@ test('scalar filters before freeze, preserves retained expectations, and supplie
   const impl = JSON.parse(await readFile(`${env.FAKE_CODEX_RECORD}.implementation.json`));
   assert.ok(spec.instructions.endsWith(`${terseRule} ${exactRule} ${scalarRule}`));
   assert.ok(impl.instructions.endsWith(terseRule) && !impl.instructions.includes(scalarRule) && !impl.instructions.includes(exactRule));
-  assert.equal(impl.frozen['tests.json'], out.candidate.files['tests.json']);
+  assert.equal(impl.frozen, undefined);
 });
 test('scalar rejects NaN and infinities and only drops fractional traps at declared integer positions', () => {
   const cases = [NaN, Infinity, -Infinity].map((n, i) => ({ name: String(i), fn: 'add', args: [n, 0], expect: 0 }));
