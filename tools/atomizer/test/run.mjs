@@ -59,7 +59,7 @@ check('forbidden edge tests->kernel rejected', !vf.ok && vf.errors.some((e) => /
 const vg = validate(JSON.parse(fs.readFileSync(fx('synthetic-fanout.json'), 'utf8')), policy);
 check('fan-out fixture valid', vg.ok, vg.errors.join('; '));
 // 2. parallel run: 10 atoms of ~1 s each; critical path 3 atoms
-const r1 = spawnSync(node, [sched, 'run', fx('synthetic-fanout.json'), '--run-dir', path.join(tmp, 'fanout'), '--concurrency', '9'], { encoding: 'utf8' });
+const r1 = spawnSync(node, [sched, 'run', fx('synthetic-fanout.json'), '--run-dir', path.join(tmp, 'fanout'), '--concurrency', '9'], { encoding: 'utf8', env: { ...process.env, ENDOFORGE_THROTTLE: '0' } });
 const s1 = JSON.parse(r1.stdout.trim().split('\n').at(-1));
 check('fan-out all done', s1.allDone, r1.stderr.slice(-300));
 check('wall below 6 s for ~10 s of atom work', s1.wallMs < 6000, `wall ${s1.wallMs} ms, sequential-equivalent ${s1.sumAtomWallMs} ms`);

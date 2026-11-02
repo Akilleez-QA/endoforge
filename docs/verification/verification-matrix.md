@@ -220,3 +220,81 @@ Logs: `/tmp/ef-process-make-default-final.log`,
 `/tmp/ef-process-make-node22-final.log`, `/tmp/ef-p18-final.log` and
 `/tmp/ef-process-check-final.log`. The full `make test` and `make test-optimized`
 suites were not rerun for this focused extension.
+
+## Atomizer fan-out timing verification
+
+On 2026-11-01, branch `deflake-atomizer` was checked against baseline
+`33f1507ba1d2c1700d385a0d97a226e1e12efa60` with Node 22.23.3,
+Python 3.14.8 and bubblewrap 0.13.1. These are local shared-host observations,
+not an observed GitHub Actions run; affinity to CPUs 0 and 1 limits execution
+to two logical CPUs without isolating the host's load average.
+
+The fan-out fixture already uses ten `sleep 1` commands, with eight independent
+workers between seed and compose. Concurrency 9 can overlap those sleeps on
+two CPUs; this is a scheduler overlap check, not a CPU throughput benchmark.
+The planned 3.33x bound is ten work points over a three-point critical path,
+not a guarantee that accounts for throttling or harness overhead.
+The inherited headroom guard can hold ready workers when host load exceeds
+1.8 under two-CPU affinity, or available memory falls below its reserve. That
+makes the timing assertion depend on host conditions and earlier suite work.
+Only this fan-out scheduler invocation now sets `ENDOFORGE_THROTTLE=0`.
+Production headroom policy, fixtures, and every existing assertion are unchanged.
+
+`realizedSpeedup` rounds `sumAtomWallMs / wallMs` to two decimal places.
+The reported CI values give `10160 / 5091 = 1.99568`, correctly rounded to
+`2.00`; removing rounding would still fail `> 2`. Atom wall sums isolated
+attempts, including spawn, OS scheduling/pool waits, execution and close/cleanup;
+it excludes the scheduler's ready queue and input staging. Run wall includes
+those ready-queue delays, staging and postprocessing. It excludes earlier test
+harness work and scheduler startup/context collection. No timing boundary or
+rounding changed, and neither the >2x nor six-second threshold was widened.
+Overlapping OS waits can inflate atom wall sums, so the realized ratio can
+slightly exceed the bound calculated from declared work points.
+
+A controlled two-CPU scheduler pair set `ENDOFORGE_MAX_LOAD=0.000001` and
+`ENDOFORGE_RESERVE_GB=1000000`: throttling enabled produced 1.00x in 10081 ms
+with seven throttles; disabled produced 3.32x in 3039 ms with zero throttles.
+Both completed all ten atoms. This isolates the host guard as a cause of the
+assertion failure without changing work or the speedup calculation.
+
+Each batch ran `PYTHONOPTIMIZE=1 taskset -c 0,1 node tools/atomizer/test/run.mjs`
+30 times sequentially, using Node 22.23.3. The execution sandbox breaks
+Node synchronous pipe I/O (`EPERM`, empty output or stalled stdin); both batches
+used the same external `NODE_OPTIONS=--require=/tmp/ef-atomizer-deflake/stdin.cjs`
+adapter, which substitutes temporary files for synchronous subprocess pipes,
+preserves output and exit status, and captures fan-out receipts before cleanup.
+No assertion or fixture was altered by the adapter.
+
+| Batch | Passing test runs | Speedup min / median / p95 / max | Fan-out wall min / median / p95 / max (ms) | Throttles |
+|---|---|---|---|---|
+| Before | 12/30 | 1.00 / 1.00 / 3.32 / 3.32 | 3036 / 10077 / 10248 / 10291 | 7 in each failed run, 0 in each passing run |
+| After | 30/30 | 3.12 / 3.31 / 3.32 / 3.34 | 3045 / 3056 / 3473 / 3540 | 0 in all runs |
+
+Reported speedup counts before: 1.00x (18), 3.31x (3), 3.32x (9).
+After: 3.12x (1), 3.20x (1), 3.23x (2), 3.24x (2), 3.25x (1),
+3.27x (1), 3.31x (15), 3.32x (6), 3.34x (1). Percentiles use nearest rank.
+The 18 baseline failures each failed only the >2x and six-second checks;
+all other assertions passed. Raw unrounded ratios ranged from 0.996487 to
+3.324120 before and 3.120621 to 3.337288 after.
+
+Logs, per-run summary receipts, exit statuses, the adapter and repetition/statistics
+scripts are outside the source tree under `/tmp/ef-atomizer-deflake/`:
+`baseline.jsonl`, `after.jsonl`, `baseline-*.log`, `after-*.log`,
+`*-exits.jsonl`, `distribution.txt`, `repeat.py`, `summarize.py` and
+`controlled-{0,1}/`. The receipts contain the original wall measurements;
+receipt capture runs after the scheduler has exited.
+
+Additional checks used Node 22.23.3 first on PATH:
+
+| Command | Actual result |
+|---|---|
+| `make check` | Exit 0; zero link/digest failures over 57 documents |
+| `timeout 60s make test ENDOFORGE_TEST_OUTPUT=/tmp/ef-atomizer-deflake/full-test` | Exit 124; check, 18 lifecycle/boundary and 32 ledger tests passed; engine evaluator stalled on synchronous Python stdin |
+| `timeout 60s make test-optimized ENDOFORGE_TEST_OUTPUT=/tmp/ef-atomizer-deflake/full-optimized` | Exit 124; same completed checks and engine stall |
+| `make atomizer-test` with the external I/O adapter | Exit 2; trace tests and main scheduler tests passed; unchanged swarm model-fallback test failed (`1 !== 0`); remaining swarm checks passed |
+| Compare all 31 existing `check()` lines against baseline; `git diff --check` | Identical assertions; exit 0 |
+
+The full-suite attempts used native I/O without the adapter and therefore did
+not qualify later Makefile targets. Their logs are `make-test.log` and
+`make-test-optimized.log`; the focused target log is `make-atomizer.log`, all
+under the evidence directory above. No assertion was changed to obtain a pass.
