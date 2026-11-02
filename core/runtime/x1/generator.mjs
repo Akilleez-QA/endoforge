@@ -26,13 +26,28 @@ const read = async (directory, name) => {
   if (!stat.isFile() || stat.isSymbolicLink() || stat.size > 1024 * 1024) throw Error('invalid generated file');
   return readFile(file, 'utf8');
 };
-function invoke(directory, prompt, env, timeout) {
+export function effortFor(need, setting = 'auto') {
+  if (setting === 'default') return null;
+  if (setting !== 'auto') return setting;
+  const words = need.match(/## The request, in the requester's words\s+([\s\S]*?)(\n## |$)/);
+  return (words ? words[1] : need).trim().length <= 400 ? 'low' : null;
+}
+function invoke(directory, prompt, env, timeout, { resume = null, effort = null } = {}) {
   const argv = env.ENDOFORGE_CODEX_CMD?.startsWith('[') ? JSON.parse(env.ENDOFORGE_CODEX_CMD) : [env.ENDOFORGE_CODEX_CMD];
   if (!argv?.length || !argv.every(x => typeof x === 'string' && x) || !env.CODEX_HOME) throw Error('ENDOFORGE_CODEX_CMD and CODEX_HOME required');
+  const tuning = effort ? ['-c', `model_reasoning_effort="${effort}"`] : [];
+  const args = resume
+    ? ['exec', 'resume', '--json', '--skip-git-repo-check', '-c', 'sandbox_mode="workspace-write"', ...tuning, resume, '-']
+    : ['exec', '--json', '--skip-git-repo-check', '--sandbox', 'workspace-write', ...tuning, '-'];
   return new Promise((resolve, reject) => {
-    const child = execFile(argv[0], [...argv.slice(1), 'exec', '--skip-git-repo-check', '--sandbox', 'workspace-write', '-'], {
-      cwd: directory, env, timeout, maxBuffer: 2 * 1024 * 1024,
-    }, error => error ? reject(Error('codex generation failed or timed out')) : resolve());
+    const child = execFile(argv[0], [...argv.slice(1), ...args], {
+      cwd: directory, env, timeout, maxBuffer: 16 * 1024 * 1024,
+    }, (error, stdout) => {
+      if (error) return reject(Error('codex generation failed or timed out'));
+      const started = String(stdout).split('\n').map(line => { try { return JSON.parse(line); } catch { return null; } })
+        .find(event => event?.type === 'thread.started' && typeof event.thread_id === 'string' && /^[A-Za-z0-9-]+$/.test(event.thread_id));
+      resolve(started?.thread_id ?? null);
+    });
     child.stdin.on('error', () => {});
     child.stdin.end(JSON.stringify(prompt));
   });
@@ -45,9 +60,10 @@ export async function generate({ need, directory, env = process.env, timeout = 6
   await mkdir(workspace); await mkdir(root);
   const reference = { ledger: join(directory, 'ledger.sqlite'), root };
   const id = basename(directory);
+  const effort = effortFor(need, env.ENDOFORGE_CODEX_EFFORT || 'auto'), warm = (env.ENDOFORGE_CODEX_SESSION || 'resume') === 'resume';
   const start = performance.now();
-  await invoke(workspace, { stage: 'specification', need, id, instructions:
-    'Write only CONTRACT.md and tests.json. Do not write kernel.ts or glue.json yet. Define a pure bounded AssemblyScript kernel, explicit assumptions, exports and numeric tests. tests.json is a nonempty array of {name,fn,args,expect,tol?} or {name,fn,args,expectError:true}. Include boundary and trap cases. For every number result, state in CONTRACT.md the decimal places to show. These files will be frozen before implementation.', glueRules }, env, timeout);
+  const thread = await invoke(workspace, { stage: 'specification', need, id, instructions:
+    'The workspace starts empty; do not explore it or run commands. Write only CONTRACT.md and tests.json, CONTRACT.md under 40 lines. Do not write kernel.ts or glue.json yet. Define a pure bounded AssemblyScript kernel, explicit assumptions, exports and numeric tests. tests.json is a nonempty array of {name,fn,args,expect,tol?} or {name,fn,args,expectError:true}. Include boundary and trap cases. For every number result, state in CONTRACT.md the decimal places to show. These files will be frozen before implementation.', glueRules }, env, timeout, { effort });
   const names = (await readdir(workspace)).sort();
   if (JSON.stringify(names) !== JSON.stringify(['CONTRACT.md', 'tests.json'])) throw Error('code or unexpected files before freeze');
   const files = Object.fromEntries(await Promise.all(names.map(async n => [n, await read(workspace, n)])));
@@ -62,12 +78,13 @@ export async function generate({ need, directory, env = process.env, timeout = 6
   reference.identity = frozen.identity;
   const freezeMs = performance.now() - freezeStart, codeStart = performance.now();
   await invoke(workspace, { stage: 'implementation', need, id, glueSchema: schema, glueRules, glueTemplate, instructions:
-    'Read the frozen CONTRACT.md and tests.json. Write kernel.ts and glue.json only. Do not change CONTRACT.md, tests.json or frozen.sha256. Use AssemblyScript 0.28.20, runtime stub, no imports except env.abort, explicit bounded memory. Implement all frozen tests and the closed glue schema; glue.id must equal id. glue.json must satisfy every rule in glueRules; glueTemplate shows the shape. No compiler or other output files.' }, env, timeout);
+    'You already wrote the frozen CONTRACT.md and tests.json; read them only if not in context. Do not run compilers, tests or other commands; the supervisor compiles and gates. Write kernel.ts and glue.json only. Do not change CONTRACT.md, tests.json or frozen.sha256. Use AssemblyScript 0.28.20, runtime stub, no imports except env.abort, explicit bounded memory. Implement all frozen tests and the closed glue schema; glue.id must equal id. glue.json must satisfy every rule in glueRules; glueTemplate shows the shape. No compiler or other output files.' }, env, timeout, { effort, resume: warm ? thread : null });
   for (const [name, text] of Object.entries(files)) if (await read(workspace, name) !== text) throw Error('frozen specification changed during generation');
   if (JSON.stringify((await readdir(workspace)).sort()) !== JSON.stringify([...Object.keys(files), 'kernel.ts', 'glue.json'].sort())) throw Error('unexpected implementation files');
   for (const name of ['kernel.ts', 'glue.json']) files[name] = await read(workspace, name);
   JSON.parse(files['glue.json']);
   return { candidate: { id, files }, reference, digest: frozen.digest,
     testDouble: env.ENDOFORGE_CODEX_TEST_DOUBLE === '1',
+    session: { effort: effort ?? 'default', resumed: Boolean(warm && thread) },
     timings: { generate: generatedSpecMs + performance.now() - codeStart, freeze: freezeMs } };
 }

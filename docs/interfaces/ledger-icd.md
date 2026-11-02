@@ -158,6 +158,9 @@ retaining client transcripts. Freeze timing includes durable oracle registration
 generate timing sums the two client sessions and their output validation.
 The specification request carries `glueRules`; the implementation request carries
 `glueSchema`, `glueRules` and `glueTemplate`, all exported by the generator module.
+Both turns use `codex exec --json`; the implementation turn is `codex exec resume <thread_id>`
+when a `thread.started` id was observed and resume is enabled. The result adds
+`session: {effort, resumed}`.
 `ENDOFORGE_CODEX_TEST_DOUBLE=1` explicitly marks synthetic smoke runs.
 
 ## Local promotion interface for POODO
