@@ -167,7 +167,7 @@ promise at timeout (exit 124); gates test file completed. Later make targets
 were not reached. Synchronous Node subprocess diagnostics returned EPERM or
 timed out with stdin in this execution environment; async Python calls used
 by the measured pool completed. The full suites are **not claimed to pass**.
-Logs: [regular](receipt/make-test.log), [optimized](receipt/make-test-optimized.log).
+Logs: [regular](receipt/make-test.txt), [optimized](receipt/make-test-optimized.txt).
 
 ## What it does not show
 

@@ -1,0 +1,90 @@
+PYTHONOPTIMIZE=1 make test PYTHON="python3 -O"
+make[1]: Entering directory '$REPO'
+python3 -O -I tools/check-docs.py
+0 failure(s) over 52 documents
+python3 -O -B -m unittest discover -s tests -v
+test_core_imports_only_the_allowlisted_stdlib (test_endoforge_core_boundary.EndoforgeCoreBoundaryTests.test_core_imports_only_the_allowlisted_stdlib) ... ok
+test_importing_the_core_loads_nothing_concrete (test_endoforge_core_boundary.EndoforgeCoreBoundaryTests.test_importing_the_core_loads_nothing_concrete) ... ok
+test_a_hand_built_proposal_cannot_skip_the_rules (test_endoforge_lifecycle.DecisionTests.test_a_hand_built_proposal_cannot_skip_the_rules) ... ok
+test_a_hand_set_state_or_artifact_is_refused (test_endoforge_lifecycle.DecisionTests.test_a_hand_set_state_or_artifact_is_refused) ... ok
+test_a_transition_applies_only_with_a_decision_bound_to_its_digest (test_endoforge_lifecycle.DecisionTests.test_a_transition_applies_only_with_a_decision_bound_to_its_digest) ... ok
+test_decisions_are_consumed_once_and_stale_proposals_refused (test_endoforge_lifecycle.DecisionTests.test_decisions_are_consumed_once_and_stale_proposals_refused) ... ok
+test_a_generated_artifact_holds_no_qualification_or_activation (test_endoforge_lifecycle.GenerationGrantsNothingTests.test_a_generated_artifact_holds_no_qualification_or_activation) ... ok
+test_generation_cannot_carry_its_own_claims (test_endoforge_lifecycle.GenerationGrantsNothingTests.test_generation_cannot_carry_its_own_claims) ... ok
+test_the_generation_decision_does_not_authorize_the_next_step (test_endoforge_lifecycle.GenerationGrantsNothingTests.test_the_generation_decision_does_not_authorize_the_next_step) ... ok
+test_qualification_adds_the_receipt_identity_without_changing_the_others (test_endoforge_lifecycle.IdentityTests.test_qualification_adds_the_receipt_identity_without_changing_the_others) ... ok
+test_records_are_immutable (test_endoforge_lifecycle.IdentityTests.test_records_are_immutable) ... ok
+test_same_candidate_from_other_inputs_or_task_is_another_artifact (test_endoforge_lifecycle.IdentityTests.test_same_candidate_from_other_inputs_or_task_is_another_artifact) ... ok
+test_the_four_identities_are_distinct (test_endoforge_lifecycle.IdentityTests.test_the_four_identities_are_distinct) ... ok
+test_activation_needs_preview_and_host_approval (test_endoforge_lifecycle.TransitionTests.test_activation_needs_preview_and_host_approval) ... ok
+test_disposal_is_always_allowed_and_recorded (test_endoforge_lifecycle.TransitionTests.test_disposal_is_always_allowed_and_recorded) ... ok
+test_every_illegal_pair_is_refused (test_endoforge_lifecycle.TransitionTests.test_every_illegal_pair_is_refused) ... ok
+test_happy_path_records_every_decision (test_endoforge_lifecycle.TransitionTests.test_happy_path_records_every_decision) ... ok
+test_qualification_needs_a_passing_receipt_under_the_frozen_oracle (test_endoforge_lifecycle.TransitionTests.test_qualification_needs_a_passing_receipt_under_the_frozen_oracle) ... ok
+
+----------------------------------------------------------------------
+Ran 18 tests in 0.468s
+
+OK
+python3 -O -B -m unittest core.ledger.test_ledger core.ledger.test_frozen core.ledger.test_provenance -v
+test_concurrent_duplicate_has_exactly_one_winner (core.ledger.test_ledger.LedgerTests.test_concurrent_duplicate_has_exactly_one_winner) ... ok
+test_cross_task_and_input_mismatches_fail (core.ledger.test_ledger.LedgerTests.test_cross_task_and_input_mismatches_fail) ... ok
+test_missing_required_fields_and_unknown_fields_fail_schema (core.ledger.test_ledger.LedgerTests.test_missing_required_fields_and_unknown_fields_fail_schema) ... ok
+test_non_durable_and_wrong_kind_references_fail (core.ledger.test_ledger.LedgerTests.test_non_durable_and_wrong_kind_references_fail) ... ok
+test_process_exit_before_and_after_commit (core.ledger.test_ledger.LedgerTests.test_process_exit_before_and_after_commit) ... ok
+test_receipt_requires_frozen_evaluator_bound_artifact_and_observations (core.ledger.test_ledger.LedgerTests.test_receipt_requires_frozen_evaluator_bound_artifact_and_observations) ... ok
+test_reopen_and_append_detect_tampering (core.ledger.test_ledger.LedgerTests.test_reopen_and_append_detect_tampering) ... ok
+test_rewrites_and_identical_retries_leave_records_unchanged (core.ledger.test_ledger.LedgerTests.test_rewrites_and_identical_retries_leave_records_unchanged) ... ok
+test_round_trip_five_records_and_independent_return_values (core.ledger.test_ledger.LedgerTests.test_round_trip_five_records_and_independent_return_values) ... ok
+test_sql_update_delete_and_replace_are_refused (core.ledger.test_ledger.LedgerTests.test_sql_update_delete_and_replace_are_refused) ... ok
+test_temporary_databases_and_nonfinite_payloads_are_refused (core.ledger.test_ledger.LedgerTests.test_temporary_databases_and_nonfinite_payloads_are_refused) ... ok
+test_candidate_context_and_missing_confirmation_refused (core.ledger.test_frozen.FrozenTests.test_candidate_context_and_missing_confirmation_refused) ... ok
+test_cli_freeze_and_symlink_refusal (core.ledger.test_frozen.FrozenTests.test_cli_freeze_and_symlink_refusal) ... ok
+test_edit_after_failure_refused_even_with_new_identity_or_input (core.ledger.test_frozen.FrozenTests.test_edit_after_failure_refused_even_with_new_identity_or_input) ... ok
+test_evaluation_records_hash_before_judge_and_uses_snapshot (core.ledger.test_frozen.FrozenTests.test_evaluation_records_hash_before_judge_and_uses_snapshot) ... ok
+test_every_component_change_refuses_before_judging (core.ledger.test_frozen.FrozenTests.test_every_component_change_refuses_before_judging) ... ok
+test_missing_legacy_and_forged_hash_are_refused (core.ledger.test_frozen.FrozenTests.test_missing_legacy_and_forged_hash_are_refused) ... ok
+test_revision_requires_structured_independent_reason (core.ledger.test_frozen.FrozenTests.test_revision_requires_structured_independent_reason) ... ok
+test_current_admission_refuses_legacy_and_unsupported_versions (core.ledger.test_provenance.ProvenanceTests.test_current_admission_refuses_legacy_and_unsupported_versions) ... ok
+test_current_admissions_can_extend_legacy_lineage_without_backfill (core.ledger.test_provenance.ProvenanceTests.test_current_admissions_can_extend_legacy_lineage_without_backfill) ... ok
+test_data_references_also_preserve_scopes (core.ledger.test_provenance.ProvenanceTests.test_data_references_also_preserve_scopes) ... ok
+test_explicit_unknown_is_allowed_without_strict_policy (core.ledger.test_provenance.ProvenanceTests.test_explicit_unknown_is_allowed_without_strict_policy) ... ok
+test_legacy_append_cannot_bypass_current_task_policy (core.ledger.test_provenance.ProvenanceTests.test_legacy_append_cannot_bypass_current_task_policy) ... ok
+test_legacy_replay_reports_unknown_without_changing_records_or_hashes (core.ledger.test_provenance.ProvenanceTests.test_legacy_replay_reports_unknown_without_changing_records_or_hashes) ... ok
+test_lineage_cannot_reference_missing_self_or_other_task (core.ledger.test_provenance.ProvenanceTests.test_lineage_cannot_reference_missing_self_or_other_task) ... ok
+test_metadata_shapes_and_blank_values_are_rejected (core.ledger.test_provenance.ProvenanceTests.test_metadata_shapes_and_blank_values_are_rejected) ... ok
+test_one_query_returns_sources_license_and_generation_scopes (core.ledger.test_provenance.ProvenanceTests.test_one_query_returns_sources_license_and_generation_scopes) ... ok
+test_replay_refuses_current_record_without_metadata_even_with_valid_hash (core.ledger.test_provenance.ProvenanceTests.test_replay_refuses_current_record_without_metadata_even_with_valid_hash) ... ok
+test_required_metadata_on_every_kind (core.ledger.test_provenance.ProvenanceTests.test_required_metadata_on_every_kind) ... ok
+test_successor_preserves_lineage_scopes_on_reopen (core.ledger.test_provenance.ProvenanceTests.test_successor_preserves_lineage_scopes_on_reopen) ... ok
+test_task_policy_requires_boolean (core.ledger.test_provenance.ProvenanceTests.test_task_policy_requires_boolean) ... ok
+test_unknown_import_policy_is_pinned_before_admission (core.ledger.test_provenance.ProvenanceTests.test_unknown_import_policy_is_pinned_before_admission) ... ok
+
+----------------------------------------------------------------------
+Ran 32 tests in 2.221s
+
+OK
+node --test core/engine/*.test.mjs
+
+Interrupted while running:
+
+⚠ core/engine/evaluator.test.mjs (core/engine/evaluator.test.mjs:1:1)
+⚠ core/engine/gates.test.mjs (core/engine/gates.test.mjs:1:1)
+✖ core/engine/evaluator.test.mjs (85262.093136ms)
+✔ core/engine/gates.test.mjs (420.839707ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 1
+ℹ fail 0
+ℹ cancelled 1
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 85286.441301
+
+✖ failing tests:
+
+test at core/engine/evaluator.test.mjs:1:1
+✖ core/engine/evaluator.test.mjs (85262.093136ms)
+  'Promise resolution is still pending but the event loop has already resolved'
+make[1]: *** [Makefile:22: engine-test] Error 1
+make: *** [Makefile:10: test-optimized] Interrupt
