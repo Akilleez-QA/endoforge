@@ -156,6 +156,8 @@ Each invocation appends `exec --skip-git-repo-check --sandbox workspace-write -`
 Default timeout is 600 seconds per session. Nonzero exits/timeouts refuse without
 retaining client transcripts. Freeze timing includes durable oracle registration;
 generate timing sums the two client sessions and their output validation.
+The specification request carries `glueRules`; the implementation request carries
+`glueSchema`, `glueRules` and `glueTemplate`, all exported by the generator module.
 `ENDOFORGE_CODEX_TEST_DOUBLE=1` explicitly marks synthetic smoke runs.
 
 ## Local promotion interface for POODO

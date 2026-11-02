@@ -5,6 +5,22 @@ import { performance } from 'node:perf_hooks';
 import { configuration, hash } from './host.mjs';
 import { ledger } from './ledger.mjs';
 const schema = JSON.parse(await readFile(new URL('./glue.schema.json', import.meta.url)));
+export const glueRules = [
+  'Every export of kernel.ts has exactly one glue.exports entry, and glue describes no other names.',
+  'Each args list has one entry per parameter of the export, in order.',
+  'A result of kind number must include an integer precision from 0 to 6 (decimal places shown).',
+  'A result of kind code must include a codes table labelling every code the tests return.',
+  'A result of kind boolean must include labels with true and false strings.',
+  'An argument of kind code must include a codes table.',
+  'Every function with an expectError test must have a traps entry with fn, when and message.',
+];
+export const glueTemplate = {
+  id: '<id>', assumption: 'State the physical and unit assumptions of the kernel.', question: 'State the question a technician asks.',
+  exports: [{ name: 'exampleKernel', label: 'Example result', headline: true,
+    args: [{ name: 'massLb', kind: 'number', unit: 'lb', range: '0..1000' }],
+    result: { kind: 'number', unit: 'USD', precision: 2 } }],
+  traps: [{ fn: 'exampleKernel', when: 'massLb is outside 0..1000', message: 'Mass is outside the supported range.' }],
+};
 const read = async (directory, name) => {
   const file = join(directory, name), stat = await lstat(file);
   if (!stat.isFile() || stat.isSymbolicLink() || stat.size > 1024 * 1024) throw Error('invalid generated file');
@@ -31,7 +47,7 @@ export async function generate({ need, directory, env = process.env, timeout = 6
   const id = basename(directory);
   const start = performance.now();
   await invoke(workspace, { stage: 'specification', need, id, instructions:
-    'Write only CONTRACT.md and tests.json. Do not write kernel.ts or glue.json yet. Define a pure bounded AssemblyScript kernel, explicit assumptions, exports and numeric tests. tests.json is a nonempty array of {name,fn,args,expect,tol?} or {name,fn,args,expectError:true}. Include boundary and trap cases. These files will be frozen before implementation.' }, env, timeout);
+    'Write only CONTRACT.md and tests.json. Do not write kernel.ts or glue.json yet. Define a pure bounded AssemblyScript kernel, explicit assumptions, exports and numeric tests. tests.json is a nonempty array of {name,fn,args,expect,tol?} or {name,fn,args,expectError:true}. Include boundary and trap cases. For every number result, state in CONTRACT.md the decimal places to show. These files will be frozen before implementation.', glueRules }, env, timeout);
   const names = (await readdir(workspace)).sort();
   if (JSON.stringify(names) !== JSON.stringify(['CONTRACT.md', 'tests.json'])) throw Error('code or unexpected files before freeze');
   const files = Object.fromEntries(await Promise.all(names.map(async n => [n, await read(workspace, n)])));
@@ -45,8 +61,8 @@ export async function generate({ need, directory, env = process.env, timeout = 6
   const frozen = await ledger('freeze', { reference, need, configuration });
   reference.identity = frozen.identity;
   const freezeMs = performance.now() - freezeStart, codeStart = performance.now();
-  await invoke(workspace, { stage: 'implementation', need, id, glueSchema: schema, instructions:
-    'Read the frozen CONTRACT.md and tests.json. Write kernel.ts and glue.json only. Do not change CONTRACT.md, tests.json or frozen.sha256. Use AssemblyScript 0.28.20, runtime stub, no imports except env.abort, explicit bounded memory. Implement all frozen tests and the closed glue schema; glue.id must equal id. No compiler or other output files.' }, env, timeout);
+  await invoke(workspace, { stage: 'implementation', need, id, glueSchema: schema, glueRules, glueTemplate, instructions:
+    'Read the frozen CONTRACT.md and tests.json. Write kernel.ts and glue.json only. Do not change CONTRACT.md, tests.json or frozen.sha256. Use AssemblyScript 0.28.20, runtime stub, no imports except env.abort, explicit bounded memory. Implement all frozen tests and the closed glue schema; glue.id must equal id. glue.json must satisfy every rule in glueRules; glueTemplate shows the shape. No compiler or other output files.' }, env, timeout);
   for (const [name, text] of Object.entries(files)) if (await read(workspace, name) !== text) throw Error('frozen specification changed during generation');
   if (JSON.stringify((await readdir(workspace)).sort()) !== JSON.stringify([...Object.keys(files), 'kernel.ts', 'glue.json'].sort())) throw Error('unexpected implementation files');
   for (const name of ['kernel.ts', 'glue.json']) files[name] = await read(workspace, name);
