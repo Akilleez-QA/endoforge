@@ -54,9 +54,10 @@ export function installWasmLimit(maxMb, breach) {
     const kind = reader.uint();
     if (kind > 3) unsupported();
     const initial = reader.uint();
-    const maximum = kind & 1 ? reader.uint() : cap;
+    if (!(kind & 1)) fail();
+    const maximum = reader.uint();
     if (initial > cap || maximum > cap) fail();
-    return [...leb(kind | 1), ...leb(initial), ...leb(maximum)];
+    return [...leb(kind), ...leb(initial), ...leb(maximum)];
   };
   const valueType = reader => {
     const type = reader.byte();

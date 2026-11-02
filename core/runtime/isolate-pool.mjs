@@ -2,6 +2,8 @@ import { availableParallelism } from 'node:os';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { Worker } from 'node:worker_threads';
+import { fork } from 'node:child_process';
+import { attachCgroup, prepareCgroup, releaseCgroup } from './isolate-cgroup.mjs';
 import { ledgerRequest } from './isolate-ledger.mjs';
 
 const positive = value => Number.isSafeInteger(value) && value > 0;
@@ -11,6 +13,9 @@ export class IsolatePool {
   #hostPort;
   #limits;
   #wasmMemoryMaxMb;
+  #isolation;
+  #cgroupRoot;
+  #cgroupLimits;
   #cells = new Set();
   #queue = [];
   #pending = new Set();
@@ -19,7 +24,10 @@ export class IsolatePool {
   #stopping = false;
   #closed;
 
-  constructor({ hostPort, size = availableParallelism(), resourceLimits = {}, wasmMemoryMaxMb = 64 } = {}) {
+  constructor({ hostPort, size = availableParallelism(), resourceLimits = {}, wasmMemoryMaxMb = 64,
+    isolation = 'thread', cgroupRoot, cgroupLimits = {} } = {}) {
+    if (!['thread', 'process'].includes(isolation)) throw new TypeError('isolation must be thread or process');
+    if (cgroupRoot !== undefined && (typeof cgroupRoot !== 'string' || !cgroupRoot)) throw new TypeError('cgroupRoot path required');
     if (!positive(size)) throw new TypeError('positive integer pool size required');
     if (typeof hostPort !== 'string' || !hostPort) throw new TypeError('hostPort module path required');
     if (!positive(wasmMemoryMaxMb) || wasmMemoryMaxMb > 4096) {
@@ -37,6 +45,13 @@ export class IsolatePool {
     this.#hostPort = pathToFileURL(resolve(hostPort)).href;
     this.#limits = Object.freeze(limits);
     this.#wasmMemoryMaxMb = wasmMemoryMaxMb;
+    this.#isolation = isolation;
+    this.#cgroupLimits = Object.freeze({ memoryMax: Math.max(256, limits.maxOldGenerationSizeMb + 3 * limits.maxYoungGenerationSizeMb + 128) * 1048576,
+      cpuMax: '100000 100000', pidsMax: 64, ...cgroupLimits });
+    const { memoryMax, cpuMax, pidsMax } = this.#cgroupLimits;
+    if (Object.keys(this.#cgroupLimits).length !== 3 || !positive(memoryMax) || !positive(pidsMax) ||
+        typeof cpuMax !== 'string' || !/^(max|[1-9]\d*) [1-9]\d*$/.test(cpuMax)) throw new TypeError('invalid cgroupLimits');
+    this.#cgroupRoot = isolation === 'process' ? prepareCgroup(cgroupRoot) : null;
   }
 
   get stats() {
@@ -74,11 +89,28 @@ export class IsolatePool {
   }
 
   #spawn() {
-    const worker = new Worker(new URL('./isolate-workcell.mjs', import.meta.url), {
+    const subprocess = this.#isolation === 'process';
+    const entry = new URL('./isolate-workcell.mjs', import.meta.url);
+    const worker = subprocess ? fork(entry, [JSON.stringify({ wasmMemoryMaxMb: this.#wasmMemoryMaxMb, resourceLimits: this.#limits })], {
+      execArgv: [`--max-old-space-size=${this.#limits.maxOldGenerationSizeMb}`, `--max-semi-space-size=${this.#limits.maxYoungGenerationSizeMb}`],
+      serialization: 'advanced', stdio: ['ignore', 'ignore', 'pipe', 'ipc'],
+    }) : new Worker(entry, {
       resourceLimits: this.#limits, execArgv: [],
       workerData: { wasmMemoryMaxMb: this.#wasmMemoryMaxMb },
     });
-    const cell = { worker, id: worker.threadId, job: null, error: null };
+    const directory = subprocess ? attachCgroup(worker.pid, this.#cgroupRoot, this.#cgroupLimits) : null;
+    const cell = { worker, id: subprocess ? worker.pid : worker.threadId, job: null, error: null,
+      metadata: { isolation: this.#isolation, cgroup: subprocess ? (directory ? 'enabled' : 'unavailable') : 'not_applicable',
+        ...(directory ? { cgroupLimits: this.#cgroupLimits } : {}) } };
+    if (subprocess) {
+      let tail = '';
+      worker.stderr.on('data', chunk => {
+        tail = (tail + chunk).slice(-8192);
+        if (/FATAL ERROR:.*(?:heap out of memory|heap limit|Allocation failed)/i.test(tail)) cell.error = { code: 'ERR_WORKER_OUT_OF_MEMORY' };
+      });
+      worker.postMessage = message => worker.send(message, error => { if (error) { cell.error = error; worker.kill(); } });
+      worker.terminate = () => new Promise(resolve => { worker.once('close', resolve); worker.kill(); });
+    }
     this.#cells.add(cell);
     worker.on('message', result => {
       if (!cell.job) return;
@@ -88,15 +120,18 @@ export class IsolatePool {
       }
       const job = cell.job;
       cell.job = null;
-      this.#finish(job, result);
+      this.#finish(job, { ...result, ...cell.metadata });
       this.#pump();
     });
     worker.on('error', error => { cell.error = error; });
-    worker.on('exit', code => {
+    worker.on(subprocess ? 'close' : 'exit', (code, signal) => {
       this.#cells.delete(cell);
-      if (cell.job) this.#finish(cell.job, { status: 'outcome_unknown',
-        reason: ['ERR_WORKER_OUT_OF_MEMORY', 'ERR_WORKCELL_WASM_MEMORY_LIMIT'].includes(cell.error?.code) ? 'limit' : 'worker_exit',
-        error: cell.error?.code || null, exitCode: code, report: null,
+      releaseCgroup(directory);
+      if (subprocess && code === 18) cell.error = { code: 'ERR_WORKCELL_WASM_MEMORY_LIMIT' };
+      const limited = ['ERR_WORKER_OUT_OF_MEMORY', 'ERR_WORKCELL_WASM_MEMORY_LIMIT'].includes(cell.error?.code);
+      if (cell.job) this.#finish(cell.job, { status: subprocess && limited ? 'rejected' : 'outcome_unknown',
+        reason: limited ? (subprocess ? (cell.error.code === 'ERR_WORKER_OUT_OF_MEMORY' ? 'heap' : 'wasm_memory') : 'limit') : 'worker_exit',
+        error: cell.error?.code || null, exitCode: code, signal: signal || null, report: null, ...cell.metadata,
         workcell: cell.id, resourceLimits: this.#limits, wasmMemoryMaxMb: this.#wasmMemoryMaxMb });
       if (!this.#stopping) {
         try { this.#spawn(); } catch { }
@@ -119,7 +154,7 @@ export class IsolatePool {
       } catch (error) {
         if (cell) cell.job = null;
         this.#finish(job, { status: 'outcome_unknown', reason: error.message,
-          report: null, workcell: cell?.id ?? null, resourceLimits: this.#limits, wasmMemoryMaxMb: this.#wasmMemoryMaxMb });
+          report: null, workcell: cell?.id ?? null, ...cell?.metadata, resourceLimits: this.#limits, wasmMemoryMaxMb: this.#wasmMemoryMaxMb });
       }
     }
   }

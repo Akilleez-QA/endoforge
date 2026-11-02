@@ -188,3 +188,35 @@ exposes its 33 constituent tests. A preliminary run with an invalid synthetic
 start-body length failed before the fixture was corrected; no existing expected
 results or assertions were changed. The full `make test`/`make test-optimized`
 suites were not rerun for this extension.
+
+## Process workcell verification
+
+The `v8-process-workcells` working tree was checked locally with Node 26.12.0
+and 22.23.3. This is not an observed ubuntu-latest CI run. The new
+[process tests](../../core/runtime/test/isolate-process.test.mjs) run without
+delegation and share the [P-18 fixture](../../core/runtime/test/fixtures/pool-breach.mjs).
+
+| Requirement | Evidence | Actual result |
+|---|---|---|
+| REQ-ISO-001, REQ-ISO-003, REQ-ISO-004 | N=8 process heap/WASM breaches, native accepted/rejected reports, distinct replacement, receipt observations and Python chain replay | Pass; one lost cell, zero lost siblings, 17 receipts per arm |
+| REQ-ISO-002 | Real child V8 heap exhaustion with 24/4 MiB flags | Pass; fatal heap exit classified `rejected`/`heap` |
+| REQ-ISO-005 | Existing FIFO/drain/close tests plus process shutdown | Pass |
+| REQ-ISO-006 | Process compile/instantiate of imported/defined missing/oversized limits; retained thread API and instruction growth tests | Pass; process rejection reason `wasm_memory` |
+| REQ-ISO-007 | Invalid options, unavailable explicit cgroup root, ordinary exit/replacement; cgroup helper inspection | Fallback passed; delegated memory/cpu/pids enforcement unmeasured |
+| REQ-DOCS-001 | `make check` | Exit 0; links and digests checked |
+
+`make isolate-test` passed on Node 26.12.0 and Node 22.23.3 (both test files).
+An initial thread run failed because a healthy fixture still lacked a maximum;
+its input now declares the maximum, preserving its existing verdict assertions.
+Exactly two existing assertions changed, both in the omitted-maximum test:
+`bounded.status` now expects `outcome_unknown` instead of `completed`, and
+`smaller.workcell` must differ from `bounded.workcell` instead of matching it.
+Explicit bounded growth, native smaller maxima and swallowed/internal/start
+breach coverage remain. No other existing assertion changed.
+
+[P-18](../../experiments/P-18-pool-breach/RESULT.md) records actual thread/process
+breach counts, precommit verification and the unavailable-cgroup limitation.
+Logs: `/tmp/ef-process-make-default-final.log`,
+`/tmp/ef-process-make-node22-final.log`, `/tmp/ef-p18-final.log` and
+`/tmp/ef-process-check-final.log`. The full `make test` and `make test-optimized`
+suites were not rerun for this focused extension.

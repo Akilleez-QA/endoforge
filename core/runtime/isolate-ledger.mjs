@@ -29,7 +29,7 @@ else:
         data = record['data']
         attempts = [a for a in (report or {}).get('attempts', []) if a['candidate'] == data['candidate']]
         unknown = result['status'] == 'outcome_unknown'
-        outcome = 'inconclusive' if unknown else ('failed' if any(a['stage'] == 'rejected' for a in attempts)
+        outcome = 'inconclusive' if unknown else ('failed' if result['status'] == 'rejected' or any(a['stage'] == 'rejected' for a in attempts)
                   else 'passed' if attempts and all(a['stage'] == 'passed' for a in attempts) else 'unobserved')
         data.update(delivery_state='outcome_unknown' if unknown else 'finished', outcome_state=outcome,
                     observations=[result])
