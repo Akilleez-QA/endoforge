@@ -6,6 +6,9 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Added
 
+- Environment-configured two-stage Codex generation with durable freeze before
+  implementation and labelled CI test doubles; no account discovery or auth reads.
+
 - X1 G1–G7 host port through the real thread/process evaluator, supervisor
   compiler and closed glue schema with local parity/refusal fixtures.
 

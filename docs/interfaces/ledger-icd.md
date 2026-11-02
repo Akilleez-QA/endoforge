@@ -143,3 +143,16 @@ complete X1 result, including per-gate verdicts and observed test durations.
 G4/G5/G6 operate on two fresh WASM instances, with the original X1 comparisons.
 The additional compiler memory maximum satisfies the pool's existing WASM guard;
 unsupported binaries remain fail-closed. Compiler callers and host modules are trusted.
+
+## Candidate generator interface
+
+`generate({need, directory, env?, timeout?})` returns `{candidate, reference,
+digest, testDouble, timings}`. Directory must not exist. Candidate has `{id, files}`;
+its id is the directory basename. Two stdin JSON prompts describe the specification
+and implementation stages, including the glue schema. The executable/optional prefix
+argv comes from `ENDOFORGE_CODEX_CMD`; `CODEX_HOME` is required and passed unchanged.
+Each invocation appends `exec --skip-git-repo-check --sandbox workspace-write -`.
+Default timeout is 600 seconds per session. Nonzero exits/timeouts refuse without
+retaining client transcripts. Freeze timing includes durable oracle registration;
+generate timing sums the two client sessions and their output validation.
+`ENDOFORGE_CODEX_TEST_DOUBLE=1` explicitly marks synthetic smoke runs.
