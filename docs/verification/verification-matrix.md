@@ -314,3 +314,14 @@ An additional supervisor run with AssemblyScript 0.28.20 compared all six fixtur
 variants against the unchanged P-21 `gate.mjs`: every G1–G7 boolean matched.
 WASM hashes differ because the port compiler declares a 64-MiB memory maximum;
 parity concerns verdicts and outputs, not timestamps or compiled byte identity.
+
+## Generator adapter
+
+REQ-GEN-001: `make pipeline-test` includes a labelled executable test double,
+two-stage generation, durable oracle creation, frozen hashes, absence of code in
+the oracle, early-code/drift/nonzero-exit refusals and missing configuration.
+The configured CODEX_HOME does not exist in the test: the adapter does not inspect
+it. No live Codex generation is run in the sandbox. Client sandbox behavior and
+semantic quality of authored acceptance tests remain outside this fixture's claim.
+`make check`, `make core-test` (18 tests) and `make pipeline-test` passed locally
+on Node 26.12.0/Python 3.14.8 after adding the generator.

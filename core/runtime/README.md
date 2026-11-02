@@ -202,3 +202,17 @@ checks and compiler bytes; the port checks source and frozen implementation bind
 Original WASM exports exclude guard helpers; the closed glue schema preserves X1 constraints.
 G6 retains X1's observed 2000-ms call boundary, not a preemptive CPU watchdog.
 Host ports are trusted; workcells are not an OS sandbox.
+
+[x1/generator.mjs](x1/generator.mjs) exposes
+`generate({need, directory, env?, timeout?})`. Use a fresh output directory outside
+the checkout. It invokes two `codex exec` sessions: specification, then implementation.
+Between sessions the supervisor hashes contract/tests and durably freezes the oracle
+and gate implementation using the existing ledger. Specification/marker drift,
+premature code, unexpected files, symlinks and files above 1 MiB are refused.
+Set `ENDOFORGE_CODEX_CMD` to an executable or JSON argv array, and `CODEX_HOME`
+to the configured client home. The adapter forwards this environment; it never
+reads, copies or discovers account/auth files. Client output is bounded and discarded.
+The executable is trusted and Codex enforces its own workspace-write sandbox.
+The returned candidate grants no promotion. CI uses the explicitly labelled
+[fake Codex script](test/fixtures/x1/fake-codex.mjs), which always authors addition;
+it is a test double and supplies no evidence of live synthesis quality.
