@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url';
 import { Worker } from 'node:worker_threads';
 import { fork } from 'node:child_process';
 import { attachCgroup, prepareCgroup, releaseCgroup } from './isolate-cgroup.mjs';
-import { ledgerRequest } from './isolate-ledger.mjs';
+import { LedgerBridge } from './isolate-ledger.mjs';
 import { trustedWasmPolicy } from './isolate-wasm.mjs';
 
 const positive = value => Number.isSafeInteger(value) && value > 0;
@@ -22,7 +22,7 @@ export class IsolatePool {
   #cells = new Set();
   #queue = [];
   #pending = new Set();
-  #ledger = Promise.resolve();
+  #ledger = new LedgerBridge();
   #closing = false;
   #stopping = false;
   #closed;
@@ -64,9 +64,7 @@ export class IsolatePool {
   }
 
   #persist(action, job, result) {
-    const pending = this.#ledger.then(() => ledgerRequest(action, job, result));
-    this.#ledger = pending.catch(() => {});
-    return pending;
+    return this.#ledger.request(action, job, result);
   }
 
   run(input) {
@@ -179,6 +177,7 @@ export class IsolatePool {
     this.#closing = true;
     return this.#closed ||= (async () => {
       await Promise.allSettled([...this.#pending]);
+      await this.#ledger.close();
       this.#stopping = true;
       await Promise.all([...this.#cells].map(cell => cell.worker.terminate()));
     })();
