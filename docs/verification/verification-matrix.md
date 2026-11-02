@@ -410,3 +410,14 @@ pool/ledger path. Verification logs are retained with the dated P-20 receipts.
 also passed 18 core and 32 ledger tests, then timed out at the engine stage
 (exit 124). The evaluator file was canceled with a pending promise; the gates
 file passed. Later Make targets were not reached in either full-suite run.
+
+## Persistent batched ledger bridge verification — 2026-11-02 UTC
+
+| Requirement | Case | Expected result |
+|---|---|---|
+| REQ-ISO-010 | 64 jobs at width 16 through one pool | Pass; every receipt present and the chain verifies from a fresh Ledger |
+| REQ-ISO-010 | Second writer appends between pool batches | Pass; pool appends chain after the external record |
+| REQ-ISO-010 | Bridge process killed with work pending | Pass; pending and later requests reject, no respawn |
+| REQ-ISO-010 | Stored row tampered after caching | Pass; next read rejects the chain |
+| REQ-ISO-010 | One invalid request inside a batch | Pass; only that request fails and the others commit |
+
