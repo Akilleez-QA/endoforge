@@ -1,0 +1,196 @@
+# P-20 old probes vs new pool — result
+
+Status: **Recorded (probe), with compile compatibility stops**. All 24 precompiled
+repetitions completed through the real thread/process IsolatePool, evaluator, gates,
+frozen-content checks and Python Ledger. The compile and residency arms failed
+during compiler import before any timed candidate; wider steps and remaining
+repetitions in those arms were stopped as precommitted.
+
+UTC run: 2026-11-02T00:32:01.262Z to 2026-11-02T00:42:31.912Z. Node v26.12.0,
+AMD Ryzen 9 7950X 16-Core Processor, kernel 7.2.8-9-omarchy; measured supervisors and inherited workers
+were pinned to cores 0–27. Every measurement invocation held the exclusive
+`flock /tmp/ef-bench.lock`; the harness also checked lock contention before running.
+The lock wait preceded measurement. This was a shared desktop, without a quiet gate.
+
+Precommit SHA-256: `8d71be6e709e96252e45d1a2d13d59f46fdb265fa0da8fc12b42a1c5f92ee84a`. The [precommit](PRECOMMIT.md)
+and [hash](receipt/precommit.sha256) preceded setup and measurement. See
+[summary.json](receipt/summary.json), `receipt/raw/`,
+[source/runtime hashes](receipt/modules.sha256), [dependency hashes](receipt/dependencies.sha256),
+and [setup attempts](receipt/setup.json). No core or existing test files changed.
+
+## Procedure as run
+
+The 22 sources are read directly from P-15: 17 expected accepts, three compiler
+rejects, and two exact env.clock negative controls. Sources, -O3, stub runtime,
+initialMemory 1, --noAssert, signature, five inputs, 20 step events per case,
+fresh instances, and the five gate limits follow P-15/P-16/P-17. Kernel builds
+add --maximumMemory 16 because the pool requires declared memory maxima.
+The precompiled arm builds once outside measurement, with 128/16 MiB heap
+settings and a 64 MiB WASM ceiling. Both modes use three fresh-pool repetitions
+at N=1,10,20,50 and a 15 s submission window. Throughput includes draining
+in-flight jobs after that window. Warmup jobs and receipts are excluded.
+
+The compile arm attempted N=1 in both modes; the residency arm attempted N=100
+in both modes. Those arms use 1024/16 MiB heap settings and a 4096 MiB WASM ceiling.
+The P-15/P-17 combined widths and 5 s residency windows were precommitted, but
+no timed windows in those arms began. Consequently the P-15 latency stop ratio
+has no usable baseline. No memory-floor stop fired.
+
+## Old versus new accepted-correct/s
+
+Old figures below come directly from [P-15 RESULT](../P-15-workcell-concurrency/RESULT.md),
+[P-17 RESULT](../P-17-workcell-gap/RESULT.md), and
+[P-16 RESULT](../P-16-workerd-isolates/RESULT.md). P-15 values are displayed rep
+ranges; P-17 values are its published medians; P-16 values are medians of its
+displayed three reps. New values are medians of three reps. Missing measurements
+are not zero throughput. Shared P-15/P-17 compile widths were planned to reuse
+observations, rather than duplicate the same workload.
+
+| Old workload | N | Old accepted/s | New thread | New process |
+|---|---|---|---|---|
+| P-15 compile | 1 | 21.2–21.4 | blocked before ready | blocked before ready |
+| P-15 compile | 10 | 99.3–119.4 | not run (stop) | not run (stop) |
+| P-15 compile | 50 | 62.3–77.1 | not run (stop) | not run (stop) |
+| P-17 compile | 10 | 88.9 | not run (stop) | not run (stop) |
+| P-17 compile | 12 | 98.9 | not run (stop) | not run (stop) |
+| P-17 compile | 16 | 95.8 | not run (stop) | not run (stop) |
+| P-17 compile | 20 | 108.6 | not run (stop) | not run (stop) |
+| P-17 compile | 24 | 107.4 | not run (stop) | not run (stop) |
+| P-17 compile | 28 | 112.1 | not run (stop) | not run (stop) |
+| P-17 compile | 32 | 108.9 | not run (stop) | not run (stop) |
+| P-17 compile | 40 | 96.4 | not run (stop) | not run (stop) |
+| P-17 compile | 50 | 65.8 | not run (stop) | not run (stop) |
+| P-15 residency | 100 | 24.0–26.5 | blocked before ready | blocked before ready |
+| P-15 residency | 150 | 17.2–20.6 | not run (stop) | not run (stop) |
+| P-15 residency | 200 | 9.7–13.7 | not run (stop) | not run (stop) |
+| P-16 precompiled | 1 | 1852 | 2.90 | 2.93 |
+| P-16 precompiled | 10 | 1950 | 7.40 | 7.55 |
+| P-16 precompiled | 20 | 1561 | 6.87 | 7.16 |
+| P-16 precompiled | 50 | 1881 | 6.00 | 6.58 |
+
+## Precompiled latency, memory, and readiness
+
+New latency includes pool queueing, evaluator rounds, Python frozen verification,
+and durable receipt append. p50/p95 are medians of the three per-rep percentiles.
+Heap is the median across reps of median cell maximum-sampled used JS heap;
+external/WASM memory is excluded. RSS/cell is (sampled peak minus supervisor
+baseline)/N. Sampling is every 200 ms and includes transient direct Python
+children. Thread RSS is counted once. Old P-16 RSS/cell uses total RSS/N,
+without subtracting its supervisor baseline; old heap was not recorded.
+
+The pool exposes no spawn timestamp. New readiness is submission-to-port-ready
+and is an **upper bound** including serialized ledger preparation, startup and
+module loading. The two new ready columns are median cell p50 / median all-ready
+over reps. Old P-16 reports all-ready ranges. They are different observables.
+
+| N | Runtime | accepted/s (rep range) | latency p50 / p95 ms | RSS/cell MiB | heap/cell MiB | ready p50 / all ms |
+|---|---|---|---|---|---|---|
+| 1 | old P-16 | 1713–1854 | 0.37 / 0.67 | 170–173 | unavailable | — / 30–78 |
+| 1 | new thread | 2.89–2.93 | 296.26 / 332.30 | 60.9 | 12.0 | ≤ 65 / 70 |
+| 1 | new process | 2.86–2.93 | 289.53 / 328.84 | 105.8 | 12.0 | ≤ 75 / 81 |
+| 10 | old P-16 | 1351–2568 | 2.95 / 9.02 | 35–46 | unavailable | — / 79–96 |
+| 10 | new thread | 7.30–7.42 | 1067.95 / 1367.25 | 19.7 | 8.5 | ≤ 217 / 417 |
+| 10 | new process | 7.41–7.59 | 1039.42 / 1332.57 | 76.1 | 8.3 | ≤ 233 / 434 |
+| 20 | old P-16 | 959–1728 | 8.30 / 18.59 | 27–31 | unavailable | — / 162–264 |
+| 20 | new thread | 6.31–6.95 | 2203.19 / 2669.61 | 16.0 | 8.3 | ≤ 433 / 846 |
+| 20 | new process | 7.07–7.21 | 2102.97 / 2601.84 | 72.2 | 8.3 | ≤ 420 / 823 |
+| 50 | old P-16 | 1820–1915 | 19.29 / 27.41 | 23.5 | unavailable | — / 344–421 |
+| 50 | new thread | 5.86–6.21 | 6164.61 / 7201.06 | 13.7 | 8.2 | ≤ 1040 / 2138 |
+| 50 | new process | 6.54–6.60 | 5421.33 / 6586.92 | 70.0 | 8.2 | ≤ 1045 / 2040 |
+
+Peak new throughput by mode:
+
+- thread: N=10, 7.40 accepted-correct/s (median).
+- process: N=10, 7.55 accepted-correct/s (median).
+
+All timed reports matched the expected accepts/interface rejects/effect rejects,
+and every completed precompiled receipt had the expected candidate, oracle and
+outcome. Python Ledger.records revalidated every complete chain after each rep;
+3566 durable receipts include warmups,
+with 3080 timed correct completions and 2435 timed accepts.
+Process cgroup status was unavailable.
+
+## Compiler compatibility stop
+
+The pinned AssemblyScript module imports an embedded 7,419-byte `f64_pow` WASM
+helper with one memory: initial=1 page, **no declared maximum**. The pool
+memoryType check refuses missing maxima before allocation, even with a 4096 MiB
+ceiling. This is source compatibility, not measured compiler latency or a
+demonstrated physical-memory exhaustion. [Static decoding evidence](receipt/compiler-memory.json)
+can be reproduced with `node experiments/P-20-pool-speed-rerun/inspect-compiler.mjs`
+using the same P20_ASC installation. Neither the guard nor the compiler was patched.
+
+| Attempt | N | Mode | Cells port-ready | Durable failure receipts | Pool outcome |
+|---|---|---|---|---|---|
+| compile r1 | 1 | thread | 0 | 1 | outcome_unknown: limit |
+| compile r1 | 1 | process | 0 | 1 | rejected: wasm_memory |
+| residency r1 | 100 | thread | 0 | 100 | outcome_unknown: limit |
+| residency r1 | 100 | process | 0 | 100 | rejected: wasm_memory |
+
+All 202 failure receipts were chain-verified. They do not count as correct
+candidate completions. No automatic retry was used. Repetitions 2–3 and subsequent
+widths stopped after the first failed preparation in each arm/mode.
+
+## Machine load
+
+Before/after each sweep (and each rep) record host loadavg, MemFree,
+MemAvailable and process counts. Process counts see only the execution PID
+namespace, **not the desktop total**; the per-rep supervisor snapshots exclude
+its descendants and are the appropriate count scope. Child-rep snapshots may
+include the idle parent controller. Old probes counted desktop Codex processes,
+so those counts are not directly comparable. Host load and memory remain global.
+
+| Sweep | load 1m before → after | MemFree GiB before → after | MemAvailable GiB before → after | visible other-heavy before → after |
+|---|---|---|---|---|
+| compile thread | 8.45 → 8.45 | 1.79 → 1.96 | 59.48 → 59.03 | 0 → 0 |
+| compile process | 8.45 → 8.41 | 1.96 → 2.20 | 59.03 → 59.27 | 0 → 0 |
+| residency thread | 8.41 → 41.83 | 2.20 → 4.58 | 59.27 → 65.03 | 0 → 0 |
+| residency process | 41.83 → 49.27 | 4.58 → 19.83 | 65.03 → 74.22 | 0 → 0 |
+| precompiled thread | 49.27 → 8.57 | 19.83 → 6.99 | 74.22 → 71.04 | 0 → 0 |
+| precompiled process | 8.57 → 6.33 | 6.99 → 5.51 | 71.04 → 69.11 | 0 → 0 |
+
+Minimum sampled MemAvailable: 48.55 GiB, above the 20% floor.
+Widths were ascending, modes sequential. Old P-16 reported load 10–16;
+P-17 load rose 8→48; P-15 residency reached 140. This run cannot remove
+background drift from comparisons. Repository checks overlapped early
+preparation/repetitions; their CPU cost is part of this shared-host run.
+
+## Verification
+
+`make check`: passed, 0 failures over 52 documents. `node --check run.mjs` and
+precommit/source hash checks passed. See [verification.json](receipt/verification.json).
+`make test ENDOFORGE_TEST_OUTPUT=/tmp/ef-p20-tests`: 18 core and 32 ledger tests
+passed, then the engine tests stalled; interrupted with exit 130.
+`timeout --signal=INT --kill-after=5s 90s make test-optimized ENDOFORGE_TEST_OUTPUT=/tmp/ef-p20-tests-optimized`:
+the same 50 Python tests passed; engine evaluation was canceled with a pending
+promise at timeout (exit 124); gates test file completed. Later make targets
+were not reached. Synchronous Node subprocess diagnostics returned EPERM or
+timed out with stdin in this execution environment; async Python calls used
+by the measured pool completed. The full suites are **not claimed to pass**.
+Logs: [regular](receipt/make-test.txt), [optimized](receipt/make-test-optimized.txt).
+
+## What it does not show
+
+This compares complete pipelines across separate shared-desktop runs. The new
+pipeline validates durable receipts, repeatedly checks frozen content using
+Python processes, and evaluates accepted candidates twice. The old probes used
+a JavaScript hash chain and one gate evaluation. P-16 also included loopback
+HTTP; P-20 uses pool IPC. The much lower full-pipeline rate cannot be attributed
+exclusively to isolate scheduling, IPC, the ledger, or a single check without
+further measurements. No causal speedup or runtime-only regression claim follows.
+
+No compile throughput curve or maximum stable compile width was obtained.
+The compiler could not become ready with the real guard. Moving it to the host
+would change the compile experiment; weakening the guard would change the pool.
+The constant objective and residual callback only confirm the fixed synthetic
+workload, without independent semantic qualification. Compile failures are
+represented as real interface-gate rejections because this evaluator has no
+compile gate; raw candidate IDs retain that distinction.
+
+Heap excludes external WASM memory. RSS includes shared Node overhead and
+validators, is sampled rather than an exact peak, and is not a per-cell quota.
+Readiness is a public-API upper bound, not a directly observed spawn interval.
+One machine, one lifetime, three reps per completed point; no randomization,
+confidence intervals, model service, production qualification, quiet-host
+comparison, or new memory-breach containment claim. See P-18 for containment.
+No commit or push was performed.
