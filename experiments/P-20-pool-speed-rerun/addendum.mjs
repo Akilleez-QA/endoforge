@@ -25,7 +25,7 @@ const scratch = fs.mkdtempSync('/tmp/ef-p20b-');
 fs.mkdirSync(output, { recursive: true });
 
 const kernelWasm = path.join(scratch, 'kernel-stub-1p.wasm');
-execFileSync(process.execPath, [ascPath, path.join(oldRoot, 'P-01-kernel-instantiate/kernel/kernel.ts'), '-O3', '--runtime', 'stub', '--noAssert', '--initialMemory', '1', '--maximumMemory', '16', '-o', kernelWasm]);
+execFileSync(process.execPath, [path.join(path.dirname(ascPath), "../bin/asc.js"), path.join(oldRoot, 'P-01-kernel-instantiate/kernel/kernel.ts'), '-O3', '--runtime', 'stub', '--noAssert', '--initialMemory', '1', '--maximumMemory', '16', '-o', kernelWasm]);
 const p02 = path.join(oldRoot, 'P-02-compiler-in-isolate/kernels');
 const kernels = fs.readdirSync(p02).filter(f => f.endsWith('.ts')).sort().map(f => [f.slice(0, -3), fs.readFileSync(path.join(p02, f), 'utf8')]);
 const { PROJECTS } = await import(pathToFileURL(path.join(oldRoot, 'P-05-hosted-fit/gen-overlay.mjs')));
