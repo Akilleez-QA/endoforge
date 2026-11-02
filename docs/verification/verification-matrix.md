@@ -254,7 +254,7 @@ not a guarantee that accounts for throttling or harness overhead.
 The inherited headroom guard can hold ready workers when host load exceeds
 1.8 under two-CPU affinity, or available memory falls below its reserve. That
 makes the timing assertion depend on host conditions and earlier suite work.
-Only this fan-out scheduler invocation now sets `ENDOFORGE_THROTTLE=0`.
+This fan-out scheduler invocation and the agent-swarm test scheduler invocations set `ENDOFORGE_THROTTLE=0`; the account-spread case otherwise ran one worker at a time after heavy earlier suite work and used a single account.
 Production headroom policy, fixtures, and every existing assertion are unchanged.
 
 `realizedSpeedup` rounds `sumAtomWallMs / wallMs` to two decimal places.
