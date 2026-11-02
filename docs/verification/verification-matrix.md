@@ -344,6 +344,11 @@ fresh/default fallback through recorded client arguments. One real add(a,b) smok
 2026-11-01 took 92.4 s before the no-exploration instruction and 42.6 s (low) / 41.7 s
 (default) after; a single run each, not a measurement.
 
+REQ-GEN-004: `generator.test.mjs` checks that `compiler.mjs` passes `--noAssert` and that
+the recorded implementation instructions forbid `assert` and require an explicit
+`abort()` or `throw` trap. Root cause from P-24: 43 of 45 G4 refusals used `assert(`,
+0 of 34 promotions did, independent of session resume and effort.
+
 REQ-GEN-001: `make pipeline-test` includes a labelled executable test double,
 two-stage generation, durable oracle creation, frozen hashes, absence of code in
 the oracle, early-code/drift/nonzero-exit refusals and missing configuration.
