@@ -1,24 +1,59 @@
-# P-22 status: real measurement pending
+# P-22 result: real need to candidate
 
-No real Codex measurement was run in the implementation sandbox. The harness
-and local qualification decision issuer are implemented. POODO is an instruction
-package without an intake/approval API; the issuer is in EndoForge and exposes the
-interface that POODO can call. It grants local qualification only, not activation.
+Real run on 2026-11-01, 21:40 to 21:56 ET, under the hashed PRECOMMIT
+(`a7a721c4…07c6`), Node v22.23.3, concurrency ten, shared benchmark lock held,
+real Codex generation, AssemblyScript 0.28.20, pool G1–G7 gates, linked ledger
+and local EndoForge qualification policy. No warmups, retries or exclusions.
+All 60 records completed; 41 promoted. Total wall time 929.3 s.
 
-The first sandbox smoke run completed all 60 records and promoted 60/60 using
-explicitly labelled Codex and compiler test doubles. The two twenty-request and
-two ten-addition cohorts each ran at concurrency ten. No warmups, retries or
-exclusions were used. Generated files and receipts remained outside the checkout.
-Fake latency is not a measurement of synthesis and is deliberately not tabulated.
+Stage latency in ms, nearest-rank p50 / p95 with sample counts. Read is under
+1 ms in every cohort and is omitted. Wall time is per cohort in seconds.
 
-`make pipeline-test` passed locally, including both thread/process promotion,
-actual failing glue, wrong receipt hash, all seven individually failed gate
-verdicts in otherwise passing-shaped evidence, and corrupted hash-chain refusal.
-Full suite results are recorded in the verification matrix. The real measurement
-must preserve all failures and report stage sample counts and promotion counts,
-as fixed by the precommit. The README gives the command; no real outcome is claimed.
+| Mode | Cohort | Promoted | Wall s | Generate | Freeze | Compile | Gate | Ledger | Promote | Total |
+|---|---|---|---|---|---|---|---|---|---|---|
+| thread | P21 | 13/20 | 334.8 | 129630 / 161869 (n=20) | 38 / 49 (n=20) | 524 / 563 (n=20) | 186 / 256 (n=20) | 115 / 127 (n=20) | 37 / 46 (n=20) | 130385 / 162709 (n=20) |
+| thread | P19 | 9/10 | 126.1 | 95635 / 125162 (n=9) | 38 / 40 (n=9) | 526 / 548 (n=9) | 196 / 243 (n=9) | 114 / 119 (n=9) | 38 / 44 (n=9) | 96569 / 126082 (n=10) |
+| process | P21 | 9/20 | 305.3 | 119956 / 175331 (n=20) | 39 / 48 (n=20) | 564 / 640 (n=20) | 90 / 226 (n=20) | 115 / 124 (n=20) | 37 / 40 (n=20) | 120864 / 176181 (n=20) |
+| process | P19 | 10/10 | 163.1 | 94116 / 162205 (n=10) | 38 / 41 (n=10) | 523 / 587 (n=10) | 189 / 203 (n=10) | 111 / 119 (n=10) | 38 / 44 (n=10) | 95050 / 163056 (n=10) |
 
-A second fake run also read all twenty actual need-file locations and completed
-60/60. Real AssemblyScript 0.28.20 with the fake generator promoted in both modes.
-`make isolate-test` passed; normal/optimized full-suite attempts timed out at the
-unchanged evaluator tests (exit 124). No full-suite pass is claimed.
+Generation is 98–99% of total latency. Everything after generation (freeze,
+compile, gate, ledger, promote) sums to roughly 0.8–0.9 s at p50.
+
+## Refusals and failures
+
+19 of 60 did not promote; every one is retained in `receipt/real-2026-11-01/refusals.json`
+and `summary.json`.
+
+- 15 refused at G7 only: generated glue declared numeric results without a
+  precision field (P-21 cohort, both modes).
+- 2 refused at G4 only and 1 at G4 and G7: generated code failed its own
+  frozen tests.
+- 1 failed in generation (thread, add-3): no candidate passed the generate stage;
+  later stages are null.
+
+## Old vs new
+
+| Measurement | Requests | p50 | p95 |
+|---|---|---|---|
+| P-21 Oct 17 (Codex loop, old pipeline) | 20 | 96.5 s | 146.2 s |
+| P-21 Oct 18 | 20 | 29.4 s | 53.7 s |
+| P-21 Nov 1 | 20 | 59.4 s | 83.6 s |
+| P-19 synthetic (no generation) | add ×10 | — | 2.119 s thread / 2.156 s process |
+| P-22 P-21 cohort, thread | 20 | 130.4 s | 162.7 s |
+| P-22 P-21 cohort, process | 20 | 120.9 s | 176.2 s |
+| P-22 P-19 cohort, thread | add ×10 | 96.6 s | 126.1 s |
+| P-22 P-19 cohort, process | add ×10 | 95.1 s | 163.1 s |
+| P-22 post-generation stages | all | ≈0.8–0.9 s | ≈1.0 s |
+
+## What it does not show
+
+- It does not show the new pipeline is slower at verification: P-22 adds two
+  Codex sessions with a durable freeze before implementation, which P-21 did
+  not, so the end-to-end numbers are not like for like.
+- Generated tests are not independent domain oracles; a promotion means the
+  candidate passed its own frozen tests, G1–G7 and a verified chain, not that
+  the engineering answer is right.
+- Promotion is local qualification in EndoForge; POODO has no callable API and
+  nothing was activated or deployed.
+- One run per mode; Codex latency depends on the remote service at that hour.
+- The harness ran from commit `8376ef5`, whose non-fake path matches main.

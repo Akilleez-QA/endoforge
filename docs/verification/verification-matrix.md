@@ -335,6 +335,9 @@ glue, wrong receipt hash, each of seven failed gate booleans in passing-shaped
 ledger evidence and chain tampering. Existing tests/expected results are unchanged.
 P-22's first fake run completed 60/60 records/promotions at concurrency ten;
 this qualifies wiring, not live generation, compiler correctness or real latency.
+The real P-22 run on 2026-11-01 completed 60/60 records with real Codex and
+AssemblyScript 0.28.20; 41 promoted, 19 refused or failed with every verdict
+retained (experiments/P-22-real-need-to-candidate/RESULT.md).
 
 `make check` passed (60 documents); `make isolate-test` passed both existing
 suites after optional timing support; direct `node core/engine/gates.test.mjs`
