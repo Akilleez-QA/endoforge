@@ -39,6 +39,10 @@ receipt sha256:
 - cand-r5: 33487758d466d9f0f27749289e5221a7aa2c11ad13cfd91f2630b4791e344af3
 - cand-r6: 87240303a309b17e995eaa857a65949d66e57ab25a42e815cb873c933e1a8904
 
+## Correction note (2026-11-03)
+
+Reference mode replaces model-written expected numbers with reference-computed ones before freeze. This correction note changes no existing golden files or assertions.
+
 ## Failure analysis
 
 Candidate is 10.8 s faster on median mean and 12.6 s faster on p95 mean, but promotes 168 vs 174 (min 27 vs 28).
