@@ -99,7 +99,7 @@ export function classifyEscape(row, tests, baseline, mutant) {
     else if (Number.isFinite(test.tol)) tolerated = true;
   }
   if (differs) return { reason: 'evaluator_weakness', detail: tolerated ? 'difference absorbed by a frozen tolerance' : trapMasked ? 'expectError accepts any trap' : 'comparison coerced the difference away' };
-  if (!row.witness?.finite) return { reason: 'gate_gap', detail: 'difference only on non-finite inputs, which the scalar test filter and JSON tests cannot express' };
+  if (!row.witness?.finite) return { reason: 'gate_gap', detail: 'difference only on non-finite inputs, which the frozen tests in this corpus never use' };
   return { reason: 'test_gap', detail: 'no frozen test input distinguishes the fault' };
 }
 const rangePattern = /(-?\d[\d_.]*(?:[eE][+-]?\d+)?)\s*\.\.\s*(-?\d[\d_.]*(?:[eE][+-]?\d+)?)/;

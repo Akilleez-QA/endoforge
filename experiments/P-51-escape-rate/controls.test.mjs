@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync, readFileSync } from 'node:fs';
+import { mkdtempSync, rmSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
@@ -118,6 +118,23 @@ test('the real path promotes the pristine control, rejects a caught fault, and p
     assert.equal(glueEscape.promoted, true);
     const drift = await run('drift', { surface: 'binding', driftTests: JSON.stringify([{ ...tests[0], expect: 7 }, ...tests.slice(1)]) }, 'binding');
     assert.equal(drift.promoted, false);
+    assert.equal(drift.caught, 'before_gates');
+    assert.deepEqual(drift.pool, []);
+    assert.equal(pristine.decision.decision, 'promote');
+    assert.equal(typeof pristine.timings.gate, 'number');
+    assert.equal(pristine.pool[0].stage, 'completed');
+    assert.equal(caught.decision.decision, 'refuse');
+    assert.equal(caught.pool[0].attempts[0].firstFailure, 'residual');
+    assert.ok(caught.pool[0].attempts[0].reason.includes('G4_tests'));
+    const badAsc = join(scratch, 'bad-asc');
+    writeFileSync(badAsc, '#!/bin/sh\nexit 1\n', { mode: 0o755 });
+    const refused = await submit({ replay: caseFor({ surface: 'control' }, kernel, 'control'), pool, asc: badAsc, scratch, name: 'refused', wasm: await wasmOf(source) });
+    assert.equal(refused.promoted, false);
+    assert.equal(refused.error, null);
+    assert.equal(refused.caught, 'gates_passed_decision_refused');
+    assert.match(refused.decision.reason, /incomplete passing pool evidence/);
+    assert.equal(refused.pool[0].attempts[0].firstFailure, 'residual');
+    assert.ok(refused.elapsedMs > 0 && refused.timings.compile !== null);
   } finally {
     await pool.close();
     rmSync(scratch, { recursive: true, force: true });

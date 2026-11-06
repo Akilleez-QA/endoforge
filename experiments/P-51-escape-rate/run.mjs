@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { appendFileSync, createReadStream, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve, relative, sep } from 'node:path';
+import { performance } from 'node:perf_hooks';
 import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
 import { IsolatePool } from '../../core/runtime/isolate-pool.mjs';
@@ -19,16 +20,32 @@ export function caseFor(row, kernel, arm) {
   if (row.surface === 'binding') return { ...base, ...(row.driftTests ? { driftTests: row.driftTests } : {}), ...(row.driftContract ? { driftContract: row.driftContract } : {}) };
   return { ...base, kernel: row.source, tests: arm === 'correlated' ? row.correlatedTests : kernel.testsText };
 }
+export function poolEvidence(result) {
+  return { status: result.status ?? null, reason: result.reason ?? null, error: result.error ?? null, stage: result.report?.stage ?? null,
+    attempts: (result.report?.attempts ?? []).map(attempt => ({ round: attempt.round, stage: attempt.stage, firstFailure: attempt.firstFailure,
+      reason: attempt.results?.find(check => !check.passed)?.reason?.slice(0, 500) ?? null })) };
+}
+export function decisionEvidence(directory) {
+  const path = join(directory, 'promotion.json');
+  if (!existsSync(path)) return null;
+  const { decision, reason = null } = JSON.parse(readFileSync(path, 'utf8'));
+  return { decision, reason };
+}
 export async function submit({ replay, pool, asc, scratch, name, wasm }) {
   const directory = join(scratch, `p51-${sha(name)}`), casePath = `${directory}.case.json`, home = `${directory}.home`;
   rmSync(directory, { recursive: true, force: true });
   mkdirSync(home, { recursive: true });
   writeFileSync(casePath, JSON.stringify(replay));
   const env = { ...process.env, ENDOFORGE_CODEX_CMD: JSON.stringify([process.execPath, join(here, 'replay-codex.mjs')]), CODEX_HOME: home, ENDOFORGE_ASC_CMD: asc, ENDOFORGE_CODEX_TERSE: 'scalar', ENDOFORGE_CODEX_TEST_DOUBLE: '1', ENDOFORGE_SELF_CHECK: '0', P51_CASE: casePath };
+  const observed = [], watched = { run: input => pool.run(input).then(
+    result => { observed.push(poolEvidence(result)); return result; },
+    error => { observed.push({ rejected: error.message }); throw error; }) };
   try {
-    const result = await runNeed({ need: `Replayed candidate ${sha(name)}; no model.`, directory, pool, env });
-    const outcome = { promoted: result.promoted === true, error: result.error ?? null };
-    if (!outcome.promoted) outcome.caught = attribute(directory, wasm, result);
+    const begin = performance.now();
+    const result = await runNeed({ need: `Replayed candidate ${sha(name)}; no model.`, directory, pool: watched, env });
+    const outcome = { promoted: result.promoted === true, error: result.error ?? null, elapsedMs: performance.now() - begin,
+      timings: result.timings ?? null, pool: observed, decision: decisionEvidence(directory) };
+    if (!outcome.promoted) outcome.caught = attribute(directory, wasm, result, observed);
     return outcome;
   } finally {
     rmSync(directory, { recursive: true, force: true });
@@ -36,8 +53,9 @@ export async function submit({ replay, pool, asc, scratch, name, wasm }) {
     rmSync(casePath, { force: true });
   }
 }
-function attribute(directory, wasm, result) {
+function attribute(directory, wasm, result, observed) {
   if (result.error && !existsSync(join(directory, 'candidate', 'kernel.ts'))) return 'before_candidate';
+  if (result.error && !observed.length) return 'before_gates';
   if (!wasm) return result.error ? 'pipeline_stage' : 'unattributed';
   try {
     const read = name => readFileSync(join(directory, 'candidate', name), 'utf8');
