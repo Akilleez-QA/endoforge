@@ -11,12 +11,14 @@ export async function loadCompiler(ascPath) {
   return compiler ||= import(pathToFileURL(ascPath));
 }
 
-export async function compile(c, ascPath) {
+export const probeFlags = Object.freeze(['--initialMemory', '1', '--maximumMemory', '16']);
+export const x1Flags = Object.freeze(['--maximumMemory', '1024']);
+
+export async function compile(c, ascPath, { flags = probeFlags, onRead } = {}) {
   const asc = await loadCompiler(ascPath), files = {}, overlay = { [`${c.name}.ts`]: c.source };
-  const result = await asc.main([`${c.name}.ts`, '-O3', '--runtime', 'stub', '--noColors', '--initialMemory', '1',
-    '--maximumMemory', '16', '--noAssert', '--outFile', 'out.wasm'], {
+  const result = await asc.main([`${c.name}.ts`, '-O3', '--runtime', 'stub', '--noColors', ...flags, '--noAssert', '--outFile', 'out.wasm'], {
     stdout: asc.createMemoryStream(), stderr: asc.createMemoryStream(),
-    readFile: name => overlay[name] ?? null, writeFile: (name, data) => { files[name] = data; }, listFiles: () => [],
+    readFile: name => { onRead?.(name); return overlay[name] ?? null; }, writeFile: (name, data) => { files[name] = data; }, listFiles: () => [],
   });
   return result.error ? null : files['out.wasm'];
 }

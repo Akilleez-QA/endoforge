@@ -42,11 +42,11 @@ export function paretoFrontier(candidates, objectives) {
   return candidates.filter(b => !candidates.some(a => dominates(a, b)));
 }
 
-export async function evaluateCandidates(reference, candidates, port) {
+export async function evaluateCandidates(reference, candidates, port, { requireFrozen: verifyFrozen = requireFrozen } = {}) {
   reference = copy(reference);
   candidates = copy(candidates);
   ensure(Array.isArray(candidates) && candidates.every(named) && new Set(candidates).size === candidates.length, 'unique candidate identities required');
-  const frozen = await requireFrozen(reference);
+  const frozen = await verifyFrozen(reference);
   ensure(Object.keys(frozen.bundle.configuration).sort().join(',') === 'gateInput,invariants,objectives', 'expected gateInput, invariants and objectives configuration');
   const { gateInput, invariants, objectives } = frozen.bundle.configuration;
   ensure(object(gateInput) && !Object.hasOwn(gateInput, 'candidate'), 'shared gate input required');
@@ -65,7 +65,7 @@ export async function evaluateCandidates(reference, candidates, port) {
     };
     async function verify() {
       try {
-        const current = await requireFrozen(reference);
+        const current = await verifyFrozen(reference);
         ensure(current.identity === frozen.identity && current.digest === frozen.digest, 'frozen identity changed');
         return true;
       } catch { fail('frozen', 'frozen evaluator verification failed'); return false; }

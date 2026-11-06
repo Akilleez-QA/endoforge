@@ -8,7 +8,7 @@ LINK = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
 
 def main():
     failures = []
-    files = sorted(ROOT.rglob("*.md"))
+    files = sorted(path for path in ROOT.rglob("*.md") if "node_modules" not in path.parts)
     for path in files:
         for number, line in enumerate(path.read_text().splitlines(), 1):
             for target in LINK.findall(line):

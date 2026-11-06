@@ -58,9 +58,10 @@ export function ledgerRequest(action, job, result) {
   });
 }
 
-const persistentBridge = `
+export const persistentBridge = `
 import json, os, select, sys
 from core.ledger.ledger import Ledger, validate
+from core.ledger.x1_loop import LOOP, write_decision
 ${operation}
 paths = {}
 sys.stdout.write(json.dumps(dict(id=0, result='ready')) + '\\n')
@@ -86,6 +87,8 @@ while True:
         responses = []
         try:
             if path not in paths:
+                if len(paths) >= 64:
+                    paths.pop(next(iter(paths)))[1].close()
                 ledger = Ledger(path)
                 paths[path] = (ledger, ledger._connect(), [])
             ledger, db, cache = paths[path]
@@ -100,7 +103,8 @@ while True:
                     db.execute('SAVEPOINT request')
                     saved_prior, saved_previous = dict(prior), previous
                     try:
-                        result = process(request, prior, append)
+                        action = LOOP.get(request['action'])
+                        result = action(request, prior, append, process) if action else process(request, prior, append)
                         responses.append(dict(id=request['id'], result=result))
                     except Exception as error:
                         db.execute('ROLLBACK TO request')
@@ -115,6 +119,10 @@ while True:
         except Exception as error:
             responses = [dict(id=r['id'], error=str(error)) for r in requests]
         for response in responses:
+            try:
+                write_decision(response.get('result'))
+            except Exception as error:
+                response = dict(id=response['id'], error=str(error))
             print(json.dumps(response), flush=True)
 `;
 

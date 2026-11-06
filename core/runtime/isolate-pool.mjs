@@ -101,6 +101,10 @@ export class IsolatePool {
     })();
   }
 
+  get ledger() {
+    return this.#ledger;
+  }
+
   get stats() {
     return { size: this.#size, workers: this.#cells.size,
       busy: [...this.#cells].filter(cell => cell.job).length, queued: this.#queue.length };
@@ -142,7 +146,7 @@ export class IsolatePool {
     const promise = new Promise((resolve, reject) => {
       const job = { data, resolve, reject, ready: false, started: performance.now() };
       this.#queue.push(job);
-      Promise.all([this.#persist('prepare', data), this.#share()]).then(() => { job.prepared = performance.now(); job.ready = true; this.#pump(); }, error => {
+      Promise.all([data.ledger === 'caller' ? null : this.#persist('prepare', data), this.#share()]).then(() => { job.prepared = performance.now(); job.ready = true; this.#pump(); }, error => {
         this.#queue.splice(this.#queue.indexOf(job), 1);
         reject(error);
         this.#pump();
@@ -273,7 +277,7 @@ export class IsolatePool {
     result = { ...result, trustedWasmModules: this.#trustedWasmModules };
     try {
       const evaluated = performance.now();
-      const receipts = await this.#persist('append', job.data, result);
+      const receipts = job.data.ledger === 'caller' ? [] : await this.#persist('append', job.data, result);
       const timings = { gate: evaluated - job.prepared, ledger: job.prepared - job.started + performance.now() - evaluated };
       job.resolve({ ...result, receipts, ...(job.data.timing === true ? { timings } : {}) });
     }
