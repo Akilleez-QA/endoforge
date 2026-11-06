@@ -46,6 +46,34 @@ Each failure stays a recorded failure.
 
 The first run reached the tracer's `isolate-thread` arm and stopped: the input list was over Linux's 128 KiB limit for one argument, so the tracer never started. Its parity arm had completed, with 0 differences in 31 inputs, and is kept as the first of two parity runs. The list now goes in a file. Nothing else changes, and everything runs again.
 
+## Amendment 2, scope corrected by Craig before the agent path was measured
+
+The arms above cover only generation returning to the ledger commit, and their results are labelled that way. Craig: "the whole point is not to run the CLIs outside of the isolate". The agent loop itself runs in the workcell: file overlay, turn loop, compile, checks, repair. The model is reached only through a host-owned transport behind a provider port. Subscription sign-in only, with no API keys or billing and no credential contents read. The CLI is a model transport with its tools off and no access to a working directory.
+
+New arms, all with the kernels, tests and seeds above, `runNeed` under `ENDOFORGE_LOOP=agent`:
+
+- `agent-thread`, `agent-process`: one cell, with a scripted provider that replies at once. 5 reps of the 21. `agent-thread-8`, `agent-process-8`: 8 cells, 3 reps.
+- Parity: the same 31 inputs through `agent-thread` and `agent-process`, against `current`.
+- Count: `agent-thread`, `agent-process` under the tracer. `need` marks admission of the need to the cell.
+- Transport: `SpawnClaudeTransport` and `WarmClaudeTransport`, 5 trivial turns each on the cheapest model and one logged-in account, recording each turn's wall time and the CLI's reported API time. Warm startup is recorded separately.
+- Real proof: one need, end to end through the warm transport, untraced for timing and once more traced. Its candidate quality is the model's, and is reported either way.
+
+Revised acceptance:
+
+- **B1** From need admission to ledger commit starting, zero process spawns and zero temp-file writes per candidate on the warm path, by the tracer, excluding the transport's own startup and its own process tree, which are recorded separately. The freeze crossing's own durable writes are reported as such and aren't temp files. Generation is inside this window.
+- **B2** Non-model time under 100 ms at both p50 and p95 on `agent-thread` and `agent-process`. Non-model is wall time of the attempt minus time inside the provider call. 8-cell arms are reported against the same line as **B2w**. The transport's own overhead per turn (its wall time minus its reported API time) is reported beside it, not hidden in the subtraction.
+- **B3** Verdicts match `current`, as A3.
+- **B4–B6** A4, A5 and A6 hold on this path. Where no frozen tree exists on disk, A5's disk cases don't apply: the bundle is only in the ledger and in memory, and tampering with the ledger record stands in.
+- **B7** A7 holds, adding kills during the model wait and just after admission.
+- **B8** Leaving the isolate: only the model call through the host's transport and durable ledger crossings. The request says one crossing. Freeze-before-code needs the evaluator durable before implementation turns, so this design has one per candidate plus one per task. On the strict reading that is a failure, and it is reported as one.
+
+Predictions:
+
+7. `agent-thread` non-model p50 is 55–95 ms, about the same as `isolate-thread` since it compiles once and adds a turn loop and two cell messages per turn. p95 under 100 ms is less likely than p50.
+8. Warm saves at least 500 ms per turn over spawn, excluding API time. Warm's own overhead per turn is 20–200 ms, so with a real CLI the 100 ms line is met by the harness and likely not by the harness plus the transport.
+9. `/clear` keeps a warm process usable across candidates without leaking a prior conversation. A probe on 2026-11-06 saw this with one model, 4 turns; the real proof repeats it.
+10. The real proof promotes on `add`, on a cheap model, perhaps after one repair turn.
+
 ## Failure meaning
 
 A1, A3, A4, A5, A6 or A7 failing means the path stays off, and the failure is named. A2 failing with the rest passing means the path is safe but not this fast, and the timing split says where the time goes. No test is softened to pass.
