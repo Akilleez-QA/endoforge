@@ -123,6 +123,13 @@ test('the real path promotes the pristine control, rejects a caught fault, and p
     rmSync(scratch, { recursive: true, force: true });
   }
 });
+test('an escape inside a frozen tolerance is an evaluator weakness and a non-finite witness is a gate gap', { skip: !asc }, async () => {
+  const baseline = load((await compile({ 'kernel.ts': source }, asc)).wasm);
+  const shifted = load((await compile({ 'kernel.ts': source.replace('2.5', '2.5000001') }, asc)).wasm);
+  const tolerant = tests.map(t => t.expectError ? t : { ...t, tol: 1e-3 });
+  assert.equal(classifyEscape({ surface: 'kernel', witness: { finite: true } }, tolerant, baseline, shifted).reason, 'evaluator_weakness');
+  assert.equal(classifyEscape({ surface: 'kernel', witness: { finite: false, nonFinite: true } }, tests, baseline, baseline).reason, 'gate_gap');
+});
 test('replay shim exists and never names a model client', () => {
   const text = readFileSync(join(here, 'replay-codex.mjs'), 'utf8');
   assert.ok(!/api\.|fetch\(|https?:/.test(text));

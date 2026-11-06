@@ -57,7 +57,7 @@ export async function loadRows(path, surfaces) {
   }
   return rows;
 }
-export async function drive({ rows, kernels, arm, output, pool, asc, width, scratch, baselines, log = () => {} }) {
+export async function drive({ rows, kernels, arm, caseArm = arm, output, pool, asc, width, scratch, baselines, log = () => {} }) {
   const path = join(output, `${arm}.jsonl`), done = new Set();
   if (existsSync(path)) for (const line of readFileSync(path, 'utf8').split('\n')) if (line) done.add(JSON.parse(line).mutant);
   const pending = rows.filter(r => !done.has(r.mutant));
@@ -68,7 +68,7 @@ export async function drive({ rows, kernels, arm, output, pool, asc, width, scra
       const row = pending[cursor++], kernel = kernels[row.key];
       const name = `${arm}|${row.mutant}`;
       let outcome;
-      try { outcome = await submit({ replay: caseFor(row, kernel, arm), pool, asc, scratch, name, wasm: row.wasm ?? baselines[row.key] }); }
+      try { outcome = await submit({ replay: caseFor(row, kernel, caseArm), pool, asc, scratch, name, wasm: row.wasm ?? baselines[row.key] }); }
       catch (error) { outcome = { promoted: false, error: `harness: ${error.message}`, caught: 'harness_error' }; }
       appendFileSync(path, `${JSON.stringify({ mutant: row.mutant, arm, key: row.key, id: row.id, need: row.need, cohort: row.cohort, surface: row.surface, class: row.class, op: row.op, witness: row.witness ?? null, ...outcome })}\n`);
       if (++finished % 250 === 0) log(`${arm} ${finished}/${pending.length} ${(finished * 1000 / (Date.now() - start)).toFixed(1)}/s`);
@@ -90,6 +90,12 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   await pool.ready();
   try {
     for (const arm of arms) {
+      if (arm === 'correlated-retry') {
+        const retry = new Set(readFileSync(join(output, 'correlated.jsonl'), 'utf8').split('\n').filter(Boolean).map(line => JSON.parse(line)).filter(r => ['gates_passed_decision_refused', 'before_candidate'].includes(r.caught)).map(r => r.mutant));
+        await drive({ rows: (await loadRows(join(prep, 'mutants.jsonl'), ['kernel'])).filter(r => retry.has(r.mutant)), kernels, arm, caseArm: 'correlated', output, pool, asc, width, scratch, baselines, log: console.error });
+        console.error(`${arm} complete`);
+        continue;
+      }
       const rows = arm === 'control' ? corpus.map(k => ({ mutant: `${k.key}#control`, key: k.key, id: k.id, need: k.need, cohort: k.cohort, surface: 'control', class: 'control', op: 'pristine' }))
         : await loadRows(join(prep, 'mutants.jsonl'), arm === 'glue' ? ['glue'] : arm === 'binding' ? ['binding'] : ['kernel']);
       await drive({ rows, kernels, arm, output, pool, asc, width, scratch, baselines, log: console.error });
