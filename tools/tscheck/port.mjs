@@ -5,8 +5,8 @@ import { typecheck, warm as warmChecker } from './checker.mjs';
 
 export const TS_INVARIANT = 'typescript';
 
-export async function warm({ vendor, probe } = {}) {
-  await warmChecker({ probe, ...(vendor ? { vendor: new URL(vendor) } : {}) });
+export async function warm({ vendor } = {}) {
+  await warmChecker(vendor ? { vendor: new URL(vendor) } : {});
 }
 
 export async function createPort({ basePort, baseOptions, projects, vendor, reportFile }) {

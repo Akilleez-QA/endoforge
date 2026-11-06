@@ -24,5 +24,6 @@ precommit hashed before measurement and a result that states what it does not sh
 | [P-43](P-43-tsrs-workcell/PRECOMMIT.md) | The TypeScript checker in the workcell pool, blocked in P-20: parity on 20 of 20 synthetic projects against TS 7.1 beta, throughput flat by 8 cells, 0 of 7 siblings lost on a heap breach after an invalid first run | [RESULT.md](P-43-tsrs-workcell/RESULT.md) |
 | [P-44](P-44-offheap/PRECOMMIT.md) | Off-heap allocation through the pool: 3 GiB past a 128 MiB heap passes in thread mode and in process mode without a cgroup; `memory.max` alone also failed to stop it until `memory.swap.max=0` was set | [RESULT.md](P-44-offheap/RESULT.md) |
 | [P-45](P-45-shared-module/PRECOMMIT.md) | One guard-instrumented module shared across thread cells: at 8 cells, 56% less peak RSS and 60% less time to first results; the compile cost was the guard's JavaScript instrumentation, not V8 | [RESULT.md](P-45-shared-module/RESULT.md) |
+| [P-46](P-46-prewarm/PRECOMMIT.md) | Loading host warm state in `ready()`: first job down 82% with the same total; a trivial probe check didn't help and was removed | [RESULT.md](P-46-prewarm/RESULT.md) |
 
 Rebuild P-15 dependencies with `setup.sh` in its directory; `node_modules` is not committed.
