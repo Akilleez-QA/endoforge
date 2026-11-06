@@ -52,8 +52,8 @@ if (isMainThread) {
   for (const name of names) {
     const base = read(join(work, name, 'proj'), join(work, name, 'proj'));
     const shared = `/proj/src/${importCounts(base)[0]?.[0] ?? 'm000'}.ts`;
-    const imported = new Set(importCounts(base).map(([m]) => `/proj/src/${m}.ts`));
-    const leaf = Object.keys(base).sort().reverse().find(path => /\/src\/m\d+\.ts$/.test(path) && !imported.has(path));
+    const counts = new Map(importCounts(base));
+    const leaf = Object.keys(base).filter(path => /\/src\/m\d+\.ts$/.test(path)).sort((a, b) => (counts.get(a.slice(10, -3)) ?? 0) - (counts.get(b.slice(10, -3)) ?? 0) || b.localeCompare(a))[0];
     const field = /export interface \w+ \{ id: number;/.exec(base[shared]);
     if (!field) throw new Error(`no interface in ${shared}`);
     const edits = [
@@ -88,7 +88,7 @@ if (isMainThread) {
         parentPort.postMessage({ line: JSON.stringify(row) });
       }
     }
-    steps[name] = { leaf: leaf.replace('/proj/', ''), shared: shared.replace('/proj/', '') };
+    steps[name] = { leaf: leaf.replace('/proj/', ''), leafImporters: counts.get(leaf.slice(10, -3)) ?? 0, shared: shared.replace('/proj/', ''), sharedImporters: counts.get(shared.slice(10, -3)) ?? 0 };
   }
   parentPort.postMessage({ done: { steps, rows } });
 }

@@ -32,3 +32,7 @@ Decision: ship a `buildInfo` option in `checker.mjs` only if prediction 1 holds 
 Failure meaning: a parity difference is a failure of this technique on this compiler version, not of the checker, and is kept with the step named.
 
 Limits: a shared desktop with no quiet gate, one host and Node as recorded, one compiler version. The edits are synthetic. Build info is fed back in memory, so this says nothing about a persistent cache's trust: a stale or forged file is a separate question.
+
+## Amendment 1, after the harness failed
+
+The first run crashed on its second edit. Every generated module is imported by another, so no file had zero importers, the harness's "leaf" was undefined and its `comment` edit only wrote a file named `undefined`. That one row is not kept as evidence. "Leaf" now means the module with the fewest importers, recorded per workload. Predictions and decision are unchanged.
