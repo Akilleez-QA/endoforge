@@ -432,5 +432,8 @@ and 26.12.0. Spawn-cost measurements are in P-26.
 | REQ-ISO-010 | Bridge process killed with work pending | Pass; pending and later requests reject, no respawn |
 | REQ-ISO-010 | Stored row tampered after caching | Pass; next read rejects the chain |
 | REQ-ISO-010 | One invalid request inside a batch | Pass; only that request fails and the others commit |
+| REQ-ISO-011 | `stackSizeMb` validation; a deep expression traps without it and passes with it | Pass |
+| REQ-ISO-012 | A hung job and a compiler past its deadline end `outcome_unknown`/`deadline`, and the replacement cell completes the next job | Pass |
+| REQ-TSC-001 | Pinned check passes clean code and rejects a planted error; compiled once per workcell; unpinned stopped by the guard; tampered and missing are unknown | Pass |
 | REQ-ISO-009 | Bridge process after `ready()` with prewarm, none on a lazy pool | Pass; one bridge before the first job and none respawned by it; `start()` memoized and rejects after close |
 

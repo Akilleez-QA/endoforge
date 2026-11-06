@@ -17,7 +17,7 @@ export const python = (code, input) => new Promise((resolve, reject) => {
   child.stdin.end(JSON.stringify(input));
 });
 
-export async function fixture(t) {
+export async function fixture(t, { invariants = ['identity'] } = {}) {
   const directory = mkdtempSync(join(tmpdir(), 'ef-isolates-'));
   t.after(() => rmSync(directory, { recursive: true, force: true }));
   const root = join(directory, 'evaluator');
@@ -26,7 +26,7 @@ export async function fixture(t) {
   const configuration = {
     gateInput: { version: 1, contract: { version: 1, signature, refusals: [], tolerance: 0, sources: ['synthetic'] },
       cases: [{ id: 'zero', inputs: { x: 0 } }], limits: { wallMs: 10, memoryBytes: 1024, fuel: 100 }, allowedEffects: [] },
-    invariants: ['identity'], objectives: { cost: 'min' },
+    invariants, objectives: { cost: 'min' },
   };
   const candidates = ['pass', 'dominated', 'interface', 'effects', 'invariant', 'throw', 'heap', 'exit'];
   const reference = { ledger: join(directory, 'ledger.sqlite'), root };
