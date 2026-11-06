@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import { attachCgroup } from '../isolate-cgroup.mjs';
 import { IsolatePool } from '../isolate-pool.mjs';
 import { fixture } from './fixtures/ledger-fixture.mjs';
 
@@ -39,4 +40,22 @@ test('process with a delegated cgroup: off-heap memory past memory.max is killed
   assert.equal(result.signal, 'SIGKILL');
   assert.equal(result.receipts[0].record.data.outcome_state, 'inconclusive');
   assert.equal((await pool.run(job(['pass'], {}))).status, 'completed');
+});
+
+const limits = { memoryMax: 268435456, cpuMax: '100000 100000', pidsMax: 64 };
+const cgroupRoot = t => {
+  const root = mkdtempSync(join(tmpdir(), 'ef-cgroup-attach-'));
+  t.after(() => rmSync(root, { recursive: true, force: true }));
+  return root;
+};
+
+test('a cgroup with no swap limit, on a host with swap, is not reported as enabled', t => {
+  assert.equal(attachCgroup(1234, cgroupRoot(t), limits, () => true), null);
+});
+
+test('a cgroup with no swap limit bounds the cell on a host without swap', t => {
+  const directory = attachCgroup(1234, cgroupRoot(t), limits, () => false);
+  assert.ok(directory);
+  assert.equal(readFileSync(join(directory, 'cgroup.procs'), 'utf8'), '1234');
+  assert.equal(existsSync(join(directory, 'memory.swap.max')), false);
 });
