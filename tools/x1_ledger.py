@@ -5,7 +5,7 @@ import sys
 
 from core.ledger.frozen import FrozenEvaluators
 from core.ledger.ledger import Ledger
-from core.ledger.x1_loop import decide, refusal, store_decision
+from tools.x1_loop import decide, refusal, store_decision
 
 action = sys.argv[1]
 r = json.load(sys.stdin)

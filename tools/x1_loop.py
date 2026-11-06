@@ -5,10 +5,10 @@ import math
 import os
 from pathlib import Path
 
-from .frozen import digest, frozen_record, snapshot
-from .ledger import encode
+from core.ledger.frozen import digest, frozen_record, snapshot
+from core.ledger.ledger import encode
 
-REPOSITORY = Path(__file__).resolve().parents[2]
+REPOSITORY = Path(__file__).resolve().parents[1]
 ROUND_CHECKS = ["schema", "interface", "bounds", "determinism", "forbidden_effects", "residual"]
 GATES = {"G1_frozen", "G2_compiles", "G3_exports", "G4_tests", "G5_deterministic", "G6_bounded", "G7_glue"}
 ORACLE_FILES = ("CONTRACT.md", "tests.json", "frozen.sha256")

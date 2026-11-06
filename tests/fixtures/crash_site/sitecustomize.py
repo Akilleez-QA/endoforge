@@ -5,7 +5,7 @@ import sqlite3
 point = os.environ.get("EF_BRIDGE_KILL")
 if point:
     import core.ledger.ledger as ledger_module
-    import core.ledger.x1_loop as loop
+    import tools.x1_loop as loop
 
     state = dict(active=False, appended=0)
 

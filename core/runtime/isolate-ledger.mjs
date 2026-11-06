@@ -62,7 +62,7 @@ export const persistentBridge = `
 import json, os, select, sys
 from core.ledger.ledger import Ledger, validate
 import sqlite3
-from core.ledger.x1_loop import LOOP, write_decision
+from tools.x1_loop import LOOP, write_decision
 ${operation}
 paths = {}
 sys.stdout.write(json.dumps(dict(id=0, result='ready')) + '\\n')

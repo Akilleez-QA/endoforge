@@ -11,7 +11,7 @@ import { python } from './fixtures/ledger-fixture.mjs';
 const here = path => fileURLToPath(new URL(path, import.meta.url));
 const repository = here('../../../');
 const driver = here('./fixtures/x1/loop-driver.mjs');
-const crashSite = here('./fixtures/x1/crash_site');
+const crashSite = here('../../../tests/fixtures/crash_site');
 const scratch = t => {
   const root = mkdtempSync(join(tmpdir(), 'ef-loop-crash-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
@@ -119,7 +119,7 @@ for (const point of ['after_commit', 'after_decision']) {
 
 test('an implementation file changed after admission is refused at commit', { timeout: 60000 }, async t => {
   const root = scratch(t), copy = join(root, 'copy');
-  for (const part of ['core', 'tools/factory_quality', 'experiments/assemblyscript-toolchain.mjs']) cpSync(join(repository, part), join(copy, part), { recursive: true });
+  for (const part of ['core', 'tools/factory_quality', 'tools/x1_loop.py', 'experiments/assemblyscript-toolchain.mjs']) cpSync(join(repository, part), join(copy, part), { recursive: true });
   mkdirSync(join(copy, 'tools/asc'), { recursive: true });
   cpSync(join(repository, 'tools/asc/pin.mjs'), join(copy, 'tools/asc/pin.mjs'));
   symlinkSync(join(repository, 'tools/asc/node_modules'), join(copy, 'tools/asc/node_modules'));
