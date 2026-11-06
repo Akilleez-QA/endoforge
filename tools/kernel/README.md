@@ -65,7 +65,7 @@ The candidate loop in [core/runtime](../../core/runtime/README.md) runs in V8 is
 ## Resident component host
 
 Install `requirements.txt` into a virtual environment and select that interpreter
-with `make kernel-test PYTHON=/path/to/venv/bin/python`. It is not part of `make test`, so it adds no prerequisite there; missing dependencies fail these checks.
+with `make kernel-test PYTHON=/path/to/venv/bin/python`. `make test` runs this target too, so select the same interpreter there; missing dependencies fail these checks.
 
 `Workcell(component_bytes, (state_schema, event_schema, effect_schema))` validates
 the kernel contract and compiles once. Call `run(state_bytes, event_bytes, inputs)`
