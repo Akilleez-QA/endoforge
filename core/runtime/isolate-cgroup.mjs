@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, rmdirSync, statfsSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmdirSync, statfsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 let defaultRoot;
@@ -26,7 +26,12 @@ export function prepareCgroup(root) {
   } catch { return null; }
 }
 
-export function attachCgroup(pid, root, limits) {
+const hostHasSwap = () => {
+  try { return readFileSync('/proc/swaps', 'utf8').trim().split('\n').length > 1; }
+  catch { return true; }
+};
+
+export function attachCgroup(pid, root, limits, swapPresent = hostHasSwap) {
   if (!root) return null;
   let directory;
   try {
@@ -36,6 +41,8 @@ export function attachCgroup(pid, root, limits) {
       'memory.oom.group': 1, 'cpu.max': limits.cpuMax, 'pids.max': limits.pidsMax })) {
       writeFileSync(join(directory, name), String(value));
     }
+    if (existsSync(join(directory, 'memory.swap.max'))) writeFileSync(join(directory, 'memory.swap.max'), '0');
+    else if (swapPresent()) throw new Error('memory.max does not bound a cell with swap and no swap limit');
     writeFileSync(join(directory, 'cgroup.procs'), String(pid));
     return directory;
   } catch {

@@ -80,8 +80,11 @@ defines worker heap limits and termination. Its
 `Worker::UpdateResourceConstraints` and `Worker::NearHeapLimit`, supplies the embedding:
 separate isolates, generation constraints, and `ERR_WORKER_OUT_OF_MEMORY` shutdown.
 The pool waits for exit before replacement. Heap flags that override these limits
-are refused. Limits exclude ArrayBuffers, native allocations, and total RSS;
-global OOM can still terminate the host, as can native crashes in thread mode. Host modules are
+are refused. Limits exclude ArrayBuffers, native allocations, and total RSS:
+[P-44](../../experiments/P-44-offheap/RESULT.md) measured a job with a 128 MiB heap retain 3 GiB of ArrayBuffer,
+Buffer, Blob or separate WASM memories and still pass, in thread mode and in process mode without a cgroup.
+Thread mode can't bound off-heap memory; only a delegated cgroup in process mode can.
+Global OOM can still terminate the host, as can native crashes in thread mode. Host modules are
 trusted code with normal Node privileges. Workcells are not an OS sandbox.
 
 ## WebAssembly memory enforcement
@@ -200,8 +203,11 @@ root must expose memory/cpu/pids and writable migration/controller files; a
 populated shared desktop cgroup is insufficient. A suitably delegated user
 scope or empty writable `cgroupRoot` can supply this. Setup follows the kernel's
 [no-internal-process constraint](https://docs.kernel.org/admin-guide/cgroup-v2.html#no-internal-process-constraint).
-Each attached child gets its own group with `memory.max`, `memory.oom.group=1`,
-`cpu.max` and `pids.max`. Failure records `cgroup: 'unavailable'`; V8 limits and
+Each attached child gets its own group with `memory.max`, `memory.swap.max=0` where the kernel has it,
+`memory.oom.group=1`, `cpu.max` and `pids.max`. Without the swap limit, P-44 saw every off-heap kind reach its 3 GiB cap
+with no kill on a host with swap, and with it every kind was killed. Its receipt has no swap reading, so swap as
+where the excess went is inferred. The limit is part of the bound, so a kernel without `memory.swap.max` on a host
+with swap in `/proc/swaps` gets no cgroup. Failure records `cgroup: 'unavailable'`; V8 limits and
 the WASM gate still apply. Cgroup OOM kills without V8 diagnostics remain unknown
 and are not mislabeled as JS heap exhaustion. Host ports remain trusted Node code.
 The supervisor stops waiting 500 ms after a child's exit even if a grandchild still holds its stderr. Without a cgroup, that grandchild keeps running; with one, the group kill ends it. A cell whose process has exited takes no job during that wait, so the next job goes to its replacement.
