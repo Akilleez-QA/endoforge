@@ -30,3 +30,19 @@ precommit hashed before measurement and a result that states what it does not sh
 | [P-49](P-49-incremental/PRECOMMIT.md) | `.tsbuildinfo` feedback between checks: one-file edit 65–80% faster, no diagnostic difference in 220 comparisons, widely imported type edit 18–33% slower | [RESULT.md](P-49-incremental/RESULT.md) |
 
 Rebuild P-15 dependencies with `setup.sh` in its directory; `node_modules` is not committed.
+
+## Rules
+
+A probe turns one named unknown into a recorded number on one machine. It is not a campaign: it runs once, without the quiet gate, calibration or replication a campaign requires, so its result may narrow a design decision but never stands in for a campaign result.
+
+1. **Precommit before run.** `PRECOMMIT.md` states the question, the unknown it de-risks, the procedure, the metrics, what counts as a bad sign and the stop rule. Hash it before the first measurement: `sha256sum PRECOMMIT.md > receipt/precommit.sha256`.
+2. **One directory per probe**, `experiments/P-nn-<slug>/`, with `PRECOMMIT.md`, the runnable, setup for pinned dependencies, `receipt/` and `RESULT.md`.
+3. **Capture the environment**: kernel, CPU, load before and after, memory, tool versions, this repository's commit and exact module hashes.
+4. **Keep raw samples.** Summaries report median, p95, min, max and n. Do not claim a confidence interval from a single lifetime.
+5. **`RESULT.md` says what it does not show**, in a section with that name, before any interpretation.
+6. **Claim nothing beyond the probe.** A compiler run in a Node worker does not show it runs under Wasmtime; say so.
+7. **Keep dependencies local** to the probe (`node_modules/`, binaries under `.tools/`), ignored by git, with versions and hashes in `receipt/`.
+
+## Earlier probes
+
+P-01 to P-14 ran before this repository's first commit and are not published here, so a result that cites one, such as P-20 citing P-01, P-02 and P-05, carries the numbers it needs. Numbering continues from one sequence.
