@@ -2,9 +2,9 @@ PYTHON ?= python3
 export PYTHONDONTWRITEBYTECODE := 1
 export ENDOFORGE_TEST_OUTPUT := $(CURDIR)/.test-work
 
-.PHONY: test test-optimized check core-test ledger-test engine-test isolate-test tscheck-setup tscheck-test tscheck-requalify atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test seeded-fault-test
+.PHONY: test test-optimized check core-test ledger-test engine-test isolate-test tscheck-setup tscheck-test tscheck-requalify atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test seeded-fault-test escape-test
 
-test: pipeline-test check core-test ledger-test engine-test isolate-test tscheck-test atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test seeded-fault-test
+test: pipeline-test check core-test ledger-test engine-test isolate-test tscheck-test atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test seeded-fault-test escape-test
 
 test-optimized:
 	PYTHONOPTIMIZE=1 $(MAKE) test PYTHON="$(PYTHON) -O"
@@ -66,3 +66,6 @@ pipeline-test:
 
 seeded-fault-test:
 	$(PYTHON) -B -m unittest tools.seeded_faults.test_generator -v
+
+escape-test:
+	$(PYTHON) -B -m unittest tools.escape_harness.test_harness -v
