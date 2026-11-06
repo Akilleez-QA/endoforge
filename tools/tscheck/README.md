@@ -16,7 +16,7 @@ const result = await pool.run({ reference, candidates, receipts, portOptions: { 
 - Pass `warm: {}` to the pool to have `ready()` load the checker in every cell, so the first job doesn't compile. [P-46](../../experiments/P-46-prewarm/RESULT.md) measured the first job down 82%, at the cost of a slower `ready()` and with the same total.
 - A hash mismatch, a missing compiler or a trap throws, so the evaluator records an unknown outcome and never a pass.
 
-Use a `jobTimeoutMs`, since a check can't stop itself. Don't lower `maxOldGenerationSizeMb` below the pinned limit: 256 MiB ran out of memory on a healthy job in [P-43](../../experiments/P-43-tsrs-workcell/RESULT.md). That probe also found throughput flat by 8 cells.
+Use a `jobTimeoutMs`, since a check can't stop itself. Don't lower `maxOldGenerationSizeMb` below the pinned limit: 256 MiB ran out of memory on a healthy job in [P-43](../../experiments/P-43-tsrs-workcell/RESULT.md). That probe also found throughput flat by 8 cells, and on this stack [P-48](../../experiments/P-48-width/RESULT.md) traced it to the evaluator's frozen check, not the compiler.
 
 `make tscheck-setup` installs the exact pinned version without install scripts, and `make tscheck-test` runs the tests. On a version bump, update `pin.mjs` and rerun the probe.
 
