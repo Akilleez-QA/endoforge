@@ -18,10 +18,14 @@ test('stackSizeMb is optional, thread-only and validated', () => {
 });
 
 test('a job past its deadline is unknown, its cell is replaced, and the next job completes', { timeout: 60000 }, async t => {
+  const deadlines = holdTimers(t, 3599997);
   const { job } = await fixture(t);
-  const pool = new IsolatePool({ hostPort, size: 1, jobTimeoutMs: 1500, resourceLimits: { stackSizeMb: 8 } });
+  const pool = new IsolatePool({ hostPort, size: 1, jobTimeoutMs: 3599997, resourceLimits: { stackSizeMb: 8 } });
   t.after(() => pool.close());
-  const hung = await pool.run(job(['pass'], { hang: true }));
+  const running = pool.run(job(['pass'], { hang: true }));
+  while (!deadlines.count) await new Promise(setImmediate);
+  deadlines.fire();
+  const hung = await running;
   assert.equal(hung.status, 'outcome_unknown');
   assert.equal(hung.reason, 'deadline');
   assert.equal(hung.report, null);
