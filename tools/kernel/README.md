@@ -60,3 +60,63 @@ This is a static slice. It doesn't run a reference kernel, check semantic confor
 ## Relation to the V8 workcell
 
 The candidate loop in [core/runtime](../../core/runtime/README.md) runs in V8 isolates. This lane targets Wasmtime in Python and is separate from that loop: nothing in `core/` imports it, and neither Wasmtime nor a Python process is part of the loop. `kernel.wit` and its validator don't depend on Wasmtime. A Wasmtime host in this directory is a conformance host for kernels, not a loop component.
+
+## Resident component host
+
+Install `requirements.txt` into a virtual environment and select that interpreter
+with `make kernel-test PYTHON=/path/to/venv/bin/python`. It is not part of `make test`, so it adds no prerequisite there; missing dependencies fail these checks.
+
+`Workcell(component_bytes, (state_schema, event_schema, effect_schema))` validates
+the kernel contract and compiles once. Call `run(state_bytes, event_bytes, inputs)`
+with immutable byte snapshots. Each attempt instantiates into a fresh store,
+checks `describe`, invokes `reduce`, performs canonical post-return cleanup,
+and destroys the store on success or failure. Results include state/effect data,
+artifact identity, cache identity, host timings, fuel use and buffer-read bytes.
+Effects grant no authority and are never dispatched by this host.
+
+The cache holds one component for this engine's lifetime, keyed by the kernel
+artifact identity and pinned runtime/compiler configuration. Attempts serialize;
+compiler parallelism is disabled. Guest limits: 16 MiB memory, 1 MiB total input,
+64 snapshots, 1 MiB cumulative reads and at most 10 million fuel units.
+
+`reference.wat` is a hand-written conformance control, not a generation route.
+Its byte reducer adds state, event and the first buffer byte modulo 256; a
+mutable call counter deliberately detects accidental instance reuse. Tests build
+components in temporary directories without changing existing fixtures.
+
+The tests run 1,000 attempts with one actual compilation and distinct closed
+stores. Performance is not claimed.
+This embedding is for local conformance controls until the remaining slices
+provide OS sandboxing, cgroup ownership and helper containment, an external
+watchdog, compile-process limits, integrated cheap gates and calibration. Full effect-payload validation and ledger admission also remain open.
+
+## Declared buffer imports and per-call broker
+
+`Workcell(..., declared_imports=("endoforge:kernel/buffers@1.0.0",))` binds
+the candidate declaration to the fixed v1 WIT import list. This is also the
+default declaration. Missing or additional entries fail admission before
+compilation; the binary still undergoes exact interface validation. Declaring
+an extra capability cannot grant it. No WIT or artifact identity changes.
+
+`run(..., authorize=checker, max_host_calls=4096)` creates a fresh broker for
+each attempt. The trusted host checker receives `(buffer_index, operation)`
+on every size/read, before retrieving snapshot bytes; it must return exactly
+`True`. Revocation or a checker exception aborts with `BrokerDenied`, even
+after a successful read of that same buffer. The checker must consult current
+authority and return promptly; the default `None` treats the explicit immutable
+inputs as attempt-scoped grants.
+
+The host-call limit is an integer from 1 to 4096. Size calls, zero-length reads
+and typed read errors consume it; the next call traps before authority lookup
+or data access. Canonical resource drops only release handles and confer no
+capability, so they are outside this service-call count. Fuel still bounds guest
+instructions. The existing cumulative byte budget remains in force.
+
+Successful results include a `broker` report with host-call/byte counters,
+the declared limit and denial records. Fatal broker denials carry the same
+report on `BrokerDenied.report`; the host retains it after store destruction.
+At most 64 denial records are retained, with the last slot tracking the newest
+denial, plus an exact total count. Records contain operation, buffer index and
+reason, never source bytes or authority-service exception text.
+
+Declarations are tested at admission and the broker through real guest calls. Effects remain return data. There is no durable record of denials yet.
