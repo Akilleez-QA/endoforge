@@ -23,18 +23,22 @@ export async function warm({ vendor = VENDOR } = {}) {
   if (!loaded.has(String(vendor))) loaded.set(String(vendor), await load(vendor));
 }
 
-export async function typecheck(project, { emit = false, vendor = VENDOR } = {}) {
+export async function typecheck(project, { emit = false, vendor = VENDOR, buildInfo } = {}) {
+  if (emit && buildInfo !== undefined) throw new Error('emit needs a full check');
+  const incremental = buildInfo !== undefined;
+  const infoPath = `${project.root}/.tsbuildinfo`;
   const key = String(vendor);
   const warm = loaded.has(key);
   if (!warm) loaded.set(key, await load(vendor));
   const { core, module, compileMs } = loaded.get(key);
-  const files = project.tsconfig ? { ...project.files, [`${project.root}/tsconfig.json`]: JSON.stringify(project.tsconfig) } : project.files;
+  const files = { ...project.files, ...(project.tsconfig ? { [`${project.root}/tsconfig.json`]: JSON.stringify(project.tsconfig) } : {}),
+    ...(typeof buildInfo === 'string' ? { [infoPath]: buildInfo } : {}) };
   const host = core.memoryFileSystem(files);
   const text = new TextDecoder();
   let stderr = '';
   const started = performance.now();
   const result = core.runTsc(module,
-    core.makeRequest(['-p', `${project.root}/tsconfig.json`, '--pretty', 'false', ...(emit ? [] : ['--noEmit'])], { cwd: project.root, json: true }),
+    core.makeRequest(['-p', `${project.root}/tsconfig.json`, '--pretty', 'false', ...(emit ? [] : ['--noEmit']), ...(incremental ? ['--incremental', '--tsBuildInfoFile', infoPath] : [])], { cwd: project.root, json: true }),
     host, { env: {}, stdout: () => {}, stderr: chunk => { stderr += text.decode(chunk); } });
   const wallMs = Math.round(performance.now() - started);
   if (result.exitCode === core.EXIT_CRASHED) throw new Error(`tsrs trapped: ${stderr.slice(0, 300)}`);
@@ -55,6 +59,7 @@ export async function typecheck(project, { emit = false, vendor = VENDOR } = {})
     compileMs: warm ? 0 : compileMs,
     wallMs,
     memoryBytes: result.memoryBytes,
+    ...(incremental ? { buildInfo: host.written.get(infoPath) ?? buildInfo } : {}),
     artifact: emit && !diagnostics.length
       ? { files: written, sha256: Object.fromEntries(Object.entries(written).map(([path, value]) => [path, sha256(value)])) }
       : null,

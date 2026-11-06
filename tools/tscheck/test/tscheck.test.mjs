@@ -162,3 +162,27 @@ test('a clean emit binds its artifact hashes and compiler identity into the rece
   const plain = await pool.run(job(['pass'], options({ projects })));
   assert.equal(plain.receipts[0].record.data.observations[0].evidence, undefined);
 });
+
+test('build info feedback matches a full check, is refused with emit, and can be forged', { timeout: 60000 }, async () => {
+  const shared = 'export interface Rec { id: number }\n';
+  const files = (a, b) => ({ '/proj/shared.ts': shared, '/proj/a.ts': a, '/proj/b.ts': b });
+  const tsconfig = { compilerOptions, files: ['./shared.ts', './a.ts', './b.ts'] };
+  const a = 'import type { Rec } from "./shared";\nexport const r: Rec = { id: 1 };\n';
+  const b = 'export const n: number = "x";\n';
+  const check = (nextFiles, buildInfo) => typecheck({ root: '/proj', files: nextFiles, tsconfig }, buildInfo === undefined ? {} : { buildInfo });
+  const seed = await check(files(a, b), null);
+  assert.equal(seed.diagnostics.length, 1);
+  assert.ok(seed.buildInfo.length > 0);
+  const edited = files(`${a}// edited\n`, b);
+  const [full, incremental] = [await check(edited), await check(edited, seed.buildInfo)];
+  assert.deepEqual(incremental.diagnostics, full.diagnostics);
+  assert.equal(incremental.exitCode, full.exitCode);
+  assert.equal(full.buildInfo, undefined);
+  const newError = files(a, `${b}export const m: string = 1;\n`);
+  assert.deepEqual((await check(newError, incremental.buildInfo)).diagnostics, (await check(newError)).diagnostics);
+  await assert.rejects(typecheck({ root: '/proj', files: edited, tsconfig }, { emit: true, buildInfo: null }), /full check/);
+  const parsed = JSON.parse(seed.buildInfo);
+  delete parsed.semanticDiagnosticsPerFile;
+  const forged = await check(files(a, b), JSON.stringify(parsed));
+  assert.deepEqual(forged.diagnostics, [], 'forged build info hides the error, which is why it must never come from a candidate');
+});
