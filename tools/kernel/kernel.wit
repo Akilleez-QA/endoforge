@@ -1,0 +1,38 @@
+package endoforge:kernel@1.0.0;
+
+interface buffers {
+  enum read-error {
+    out-of-bounds,
+    limit-exceeded,
+  }
+  resource buffer {
+    size: func() -> u64;
+    read: func(offset: u64, length: u32) -> result<list<u8>, read-error>;
+  }
+}
+
+interface reducer {
+  use buffers.{buffer};
+  record effect {
+    capability: string,
+    operation: string,
+    payload: list<u8>,
+  }
+  record transition {
+    state: list<u8>,
+    effects: list<effect>,
+  }
+  record metadata {
+    contract-version: string,
+    state-schema: string,
+    event-schema: string,
+    effect-schema: string,
+  }
+  reduce: func(state: list<u8>, event: list<u8>, inputs: list<borrow<buffer>>) -> transition;
+  describe: func() -> metadata;
+}
+
+world kernel {
+  import buffers;
+  export reducer;
+}

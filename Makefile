@@ -69,3 +69,7 @@ seeded-fault-test:
 
 escape-test:
 	$(PYTHON) -B -m unittest tools.escape_harness.test_harness -v
+
+.PHONY: kernel-test
+kernel-test:
+	$(PYTHON) -B -m unittest tools.kernel.test_contract -v
