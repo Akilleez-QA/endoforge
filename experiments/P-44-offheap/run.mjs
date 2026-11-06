@@ -28,7 +28,7 @@ for (const mode of modes) for (const kind of kinds) for (let rep = 0; rep < repe
   await pool.close();
   const trial = { mode, kind, rep, status: settled.status, reason: settled.reason, error: settled.error ?? null, signal: settled.signal ?? null,
     cgroup: settled.cgroup, outcome: settled.receipts[0].record.data.outcome_state, progress: read(progress), ms,
-    siblingsLost: survivors.filter(r => r.status !== 'completed').length, replacement: replacement.status };
+    siblingsLost: survivors.filter(r => r.status !== 'completed').length, replacement: replacement.status, replacementWorkcell: replacement.workcell };
   result.trials.push(trial);
   console.log(JSON.stringify(trial));
 }

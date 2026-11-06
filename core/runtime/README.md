@@ -43,7 +43,7 @@ defines all fields and failure states; the
 and append implementation on the host. Every batch produces one receipt per
 candidate, preserving candidate/oracle binding without changing the schema. A host port may export `evidence()`; its JSON value joins that batch's result as `evidence`, and so the observation of each of the batch's receipts.
 Unknown worker outcomes produce inconclusive receipts and never a retry or a pass.
-`warm: {...}`, off by default, has each cell import the host module and await its exported `warm(options)` before it reports ready. A failure rejects `ready()` and makes that cell's jobs unknown, never a pass. Replacement cells warm themselves and aren't awaited.
+`warm: {...}`, off by default, has each cell import the host module and await its exported `warm(options)` before it reports ready. A failure rejects `ready()` and makes that cell's jobs unknown, never a pass. Replacement cells warm themselves and aren't awaited. Cells that exit before reporting ready, as a `warm` calling `process.exit` does, stop being respawned after `size + 2` in a row. `halted` turns true, and later jobs get `outcome_unknown` with reason `workcell_start_failed` and start no cell.
 Keep ledger files and other generated evidence outside the source tree.
 
 Run `make isolate-test` for native evaluator parity, multi-isolate chain verification
@@ -188,7 +188,7 @@ Node runtime to demonstrate actual worker-local enforcement.
 
 `isolation: 'process'` forks one Node child per cell with the same configured
 old/young values passed as `--max-old-space-size` and `--max-semi-space-size`.
-With `stackSizeMb`, the child starts through `/bin/sh`, which raises `RLIMIT_STACK` and `exec`s Node with `--stack-size` 192 KiB below it; the constructor refuses if the host won't raise the limit. The flag alone dies with SIGSEGV on deep recursion, as [P-47](../../experiments/P-47-process-stack/RESULT.md) measured, and with the rlimit raised the same probes throw `RangeError`.
+With `stackSizeMb`, the child starts through `/bin/sh`, which raises `RLIMIT_STACK` and `exec`s Node with `--stack-size` 192 KiB below it, less the size of the environment and arguments, which share that stack; the constructor refuses if the host won't raise the limit. The flag alone dies with SIGSEGV on deep recursion, as [P-47](../../experiments/P-47-process-stack/RESULT.md) measured, and with the rlimit raised the same probes throw `RangeError`.
 V8's young generation can include several semi-spaces; these are heap settings,
 not RSS quotas. The child uses V8's fatal heap-limit exit; it does not install
 `v8.setHeapSnapshotNearHeapLimit`, which is a snapshot API, or a native callback.
@@ -210,10 +210,13 @@ populated shared desktop cgroup is insufficient. A suitably delegated user
 scope or empty writable `cgroupRoot` can supply this. Setup follows the kernel's
 [no-internal-process constraint](https://docs.kernel.org/admin-guide/cgroup-v2.html#no-internal-process-constraint).
 Each attached child gets its own group with `memory.max`, `memory.swap.max=0` where the kernel has it,
-`memory.oom.group=1`, `cpu.max` and `pids.max`. Without the swap limit, P-44 measured the excess going to swap
-and no kill, so the limit is part of the bound. Failure records `cgroup: 'unavailable'`; V8 limits and
+`memory.oom.group=1`, `cpu.max` and `pids.max`. Without the swap limit, P-44 saw every off-heap kind reach its 3 GiB cap
+with no kill on a host with swap, and with it every kind was killed. Its receipt has no swap reading, so swap as
+where the excess went is inferred. The limit is part of the bound, so a kernel without `memory.swap.max` on a host
+with swap in `/proc/swaps` gets no cgroup. Failure records `cgroup: 'unavailable'`; V8 limits and
 the WASM gate still apply. Cgroup OOM kills without V8 diagnostics remain unknown
 and are not mislabeled as JS heap exhaustion. Host ports remain trusted Node code.
+The supervisor stops waiting 500 ms after a child's exit even if a grandchild still holds its stderr. Without a cgroup, that grandchild keeps running; with one, the group kill ends it.
 [P-18](../../experiments/P-18-pool-breach/RESULT.md) records N=8 breach results
 for both modes, including the unavailable-delegation limitation.
 

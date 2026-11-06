@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { setTimeout as sleep } from 'node:timers/promises';
 import test from 'node:test';
 import { IsolatePool } from '../isolate-pool.mjs';
 import { fixture } from './fixtures/ledger-fixture.mjs';
@@ -82,4 +85,73 @@ test('warm is opt-in: ready() waits for the host module, and a failure never bec
   t.after(() => off.close());
   const cold = await off.run(job(['pass'], { expectWarm: null }));
   assert.equal(cold.status, 'completed');
+});
+
+const warmExit = fileURLToPath(new URL('./fixtures/warm-exit-port.mjs', import.meta.url));
+const warms = counter => existsSync(counter) ? readFileSync(counter, 'utf8').length : 0;
+
+for (const isolation of ['thread', 'process']) {
+  test(`${isolation}: a warm() that exits the cell stops respawning, and the failure is surfaced`, { timeout: 60000 }, async t => {
+    const { job, directory } = await fixture(t);
+    const counter = join(directory, 'warms');
+    const size = 2;
+    const pool = new IsolatePool({ hostPort: warmExit, size, isolation, warm: { counter } });
+    t.after(() => pool.close());
+    await assert.rejects(pool.ready(), /failed before ready/);
+    await sleep(1500);
+    const settled = warms(counter);
+    assert.ok(settled <= size + 2 + size, `${settled} warms`);
+    await sleep(500);
+    assert.equal(warms(counter), settled, 'no further respawn');
+    assert.equal(pool.stats.workers, 0);
+    assert.equal(pool.halted, true);
+    const result = await pool.run(job());
+    assert.equal(result.status, 'outcome_unknown');
+    assert.equal(result.reason, 'workcell_start_failed');
+    assert.notEqual(result.receipts[0].record.data.outcome_state, 'passed');
+    assert.equal(warms(counter), settled, 'a later job starts no cell');
+  });
+}
+
+test('a cell that fails to start a few times recovers once one reports ready', { timeout: 60000 }, async t => {
+  const { job, directory } = await fixture(t);
+  const counter = join(directory, 'warms');
+  const pool = new IsolatePool({ hostPort: warmExit, size: 1, warm: { counter, exitFirst: 2 } });
+  t.after(() => pool.close());
+  const lost = [await pool.run(job()), await pool.run(job())];
+  assert.deepEqual(lost.map(result => result.reason), ['worker_exit', 'worker_exit']);
+  const recovered = await pool.run(job());
+  assert.equal(recovered.status, 'completed', recovered.reason);
+  assert.equal(recovered.receipts[0].record.data.outcome_state, 'passed');
+  assert.equal(pool.halted, false);
+});
+
+for (const kib of [512, 1536]) {
+  test(`process: with ${kib} KiB of environment, a stack overflow is still a RangeError, not SIGSEGV`, { timeout: 60000 }, async t => {
+    const { job } = await fixture(t);
+    const names = Array.from({ length: Math.ceil(kib / 100) }, (_, index) => `EF_TEST_STACK_ENV_${index}`);
+    for (const name of names) process.env[name] = 'x'.repeat(100 * 1024);
+    t.after(() => { for (const name of names) delete process.env[name]; });
+    const pool = new IsolatePool({ hostPort: fileURLToPath(new URL('./fixtures/recurse-port.mjs', import.meta.url)), size: 1, isolation: 'process', resourceLimits: { stackSizeMb: 64 } });
+    t.after(() => pool.close());
+    const overflowed = await pool.run(job(['pass'], { recurse: true }));
+    assert.equal(overflowed.signal, undefined, 'the cell did not die');
+    assert.equal(overflowed.status, 'outcome_unknown');
+    assert.notEqual(overflowed.receipts[0].record.data.outcome_state, 'passed');
+    const next = await pool.run(job(['pass'], {}));
+    assert.equal(next.workcell, overflowed.workcell);
+  });
+}
+
+test('a process stack too small for the environment is refused when the cell starts', { timeout: 60000 }, async t => {
+  const { job } = await fixture(t);
+  const names = Array.from({ length: 12 }, (_, index) => `EF_TEST_STACK_ENV_${index}`);
+  for (const name of names) process.env[name] = 'x'.repeat(100 * 1024);
+  t.after(() => { for (const name of names) delete process.env[name]; });
+  const pool = new IsolatePool({ hostPort, size: 1, isolation: 'process', resourceLimits: { stackSizeMb: 1 } });
+  t.after(() => pool.close());
+  const result = await pool.run(job());
+  assert.equal(result.status, 'outcome_unknown');
+  assert.match(result.reason, /stackSizeMb is too small/);
+  assert.notEqual(result.receipts[0].record.data.outcome_state, 'passed');
 });
