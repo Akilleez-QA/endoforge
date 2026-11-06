@@ -160,6 +160,20 @@ test('an emit over a prior build info file records the files it really wrote', {
   for (const row of rows) assert.deepEqual(Object.keys(row.sha256), ['/proj/out/a.js']);
 });
 
+test('build info feedback keeps the host options and refuses a candidate build info file', { timeout: 60000 }, async () => {
+  const seed = await typecheck(project(listed()), { buildInfo: null });
+  assert.deepEqual(seed.diagnostics.map(d => d.code), [2322]);
+  const quiet = await typecheck(project(listed({ noCheck: true })), { buildInfo: seed.buildInfo });
+  assert.deepEqual(quiet.diagnostics.map(d => d.code), [2322], 'noCheck stays off with feedback');
+  const forged = project(listed({ incremental: true, tsBuildInfoFile: './.tsbuildinfo' }), { '/proj/a.ts': bad, '/proj/.tsbuildinfo': '{}' });
+  await assert.rejects(typecheck(forged, { buildInfo: null }), /build info/);
+  const renamed = project(listed({ incremental: true, tsBuildInfoFile: './info.json' }));
+  renamed.files = { ...renamed.files, '/proj/info.json': forgedInfo(renamed, '/proj/info.json', ['--noEmit']) };
+  assert.deepEqual((await typecheck(renamed, { buildInfo: null })).diagnostics.map(d => d.code), [2322], 'only the host chooses the build info file');
+  const coverage = project({ compilerOptions, include: ['ok.ts'] }, { '/proj/a.ts': bad, '/proj/ok.ts': good });
+  await assert.rejects(typecheck(coverage, { buildInfo: null }), /outside the program/);
+});
+
 function vendorCopy(t, change) {
   const directory = mkdtempSync(join(tmpdir(), 'ef-tscheck-pin-'));
   t.after(() => rmSync(directory, { recursive: true, force: true }));
