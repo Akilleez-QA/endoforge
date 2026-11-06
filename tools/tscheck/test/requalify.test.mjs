@@ -131,6 +131,13 @@ test('anything skipped fails an otherwise matching run: a directory or a loose f
   }
 });
 
+test('a workload manifest is not a skipped project', { timeout: 120000 }, async t => {
+  const directory = setup(t);
+  writeFileSync(join(directory, 'work', 'synthetic', 'manifest.json'), '{}');
+  const result = run(directory, oracle(directory, await realDiagnostics()));
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+});
+
 test('an empty workload never passes', { timeout: 60000 }, t => {
   const directory = setup(t);
   rmSync(join(directory, 'work', 'synthetic'), { recursive: true });

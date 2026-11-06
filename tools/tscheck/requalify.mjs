@@ -50,6 +50,7 @@ export async function requalify({ work, tsc }) {
   for (const group of existsSync(work) ? readdirSync(work).sort() : []) {
     if (!statSync(join(work, group)).isDirectory()) { differences.push({ project: group, kind: 'skipped' }); continue; }
     for (const name of readdirSync(join(work, group)).sort()) {
+      if (name === 'manifest.json') continue;
       if (existsSync(join(work, group, name, 'proj', 'tsconfig.json'))) projects.push(`${group}/${name}`);
       else differences.push({ project: `${group}/${name}`, kind: 'skipped' });
     }
