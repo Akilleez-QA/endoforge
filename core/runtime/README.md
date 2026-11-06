@@ -41,7 +41,7 @@ defines all fields and failure states; the
 `synthetic fixture` demonstrates their construction.
 [isolate-ledger.mjs](isolate-ledger.mjs) invokes Python's existing `Ledger` validation
 and append implementation on the host. Every batch produces one receipt per
-candidate, preserving candidate/oracle binding without changing the schema.
+candidate, preserving candidate/oracle binding without changing the schema. A host port may export `evidence()`; its JSON value joins that batch's result as `evidence`, and so the observation of each of the batch's receipts.
 Unknown worker outcomes produce inconclusive receipts and never a retry or a pass.
 `warm: {...}`, off by default, has each cell import the host module and await its exported `warm(options)` before it reports ready. A failure rejects `ready()` and makes that cell's jobs unknown, never a pass. Replacement cells warm themselves and aren't awaited.
 Keep ledger files and other generated evidence outside the source tree.
