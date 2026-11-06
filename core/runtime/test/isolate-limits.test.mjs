@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setTimeout as sleep } from 'node:timers/promises';
@@ -15,7 +15,7 @@ test('stackSizeMb is optional and validated', () => {
   assert.throws(() => new IsolatePool({ hostPort, resourceLimits: { stackSizeMb: 0 } }), /limits/);
   assert.throws(() => new IsolatePool({ hostPort, resourceLimits: { other: 1 } }), /limits/);
   const pool = fileURLToPath(new URL('../isolate-pool.mjs', import.meta.url));
-  const refused = spawnSync('/bin/sh', ['-c', 'ulimit -Hs 8192 && exec "$@"', 'sh', process.execPath, '--input-type=module', '-e',
+  const refused = spawnSync('/bin/sh', ['-c', 'ulimit -Ss 8192 && ulimit -Hs 8192 && exec "$@"', 'sh', process.execPath, '--input-type=module', '-e',
     `import { IsolatePool } from ${JSON.stringify(pool)}; new IsolatePool({ hostPort: ${JSON.stringify(hostPort)}, isolation: 'process', resourceLimits: { stackSizeMb: 64 } });`], { encoding: 'utf8' });
   assert.notEqual(refused.status, 0);
   assert.match(refused.stderr, /cannot raise the process stack limit/);
@@ -94,6 +94,12 @@ test('warm is opt-in: ready() waits for the host module, and a failure never bec
 
 const warmExit = fileURLToPath(new URL('./fixtures/warm-exit-port.mjs', import.meta.url));
 const warms = counter => existsSync(counter) ? readFileSync(counter, 'utf8').length : 0;
+const runOnFailingStart = async (pool, job, gate) => {
+  const result = pool.run(job);
+  while (!pool.stats.busy) await sleep(5);
+  writeFileSync(gate, '');
+  return result;
+};
 
 for (const isolation of ['thread', 'process']) {
   test(`${isolation}: a warm() that exits the cell stops respawning, and the failure is surfaced`, { timeout: 60000 }, async t => {
@@ -121,9 +127,10 @@ for (const isolation of ['thread', 'process']) {
 test('a cell reporting ready resets the count, so start failures with a ready between them never halt', { timeout: 60000 }, async t => {
   const { job, directory } = await fixture(t);
   const counter = join(directory, 'warms');
-  const pool = new IsolatePool({ hostPort: warmExit, size: 1, warm: { counter, exitCounts: [0, 1, 3, 4] } });
+  const gate = join(directory, 'gate');
+  const pool = new IsolatePool({ hostPort: warmExit, size: 1, warm: { counter, exitCounts: [0, 1, 3, 4], gate } });
   t.after(() => pool.close());
-  const reasons = async () => [(await pool.run(job())).reason ?? 'completed', (await pool.run(job())).reason ?? 'completed', (await pool.run(job())).status];
+  const reasons = async () => [(await runOnFailingStart(pool, job(), gate)).reason, (await runOnFailingStart(pool, job(), gate)).reason, (await pool.run(job())).status];
   assert.deepEqual(await reasons(), ['worker_exit', 'worker_exit', 'completed']);
   assert.equal((await pool.run(job(['exit']))).reason, 'worker_exit');
   assert.deepEqual(await reasons(), ['worker_exit', 'worker_exit', 'completed']);
@@ -176,9 +183,10 @@ test('warmTimeoutMs is checked', () => {
 test('a cell that fails to start a few times recovers once one reports ready', { timeout: 60000 }, async t => {
   const { job, directory } = await fixture(t);
   const counter = join(directory, 'warms');
-  const pool = new IsolatePool({ hostPort: warmExit, size: 1, warm: { counter, exitFirst: 2 } });
+  const gate = join(directory, 'gate');
+  const pool = new IsolatePool({ hostPort: warmExit, size: 1, warm: { counter, exitFirst: 2, gate } });
   t.after(() => pool.close());
-  const lost = [await pool.run(job()), await pool.run(job())];
+  const lost = [await runOnFailingStart(pool, job(), gate), await runOnFailingStart(pool, job(), gate)];
   assert.deepEqual(lost.map(result => result.reason), ['worker_exit', 'worker_exit']);
   const recovered = await pool.run(job());
   assert.equal(recovered.status, 'completed', recovered.reason);
