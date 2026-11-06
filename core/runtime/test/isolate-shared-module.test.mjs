@@ -96,3 +96,11 @@ test('bytes that do not match the digest fall back to per-cell compile', { timeo
     await pool.close();
   }
 });
+
+test('closing during the shared compile leaves no cell behind', { timeout: 60000 }, async t => {
+  const pool = new IsolatePool(options(t, compilerFile(t), { size: 2 }));
+  const ready = pool.ready();
+  await pool.close();
+  await assert.rejects(ready, /closing/);
+  assert.equal(pool.stats.workers, 0);
+});
