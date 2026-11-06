@@ -20,3 +20,7 @@ Predictions:
 Failure meaning: an off-heap kind stopped in arm 1 would mean a limit exists that this repo doesn't document, and the requirement text must describe it. A kill in arm 3 reported as a pass, or a lost sibling in any arm, is a containment failure. A cgroup that can't be delegated leaves arm 3 unmeasured, and this is reported as unmeasured.
 
 Limits: a shared desktop with other work running. One host, a safety cap instead of unbounded growth, and no test of what a global OOM does to the supervisor. Only the listed kinds; native addons and other native allocations are not exercised. The lab case cited in the review is not on disk under that name, so these synthetic kinds stand in for it.
+
+## Amendment 1, after the first cgroup run
+
+The first cgroup arm missed prediction 3: every off-heap kind reached 3 GiB under `cgroup: enabled` with no kill, and it stays in the receipt as `cgroup-first-run`. Each trial took longer than the uncgrouped arm, and `isolate-cgroup.mjs` never sets `memory.swap.max`, so the hypothesis is that `memory.max` caps resident memory while the excess goes to swap, unbounded. The change under test: a workcell cgroup also gets `memory.swap.max=0` when the file exists. Prediction for the rerun: all off-heap kinds are killed below 304 MiB plus one chunk of progress, as `outcome_unknown` / `worker_exit` / `SIGKILL`, with no lost sibling, and `js-heap` is still rejected. Any other result means this hypothesis is wrong and the arm is reported as not bounded.
