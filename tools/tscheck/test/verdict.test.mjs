@@ -298,6 +298,17 @@ test('only the top-level node_modules is exempt from coverage', { timeout: 60000
   assert.ok((await typecheck(imported)).diagnostics.some(d => d.code === 2322 || d.code === 2307));
 });
 
+test('through the pool, a stdout forgery leaves no pass and no evidence row', { timeout: 120000 }, async t => {
+  const { job } = await fixture(t, { invariants: ['identity', TS_INVARIANT] });
+  const pool = new IsolatePool({ hostPort, size: 1, ...WORKCELL });
+  t.after(() => pool.close());
+  const injected = project({ compilerOptions: { ...compilerOptions, ...hideFromStdout }, files: ['./a.ts'] }, { '/proj/a.ts': good, '/proj/x.ts': bad });
+  const result = await pool.run(job(['pass'], { basePort, projects: { pass: injected }, emit: true }));
+  const { data } = result.receipts[0].record;
+  assert.notEqual(data.outcome_state, 'passed');
+  assert.deepEqual(data.observations[0].evidence?.typescript ?? [], []);
+});
+
 test('through the pool, a forged project never gets a passed receipt', { timeout: 120000 }, async t => {
   const { job } = await fixture(t, { invariants: ['identity', TS_INVARIANT] });
   const pool = new IsolatePool({ hostPort, size: 1, ...WORKCELL });
