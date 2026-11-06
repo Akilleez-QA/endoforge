@@ -175,6 +175,10 @@ int main(int argc, char **argv) {
         struct syscall_info info;
         if (ptrace(GET_SYSCALL_INFO, pid, sizeof info, &info) > 0 && info.op == INFO_ENTRY) on_entry(pid, &info);
       } else if (status >> 16) {
+        unsigned long child = 0;
+        int kind = status >> 16;
+        if ((kind == PTRACE_EVENT_CLONE || kind == PTRACE_EVENT_FORK || kind == PTRACE_EVENT_VFORK) && !ptrace(PTRACE_GETEVENTMSG, pid, 0, &child))
+          fprintf(out, "{\"kind\":\"child\",\"pid\":%d,\"child\":%lu}\n", pid, child);
         signal_number = 0;
       } else if (stop == SIGSTOP) {
         signal_number = 0;

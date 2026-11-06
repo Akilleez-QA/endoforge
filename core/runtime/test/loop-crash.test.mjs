@@ -164,3 +164,65 @@ test('bridge and supervisor kills at random times never yield a promotion withou
     assert.equal(replay.decision, 'promote', line.target);
   }
 });
+
+const agentDecision = directory => python(`
+import json, sqlite3, sys
+from pathlib import Path
+path = Path(json.load(sys.stdin)['directory']) / 'ledger.sqlite'
+db = sqlite3.connect(path) if path.exists() else None
+try:
+    row = db.execute('SELECT body FROM x1_decisions').fetchone() if db else None
+except sqlite3.OperationalError:
+    row = None
+print(json.dumps(json.loads(row[0])['decision'] if row else None))
+`, { directory });
+const agentNoRecords = async directory => { assert.deepEqual((await state(directory)).ids, []); assert.equal(await agentDecision(directory), null); };
+for (const isolation of ['thread', 'process']) {
+  for (const stage of ['model:wait', 'admitted', 'compile:read', 'gates:start', 'verdict']) {
+    test(`agent, ${isolation}: SIGKILL in the cell at ${stage} never promotes`, { timeout: 60000 }, async t => {
+      const root = scratch(t), directory = join(root, 'addition');
+      const run = await launch({ root, directory, isolation, agent: true }, { EF_KILL_STAGE: stage });
+      assert(run.signal === 'SIGKILL' || run.result?.promoted === false);
+      const seen = await state(directory);
+      if (stage === 'model:wait') await agentNoRecords(directory);
+      else if (isolation === 'thread') { assert.deepEqual(seen.ids, before); assert.equal(await agentDecision(directory), null); }
+      else { assert.deepEqual(seen.ids, [...before, 'candidate', 'receipt']); assert.equal(seen.outcome, 'inconclusive'); assert.equal(await agentDecision(directory), 'refuse'); }
+    });
+  }
+}
+for (const stage of ['model', 'admitting', 'admitted', 'committing']) {
+  test(`agent: SIGKILL of the supervisor at ${stage} loses only the attempt, and the task resumes from the ledger`, { timeout: 60000 }, async t => {
+    const root = scratch(t), directory = join(root, 'addition');
+    const run = await launch({ root, directory, agent: true, kill: stage });
+    assert.equal(run.signal, 'SIGKILL');
+    const seen = await state(directory);
+    assert(!seen.ids.includes('candidate'));
+    assert.equal(await agentDecision(directory), null);
+    if (seen.ids.length) {
+      assert.deepEqual(seen.ids, before);
+      const again = await launch({ root, directory, agent: true, resume: true });
+      assert.equal(again.result.promoted, true, JSON.stringify(again.result));
+    }
+  });
+}
+for (const point of ['admit_start', 'admit_before_commit', 'commit_start', 'after_register', 'after_receipt', 'before_commit']) {
+  test(`agent: SIGKILL of the bridge at ${point} leaves nothing of the attempt`, { timeout: 60000 }, async t => {
+    const root = scratch(t), directory = join(root, 'addition');
+    const run = await launch({ root, directory, agent: true }, bridgeEnv(point));
+    assert.equal(run.result.promoted, false);
+    const seen = await state(directory);
+    assert.deepEqual(seen.ids, point.startsWith('admit') ? [] : before);
+    assert.equal(await agentDecision(directory), null);
+  });
+}
+for (const point of ['after_db_commit']) {
+  test(`agent: SIGKILL of the bridge at ${point} returns no promotion over complete records`, { timeout: 60000 }, async t => {
+    const root = scratch(t), directory = join(root, 'addition');
+    const run = await launch({ root, directory, agent: true }, bridgeEnv(point));
+    assert.equal(run.result.promoted, false);
+    const seen = await state(directory);
+    assert.deepEqual(seen.ids, [...before, 'candidate', 'receipt']);
+    assert.equal(seen.outcome, 'passed');
+    assert.equal(await agentDecision(directory), 'promote');
+  });
+}

@@ -27,13 +27,29 @@ const checkWasm = installWasmLimit(wasmMemoryMaxMb, error => {
 
 const warmed = options.warm ? (async () => { await (await import(options.hostPort)).warm(options.warm); })().catch(error => error.message || String(error)) : null;
 
-(parentPort || process).on('message', async ({ reference, candidates, hostPort, portOptions }) => {
+const replies = new Map();
+let nextCall = 0;
+const host = call => new Promise((resolve, reject) => {
+  const id = ++nextCall;
+  replies.set(id, { resolve, reject });
+  send({ type: 'host-call', id, call });
+});
+
+(parentPort || process).on('message', async message => {
+  if (message.type === 'host-reply') {
+    const reply = replies.get(message.id);
+    replies.delete(message.id);
+    if (message.error === undefined) reply?.resolve(message.value);
+    else reply?.reject(new Error(message.error));
+    return;
+  }
+  const { reference, candidates, hostPort, portOptions } = message;
   try {
     const warmError = await warmed;
     if (warmError) throw new Error(`warm failed: ${warmError}`);
     checkWasm.begin();
     const { createPort } = await import(hostPort);
-    const port = await createPort(portOptions);
+    const port = await createPort(portOptions, { host });
     const report = port.evaluate ? await port.evaluate(evaluateCandidates, reference) : await evaluateCandidates(reference, candidates, port);
     checkWasm();
     const evidence = port.evidence?.();

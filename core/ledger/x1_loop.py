@@ -12,7 +12,7 @@ REPOSITORY = Path(__file__).resolve().parents[2]
 ROUND_CHECKS = ["schema", "interface", "bounds", "determinism", "forbidden_effects", "residual"]
 GATES = {"G1_frozen", "G2_compiles", "G3_exports", "G4_tests", "G5_deterministic", "G6_bounded", "G7_glue"}
 ORACLE_FILES = ("CONTRACT.md", "tests.json", "frozen.sha256")
-IMPLEMENTATION_FILES = ("host.mjs", "gates.mjs", "glue.schema.json", "loop-port.mjs")
+IMPLEMENTATION_FILES = ("host.mjs", "gates.mjs", "glue.schema.json", "loop-port.mjs", "agent.mjs")
 
 
 def decide(records, tip, stored_hash, request):
@@ -82,13 +82,20 @@ def write_decision(result):
         store_decision(result["decision"], result.pop("decisionPath"))
 
 
-def admit(request, prior, append, _process):
+def admit(request, prior, append, _process, _db):
     reference, payload = request["job"]["reference"], request["result"]
-    if "identity" not in reference:
+    if payload.get("resume"):
+        frozen = [r for r in prior.values() if r["kind"] == "frozen_evaluator" and "freeze" in r["data"]]
+        if not frozen:
+            raise ValueError("content-hashed frozen evaluator required")
+        record = frozen[-1]
+        if frozen_drift(record, reference.get("root")):
+            raise ValueError("running evaluator tree digest differs from frozen record")
+    elif "identity" not in reference:
         need = payload["need"]
         append(dict(version=0, kind="task", id="task", data=dict(intent=need, acceptance="X1 G1-G7")))
         append(dict(version=0, kind="admitted_input", id="input", data=dict(task="task", content=need, origin="caller")))
-        record = frozen_record(reference["root"], task="task", admitted_input="input",
+        record = frozen_record(reference.get("root"), files=payload.get("files"), task="task", admitted_input="input",
                                confirmed_by="freeze-before-code supervisor", qualification="X1 acceptance boundary",
                                synthesis_context=dict(id="need", candidate_blind="confirmed", inputs=["input"]),
                                configuration=payload["configuration"], residual="X1 G1-G7", invariant_version="1")
@@ -97,19 +104,20 @@ def admit(request, prior, append, _process):
         record = prior.get(reference["identity"])
         if record is None or record["kind"] != "frozen_evaluator" or "freeze" not in record["data"]:
             raise ValueError("content-hashed frozen evaluator required")
-        if frozen_drift(record, reference["root"]):
+        if frozen_drift(record, reference.get("root")):
             raise ValueError("running evaluator tree digest differs from frozen record")
     return dict(identity=record["id"], digest=record["data"]["freeze"]["digest"], encoded=encode(record["data"]))
 
 
 def frozen_drift(record, root):
     stored = json.loads(record["data"]["content"])
-    try:
-        content = snapshot(root, stored["configuration"], stored["residual"], stored["invariant_version"])
-    except (OSError, ValueError):
-        return True
-    if digest(content) != record["data"]["freeze"]["digest"]:
-        return True
+    if root is not None:
+        try:
+            content = snapshot(root, stored["configuration"], stored["residual"], stored["invariant_version"])
+        except (OSError, ValueError):
+            return True
+        if digest(content) != record["data"]["freeze"]["digest"]:
+            return True
     return any(name in stored["files"] and (REPOSITORY / "core/runtime/x1" / name).read_bytes().hex() != stored["files"][name]
                for name in IMPLEMENTATION_FILES)
 
@@ -181,7 +189,7 @@ def evidence_problem(record, root, content, result, sources):
         return f"invalid report evidence: {type(error).__name__}"
 
 
-def commit(request, prior, append, process):
+def commit(request, prior, append, process, db):
     job, payload = request["job"], request["result"]
     content, result = payload["content"], dict(payload["result"])
     identity = hashlib.sha256(content.encode()).hexdigest()
@@ -193,14 +201,20 @@ def commit(request, prior, append, process):
         raise ValueError("content-hashed frozen evaluator required")
     append(dict(version=0, kind="candidate", id=identity,
                 data=dict(task="task", admitted_input="input", content=content, proposer="configured generator")))
-    problem = evidence_problem(record, reference["root"], content, result, payload.get("sources"))
+    problem = evidence_problem(record, reference.get("root"), content, result, payload.get("sources"))
     if problem:
         result.update(status="rejected", reason=problem)
     receipts = process(dict(action="append", job=job, result=result), prior, append)
     written = receipts[0]
     decision = decide(prior, written["hash"], written["hash"],
                       dict(reference=reference, candidate=identity, receipt=dict(id=written["record"]["id"], hash=written["hash"])))
-    return dict(receipts=receipts, decision=decision, decisionPath=payload["decisionPath"], problem=problem)
+    answer = dict(receipts=receipts, decision=decision, problem=problem)
+    if "decisionPath" in payload:
+        answer["decisionPath"] = payload["decisionPath"]
+    else:
+        db.execute("CREATE TABLE IF NOT EXISTS x1_decisions (candidate TEXT PRIMARY KEY, body TEXT NOT NULL)")
+        db.execute("INSERT INTO x1_decisions VALUES (?, ?)", (identity, json.dumps(decision, sort_keys=True)))
+    return answer
 
 
 LOOP = dict(admit=admit, commit=commit)

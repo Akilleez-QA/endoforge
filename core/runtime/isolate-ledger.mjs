@@ -61,6 +61,7 @@ export function ledgerRequest(action, job, result) {
 export const persistentBridge = `
 import json, os, select, sys
 from core.ledger.ledger import Ledger, validate
+import sqlite3
 from core.ledger.x1_loop import LOOP, write_decision
 ${operation}
 paths = {}
@@ -87,10 +88,16 @@ while True:
         responses = []
         try:
             if path not in paths:
-                if len(paths) >= 64:
-                    paths.pop(next(iter(paths)))[1].close()
+                if any(r['action'] == 'admit' for r in requests):
+                    os.makedirs(os.path.dirname(path), exist_ok=True)
+                    wal = sqlite3.connect(path)
+                    wal.execute('PRAGMA journal_mode=WAL')
+                else:
+                    wal = None
                 ledger = Ledger(path)
                 paths[path] = (ledger, ledger._connect(), [])
+                if wal:
+                    wal.close()
             ledger, db, cache = paths[path]
             db.execute('BEGIN IMMEDIATE')
             try:
@@ -104,7 +111,7 @@ while True:
                     saved_prior, saved_previous = dict(prior), previous
                     try:
                         action = LOOP.get(request['action'])
-                        result = action(request, prior, append, process) if action else process(request, prior, append)
+                        result = action(request, prior, append, process, db) if action else process(request, prior, append)
                         responses.append(dict(id=request['id'], result=result))
                     except Exception as error:
                         db.execute('ROLLBACK TO request')
@@ -124,6 +131,8 @@ while True:
             except Exception as error:
                 response = dict(id=response['id'], error=str(error))
             print(json.dumps(response), flush=True)
+    while len(paths) > 64:
+        paths.pop(next(iter(paths)))[1].close()
 `;
 
 export class LedgerBridge {

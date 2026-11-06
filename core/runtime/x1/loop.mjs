@@ -1,21 +1,96 @@
 import { fileURLToPath } from 'node:url';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { ASC_PATH, WORKCELL } from '../../../tools/asc/pin.mjs';
 import { IsolatePool } from '../isolate-pool.mjs';
 import { generate } from './generator.mjs';
-import { hash } from './host.mjs';
+import { configuration, hash } from './host.mjs';
 import { receipt } from './ledger.mjs';
 
 const loopPools = new WeakSet();
 const hostPortPath = fileURLToPath(new URL('./loop-port.mjs', import.meta.url));
-export const implementation = Object.freeze(['loop-port.mjs']);
+export const implementation = Object.freeze(['loop-port.mjs', 'agent.mjs']);
+export const agentLimits = Object.freeze({ maxTurns: 6, maxTokens: 64000 });
 
-export function createLoopPool({ size = 1, isolation = 'thread', jobTimeoutMs = 60000, ascPath = ASC_PATH, hostPort = hostPortPath, primes, ...rest } = {}) {
+const providers = new WeakMap();
+const agentJobs = new Map();
+let nextAgentJob = 0;
+export function createLoopPool({ size = 1, isolation = 'thread', jobTimeoutMs = 60000, ascPath = ASC_PATH, hostPort = hostPortPath, primes, provider, ...rest } = {}) {
   const pool = new IsolatePool({ hostPort, size, isolation, jobTimeoutMs, ...WORKCELL,
-    warm: { path: ascPath, ...(primes === undefined ? {} : { primes }) }, ...rest });
+    warm: { path: ascPath, ...(primes === undefined ? {} : { primes }) }, ...rest,
+    ...(provider ? { hostCall: (call, job) => answerCall(pool, provider, call, job) } : {}) });
   loopPools.add(pool);
+  if (provider) providers.set(pool, provider);
   return pool;
+}
+
+async function answerCall(pool, provider, call, job) {
+  const context = agentJobs.get(job.portOptions?.jobKey);
+  if (!context) throw Error('no agent job');
+  if (call.kind === 'model') {
+    const begin = performance.now();
+    context.observe?.('model');
+    try {
+      const reply = await provider.send({ session: job.portOptions.jobKey, messages: call.messages, remaining: call.remaining });
+      return { text: reply.text, usage: reply.usage };
+    } finally {
+      context.modelMs += performance.now() - begin;
+      context.observe?.('model-returned');
+    }
+  }
+  if (call.kind === 'admit') {
+    if (context.admission) throw Error('already admitted');
+    context.observe?.('admitting');
+    const begin = performance.now();
+    context.admission = await admit(pool, context.reference, { need: context.need, configuration, files: call.files });
+    context.freezeMs = performance.now() - begin;
+    context.reference.identity = context.admission.identity;
+    context.observe?.('admitted');
+    return context.admission;
+  }
+  throw Error('unknown host call');
+}
+
+export async function attemptAgent({ need, directory, pool, observe, limits = agentLimits, resume = false }) {
+  const timings = Object.fromEntries(['generate', 'freeze', 'compile', 'gate', 'ledger', 'promote'].map(k => [k, null]));
+  const begin = performance.now(), jobKey = `agent-${process.pid}-${++nextAgentJob}`, id = basename(directory);
+  const context = { need, observe, modelMs: 0, admission: null, reference: { ledger: join(directory, 'ledger.sqlite') } };
+  const provider = providers.get(pool);
+  agentJobs.set(jobKey, context);
+  try {
+    if (!provider) throw Error('createLoopPool with a provider required');
+    await pool.ready();
+    observe?.('need');
+    if (resume) {
+      context.admission = await admit(pool, context.reference, { resume: true });
+      context.reference.identity = context.admission.identity;
+    }
+    const result = await pool.run({ ledger: 'caller', timing: true, reference: { identity: 'pending' }, candidates: [id],
+      portOptions: { mode: 'agent', jobKey, need, id, limits, ...(resume ? { admission: context.admission } : {}) } });
+    provider.endSession(jobKey);
+    const { evidence, timings: _, ...observed } = result;
+    const { content: returned, ...kept } = evidence ?? {};
+    timings.compile = kept.timings?.compile ?? null;
+    timings.gate = kept.timings?.gates ?? null;
+    timings.generate = context.modelMs;
+    timings.freeze = context.freezeMs ?? null;
+    if (!context.admission) throw Error('no frozen evaluator');
+    const content = returned ?? JSON.stringify({ id, files: {}, compiled: { error: 'attempt lost' } });
+    observe?.('committing');
+    const outcome = await commitCandidate(pool, { evaluated: { observed: { ...observed, ...(evidence ? { evidence: kept } : {}) }, content, sources: null },
+      reference: context.reference, digest: context.admission.digest, timings });
+    observe?.('returned');
+    timings.promote = 0;
+    timings.total = performance.now() - begin;
+    return { promoted: outcome.promoted, candidate: outcome.candidate, receipt: outcome.receipt, decision: outcome.decision, problem: outcome.problem, status: outcome.status,
+      agent: kept.agent ?? null, testDouble: provider.testDouble, modelMs: context.modelMs, timings };
+  } catch {
+    provider?.endSession(jobKey);
+    timings.total = performance.now() - begin;
+    return { promoted: false, error: 'pipeline stage failed; inspect local artifacts', testDouble: provider?.testDouble ?? false, modelMs: context.modelMs, timings };
+  } finally {
+    agentJobs.delete(jobKey);
+  }
 }
 
 export function admit(pool, reference, input = {}) {

@@ -12,13 +12,20 @@ if point:
     def kill():
         os.kill(os.getpid(), signal.SIGKILL)
 
-    original_commit, original_append, original_write = loop.commit, ledger_module.Ledger._append, loop.write_decision
+    original_commit, original_append, original_write, original_admit = loop.commit, ledger_module.Ledger._append, loop.write_decision, loop.admit
 
-    def commit(request, prior, append, process):
+    def admit(request, prior, append, process, db):
+        if point == "admit_start":
+            kill()
+        state["admitting"] = True
+        result = original_admit(request, prior, append, process, db)
+        return result
+
+    def commit(request, prior, append, process, db):
         state["active"] = True
         if point == "commit_start":
             kill()
-        return original_commit(request, prior, append, process)
+        return original_commit(request, prior, append, process, db)
 
     def counted_append(self, db, record, prior, previous):
         result = original_append(self, db, record, prior, previous)
@@ -30,9 +37,11 @@ if point:
 
     class Connection(sqlite3.Connection):
         def commit(self):
-            if state["active"] and point == "before_commit":
+            if (state["active"] and point == "before_commit") or (state.get("admitting") and point == "admit_before_commit"):
                 kill()
             super().commit()
+            if state["active"] and point == "after_db_commit":
+                kill()
 
     def connect(self):
         db = sqlite3.connect(self.path, timeout=5, factory=Connection)
@@ -49,6 +58,7 @@ if point:
 
     loop.commit = commit
     loop.LOOP["commit"] = commit
+    loop.LOOP["admit"] = admit
     loop.write_decision = write_decision
     ledger_module.Ledger._append = counted_append
     ledger_module.Ledger._connect = connect

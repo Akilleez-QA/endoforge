@@ -84,8 +84,10 @@ def validate_frozen(record, prior):
 
 
 def frozen_record(root, *, task, admitted_input, confirmed_by, qualification,
-                  synthesis_context, configuration, residual, invariant_version, revision=None):
-    content = snapshot(root, configuration, residual, invariant_version)
+                  synthesis_context, configuration, residual, invariant_version, revision=None, files=None):
+    content = (snapshot(root, configuration, residual, invariant_version) if files is None else
+               encode(dict(files=files, configuration=configuration, residual=residual,
+                           invariant_version=invariant_version)))
     data = dict(task=task, admitted_input=admitted_input, content=content,
                 confirmed_by=confirmed_by,
                 freeze=dict(digest=digest(content), qualification=qualification,

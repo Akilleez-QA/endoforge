@@ -47,9 +47,11 @@ export class IsolatePool {
   #sharing;
   #warmOptions;
   #startFailures = 0;
+  #hostCall;
 
   constructor({ hostPort, size = availableParallelism(), resourceLimits = {}, wasmMemoryMaxMb = 64,
-    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, warm, jobTimeoutMs } = {}) {
+    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, warm, jobTimeoutMs, hostCall } = {}) {
+    this.#hostCall = hostCall;
     if (!['thread', 'process'].includes(isolation)) throw new TypeError('isolation must be thread or process');
     if (cgroupRoot !== undefined && (typeof cgroupRoot !== 'string' || !cgroupRoot)) throw new TypeError('cgroupRoot path required');
     if (!positive(size)) throw new TypeError('positive integer pool size required');
@@ -200,6 +202,7 @@ export class IsolatePool {
         return cell.markStarted(!result.warmError);
       }
       if (!cell.job) return;
+      if (result.type === 'host-call') return this.#answer(cell, result);
       if (result.type === 'limit') {
         cell.error = { code: result.error };
         return;
@@ -257,11 +260,7 @@ export class IsolatePool {
       try {
         cell ||= this.#spawn();
         cell.job = job;
-        if (this.#jobTimeoutMs) job.deadline = setTimeout(() => {
-          cell.error = { code: 'ERR_WORKCELL_DEADLINE' };
-          cell.stopping = true;
-          cell.worker.terminate();
-        }, this.#jobTimeoutMs);
+        this.#arm(cell, job);
         const { reference, candidates, portOptions } = job.data;
         cell.worker.postMessage({ reference, candidates, portOptions, hostPort: this.#hostPort });
       } catch (error) {
@@ -271,6 +270,27 @@ export class IsolatePool {
           report: null, workcell: cell?.id ?? null, ...cell?.metadata, resourceLimits: this.#limits, wasmMemoryMaxMb: this.#wasmMemoryMaxMb });
       }
     }
+  }
+
+  #arm(cell, job) {
+    if (this.#jobTimeoutMs) job.deadline = setTimeout(() => {
+      cell.error = { code: 'ERR_WORKCELL_DEADLINE' };
+      cell.stopping = true;
+      cell.worker.terminate();
+    }, this.#jobTimeoutMs);
+  }
+
+  #answer(cell, { id, call }) {
+    const job = cell.job;
+    clearTimeout(job.deadline);
+    Promise.resolve().then(() => {
+      if (!this.#hostCall) throw new Error('no host call handler');
+      return this.#hostCall(call, job.data);
+    }).then(value => ({ id, value }), error => ({ id, error: error.message || String(error) })).then(reply => {
+      if (cell.job !== job || cell.stopping) return;
+      this.#arm(cell, job);
+      try { cell.worker.postMessage({ type: 'host-reply', ...reply }); } catch { }
+    });
   }
 
   async #finish(job, result) {

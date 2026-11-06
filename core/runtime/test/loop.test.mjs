@@ -50,7 +50,7 @@ async function task(pool, directory) {
   mkdirSync(oracle);
   const { files } = additionCandidate();
   for (const name of ['CONTRACT.md', 'tests.json', 'frozen.sha256']) writeFileSync(join(oracle, name), files[name]);
-  for (const name of ['host.mjs', 'gates.mjs', 'glue.schema.json', 'loop-port.mjs']) writeFileSync(join(oracle, name), readFileSync(join(x1Directory, name)));
+  for (const name of ['host.mjs', 'gates.mjs', 'glue.schema.json', 'loop-port.mjs', 'agent.mjs']) writeFileSync(join(oracle, name), readFileSync(join(x1Directory, name)));
   const reference = { ledger: join(directory, 'ledger.sqlite'), root: oracle };
   const admission = await admit(pool, reference, { need: 'integer add(a,b)', configuration });
   reference.identity = admission.identity;
@@ -220,7 +220,7 @@ test('an implementation in the frozen tree that differs from the cell code never
   mkdirSync(oracle, { recursive: true });
   const { files } = additionCandidate();
   for (const name of ['CONTRACT.md', 'tests.json', 'frozen.sha256']) writeFileSync(join(oracle, name), files[name]);
-  for (const name of ['host.mjs', 'glue.schema.json', 'loop-port.mjs']) writeFileSync(join(oracle, name), readFileSync(join(x1Directory, name)));
+  for (const name of ['host.mjs', 'glue.schema.json', 'loop-port.mjs', 'agent.mjs']) writeFileSync(join(oracle, name), readFileSync(join(x1Directory, name)));
   writeFileSync(join(oracle, 'gates.mjs'), `${readFileSync(join(x1Directory, 'gates.mjs'))}\n`);
   const reference = { ledger: join(directory, 'ledger.sqlite'), root: oracle };
   const admission = await admit(pool, reference, { need: 'integer add(a,b)', configuration });
@@ -297,8 +297,9 @@ test('commit rejects a receipt that does not bind the frozen evaluator', async t
 });
 
 test('repair rounds run in one cell, are bounded and cannot edit the oracle', { timeout: 60000 }, async t => {
-  const root = scratch(t), pool = createLoopPool({ primes: 1, jobTimeoutMs: 3000 });
+  const root = scratch(t), pool = createLoopPool({ primes: 1, jobTimeoutMs: 8000 });
   t.after(() => pool.close());
+  await pool.ready();
   const wrong = { 'kernel.ts': seeds[1].kernel };
   const fixed = await task(pool, join(root, 'fixed'));
   const repaired = await evaluateAndCommit(pool, { ...fixed, candidate: { ...fixed.candidate, files: { ...fixed.candidate.files, ...wrong } },

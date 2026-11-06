@@ -5,7 +5,7 @@ import { compile } from './compiler.mjs';
 import { ledger, receipt } from './ledger.mjs';
 import { hash } from './host.mjs';
 import { runGates } from './gates.mjs';
-import { attemptInIsolate } from './loop.mjs';
+import { attemptAgent, attemptInIsolate } from './loop.mjs';
 const failures = compiler => async candidate => {
   const result = runGates({ ...candidate, compiled: await compile(candidate.files, compiler) });
   if (result.promotable) return null;
@@ -24,7 +24,8 @@ export async function runNeed(options) {
   return { ...second, retried: true, retryCancelled: !second.promoted && Date.now() >= begin + budget, first: { promoted: false, timings: first.timings } };
 }
 async function attempt(options) {
-  return (options.env ?? process.env).ENDOFORGE_LOOP === 'isolate' ? attemptInIsolate(options) : attemptCurrent(options);
+  const path = (options.env ?? process.env).ENDOFORGE_LOOP;
+  return path === 'agent' ? attemptAgent(options) : path === 'isolate' ? attemptInIsolate(options) : attemptCurrent(options);
 }
 async function attemptCurrent({ need, directory, pool, env = process.env, compiler = env.ENDOFORGE_ASC_CMD, deadline = Infinity, observe }) {
   const timings = Object.fromEntries(['generate', 'freeze', 'compile', 'gate', 'ledger', 'promote'].map(k => [k, null]));

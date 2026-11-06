@@ -20,7 +20,7 @@ test('a real syscall counter sees no spawn or write before commit in the cell, a
   execFileSync('gcc', ['-O1', '-o', tracer, here('../../../experiments/P-50-in-isolate/syscount.c')]);
   const extra = { CODEX_HOME: join(root, 'unused-home'), ENDOFORGE_CODEX_TEST_DOUBLE: '1', ENDOFORGE_ASC_CMD: here('../../../tools/asc/node_modules/.bin/asc'),
     ENDOFORGE_CODEX_CMD: JSON.stringify([process.execPath, here('./fixtures/x1/fake-codex.mjs')]) };
-  for (const arm of ['current', 'isolate-thread', 'isolate-process']) {
+  for (const arm of ['current', 'isolate-thread', 'isolate-process', 'agent-thread', 'agent-process']) {
     const output = join(root, arm), log = join(root, `${arm}.jsonl`);
     const plan = join(root, `${arm}.plan.json`);
     writeFileSync(plan, JSON.stringify({ arm, output, env: extra, inputs: [input, input] }));
@@ -30,7 +30,11 @@ test('a real syscall counter sees no spawn or write before commit in the cell, a
     assert.deepEqual(rows.map(row => row.promoted), [true, true]);
     const seen = windows(log);
     for (const row of rows) {
-      const { toCommit, commit } = seen[row.id];
+      const { toAdmit, toCommit, commit } = seen[row.id];
+      if (arm.startsWith('agent')) {
+        assert.deepEqual([toAdmit.spawns, toAdmit.execs, toAdmit.writes], [[], [], []]);
+        assert.deepEqual(row.requestsAfter, ['admit', 'commit']);
+      }
       if (arm === 'current') {
         assert(toCommit.spawns.length >= 8, `control saw ${toCommit.spawns.length} spawns`);
         assert(toCommit.writes.some(line => line.includes('ef-compile-')), 'control saw no temp directory');
@@ -39,7 +43,7 @@ test('a real syscall counter sees no spawn or write before commit in the cell, a
         assert.deepEqual(toCommit.execs, []);
         assert.deepEqual(toCommit.writes, []);
         assert.deepEqual(commit.spawns, []);
-        assert.deepEqual(row.requestsAfter, ['commit']);
+        if (arm.startsWith('isolate')) assert.deepEqual(row.requestsAfter, ['commit']);
         assert.equal(row.jobsAfter, 1);
       }
     }
