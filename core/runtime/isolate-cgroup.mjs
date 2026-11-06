@@ -1,4 +1,4 @@
-import { mkdirSync, readFileSync, rmdirSync, statfsSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, rmdirSync, statfsSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 let defaultRoot;
@@ -36,6 +36,7 @@ export function attachCgroup(pid, root, limits) {
       'memory.oom.group': 1, 'cpu.max': limits.cpuMax, 'pids.max': limits.pidsMax })) {
       writeFileSync(join(directory, name), String(value));
     }
+    if (existsSync(join(directory, 'memory.swap.max'))) writeFileSync(join(directory, 'memory.swap.max'), '0');
     writeFileSync(join(directory, 'cgroup.procs'), String(pid));
     return directory;
   } catch {
