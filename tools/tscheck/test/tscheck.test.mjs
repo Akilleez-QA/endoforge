@@ -74,6 +74,18 @@ test('a tampered or missing compiler is an unknown outcome, never a pass', { tim
   }
 });
 
+test('the pinned compiler growing past a lowered maximumPages stops its cell', { timeout: 120000 }, async t => {
+  const { memoryBytes } = await typecheck(clean);
+  const maximumPages = Math.floor(memoryBytes / 65536) - 1;
+  const { job } = await fixture(t, { invariants: ['identity', TS_INVARIANT] });
+  const pool = new IsolatePool({ hostPort, size: 1, ...WORKCELL, trustedWasmModules: [{ ...TSRS_MODULE, maximumPages }] });
+  t.after(() => pool.close());
+  const stopped = await pool.run(job(['pass'], options()));
+  assert.equal(stopped.status, 'outcome_unknown');
+  assert.equal(stopped.error, 'ERR_WORKCELL_WASM_MEMORY_LIMIT');
+  assert.notEqual(stopped.receipts[0].record.data.outcome_state, 'passed');
+});
+
 test('deep input needs the stack limit, and a compiler past its deadline is stopped', { timeout: 240000 }, async t => {
   const deep = project(`export const n = ${Array(60000).fill('1').join(' + ')};\n`);
   const projects = { pass: deep };

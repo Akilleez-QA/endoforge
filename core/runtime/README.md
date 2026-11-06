@@ -117,6 +117,8 @@ allocation. Each cap must fit `wasmMemoryMaxMb`; initial sizes must fit the cap.
 Names label the policy; SHA-256 of the complete original bytes establishes the
 match. Candidate inputs and `portOptions` cannot add trust. The supervisor copies
 the policy into every result and ledger observation, including worker losses.
+Growth past a cap the policy supplied, from an instruction or from JS, is a breach:
+it stops the cell and leaves its siblings running, so a pinned compiler can't continue on a `-1` the policy produced.
 An empty policy is the default. All binary parsing, growth instrumentation and
 unsupported-feature checks still apply. This is a toolchain compatibility policy,
 not authority for arbitrary candidate modules.
