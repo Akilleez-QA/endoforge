@@ -19,7 +19,7 @@ const result = await pool.run({ reference, candidates, receipts, portOptions: { 
 - These still pass, as stated limits: `// @ts-ignore` and `// @ts-expect-error`, any `strict` family setting the project chose, `skipLibCheck` on a declaration file, and JavaScript without `checkJs`. A project of only JavaScript has no TypeScript source and is refused. Type lies in declarations and `any` are ordinary TypeScript.
 - A hash mismatch, a missing compiler or a trap throws, so the evaluator records an unknown outcome and never a pass.
 
-Use a `jobTimeoutMs`, since a check can't stop itself. Don't lower `maxOldGenerationSizeMb` below the pinned limit: 256 MiB ran out of memory on a healthy job in [P-43](../../experiments/P-43-tsrs-workcell/RESULT.md). That probe also found throughput flat by 8 cells, and on this stack [P-48](../../experiments/P-48-width/RESULT.md) traced it to the evaluator's frozen check, not the compiler.
+Use a `jobTimeoutMs`, since a check can't stop itself. Don't lower `maxOldGenerationSizeMb` below the pinned limit: 256 MiB ran out of memory on a healthy job in [P-43](../../experiments/P-43-tsrs-workcell/RESULT.md). That probe also found throughput flat by 8 cells. On this stack [P-48](../../experiments/P-48-width/RESULT.md) found the compiler isn't the limit and the evaluator's frozen check is the likely one, though no arm removes the check.
 
 `make tscheck-setup` installs the exact pinned version without install scripts, and `make tscheck-test` runs the tests. On a version bump, update `pin.mjs` and rerun the probe.
 
