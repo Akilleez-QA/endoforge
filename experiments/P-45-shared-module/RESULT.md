@@ -2,7 +2,7 @@
 
 Status: **Recorded (probe)**, 2026-11-06, Node v26.13.0, a shared desktop with other agent work running. Precommit: [PRECOMMIT.md](PRECOMMIT.md). Raw results: [summary.json](receipt/summary.json). One wiring smoke at N = 1, not kept, ran before the precommit froze.
 
-**Sharing works, and it's better on every measure.** One guard-instrumented `WebAssembly.Module` was posted to thread cells, and the containment tests pass.
+**Sharing works, and it's better on every measure at 8 and 16 cells.** At one cell it's slower: 2,185 ms against 2,023 ms to the first result, and 3.8 checks/s against 4.1. One guard-instrumented `WebAssembly.Module` was posted to thread cells, and the containment tests pass.
 
 Means of 3 reps on `medium/ill`, `tools/tscheck/pin.mjs` limits, 8 × N jobs after the first batch.
 
