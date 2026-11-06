@@ -24,8 +24,9 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - name: Install test dependencies
-        run: sudo apt-get update && sudo apt-get install -y age bubblewrap
+        run: sudo apt-get update && sudo apt-get install -y age bubblewrap gcc
       - name: Repository tests
-        run: make test
+        run: make -k test
       - name: Optimized Python tests
-        run: make test-optimized
+        if: ${{ !cancelled() }}
+        run: make -k test-optimized

@@ -1,0 +1,10 @@
+{
+  "indirect": {
+    "tools/atomizer/test/lessons.test.mjs": "tools/atomizer/test/run.mjs",
+    "tools/atomizer/test/routing.test.mjs": "tools/atomizer/test/run.mjs"
+  },
+  "excluded": {
+    "tools/conductor/test/helpers.mjs": "Shared helper imported by the conductor tests; it defines no tests."
+  },
+  "known_failing": {}
+}
