@@ -337,3 +337,15 @@ export async function createPort() { const port = await base(); return { ...port
   assert.equal(result.status, 1, result.stdout + result.stderr);
   assert.match(result.stdout, /"kind":"not-completed","status":"outcome_unknown"/);
 });
+
+test('a job that completes without running the checker shows as not completed', { timeout: 120000 }, async t => {
+  const table = await answers();
+  const directory = setup(t);
+  const port = join(directory, 'failing-port.mjs');
+  writeFileSync(port, `import { createPort as base } from ${JSON.stringify(new URL('../../../core/runtime/test/fixtures/identity-port.mjs', import.meta.url).href)};
+export async function createPort() { const port = await base(); return { ...port, invariant() { return { passed: false, reason: 'synthetic' }; } }; }
+`);
+  const result = run(directory, oracle(directory, { table }), [], { port });
+  assert.equal(result.status, 1, result.stdout + result.stderr);
+  assert.match(result.stdout, /"kind":"not-completed","status":"completed"/);
+});
