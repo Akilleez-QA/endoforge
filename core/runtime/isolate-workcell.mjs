@@ -25,8 +25,12 @@ const checkWasm = installWasmLimit(wasmMemoryMaxMb, error => {
   process.exit(18);
 }, options.trustedWasmModules, options.sharedWasmModules);
 
+const warmed = options.warm ? (async () => { await (await import(options.hostPort)).warm(options.warm); })().catch(error => error.message || String(error)) : null;
+
 (parentPort || process).on('message', async ({ reference, candidates, hostPort, portOptions }) => {
   try {
+    const warmError = await warmed;
+    if (warmError) throw new Error(`warm failed: ${warmError}`);
     checkWasm.begin();
     const { createPort } = await import(hostPort);
     const port = await createPort(portOptions);
@@ -40,4 +44,4 @@ const checkWasm = installWasmLimit(wasmMemoryMaxMb, error => {
       report: null, ...metadata });
   }
 });
-send({ type: 'ready' });
+send({ type: 'ready', warmError: await warmed });

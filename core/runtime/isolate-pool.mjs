@@ -31,13 +31,16 @@ export class IsolatePool {
   #sharedSources;
   #sharedModules = [];
   #sharing;
+  #warmOptions;
 
   constructor({ hostPort, size = availableParallelism(), resourceLimits = {}, wasmMemoryMaxMb = 64,
-    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, jobTimeoutMs } = {}) {
+    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, warm, jobTimeoutMs } = {}) {
     if (!['thread', 'process'].includes(isolation)) throw new TypeError('isolation must be thread or process');
     if (cgroupRoot !== undefined && (typeof cgroupRoot !== 'string' || !cgroupRoot)) throw new TypeError('cgroupRoot path required');
     if (!positive(size)) throw new TypeError('positive integer pool size required');
     if (typeof prewarm !== 'boolean') throw new TypeError('prewarm must be boolean');
+    if (warm !== undefined && (warm === null || typeof warm !== 'object')) throw new TypeError('warm must be an options object');
+    this.#warmOptions = warm;
     if (typeof hostPort !== 'string' || !hostPort) throw new TypeError('hostPort module path required');
     if (!positive(wasmMemoryMaxMb) || wasmMemoryMaxMb > 4096) {
       throw new TypeError('wasmMemoryMaxMb must be an integer from 1 to 4096');
@@ -79,7 +82,7 @@ export class IsolatePool {
       if (this.#closing) throw new Error('isolate pool is closing');
       while (this.#cells.size < this.#size) this.#spawn();
       const [started] = await Promise.all([Promise.all([...this.#cells].map(cell => cell.started)), this.#ledger.start()]);
-      if (!started.every(Boolean)) throw new Error('workcell exited before ready');
+      if (!started.every(Boolean)) throw new Error('workcell failed before ready');
     })();
   }
 
@@ -134,7 +137,8 @@ export class IsolatePool {
   #spawn() {
     const subprocess = this.#isolation === 'process';
     const entry = new URL('./isolate-workcell.mjs', import.meta.url);
-    const policy = { wasmMemoryMaxMb: this.#wasmMemoryMaxMb, trustedWasmModules: this.#trustedWasmModules };
+    const policy = { wasmMemoryMaxMb: this.#wasmMemoryMaxMb, trustedWasmModules: this.#trustedWasmModules,
+      ...(this.#warmOptions ? { warm: this.#warmOptions, hostPort: this.#hostPort } : {}) };
     const worker = subprocess ? fork(entry, [JSON.stringify({ ...policy, resourceLimits: this.#limits })], {
       execArgv: [`--max-old-space-size=${this.#limits.maxOldGenerationSizeMb}`, `--max-semi-space-size=${this.#limits.maxYoungGenerationSizeMb}`],
       serialization: 'advanced', stdio: ['ignore', 'ignore', 'pipe', 'ipc'],
@@ -158,7 +162,7 @@ export class IsolatePool {
     cell.started = new Promise(resolve => { cell.markStarted = resolve; });
     this.#cells.add(cell);
     worker.on('message', result => {
-      if (result?.type === 'ready') return cell.markStarted(true);
+      if (result?.type === 'ready') return cell.markStarted(!result.warmError);
       if (!cell.job) return;
       if (result.type === 'limit') {
         cell.error = { code: result.error };

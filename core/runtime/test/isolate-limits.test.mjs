@@ -34,3 +34,34 @@ test('a job inside its deadline is unaffected', { timeout: 60000 }, async t => {
   t.after(() => pool.close());
   assert.equal((await pool.run(job(['pass'], {}))).status, 'completed');
 });
+
+test('warm is opt-in: ready() waits for the host module, and a failure never becomes a pass', { timeout: 60000 }, async t => {
+  const warmPort = fileURLToPath(new URL('./fixtures/warm-port.mjs', import.meta.url));
+  assert.throws(() => new IsolatePool({ hostPort: warmPort, warm: 'yes' }), /warm/);
+  const { job } = await fixture(t);
+  for (const isolation of ['thread', 'process']) {
+    const pool = new IsolatePool({ hostPort: warmPort, size: 2, isolation, warm: { value: 'loaded' } });
+    t.after(() => pool.close());
+    await pool.ready();
+    const result = await pool.run(job(['pass'], { expectWarm: 'loaded' }));
+    assert.equal(result.status, 'completed', isolation);
+    assert.equal(result.receipts[0].record.data.outcome_state, 'passed');
+    await pool.close();
+    const failing = new IsolatePool({ hostPort: warmPort, size: 1, isolation, warm: { fail: true } });
+    t.after(() => failing.close());
+    await assert.rejects(failing.ready(), /before ready/);
+    const lost = await failing.run(job(['pass'], {}));
+    assert.equal(lost.status, 'outcome_unknown', isolation);
+    assert.match(lost.reason, /warm failed/);
+    assert.notEqual(lost.receipts[0].record.data.outcome_state, 'passed');
+    await failing.close();
+  }
+  const absent = new IsolatePool({ hostPort, size: 1, warm: {} });
+  t.after(() => absent.close());
+  await assert.rejects(absent.ready(), /before ready/);
+  await absent.close();
+  const off = new IsolatePool({ hostPort: warmPort, size: 1 });
+  t.after(() => off.close());
+  const cold = await off.run(job(['pass'], { expectWarm: null }));
+  assert.equal(cold.status, 'completed');
+});

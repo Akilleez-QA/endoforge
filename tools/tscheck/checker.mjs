@@ -19,6 +19,14 @@ async function load(vendor) {
   return { core, module: new WebAssembly.Module(bytes), compileMs: Math.round(performance.now() - started) };
 }
 
+const PROBE = { root: '/warm', files: { '/warm/a.ts': 'export const n: number = 1;\n' },
+  tsconfig: { compilerOptions: { strict: true, noLib: true, types: [] }, files: ['./a.ts'] } };
+
+export async function warm({ vendor = VENDOR, probe = false } = {}) {
+  if (!loaded.has(String(vendor))) loaded.set(String(vendor), await load(vendor));
+  if (probe) await typecheck(PROBE, { vendor });
+}
+
 export async function typecheck(project, { emit = false, vendor = VENDOR } = {}) {
   const key = String(vendor);
   const warm = loaded.has(key);
