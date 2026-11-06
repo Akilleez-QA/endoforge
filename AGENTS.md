@@ -28,7 +28,7 @@ private inputs, or sensitive receipts.
 ## Verification
 
 The README requires Python 3.11+, Node.js 20+, GNU Make, and bubblewrap for
-isolate checks. CI uses Python 3.12 and Node.js 22 and installs `age` and bubblewrap.
+isolate checks. CI uses Python 3.12 and Node.js 22 and 26 and installs `age`, bubblewrap and `gcc`.
 Public agent clients are optional; tests use synthetic inputs and stubs.
 
 Run from the repository root:
@@ -43,6 +43,10 @@ make test-optimized
 check and the test targets in [Makefile](Makefile); `make test-optimized` repeats
 the suite with Python optimization enabled. Report commands and actual results,
 including failures or unavailable prerequisites. Do not claim unrun checks passed.
+
+`tests/test_reachability.py` fails when a test file is not reached by `make test`.
+Wire a new test into a target, or list it with a reason in
+`tests/test-reachability.json`.
 
 ## Contributions
 

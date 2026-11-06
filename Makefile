@@ -32,6 +32,15 @@ atomizer-test:
 harness-test:
 	$(PYTHON) -B -m unittest tools.step_harness.test_harness -v
 
+test: pipeline-retry-test receipt-test
+
+.PHONY: pipeline-retry-test receipt-test
+pipeline-retry-test:
+	node --test core/runtime/test/pipeline-fallback.test.mjs core/runtime/test/pipeline-retry.test.mjs
+
+receipt-test:
+	PYTHONOPTIMIZE= $(firstword $(PYTHON)) -B experiments/P-19-need-to-candidate/verify.py
+
 hardware-test:
 	$(PYTHON) -B -m unittest tools.hardware_record.test_record -v
 
