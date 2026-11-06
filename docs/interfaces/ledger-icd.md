@@ -181,6 +181,21 @@ hashes the other fields as sorted compact JSON. Existing output paths fail close
 This is a local trusted-host policy, not a POODO-issued lifecycle authorization or
 signature. POODO has no callable approval API today; neither sibling repo changes.
 
+## In-workcell candidate loop interface
+
+`x1/loop.mjs` exports the loop. `createLoopPool({size, isolation, jobTimeoutMs, ascPath, hostPort, primes})` returns an `IsolatePool` with the limits of `tools/asc/pin.mjs`, warm state from `x1/loop-port.mjs`, and a 60-second default deadline. `runNeed` takes this path when `env.ENDOFORGE_LOOP === 'isolate'`, and refuses any other pool.
+
+| Operation | Contract |
+|---|---|
+| `admit(pool, reference, {need, configuration})` | One bridge request. Without `reference.identity`, it appends task, input and frozen evaluator in one transaction from `reference.root`; with one, it re-verifies the tree. Returns `{identity, digest, encoded}`, where `encoded` is the ledger's canonical encoding of the record's data. |
+| `checkCandidate(pool, admission, {id, files})` | One job with no durable effect. Returns the failing gates and tests, or null. Throws if the job doesn't return an outcome. |
+| `evaluateInCell(pool, {candidate, admission, repair, timings})` | One job. Returns `{observed, content, sources}`. A lost cell returns an `outcome_unknown` observation and content whose `compiled.error` is `attempt lost`. |
+| `commitCandidate(pool, {evaluated, reference, digest, decisionPath, timings, receiptId})` | One bridge request. Returns `{promoted, candidate, receipt, decision, problem, status, report, rounds}`. Rejects, with nothing durable, on a template the ledger refuses. |
+| `evaluateAndCommit(pool, {...})` | The last two together, with optional `observe(stage)` for `committing` and `returned`. |
+| `pool.run({..., ledger: 'caller'})` | Skips the pool's `prepare` and `append`, for a caller that writes its own records. `pool.ledger` is the pool's bridge. |
+
+`problem` is `frozen_drift`, or names the report check that failed, or is null. With a problem, the observation keeps the report, sets `status: 'rejected'` and the problem as `reason`, the receipt is `finished`/`failed`, and the decision refuses. `promote` on the same ledger reaches the same decision: the rule is shared through `core/ledger/x1_loop.py:decide`, unchanged. The decision file is written after commit, so `promoted: true` implies the records and decision are durable, and a crash between them leaves records with no decision. The port's evidence joins the observation without `content`: `{identity, compiler, rounds, timings}`. Candidate records and receipts have the existing schema.
+
 `IsolatePool.run({...job, timing:true})` additionally returns host monotonic
 `timings: {gate, ledger}`. Gate spans receipt-preflight completion through worker
 result delivery, including FIFO wait/startup and frozen verification. Ledger sums

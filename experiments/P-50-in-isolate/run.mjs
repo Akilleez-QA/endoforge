@@ -80,8 +80,10 @@ async function timing(name) {
 function counting(arm, inputs) {
   const tracer = join(output, 'syscount'), base = join(output, `count-${arm}`), log = join(output, `count-${arm}.jsonl`);
   execFileSync('gcc', ['-O1', '-o', tracer, here('./syscount.c')]);
-  const run = spawnSync(tracer, [log, process.execPath, here('./count-child.mjs'), JSON.stringify({ arm, output: base, env: clientEnv, inputs })], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] });
-  assert.equal(run.status, 0);
+  const plan = join(output, `count-${arm}.plan.json`);
+  writeFileSync(plan, JSON.stringify({ arm, output: base, env: clientEnv, inputs }));
+  const run = spawnSync(tracer, [log, process.execPath, here('./count-child.mjs'), plan], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'inherit'] });
+  assert.equal(run.status, 0, JSON.stringify({ signal: run.signal, error: String(run.error) }));
   const seen = windows(log), rows = JSON.parse(readFileSync(join(base, 'rows.json')));
   const perCandidate = rows.map(row => ({ name: row.name, promoted: row.promoted, requestsAfter: row.requestsAfter, jobsAfter: row.jobsAfter,
     toCommit: counts(seen[row.id].toCommit), commit: counts(seen[row.id].commit),

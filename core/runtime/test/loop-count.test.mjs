@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -22,8 +22,9 @@ test('a real syscall counter sees no spawn or write before commit in the cell, a
     ENDOFORGE_CODEX_CMD: JSON.stringify([process.execPath, here('./fixtures/x1/fake-codex.mjs')]) };
   for (const arm of ['current', 'isolate-thread', 'isolate-process']) {
     const output = join(root, arm), log = join(root, `${arm}.jsonl`);
-    const run = spawnSync(tracer, [log, process.execPath, here('../../../experiments/P-50-in-isolate/count-child.mjs'),
-      JSON.stringify({ arm, output, env: extra, inputs: [input, input] })], { encoding: 'utf8', timeout: 120000 });
+    const plan = join(root, `${arm}.plan.json`);
+    writeFileSync(plan, JSON.stringify({ arm, output, env: extra, inputs: [input, input] }));
+    const run = spawnSync(tracer, [log, process.execPath, here('../../../experiments/P-50-in-isolate/count-child.mjs'), plan], { encoding: 'utf8', timeout: 120000 });
     assert.equal(run.status, 0, run.stderr);
     const rows = JSON.parse(readFileSync(join(output, 'rows.json')));
     assert.deepEqual(rows.map(row => row.promoted), [true, true]);

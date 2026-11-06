@@ -42,6 +42,10 @@ Each failure stays a recorded failure.
 5. Handoffs fall from 12 (8 spawns, 2 bridge requests, 2 cell messages) to 3 (1 bridge request, 2 cell messages), with one more bridge request per task before generation returns, for freeze and admission.
 6. Reference evaluation stays outside: a `vm` context in a cell isn't an equivalent boundary to a child under `--permission` with an empty environment. A probe shows it by escaping the context in a cell and reaching the file system. If the probe can't, this prediction fails.
 
+## Amendment 1, after the harness failed
+
+The first run reached the tracer's `isolate-thread` arm and stopped: the input list was over Linux's 128 KiB limit for one argument, so the tracer never started. Its parity arm had completed, with 0 differences in 31 inputs, and is kept as the first of two parity runs. The list now goes in a file. Nothing else changes, and everything runs again.
+
 ## Failure meaning
 
 A1, A3, A4, A5, A6 or A7 failing means the path stays off, and the failure is named. A2 failing with the rest passing means the path is safe but not this fast, and the timing split says where the time goes. No test is softened to pass.

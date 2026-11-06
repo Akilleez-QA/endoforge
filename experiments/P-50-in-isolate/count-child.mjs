@@ -1,10 +1,10 @@
-import { mkdirSync, statSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createLoopPool } from '../../core/runtime/x1/loop.mjs';
 import { runNeed } from '../../core/runtime/x1/pipeline.mjs';
 import { IsolatePool } from '../../core/runtime/isolate-pool.mjs';
 
-const { arm, output, inputs, env: extra } = JSON.parse(process.argv[2]);
+const { arm, output, inputs, env: extra } = JSON.parse(readFileSync(process.argv[2], 'utf8'));
 const repository = new URL('../../', import.meta.url).pathname;
 const mark = name => statSync(`/__ef_mark__/${name}`, { throwIfNoEntry: false });
 const isolate = arm.startsWith('isolate');
