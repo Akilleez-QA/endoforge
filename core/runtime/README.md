@@ -43,7 +43,7 @@ defines all fields and failure states; the
 and append implementation on the host. Every batch produces one receipt per
 candidate, preserving candidate/oracle binding without changing the schema.
 Unknown worker outcomes produce inconclusive receipts and never a retry or a pass.
-`warm: {...}`, off by default, has each cell import the host module and await its exported `warm(options)` before it reports ready. A failure rejects `ready()` and makes that cell's jobs unknown, never a pass. Replacement cells warm themselves and aren't awaited. Cells that exit before reporting ready, as a `warm` calling `process.exit` does, stop being respawned after `size + 2` in a row. `halted` turns true, and later jobs get `outcome_unknown` with reason `workcell_start_failed` and start no cell.
+`warm: {...}`, off by default, has each cell import the host module and await its exported `warm(options)` before it reports ready. A failure, or a `warm` still running after `warmTimeoutMs` (default 60000), rejects `ready()` and makes that cell's jobs unknown, never a pass. Replacement cells warm themselves and aren't awaited. Cells that exit before reporting ready, as a `warm` calling `process.exit` does, stop being respawned after `size + 2` in a row. `halted` turns true, and later jobs get `outcome_unknown` with reason `workcell_start_failed` and start no cell.
 Keep ledger files and other generated evidence outside the source tree.
 
 Run `make isolate-test` for native evaluator parity, multi-isolate chain verification
