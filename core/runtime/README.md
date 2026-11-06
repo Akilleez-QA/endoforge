@@ -209,10 +209,13 @@ populated shared desktop cgroup is insufficient. A suitably delegated user
 scope or empty writable `cgroupRoot` can supply this. Setup follows the kernel's
 [no-internal-process constraint](https://docs.kernel.org/admin-guide/cgroup-v2.html#no-internal-process-constraint).
 Each attached child gets its own group with `memory.max`, `memory.swap.max=0` where the kernel has it,
-`memory.oom.group=1`, `cpu.max` and `pids.max`. Without the swap limit, P-44 measured the excess going to swap
-and no kill, so the limit is part of the bound. Failure records `cgroup: 'unavailable'`; V8 limits and
+`memory.oom.group=1`, `cpu.max` and `pids.max`. Without the swap limit, P-44 saw every off-heap kind reach its 3 GiB cap
+with no kill on a host with swap, and with it every kind was killed. Its receipt has no swap reading, so swap as
+where the excess went is inferred. The limit is part of the bound, so a kernel without `memory.swap.max` on a host
+with swap in `/proc/swaps` gets no cgroup. Failure records `cgroup: 'unavailable'`; V8 limits and
 the WASM gate still apply. Cgroup OOM kills without V8 diagnostics remain unknown
 and are not mislabeled as JS heap exhaustion. Host ports remain trusted Node code.
+The supervisor stops waiting 500 ms after a child's exit even if a grandchild still holds its stderr. Without a cgroup, that grandchild keeps running; with one, the group kill ends it.
 [P-18](../../experiments/P-18-pool-breach/RESULT.md) records N=8 breach results
 for both modes, including the unavailable-delegation limitation.
 

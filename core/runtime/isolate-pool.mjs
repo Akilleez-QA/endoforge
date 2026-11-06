@@ -9,6 +9,8 @@ import { LedgerBridge } from './isolate-ledger.mjs';
 import { trustedWasmPolicy } from './isolate-wasm.mjs';
 
 const positive = value => Number.isSafeInteger(value) && value > 0;
+const killGraceMs = 1000;
+const exitGraceMs = 500;
 
 export class IsolatePool {
   #size;
@@ -157,9 +159,14 @@ export class IsolatePool {
         if (/FATAL ERROR:.*(?:heap out of memory|heap limit|Allocation failed)/i.test(tail)) cell.error = { code: 'ERR_WORKER_OUT_OF_MEMORY' };
       });
       worker.postMessage = message => worker.send(message, error => { if (error) { cell.error = error; worker.kill(); } });
-      worker.terminate = () => new Promise(resolve => { worker.once('close', resolve); worker.kill(); });
+      worker.terminate = () => new Promise(resolve => {
+        const kill = setTimeout(() => worker.kill('SIGKILL'), killGraceMs);
+        cell.gone.then(() => { clearTimeout(kill); resolve(); });
+        worker.kill();
+      });
     }
     cell.started = new Promise(resolve => { cell.markStarted = resolve; });
+    cell.gone = new Promise(resolve => { cell.markGone = resolve; });
     this.#cells.add(cell);
     worker.on('message', result => {
       if (result?.type === 'ready') return cell.markStarted(!result.warmError);
@@ -175,7 +182,13 @@ export class IsolatePool {
       this.#pump();
     });
     worker.on('error', error => { cell.error = error; });
-    worker.on(subprocess ? 'close' : 'exit', (code, signal) => {
+    let exited = false;
+    let exitTimer;
+    const gone = (code, signal) => {
+      if (exited) return;
+      exited = true;
+      clearTimeout(exitTimer);
+      cell.markGone();
       this.#cells.delete(cell);
       cell.markStarted(false);
       releaseCgroup(directory);
@@ -190,13 +203,20 @@ export class IsolatePool {
         try { this.#spawn(); } catch { }
         this.#pump();
       }
+    };
+    worker.on(subprocess ? 'close' : 'exit', gone);
+    if (subprocess) worker.on('exit', (code, signal) => {
+      exitTimer = setTimeout(() => setImmediate(() => {
+        if (!exited) worker.stderr.destroy();
+        gone(code, signal);
+      }), exitGraceMs);
     });
     return cell;
   }
 
   #pump() {
     while (this.#queue[0]?.ready) {
-      let cell = [...this.#cells].find(cell => !cell.job);
+      let cell = [...this.#cells].find(cell => !cell.job && !cell.stopping);
       if (!cell && this.#cells.size >= this.#size) return;
       const job = this.#queue.shift();
       try {
@@ -204,11 +224,13 @@ export class IsolatePool {
         cell.job = job;
         if (this.#jobTimeoutMs) job.deadline = setTimeout(() => {
           cell.error = { code: 'ERR_WORKCELL_DEADLINE' };
+          cell.stopping = true;
           cell.worker.terminate();
         }, this.#jobTimeoutMs);
         const { reference, candidates, portOptions } = job.data;
         cell.worker.postMessage({ reference, candidates, portOptions, hostPort: this.#hostPort });
       } catch (error) {
+        clearTimeout(job.deadline);
         if (cell) cell.job = null;
         this.#finish(job, { status: 'outcome_unknown', reason: error.message,
           report: null, workcell: cell?.id ?? null, ...cell?.metadata, resourceLimits: this.#limits, wasmMemoryMaxMb: this.#wasmMemoryMaxMb });
