@@ -14,11 +14,11 @@ const names = ['js', 'json-parse', 'json-stringify', 'parser', 'wasm', 'clone'];
 const result = { node: process.version, kernel: spawnSync('uname', ['-r'], { encoding: 'utf8' }).stdout.trim(), defaultStackKb: spawnSync('sh', ['-c', 'ulimit -s'], { encoding: 'utf8' }).stdout.trim(), naive: [], raised: [], pool: {} };
 const shape = (label, r) => ({ label, status: r.status, signal: r.signal, output: r.stdout.trim().split('\n').at(-1).slice(0, 120) });
 for (let rep = 0; rep < 3; rep++) for (const name of names) {
-  result.naive.push(shape(name, spawnSync(process.execPath, ['--stack-size=261952', probe, name], { encoding: 'utf8', timeout: 180000 })));
+  result.naive.push(shape(name, spawnSync(process.execPath, ['--stack-size=261952', probe, name], { encoding: 'utf8', timeout: 60000 })));
   console.log(JSON.stringify(result.naive.at(-1)));
   for (const mb of [8, 64, 256]) {
     const kb = mb * 1024;
-    result.raised.push({ mb, ...shape(name, spawnSync('/bin/sh', ['-c', 'ulimit -s "$1" && shift && exec "$@"', 'sh', String(kb), process.execPath, `--stack-size=${kb - 192}`, probe, name], { encoding: 'utf8', timeout: 180000 })) });
+    result.raised.push({ mb, ...shape(name, spawnSync('/bin/sh', ['-c', 'ulimit -s "$1" && shift && exec "$@"', 'sh', String(kb), process.execPath, `--stack-size=${kb - 192}`, probe, name], { encoding: 'utf8', timeout: 60000 })) });
     console.log(JSON.stringify(result.raised.at(-1)));
   }
 }

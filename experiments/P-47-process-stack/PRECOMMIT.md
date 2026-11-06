@@ -25,3 +25,7 @@ Decision: if prediction 2 and 3 hold, process mode supports `stackSizeMb` on hos
 Failure meaning: a signal death in arm B or C means the margin isn't safe. Windows has no `/bin/sh`, so the preflight refuses it there.
 
 Limits: one Linux host, one kernel and Node as recorded. The probes are not exhaustive of native recursion, and a native addon can still overrun.
+
+## Amendment 1, after the first run was stopped
+
+The first run was stopped partway and is kept as `receipt/first-run.json`. The harness was wrong in two ways: `json-stringify` at depth 5,000,000 takes longer than the harness's 180 s timeout in both arms, and its result was printed in full, and `json-parse` at depth 20,000,000 hit the timeout at 256 MiB. Those `SIGTERM`s come from the harness's timeout and aren't stack faults. Up to that point arm A had died with SIGSEGV on `js`, `json-parse`, `parser`, `wasm` and `clone`, and arm B had no `SIGSEGV`. For the rerun, `json-stringify` uses depth 100,000, `json-parse` 5,000,000, a 60 s timeout, and no probe prints its value. `SIGTERM` from that timeout is recorded separately as a timeout. Predictions and decision are unchanged, with prediction 2 read as no `SIGSEGV` or `SIGABRT`.
