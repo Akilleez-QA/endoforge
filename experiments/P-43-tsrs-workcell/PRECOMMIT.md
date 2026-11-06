@@ -25,3 +25,7 @@ Limits: a shared desktop with other work running, no quiet gate, and a thread-mo
 ## Amendment 1, after the first run
 
 The first breach arm lost 7 of 7 siblings. It is recorded as `breach_first_run_invalid` in `receipt/summary.json` and is invalid for containment: the harness lowered the old generation to 256 MiB, and a single healthy job with no breach and no neighbour also ends in `ERR_WORKER_OUT_OF_MEMORY` at that limit. Prediction for the rerun: with the unchanged `WORKCELL` limits and siblings held mid-job until the breach has finished, 0 of 7 siblings are lost and the replacement completes. Any lost sibling is a failure. Parity, warm and width arms are not rerun.
+
+## Amendment 2, after review
+
+The first breach arm's replacement job ran on sibling cell 1, because the siblings had been released by then, so it says nothing about the replacement cell. This adds `P43_ARM=replacement`: 8 cells, 7 siblings held mid-job, one heap breach, and the next job submitted while the siblings are still held, so only a new cell can take it. Prediction: that job completes on a workcell id that is neither the breached cell's nor any sibling's, and 0 of 7 siblings are lost. Its input is a one-file synthetic `small/ill`, since the original workload isn't on this machine, so this tests the cell and not the original inputs. It doesn't change any earlier result.

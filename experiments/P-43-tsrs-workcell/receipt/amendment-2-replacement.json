@@ -1,0 +1,42 @@
+{
+  "node": "v26.13.0",
+  "cpu": "AMD Ryzen 9 7950X 16-Core Processor",
+  "load": [],
+  "parity": {},
+  "warm": null,
+  "width": {},
+  "breach": {
+    "status": "outcome_unknown",
+    "reason": "limit",
+    "error": "ERR_WORKER_OUT_OF_MEMORY",
+    "breachedWorkcell": 8,
+    "siblingWorkcells": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "siblingsLost": 0,
+    "siblingReasons": [
+      null,
+      null,
+      null,
+      null,
+      null,
+      null,
+      null
+    ],
+    "siblings": 7,
+    "replacementStatus": "completed",
+    "replacementWorkcell": 1,
+    "heldReplacement": {
+      "status": "completed",
+      "workcell": 9,
+      "stage": "rejected"
+    }
+  },
+  "freeMemGiBEnd": 94.9
+}

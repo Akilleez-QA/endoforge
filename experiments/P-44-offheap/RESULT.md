@@ -11,13 +11,13 @@ A job retained and touched off-heap memory with the cell's heap limited to 128/1
 | `wasm-memories` (each 32 MiB, under the ceiling) | **Not bounded**: 3,072 MiB, pass | **Not bounded**: 3,072 MiB, pass | **Not bounded**: 3,072 MiB, pass | Killed at 288 MiB, inconclusive |
 | `js-heap` control | Stopped, `limit`, inconclusive | Stopped, `heap`, failed | Stopped, `heap`, failed | Stopped, `heap`, failed |
 
-The figures are the last chunk completed before the kill, and were the same in all three reps. No sibling was lost in any of the 168 trials, and every replacement completed. Kills under the cgroup were reported as `outcome_unknown` / `worker_exit` / `SIGKILL`, never as a pass.
+The figures are the last chunk completed before the kill, and were the same in all three reps. No sibling was lost in any of the 168 trials, and every job submitted after the breach completed. The siblings had been released by then and the receipt doesn't record which cell ran that job, so this doesn't show the replacement cell itself working. The harness now records it, and this receipt predates that. Kills under the cgroup were reported as `outcome_unknown` / `worker_exit` / `SIGKILL`, never as a pass.
 
 ## Findings
 
 - **Thread mode can't bound off-heap memory.** `resourceLimits` doesn't see it, and on these three Node versions nothing stopped 3 GiB, about 23 times the old-generation limit. The job *passed*. This is now a stated limit in REQ-ISO-013 and the runtime README. A cell's allocation is process-wide, so the only stop is the host's own.
 - **Process mode without a cgroup is the same.** `--max-old-space-size` doesn't see it either.
-- **The first cgroup run was a real bug.** Prediction 3 failed: with `cgroup: enabled` and `memory.max` at 304 MiB, each kind still reached 3 GiB and passed. The cell's `memory.swap.max` was unset, and on this host (zram plus a swapfile) the excess went to swap. Workcell cgroups now set `memory.swap.max=0` when the file exists. With that, every off-heap kind was killed at or below 304 MiB, so Amendment 1's prediction held. `memory.max` alone doesn't bound a cell on a host with swap.
+- **The first cgroup run was a real bug.** Prediction 3 failed: with `cgroup: enabled` and `memory.max` at 304 MiB, each kind still reached 3 GiB and passed. The cell's `memory.swap.max` was unset, and this host has zram plus a swapfile, so the excess most likely went to swap. The receipt has no swap reading, so that is inferred. Workcell cgroups now set `memory.swap.max=0` when the file exists. With that, every off-heap kind was killed at or below 304 MiB, so Amendment 1's prediction held. `memory.max` alone doesn't bound a cell on a host with swap.
 
 ## Predictions
 
