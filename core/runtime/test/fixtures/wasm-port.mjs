@@ -19,7 +19,7 @@ export async function createPort(options) {
       } else if (action === 'shared-grow') new WebAssembly.Memory({ initial: 1, maximum: 16, shared: true }).grow(pages);
       else {
         let module, instance;
-        const bindings = imports ? { env: { memory: new WebAssembly.Memory({ initial: 1 }) } } : {};
+        const bindings = imports ? { env: { memory: new WebAssembly.Memory({ initial: 1, ...(options.importMaximum ? { maximum: options.importMaximum } : {}) }) } } : {};
         if (action === 'foreign-module') instance = new WebAssembly.Instance(options.module);
         else if (action === 'foreign-instantiate') instance = await WebAssembly.instantiate(options.module);
         else if (action === 'compile') module = await WebAssembly.compile(source);
@@ -39,6 +39,7 @@ export async function createPort(options) {
         }
         if (options.checkMemory) assert.equal(instance.exports.memory.buffer.byteLength, options.checkMemory * 65536);
         if (options.exportGrow) instance.exports.memory.grow(pages);
+        if (options.importGrow) try { bindings.env.memory.grow(pages); } catch { }
       }
     }
     return port.describe(candidate);
