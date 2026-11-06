@@ -162,12 +162,11 @@ console.log(lost.reason);
 test('stated limit: terminate can not interrupt a thread cell in a blocking native call', { timeout: 60000 }, async t => {
   const deadlines = holdTimers(t, heldDeadline);
   const { job, directory } = await fixture(t);
-  const startedFile = join(directory, 'started');
+  const blockedFile = join(directory, 'blocked');
   const pool = new IsolatePool({ hostPort: stubborn, size: 1, jobTimeoutMs: heldDeadline });
   t.after(() => pool.close());
-  const result = pool.run(job(['pass'], { blockMs: 3000, startedFile }));
-  await until(() => existsSync(startedFile) && deadlines.count);
-  await sleep(200);
+  const result = pool.run(job(['pass'], { blockMs: 5000, blockedFile }));
+  await until(() => existsSync(blockedFile) && deadlines.count);
   const fired = performance.now();
   deadlines.fire();
   const stopped = await result;
