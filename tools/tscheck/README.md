@@ -19,6 +19,6 @@ const result = await pool.run({ reference, candidates, receipts, portOptions: { 
 
 Use a `jobTimeoutMs`, since a check can't stop itself. Don't lower `maxOldGenerationSizeMb` below the pinned limit: 256 MiB ran out of memory on a healthy job in [P-43](../../experiments/P-43-tsrs-workcell/RESULT.md). That probe also found throughput flat by 8 cells, and on this stack [P-48](../../experiments/P-48-width/RESULT.md) traced it to the evaluator's frozen check, not the compiler.
 
-`make tscheck-setup` installs the exact pinned version without install scripts, and `make tscheck-test` runs the tests. On a version bump, update `pin.mjs` and rerun the probe.
+`make tscheck-setup` installs the exact pinned version without install scripts, and `make tscheck-test` runs the tests. On a version bump, update `pin.mjs` and run `make tscheck-requalify WORK=<dir> TSC=<path to tsc>`, which reruns [P-43](../../experiments/P-43-tsrs-workcell/RESULT.md)'s parity arm against whatever `pin.mjs` names and exits nonzero on any difference. That means any location, first-line message, exit code or compiler digest that differs, a job that doesn't complete, an oracle whose version isn't the one in `TSRS_VERSION`, or a workload with no projects. A workload directory holds `<group>/<name>/proj/tsconfig.json`, and inputs aren't committed.
 
 Thread workcells aren't an OS sandbox. Running the emitted JavaScript isn't implemented here.
