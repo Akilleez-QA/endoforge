@@ -34,6 +34,7 @@ export class IsolatePool {
   #sharedModules = [];
   #sharing;
   #warmOptions;
+  #startFailures = 0;
 
   constructor({ hostPort, size = availableParallelism(), resourceLimits = {}, wasmMemoryMaxMb = 64,
     isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, warm, jobTimeoutMs } = {}) {
@@ -91,6 +92,10 @@ export class IsolatePool {
   get stats() {
     return { size: this.#size, workers: this.#cells.size,
       busy: [...this.#cells].filter(cell => cell.job).length, queued: this.#queue.length };
+  }
+
+  get halted() {
+    return this.#startFailures >= this.#size + 2;
   }
 
   #share() {
@@ -169,7 +174,11 @@ export class IsolatePool {
     cell.gone = new Promise(resolve => { cell.markGone = resolve; });
     this.#cells.add(cell);
     worker.on('message', result => {
-      if (result?.type === 'ready') return cell.markStarted(!result.warmError);
+      if (result?.type === 'ready') {
+        cell.ready = true;
+        this.#startFailures = 0;
+        return cell.markStarted(!result.warmError);
+      }
       if (!cell.job) return;
       if (result.type === 'limit') {
         cell.error = { code: result.error };
@@ -199,8 +208,9 @@ export class IsolatePool {
         reason: cell.error?.code === 'ERR_WORKCELL_DEADLINE' ? 'deadline' : limited ? (subprocess ? (cell.error.code === 'ERR_WORKER_OUT_OF_MEMORY' ? 'heap' : 'wasm_memory') : 'limit') : 'worker_exit',
         error: cell.error?.code || null, exitCode: code, signal: signal || null, report: null, ...cell.metadata,
         workcell: cell.id, resourceLimits: this.#limits, wasmMemoryMaxMb: this.#wasmMemoryMaxMb });
+      if (!cell.ready && cell.error?.code !== 'ERR_WORKCELL_DEADLINE') this.#startFailures += 1;
       if (!this.#stopping) {
-        try { this.#spawn(); } catch { }
+        if (!this.halted) try { this.#spawn(); } catch { }
         this.#pump();
       }
     };
@@ -217,8 +227,13 @@ export class IsolatePool {
   #pump() {
     while (this.#queue[0]?.ready) {
       let cell = [...this.#cells].find(cell => !cell.job && !cell.stopping);
-      if (!cell && this.#cells.size >= this.#size) return;
+      if (!cell && (this.halted ? this.#cells.size : this.#cells.size >= this.#size)) return;
       const job = this.#queue.shift();
+      if (!cell && this.halted) {
+        this.#finish(job, { status: 'outcome_unknown', reason: 'workcell_start_failed', report: null, workcell: null,
+          isolation: this.#isolation, resourceLimits: this.#limits, wasmMemoryMaxMb: this.#wasmMemoryMaxMb });
+        continue;
+      }
       try {
         cell ||= this.#spawn();
         cell.job = job;
