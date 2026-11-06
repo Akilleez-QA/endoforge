@@ -23,5 +23,6 @@ precommit hashed before measurement and a result that states what it does not sh
 | [P-29](P-29-hillclimb/) | Hill-climb round 1: generator self-check, 3x30 per arm | No gain: 29.00 vs 28.67 promoted, p50 65.7 vs 68.0 s; stays off |
 | [P-43](P-43-tsrs-workcell/PRECOMMIT.md) | The TypeScript checker in the workcell pool, blocked in P-20: parity on 20 of 20 synthetic projects against TS 7.1 beta, throughput flat by 8 cells, 0 of 7 siblings lost on a heap breach after an invalid first run | [RESULT.md](P-43-tsrs-workcell/RESULT.md) |
 | [P-44](P-44-offheap/PRECOMMIT.md) | Off-heap allocation through the pool: 3 GiB past a 128 MiB heap passes in thread mode and in process mode without a cgroup; `memory.max` alone also failed to stop it until `memory.swap.max=0` was set | [RESULT.md](P-44-offheap/RESULT.md) |
+| [P-45](P-45-shared-module/PRECOMMIT.md) | One guard-instrumented module shared across thread cells: at 8 cells, 56% less peak RSS and 60% less time to first results; the compile cost was the guard's JavaScript instrumentation, not V8 | [RESULT.md](P-45-shared-module/RESULT.md) |
 
 Rebuild P-15 dependencies with `setup.sh` in its directory; `node_modules` is not committed.

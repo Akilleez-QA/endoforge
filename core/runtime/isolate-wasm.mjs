@@ -50,11 +50,17 @@ export function trustedWasmPolicy(entries, maxMb) {
   }));
 }
 
-export function installWasmLimit(maxMb, breach, trustedWasmModules = []) {
+export function installWasmLimit(maxMb, breach, trustedWasmModules = [], sharedWasmModules = []) {
   const trustedModules = new Map(trustedWasmPolicy(trustedWasmModules, maxMb).map(entry => [entry.sha256, entry]));
+  const sharedModules = new Map(sharedWasmModules.map(entry => [entry.sha256, entry]));
   const native = Object.fromEntries(Object.getOwnPropertyNames(WebAssembly).map(key => [key, WebAssembly[key]]));
   const cap = maxMb * 1024 * 1024 / pageBytes;
-  const modules = new WeakMap();
+  const modules = new WeakMap(sharedWasmModules.map(entry => [entry.module, entry.data]));
+  const shared = source => {
+    if (!sharedModules.size) return undefined;
+    const view = ArrayBuffer.isView(source) ? new Uint8Array(source.buffer, source.byteOffset, source.byteLength) : new Uint8Array(source);
+    return sharedModules.get(createHash('sha256').update(view).digest('hex'))?.module;
+  };
   const memoryLimits = new WeakMap();
   const flags = new Set();
   const activeFlags = new Set();
@@ -244,6 +250,8 @@ export function installWasmLimit(maxMb, breach, trustedWasmModules = []) {
     return Reflect.construct(target, [{ initial, maximum, shared: descriptor.shared }], derived);
   });
   wrapConstructor('Module', (target, [source, options], derived) => {
+    const reused = shared(source);
+    if (reused) return reused;
     const data = rewrite(source);
     const module = Reflect.construct(target, [data.bytes, options], derived);
     modules.set(module, data);
@@ -267,6 +275,8 @@ export function installWasmLimit(maxMb, breach, trustedWasmModules = []) {
   };
   wrapConstructor('Instance', (target, [module, imports], derived) => instance(module, imports, derived));
   WebAssembly.compile = async (source, options) => {
+    const reused = shared(source);
+    if (reused) return reused;
     const data = rewrite(source);
     const module = await native.compile(data.bytes, options);
     modules.set(module, data);
@@ -286,6 +296,10 @@ export function installWasmLimit(maxMb, breach, trustedWasmModules = []) {
       const flag = ref.deref();
       if (flag) activeFlags.add(flag);
     }
+  };
+  check.describe = module => {
+    const { bytes, ...data } = modules.get(module);
+    return data;
   };
   return check;
 }

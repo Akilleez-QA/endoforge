@@ -123,6 +123,8 @@ An empty policy is the default. All binary parsing, growth instrumentation and
 unsupported-feature checks still apply. This is a toolchain compatibility policy,
 not authority for arbitrary candidate modules.
 
+`sharedWasmModules: [{sha256, path}]` lets a thread pool instrument and compile a pinned module once, in a short-lived guarded worker, and post it to its cells. It must name a `trustedWasmModules` digest. A cell given matching bytes gets that module instead of recompiling; other bytes are still checked, and modules from anywhere else stay refused. Bytes that don't match the digest fall back to compiling per cell, and results list what was shared. A `Module` can't cross a process boundary, so process cells always compile their own. [P-45](../../experiments/P-45-shared-module/RESULT.md) records the measurements.
+
 [`tools/tscheck`](../../tools/tscheck/README.md) uses the same policy for the pinned TypeScript checker, with `stackSizeMb` for deep input.
 
 [AssemblyScript toolchain helper](../../experiments/assemblyscript-toolchain.mjs)
@@ -146,7 +148,7 @@ features in memory-bearing modules (including SIMD, atomics, GC types, exception
 and memory64) fail closed with a compilation error; there is no unchecked fallback.
 Modules without memories need no growth instrumentation. Modules transferred from
 outside the workcell cannot be instantiated: they must be compiled locally through
-the guard. Ports are trusted Node code and must use this realm’s checked API;
+the guard, or come from the supervisor's `sharedWasmModules`. Ports are trusted Node code and must use this realm’s checked API;
 new realms, native addons, or other workers can bypass JavaScript wrappers and are
 outside this interface. No Wasmtime dependency is introduced.
 
