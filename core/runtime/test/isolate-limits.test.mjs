@@ -15,7 +15,7 @@ test('stackSizeMb is optional and validated', () => {
   assert.throws(() => new IsolatePool({ hostPort, resourceLimits: { stackSizeMb: 0 } }), /limits/);
   assert.throws(() => new IsolatePool({ hostPort, resourceLimits: { other: 1 } }), /limits/);
   const pool = fileURLToPath(new URL('../isolate-pool.mjs', import.meta.url));
-  const refused = spawnSync('/bin/sh', ['-c', 'ulimit -Hs 8192 && exec "$@"', 'sh', process.execPath, '--input-type=module', '-e',
+  const refused = spawnSync('/bin/sh', ['-c', 'ulimit -Ss 8192 && ulimit -Hs 8192 && exec "$@"', 'sh', process.execPath, '--input-type=module', '-e',
     `import { IsolatePool } from ${JSON.stringify(pool)}; new IsolatePool({ hostPort: ${JSON.stringify(hostPort)}, isolation: 'process', resourceLimits: { stackSizeMb: 64 } });`], { encoding: 'utf8' });
   assert.notEqual(refused.status, 0);
   assert.match(refused.stderr, /cannot raise the process stack limit/);
