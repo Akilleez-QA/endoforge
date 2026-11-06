@@ -109,6 +109,8 @@ test('stated limits: suppression comments and skipLibCheck on a declaration file
   }
   const skipped = project({ compilerOptions: { ...compilerOptions, skipLibCheck: true }, files: ['./a.ts', './b.d.ts'] }, { '/proj/a.ts': good, '/proj/b.d.ts': bad });
   assert.deepEqual((await typecheck(skipped)).diagnostics, []);
+  const declared = project({ compilerOptions, files: ['./a.ts', './b.d.ts'] }, { '/proj/a.ts': good, '/proj/b.d.ts': `// @ts-nocheck\n${bad}` });
+  assert.deepEqual((await typecheck(declared)).diagnostics, []);
   const weak = project({ compilerOptions: { ...compilerOptions, strict: false }, files: ['./a.ts'] }, { '/proj/a.ts': 'export const f = (x) => x;\n' });
   assert.deepEqual((await typecheck(weak)).diagnostics, []);
 });
