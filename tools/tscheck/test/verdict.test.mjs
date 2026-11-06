@@ -135,6 +135,31 @@ test('through the pool, a forged project never gets a passed receipt', { timeout
   assert.equal(clean.receipts[0].record.data.outcome_state, 'passed');
 });
 
+test('an emit that writes nothing leaves no clean artifact in the receipt', { timeout: 120000 }, async t => {
+  const { job } = await fixture(t, { invariants: ['identity', TS_INVARIANT] });
+  const pool = new IsolatePool({ hostPort, size: 1, ...WORKCELL });
+  t.after(() => pool.close());
+  const quiet = project(listed({ noEmit: true, outDir: './out' }), { '/proj/a.ts': good });
+  const stopped = await pool.run(job(['pass'], { basePort, emit: true, projects: { pass: quiet } }));
+  assert.equal(stopped.status, 'outcome_unknown');
+  const data = stopped.receipts[0].record.data;
+  assert.notEqual(data.outcome_state, 'passed');
+  assert.deepEqual(data.observations[0].evidence?.typescript ?? [], []);
+});
+
+test('an emit over a prior build info file records the files it really wrote', { timeout: 120000 }, async t => {
+  const { job } = await fixture(t, { invariants: ['identity', TS_INVARIANT] });
+  const pool = new IsolatePool({ hostPort, size: 1, ...WORKCELL });
+  t.after(() => pool.close());
+  const seeded = project(listed({ incremental: true, tsBuildInfoFile: './info.json', outDir: './out' }), { '/proj/a.ts': good });
+  seeded.files = { ...seeded.files, '/proj/info.json': forgedInfo(seeded, '/proj/info.json') };
+  const result = await pool.run(job(['pass'], { basePort, emit: true, projects: { pass: seeded } }));
+  assert.equal(result.status, 'completed', result.reason);
+  const rows = result.receipts[0].record.data.observations[0].evidence.typescript;
+  assert.ok(rows.length);
+  for (const row of rows) assert.deepEqual(Object.keys(row.sha256), ['/proj/out/a.js']);
+});
+
 function vendorCopy(t, change) {
   const directory = mkdtempSync(join(tmpdir(), 'ef-tscheck-pin-'));
   t.after(() => rmSync(directory, { recursive: true, force: true }));
