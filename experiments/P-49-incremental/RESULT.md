@@ -30,7 +30,7 @@ A full check stops early on a syntax error, so incremental is slower there in pe
 
 ## Decision
 
-`typecheck(project, {buildInfo})` ships, because parity held and the saving passed the bar. It's refused with `emit`, because an incremental emit needn't rewrite unchanged files, so its artifact wouldn't be complete. `tools/tscheck/port.mjs` doesn't use it, so pool verdicts are still full checks. Wiring it into a verdict would need the trust question below settled first.
+`typecheck(project, {buildInfo})` ships, because parity held and the saving passed the bar. It's refused with `emit`, because an incremental emit needn't rewrite unchanged files, so its artifact wouldn't be complete. `tools/tscheck/port.mjs` doesn't use it, so pool verdicts are still full checks. Added later, after review: that sentence was false when candidates author project files, since a project's own `incremental` and a forged build info file also passed. The host now owns those options and refuses such inputs, as the [checker README](../../tools/tscheck/README.md) states. Wiring it into a verdict would need the trust question below settled first.
 
 ## What this does not show
 
