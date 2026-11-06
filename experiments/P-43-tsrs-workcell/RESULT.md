@@ -10,10 +10,10 @@ All 20 projects completed with matching location sets, matching first-line messa
 
 | Project | Files | Diagnostics | Check | Linear memory |
 |---|---|---|---|---|
-| small/ill | 68 | 10 | 17 ms | 98 MiB |
-| medium/ill | 618 | 40 | 148 ms | 112 MiB |
-| stress/ill | 6,024 | 123 | 1,293 ms | 252 MiB |
-| stress/well | 6,024 | 0 | 1,131 ms | 252 MiB |
+| small/ill | 69 | 10 | 17 ms | 98 MiB |
+| medium/ill | 259 | 40 | 148 ms | 112 MiB |
+| stress/ill | 2,061 | 123 | 1,293 ms | 252 MiB |
+| stress/well | 2,061 | 0 | 1,131 ms | 252 MiB |
 
 ## Warm reuse
 
