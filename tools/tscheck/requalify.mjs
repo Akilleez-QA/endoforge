@@ -8,8 +8,10 @@ import { IsolatePool } from '../../core/runtime/isolate-pool.mjs';
 import { fixture, hostPort as basePort } from '../../core/runtime/test/fixtures/ledger-fixture.mjs';
 import { TSRS_MODULE, TSRS_VERSION, WORKCELL } from './pin.mjs';
 import { TS_INVARIANT } from './port.mjs';
+import { HOST_OPTIONS } from './checker.mjs';
 
 const JOB_MS = 120000;
+export const MIN_PROJECTS = 20;
 const hostPort = fileURLToPath(new URL('./port.mjs', import.meta.url));
 const read = (dir, root, files = {}) => {
   for (const name of readdirSync(dir)) {
@@ -24,7 +26,7 @@ const firstLine = text => text.split('\n')[0];
 const reports = file => existsSync(file) ? readFileSync(file, 'utf8').trim().split('\n').filter(Boolean).map(line => JSON.parse(line)) : [];
 
 function oracle(tsc, directory) {
-  const r = spawnSync(tsc, ['-p', 'tsconfig.json', '--noEmit', '--pretty', 'false'], { cwd: directory, encoding: 'utf8', timeout: JOB_MS, maxBuffer: 1 << 28 });
+  const r = spawnSync(tsc, ['-p', 'tsconfig.json', ...HOST_OPTIONS, '--noEmit', '--pretty', 'false'], { cwd: directory, encoding: 'utf8', timeout: JOB_MS, maxBuffer: 1 << 28 });
   const rows = [];
   for (const line of (r.stdout ?? '').split('\n')) {
     const m = /^(.+?)\((\d+),(\d+)\): (?:error|warning) TS(\d+): (.*)$/.exec(line);
@@ -44,9 +46,16 @@ export async function requalify({ work, tsc }) {
   const expected = expectedOracleVersion();
   const version = spawnSync(tsc, ['--version'], { encoding: 'utf8', timeout: JOB_MS }).stdout?.trim() ?? '';
   if (version !== `Version ${expected}`) differences.push({ project: null, kind: 'oracle-version', expected, got: version });
-  const projects = existsSync(work) ? readdirSync(work).sort().filter(group => statSync(join(work, group)).isDirectory()).flatMap(group => readdirSync(join(work, group)).sort()
-    .filter(name => existsSync(join(work, group, name, 'proj', 'tsconfig.json'))).map(name => `${group}/${name}`)) : [];
+  const projects = [];
+  for (const group of existsSync(work) ? readdirSync(work).sort() : []) {
+    if (!statSync(join(work, group)).isDirectory()) { differences.push({ project: group, kind: 'skipped' }); continue; }
+    for (const name of readdirSync(join(work, group)).sort()) {
+      if (existsSync(join(work, group, name, 'proj', 'tsconfig.json'))) projects.push(`${group}/${name}`);
+      else differences.push({ project: `${group}/${name}`, kind: 'skipped' });
+    }
+  }
   if (!projects.length) differences.push({ project: null, kind: 'no-projects', work });
+  else if (projects.length < MIN_PROJECTS) differences.push({ project: null, kind: 'too-few-projects', minimum: MIN_PROJECTS, got: projects.length });
   const cleanup = [];
   const scratch = mkdtempSync(join(tmpdir(), 'ef-requalify-'));
   const rows = {};
@@ -77,6 +86,7 @@ export async function requalify({ work, tsc }) {
         rows[name] = { diagnostics: expectedRows.rows.length, wallMs: report?.wallMs ?? null, differences: found.length };
         for (const difference of found) differences.push({ project: name, ...difference });
       }
+      if (projects.length && !Object.values(rows).some(row => row.diagnostics > 0)) differences.push({ project: null, kind: 'no-diagnostics' });
     } finally { await pool.close(); }
   } finally {
     for (const fn of cleanup) await fn();

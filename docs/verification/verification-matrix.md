@@ -433,13 +433,14 @@ and 26.12.0. Spawn-cost measurements are in P-26.
 | REQ-ISO-010 | Stored row tampered after caching | Pass; next read rejects the chain |
 | REQ-ISO-010 | One invalid request inside a batch | Pass; only that request fails and the others commit |
 | REQ-ISO-011 | `stackSizeMb` validation; a deep expression traps without it and passes with it, in thread and process cells; a process stack overflow is unknown and the cell lives; a lowered hard limit is refused | Pass |
-| REQ-ISO-012 | A hung job and a compiler past its deadline end `outcome_unknown`/`deadline`, and the replacement cell completes the next job | Pass |
+| REQ-ISO-012 | A hung job and a compiler past its deadline end `outcome_unknown`/`deadline`, and the replacement cell completes the next job; a SIGTERM trap or a grandchild holding stderr still ends at the deadline; no job goes to a stopping cell; no stale timer stops a later cell | Pass |
 | REQ-ISO-013 | Off-heap memory past a 24 MiB heap passes in thread mode and in process mode without a cgroup; with a delegated cgroup it's killed and inconclusive | Pass; the cgroup case is skipped without a delegated scope |
 | REQ-ISO-014 | A shared module through every checked path, a breach stopping only its cell, port-supplied modules refused, digest mismatch falling back, and close during the shared compile | Pass |
 | REQ-ISO-015 | `warm` awaited by `ready()`, a failure rejecting `ready()` and making jobs unknown, off by default, in both modes | Pass |
 | REQ-TSC-001 | Pinned check passes clean code and rejects a planted error; compiled once per workcell; unpinned stopped by the guard; tampered and missing are unknown | Pass |
-| REQ-TSC-002 | A clean emit's hashes and compiler identity in the receipt; a planted error adds no artifact hash | Pass |
-| REQ-TSC-003 | Re-qualification exits zero on a matching oracle, and nonzero on location, text, exit-code, oracle-version and empty-workload differences | Pass |
+| REQ-TSC-002 | A clean emit's hashes and compiler identity in the receipt; a planted error adds no artifact hash; an emit that writes nothing leaves no passed receipt and no empty row | Pass |
+| REQ-TSC-003 | Re-qualification exits zero on a matching oracle, and nonzero on location, text, exit-code, oracle-version and empty-workload differences, a workload under the minimum, one with no diagnostics, and anything skipped. These use a stub oracle; a run against the real pinned `tsc` and the original workload wasn't repeated | Pass |
 | REQ-TSC-004 | Build info feedback matches a full check; refused with `emit`; a forged file hides an error, which is the stated limit | Pass |
+| REQ-TSC-005 | `noCheck`, `incremental`, `composite` and `noResolve` from a project, including through `extends`, don't change the verdict; `@ts-nocheck`, `.tsbuildinfo` inputs, sources outside the program, `references` and a program with no TypeScript source are refused; `// @ts-ignore`, `strict`, `skipLibCheck` stated limits are pinned by a test | Pass |
 | REQ-ISO-009 | Bridge process after `ready()` with prewarm, none on a lazy pool | Pass; one bridge before the first job and none respawned by it; `start()` memoized and rejects after close |
 
