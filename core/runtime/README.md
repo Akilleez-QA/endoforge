@@ -118,6 +118,8 @@ An empty policy is the default. All binary parsing, growth instrumentation and
 unsupported-feature checks still apply. This is a toolchain compatibility policy,
 not authority for arbitrary candidate modules.
 
+[`tools/tscheck`](../../tools/tscheck/README.md) uses the same policy for the pinned TypeScript checker, with `stackSizeMb` for deep input.
+
 [AssemblyScript toolchain helper](../../experiments/assemblyscript-toolchain.mjs)
 pins the AssemblyScript 0.28.20 `f64_pow` helper to 16 pages (1 MiB).
 Binaryen already declares 65,536 pages; kernel output retains `--maximumMemory 16`.

@@ -21,6 +21,7 @@ See the [requirements](../requirements/requirements.md) for the tested boundarie
 | `core/engine/gates.mjs` | Apply schema, interface, bounds, determinism, and forbidden-effects gates in order | [Gate tests](../../core/engine/gates.test.mjs) |
 | `core/engine/frozen.py` | Verify frozen evaluator references through the core ledger | [Evaluator tests](../../core/engine/evaluator.test.mjs) |
 | `core/runtime/` | Launch local agent clients and replay stub outputs, separate from lifecycle state | [Runtime guidance](../../core/runtime/README.md) |
+| `tools/tscheck/` | Pinned tsrs TypeScript checker for pool workcells, exposed as an evaluator invariant | [Checker tests](../../tools/tscheck/test/tscheck.test.mjs) |
 
 The [ledger ICD](../interfaces/ledger-icd.md) defines Python, CLI, and storage
 interfaces. Importing `core` keeps its lifecycle exports and does not load the ledger.

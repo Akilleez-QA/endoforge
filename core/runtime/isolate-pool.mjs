@@ -19,6 +19,7 @@ export class IsolatePool {
   #isolation;
   #cgroupRoot;
   #cgroupLimits;
+  #jobTimeoutMs;
   #cells = new Set();
   #queue = [];
   #pending = new Set();
@@ -29,7 +30,7 @@ export class IsolatePool {
   #warm;
 
   constructor({ hostPort, size = availableParallelism(), resourceLimits = {}, wasmMemoryMaxMb = 64,
-    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], prewarm = false } = {}) {
+    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], prewarm = false, jobTimeoutMs } = {}) {
     if (!['thread', 'process'].includes(isolation)) throw new TypeError('isolation must be thread or process');
     if (cgroupRoot !== undefined && (typeof cgroupRoot !== 'string' || !cgroupRoot)) throw new TypeError('cgroupRoot path required');
     if (!positive(size)) throw new TypeError('positive integer pool size required');
@@ -39,9 +40,13 @@ export class IsolatePool {
       throw new TypeError('wasmMemoryMaxMb must be an integer from 1 to 4096');
     }
     const limits = { maxOldGenerationSizeMb: 128, maxYoungGenerationSizeMb: 16, ...resourceLimits };
-    if (Object.keys(limits).length !== 2 || !Object.values(limits).every(positive)) {
+    const { maxOldGenerationSizeMb, maxYoungGenerationSizeMb, stackSizeMb, ...unknownLimits } = limits;
+    if (Object.keys(unknownLimits).length || !Object.values(limits).every(positive)) {
       throw new TypeError('positive integer old and young generation limits required');
     }
+    if (stackSizeMb !== undefined && isolation !== 'thread') throw new TypeError('stackSizeMb requires thread isolation');
+    if (jobTimeoutMs !== undefined && !positive(jobTimeoutMs)) throw new TypeError('jobTimeoutMs must be a positive integer');
+    this.#jobTimeoutMs = jobTimeoutMs;
     if (process.execArgv.some(arg => /^--max[-_](old[-_]space|semi[-_]space)[-_]size/.test(arg)) ||
         /--max[-_](old[-_]space|semi[-_]space)[-_]size/.test(process.env.NODE_OPTIONS || '')) {
       throw new Error('heap command-line overrides conflict with workcell limits');
@@ -136,6 +141,7 @@ export class IsolatePool {
         return;
       }
       const job = cell.job;
+      clearTimeout(job.deadline);
       cell.job = null;
       this.#finish(job, { ...result, ...cell.metadata });
       this.#pump();
@@ -147,8 +153,9 @@ export class IsolatePool {
       releaseCgroup(directory);
       if (subprocess && code === 18) cell.error = { code: 'ERR_WORKCELL_WASM_MEMORY_LIMIT' };
       const limited = ['ERR_WORKER_OUT_OF_MEMORY', 'ERR_WORKCELL_WASM_MEMORY_LIMIT'].includes(cell.error?.code);
+      if (cell.job) clearTimeout(cell.job.deadline);
       if (cell.job) this.#finish(cell.job, { status: subprocess && limited ? 'rejected' : 'outcome_unknown',
-        reason: limited ? (subprocess ? (cell.error.code === 'ERR_WORKER_OUT_OF_MEMORY' ? 'heap' : 'wasm_memory') : 'limit') : 'worker_exit',
+        reason: cell.error?.code === 'ERR_WORKCELL_DEADLINE' ? 'deadline' : limited ? (subprocess ? (cell.error.code === 'ERR_WORKER_OUT_OF_MEMORY' ? 'heap' : 'wasm_memory') : 'limit') : 'worker_exit',
         error: cell.error?.code || null, exitCode: code, signal: signal || null, report: null, ...cell.metadata,
         workcell: cell.id, resourceLimits: this.#limits, wasmMemoryMaxMb: this.#wasmMemoryMaxMb });
       if (!this.#stopping) {
@@ -167,6 +174,10 @@ export class IsolatePool {
       try {
         cell ||= this.#spawn();
         cell.job = job;
+        if (this.#jobTimeoutMs) job.deadline = setTimeout(() => {
+          cell.error = { code: 'ERR_WORKCELL_DEADLINE' };
+          cell.worker.terminate();
+        }, this.#jobTimeoutMs);
         const { reference, candidates, portOptions } = job.data;
         cell.worker.postMessage({ reference, candidates, portOptions, hostPort: this.#hostPort });
       } catch (error) {
