@@ -74,6 +74,10 @@ Predictions:
 9. `/clear` keeps a warm process usable across candidates without leaking a prior conversation. A probe on 2026-11-06 saw this with one model, 4 turns; the real proof repeats it.
 10. The real proof promotes on `add`, on a cheap model, perhaps after one repair turn.
 
+## Amendment 3, after the first arms and before the agent arms
+
+The `isolate` arms missed A2 on the freeze and commit, not the compiler. Before the agent arms ran: bridge-created ledgers use WAL, the agent path's decision commits in the receipt's transaction, and eviction moved after the response. After the first agent arms also missed: the ledger schema is one transaction, and `agent-thread` and `agent-process` ran again as `receipt/agent-second`. The first agent arms are kept. Acceptance and predictions are unchanged.
+
 ## Failure meaning
 
 A1, A3, A4, A5, A6 or A7 failing means the path stays off, and the failure is named. A2 failing with the rest passing means the path is safe but not this fast, and the timing split says where the time goes. No test is softened to pass.

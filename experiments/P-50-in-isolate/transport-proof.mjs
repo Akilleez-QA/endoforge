@@ -10,7 +10,7 @@ if (!configDir) throw Error('P50_CLAUDE_CONFIG_DIR required');
 mkdirSync(output, { recursive: true });
 const cwd = mkdtempSync(join(output, 'empty-'));
 const nearest = (values, q) => { const sorted = [...values].sort((a, b) => a - b); return sorted[Math.ceil(sorted.length * q) - 1] ?? null; };
-const overhead = turns => turns.map(turn => turn.wallMs - (turn.apiMs ?? 0));
+const overhead = turns => turns.map((turn, index) => turn.wallMs - ((turn.apiMs ?? 0) - (index && turn.apiMs >= turns[index - 1].apiMs && turn.apiMs > turn.wallMs ? turns[index - 1].apiMs : 0)));
 const summary = {};
 if (step === 'transports') {
   const prompt = [{ role: 'user', content: 'Return one done call.' }];
