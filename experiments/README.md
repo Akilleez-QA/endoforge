@@ -25,5 +25,6 @@ precommit hashed before measurement and a result that states what it does not sh
 | [P-44](P-44-offheap/PRECOMMIT.md) | Off-heap allocation through the pool: 3 GiB past a 128 MiB heap passes in thread mode and in process mode without a cgroup; `memory.max` alone also failed to stop it until `memory.swap.max=0` was set | [RESULT.md](P-44-offheap/RESULT.md) |
 | [P-45](P-45-shared-module/PRECOMMIT.md) | One guard-instrumented module shared across thread cells: at 8 cells, 56% less peak RSS and 60% less time to first results; the compile cost was the guard's JavaScript instrumentation, not V8 | [RESULT.md](P-45-shared-module/RESULT.md) |
 | [P-46](P-46-prewarm/PRECOMMIT.md) | Loading host warm state in `ready()`: first job down 82% with the same total; a trivial probe check didn't help and was removed | [RESULT.md](P-46-prewarm/RESULT.md) |
+| [P-47](P-47-process-stack/PRECOMMIT.md) | `stackSizeMb` in process cells: the V8 flag alone dies with SIGSEGV; with the rlimit raised first, no probe died and diagnostics matched thread mode | [RESULT.md](P-47-process-stack/RESULT.md) |
 
 Rebuild P-15 dependencies with `setup.sh` in its directory; `node_modules` is not committed.

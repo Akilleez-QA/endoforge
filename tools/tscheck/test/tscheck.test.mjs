@@ -124,3 +124,16 @@ test('warm compiles in ready(), and the first job compiles nothing and keeps its
   assert.equal(result.receipts[1].record.data.outcome_state, 'failed');
   assert.ok(reports(reportFile).every(row => row.warm && row.compileMs === 0));
 });
+
+test('in process cells, deep input needs the stack limit as it does in threads', { timeout: 120000 }, async t => {
+  const deep = project(`export const n = ${Array(60000).fill('1').join(' + ')};\n`);
+  const { resourceLimits: { stackSizeMb, ...heap }, ...rest } = WORKCELL;
+  const small = await setup(t, { ...rest, isolation: 'process', resourceLimits: heap });
+  const trapped = await small.pool.run(small.job(['pass'], options({ projects: { pass: deep } })));
+  assert.equal(trapped.status, 'outcome_unknown');
+  const large = await setup(t, { ...WORKCELL, isolation: 'process' });
+  const passed = await large.pool.run(large.job(['pass'], options({ projects: { pass: deep } })));
+  assert.equal(passed.status, 'completed');
+  assert.equal(passed.isolation, 'process');
+  assert.equal(passed.report.attempts[0].stage, 'passed');
+});

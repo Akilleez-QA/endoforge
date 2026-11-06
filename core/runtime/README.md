@@ -188,6 +188,7 @@ Node runtime to demonstrate actual worker-local enforcement.
 
 `isolation: 'process'` forks one Node child per cell with the same configured
 old/young values passed as `--max-old-space-size` and `--max-semi-space-size`.
+With `stackSizeMb`, the child starts through `/bin/sh`, which raises `RLIMIT_STACK` and `exec`s Node with `--stack-size` 192 KiB below it; the constructor refuses if the host won't raise the limit. The flag alone dies with SIGSEGV on deep recursion, as [P-47](../../experiments/P-47-process-stack/RESULT.md) measured, and with the rlimit raised the same probes throw `RangeError`.
 V8's young generation can include several semi-spaces; these are heap settings,
 not RSS quotas. The child uses V8's fatal heap-limit exit; it does not install
 `v8.setHeapSnapshotNearHeapLimit`, which is a snapshot API, or a native callback.
