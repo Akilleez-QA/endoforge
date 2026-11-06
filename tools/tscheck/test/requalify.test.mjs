@@ -64,7 +64,9 @@ const info = argv.indexOf('--tsBuildInfoFile') + 1;
 if (info) writeFileSync(argv[info], '{}');
 if (${JSON.stringify(log ?? null)}) appendFileSync(${JSON.stringify(log ?? '')}, JSON.stringify({ argv, stale: info > 0 && staleBefore }) + '\\n');
 const table = ${JSON.stringify(table ?? null)};
-const row = (!argv.includes('--noEmit') && ${JSON.stringify(plain ?? null)}) || (table && table[readFileSync('a.ts', 'utf8')]) || { stdout: ${JSON.stringify(stdout)}, exit: ${exit} };
+const text = (() => { try { return readFileSync('a.ts', 'utf8'); } catch { return ''; } })();
+const plain = ${JSON.stringify(plain ?? null)};
+const row = (!argv.includes('--noEmit') && plain && (plain.exit === undefined ? plain[text] : plain)) || (table && table[text]) || { stdout: ${JSON.stringify(stdout)}, exit: ${exit} };
 process.stdout.write(row.stdout);
 process.exit(row.exit);
 `);
@@ -244,36 +246,29 @@ test('twenty broken tsconfigs never pass: a configuration error is not variety',
   assert.match(result.stdout, /"codes":0/);
 });
 
-test('each variety floor fires by itself', { timeout: 120000 }, async t => {
-  const table = await answers();
-  const fewer = (keep, floor) => {
+test('each variety floor fires by itself', { timeout: 300000 }, async t => {
+  const well = index => `export const n${index}: number = ${index};\n`;
+  const many = index => `// ${index}\nexport const a: number = "x";\nexport const b: number = missing;\nexport const c: number = (1).nope;\nconst f = (x: string) => x;\nexport const d = f(1);\nexport const e = f();\n`;
+  const expectFloor = async (texts, got) => {
     const directory = bare(t);
-    let index = 0;
-    for (const [name, text] of keep) project(directory, name, text);
-    while (Object.keys(keep).length + index < MIN_PROJECTS) {
-      project(directory, `pad-${index}`, `export const n${index}: number = ${index};\n`);
-      index += 1;
+    const table = {};
+    for (const [index, text] of texts.entries()) {
+      project(directory, `p-${index}`, text);
+      table[text] = await answer(text);
     }
-    return [directory, floor];
+    const result = run(directory, oracle(directory, { table }));
+    assert.equal(result.status, 1, result.stdout + result.stderr);
+    const [difference, ...rest] = result.stdout.split('\n').slice(1).filter(Boolean).map(line => JSON.parse(line));
+    assert.deepEqual(rest, []);
+    assert.equal(difference.kind, 'no-variety');
+    assert.deepEqual(difference.got, got);
   };
-  const noisy = Array.from({ length: MIN_PROJECTS }, (_, i) => [`bad-${i}`, `// ${i}\n${source}`]);
-  const rows = {};
-  for (const [name, text] of noisy) rows[text] = await answer(text);
-  const [allBad] = fewer(noisy);
-  const noClean = run(allBad, oracle(allBad, { table: rows }));
-  assert.match(noClean.stdout, /"kind":"no-variety"/);
-  assert.match(noClean.stdout, /"clean":0/);
-  const [oneCode] = fewer(Array.from({ length: 4 }, (_, i) => [`bad-${i}`, `// ${i}\n${source}`]));
-  const oneRows = { ...table };
-  for (let i = 0; i < 4; i++) oneRows[`// ${i}\n${source}`] = await answer(`// ${i}\n${source}`);
-  for (let i = 0; i < MIN_PROJECTS; i++) oneRows[`export const n${i}: number = ${i};\n`] = { exit: 0, stdout: '' };
-  const single = run(oneCode, oracle(oneCode, { table: oneRows }));
-  assert.match(single.stdout, /"kind":"no-variety"/);
-  assert.match(single.stdout, /"codes":1/);
-  const [twoBad] = fewer(Array.from({ length: 2 }, (_, i) => [`bad-${i}`, varied[i][1]]));
-  const few = run(twoBad, oracle(twoBad, { table: oneRows }));
-  assert.match(few.stdout, /"kind":"no-variety"/);
-  assert.match(few.stdout, /"diagnosed":2/);
+  const filler = (from, count) => Array.from({ length: count }, (_, index) => well(from + index));
+  const fiveCodes = Array.from({ length: 3 }, (_, index) => many(index));
+  await expectFloor([...fiveCodes, ...filler(0, 2), ...Array.from({ length: 15 }, (_, index) => many(index + 3))], { clean: 2, diagnosed: 18, codes: 5, distinct: 20 });
+  await expectFloor([many(0), many(1), ...filler(0, 18)], { clean: 18, diagnosed: 2, codes: 5, distinct: 20 });
+  await expectFloor([`// 0\n${source}`, `// 1\n${source}`, `// 2\n${source}`, ...filler(0, 17)], { clean: 17, diagnosed: 3, codes: 1, distinct: 20 });
+  await expectFloor([...fiveCodes, ...filler(0, 16), well(0)], { clean: 17, diagnosed: 3, codes: 5, distinct: 19 });
 });
 
 test('the oracle gets the host options once, and a plain run with none in a copy of the project', { timeout: 120000 }, async t => {
@@ -301,6 +296,16 @@ test('a host option that changes the verdict shows: plain tsc disagrees with the
     const result = run(directory, oracle(directory, { table: await answers(), plain }));
     assert.equal(result.status, 1, name + result.stdout + result.stderr);
     assert.match(result.stdout, /"kind":"host-option-effect"/, name);
+  }
+});
+
+test('plain tsc disagreeing on only the exit code, or only the rows, still shows', { timeout: 120000 }, async t => {
+  const table = await answers();
+  for (const [name, row] of Object.entries({ 'exit code': { ...table[source], exit: 1 }, rows: { ...table[source], stdout: 'a.ts(9,9): error TS9999: Not what the hosted run said.\n' } })) {
+    const directory = setup(t);
+    const result = run(directory, oracle(directory, { table, plain: { [source]: row } }));
+    assert.equal(result.status, 1, name + result.stdout + result.stderr);
+    assert.match(result.stdout, /"project":"synthetic\/ill","kind":"host-option-effect"/, name);
   }
 });
 
