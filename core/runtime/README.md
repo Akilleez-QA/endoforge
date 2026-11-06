@@ -43,7 +43,7 @@ defines all fields and failure states; the
 and append implementation on the host. Every batch produces one receipt per
 candidate, preserving candidate/oracle binding without changing the schema.
 Unknown worker outcomes produce inconclusive receipts and never a retry or a pass.
-`warm: {...}`, off by default, has each cell import the host module and await its exported `warm(options)` before it reports ready. A failure rejects `ready()` and makes that cell's jobs unknown, never a pass. Replacement cells warm themselves and aren't awaited. Cells that exit before reporting ready, as a `warm` calling `process.exit` does, stop being respawned after `size + 2` in a row. `halted` turns true, and later jobs get `outcome_unknown` with reason `workcell_start_failed` and start no cell.
+`warm: {...}`, off by default, has each cell import the host module and await its exported `warm(options)` before it reports ready. A failure, or a `warm` still running after `warmTimeoutMs` (default 60000), rejects `ready()` and makes that cell's jobs unknown, never a pass. Replacement cells warm themselves and aren't awaited. Cells that exit before reporting ready, as a `warm` calling `process.exit` does, stop being respawned after `size + 2` in a row. `halted` turns true, and later jobs get `outcome_unknown` with reason `workcell_start_failed` and start no cell.
 Keep ledger files and other generated evidence outside the source tree.
 
 Run `make isolate-test` for native evaluator parity, multi-isolate chain verification
@@ -216,7 +216,8 @@ where the excess went is inferred. The limit is part of the bound, so a kernel w
 with swap in `/proc/swaps` gets no cgroup. Failure records `cgroup: 'unavailable'`; V8 limits and
 the WASM gate still apply. Cgroup OOM kills without V8 diagnostics remain unknown
 and are not mislabeled as JS heap exhaustion. Host ports remain trusted Node code.
-The supervisor stops waiting 500 ms after a child's exit even if a grandchild still holds its stderr. Without a cgroup, that grandchild keeps running; with one, the group kill ends it.
+The supervisor stops waiting 500 ms after a child's exit even if a grandchild still holds its stderr. Without a cgroup, that grandchild keeps running; with one, the group kill ends it. A cell whose process has exited takes no job during that wait, so the next job goes to its replacement.
+A deadline can't interrupt a thread cell in a blocking native call such as `execSync`: `terminate()` waits for the call to return, so the job can overrun by that call's length. Its outcome stays unknown, never a pass. Use process cells where the bound has to hold for code like that.
 [P-18](../../experiments/P-18-pool-breach/RESULT.md) records N=8 breach results
 for both modes, including the unavailable-delegation limitation.
 
