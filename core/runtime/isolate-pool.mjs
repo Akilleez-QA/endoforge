@@ -178,6 +178,7 @@ export class IsolatePool {
     };
     worker.on(subprocess ? 'close' : 'exit', gone);
     if (subprocess) worker.on('exit', (code, signal) => {
+      cell.stopping = true;
       exitTimer = setTimeout(() => setImmediate(() => {
         if (!exited) worker.stderr.destroy();
         gone(code, signal);
