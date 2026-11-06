@@ -62,8 +62,7 @@ export class IsolatePool {
     this.#isolation = isolation;
     if (!Array.isArray(sharedWasmModules) || !sharedWasmModules.every(({ sha256, path }) => typeof path === 'string' && path &&
         this.#trustedWasmModules.some(entry => entry.sha256 === sha256))) throw new TypeError('sharedWasmModules must name trustedWasmModules digests and paths');
-    if (sharedWasmModules.length && isolation !== 'thread') throw new TypeError('sharedWasmModules requires thread isolation');
-    this.#sharedSources = sharedWasmModules.map(({ sha256, path }) => ({ sha256, path }));
+    this.#sharedSources = isolation === 'thread' ? sharedWasmModules.map(({ sha256, path }) => ({ sha256, path })) : [];
     this.#cgroupLimits = Object.freeze({ memoryMax: Math.max(256, limits.maxOldGenerationSizeMb + 3 * limits.maxYoungGenerationSizeMb + 128) * 1048576,
       cpuMax: '100000 100000', pidsMax: 64, ...cgroupLimits });
     const { memoryMax, cpuMax, pidsMax } = this.#cgroupLimits;

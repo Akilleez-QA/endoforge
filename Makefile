@@ -22,7 +22,7 @@ engine-test:
 	node --test core/engine/*.test.mjs
 
 isolate-test:
-	node --test core/runtime/test/isolate-pool.test.mjs core/runtime/test/isolate-process.test.mjs core/runtime/test/isolate-toolchain.test.mjs core/runtime/test/isolate-limits.test.mjs core/runtime/test/isolate-offheap.test.mjs core/runtime/test/isolate-trusted-cap.test.mjs
+	node --test core/runtime/test/isolate-pool.test.mjs core/runtime/test/isolate-process.test.mjs core/runtime/test/isolate-toolchain.test.mjs core/runtime/test/isolate-limits.test.mjs core/runtime/test/isolate-offheap.test.mjs core/runtime/test/isolate-trusted-cap.test.mjs core/runtime/test/isolate-shared-module.test.mjs
 
 tscheck-setup:
 	npm ci --ignore-scripts --no-audit --no-fund --prefix tools/tscheck

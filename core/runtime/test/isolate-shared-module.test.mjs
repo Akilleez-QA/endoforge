@@ -25,9 +25,17 @@ function compilerFile(t, bytes = compiler) {
 }
 const options = (t, path, extra) => ({ hostPort, wasmMemoryMaxMb: 1, trustedWasmModules, sharedWasmModules: [{ sha256, path }], ...extra });
 
-test('shared modules are validated, thread-only and must be pinned', t => {
+test('process cells compile per cell, since a module cannot cross a process boundary', { timeout: 60000 }, async t => {
+  const { job } = await fixture(t);
+  const pool = new IsolatePool(options(t, compilerFile(t), { size: 1, isolation: 'process' }));
+  t.after(() => pool.close());
+  const result = await pool.run(job(['pass'], { action: 'instantiate', bytes: compiler, pages: 1, checkMemory: 2 }));
+  assert.equal(result.status, 'completed');
+  assert.equal(result.sharedWasmModules, undefined);
+});
+
+test('shared modules are validated and must be pinned', t => {
   const path = compilerFile(t);
-  assert.throws(() => new IsolatePool(options(t, path, { isolation: 'process' })), /thread/);
   assert.throws(() => new IsolatePool(options(t, path, { trustedWasmModules: [] })), /sharedWasmModules/);
   assert.throws(() => new IsolatePool(options(t, path, { sharedWasmModules: [{ sha256 }] })), /sharedWasmModules/);
 });
