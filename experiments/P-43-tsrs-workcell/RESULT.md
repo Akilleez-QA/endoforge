@@ -26,10 +26,12 @@ One cell on `medium/ill`: the module compiled once in 1,222 ms, the guard's inst
 | Cells | Checks/s (3 reps) | Check p50 | Check p95 | Peak RSS |
 |---|---|---|---|---|
 | 1 | 3.3, 3.1, 3.3 | 136–142 ms | 140–159 ms | 0.6 GiB |
-| 4 | 11.3, 11.3, 11.4 | 122–133 ms | 137–168 ms | 1.9 GiB |
-| 8 | 16.5, 14.4, 14.4 | 153–173 ms | 193–222 ms | 3.2 GiB |
-| 16 | 16.6, 15.5, 14.1 | 285–308 ms | 388–451 ms | 6.0 GiB |
-| 28 | 11.7, 11.5, 11.8 | 622–722 ms | 1,134–1,586 ms | 9.3 GiB |
+| 4 | 11.3, 11.3, 11.4 | 122–133 ms | 137–168 ms | 1.8 GiB |
+| 8 | 16.5, 14.4, 14.4 | 153–173 ms | 193–222 ms | 3.1 GiB |
+| 16 | 16.6, 15.5, 14.1 | 285–308 ms | 388–451 ms | 5.8 GiB |
+| 28 | 11.7, 11.5, 11.8 | 622–722 ms | 1,134–1,586 ms | 9.0 GiB |
+
+Peak RSS is the largest `cellRssMiB` of the three reps, divided by 1,024. It was first published divided by 1,000.
 
 Throughput flattens by 8 cells and falls by 28. That is narrower than P-17's 20–32 for AssemblyScript kernels. This probe doesn't separate the compiler, the ledger, the evaluator's Python frozen check or the shared desktop as the cause.
 
@@ -37,7 +39,9 @@ Throughput flattens by 8 cells and falls by 28. That is narrower than P-17's 20�
 
 **The first run failed:** 7 of 7 siblings lost and no replacement. It is kept as `breach_first_run_invalid`. The harness had lowered the heap to 256 MiB, and a healthy job alone, with no breach and no neighbour, also ran out of memory at that limit, which shows the arm did not test containment. It also shows that a `tsrs` cell needs more than 256 MiB of old generation on this input.
 
-With the unchanged limits and siblings held mid-job until the breach finished: the breached cell reported `ERR_WORKER_OUT_OF_MEMORY`, **0 of 7 siblings were lost**, and the replacement completed. That is one run, and it is thread mode.
+With the unchanged limits and siblings held mid-job until the breach finished: the breached cell reported `ERR_WORKER_OUT_OF_MEMORY`, **0 of 7 siblings were lost**, and a later job completed. That job ran on sibling cell 1, not on the replacement, since the siblings had been released by then (`replacementWorkcell` in the receipt). So this run doesn't show the replacement cell working. That is one run, and it is thread mode.
+
+Amendment 2 adds a check that does, with the prediction in [PRECOMMIT.md](PRECOMMIT.md) and the result in [its receipt](receipt/amendment-2-replacement.json). With 7 siblings still held after the breach of cell 8, the next job ran on new cell 9 and completed, and 0 of 7 siblings were lost. **The prediction held.** That is one run on a one-file synthetic input, since the original workload isn't on this machine.
 
 ## What this does not show
 

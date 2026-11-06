@@ -10,10 +10,19 @@ import { trustedWasmPolicy } from './isolate-wasm.mjs';
 
 const positive = value => Number.isSafeInteger(value) && value > 0;
 const stackMargin = 192;
+const stackFlag = (stackKb, args) => {
+  const block = [...args, ...Object.entries(process.env).map(([name, value]) => `${name}=${value}`)];
+  const bytes = block.reduce((total, entry) => total + Buffer.byteLength(entry) + 9, 0);
+  const size = stackKb - stackMargin - Math.ceil(bytes / 1024);
+  if (size < stackMargin) throw new Error('stackSizeMb is too small for this environment and its arguments');
+  return `--stack-size=${size}`;
+};
 const requireProcessStack = stackSizeMb => {
   try { execFileSync('/bin/sh', ['-c', 'ulimit -s "$1"', 'sh', String(stackSizeMb * 1024)], { stdio: 'ignore' }); }
   catch { throw new Error('this host cannot raise the process stack limit to stackSizeMb'); }
 };
+const killGraceMs = 1000;
+const exitGraceMs = 500;
 
 export class IsolatePool {
   #size;
@@ -37,6 +46,7 @@ export class IsolatePool {
   #sharedModules = [];
   #sharing;
   #warmOptions;
+  #startFailures = 0;
 
   constructor({ hostPort, size = availableParallelism(), resourceLimits = {}, wasmMemoryMaxMb = 64,
     isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, warm, jobTimeoutMs } = {}) {
@@ -96,6 +106,10 @@ export class IsolatePool {
       busy: [...this.#cells].filter(cell => cell.job).length, queued: this.#queue.length };
   }
 
+  get halted() {
+    return this.#startFailures >= this.#size + 2;
+  }
+
   #share() {
     return this.#sharing ||= (async () => {
       if (!this.#sharedSources.length) return;
@@ -150,7 +164,7 @@ export class IsolatePool {
     const stackKb = this.#limits.stackSizeMb && this.#limits.stackSizeMb * 1024;
     const worker = subprocess ? (stackKb
       ? spawn('/bin/sh', ['-c', 'ulimit -s "$1" && shift && exec "$@"', 'sh', String(stackKb), process.execPath, ...heapArgv,
-        `--stack-size=${stackKb - stackMargin}`, fileURLToPath(entry), ...processArguments], processOptions)
+        stackFlag(stackKb, [process.execPath, ...heapArgv, fileURLToPath(entry), ...processArguments]), fileURLToPath(entry), ...processArguments], processOptions)
       : fork(entry, processArguments, { execArgv: heapArgv, ...processOptions })) : new Worker(entry, {
       resourceLimits: this.#limits, execArgv: [],
       workerData: { ...policy, sharedWasmModules: this.#sharedModules },
@@ -166,12 +180,21 @@ export class IsolatePool {
         if (/FATAL ERROR:.*(?:heap out of memory|heap limit|Allocation failed)/i.test(tail)) cell.error = { code: 'ERR_WORKER_OUT_OF_MEMORY' };
       });
       worker.postMessage = message => worker.send(message, error => { if (error) { cell.error = error; worker.kill(); } });
-      worker.terminate = () => new Promise(resolve => { worker.once('close', resolve); worker.kill(); });
+      worker.terminate = () => new Promise(resolve => {
+        const kill = setTimeout(() => worker.kill('SIGKILL'), killGraceMs);
+        cell.gone.then(() => { clearTimeout(kill); resolve(); });
+        worker.kill();
+      });
     }
     cell.started = new Promise(resolve => { cell.markStarted = resolve; });
+    cell.gone = new Promise(resolve => { cell.markGone = resolve; });
     this.#cells.add(cell);
     worker.on('message', result => {
-      if (result?.type === 'ready') return cell.markStarted(!result.warmError);
+      if (result?.type === 'ready') {
+        cell.ready = true;
+        this.#startFailures = 0;
+        return cell.markStarted(!result.warmError);
+      }
       if (!cell.job) return;
       if (result.type === 'limit') {
         cell.error = { code: result.error };
@@ -184,7 +207,13 @@ export class IsolatePool {
       this.#pump();
     });
     worker.on('error', error => { cell.error = error; });
-    worker.on(subprocess ? 'close' : 'exit', (code, signal) => {
+    let exited = false;
+    let exitTimer;
+    const gone = (code, signal) => {
+      if (exited) return;
+      exited = true;
+      clearTimeout(exitTimer);
+      cell.markGone();
       this.#cells.delete(cell);
       cell.markStarted(false);
       releaseCgroup(directory);
@@ -195,29 +224,44 @@ export class IsolatePool {
         reason: cell.error?.code === 'ERR_WORKCELL_DEADLINE' ? 'deadline' : limited ? (subprocess ? (cell.error.code === 'ERR_WORKER_OUT_OF_MEMORY' ? 'heap' : 'wasm_memory') : 'limit') : 'worker_exit',
         error: cell.error?.code || null, exitCode: code, signal: signal || null, report: null, ...cell.metadata,
         workcell: cell.id, resourceLimits: this.#limits, wasmMemoryMaxMb: this.#wasmMemoryMaxMb });
+      if (!cell.ready && cell.error?.code !== 'ERR_WORKCELL_DEADLINE') this.#startFailures += 1;
       if (!this.#stopping) {
-        try { this.#spawn(); } catch { }
+        if (!this.halted) try { this.#spawn(); } catch { }
         this.#pump();
       }
+    };
+    worker.on(subprocess ? 'close' : 'exit', gone);
+    if (subprocess) worker.on('exit', (code, signal) => {
+      exitTimer = setTimeout(() => setImmediate(() => {
+        if (!exited) worker.stderr.destroy();
+        gone(code, signal);
+      }), exitGraceMs);
     });
     return cell;
   }
 
   #pump() {
     while (this.#queue[0]?.ready) {
-      let cell = [...this.#cells].find(cell => !cell.job);
-      if (!cell && this.#cells.size >= this.#size) return;
+      let cell = [...this.#cells].find(cell => !cell.job && !cell.stopping);
+      if (!cell && (this.halted ? this.#cells.size : this.#cells.size >= this.#size)) return;
       const job = this.#queue.shift();
+      if (!cell && this.halted) {
+        this.#finish(job, { status: 'outcome_unknown', reason: 'workcell_start_failed', report: null, workcell: null,
+          isolation: this.#isolation, resourceLimits: this.#limits, wasmMemoryMaxMb: this.#wasmMemoryMaxMb });
+        continue;
+      }
       try {
         cell ||= this.#spawn();
         cell.job = job;
         if (this.#jobTimeoutMs) job.deadline = setTimeout(() => {
           cell.error = { code: 'ERR_WORKCELL_DEADLINE' };
+          cell.stopping = true;
           cell.worker.terminate();
         }, this.#jobTimeoutMs);
         const { reference, candidates, portOptions } = job.data;
         cell.worker.postMessage({ reference, candidates, portOptions, hostPort: this.#hostPort });
       } catch (error) {
+        clearTimeout(job.deadline);
         if (cell) cell.job = null;
         this.#finish(job, { status: 'outcome_unknown', reason: error.message,
           report: null, workcell: cell?.id ?? null, ...cell?.metadata, resourceLimits: this.#limits, wasmMemoryMaxMb: this.#wasmMemoryMaxMb });

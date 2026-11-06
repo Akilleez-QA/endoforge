@@ -47,7 +47,7 @@ const result = { node: process.version, cpu: execFileSync('sh', ['-c', "grep -m1
 const options = (name, project, reportFile, extra) => ({ basePort, projects: { pass: project }, reportFile, ...extra });
 
 const arm = process.env.P43_ARM;
-if (arm !== 'breach') {
+if (arm !== 'breach' && arm !== 'replacement') {
 const parityPool = new IsolatePool({ hostPort, size: 1, jobTimeoutMs: JOB_MS, prewarm: true, ...WORKCELL });
 await parityPool.ready();
 for (const name of projects) {
@@ -112,12 +112,14 @@ const breachPool = new IsolatePool({ hostPort: breachPort, size: 8, jobTimeoutMs
 await breachPool.ready();
 const siblings = Array.from({ length: 7 }, () => breachPool.run(job(['pass'], breachOptions({ baseOptions: { release } }))));
 const breached = await breachPool.run(job(['pass'], breachOptions({ breach: true })));
+const held = arm === 'replacement' ? await breachPool.run(job(['pass'], breachOptions())) : null;
 writeFileSync(release, 'go');
 const healthy = await Promise.all(siblings);
 const replacement = await breachPool.run(job(['pass'], breachOptions()));
 await breachPool.close();
 const reasons = healthy.map(r => r.reason ?? null);
 result.breach = { status: breached.status, reason: breached.reason, error: breached.error ?? null, breachedWorkcell: breached.workcell, siblingWorkcells: healthy.map(r => r.workcell), siblingsLost: healthy.filter(r => r.status !== 'completed').length, siblingReasons: reasons, siblings: healthy.length, replacementStatus: replacement.status, replacementWorkcell: replacement.workcell };
+if (held) result.breach.heldReplacement = { status: held.status, workcell: held.workcell, stage: held.report?.attempts?.[0]?.stage ?? null };
 console.log('breach', JSON.stringify(result.breach));
 
 for (const fn of cleanup) await fn();

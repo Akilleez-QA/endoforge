@@ -23,6 +23,10 @@ function compilerFile(t, bytes = compiler) {
   writeFileSync(path, Uint8Array.from(bytes));
   return path;
 }
+const bounded = [0, 97, 115, 109, 1, 0, 0, 0,
+  1, 6, 1, 0x60, 1, 0x7f, 1, 0x7f, 3, 2, 1, 0, 5, 4, 1, 1, 1, 1,
+  7, 17, 2, 6, 109, 101, 109, 111, 114, 121, 2, 0, 4, 103, 114, 111, 119, 0, 0,
+  10, 8, 1, 6, 0, 0x20, 0, 0x40, 0, 0x0b];
 const options = (t, path, extra) => ({ hostPort, wasmMemoryMaxMb: 1, trustedWasmModules, sharedWasmModules: [{ sha256, path }], ...extra });
 
 test('process cells compile per cell, since a module cannot cross a process boundary', { timeout: 60000 }, async t => {
@@ -95,6 +99,25 @@ test('bytes that do not match the digest fall back to per-cell compile', { timeo
     assert.deepEqual(result.sharedWasmModules, []);
     await pool.close();
   }
+});
+
+test('other valid bytes get their own module, not the shared one', { timeout: 60000 }, async t => {
+  const { job } = await fixture(t);
+  const pool = new IsolatePool(options(t, compilerFile(t), { size: 1 }));
+  t.after(() => pool.close());
+  const other = await pool.run(job(['pass'], { action: 'instantiate', bytes: bounded, pages: 1, expectedOldPages: -1, checkMemory: 1 }));
+  assert.equal(other.status, 'completed', other.reason);
+  assert.equal(other.receipts[0].record.data.outcome_state, 'passed');
+  assert.deepEqual(other.sharedWasmModules, [sha256]);
+});
+
+test('a file with other valid bytes is never shared under the pinned digest', { timeout: 60000 }, async t => {
+  const { job } = await fixture(t);
+  const pool = new IsolatePool(options(t, compilerFile(t, bounded), { size: 1 }));
+  t.after(() => pool.close());
+  const result = await pool.run(job(['pass'], { action: 'instantiate', bytes: compiler, pages: 1, checkMemory: 2 }));
+  assert.equal(result.status, 'completed', result.reason);
+  assert.deepEqual(result.sharedWasmModules, []);
 });
 
 test('closing during the shared compile leaves no cell behind', { timeout: 60000 }, async t => {
