@@ -125,3 +125,33 @@ test('a cell that fails to start a few times recovers once one reports ready', {
   assert.equal(recovered.receipts[0].record.data.outcome_state, 'passed');
   assert.equal(pool.halted, false);
 });
+
+for (const kib of [512, 1536]) {
+  test(`process: with ${kib} KiB of environment, a stack overflow is still a RangeError, not SIGSEGV`, { timeout: 60000 }, async t => {
+    const { job } = await fixture(t);
+    const names = Array.from({ length: Math.ceil(kib / 100) }, (_, index) => `EF_TEST_STACK_ENV_${index}`);
+    for (const name of names) process.env[name] = 'x'.repeat(100 * 1024);
+    t.after(() => { for (const name of names) delete process.env[name]; });
+    const pool = new IsolatePool({ hostPort: fileURLToPath(new URL('./fixtures/recurse-port.mjs', import.meta.url)), size: 1, isolation: 'process', resourceLimits: { stackSizeMb: 64 } });
+    t.after(() => pool.close());
+    const overflowed = await pool.run(job(['pass'], { recurse: true }));
+    assert.equal(overflowed.signal, undefined, 'the cell did not die');
+    assert.equal(overflowed.status, 'outcome_unknown');
+    assert.notEqual(overflowed.receipts[0].record.data.outcome_state, 'passed');
+    const next = await pool.run(job(['pass'], {}));
+    assert.equal(next.workcell, overflowed.workcell);
+  });
+}
+
+test('a process stack too small for the environment is refused when the cell starts', { timeout: 60000 }, async t => {
+  const { job } = await fixture(t);
+  const names = Array.from({ length: 12 }, (_, index) => `EF_TEST_STACK_ENV_${index}`);
+  for (const name of names) process.env[name] = 'x'.repeat(100 * 1024);
+  t.after(() => { for (const name of names) delete process.env[name]; });
+  const pool = new IsolatePool({ hostPort, size: 1, isolation: 'process', resourceLimits: { stackSizeMb: 1 } });
+  t.after(() => pool.close());
+  const result = await pool.run(job());
+  assert.equal(result.status, 'outcome_unknown');
+  assert.match(result.reason, /stackSizeMb is too small/);
+  assert.notEqual(result.receipts[0].record.data.outcome_state, 'passed');
+});

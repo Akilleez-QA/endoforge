@@ -10,6 +10,13 @@ import { trustedWasmPolicy } from './isolate-wasm.mjs';
 
 const positive = value => Number.isSafeInteger(value) && value > 0;
 const stackMargin = 192;
+const stackFlag = (stackKb, args) => {
+  const block = [...args, ...Object.entries(process.env).map(([name, value]) => `${name}=${value}`)];
+  const bytes = block.reduce((total, entry) => total + Buffer.byteLength(entry) + 9, 0);
+  const size = stackKb - stackMargin - Math.ceil(bytes / 1024);
+  if (size < stackMargin) throw new Error('stackSizeMb is too small for this environment and its arguments');
+  return `--stack-size=${size}`;
+};
 const requireProcessStack = stackSizeMb => {
   try { execFileSync('/bin/sh', ['-c', 'ulimit -s "$1"', 'sh', String(stackSizeMb * 1024)], { stdio: 'ignore' }); }
   catch { throw new Error('this host cannot raise the process stack limit to stackSizeMb'); }
@@ -157,7 +164,7 @@ export class IsolatePool {
     const stackKb = this.#limits.stackSizeMb && this.#limits.stackSizeMb * 1024;
     const worker = subprocess ? (stackKb
       ? spawn('/bin/sh', ['-c', 'ulimit -s "$1" && shift && exec "$@"', 'sh', String(stackKb), process.execPath, ...heapArgv,
-        `--stack-size=${stackKb - stackMargin}`, fileURLToPath(entry), ...processArguments], processOptions)
+        stackFlag(stackKb, [process.execPath, ...heapArgv, fileURLToPath(entry), ...processArguments]), fileURLToPath(entry), ...processArguments], processOptions)
       : fork(entry, processArguments, { execArgv: heapArgv, ...processOptions })) : new Worker(entry, {
       resourceLimits: this.#limits, execArgv: [],
       workerData: { ...policy, sharedWasmModules: this.#sharedModules },
