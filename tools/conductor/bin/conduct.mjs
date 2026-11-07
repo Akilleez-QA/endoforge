@@ -19,6 +19,7 @@ import { loadJob } from '../../job/lib/load.mjs';
 import * as C from '../lib/commands.mjs';
 import { conduct } from '../lib/daemon.mjs';
 import { loadState } from '../lib/state.mjs';
+import { emit } from '../../job/lib/events.mjs';
 
 const HERE = fileURLToPath(import.meta.url);
 export async function main(argv) {
@@ -43,7 +44,7 @@ export async function main(argv) {
       const s = await conduct(f, { load: loadJob, handlers, tickMs: Number(flag('--tick') ?? 5) * 1000, maxTicks: Number(flag('--max-ticks') ?? Infinity) }); out(`phase ${s.phase}`); return 0; }
     if (cmd === 'unit') {
       const unit = `endoforge-conductor-${job.id}`;
-      const a = ['systemd-run', '--user', `--unit=${unit}`, '--slice=heavy.slice', '--property=Restart=on-failure', '--property=RestartSec=10', `--setenv=PATH=${process.env.PATH}`,
+      const a = ['systemd-run', '--user', `--unit=${unit}`, '--slice=heavy.slice', '--property=Restart=on-failure', '--property=RestartSec=10', '--property=RestartPreventExitStatus=78', `--setenv=PATH=${process.env.PATH}`,
         '--', process.execPath, HERE, 'run', f];
       if (rest.includes('--dry-run')) { out(a.join(' ')); return 0; }
       const r = spawnSync(a[0], a.slice(1), { stdio: 'inherit' }); if (r.status === 0) out(`${unit} started; endoforge job status ${f}`); return r.status ?? 1;
@@ -61,7 +62,11 @@ export async function main(argv) {
     }
     if (cmd === 'stop') { C.stop(job, f, o); out('stop requested; the conductor stops its lanes and ends the job'); return 0; }
     console.error(`unknown command ${cmd}`); return 2;
-  } catch (e) { console.error(`conduct ${cmd}: ${e.message}`); return e.exitCode ?? 1; }
+  } catch (e) {
+    console.error(`conduct ${cmd}: ${e.message}`);
+    if (cmd === 'run' && e.exitCode === 78) emit(job, f, { kind: 'NEEDS-YOU', summary: `the conductor stopped: ${e.message}` });
+    return e.exitCode ?? 1;
+  }
 }
 export { loadState };
 if (process.argv[1] && fs.realpathSync(process.argv[1]) === HERE) process.exitCode = await main(process.argv.slice(2));
