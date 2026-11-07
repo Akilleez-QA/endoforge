@@ -59,32 +59,36 @@ export function specificationProblems(overlay) {
   if (tests !== null) problems.push(...testProblems(tests));
   return problems.length ? { problems } : null;
 }
-export async function agentStage({ ask, messages, overlay, editable, prompt, check, receipt, limits: { maxTurns, maxTokens } }) {
+export async function agentStage({ ask, messages, overlay, editable, prompt, check, receipt, limits }) {
   messages.push({ role: 'user', content: prompt });
-  for (let turn = 0; turn < maxTurns; turn++) {
-    const reply = await ask(messages, maxTokens - receipt.tokens);
-    receipt.turns += 1;
-    if (!Number.isSafeInteger(reply?.usage) || reply.usage < 0) throw Error('invalid usage');
-    receipt.tokens += reply.usage;
-    if (receipt.tokens >= maxTokens) return 'max_tokens';
-    messages.push({ role: 'assistant', content: reply.text });
-    const parsed = parseReply(reply.text);
-    if (!parsed) { messages.push({ role: 'user', content: JSON.stringify({ error: 'reply must be one JSON object with a calls array' }) }); continue; }
-    if (parsed.calls.length > MAX_CALLS) { messages.push({ role: 'user', content: JSON.stringify({ error: 'too many calls' }) }); continue; }
-    const results = [];
-    let finished = parsed.calls.length === 0, failures = null, checked = false;
-    for (const call of parsed.calls) {
-      receipt.tool_calls += 1;
-      if (call?.name === 'done') { finished = true; continue; }
-      if (call?.name === 'check') { failures = await check(); checked = true; results.push({ check: failures ?? 'passed' }); continue; }
-      results.push({ path: call?.path, ...applyCall(overlay, editable, call) });
-    }
-    if (finished) {
-      if (!checked) { failures = await check(); checked = true; }
-      if (!failures) return 'stop';
-      results.push({ check: failures });
-    }
-    messages.push({ role: 'user', content: JSON.stringify({ results, instructions: 'Fix what failed, then done.' }) });
+  for (let turn = 0; turn < limits.maxTurns; turn++) {
+    const exit = await takeReply({ messages, overlay, editable, check, receipt, limits }, await ask(messages, limits.maxTokens - receipt.tokens));
+    if (exit) return exit;
   }
   return 'max_turns';
+}
+export async function takeReply({ messages, overlay, editable, check, receipt, limits: { maxTokens } }, reply) {
+  receipt.turns += 1;
+  if (!Number.isSafeInteger(reply?.usage) || reply.usage < 0) throw Error('invalid usage');
+  receipt.tokens += reply.usage;
+  if (receipt.tokens >= maxTokens) return 'max_tokens';
+  messages.push({ role: 'assistant', content: reply.text });
+  const parsed = parseReply(reply.text);
+  if (!parsed) { messages.push({ role: 'user', content: JSON.stringify({ error: 'reply must be one JSON object with a calls array' }) }); return null; }
+  if (parsed.calls.length > MAX_CALLS) { messages.push({ role: 'user', content: JSON.stringify({ error: 'too many calls' }) }); return null; }
+  const results = [];
+  let finished = parsed.calls.length === 0, failures = null, checked = false;
+  for (const call of parsed.calls) {
+    receipt.tool_calls += 1;
+    if (call?.name === 'done') { finished = true; continue; }
+    if (call?.name === 'check') { failures = await check(); checked = true; results.push({ check: failures ?? 'passed' }); continue; }
+    results.push({ path: call?.path, ...applyCall(overlay, editable, call) });
+  }
+  if (finished) {
+    if (!checked) { failures = await check(); checked = true; }
+    if (!failures) return 'stop';
+    results.push({ check: failures });
+  }
+  messages.push({ role: 'user', content: JSON.stringify({ results, instructions: 'Fix what failed, then done.' }) });
+  return null;
 }

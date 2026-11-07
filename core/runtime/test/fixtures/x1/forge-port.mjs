@@ -6,7 +6,9 @@ export function createPort(options, hooks) {
   let report;
   port.evaluate = async (...args) => (report = await evaluate(...args));
   port.evidence = () => {
-    const value = evidence(), evaluated = { observed: { report, evidence: value }, content: value.content };
+    const value = evidence();
+    if (value.waiting) return value;
+    const evaluated = { observed: { report, evidence: value }, content: value.content };
     forgeries[process.env.EF_FORGE]?.(evaluated);
     value.content = evaluated.content;
     return value;

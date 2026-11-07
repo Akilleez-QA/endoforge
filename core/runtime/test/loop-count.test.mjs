@@ -20,7 +20,7 @@ test('a real syscall counter sees no spawn or write before commit in the cell, a
   execFileSync('gcc', ['-O1', '-o', tracer, here('../../../experiments/P-50-in-isolate/syscount.c')]);
   const extra = { CODEX_HOME: join(root, 'unused-home'), ENDOFORGE_CODEX_TEST_DOUBLE: '1', ENDOFORGE_ASC_CMD: here('../../../tools/asc/node_modules/.bin/asc'),
     ENDOFORGE_CODEX_CMD: JSON.stringify([process.execPath, here('./fixtures/x1/fake-codex.mjs')]) };
-  for (const arm of ['current', 'isolate-thread', 'isolate-process', 'agent-thread', 'agent-process']) {
+  for (const arm of ['current', 'isolate-thread', 'isolate-process', 'agent-thread', 'agent-process', 'agent-release-process']) {
     const output = join(root, arm), log = join(root, `${arm}.jsonl`);
     const plan = join(root, `${arm}.plan.json`);
     writeFileSync(plan, JSON.stringify({ arm, output, env: extra, inputs: [input, input] }));
@@ -30,10 +30,14 @@ test('a real syscall counter sees no spawn or write before commit in the cell, a
     assert.deepEqual(rows.map(row => row.promoted), [true, true]);
     const seen = windows(log);
     for (const row of rows) {
-      const { toAdmit, toCommit, commit } = seen[row.id];
+      const { toAdmit, toCommit, commit, park } = seen[row.id];
       if (arm.startsWith('agent')) {
         assert.deepEqual([toAdmit.spawns, toAdmit.execs, toAdmit.writes], [[], [], []]);
-        assert.deepEqual(row.requestsAfter, ['admit', 'commit']);
+        assert.deepEqual(row.requestsAfter, arm.includes('release') ? ['admit', 'park', 'commit'] : ['admit', 'commit']);
+      }
+      if (arm.includes('release')) {
+        assert.deepEqual([park.spawns, park.execs], [[], []]);
+        assert(park.writes.length > 0 && park.writes.every(line => /\/ledger\.sqlite(-wal|-shm)?$/.test(line)), park.writes.join('\n'));
       }
       if (arm === 'current') {
         assert(toCommit.spawns.length >= 6, `control saw ${toCommit.spawns.length} spawns`);
@@ -44,7 +48,7 @@ test('a real syscall counter sees no spawn or write before commit in the cell, a
         assert.deepEqual(toCommit.writes, []);
         assert.deepEqual(commit.spawns, []);
         if (arm.startsWith('isolate')) assert.deepEqual(row.requestsAfter, ['commit']);
-        assert.equal(row.jobsAfter, 1);
+        assert.equal(row.jobsAfter, arm.includes('release') ? 3 : 1);
       }
     }
   }

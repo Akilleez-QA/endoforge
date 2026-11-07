@@ -57,6 +57,7 @@ export class IsolatePool {
   #frozenThroughLedger;
   #hostCall;
   #retireAfterJobs;
+  #busyMs = 0;
 
   constructor({ hostPort, size = availableParallelism(), resourceLimits = {}, wasmMemoryMaxMb = 64,
     isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, warm, warmTimeoutMs = 60000, jobTimeoutMs, jobDeadlineMs, hostCall, hostCalls, frozenThroughLedger = false, cellEnv, cellFlags = [], ledgerBridge, retireAfterJobs = 256 } = {}) {
@@ -132,6 +133,10 @@ export class IsolatePool {
   get stats() {
     return { size: this.#size, workers: this.#cells.size,
       busy: [...this.#cells].filter(cell => cell.job).length, queued: this.#queue.length };
+  }
+
+  get busyMs() {
+    return this.#busyMs;
   }
 
   get halted() {
@@ -302,6 +307,7 @@ export class IsolatePool {
       try {
         cell ||= this.#spawn();
         cell.job = job;
+        job.dispatched = performance.now();
         this.#arm(cell, job);
         if (this.#jobDeadlineMs) job.total = setTimeout(() => this.#stop(cell), this.#jobDeadlineMs);
         const { reference, candidates, portOptions } = job.data;
@@ -343,6 +349,8 @@ export class IsolatePool {
   }
 
   #disarm(job) {
+    if (job.dispatched) this.#busyMs += performance.now() - job.dispatched;
+    job.dispatched = 0;
     clearTimeout(job.deadline);
     clearTimeout(job.total);
     clearInterval(job.liveness);

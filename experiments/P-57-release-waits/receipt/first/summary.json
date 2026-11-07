@@ -1,0 +1,459 @@
+{
+ "commit": "434b5a032f7e55728153fd59635a48b005515fab",
+ "precommit": "fe6213a564ef93baa55414ba96cf576ad9596d84c4732792d572ad72923258a6",
+ "testDouble": true,
+ "node": "v26.13.0",
+ "cpus": "AMD Ryzen 9 7950X 16-Core Processor",
+ "parallelism": 32,
+ "totalMemory": 134143877120,
+ "corpus": {
+  "digest": "35b10f688e9f383c0c1cfa2c14b5351c2215931bd6d4b214e210e976df772ea6",
+  "kernels": 21
+ },
+ "started": "2026-11-07T05:33:39.159Z",
+ "arms": {
+  "serial-hold": {
+   "waits": "hold",
+   "size": 1,
+   "count": 105,
+   "width": 1,
+   "delay": [
+    0,
+    0
+   ],
+   "loadStart": 4.72,
+   "loadEnd": 5.32,
+   "label": "acceptance",
+   "wallMs": 5014.360814000001,
+   "throughputPerMinute": 1256.391439245959,
+   "promoted": 90,
+   "errors": 0,
+   "wrongVerdicts": [],
+   "nonModel": {
+    "n": 105,
+    "p50": 49.5555860000004,
+    "p95": 58.97836600000028,
+    "max": 72.81137299999955
+   },
+   "model": {
+    "n": 105,
+    "p50": 0.18520800000078452,
+    "p95": 0.40773299999909796,
+    "max": 0.674739000000045
+   },
+   "stages": {
+    "freeze": {
+     "n": 105,
+     "p50": 2.4845839999998134,
+     "p95": 3.262340999999651,
+     "max": 4.390905999999632
+    },
+    "compile": {
+     "n": 105,
+     "p50": 35.57426899999973,
+     "p95": 43.031744000000344,
+     "max": 50.60980299999983
+    },
+    "gate": {
+     "n": 105,
+     "p50": 3.7993989999995392,
+     "p95": 7.710992999999689,
+     "max": 8.142469000000347
+    },
+    "ledger": {
+     "n": 105,
+     "p50": 2.712709999999788,
+     "p95": 4.680926000000909,
+     "max": 13.10747099999935
+    }
+   },
+   "parkMs": {
+    "n": 0,
+    "p50": null,
+    "p95": null,
+    "max": null
+   },
+   "crossings": {
+    "bridgeRequestsPerCandidate": {
+     "admit": 1,
+     "commit": 1
+    },
+    "jobsPerCandidate": 1
+   },
+   "busyAtSend": {
+    "values": [
+     1
+    ],
+    "sends": 225,
+    "zero": 0
+   },
+   "peakInFlight": 1,
+   "peakWaiting": 1,
+   "occupancy": 0.928859137937575,
+   "usefulOccupancy": 0.9244522111487612,
+   "memory": {
+    "idleBytes": 1456803840,
+    "peakBytes": 1456803840,
+    "peakProcesses": 3,
+    "inFlightPerGiB": 0.7370531258347041
+   }
+  },
+  "serial-release": {
+   "waits": "release",
+   "size": 1,
+   "count": 105,
+   "width": 1,
+   "delay": [
+    0,
+    0
+   ],
+   "loadStart": 5.32,
+   "loadEnd": 5.3,
+   "label": "acceptance",
+   "wallMs": 5296.432551,
+   "throughputPerMinute": 1189.4798884601146,
+   "promoted": 90,
+   "errors": 0,
+   "wrongVerdicts": [],
+   "nonModel": {
+    "n": 105,
+    "p50": 49.63760799999909,
+    "p95": 64.4638649999979,
+    "max": 69.31939799999964
+   },
+   "model": {
+    "n": 105,
+    "p50": 0.15285799999946903,
+    "p95": 0.3428249999979016,
+    "max": 0.46043899999676796
+   },
+   "stages": {
+    "freeze": {
+     "n": 105,
+     "p50": 2.3962850000007165,
+     "p95": 3.308005000000776,
+     "max": 13.434431000001496
+    },
+    "compile": {
+     "n": 105,
+     "p50": 36.47274799999923,
+     "p95": 47.470596000000114,
+     "max": 55.54101300000002
+    },
+    "gate": {
+     "n": 105,
+     "p50": 3.3655210000006264,
+     "p95": 5.267084000000068,
+     "max": 9.59092899999996
+    },
+    "ledger": {
+     "n": 105,
+     "p50": 2.3321089999990363,
+     "p95": 3.7478360000004614,
+     "max": 11.391901000000871
+    }
+   },
+   "parkMs": {
+    "n": 120,
+    "p50": 1.0189869999994698,
+    "p95": 1.494351999999708,
+    "max": 2.0523689999990893
+   },
+   "crossings": {
+    "bridgeRequestsPerCandidate": {
+     "admit": 1,
+     "park": 1.1428571428571428,
+     "commit": 1
+    },
+    "jobsPerCandidate": 3.142857142857143
+   },
+   "busyAtSend": {
+    "values": [
+     0
+    ],
+    "sends": 225,
+    "zero": 225
+   },
+   "peakInFlight": 1,
+   "peakWaiting": 1,
+   "occupancy": 0.9103818518541541,
+   "usefulOccupancy": 0.9103818518541541,
+   "memory": {
+    "idleBytes": 1136521216,
+    "peakBytes": 1143771136,
+    "peakProcesses": 3,
+    "inFlightPerGiB": 0.9387733176718318
+   }
+  },
+  "swarm-hold": {
+   "waits": "hold",
+   "size": 4,
+   "count": 64,
+   "width": 64,
+   "delay": [
+    2000,
+    4000
+   ],
+   "loadStart": 5.3,
+   "loadEnd": 2.76,
+   "label": "acceptance",
+   "wallMs": 105140.73020399999,
+   "throughputPerMinute": 36.52247794503057,
+   "promoted": 55,
+   "errors": 0,
+   "wrongVerdicts": [],
+   "nonModel": {
+    "n": 64,
+    "p50": 47512.0227,
+    "p95": 92355.48884,
+    "max": 98848.072449
+   },
+   "model": {
+    "n": 64,
+    "p50": 6292.30399,
+    "p95": 8159.03079400002,
+    "max": 10556.20554000001
+   },
+   "stages": {
+    "freeze": {
+     "n": 64,
+     "p50": 2.601729999998497,
+     "p95": 4.509833999996772,
+     "max": 13.08772499999759
+    },
+    "compile": {
+     "n": 64,
+     "p50": 43.749712000004365,
+     "p95": 99.74987899999542,
+     "max": 143.8560290000023
+    },
+    "gate": {
+     "n": 64,
+     "p50": 3.9062320000011823,
+     "p95": 8.16545600000245,
+     "max": 10.234920999981114
+    },
+    "ledger": {
+     "n": 64,
+     "p50": 2.5931299999938346,
+     "p95": 3.995073999998567,
+     "max": 13.349423999999999
+    }
+   },
+   "parkMs": {
+    "n": 0,
+    "p50": null,
+    "p95": null,
+    "max": null
+   },
+   "crossings": {
+    "bridgeRequestsPerCandidate": {
+     "admit": 1,
+     "commit": 1
+    },
+    "jobsPerCandidate": 1
+   },
+   "busyAtSend": {
+    "values": [
+     3,
+     4
+    ],
+    "sends": 137,
+    "zero": 0
+   },
+   "peakInFlight": 5,
+   "peakWaiting": 4,
+   "occupancy": 0.9818274429182413,
+   "usefulOccupancy": 0.009544472090434878,
+   "memory": {
+    "idleBytes": 2309132288,
+    "peakBytes": 2319319040,
+    "peakProcesses": 6,
+    "inFlightPerGiB": 2.3147781859282284
+   }
+  },
+  "swarm-release": {
+   "waits": "release",
+   "size": 4,
+   "count": 64,
+   "width": 64,
+   "delay": [
+    2000,
+    4000
+   ],
+   "loadStart": 2.76,
+   "loadEnd": 2.71,
+   "label": "acceptance",
+   "wallMs": 10769.035634,
+   "throughputPerMinute": 356.57788965581574,
+   "promoted": 55,
+   "errors": 0,
+   "wrongVerdicts": [],
+   "nonModel": {
+    "n": 64,
+    "p50": 56.11309199997049,
+    "p95": 102.46344500001578,
+    "max": 106.29362300000503
+   },
+   "model": {
+    "n": 64,
+    "p50": 5973.614988999994,
+    "p95": 9908.171633999984,
+    "max": 10713.828451999987
+   },
+   "stages": {
+    "freeze": {
+     "n": 64,
+     "p50": 2.4883350000018254,
+     "p95": 4.70115700000315,
+     "max": 7.708890999987489
+    },
+    "compile": {
+     "n": 64,
+     "p50": 38.78798199999892,
+     "p95": 58.414253999999346,
+     "max": 78.23574999999983
+    },
+    "gate": {
+     "n": 64,
+     "p50": 3.4046299999981784,
+     "p95": 8.612041999998837,
+     "max": 14.423346999999922
+    },
+    "ledger": {
+     "n": 64,
+     "p50": 2.420490999997128,
+     "p95": 4.5381690000067465,
+     "max": 5.015371000015875
+    }
+   },
+   "parkMs": {
+    "n": 73,
+    "p50": 1.1561609999916982,
+    "p95": 3.703806000004988,
+    "max": 6.23722299997462
+   },
+   "crossings": {
+    "bridgeRequestsPerCandidate": {
+     "admit": 1,
+     "park": 1.140625,
+     "commit": 1
+    },
+    "jobsPerCandidate": 3.140625
+   },
+   "busyAtSend": {
+    "values": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "sends": 137,
+    "zero": 63
+   },
+   "peakInFlight": 64,
+   "peakWaiting": 64,
+   "occupancy": 0.07625835563745643,
+   "usefulOccupancy": 0.07625835563745643,
+   "memory": {
+    "idleBytes": 2212769792,
+    "peakBytes": 2248413184,
+    "peakProcesses": 6,
+    "inFlightPerGiB": 30.563544647850634
+   }
+  },
+  "swarm-release-256": {
+   "waits": "release",
+   "size": 4,
+   "count": 256,
+   "width": 256,
+   "delay": [
+    2000,
+    4000
+   ],
+   "loadStart": 2.71,
+   "loadEnd": 3.8,
+   "label": "acceptance",
+   "wallMs": 11514.228486000007,
+   "throughputPerMinute": 1334.0016674739443,
+   "promoted": 220,
+   "errors": 0,
+   "wrongVerdicts": [],
+   "nonModel": {
+    "n": 256,
+    "p50": 237.7777810000116,
+    "p95": 538.2769649999973,
+    "max": 568.6442619999871
+   },
+   "model": {
+    "n": 256,
+    "p50": 5991.478134999983,
+    "p95": 8934.66062900002,
+    "max": 11450.109934000036
+   },
+   "stages": {
+    "freeze": {
+     "n": 256,
+     "p50": 2.4675679999927524,
+     "p95": 5.934552999999141,
+     "max": 12.359582000004593
+    },
+    "compile": {
+     "n": 256,
+     "p50": 42.07812699999886,
+     "p95": 51.604655000001,
+     "max": 83.37882600000103
+    },
+    "gate": {
+     "n": 256,
+     "p50": 3.906416999998328,
+     "p95": 7.589097000000038,
+     "max": 14.40188500000113
+    },
+    "ledger": {
+     "n": 256,
+     "p50": 4.918367000005674,
+     "p95": 8.715984999987995,
+     "max": 17.243336999992607
+    }
+   },
+   "parkMs": {
+    "n": 292,
+    "p50": 1.58435499999905,
+    "p95": 5.3815019999747165,
+    "max": 19.22830299998168
+   },
+   "crossings": {
+    "bridgeRequestsPerCandidate": {
+     "admit": 1,
+     "park": 1.140625,
+     "commit": 1
+    },
+    "jobsPerCandidate": 3.140625
+   },
+   "busyAtSend": {
+    "values": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "sends": 548,
+    "zero": 194
+   },
+   "peakInFlight": 256,
+   "peakWaiting": 256,
+   "occupancy": 0.2936551865034825,
+   "usefulOccupancy": 0.2936551865034825,
+   "memory": {
+    "idleBytes": 2286710784,
+    "peakBytes": 2382630912,
+    "peakProcesses": 6,
+    "inFlightPerGiB": 115.36738886396182
+   }
+  }
+ },
+ "finished": "2026-11-07T05:36:10.616Z"
+}

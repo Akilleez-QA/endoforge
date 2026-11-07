@@ -60,7 +60,7 @@ const verifyFrozen = reference => callHost({ type: 'host_frozen', reference });
     const report = port.evaluate ? await port.evaluate(evaluateCandidates, reference) : await evaluateCandidates(reference, candidates, port, frozenThroughLedger ? { verifyFrozen } : {});
     checkWasm();
     const evidence = port.evidence?.();
-    send({ status: report.stage === 'outcome_unknown' ? 'outcome_unknown' : 'completed',
+    send({ status: report.stage === 'outcome_unknown' ? 'outcome_unknown' : report.stage === 'waiting' ? 'waiting' : 'completed',
       reason: null, report, ...(evidence === undefined ? {} : { evidence }), ...metadata });
   } catch (error) {
     checkWasm();
