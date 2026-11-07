@@ -73,3 +73,7 @@ escape-test:
 .PHONY: kernel-test
 kernel-test:
 	$(PYTHON) -B -m unittest tools.kernel.test_contract tools.kernel.test_workcell tools.kernel.test_broker tools.kernel.test_limits -v
+
+.PHONY: rust-lane-test
+rust-lane-test:
+	$(PYTHON) -B -m unittest tools.rust_lane.test_lane -v
