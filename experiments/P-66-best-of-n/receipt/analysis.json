@@ -1,0 +1,3074 @@
+{
+ "stage": "main",
+ "completeNeeds": 26,
+ "incompleteNeeds": [
+  "H03"
+ ],
+ "callsRecorded": 600,
+ "frozenWrong": [
+  {
+   "need": "H02",
+   "arm": "sonnet-low",
+   "sample": 2,
+   "class": "frozen-wrong",
+   "evidence": {
+    "test": "max amps min volts",
+    "fn": "threePhaseHp",
+    "args": [
+     100,
+     2000,
+     1,
+     1
+    ],
+    "frozen": {
+     "trap": false,
+     "value": 464.5449524
+    },
+    "reference": {
+     "trap": false,
+     "value": 464.54367838992397
+    },
+    "kernel": {
+     "trap": false,
+     "value": 464.54367838992397
+    }
+   }
+  },
+  {
+   "need": "H02",
+   "arm": "sonnet-low",
+   "sample": 5,
+   "class": "frozen-wrong",
+   "evidence": {
+    "test": "max volts amps",
+    "fn": "threePhaseHp",
+    "args": [
+     1000,
+     2000,
+     1,
+     1
+    ],
+    "frozen": {
+     "trap": false,
+     "value": 2322.71704
+    },
+    "reference": {
+     "trap": false,
+     "value": 4645.436783899239
+    },
+    "kernel": {
+     "trap": false,
+     "value": 4645.436783899239
+    }
+   }
+  },
+  {
+   "need": "H08",
+   "arm": "sonnet-low",
+   "sample": 3,
+   "class": "frozen-wrong",
+   "evidence": {
+    "test": "nominal 1ft dia",
+    "fn": "lineChargeLb",
+    "args": [
+     10,
+     12,
+     70
+    ],
+    "frozen": {
+     "trap": false,
+     "value": 549.7787143782137
+    },
+    "reference": {
+     "trap": true
+    },
+    "kernel": {
+     "trap": true
+    }
+   }
+  },
+  {
+   "need": "H08",
+   "arm": "sonnet-low",
+   "sample": 5,
+   "class": "frozen-wrong",
+   "evidence": {
+    "test": "all upper bounds",
+    "fn": "lineChargeLb",
+    "args": [
+     1000,
+     6,
+     100
+    ],
+    "frozen": {
+     "trap": false,
+     "value": 19634954.0849362
+    },
+    "reference": {
+     "trap": false,
+     "value": 19634.954084936206
+    },
+    "kernel": {
+     "trap": false,
+     "value": 19634.954084936206
+    }
+   }
+  }
+ ],
+ "failureClasses": {
+  "frozen-wrong": 4,
+  "other": 2,
+  "gates-other": 0,
+  "no-candidate": 0
+ },
+ "excludedNeeds": [
+  "H02",
+  "H08"
+ ],
+ "load": {
+  "start": 8.1,
+  "max": 37.78,
+  "loadedRuns": 201,
+  "runs": 260
+ },
+ "auth": [
+  "claude-sonnet-5-5|none",
+  "claude-opus-5-5|none"
+ ],
+ "views": {
+  "decision": {
+   "name": "decision",
+   "needs": 24,
+   "needList": [
+    "CC-026",
+    "CC-001",
+    "C-005",
+    "H05",
+    "CC-007",
+    "H01",
+    "CC-014",
+    "C-016",
+    "C-012",
+    "C-010",
+    "CC-027",
+    "C-006",
+    "CC-009",
+    "H04",
+    "CC-011",
+    "CC-013",
+    "C-007",
+    "H07",
+    "C-019",
+    "C-015",
+    "H10",
+    "H06",
+    "CC-036",
+    "H09"
+   ],
+   "table": [
+    {
+     "strategy": "bo1",
+     "needs": 24,
+     "passRate": 0.9948,
+     "acceptedRate": 0.9948,
+     "escapes": 0,
+     "costPerPromoted": 0.0563,
+     "costLowerPerPromoted": 0.0563,
+     "callsPerPromoted": 2.1623,
+     "modelSecondsPerPromoted": 23.4027,
+     "tokensPerPromoted": 13552.4188,
+     "failedPerPromoted": 0.0785,
+     "timeP50": 23.1293,
+     "timeP90": 29.4104,
+     "meanCostPerNeed": 0.056
+    },
+    {
+     "strategy": "bo2",
+     "needs": 24,
+     "passRate": 1,
+     "acceptedRate": 1,
+     "escapes": 0,
+     "costPerPromoted": 0.1078,
+     "costLowerPerPromoted": 0.0819,
+     "callsPerPromoted": 4.0104,
+     "modelSecondsPerPromoted": 43.4117,
+     "tokensPerPromoted": 24431.9851,
+     "failedPerPromoted": 0.0744,
+     "timeP50": 21.8844,
+     "timeP90": 26.6529,
+     "meanCostPerNeed": 0.1078
+    },
+    {
+     "strategy": "bo4",
+     "needs": 24,
+     "passRate": 1,
+     "acceptedRate": 1,
+     "escapes": 0,
+     "costPerPromoted": 0.2119,
+     "costLowerPerPromoted": 0.1326,
+     "callsPerPromoted": 7.8036,
+     "modelSecondsPerPromoted": 83.1239,
+     "tokensPerPromoted": 47113.2333,
+     "failedPerPromoted": 0.125,
+     "timeP50": 21.263,
+     "timeP90": 24.9311,
+     "meanCostPerNeed": 0.2119
+    },
+    {
+     "strategy": "bo8",
+     "needs": 24,
+     "passRate": 1,
+     "acceptedRate": 1,
+     "escapes": 0,
+     "costPerPromoted": 0.4198,
+     "costLowerPerPromoted": 0.2355,
+     "callsPerPromoted": 15.4167,
+     "modelSecondsPerPromoted": 160.65,
+     "tokensPerPromoted": 92730.875,
+     "failedPerPromoted": 0.25,
+     "timeP50": 20.2978,
+     "timeP90": 24.1549,
+     "meanCostPerNeed": 0.4198
+    },
+    {
+     "strategy": "opus-high",
+     "needs": 24,
+     "passRate": 1,
+     "acceptedRate": 1,
+     "escapes": 0,
+     "costPerPromoted": 0.179,
+     "costLowerPerPromoted": 0.179,
+     "callsPerPromoted": 2.1667,
+     "modelSecondsPerPromoted": 52.6938,
+     "tokensPerPromoted": 17838.25,
+     "failedPerPromoted": 0.0417,
+     "timeP50": 45.6459,
+     "timeP90": 89.7852,
+     "meanCostPerNeed": 0.179
+    },
+    {
+     "strategy": "sonnet-medium",
+     "needs": 24,
+     "passRate": 1,
+     "acceptedRate": 1,
+     "escapes": 0,
+     "costPerPromoted": 0.0655,
+     "costLowerPerPromoted": 0.0655,
+     "callsPerPromoted": 2.125,
+     "modelSecondsPerPromoted": 27.4663,
+     "tokensPerPromoted": 14912,
+     "failedPerPromoted": 0.0417,
+     "timeP50": 29.0576,
+     "timeP90": 34.3734,
+     "meanCostPerNeed": 0.0655
+    }
+   ],
+   "decision": {
+    "winner": "bo1",
+    "bestPassRate": 1,
+    "eligible": [
+     "bo1",
+     "sonnet-medium",
+     "bo2",
+     "opus-high",
+     "bo4",
+     "bo8"
+    ],
+    "costTie": [
+     "bo1"
+    ]
+   },
+   "namedDecision": {
+    "winner": "sonnet-medium",
+    "bestPassRate": 1,
+    "eligible": [
+     "sonnet-medium",
+     "bo2",
+     "opus-high",
+     "bo4",
+     "bo8"
+    ],
+    "costTie": [
+     "sonnet-medium"
+    ]
+   },
+   "passAtK": [
+    {
+     "k": 1,
+     "observed": 0.9948,
+     "independent": 0.9948
+    },
+    {
+     "k": 2,
+     "observed": 1,
+     "independent": 1
+    },
+    {
+     "k": 3,
+     "observed": 1,
+     "independent": 1
+    },
+    {
+     "k": 4,
+     "observed": 1,
+     "independent": 1
+    },
+    {
+     "k": 5,
+     "observed": 1,
+     "independent": 1
+    },
+    {
+     "k": 6,
+     "observed": 1,
+     "independent": 1
+    },
+    {
+     "k": 7,
+     "observed": 1,
+     "independent": 1
+    },
+    {
+     "k": 8,
+     "observed": 1,
+     "independent": 1
+    }
+   ],
+   "saturationK": 1,
+   "failureIcc": 0,
+   "failureIccInterval": [
+    -0.0166,
+    0
+   ],
+   "lowPromotedPerNeed": {
+    "CC-026": 8,
+    "CC-001": 8,
+    "C-005": 8,
+    "H05": 8,
+    "CC-007": 7,
+    "H01": 8,
+    "CC-014": 8,
+    "C-016": 8,
+    "C-012": 8,
+    "C-010": 8,
+    "CC-027": 8,
+    "C-006": 8,
+    "CC-009": 8,
+    "H04": 8,
+    "CC-011": 8,
+    "CC-013": 8,
+    "C-007": 8,
+    "H07": 8,
+    "C-019": 8,
+    "C-015": 8,
+    "H10": 8,
+    "H06": 8,
+    "CC-036": 8,
+    "H09": 8
+   }
+  },
+  "asIs": {
+   "name": "as-is",
+   "needs": 26,
+   "needList": [
+    "CC-026",
+    "CC-001",
+    "C-005",
+    "H05",
+    "CC-007",
+    "H01",
+    "H02",
+    "CC-014",
+    "C-016",
+    "C-012",
+    "H08",
+    "C-010",
+    "CC-027",
+    "C-006",
+    "CC-009",
+    "H04",
+    "CC-011",
+    "CC-013",
+    "C-007",
+    "H07",
+    "C-019",
+    "C-015",
+    "H10",
+    "H06",
+    "CC-036",
+    "H09"
+   ],
+   "table": [
+    {
+     "strategy": "bo1",
+     "needs": 26,
+     "passRate": 0.9712,
+     "acceptedRate": 0.9712,
+     "escapes": 0,
+     "costPerPromoted": 0.0584,
+     "costLowerPerPromoted": 0.0584,
+     "callsPerPromoted": 2.3317,
+     "modelSecondsPerPromoted": 24.5108,
+     "tokensPerPromoted": 14874.9356,
+     "failedPerPromoted": 0.2228,
+     "timeP50": 23.1712,
+     "timeP90": 29.3214,
+     "meanCostPerNeed": 0.0568
+    },
+    {
+     "strategy": "bo2",
+     "needs": 26,
+     "passRate": 0.9945,
+     "acceptedRate": 0.9945,
+     "escapes": 0,
+     "costPerPromoted": 0.1091,
+     "costLowerPerPromoted": 0.0836,
+     "callsPerPromoted": 4.1119,
+     "modelSecondsPerPromoted": 44.0917,
+     "tokensPerPromoted": 25154.9613,
+     "failedPerPromoted": 0.1575,
+     "timeP50": 22.0818,
+     "timeP90": 26.4629,
+     "meanCostPerNeed": 0.1085
+    },
+    {
+     "strategy": "bo4",
+     "needs": 26,
+     "passRate": 1,
+     "acceptedRate": 1,
+     "escapes": 0,
+     "costPerPromoted": 0.2129,
+     "costLowerPerPromoted": 0.1345,
+     "callsPerPromoted": 7.8604,
+     "modelSecondsPerPromoted": 83.6184,
+     "tokensPerPromoted": 47377.611,
+     "failedPerPromoted": 0.1599,
+     "timeP50": 21.3773,
+     "timeP90": 24.712,
+     "meanCostPerNeed": 0.2129
+    },
+    {
+     "strategy": "bo8",
+     "needs": 26,
+     "passRate": 1,
+     "acceptedRate": 1,
+     "escapes": 0,
+     "costPerPromoted": 0.4219,
+     "costLowerPerPromoted": 0.239,
+     "callsPerPromoted": 15.5385,
+     "modelSecondsPerPromoted": 161.8088,
+     "tokensPerPromoted": 93322.2692,
+     "failedPerPromoted": 0.3077,
+     "timeP50": 20.3297,
+     "timeP90": 24.1549,
+     "meanCostPerNeed": 0.4219
+    },
+    {
+     "strategy": "opus-high",
+     "needs": 26,
+     "passRate": 1,
+     "acceptedRate": 1,
+     "escapes": 0,
+     "costPerPromoted": 0.1755,
+     "costLowerPerPromoted": 0.1755,
+     "callsPerPromoted": 2.1538,
+     "modelSecondsPerPromoted": 51.6316,
+     "tokensPerPromoted": 17476.5,
+     "failedPerPromoted": 0.0385,
+     "timeP50": 44.0994,
+     "timeP90": 89.7852,
+     "meanCostPerNeed": 0.1755
+    },
+    {
+     "strategy": "sonnet-medium",
+     "needs": 26,
+     "passRate": 1,
+     "acceptedRate": 1,
+     "escapes": 0,
+     "costPerPromoted": 0.0651,
+     "costLowerPerPromoted": 0.0651,
+     "callsPerPromoted": 2.1154,
+     "modelSecondsPerPromoted": 27.2798,
+     "tokensPerPromoted": 14714.5769,
+     "failedPerPromoted": 0.0385,
+     "timeP50": 28.2852,
+     "timeP90": 34.3734,
+     "meanCostPerNeed": 0.0651
+    }
+   ],
+   "decision": {
+    "winner": "bo1",
+    "bestPassRate": 1,
+    "eligible": [
+     "bo1",
+     "sonnet-medium",
+     "bo2",
+     "opus-high",
+     "bo4",
+     "bo8"
+    ],
+    "costTie": [
+     "bo1"
+    ]
+   },
+   "namedDecision": {
+    "winner": "sonnet-medium",
+    "bestPassRate": 1,
+    "eligible": [
+     "sonnet-medium",
+     "bo2",
+     "opus-high",
+     "bo4",
+     "bo8"
+    ],
+    "costTie": [
+     "sonnet-medium"
+    ]
+   },
+   "passAtK": [
+    {
+     "k": 1,
+     "observed": 0.9712,
+     "independent": 0.9712
+    },
+    {
+     "k": 2,
+     "observed": 0.9945,
+     "independent": 0.9992
+    },
+    {
+     "k": 3,
+     "observed": 0.9993,
+     "independent": 1
+    },
+    {
+     "k": 4,
+     "observed": 1,
+     "independent": 1
+    },
+    {
+     "k": 5,
+     "observed": 1,
+     "independent": 1
+    },
+    {
+     "k": 6,
+     "observed": 1,
+     "independent": 1
+    },
+    {
+     "k": 7,
+     "observed": 1,
+     "independent": 1
+    },
+    {
+     "k": 8,
+     "observed": 1,
+     "independent": 1
+    }
+   ],
+   "saturationK": 2,
+   "failureIcc": 0.1754,
+   "failureIccInterval": [
+    -0.005,
+    0.2857
+   ],
+   "lowPromotedPerNeed": {
+    "CC-026": 8,
+    "CC-001": 8,
+    "C-005": 8,
+    "H05": 8,
+    "CC-007": 7,
+    "H01": 8,
+    "H02": 5,
+    "CC-014": 8,
+    "C-016": 8,
+    "C-012": 8,
+    "H08": 6,
+    "C-010": 8,
+    "CC-027": 8,
+    "C-006": 8,
+    "CC-009": 8,
+    "H04": 8,
+    "CC-011": 8,
+    "CC-013": 8,
+    "C-007": 8,
+    "H07": 8,
+    "C-019": 8,
+    "C-015": 8,
+    "H10": 8,
+    "H06": 8,
+    "CC-036": 8,
+    "H09": 8
+   }
+  }
+ },
+ "router": {
+  "decision": {
+   "name": "decision",
+   "fitNeeds": [
+    "CC-026",
+    "C-005",
+    "H05",
+    "CC-014",
+    "C-012",
+    "CC-027",
+    "CC-009",
+    "H04",
+    "CC-013",
+    "C-019",
+    "H10",
+    "CC-036",
+    "H09"
+   ],
+   "heldNeeds": [
+    "CC-001",
+    "CC-007",
+    "H01",
+    "C-016",
+    "C-010",
+    "C-006",
+    "CC-011",
+    "C-007",
+    "H07",
+    "C-015",
+    "H06"
+   ],
+   "groups": {
+    "CC-026": "R:clean-before",
+    "CC-001": "R:clean-before",
+    "C-005": "R:clean-before",
+    "H05": "H:clean-before",
+    "CC-007": "R:clean-before",
+    "H01": "H:clean-before",
+    "CC-014": "R:clean-before",
+    "C-016": "R:clean-before",
+    "C-012": "R:clean-before",
+    "C-010": "R:clean-before",
+    "CC-027": "R:clean-before",
+    "C-006": "R:clean-before",
+    "CC-009": "R:clean-before",
+    "H04": "H:clean-before",
+    "CC-011": "R:clean-before",
+    "CC-013": "R:clean-before",
+    "C-007": "R:clean-before",
+    "H07": "H:clean-before",
+    "C-019": "R:clean-before",
+    "C-015": "R:clean-before",
+    "H10": "H:clean-before",
+    "H06": "H:clean-before",
+    "CC-036": "R:failed-before",
+    "H09": "H:clean-before"
+   },
+   "fixedOnHeldOut": [
+    {
+     "strategy": "bo1",
+     "needs": 11,
+     "passRate": 0.9886,
+     "acceptedRate": 0.9886,
+     "escapes": 0,
+     "costPerPromoted": 0.0548,
+     "costLowerPerPromoted": 0.0548,
+     "callsPerPromoted": 2.1724,
+     "modelSecondsPerPromoted": 22.462,
+     "tokensPerPromoted": 13505.8621,
+     "failedPerPromoted": 0.069,
+     "timeP50": 21.4065,
+     "timeP90": 27.9278,
+     "meanCostPerNeed": 0.0542
+    },
+    {
+     "strategy": "bo2",
+     "needs": 11,
+     "passRate": 1,
+     "acceptedRate": 1,
+     "escapes": 0,
+     "costPerPromoted": 0.1037,
+     "costLowerPerPromoted": 0.0783,
+     "callsPerPromoted": 3.9448,
+     "modelSecondsPerPromoted": 41.2829,
+     "tokensPerPromoted": 23556.8961,
+     "failedPerPromoted": 0.013,
+     "timeP50": 20.3297,
+     "timeP90": 26.3988,
+     "meanCostPerNeed": 0.1037
+    },
+    {
+     "strategy": "bo4",
+     "needs": 11,
+     "passRate": 1,
+     "acceptedRate": 1,
+     "escapes": 0,
+     "costPerPromoted": 0.2038,
+     "costLowerPerPromoted": 0.1254,
+     "callsPerPromoted": 7.6818,
+     "modelSecondsPerPromoted": 79.0833,
+     "tokensPerPromoted": 45464.0026,
+     "failedPerPromoted": 0,
+     "timeP50": 19.0703,
+     "timeP90": 25.9458,
+     "meanCostPerNeed": 0.2038
+    },
+    {
+     "strategy": "bo8",
+     "needs": 11,
+     "passRate": 1,
+     "acceptedRate": 1,
+     "escapes": 0,
+     "costPerPromoted": 0.4041,
+     "costLowerPerPromoted": 0.2189,
+     "callsPerPromoted": 15.1818,
+     "modelSecondsPerPromoted": 152.5735,
+     "tokensPerPromoted": 89582.0909,
+     "failedPerPromoted": 0,
+     "timeP50": 18.1618,
+     "timeP90": 24.1549,
+     "meanCostPerNeed": 0.4041
+    },
+    {
+     "strategy": "opus-high",
+     "needs": 11,
+     "passRate": 1,
+     "acceptedRate": 1,
+     "escapes": 0,
+     "costPerPromoted": 0.1649,
+     "costLowerPerPromoted": 0.1649,
+     "callsPerPromoted": 2,
+     "modelSecondsPerPromoted": 48.0844,
+     "tokensPerPromoted": 15298.8182,
+     "failedPerPromoted": 0,
+     "timeP50": 44.0994,
+     "timeP90": 67.779,
+     "meanCostPerNeed": 0.1649
+    },
+    {
+     "strategy": "sonnet-medium",
+     "needs": 11,
+     "passRate": 1,
+     "acceptedRate": 1,
+     "escapes": 0,
+     "costPerPromoted": 0.0634,
+     "costLowerPerPromoted": 0.0634,
+     "callsPerPromoted": 2.0909,
+     "modelSecondsPerPromoted": 25.7957,
+     "tokensPerPromoted": 14425.6364,
+     "failedPerPromoted": 0,
+     "timeP50": 27.0556,
+     "timeP90": 33.2807,
+     "meanCostPerNeed": 0.0634
+    }
+   ],
+   "bestFixed": {
+    "winner": "bo1",
+    "bestPassRate": 1,
+    "eligible": [
+     "bo1",
+     "sonnet-medium",
+     "bo2",
+     "opus-high",
+     "bo4",
+     "bo8"
+    ],
+    "costTie": [
+     "bo1"
+    ]
+   },
+   "bestPass": 1,
+   "greedy": {
+    "passRate": 0.9886,
+    "costPerPromoted": 0.0548,
+    "failedPerPromoted": 0.069,
+    "timeP50": 21.4065,
+    "gapClosed": null
+   },
+   "exploring": {
+    "passRate": 0.9896,
+    "costPerPromoted": 0.0688,
+    "failedPerPromoted": 0.0632,
+    "costInterval": [
+     0.0548,
+     0.1012
+    ],
+    "passInterval": [
+     0.9886,
+     1
+    ],
+    "timeP50": 21.4065,
+    "gapClosed": null
+   },
+   "oracle": {
+    "passRate": 1,
+    "costPerPromoted": 0.0562,
+    "timeP50": 21.4812
+   },
+   "bar": {
+    "costMet": false,
+    "passMet": true,
+    "met": false
+   },
+   "decisions": [
+    {
+     "need": "CC-001",
+     "group": "R:clean-before",
+     "chosen": "bo1",
+     "oracle": "sonnet-medium",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 1,
+       "cost": 0.059
+      },
+      {
+       "s": "bo2",
+       "p": 1,
+       "cost": 0.1147
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2252
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4451
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.2133
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 1,
+       "cost": 0.0704
+      }
+     ]
+    },
+    {
+     "need": "CC-007",
+     "group": "R:clean-before",
+     "chosen": "bo1",
+     "oracle": "sonnet-medium",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 1,
+       "cost": 0.0581
+      },
+      {
+       "s": "bo2",
+       "p": 1,
+       "cost": 0.1147
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2252
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4451
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.2133
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 1,
+       "cost": 0.0704
+      }
+     ]
+    },
+    {
+     "need": "H01",
+     "group": "H:clean-before",
+     "chosen": "bo1",
+     "oracle": "bo1",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 1,
+       "cost": 0.0565
+      },
+      {
+       "s": "bo2",
+       "p": 1,
+       "cost": 0.1111
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2212
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4412
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.148
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 1,
+       "cost": 0.064
+      }
+     ]
+    },
+    {
+     "need": "C-016",
+     "group": "R:clean-before",
+     "chosen": "bo1",
+     "oracle": "bo1",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 0.99,
+       "cost": 0.0581
+      },
+      {
+       "s": "bo2",
+       "p": 1,
+       "cost": 0.1147
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2252
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4451
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.2133
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 1,
+       "cost": 0.0704
+      }
+     ]
+    },
+    {
+     "need": "C-010",
+     "group": "R:clean-before",
+     "chosen": "bo1",
+     "oracle": "bo1",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 0.99,
+       "cost": 0.0577
+      },
+      {
+       "s": "bo2",
+       "p": 1,
+       "cost": 0.1147
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2252
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4451
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.2133
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 1,
+       "cost": 0.0704
+      }
+     ]
+    },
+    {
+     "need": "C-006",
+     "group": "R:clean-before",
+     "chosen": "bo1",
+     "oracle": "bo1",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 0.991,
+       "cost": 0.0586
+      },
+      {
+       "s": "bo2",
+       "p": 1,
+       "cost": 0.1147
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2252
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4451
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.2133
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 1,
+       "cost": 0.0704
+      }
+     ]
+    },
+    {
+     "need": "CC-011",
+     "group": "R:clean-before",
+     "chosen": "bo1",
+     "oracle": "bo1",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 0.992,
+       "cost": 0.0589
+      },
+      {
+       "s": "bo2",
+       "p": 1,
+       "cost": 0.1147
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2252
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4451
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.2133
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 1,
+       "cost": 0.0704
+      }
+     ]
+    },
+    {
+     "need": "C-007",
+     "group": "R:clean-before",
+     "chosen": "bo1",
+     "oracle": "bo1",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 0.992,
+       "cost": 0.0579
+      },
+      {
+       "s": "bo2",
+       "p": 1,
+       "cost": 0.1147
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2252
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4451
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.2133
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 1,
+       "cost": 0.0704
+      }
+     ]
+    },
+    {
+     "need": "H07",
+     "group": "H:clean-before",
+     "chosen": "bo1",
+     "oracle": "bo1",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 1,
+       "cost": 0.0547
+      },
+      {
+       "s": "bo2",
+       "p": 1,
+       "cost": 0.1111
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2212
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4412
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.148
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 1,
+       "cost": 0.064
+      }
+     ]
+    },
+    {
+     "need": "C-015",
+     "group": "R:clean-before",
+     "chosen": "bo1",
+     "oracle": "bo1",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 0.993,
+       "cost": 0.0576
+      },
+      {
+       "s": "bo2",
+       "p": 1,
+       "cost": 0.1147
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2252
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4451
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.2133
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 1,
+       "cost": 0.0704
+      }
+     ]
+    },
+    {
+     "need": "H06",
+     "group": "H:clean-before",
+     "chosen": "bo1",
+     "oracle": "bo1",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 1,
+       "cost": 0.0538
+      },
+      {
+       "s": "bo2",
+       "p": 1,
+       "cost": 0.1111
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2212
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4412
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.148
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 1,
+       "cost": 0.064
+      }
+     ]
+    }
+   ],
+   "exploringFrequency": {
+    "CC-001": {
+     "bo1": 0.895,
+     "bo2": 0.014,
+     "bo4": 0.023,
+     "bo8": 0.02,
+     "opus-high": 0.026,
+     "sonnet-medium": 0.022
+    },
+    "CC-007": {
+     "bo1": 0.914,
+     "bo2": 0.016,
+     "bo4": 0.019,
+     "bo8": 0.022,
+     "opus-high": 0.016,
+     "sonnet-medium": 0.013
+    },
+    "H01": {
+     "bo1": 0.892,
+     "bo2": 0.023,
+     "bo4": 0.019,
+     "bo8": 0.026,
+     "opus-high": 0.019,
+     "sonnet-medium": 0.021
+    },
+    "C-016": {
+     "bo1": 0.892,
+     "bo2": 0.027,
+     "bo4": 0.024,
+     "bo8": 0.014,
+     "opus-high": 0.028,
+     "sonnet-medium": 0.015
+    },
+    "C-010": {
+     "bo1": 0.905,
+     "bo2": 0.027,
+     "bo4": 0.019,
+     "bo8": 0.017,
+     "opus-high": 0.016,
+     "sonnet-medium": 0.016
+    },
+    "C-006": {
+     "bo1": 0.916,
+     "bo2": 0.013,
+     "bo4": 0.015,
+     "bo8": 0.015,
+     "opus-high": 0.025,
+     "sonnet-medium": 0.016
+    },
+    "CC-011": {
+     "bo1": 0.876,
+     "bo2": 0.026,
+     "bo4": 0.025,
+     "bo8": 0.024,
+     "opus-high": 0.024,
+     "sonnet-medium": 0.025
+    },
+    "C-007": {
+     "bo1": 0.908,
+     "bo2": 0.016,
+     "bo4": 0.023,
+     "bo8": 0.015,
+     "opus-high": 0.024,
+     "sonnet-medium": 0.014
+    },
+    "H07": {
+     "bo1": 0.885,
+     "bo2": 0.017,
+     "bo4": 0.022,
+     "bo8": 0.029,
+     "opus-high": 0.022,
+     "sonnet-medium": 0.025
+    },
+    "C-015": {
+     "bo1": 0.893,
+     "bo2": 0.018,
+     "bo4": 0.02,
+     "bo8": 0.02,
+     "opus-high": 0.019,
+     "sonnet-medium": 0.03
+    },
+    "H06": {
+     "bo1": 0.894,
+     "bo2": 0.017,
+     "bo4": 0.024,
+     "bo8": 0.025,
+     "opus-high": 0.025,
+     "sonnet-medium": 0.015
+    }
+   }
+  },
+  "asIs": {
+   "name": "as-is",
+   "fitNeeds": [
+    "CC-026",
+    "C-005",
+    "H05",
+    "H02",
+    "CC-014",
+    "C-012",
+    "CC-027",
+    "CC-009",
+    "H04",
+    "CC-013",
+    "C-019",
+    "H10",
+    "CC-036",
+    "H09"
+   ],
+   "heldNeeds": [
+    "CC-001",
+    "CC-007",
+    "H01",
+    "C-016",
+    "H08",
+    "C-010",
+    "C-006",
+    "CC-011",
+    "C-007",
+    "H07",
+    "C-015",
+    "H06"
+   ],
+   "groups": {
+    "CC-026": "R:clean-before",
+    "CC-001": "R:clean-before",
+    "C-005": "R:clean-before",
+    "H05": "H:clean-before",
+    "CC-007": "R:clean-before",
+    "H01": "H:clean-before",
+    "H02": "H:clean-before",
+    "CC-014": "R:clean-before",
+    "C-016": "R:clean-before",
+    "C-012": "R:clean-before",
+    "H08": "H:failed-before",
+    "C-010": "R:clean-before",
+    "CC-027": "R:clean-before",
+    "C-006": "R:clean-before",
+    "CC-009": "R:clean-before",
+    "H04": "H:clean-before",
+    "CC-011": "R:clean-before",
+    "CC-013": "R:clean-before",
+    "C-007": "R:clean-before",
+    "H07": "H:clean-before",
+    "C-019": "R:clean-before",
+    "C-015": "R:clean-before",
+    "H10": "H:clean-before",
+    "H06": "H:clean-before",
+    "CC-036": "R:failed-before",
+    "H09": "H:clean-before"
+   },
+   "fixedOnHeldOut": [
+    {
+     "strategy": "bo1",
+     "needs": 12,
+     "passRate": 0.9688,
+     "acceptedRate": 0.9688,
+     "escapes": 0,
+     "costPerPromoted": 0.057,
+     "costLowerPerPromoted": 0.057,
+     "callsPerPromoted": 2.3226,
+     "modelSecondsPerPromoted": 23.4511,
+     "tokensPerPromoted": 14718.4301,
+     "failedPerPromoted": 0.1935,
+     "timeP50": 21.6295,
+     "timeP90": 27.6802,
+     "meanCostPerNeed": 0.0552
+    },
+    {
+     "strategy": "bo2",
+     "needs": 12,
+     "passRate": 0.997,
+     "acceptedRate": 0.997,
+     "escapes": 0,
+     "costPerPromoted": 0.1054,
+     "costLowerPerPromoted": 0.0802,
+     "callsPerPromoted": 4.0149,
+     "modelSecondsPerPromoted": 41.848,
+     "tokensPerPromoted": 24116.4179,
+     "failedPerPromoted": 0.0657,
+     "timeP50": 20.6288,
+     "timeP90": 26.3804,
+     "meanCostPerNeed": 0.1051
+    },
+    {
+     "strategy": "bo4",
+     "needs": 12,
+     "passRate": 1,
+     "acceptedRate": 1,
+     "escapes": 0,
+     "costPerPromoted": 0.206,
+     "costLowerPerPromoted": 0.1275,
+     "callsPerPromoted": 7.7155,
+     "modelSecondsPerPromoted": 79.7207,
+     "tokensPerPromoted": 45720.5262,
+     "failedPerPromoted": 0.0131,
+     "timeP50": 19.3958,
+     "timeP90": 25.9458,
+     "meanCostPerNeed": 0.206
+    },
+    {
+     "strategy": "bo8",
+     "needs": 12,
+     "passRate": 1,
+     "acceptedRate": 1,
+     "escapes": 0,
+     "costPerPromoted": 0.4087,
+     "costLowerPerPromoted": 0.2228,
+     "callsPerPromoted": 15.25,
+     "modelSecondsPerPromoted": 154.0095,
+     "tokensPerPromoted": 90093.75,
+     "failedPerPromoted": 0,
+     "timeP50": 18.1618,
+     "timeP90": 24.1549,
+     "meanCostPerNeed": 0.4087
+    },
+    {
+     "strategy": "opus-high",
+     "needs": 12,
+     "passRate": 1,
+     "acceptedRate": 1,
+     "escapes": 0,
+     "costPerPromoted": 0.1622,
+     "costLowerPerPromoted": 0.1622,
+     "callsPerPromoted": 2,
+     "modelSecondsPerPromoted": 47.1375,
+     "tokensPerPromoted": 15118.5,
+     "failedPerPromoted": 0,
+     "timeP50": 40.1191,
+     "timeP90": 67.779,
+     "meanCostPerNeed": 0.1622
+    },
+    {
+     "strategy": "sonnet-medium",
+     "needs": 12,
+     "passRate": 1,
+     "acceptedRate": 1,
+     "escapes": 0,
+     "costPerPromoted": 0.0631,
+     "costLowerPerPromoted": 0.0631,
+     "callsPerPromoted": 2.0833,
+     "modelSecondsPerPromoted": 25.6819,
+     "tokensPerPromoted": 14248.1667,
+     "failedPerPromoted": 0,
+     "timeP50": 24.6562,
+     "timeP90": 33.2807,
+     "meanCostPerNeed": 0.0631
+    }
+   ],
+   "bestFixed": {
+    "winner": "bo1",
+    "bestPassRate": 1,
+    "eligible": [
+     "bo1",
+     "sonnet-medium",
+     "bo2",
+     "opus-high",
+     "bo4",
+     "bo8"
+    ],
+    "costTie": [
+     "bo1"
+    ]
+   },
+   "bestPass": 1,
+   "greedy": {
+    "passRate": 0.9688,
+    "costPerPromoted": 0.0586,
+    "failedPerPromoted": 0.1935,
+    "timeP50": 21.8563,
+    "gapClosed": null
+   },
+   "exploring": {
+    "passRate": 0.9718,
+    "costPerPromoted": 0.0725,
+    "failedPerPromoted": 0.1754,
+    "costInterval": [
+     0.0586,
+     0.1036
+    ],
+    "passInterval": [
+     0.9688,
+     0.9896
+    ],
+    "timeP50": 21.8563,
+    "gapClosed": null
+   },
+   "oracle": {
+    "passRate": 1,
+    "costPerPromoted": 0.0566,
+    "timeP50": 22.1971
+   },
+   "bar": {
+    "costMet": false,
+    "passMet": false,
+    "met": false
+   },
+   "decisions": [
+    {
+     "need": "CC-001",
+     "group": "R:clean-before",
+     "chosen": "bo1",
+     "oracle": "sonnet-medium",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 1,
+       "cost": 0.059
+      },
+      {
+       "s": "bo2",
+       "p": 1,
+       "cost": 0.1147
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2252
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4451
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.2133
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 1,
+       "cost": 0.0704
+      }
+     ]
+    },
+    {
+     "need": "CC-007",
+     "group": "R:clean-before",
+     "chosen": "bo1",
+     "oracle": "sonnet-medium",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 1,
+       "cost": 0.0581
+      },
+      {
+       "s": "bo2",
+       "p": 1,
+       "cost": 0.1147
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2252
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4451
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.2133
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 1,
+       "cost": 0.0704
+      }
+     ]
+    },
+    {
+     "need": "H01",
+     "group": "H:clean-before",
+     "chosen": "sonnet-medium",
+     "oracle": "bo1",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 0.946,
+       "cost": 0.0578
+      },
+      {
+       "s": "bo2",
+       "p": 0.985,
+       "cost": 0.1117
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2208
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4405
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.146
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 1,
+       "cost": 0.0635
+      }
+     ]
+    },
+    {
+     "need": "C-016",
+     "group": "R:clean-before",
+     "chosen": "bo1",
+     "oracle": "bo1",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 0.99,
+       "cost": 0.0581
+      },
+      {
+       "s": "bo2",
+       "p": 1,
+       "cost": 0.1147
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2252
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4451
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.2133
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 1,
+       "cost": 0.0704
+      }
+     ]
+    },
+    {
+     "need": "H08",
+     "group": "H:failed-before",
+     "chosen": "bo1",
+     "oracle": "sonnet-medium",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 1,
+       "cost": 0.0561
+      },
+      {
+       "s": "bo2",
+       "p": 1,
+       "cost": 0.1123
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2246
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4492
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.1267
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 0.5,
+       "cost": 0.0852
+      }
+     ]
+    },
+    {
+     "need": "C-010",
+     "group": "R:clean-before",
+     "chosen": "bo1",
+     "oracle": "bo1",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 0.99,
+       "cost": 0.0577
+      },
+      {
+       "s": "bo2",
+       "p": 1,
+       "cost": 0.1147
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2252
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4451
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.2133
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 1,
+       "cost": 0.0704
+      }
+     ]
+    },
+    {
+     "need": "C-006",
+     "group": "R:clean-before",
+     "chosen": "bo1",
+     "oracle": "bo1",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 0.991,
+       "cost": 0.0586
+      },
+      {
+       "s": "bo2",
+       "p": 1,
+       "cost": 0.1147
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2252
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4451
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.2133
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 1,
+       "cost": 0.0704
+      }
+     ]
+    },
+    {
+     "need": "CC-011",
+     "group": "R:clean-before",
+     "chosen": "bo1",
+     "oracle": "bo1",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 0.992,
+       "cost": 0.0589
+      },
+      {
+       "s": "bo2",
+       "p": 1,
+       "cost": 0.1147
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2252
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4451
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.2133
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 1,
+       "cost": 0.0704
+      }
+     ]
+    },
+    {
+     "need": "C-007",
+     "group": "R:clean-before",
+     "chosen": "bo1",
+     "oracle": "bo1",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 0.992,
+       "cost": 0.0579
+      },
+      {
+       "s": "bo2",
+       "p": 1,
+       "cost": 0.1147
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2252
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4451
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.2133
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 1,
+       "cost": 0.0704
+      }
+     ]
+    },
+    {
+     "need": "H07",
+     "group": "H:clean-before",
+     "chosen": "sonnet-medium",
+     "oracle": "bo1",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 0.946,
+       "cost": 0.0578
+      },
+      {
+       "s": "bo2",
+       "p": 0.985,
+       "cost": 0.1117
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2208
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4405
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.146
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 1,
+       "cost": 0.0617
+      }
+     ]
+    },
+    {
+     "need": "C-015",
+     "group": "R:clean-before",
+     "chosen": "bo1",
+     "oracle": "bo1",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 0.993,
+       "cost": 0.0576
+      },
+      {
+       "s": "bo2",
+       "p": 1,
+       "cost": 0.1147
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2252
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4451
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.2133
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 1,
+       "cost": 0.0704
+      }
+     ]
+    },
+    {
+     "need": "H06",
+     "group": "H:clean-before",
+     "chosen": "sonnet-medium",
+     "oracle": "bo1",
+     "estimates": [
+      {
+       "s": "bo1",
+       "p": 0.946,
+       "cost": 0.0578
+      },
+      {
+       "s": "bo2",
+       "p": 0.985,
+       "cost": 0.1117
+      },
+      {
+       "s": "bo4",
+       "p": 1,
+       "cost": 0.2208
+      },
+      {
+       "s": "bo8",
+       "p": 1,
+       "cost": 0.4405
+      },
+      {
+       "s": "opus-high",
+       "p": 1,
+       "cost": 0.146
+      },
+      {
+       "s": "sonnet-medium",
+       "p": 1,
+       "cost": 0.0609
+      }
+     ]
+    }
+   ],
+   "exploringFrequency": {
+    "CC-001": {
+     "bo1": 0.896,
+     "bo2": 0.017,
+     "bo4": 0.022,
+     "bo8": 0.019,
+     "opus-high": 0.029,
+     "sonnet-medium": 0.017
+    },
+    "CC-007": {
+     "bo1": 0.884,
+     "bo2": 0.023,
+     "bo4": 0.026,
+     "bo8": 0.021,
+     "opus-high": 0.026,
+     "sonnet-medium": 0.02
+    },
+    "H01": {
+     "bo1": 0.014,
+     "bo2": 0.021,
+     "bo4": 0.016,
+     "bo8": 0.018,
+     "opus-high": 0.019,
+     "sonnet-medium": 0.912
+    },
+    "C-016": {
+     "bo1": 0.912,
+     "bo2": 0.02,
+     "bo4": 0.019,
+     "bo8": 0.016,
+     "opus-high": 0.016,
+     "sonnet-medium": 0.017
+    },
+    "H08": {
+     "bo1": 0.907,
+     "bo2": 0.018,
+     "bo4": 0.026,
+     "bo8": 0.016,
+     "opus-high": 0.024,
+     "sonnet-medium": 0.009
+    },
+    "C-010": {
+     "bo1": 0.896,
+     "bo2": 0.024,
+     "bo4": 0.021,
+     "bo8": 0.026,
+     "opus-high": 0.015,
+     "sonnet-medium": 0.018
+    },
+    "C-006": {
+     "bo1": 0.887,
+     "bo2": 0.025,
+     "bo4": 0.016,
+     "bo8": 0.024,
+     "opus-high": 0.027,
+     "sonnet-medium": 0.021
+    },
+    "CC-011": {
+     "bo1": 0.896,
+     "bo2": 0.022,
+     "bo4": 0.019,
+     "bo8": 0.021,
+     "opus-high": 0.023,
+     "sonnet-medium": 0.019
+    },
+    "C-007": {
+     "bo1": 0.883,
+     "bo2": 0.022,
+     "bo4": 0.025,
+     "bo8": 0.021,
+     "opus-high": 0.023,
+     "sonnet-medium": 0.026
+    },
+    "H07": {
+     "bo1": 0.028,
+     "bo2": 0.023,
+     "bo4": 0.028,
+     "bo8": 0.012,
+     "opus-high": 0.02,
+     "sonnet-medium": 0.889
+    },
+    "C-015": {
+     "bo1": 0.905,
+     "bo2": 0.015,
+     "bo4": 0.017,
+     "bo8": 0.021,
+     "opus-high": 0.028,
+     "sonnet-medium": 0.014
+    },
+    "H06": {
+     "bo1": 0.017,
+     "bo2": 0.021,
+     "bo4": 0.019,
+     "bo8": 0.021,
+     "opus-high": 0.025,
+     "sonnet-medium": 0.897
+    }
+   }
+  }
+ },
+ "perNeed": {
+  "CC-026": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0576,
+    "calls": 2,
+    "failed": 0
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.1152,
+    "calls": 4,
+    "failed": 0
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.2304,
+    "calls": 8,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.4609,
+    "calls": 16,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.3352,
+    "calls": 3,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0634,
+    "calls": 2,
+    "failed": 0
+   }
+  },
+  "CC-001": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0488,
+    "calls": 2,
+    "failed": 0
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.0975,
+    "calls": 4,
+    "failed": 0
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.195,
+    "calls": 8,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.39,
+    "calls": 16,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.2294,
+    "calls": 2,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0461,
+    "calls": 2,
+    "failed": 0
+   }
+  },
+  "C-005": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0556,
+    "calls": 2.13,
+    "failed": 0.13
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.1047,
+    "calls": 3.86,
+    "failed": 0
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.1977,
+    "calls": 7.29,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.3797,
+    "calls": 14,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.1587,
+    "calls": 3,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0677,
+    "calls": 2,
+    "failed": 0
+   }
+  },
+  "H05": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0645,
+    "calls": 3,
+    "failed": 1
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.1246,
+    "calls": 5.61,
+    "failed": 1.64
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.2444,
+    "calls": 10.79,
+    "failed": 3
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.4824,
+    "calls": 21,
+    "failed": 6
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.1624,
+    "calls": 3,
+    "failed": 1
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0734,
+    "calls": 3,
+    "failed": 1
+   }
+  },
+  "CC-007": {
+   "bo1": {
+    "pass": 0.875,
+    "cost": 0.058,
+    "calls": 2.63,
+    "failed": 0.75
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.1034,
+    "calls": 3.89,
+    "failed": 0.14
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.1948,
+    "calls": 7.07,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.3867,
+    "calls": 14,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.1471,
+    "calls": 2,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0835,
+    "calls": 2,
+    "failed": 0
+   }
+  },
+  "H01": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0442,
+    "calls": 2,
+    "failed": 0
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.0885,
+    "calls": 4,
+    "failed": 0
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.177,
+    "calls": 8,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.3539,
+    "calls": 16,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.1034,
+    "calls": 2,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0488,
+    "calls": 2,
+    "failed": 0
+   }
+  },
+  "H02": {
+   "bo1": {
+    "pass": 0.625,
+    "cost": 0.0655,
+    "calls": 3.88,
+    "failed": 2.25
+   },
+   "bo2": {
+    "pass": 0.893,
+    "cost": 0.1153,
+    "calls": 5.43,
+    "failed": 1.64
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.2181,
+    "calls": 9,
+    "failed": 1
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.4362,
+    "calls": 18,
+    "failed": 2
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.1341,
+    "calls": 2,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0606,
+    "calls": 2,
+    "failed": 0
+   }
+  },
+  "CC-014": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0591,
+    "calls": 2,
+    "failed": 0
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.1131,
+    "calls": 3.79,
+    "failed": 0
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.2245,
+    "calls": 7.5,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.4491,
+    "calls": 15,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.1425,
+    "calls": 2,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0868,
+    "calls": 2,
+    "failed": 0
+   }
+  },
+  "C-016": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0529,
+    "calls": 2,
+    "failed": 0
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.1037,
+    "calls": 3.89,
+    "failed": 0
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.2002,
+    "calls": 7.43,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.3823,
+    "calls": 14,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.1649,
+    "calls": 2,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0623,
+    "calls": 2,
+    "failed": 0
+   }
+  },
+  "C-012": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0633,
+    "calls": 2.25,
+    "failed": 0
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.1185,
+    "calls": 3.96,
+    "failed": 0
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.2241,
+    "calls": 7.31,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.4257,
+    "calls": 14,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.1748,
+    "calls": 2,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0769,
+    "calls": 2,
+    "failed": 0
+   }
+  },
+  "H08": {
+   "bo1": {
+    "pass": 0.75,
+    "cost": 0.0668,
+    "calls": 3.38,
+    "failed": 1.5
+   },
+   "bo2": {
+    "pass": 0.964,
+    "cost": 0.1197,
+    "calls": 4.64,
+    "failed": 0.64
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.2302,
+    "calls": 8.09,
+    "failed": 0.16
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.4587,
+    "calls": 16,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.1332,
+    "calls": 2,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.06,
+    "calls": 2,
+    "failed": 0
+   }
+  },
+  "C-010": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0703,
+    "calls": 2.25,
+    "failed": 0
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.1297,
+    "calls": 3.82,
+    "failed": 0
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.2566,
+    "calls": 7.5,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.5131,
+    "calls": 15,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.2202,
+    "calls": 2,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0839,
+    "calls": 2,
+    "failed": 0
+   }
+  },
+  "CC-027": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0538,
+    "calls": 2.13,
+    "failed": 0
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.1031,
+    "calls": 3.96,
+    "failed": 0
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.2001,
+    "calls": 7.53,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.3992,
+    "calls": 15,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.1953,
+    "calls": 3,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0637,
+    "calls": 2,
+    "failed": 0
+   }
+  },
+  "C-006": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0638,
+    "calls": 2.38,
+    "failed": 0
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.1216,
+    "calls": 4.25,
+    "failed": 0
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.2366,
+    "calls": 8.07,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.4718,
+    "calls": 16,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.2195,
+    "calls": 2,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0699,
+    "calls": 2,
+    "failed": 0
+   }
+  },
+  "CC-009": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0608,
+    "calls": 2,
+    "failed": 0
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.1157,
+    "calls": 3.75,
+    "failed": 0
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.2264,
+    "calls": 7.29,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.4402,
+    "calls": 14,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.2812,
+    "calls": 2,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.064,
+    "calls": 2,
+    "failed": 0
+   }
+  },
+  "H04": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0551,
+    "calls": 2,
+    "failed": 0
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.1042,
+    "calls": 3.75,
+    "failed": 0
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.2084,
+    "calls": 7.5,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.4169,
+    "calls": 15,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.1217,
+    "calls": 2,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0577,
+    "calls": 2,
+    "failed": 0
+   }
+  },
+  "CC-011": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0427,
+    "calls": 2,
+    "failed": 0
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.0855,
+    "calls": 4,
+    "failed": 0
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.1709,
+    "calls": 8,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.3419,
+    "calls": 16,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.1829,
+    "calls": 2,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0509,
+    "calls": 2,
+    "failed": 0
+   }
+  },
+  "CC-013": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0562,
+    "calls": 2.13,
+    "failed": 0
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.1117,
+    "calls": 4.11,
+    "failed": 0
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.2223,
+    "calls": 8.01,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.4445,
+    "calls": 16,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.2757,
+    "calls": 2,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0664,
+    "calls": 3,
+    "failed": 0
+   }
+  },
+  "C-007": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0528,
+    "calls": 2.13,
+    "failed": 0
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.1032,
+    "calls": 3.96,
+    "failed": 0
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.2028,
+    "calls": 7.79,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.3909,
+    "calls": 15,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.1407,
+    "calls": 2,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0707,
+    "calls": 2,
+    "failed": 0
+   }
+  },
+  "H07": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0476,
+    "calls": 2.13,
+    "failed": 0
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.0939,
+    "calls": 4,
+    "failed": 0
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.1878,
+    "calls": 8,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.3756,
+    "calls": 16,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.1153,
+    "calls": 2,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0546,
+    "calls": 2,
+    "failed": 0
+   }
+  },
+  "C-019": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0625,
+    "calls": 2.25,
+    "failed": 0
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.1222,
+    "calls": 4.18,
+    "failed": 0
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.2415,
+    "calls": 8.01,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.4828,
+    "calls": 16,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.1804,
+    "calls": 2,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.082,
+    "calls": 2,
+    "failed": 0
+   }
+  },
+  "C-015": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0521,
+    "calls": 2,
+    "failed": 0
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.0959,
+    "calls": 3.61,
+    "failed": 0
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.1874,
+    "calls": 7,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.3748,
+    "calls": 14,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.1447,
+    "calls": 2,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0572,
+    "calls": 3,
+    "failed": 0
+   }
+  },
+  "H10": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0628,
+    "calls": 2.13,
+    "failed": 0
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.1249,
+    "calls": 4.14,
+    "failed": 0
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.2482,
+    "calls": 8.06,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.4956,
+    "calls": 16,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.196,
+    "calls": 2,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0661,
+    "calls": 2,
+    "failed": 0
+   }
+  },
+  "H06": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0625,
+    "calls": 2.13,
+    "failed": 0
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.1182,
+    "calls": 3.96,
+    "failed": 0
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.233,
+    "calls": 7.64,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.4644,
+    "calls": 15,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.1454,
+    "calls": 2,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0697,
+    "calls": 2,
+    "failed": 0
+   }
+  },
+  "CC-036": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0435,
+    "calls": 2,
+    "failed": 0
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.0824,
+    "calls": 3.75,
+    "failed": 0
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.1648,
+    "calls": 7.5,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.3296,
+    "calls": 15,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.1263,
+    "calls": 2,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0458,
+    "calls": 2,
+    "failed": 0
+   }
+  },
+  "H09": {
+   "bo1": {
+    "pass": 1,
+    "cost": 0.0528,
+    "calls": 2,
+    "failed": 0
+   },
+   "bo2": {
+    "pass": 1,
+    "cost": 0.1056,
+    "calls": 4,
+    "failed": 0
+   },
+   "bo4": {
+    "pass": 1,
+    "cost": 0.2111,
+    "calls": 8,
+    "failed": 0
+   },
+   "bo8": {
+    "pass": 1,
+    "cost": 0.4222,
+    "calls": 16,
+    "failed": 0
+   },
+   "opus-high": {
+    "pass": 1,
+    "cost": 0.1315,
+    "calls": 2,
+    "failed": 0
+   },
+   "sonnet-medium": {
+    "pass": 1,
+    "cost": 0.0597,
+    "calls": 2,
+    "failed": 0
+   }
+  }
+ }
+}
