@@ -54,7 +54,8 @@ export function paretoFrontier(candidates, objectives) {
   return candidates.filter(b => !candidates.some(a => dominates(a, b)));
 }
 
-export async function evaluateCandidates(reference, candidates, port, { requireFrozen: verifyFrozen = requireFrozen } = {}) {
+export async function evaluateCandidates(reference, candidates, port, { verifyFrozen: given, requireFrozen: required } = {}) {
+  const verifyFrozen = given ?? required ?? requireFrozen;
   reference = copy(reference);
   candidates = copy(candidates);
   ensure(Array.isArray(candidates) && candidates.every(named) && new Set(candidates).size === candidates.length, 'unique candidate identities required');
