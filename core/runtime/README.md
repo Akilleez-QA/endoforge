@@ -118,6 +118,8 @@ An empty policy is the default. All binary parsing, growth instrumentation and
 unsupported-feature checks still apply. This is a toolchain compatibility policy,
 not authority for arbitrary candidate modules.
 
+[`tools/tscheck`](../../tools/tscheck/README.md) uses the same policy for the pinned TypeScript checker, with `stackSizeMb` for deep input.
+
 [AssemblyScript toolchain helper](../../experiments/assemblyscript-toolchain.mjs)
 pins the AssemblyScript 0.28.20 `f64_pow` helper to 16 pages (1 MiB).
 Binaryen already declares 65,536 pages; kernel output retains `--maximumMemory 16`.
@@ -202,6 +204,8 @@ Each attached child gets its own group with `memory.max`, `memory.oom.group=1`,
 `cpu.max` and `pids.max`. Failure records `cgroup: 'unavailable'`; V8 limits and
 the WASM gate still apply. Cgroup OOM kills without V8 diagnostics remain unknown
 and are not mislabeled as JS heap exhaustion. Host ports remain trusted Node code.
+The supervisor stops waiting 500 ms after a child's exit even if a grandchild still holds its stderr. Without a cgroup, that grandchild keeps running; with one, the group kill ends it. A cell whose process has exited takes no job during that wait, so the next job goes to its replacement.
+A deadline can't interrupt a thread cell in a blocking native call such as `execSync`: `terminate()` waits for the call to return, so the job can overrun by that call's length. Its outcome stays unknown, never a pass. Use process cells where the bound has to hold for code like that.
 [P-18](../../experiments/P-18-pool-breach/RESULT.md) records N=8 breach results
 for both modes, including the unavailable-delegation limitation.
 
