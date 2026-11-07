@@ -3,8 +3,15 @@
 // (`hillclimb.mjs lessons <campaign> --close <key> --by "PR #123"`); every round's report lists the open ones.
 import fs from 'node:fs';
 import path from 'node:path';
+import { writeJSONAtomic } from '../../lib/lock.mjs';
 
 const readJSON = (f, d) => { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch { return d; } };
+
+function readLedger(f) {
+  let raw;
+  try { raw = fs.readFileSync(f, 'utf8'); } catch (e) { if (e.code === 'ENOENT') return {}; throw new Error(`lessons ledger ${f} is unreadable: ${e.message}`); }
+  try { return JSON.parse(raw); } catch (e) { throw new Error(`lessons ledger ${f} is unreadable: ${e.message}`); }
+}
 
 /** Lessons a fan-out round's own measurements imply. Each has a stable key, so a recurrence counts up, not repeats. */
 export function autoLessons(s) {
@@ -64,10 +71,13 @@ export function lessonsMarkdown({ round, mode, rows = [], perPiece = [], timings
 /** Write LESSONS.md and update the ledger; returns the open lessons for the round's report. */
 export function recordLessons(c, dir, page, lessons) {
   const ledgerFile = path.join(c.workdir, 'lessons.json');
-  const ledger = mergeLedger(readJSON(ledgerFile, {}), lessons, page.round);
-  fs.mkdirSync(c.workdir, { recursive: true }); fs.writeFileSync(ledgerFile, JSON.stringify(ledger, null, 1) + '\n');
+  let prior = {}, problem = null;
+  try { prior = readLedger(ledgerFile); } catch (e) { problem = e.message; console.error(`lessons: ${problem}; left as it was`); }
+  const ledger = mergeLedger(prior, lessons, page.round);
+  if (!problem) writeJSONAtomic(ledgerFile, ledger);
   const open = openLessons(ledger);
-  fs.writeFileSync(path.join(dir, 'LESSONS.md'), lessonsMarkdown({ ...page, lessons, open }));
+  const rows = problem ? [...(page.rows ?? []), ['lessons ledger', `NOT UPDATED: ${problem}`]] : page.rows;
+  fs.writeFileSync(path.join(dir, 'LESSONS.md'), lessonsMarkdown({ ...page, rows, lessons, open }));
   return open;
 }
 
@@ -105,9 +115,9 @@ export function competeLessons(c, n, dir) {
 
 /** `hillclimb.mjs lessons <campaign> [--close KEY --by "PR #n"] [--add KEY --stage S --text "..."]` */
 export function lessonsCommand(c, flag) {
-  const f = path.join(c.workdir, 'lessons.json'); let ledger = readJSON(f, {});
+  const f = path.join(c.workdir, 'lessons.json'); let ledger = readLedger(f);
   if (flag('--close')) { const k = flag('--close'); if (!ledger[k]) throw new Error(`no lesson ${k}`); if (!flag('--by')) throw new Error('--close needs --by "<tool or PR>"'); ledger[k] = { ...ledger[k], tool: flag('--by') }; }
   if (flag('--add')) ledger = mergeLedger(ledger, [{ key: flag('--add'), stage: flag('--stage') ?? 'by hand', lesson: flag('--text') ?? '' }], Number(flag('--round')) || 0);
-  if (flag('--close') || flag('--add')) fs.writeFileSync(f, JSON.stringify(ledger, null, 1) + '\n');
+  if (flag('--close') || flag('--add')) writeJSONAtomic(f, ledger);
   return openLessons(ledger);
 }

@@ -28,6 +28,24 @@ precommit hashed before measurement and a result that states what it does not sh
 | [P-47](P-47-process-stack/PRECOMMIT.md) | `stackSizeMb` in process cells: the V8 flag alone dies with SIGSEGV; with the rlimit raised first, no probe died and diagnostics matched thread mode | [RESULT.md](P-47-process-stack/RESULT.md) |
 | [P-48](P-48-width/PRECOMMIT.md) | What limits checker throughput at width: the evaluator's per-call frozen-check process, near 50–70 calls/s at any width; the compiler alone reached 96 checks/s; thread cells' shared address space is second; the ledger and desktop aren't the limit | [RESULT.md](P-48-width/RESULT.md) |
 | [P-49](P-49-incremental/PRECOMMIT.md) | `.tsbuildinfo` feedback between checks: one-file edit 65–80% faster, no diagnostic difference in 220 comparisons, widely imported type edit 18–33% slower | [RESULT.md](P-49-incremental/RESULT.md) |
+| [P-51](P-51-escape-rate/PRECOMMIT.md) | How often seeded faults get past the real gate path, no model calls: 441 of 7,883 kernel faults promoted (5.6%, sampled, not searched); at least 92.7% in a simulation where tests fully share the fault, a floor for that simulation and not an estimate of how often correlation happens; 86.5% of label-only glue faults | [RESULT.md](P-51-escape-rate/RESULT.md) |
+| [P-53](P-53-library-v0/PRECOMMIT.md) | Library v0: when a promoted kernel can stand in for generation, and when it serves the wrong one: 3/118 P-21 and 45/59 add held-out hits; 0/5,493 false hits where tests carry the fault, but 93/313 where nothing frozen differs; stays off | [RESULT.md](P-53-library-v0/RESULT.md) |
 | [P-54](P-54-contained-js/PRECOMMIT.md) | Compatibility-lane JavaScript in a child isolate: one supervised cohort of reused Workers matches one process per cell in attempts per second (about 19,000 a second at width 16) at a third of the memory, 178 active attempts in 4 GiB to 55–59; a V8 fatal error loses the attempts in flight as `outcome_unknown`; 0 authority reached by 67 attacks on Node 22 and 26 | [RESULT.md](P-54-contained-js/RESULT.md) |
 
 Rebuild P-15 dependencies with `setup.sh` in its directory; `node_modules` is not committed.
+
+## Rules
+
+A probe turns one named unknown into a recorded number on one machine. It is not a campaign: it runs once, without the quiet gate, calibration or replication a campaign requires, so its result may narrow a design decision but never stands in for a campaign result.
+
+1. **Precommit before run.** `PRECOMMIT.md` states the question, the unknown it de-risks, the procedure, the metrics, what counts as a bad sign and the stop rule. Hash it before the first measurement: `sha256sum PRECOMMIT.md > receipt/precommit.sha256`.
+2. **One directory per probe**, `experiments/P-nn-<slug>/`, with `PRECOMMIT.md`, the runnable, setup for pinned dependencies, `receipt/` and `RESULT.md`.
+3. **Capture the environment**: kernel, CPU, load before and after, memory, tool versions, this repository's commit and exact module hashes.
+4. **Keep raw samples.** Summaries report median, p95, min, max and n. Do not claim a confidence interval from a single lifetime.
+5. **`RESULT.md` says what it does not show**, in a section with that name, before any interpretation.
+6. **Claim nothing beyond the probe.** A compiler run in a Node worker does not show it runs under Wasmtime; say so.
+7. **Keep dependencies local** to the probe (`node_modules/`, binaries under `.tools/`), ignored by git, with versions and hashes in `receipt/`.
+
+## Earlier probes
+
+P-01 to P-14 ran before this repository's first commit and are not published here, so a result that cites one, such as P-20 citing P-01, P-02 and P-05, carries the numbers it needs. Numbering continues from one sequence.
