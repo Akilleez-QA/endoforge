@@ -1,22 +1,124 @@
 {
   "arms": {
-    "haiku-low": { "model": "haiku", "effort": "low" },
-    "haiku-high": { "model": "haiku", "effort": "high" },
-    "sonnet-low": { "model": "sonnet", "effort": "low" },
-    "sonnet-medium": { "model": "sonnet", "effort": "medium" },
-    "sonnet-high": { "model": "sonnet", "effort": "high" },
-    "opus-low": { "model": "opus", "effort": "low" },
-    "opus-medium": { "model": "opus", "effort": "medium" },
-    "opus-high": { "model": "opus", "effort": "high" }
+    "haiku-low": {
+      "model": "haiku",
+      "effort": "low"
+    },
+    "haiku-high": {
+      "model": "haiku",
+      "effort": "high"
+    },
+    "sonnet-low": {
+      "model": "sonnet",
+      "effort": "low"
+    },
+    "sonnet-medium": {
+      "model": "sonnet",
+      "effort": "medium"
+    },
+    "sonnet-high": {
+      "model": "sonnet",
+      "effort": "high"
+    },
+    "opus-low": {
+      "model": "opus",
+      "effort": "low"
+    },
+    "opus-medium": {
+      "model": "opus",
+      "effort": "medium"
+    },
+    "opus-high": {
+      "model": "opus",
+      "effort": "high"
+    }
   },
-  "budget": { "modelCalls": 2400 },
+  "budget": {
+    "modelCalls": 2400
+  },
   "batchSize": 20,
   "stages": {
-    "smoke": { "needs": ["H01"], "arms": ["haiku-low"], "reps": 1, "width": 1 },
+    "smoke": {
+      "needs": [
+        "H01"
+      ],
+      "arms": [
+        "haiku-low"
+      ],
+      "reps": 1,
+      "width": 1
+    },
     "pilot": {
-      "needs": ["C-015", "CC-036", "CC-011", "CC-014", "CC-025", "H01", "H03", "H06", "H08", "H10"],
-      "arms": ["haiku-low", "haiku-high", "sonnet-low", "sonnet-medium", "sonnet-high", "opus-low", "opus-medium", "opus-high"],
-      "reps": 1, "width": 2
+      "needs": [
+        "C-015",
+        "CC-036",
+        "CC-011",
+        "CC-014",
+        "CC-025",
+        "H01",
+        "H03",
+        "H06",
+        "H08",
+        "H10"
+      ],
+      "arms": [
+        "haiku-low",
+        "haiku-high",
+        "sonnet-low",
+        "sonnet-medium",
+        "sonnet-high",
+        "opus-low",
+        "opus-medium",
+        "opus-high"
+      ],
+      "reps": 1,
+      "width": 2
+    },
+    "main": {
+      "needs": [
+        "C-015",
+        "CC-036",
+        "CC-011",
+        "CC-014",
+        "CC-025",
+        "CC-027",
+        "C-007",
+        "C-019",
+        "CC-002",
+        "C-016",
+        "CC-001",
+        "CC-007",
+        "C-012",
+        "C-005",
+        "CC-026",
+        "CC-022",
+        "C-010",
+        "C-006",
+        "CC-013",
+        "CC-009",
+        "H01",
+        "H02",
+        "H03",
+        "H04",
+        "H05",
+        "H06",
+        "H07",
+        "H08",
+        "H09",
+        "H10"
+      ],
+      "arms": [
+        "haiku-low",
+        "haiku-high",
+        "sonnet-low",
+        "sonnet-medium",
+        "sonnet-high",
+        "opus-low",
+        "opus-medium",
+        "opus-high"
+      ],
+      "reps": 1,
+      "width": 2
     }
   }
 }

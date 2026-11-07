@@ -150,7 +150,7 @@ async function workerLoop(worker) {
     worker.busyArm = null;
     calls.runs += 1;
     writeFileSync(callsFile, JSON.stringify(calls));
-    consecutiveErrors = row.sendErrors.length ? consecutiveErrors + 1 : 0;
+    consecutiveErrors = row.sendErrors.some(error => error !== 'model token budget exceeded') ? consecutiveErrors + 1 : 0;
     console.log(JSON.stringify({ n: calls.runs, calls: calls.model, need: row.need, arm: row.arm, promoted: row.promoted, failed: row.rounds.filter(r => r.failed).length, rounds: row.rounds.length, held: row.heldOut?.clean ?? null,
       wallS: row.wallMs && +(row.wallMs / 1000).toFixed(1), exit: row.agent?.exit_reason ?? row.error, errors: row.sendErrors, load: row.loadEnd }));
     if (consecutiveErrors >= 2) halted = `two consecutive runs with transport errors: ${row.sendErrors.join('; ')}`;

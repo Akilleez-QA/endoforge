@@ -85,3 +85,9 @@ One account, one machine, one day; the subscription service's own latency varies
 ## Amendment 1, 2026-11-07, before the first experiment call
 
 The first pilot launch stopped before any model call: the seeded shuffle in `run.mjs` let its state go negative, which produced undefined items. The runner had already passed the auth check and the environment check (the child saw the account directory and no credential-shaped name). The fix keeps the state unsigned; nothing else changes. The order is still seeded by this file's hash and the stage name, so it changes with this amendment.
+
+## Amendment 2, 2026-11-07, after the pilot and before the main run
+
+The pilot ran 80 of 80 runs, 183 model calls, 00:21–00:44 EST, load 3.3–13 (no run labelled loaded). `analyze.mjs <output> pilot sizing` gave: no arm more than 30 points below the best, so all eight are kept; the largest runs-for-10%-standard-error is 18 (`haiku-high`, CV 0.42), which 30 needs cover, so `reps` is 1; 2,217 calls remain and one rep is predicted at 675. Main is therefore 30 needs × 8 arms × 1 rep, 240 runs, as in `plan.json`. The budget would allow 3 reps; the rule, which sized on wall-time variance and not on acceptance, chose 1, and that stands.
+
+One harness change before main: three `haiku-high` pilot runs ended with the transport's own "model token budget exceeded" (a single specification turn of 18–30k output tokens). The halt rule counts transport errors to catch a usage limit; that one is the loop's budget, already recorded as the run's failure, so it no longer counts toward a halt. Nothing about how runs are measured or decided changes.
