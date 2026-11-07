@@ -1,9 +1,13 @@
 import { appendFileSync } from 'node:fs';
 import { threadId } from 'node:worker_threads';
 import { pathToFileURL } from 'node:url';
-import { typecheck } from './checker.mjs';
+import { typecheck, warm as warmChecker } from './checker.mjs';
 
 export const TS_INVARIANT = 'typescript';
+
+export async function warm({ vendor } = {}) {
+  await warmChecker(vendor ? { vendor: new URL(vendor) } : {});
+}
 
 export async function createPort({ basePort, baseOptions, projects, vendor, reportFile }) {
   const { createPort: createBase } = await import(pathToFileURL(basePort).href);

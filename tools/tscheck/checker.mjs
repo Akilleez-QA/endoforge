@@ -74,6 +74,10 @@ async function load(vendor) {
   return { core, module: new WebAssembly.Module(bytes), compileMs: Math.round(performance.now() - started) };
 }
 
+export async function warm({ vendor = VENDOR } = {}) {
+  if (!loaded.has(String(vendor))) loaded.set(String(vendor), await load(vendor));
+}
+
 export async function typecheck(project, { emit = false, vendor = VENDOR } = {}) {
   const key = String(vendor);
   const warm = loaded.has(key);
