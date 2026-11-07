@@ -7,6 +7,7 @@ export const ROUTE = 'typescript';
 const ROOT = '/proj';
 const SCALARS = 'declare type i8=number;declare type i16=number;declare type i32=number;declare type i64=number;declare type isize=number;declare type u8=number;declare type u16=number;declare type u32=number;declare type u64=number;declare type usize=number;declare type f32=number;declare type f64=number;declare type bool=boolean;\n';
 const ADAPTER = 'const kernel = require("./kernel");exports.main = I => I.tests.map(t => { try { return { out: kernel[t.fn](...t.args) }; } catch (error) { return { err: String(error && error.message) }; } });';
+export const BASELINE = 'export {};\n';
 const sha256 = text => createHash('sha256').update(text).digest('hex');
 
 export const projectFor = source => ({ root: ROOT, files: { [`${ROOT}/kernel.ts`]: source, [`${ROOT}/scalars.d.ts`]: SCALARS },
@@ -42,7 +43,8 @@ export function createContainedRoute({ width = 1, deadlineMs = 1000, layout = 's
   if (!Object.hasOwn(LAYOUTS, layout)) throw new TypeError(`unknown layout ${layout}`);
   if (!CHECKS.includes(check)) throw new TypeError(`unknown check placement ${check}`);
   if (check !== 'supervisor' && layout === 'process-per-cell') throw new TypeError('a cohort check needs a shared cohort layout');
-  const pool = LAYOUTS[layout]({ width, deadlineMs, ...limits, ...(check === 'supervisor' ? {} : { prepare: cohortPrepare({ layout: check, ...checker }) }) });
+  const { incremental = true, reuse = true, ...preparer } = checker;
+  const pool = LAYOUTS[layout]({ width, deadlineMs, ...limits, ...(check === 'supervisor' ? {} : { prepare: cohortPrepare({ layout: check, ...preparer, reuse, ...(incremental ? { baseline: projectFor(BASELINE) } : {}) }) }) });
   const receipt = fields => ({ lane: LANE, route: ROUTE, ...fields });
   const score = (tests, result, fields) => {
     if (result.status !== 'completed') return receipt({ status: result.status, reason: result.reason, detail: result.detail, ...fields });

@@ -63,7 +63,7 @@ async function route() {
     if (rows.some(row => row.check === check && row.width === width)) continue;
     await gate();
     const loadStart = load(), created = performance.now();
-    const route = createContainedRoute({ width, deadlineMs: 2000, check });
+    const route = createContainedRoute({ width, deadlineMs: 2000, check, checker: { reuse: false, incremental: false } });
     await route.ready();
     await Promise.all(Array.from({ length: width }, (_, index) => route.check(candidates[index % candidates.length])));
     const readyMs = performance.now() - created;
@@ -113,7 +113,7 @@ async function parity() {
     diagnostics: (receipt.diagnostics || []).map(({ file, line, column, code }) => ({ file, line, column, code })), artifact: receipt.artifact ?? null });
   const results = {};
   for (const check of ARMS) {
-    const route = createContainedRoute({ width: 8, deadlineMs: 2000, check });
+    const route = createContainedRoute({ width: 8, deadlineMs: 2000, check, checker: { reuse: false, incremental: false } });
     results[check] = await Promise.all(list.map(item => route.check(item).then(verdict, error => ({ status: 'threw', reason: error.message }))));
     await route.close();
   }
@@ -136,7 +136,7 @@ async function fatal() {
   for (const check of ['sibling', 'fused']) for (let rep = 0; rep < 3; rep++) {
     await gate();
     const loadStart = load();
-    let route = createContainedRoute({ width, deadlineMs: 2000, check });
+    let route = createContainedRoute({ width, deadlineMs: 2000, check, checker: { reuse: false, incremental: false } });
     await route.ready();
     const batch = [bomb, ...Array.from({ length: width * 2 - 1 }, () => good)];
     const results = await Promise.all(batch.map(item => route.check(item)));
@@ -144,7 +144,7 @@ async function fatal() {
     rows.push({ kind: 'checker-heap', check, rep, attempts: batch.length, breacher: { status: results[0].status, reason: results[0].reason, detail: results[0].detail },
       neighboursCompleted: results.slice(1).filter(item => item.status === 'completed').length, neighbours: batch.length - 1, dispatched: stats.dispatched, cohortStarts: stats.cohortStarts, loadStart, loadEnd: load() });
     await route.close();
-    route = createContainedRoute({ width, deadlineMs: 2000, check });
+    route = createContainedRoute({ width, deadlineMs: 2000, check, checker: { reuse: false, incremental: false } });
     await route.ready();
     await Promise.all(Array.from({ length: width }, () => route.check(good)));
     const before = { ...route.pool.stats };

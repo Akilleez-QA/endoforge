@@ -4,10 +4,14 @@
 export const DIAGNOSTICS_KEPT = 5;
 
 export function createPreparer({ modules, wasm, config }) {
-  const { runCheck } = modules.check, core = modules.core, module = wasm[config.compiler.sha256];
+  const { runCheck, createBaseline } = modules.check, module = wasm[config.compiler.sha256];
   if (!module) throw new Error('the pinned compiler module was not provided');
+  const reuse = config.reuse ? modules.reuse.createReusingRunTsc(modules.core, config.reuse) : null;
+  const core = reuse ? { ...modules.core, runTsc: reuse.runTsc } : modules.core;
+  const compiler = { core, module, compiler: config.compiler };
+  const baseline = config.baseline ? createBaseline(compiler, config.baseline) : undefined;
   return payload => {
-    const report = runCheck({ core, module, compiler: config.compiler }, payload.project, { emit: true });
+    const report = runCheck(compiler, payload.project, { emit: true, ...(baseline ? { baseline } : {}) });
     const info = { compiler: report.compiler, exitCode: report.exitCode, wallMs: report.wallMs, memoryBytes: report.memoryBytes,
       diagnostics: report.diagnostics.slice(0, DIAGNOSTICS_KEPT), diagnosticCount: report.diagnostics.length,
       artifact: report.artifact ? report.artifact.sha256 : null };
