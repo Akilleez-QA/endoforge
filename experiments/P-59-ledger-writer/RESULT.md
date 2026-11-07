@@ -62,3 +62,4 @@ P-57's own profile of its bridge counted 14.1 syncs per candidate at 64 and 20.1
 - Power loss is simulated by deleting the trial's ledger files after a SIGKILL, with the journal kept. The disk's own write ordering and a real power cut aren't tested, and neither is a kill during recovery.
 - The crash trials used the writer with captured P-57 requests and no cells; supervisor and cell kills are covered by `loop-crash.test.mjs`, which passes.
 - RSS isn't PSS.
+- The acceptance run measured `f9cb94e`. One later change, `38d0f76`, gives each quarantined tail a unique file name so a recovery interrupted after copying a tail can run again; it touches only recovery and wasn't re-measured.
