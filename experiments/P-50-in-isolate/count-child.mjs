@@ -15,7 +15,7 @@ const script = ({ messages, turn }) => {
   if (turn === 0) return reply(specification(input));
   return reply(turn === 1 ? implementation(input, idOf(messages)) : { calls: [{ name: 'done' }] });
 };
-const pool = isolate || agent ? createLoopPool({ isolation: arm.endsWith('process') ? 'process' : 'thread', size: 1, ...(agent ? { provider: scriptedProvider(script) } : {}) })
+const pool = isolate || agent ? createLoopPool({ isolation: arm.endsWith('process') ? 'process' : 'thread', size: 1, waits: arm.includes('release') ? 'release' : 'hold', ...(agent ? { provider: scriptedProvider(script) } : {}) })
   : new IsolatePool({ hostPort: join(repository, 'core/runtime/x1/host.mjs'), size: 1 });
 await pool.ready();
 const bridge = pool.ledger.request.bind(pool.ledger), run = pool.run.bind(pool);

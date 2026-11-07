@@ -1,0 +1,113 @@
+const nonFinite = /\b(?:non-?finite|nan|infinit(?:e|y|ies))\b/i;
+const statedFinite = /\bmust be finite\b|\bfinite and\b/i;
+const trapVerb = /\b(?:traps?|trapping|rejects?|rejecting|aborts?|throws?)\b/i;
+const aboutTests = /\b(?:tests?|cases?|freezes?|frozen)\b/i;
+const negated = /\b(?:never|not|no|cannot)\b/i;
+const permits = /\b(?:returns?|yields?|propagates?|produces?)\b[^\n]*\b(?:non-?finite|nan|infinit(?:e|y|ies))\b|\b(?:non-?finite|nan|infinit(?:e|y|ies))\b[^\n]*\b(?:propagates?|returned)\b/i;
+const excludes = /\b(?:non-?finite|nan|infinit\w*)\b[^\n]*\b(?:outside|excluded|out of scope|unsupported)\b|\bfinite inputs? (?:is|are) (?:the )?(?:boundary )?(?:precondition|assumption)|\bcallers? (?:supply|supplies|provide|provides) finite\b/i;
+const promises = /\b(?:results?|returns?|outputs?)\b[^\n]*\bfinite\b|\bfinite\b[^\n]*\b(?:results?|returns?|outputs?)\b/i;
+const words = { zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6 };
+const decimals = /\b(\d+|zero|one|two|three|four|five|six)\s+decimal/gi;
+const family = new Map(Object.entries({ f: 'F', degf: 'F', fahrenheit: 'F', c: 'C', degc: 'C', celsius: 'C', psig: 'psig', psia: 'psia', psi: 'psi', kpa: 'kPa', bar: 'bar', lb: 'lb', lbs: 'lb', pound: 'lb', pounds: 'lb', kg: 'kg', g: 'g', gram: 'g', grams: 'g', m: 'm', meter: 'm', meters: 'm', metre: 'm', metres: 'm', ft: 'ft', feet: 'ft', kw: 'kW', hp: 'hp', usd: 'USD', percent: '%', pct: '%', cfm: 'cfm', gpm: 'gpm', btu: 'Btu', s: 's', sec: 's', second: 's', seconds: 's', min: 'min', minute: 'min', minutes: 'min', h: 'h', hr: 'h', hour: 'h', hours: 'h' }));
+export function exportBlocks(contract, names) {
+  const lines = contract.split('\n'), mention = line => names.filter(name => new RegExp(`\\b${name}\\s*\\(|\`${name}\``).test(line));
+  const blocks = Object.fromEntries(names.map(name => [name, []])), shared = [];
+  let current = null;
+  for (const line of lines) {
+    const named = mention(line);
+    if (named.length === 1) current = named[0];
+    else if (named.length > 1 || /^#/.test(line)) current = null;
+    (current ? blocks[current] : shared).push(line);
+  }
+  return { blocks, shared };
+}
+const sentences = lines => lines.join('\n').split(/(?<=\.)\s+|\n/).filter(Boolean);
+export function nonFiniteExpectation(contract, names) {
+  const { blocks, shared } = exportBlocks(contract, names);
+  const excluded = sentences(contract.split('\n')).some(sentence => excludes.test(sentence));
+  return Object.fromEntries(names.map(name => {
+    const relevant = sentences([...shared, ...blocks[name]]), any = pattern => relevant.some(sentence => pattern(sentence));
+    if (any(s => permits.test(s) && !negated.test(s) && !trapVerb.test(s))) return [name, 'permitted'];
+    if (any(s => (nonFinite.test(s) || statedFinite.test(s)) && trapVerb.test(s) && !aboutTests.test(s))) return [name, 'trap'];
+    if (excluded) return [name, 'excluded'];
+    if (any(s => promises.test(s) && !aboutTests.test(s))) return [name, 'finite'];
+    return [name, 'silent'];
+  }));
+}
+export function probeProblem(expectation, outcome) {
+  if (expectation === 'trap' && !outcome.trap) return 'returned where the contract requires a trap';
+  if (expectation === 'finite' && !outcome.trap && typeof outcome.value === 'number' && !Number.isFinite(outcome.value)) return 'returned a non-finite result the contract rules out';
+  return null;
+}
+export function kernelParameters(source) {
+  const clean = source.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' '), found = new Map();
+  for (const match of clean.matchAll(/\bexport\s+function\s+([A-Za-z_]\w*)\s*(?:<[^>]*>)?\s*\(([^)]*)\)/g)) {
+    found.set(match[1], match[2].split(',').map(part => part.trim()).filter(Boolean).map(part => part.split(/[:=]/)[0].replace(/[?\s]/g, '')));
+  }
+  return found;
+}
+const unitFamily = unit => {
+  const head = String(unit).toLowerCase().replace(/°/g, 'deg').split(/\s+/)[0];
+  if (head === '%') return '%';
+  const parts = head.split('/').map(part => family.get(part));
+  return parts.every(Boolean) && parts.length <= 2 ? parts.join('/') : null;
+};
+const nameFamily = name => {
+  const tokens = name.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/([A-Z])([A-Z][a-z])/g, '$1 $2').split(/[\s_]+/);
+  if (tokens.length < 2) return null;
+  const per = tokens.lastIndexOf('Per');
+  const known = token => family.get(token.toLowerCase());
+  if (per > 0 && per === tokens.length - 2) {
+    const [top, bottom] = [known(tokens[per - 1]), known(tokens[per + 1])];
+    return top && bottom ? `${top}/${bottom}` : null;
+  }
+  if (per >= 0) return null;
+  return known(tokens[tokens.length - 1]) ?? null;
+};
+const tokens = text => new Set(String(text).toLowerCase().split(/[^a-z0-9]+/).filter(word => word.length > 1));
+const overlap = (a, b) => [...tokens(a)].filter(word => tokens(b).has(word)).length;
+export function unitDisagreements(glue) {
+  const found = [];
+  for (const entry of glue.exports) {
+    for (const [label, unit] of [...entry.args.map(arg => [arg.name, arg.unit]), [entry.name, entry.result.unit]]) {
+      const fromName = nameFamily(label), fromUnit = unitFamily(unit);
+      if (fromName && fromUnit && fromName !== fromUnit) found.push(`${label}: glue unit ${unit} disagrees with the name, which says ${fromName}`);
+    }
+  }
+  return found;
+}
+// A contract can state a result twice: as a code table, and as a computation from the parameters, whose
+// codes the input code tables and the frozen tests then fix. When it gives a computation, the table isn't the
+// only basis for what a code means, and a gate can't tell from text which statement the glue should follow.
+const computation = /\bformula\b[^:\n]*:\s*(.+)$/i;
+export function statesComputation(lines, parameters) {
+  return lines.some(line => {
+    const expressions = [...line.matchAll(/`([^`]+)`/g)].map(match => match[1]), labelled = computation.exec(line);
+    if (labelled) expressions.push(labelled[1]);
+    return expressions.some(expression => !/^\s*[A-Za-z_]\w*\s*\(/.test(expression) && /[-+*/%<>]/.test(expression)
+      && parameters.some(name => new RegExp(`\\b${name}\\b`).test(expression)));
+  });
+}
+export function glueProblems(glue, inputs) { return glueFindings(glue, inputs).problems; }
+export function glueFindings(glue, { source, contract }) {
+  const problems = [], advisory = [], parameters = kernelParameters(source), names = glue.exports.map(entry => entry.name);
+  const { blocks, shared } = exportBlocks(contract, names);
+  for (const entry of glue.exports) {
+    const declared = parameters.get(entry.name), glueNames = entry.args.map(arg => arg.name);
+    if (declared && glueNames.join() !== declared.join()) problems.push(`${entry.name}: glue argument names ${glueNames.join(', ')} differ from kernel parameters ${declared.join(', ')}`);
+    const block = blocks[entry.name] ?? [], stated = lines => [...new Set([...lines.join('\n').matchAll(decimals)].map(match => words[match[1].toLowerCase()] ?? Number(match[1])))];
+    const own = stated(block), expected = own.length ? own : stated([...shared, ...Object.values(blocks).flat()]);
+    if (expected.length === 1 && Number.isInteger(entry.result.precision) && entry.result.precision !== expected[0]) problems.push(`${entry.name}: glue precision ${entry.result.precision}, contract states ${expected[0]} decimal places`);
+    if (entry.result.codes) {
+      const table = new Map([...block.join('\n').matchAll(/(?<![\w.])(-?\d+)\s*(?:=|→|means)\s*([^,;\n]+)/g)].map(match => [match[1], match[2]]));
+      const codes = Object.keys(entry.result.codes).filter(code => table.has(code));
+      const found = statesComputation(block, declared ?? glueNames) ? advisory : problems;
+      for (const a of codes) for (const b of codes) if (a < b) {
+        const straight = overlap(entry.result.codes[a], table.get(a)) + overlap(entry.result.codes[b], table.get(b));
+        const crossed = overlap(entry.result.codes[a], table.get(b)) + overlap(entry.result.codes[b], table.get(a));
+        if (crossed > straight) found.push(`${entry.name}: labels for codes ${a} and ${b} fit the contract better swapped`);
+      }
+    }
+  }
+  return { problems, advisory };
+}

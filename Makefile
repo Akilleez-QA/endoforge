@@ -22,7 +22,7 @@ engine-test:
 	node --test core/engine/*.test.mjs
 
 isolate-test:
-	node --test core/runtime/test/isolate-pool.test.mjs core/runtime/test/isolate-process.test.mjs core/runtime/test/isolate-deadline.test.mjs core/runtime/test/isolate-toolchain.test.mjs core/runtime/test/isolate-limits.test.mjs core/runtime/test/isolate-offheap.test.mjs core/runtime/test/isolate-trusted-cap.test.mjs core/runtime/test/isolate-shared-module.test.mjs core/runtime/test/isolate-host-call.test.mjs core/runtime/test/contained-js.test.mjs
+	node --test core/runtime/test/isolate-pool.test.mjs core/runtime/test/isolate-process.test.mjs core/runtime/test/isolate-deadline.test.mjs core/runtime/test/isolate-toolchain.test.mjs core/runtime/test/isolate-limits.test.mjs core/runtime/test/isolate-offheap.test.mjs core/runtime/test/isolate-trusted-cap.test.mjs core/runtime/test/isolate-shared-module.test.mjs core/runtime/test/isolate-host-call.test.mjs core/runtime/test/contained-js.test.mjs core/runtime/test/isolate-flags.test.mjs
 
 tscheck-setup:
 	npm ci --ignore-scripts --no-audit --no-fund --prefix tools/tscheck
@@ -80,11 +80,11 @@ loop-setup:
 	npm ci --ignore-scripts --no-audit --no-fund --prefix tools/asc
 
 loop-test: loop-setup
-	node --test core/runtime/test/loop.test.mjs core/runtime/test/loop-agent.test.mjs core/runtime/test/loop-review.test.mjs core/runtime/test/loop-count.test.mjs core/runtime/test/loop-crash.test.mjs
+	node --test core/runtime/test/loop.test.mjs core/runtime/test/loop-agent.test.mjs core/runtime/test/loop-review.test.mjs core/runtime/test/loop-count.test.mjs core/runtime/test/loop-crash.test.mjs core/runtime/test/loop-waits.test.mjs
 
 .PHONY: pipeline-test
 pipeline-test:
-	node --test core/runtime/test/x1.test.mjs core/runtime/test/generator*.test.mjs core/runtime/test/promotion.test.mjs core/runtime/test/pipeline-contained.test.mjs
+	node --test core/runtime/test/x1.test.mjs core/runtime/test/x1-measured.test.mjs core/runtime/test/x1-contract.test.mjs core/runtime/test/x1-frozen.test.mjs core/runtime/test/generator*.test.mjs core/runtime/test/promotion.test.mjs core/runtime/test/synth.test.mjs core/runtime/test/synth-pipeline.test.mjs core/runtime/test/pipeline-contained.test.mjs
 
 seeded-fault-test:
 	$(PYTHON) -B -m unittest tools.seeded_faults.test_generator -v

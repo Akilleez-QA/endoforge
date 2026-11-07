@@ -4,11 +4,11 @@ import { dirname, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { compile as compileKernel, loadCompiler, x1Flags } from '../../../experiments/assemblyscript-toolchain.mjs';
 import { ASC_FILES, ASC_PATH, ASC_VERSION } from '../../../tools/asc/pin.mjs';
-import { agentStage, specificationProblems, stagePrompts } from './agent.mjs';
+import { agentStage, specificationProblems, stagePrompts, takeReply } from './agent.mjs';
 import { runGates } from './gates.mjs';
-import { createPort as x1Port, hash, signature } from './host.mjs';
+import { createPort as x1Port, hash, implementationFiles as hostFiles } from './host.mjs';
 
-export const implementationFiles = Object.freeze(['host.mjs', 'gates.mjs', 'glue.schema.json', 'loop-port.mjs', 'agent.mjs']);
+export const implementationFiles = Object.freeze([...hostFiles, 'loop-port.mjs', 'agent.mjs']);
 const oracleFiles = ['CONTRACT.md', 'tests.json', 'frozen.sha256'];
 const maximumKernelPages = 1024;
 const implementation = Object.fromEntries(implementationFiles.map(name => [name, readFileSync(new URL(name, import.meta.url)).toString('hex')]));
@@ -131,11 +131,56 @@ export function createPort(options, { stage = () => {}, host } = {}) {
     if (overlay['kernel.ts'] === undefined) throw Error(`implementation stopped: ${agentReceipt.exit_reason}`);
     return compileRound(files());
   };
+  const releasedCandidate = async () => {
+    const { id, limits } = options, resumed = options.continuation;
+    if (resumed && JSON.stringify(resumed.compiler) !== JSON.stringify(compiler)) throw Error('runtime changed during the wait');
+    const state = resumed ?? { stage: null, turn: 0, messages: [], overlay: {}, receipt: { turns: 0, tokens: 0, tool_calls: 0, exit_reason: null }, compiler };
+    const { messages, overlay } = state;
+    agentReceipt = state.receipt;
+    const admitted = () => verifyFromMemory(options.admission)({ identity: options.admission.identity }).then(({ bundle }) => {
+      for (const name of implementationFiles) if (implementation[name] !== bundle.files[name]) throw Error('host implementation drift');
+      for (const name of oracleFiles) {
+        const text = Buffer.from(bundle.files[name], 'hex').toString();
+        if (state.stage === 'implementation' && overlay[name] !== text) throw Error('frozen files differ from the continuation');
+        overlay[name] = text;
+      }
+    });
+    const files = () => ({ 'CONTRACT.md': overlay['CONTRACT.md'], 'tests.json': overlay['tests.json'], 'frozen.sha256': overlay['frozen.sha256'], 'kernel.ts': overlay['kernel.ts'] ?? '', 'glue.json': overlay['glue.json'] ?? '' });
+    const stages = {
+      specification: { editable: ['CONTRACT.md', 'tests.json'], check: async () => specificationProblems(overlay), prompt: () => stagePrompts.specification({ need: options.need, id }) },
+      implementation: { editable: ['kernel.ts', 'glue.json'], prompt: () => stagePrompts.implementation({ id, overlay: messages.length ? null : overlay }),
+        check: async () => (overlay['kernel.ts'] === undefined ? { problems: ['kernel.ts is missing'] } : checkRound(await compileRound(files()))) },
+    };
+    const begin = name => { messages.push({ role: 'user', content: stages[name].prompt() }); Object.assign(state, { stage: name, turn: 0 }); };
+    if (options.admission) await admitted();
+    if (!state.stage) begin(options.admission ? 'implementation' : 'specification');
+    else {
+      const { stage: name } = state;
+      let exit = await takeReply({ messages, overlay, editable: stages[name].editable, check: stages[name].check, receipt: state.receipt, limits }, options.reply);
+      state.turn += 1;
+      if (!exit && state.turn >= limits.maxTurns) exit = 'max_turns';
+      if (exit) {
+        state.receipt.exit_reason = exit;
+        if (name === 'specification') {
+          if (exit !== 'stop') throw Error(`specification stopped: ${exit}`);
+          overlay['frozen.sha256'] = JSON.stringify({ contract: hash(overlay['CONTRACT.md']), tests: hash(overlay['tests.json']) });
+          const frozen = Object.fromEntries(oracleFiles.map(file => [file, Buffer.from(overlay[file]).toString('hex')]));
+          options.admission = await host({ kind: 'admit', files: { ...frozen, ...implementation } });
+          stage('admitted');
+          begin('implementation');
+        } else {
+          if (overlay['kernel.ts'] === undefined) throw Error(`implementation stopped: ${exit}`);
+          return { candidate: await compileRound(files()) };
+        }
+      }
+    }
+    stage('model:wait');
+    return { waiting: state };
+  };
   const port = {
-    describe: () => signature,
-    run: (_, cases) => ({ status: 'completed', outputs: cases.map(c => ({ caseId: c.id, value: 1 })),
-      usage: { wallMs: 0, memoryBytes: 0, fuel: 0 }, effects: [] }),
-    scanEffects: () => [],
+    describe: value => base.describe(value),
+    run: (...args) => base.run(...args),
+    scanEffects: value => base.scanEffects(value),
     residual(_, bundle) {
       stage('gates:start');
       for (const name of implementationFiles) if (implementation[name] !== bundle.files[name]) throw Error('host implementation drift');
@@ -153,7 +198,11 @@ export function createPort(options, { stage = () => {}, host } = {}) {
         const current = await compileRound(options.candidate.files);
         return { stage: 'checked', failures: checkRound(current) };
       }
-      candidate = options.mode === 'agent' ? await agentCandidate() : options.repair ? await repairRounds() : await compileRound(options.candidate.files);
+      if (options.waits === 'release') {
+        const next = await releasedCandidate();
+        if (next.waiting) { port.waiting = next.waiting; return { stage: 'waiting' }; }
+        candidate = next.candidate;
+      } else candidate = options.mode === 'agent' ? await agentCandidate() : options.repair ? await repairRounds() : await compileRound(options.candidate.files);
       const content = JSON.stringify(candidate);
       identity = hash(content);
       base = x1Port({ candidates: { [identity]: candidate } });
@@ -161,6 +210,7 @@ export function createPort(options, { stage = () => {}, host } = {}) {
       return evaluateCandidates(options.mode === 'agent' ? { identity: options.admission.identity } : reference, [identity], port, { requireFrozen: verifyFromMemory(options.admission) });
     },
     evidence() {
+      if (port.waiting) return { waiting: port.waiting, compiler, timings: { compile: compileMs, gates: gateMs } };
       stage('verdict');
       return { content: port.content, identity, compiler, rounds, ...(agentReceipt ? { agent: agentReceipt } : {}), timings: { compile: compileMs, gates: gateMs } };
     },

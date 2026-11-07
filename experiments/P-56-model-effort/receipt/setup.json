@@ -1,0 +1,143 @@
+{
+ "at": "2026-11-07T05:03Z",
+ "account": "nh3 account directory, subscription sign-in",
+ "authStatus": {
+  "loggedIn": true,
+  "authMethod": "claude.ai",
+  "apiProvider": "firstParty",
+  "subscriptionType": "max"
+ },
+ "authCheckCall": {
+  "command": "claude -p --model haiku --tools \"\" --safe-mode --no-session-persistence --output-format json \"Reply with the single word ok.\"",
+  "type": "result",
+  "subtype": "success",
+  "is_error": false,
+  "result": "ok",
+  "duration_ms": 1202,
+  "duration_api_ms": 1143,
+  "total_cost_usd": 0.0005224000000000001,
+  "models": [
+   "claude-haiku-5-5"
+  ],
+  "usage": {
+   "input_tokens": 2,
+   "output_tokens": 4,
+   "cache_creation_input_tokens": 2601,
+   "cache_read_input_tokens": 0
+  }
+ },
+ "effortProbes": {
+  "haiku": {
+   "type": "result",
+   "subtype": "success",
+   "is_error": false,
+   "result": "ok",
+   "duration_ms": 980,
+   "duration_api_ms": 941,
+   "total_cost_usd": 0.00011542,
+   "models": [
+    "claude-haiku-5-5"
+   ],
+   "usage": {
+    "input_tokens": 2,
+    "output_tokens": 4,
+    "cache_creation_input_tokens": 459,
+    "cache_read_input_tokens": 2142
+   }
+  },
+  "sonnet": {
+   "type": "result",
+   "subtype": "success",
+   "is_error": false,
+   "result": "ok",
+   "duration_ms": 1594,
+   "duration_api_ms": 1526,
+   "total_cost_usd": 0.0071519999999999995,
+   "models": [
+    "claude-sonnet-5-5"
+   ],
+   "usage": {
+    "input_tokens": 2,
+    "output_tokens": 4,
+    "cache_creation_input_tokens": 1777,
+    "cache_read_input_tokens": 0
+   }
+  },
+  "opus": {
+   "type": "result",
+   "subtype": "success",
+   "is_error": false,
+   "result": "ok",
+   "duration_ms": 1165,
+   "duration_api_ms": 1118,
+   "total_cost_usd": 0.014879999999999999,
+   "models": [
+    "claude-opus-5-5"
+   ],
+   "usage": {
+    "input_tokens": 2,
+    "output_tokens": 4,
+    "cache_creation_input_tokens": 1849,
+    "cache_read_input_tokens": 0
+   }
+  }
+ },
+ "warmTransportProbe": {
+  "inits": [
+   {
+    "model": "claude-haiku-5-5",
+    "apiKeySource": "none"
+   },
+   {
+    "model": "claude-haiku-5-5",
+    "apiKeySource": "none"
+   },
+   {
+    "model": "claude-haiku-5-5",
+    "apiKeySource": "none"
+   },
+   {
+    "model": "claude-haiku-5-5",
+    "apiKeySource": "none"
+   }
+  ],
+  "out": [
+   {
+    "wallMs": 3200,
+    "apiMs": 3153,
+    "costUsd": 0.0005343100000000001,
+    "usage": {
+     "i": 6,
+     "o": 194,
+     "cc": 2126,
+     "cr": 1151
+    }
+   },
+   {
+    "wallMs": 1023,
+    "apiMs": 4164,
+    "costUsd": 0.0006274800000000001,
+    "usage": {
+     "i": 2,
+     "o": 61,
+     "cc": 229,
+     "cr": 1667
+    }
+   },
+   {
+    "wallMs": 1538,
+    "apiMs": 5676,
+    "costUsd": 0.0006995400000000001,
+    "usage": {
+     "i": 2,
+     "o": 61,
+     "cc": 112,
+     "cr": 1896
+    }
+   }
+  ]
+ },
+ "notes": [
+  "duration_api_ms and total_cost_usd in warm stream-json results appear cumulative within a session (API time clearly is); a run cost is taken as the last turn value."
+ ]
+}
