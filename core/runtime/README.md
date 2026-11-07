@@ -255,16 +255,15 @@ This isn't an OS sandbox and it isn't a Spectre boundary. The permission model d
 
 ## X1 host port
 
-[x1/host.mjs](x1/host.mjs) runs the seven X1 gates as the real evaluator's
-residual check in either workcell mode. Universal gates validate the host envelope;
-they do not claim to infer an AssemblyScript signature or scan arbitrary effects.
+[x1/host.mjs](x1/host.mjs) runs the eight X1 gates as the real evaluator's
+residual check in either workcell mode. Universal gates measure the candidate through [x1/measure.mjs](x1/measure.mjs): two fresh instances in opposite call orders, usage read from outside the guest, and a scan of imports and calls. A wall-only overrun reads as an unknown outcome; fuel, stack and memory overruns refuse.
 [x1/compiler.mjs](x1/compiler.mjs) compiles on the supervisor with a 60-second
 watchdog, bounded diagnostic output and `--maximumMemory 1024` (64 MiB). Set
 `ENDOFORGE_ASC_CMD` to the AssemblyScript 0.28.20 `asc` executable. Compilation
 is outside the workcell heap quota. Candidate identity binds source, glue, frozen
 checks and compiler bytes; the port checks source and frozen implementation bindings.
 Original WASM exports exclude guard helpers; the closed glue schema preserves X1 constraints.
-G6 retains X1's observed 2000-ms call boundary, not a preemptive CPU watchdog.
+[x1/meter.mjs](x1/meter.mjs) adds fuel to the module at function entry and each loop header, charging an upper bound on instructions executed, so a kernel that never returns stops in the guest. G6 reports that bound; bulk memory operations are charged a fixed cost, so the pool's `jobTimeoutMs` stays a backstop. G7 also checks glue against kernel parameters and the frozen contract, and G8 probes float parameters with NaN and infinity, judged by [x1/contract.mjs](x1/contract.mjs) ([P-52](../../experiments/P-52-real-gates/RESULT.md)).
 Host ports are trusted; workcells are not an OS sandbox.
 
 [x1/generator.mjs](x1/generator.mjs) exposes
@@ -296,6 +295,28 @@ frozen specification. This addresses unrepresentable inputs at the WASM boundary
 without changing gates. [P-42 precommit](../../experiments/P-42-scalar/PRECOMMIT.md)
 defines the prospective comparison; its copied harness uses `P22_OUTPUT` outside
 the checkout and `ENDOFORGE_CODEX_TERSE=exact` or `scalar` for each arm.
+
+### The loop inside the workcell
+
+`ENDOFORGE_LOOP=isolate` runs everything between generation and promotion in one warm cell, with a pool from [x1/loop.mjs](x1/loop.mjs)'s `createLoopPool`. The existing path stays the default until parity is accepted, and it is unchanged. [P-50](../../experiments/P-50-in-isolate/RESULT.md) has the measurements.
+
+- **Compile.** [x1/loop-port.mjs](x1/loop-port.mjs) compiles in the cell through the pinned AssemblyScript toolchain, over an in-memory overlay holding only `kernel.ts`, with the existing flags. No process or temp file. `import` of any other path fails, because the compiler's only reader is the overlay. `warm` checks the toolchain's digests from [tools/asc/pin.mjs](../../tools/asc/pin.mjs) and primes the compiler. The compiler needs the pool's WASM ceiling raised to 4 GiB, because binaryen declares that maximum, so the port refuses any kernel declaring more than the existing 1024 pages (64 MiB). Compile now counts against the cell's heap limit; a job past `jobTimeoutMs`, default 60 s here, loses the cell and records an unknown outcome.
+- **Frozen check.** The freeze and the admission are one bridge request, which returns the frozen record's encoded data. The cell recomputes the evaluator identity and digest from that string at each of the evaluator's verifications, so a change to what it holds fails at the next one. A change on disk after admission, or a repository implementation file that no longer matches the bundle, is caught by the commit, which re-reads both inside its transaction: the receipt records `failed` and the decision refuses. A self-consistent forged bundle doesn't match the ledger's digest, and the commit refuses that too.
+- **Gates and repair.** Round evaluation is unchanged and runs in the same cell. `repair: {module, maxRounds, options}` runs a host-supplied module in the cell, with a new compile and fresh instances each round, and may not change the oracle. A generator repair uses `checkCandidate`, one job with no durable effect, and releases the cell while the model works.
+- **Durable crossing.** One `commit` request per candidate, batched with others by the persistent bridge. In one transaction it registers the candidate, appends the receipt and evaluates the unchanged promotion rule, then writes and fsyncs the decision after commit and before answering. A crash before commit leaves nothing of the attempt, and a crash after it returns no promotion over complete records, which the existing `promote` can read. The commit also checks the report against the frozen bundle and candidate: oracle files, source and module digests, every frozen test present, and each recorded value against its expectation.
+- **Left outside.** The ledger and supervisor stay out of every cohort: the cell never gets the ledger path or the frozen root. Generation, including the freeze's oracle files, is still a client process and a workspace. [x1/reference.mjs](x1/reference.mjs) keeps its process: a `vm` context is not a boundary, and from a cell its escape reaches the file system, while under `--permission` in its own process it doesn't. `make loop-test` shows this. The cell's report is trusted code's: one that is self-consistent in every field can't be told from a real one without running the kernel again.
+
+### The agent loop in the workcell
+
+`ENDOFORGE_LOOP=agent` also moves generation in. Create the pool with `createLoopPool({ provider })`.
+
+- **Cell.** [x1/agent.mjs](x1/agent.mjs) holds the turn loop in the bounded style of a thin agent: turn and token limits, one reply object with up to 16 calls, `read_file`, `edit_file`, `check`, `done`, an error reply instead of a crash on junk. Files are an in-memory overlay. Editable paths are `CONTRACT.md` and `tests.json`, then `kernel.ts` and `glue.json`. A failed check is the next prompt in the same job.
+- **Freeze.** The cell sends the frozen files and its implementation bytes over the worker channel, and the host writes them into the ledger. There is no frozen tree on disk. The ledger's own chain guards the bundle, and the commit still compares the repository's implementation files with it. `resume: true` starts a lost attempt again from the ledger's evaluator.
+- **Decision.** It commits in the receipt's transaction, in a separate `x1_decisions` table outside the hash chain. `promote` reaches the same answer from the chain. The ledger's WAL file sits beside it.
+- **Waits.** `createLoopPool({ waits })` is `release` by default. A cell needing a model reply ends its job with status `waiting` and its continuation, and the cell goes back to the pool while the host calls the model. Once the task is frozen and the conversation holds a reply no durable record has, the host first writes the continuation to `x1_continuations` in the task's ledger. The reply is a fresh admission into any free cell: the host rechecks deadline and limits, and the cell rechecks the frozen evaluator, its implementation files, the frozen files and the compiler identity. Each park names the continuation it resumes, and the commit closes the last, so one resumed twice can't promote. A failed model call ends the attempt as under `hold`; a supervisor lost during the wait leaves the continuation for a rerun to resume. `hold` keeps the cell through the call, as before. [P-57](../../experiments/P-57-release-waits/PRECOMMIT.md) measures both.
+- **Deadline.** `jobTimeoutMs` covers compute. It stops while the host answers a call and restarts after, and the transport's own timeout bounds the model.
+- **Provider port.** `{name, testDouble, start(), send({session, messages}), endSession(session), close()}`, returning `{text, usage}`. Only those two reach the cell. [x1/transports.mjs](x1/transports.mjs) has `WarmClaudeTransport`, `SpawnClaudeTransport` and `scriptedProvider`. Another source, such as a warm `codex app-server`, can replace them without touching the loop.
+- **Warm Claude.** One long-lived `claude -p --input-format stream-json` per lane, with `--tools ""`, `--no-session-persistence`, `--strict-mcp-config`, `--setting-sources ""`, `--safe-mode`, a structured reply schema, and an allow-listed environment that has no API key variables. Each `instances` entry has one existing `CLAUDE_CONFIG_DIR`, so accounts never share state; the transport never reads credentials. A session reporting another tool, an API key source or an MCP server is refused. `/clear` separates sessions. A dead lane takes no further prompt, and the next send starts a new process with the full history. An idle lane is released after `idleMs` if its generation hasn't changed, and a usage-limit event routes work away from that instance until it resets. Nothing retries a lost attempt automatically.
 
 [x1/pipeline.mjs](x1/pipeline.mjs) connects generation, supervisor compilation,
 pool evaluation, receipt storage and local promotion. POODO currently supplies

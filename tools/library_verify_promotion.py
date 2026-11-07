@@ -7,7 +7,7 @@ from pathlib import Path
 
 from core.ledger.ledger import Ledger
 
-GATES = {"G1_frozen", "G2_compiles", "G3_exports", "G4_tests", "G5_deterministic", "G6_bounded", "G7_glue"}
+GATES = {"G1_frozen", "G2_compiles", "G3_exports", "G4_tests", "G5_deterministic", "G6_bounded", "G7_glue", "G8_nonfinite"}
 CHECKS = ["schema", "interface", "bounds", "determinism", "forbidden_effects", "residual"]
 
 

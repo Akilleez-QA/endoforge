@@ -1,0 +1,926 @@
+{
+ "control": {
+  "P21": {
+   "onRefusedPristine": {
+    "escaped": 0,
+    "submitted": 1
+   },
+   "onPromotingPristine": {
+    "after": {
+     "escaped": 117,
+     "submitted": 117
+    },
+    "before": {
+     "escaped": 117,
+     "submitted": 117
+    }
+   },
+   "after": {
+    "escaped": 117,
+    "submitted": 118
+   },
+   "before": {
+    "escaped": 118,
+    "submitted": 118
+   },
+   "byClassAfter": {
+    "control": {
+     "escaped": 117,
+     "submitted": 118
+    }
+   },
+   "byClassBefore": {
+    "control": {
+     "escaped": 118,
+     "submitted": 118
+    }
+   },
+   "byOpAfter": {
+    "pristine": {
+     "escaped": 117,
+     "submitted": 118
+    }
+   },
+   "finiteVisible": {
+    "after": {
+     "escaped": 117,
+     "submitted": 118
+    },
+    "before": {
+     "escaped": 118,
+     "submitted": 118
+    }
+   },
+   "nonFiniteOnly": {},
+   "caughtAt": {
+    "G7_glue": 1
+   },
+   "newlyCaught": 1,
+   "newlyEscaped": [],
+   "gateMs": {
+    "p50": 1843.6168849999995,
+    "p95": 3077.907292
+   },
+   "elapsedMs": {
+    "p50": 9323.782377000001
+   }
+  },
+  "add": {
+   "onPromotingPristine": {
+    "after": {
+     "escaped": 59,
+     "submitted": 59
+    },
+    "before": {
+     "escaped": 59,
+     "submitted": 59
+    }
+   },
+   "after": {
+    "escaped": 59,
+    "submitted": 59
+   },
+   "before": {
+    "escaped": 59,
+    "submitted": 59
+   },
+   "byClassAfter": {
+    "control": {
+     "escaped": 59,
+     "submitted": 59
+    }
+   },
+   "byClassBefore": {
+    "control": {
+     "escaped": 59,
+     "submitted": 59
+    }
+   },
+   "byOpAfter": {
+    "pristine": {
+     "escaped": 59,
+     "submitted": 59
+    }
+   },
+   "finiteVisible": {
+    "after": {
+     "escaped": 59,
+     "submitted": 59
+    },
+    "before": {
+     "escaped": 59,
+     "submitted": 59
+    }
+   },
+   "nonFiniteOnly": {},
+   "caughtAt": {},
+   "newlyCaught": 0,
+   "newlyEscaped": [],
+   "gateMs": {
+    "p50": 1597.3354500000023,
+    "p95": 3216.1879709999994
+   },
+   "elapsedMs": {
+    "p50": 9498.571432999997
+   }
+  },
+  "refusedOrUnknown": [
+   {
+    "mutant": "cand-r4/C-015#control",
+    "where": "G7_glue",
+    "decision": {
+     "decision": "refuse",
+     "reason": "unverified chain or incomplete passing pool evidence"
+    },
+    "pool": [
+     {
+      "status": "completed",
+      "reason": null,
+      "error": null,
+      "stage": "completed",
+      "attempts": [
+       {
+        "round": 0,
+        "stage": "rejected",
+        "firstFailure": "residual",
+        "reason": "{\"at\":\"2026-11-07T01:45:09.869Z\",\"gates\":{\"G1_frozen\":{\"ok\":true},\"G2_compiles\":{\"ok\":true,\"wasmBytes\":498,\"wasmSha256\":\"c11335f24042ac36140bcc444c9ba8d6975df6b5cff0383b47a9e1520f3de6a0\"},\"G3_exports\":{\"ok\":true,\"exports\":[\"approvalDecision\"]},\"G4_tests\":{\"ok\":true,\"passed\":16,\"total\":16},\"G6_bounded\":{\"ok\":true,\"maxMs\":0.142503,\"fuelUsed\":832},\"G5_deterministic\":{\"ok\":true},\"G7_glue\":{\"ok\":false,\"why\":\"approvalDecision: labels for codes 1 and 2 fit the contract better swapped\"},\"G8_nonfinite\":{"
+       }
+      ]
+     }
+    ]
+   }
+  ],
+  "inconclusive": 0,
+  "harnessError": 0
+ },
+ "sampled": {
+  "P21": {
+   "onRefusedPristine": {
+    "escaped": 0,
+    "submitted": 41
+   },
+   "onPromotingPristine": {
+    "after": {
+     "escaped": 280,
+     "submitted": 7842
+    },
+    "before": {
+     "escaped": 441,
+     "submitted": 7842
+    }
+   },
+   "after": {
+    "escaped": 280,
+    "submitted": 7883
+   },
+   "before": {
+    "escaped": 441,
+    "submitted": 7883
+   },
+   "byClassAfter": {
+    "swapped_units": {
+     "escaped": 1,
+     "submitted": 884
+    },
+    "dropped_rows": {
+     "escaped": 1,
+     "submitted": 271
+    },
+    "off_by_one": {
+     "escaped": 26,
+     "submitted": 955
+    },
+    "reversed_inputs": {
+     "escaped": 2,
+     "submitted": 403
+    },
+    "wrong_join": {
+     "escaped": 20,
+     "submitted": 800
+    },
+    "stale_binding": {
+     "escaped": 47,
+     "submitted": 997
+    },
+    "wrong_constants": {
+     "escaped": 32,
+     "submitted": 951
+    },
+    "wrong_rounding": {
+     "escaped": 107,
+     "submitted": 649
+    },
+    "boundary_errors": {
+     "escaped": 44,
+     "submitted": 1027
+    },
+    "sign_errors": {
+     "escaped": 0,
+     "submitted": 946
+    }
+   },
+   "byClassBefore": {
+    "swapped_units": {
+     "escaped": 1,
+     "submitted": 884
+    },
+    "dropped_rows": {
+     "escaped": 1,
+     "submitted": 271
+    },
+    "off_by_one": {
+     "escaped": 26,
+     "submitted": 955
+    },
+    "reversed_inputs": {
+     "escaped": 2,
+     "submitted": 403
+    },
+    "wrong_join": {
+     "escaped": 79,
+     "submitted": 800
+    },
+    "stale_binding": {
+     "escaped": 47,
+     "submitted": 997
+    },
+    "wrong_constants": {
+     "escaped": 32,
+     "submitted": 951
+    },
+    "wrong_rounding": {
+     "escaped": 107,
+     "submitted": 649
+    },
+    "boundary_errors": {
+     "escaped": 146,
+     "submitted": 1027
+    },
+    "sign_errors": {
+     "escaped": 0,
+     "submitted": 946
+    }
+   },
+   "byOpAfter": {
+    "input_times_unit_factor": {
+     "escaped": 0,
+     "submitted": 399
+    },
+    "drop_term": {
+     "escaped": 1,
+     "submitted": 163
+    },
+    "ternary_keep_else": {
+     "escaped": 0,
+     "submitted": 38
+    },
+    "result_over_unit_factor": {
+     "escaped": 0,
+     "submitted": 189
+    },
+    "result_times_unit_factor": {
+     "escaped": 0,
+     "submitted": 196
+    },
+    "ternary_keep_then": {
+     "escaped": 0,
+     "submitted": 38
+    },
+    "literal_plus_one": {
+     "escaped": 20,
+     "submitted": 522
+    },
+    "literal_minus_one": {
+     "escaped": 6,
+     "submitted": 336
+    },
+    "result_minus_one": {
+     "escaped": 0,
+     "submitted": 53
+    },
+    "result_plus_one": {
+     "escaped": 0,
+     "submitted": 44
+    },
+    "swap_adjacent_params": {
+     "escaped": 0,
+     "submitted": 173
+    },
+    "swap_minus_operands": {
+     "escaped": 1,
+     "submitted": 93
+    },
+    "and_to_or": {
+     "escaped": 2,
+     "submitted": 86
+    },
+    "or_to_and": {
+     "escaped": 18,
+     "submitted": 500
+    },
+    "bound_to_other_literal": {
+     "escaped": 2,
+     "submitted": 454
+    },
+    "plus_to_times": {
+     "escaped": 0,
+     "submitted": 58
+    },
+    "ternary_swap_arms": {
+     "escaped": 0,
+     "submitted": 37
+    },
+    "revision_minus_0_2pct": {
+     "escaped": 12,
+     "submitted": 256
+    },
+    "revision_plus_0_2pct": {
+     "escaped": 33,
+     "submitted": 268
+    },
+    "times_to_plus": {
+     "escaped": 0,
+     "submitted": 117
+    },
+    "times_10": {
+     "escaped": 9,
+     "submitted": 261
+    },
+    "times_0_1": {
+     "escaped": 2,
+     "submitted": 259
+    },
+    "times_1_1": {
+     "escaped": 9,
+     "submitted": 231
+    },
+    "times_1_01": {
+     "escaped": 12,
+     "submitted": 200
+    },
+    "round_one_place": {
+     "escaped": 12,
+     "submitted": 86
+    },
+    "add_floor": {
+     "escaped": 9,
+     "submitted": 94
+    },
+    "single_precision": {
+     "escaped": 31,
+     "submitted": 93
+    },
+    "add_ceil": {
+     "escaped": 7,
+     "submitted": 84
+    },
+    "relax_or_tighten_comparison": {
+     "escaped": 2,
+     "submitted": 412
+    },
+    "drop_guard_disjunct": {
+     "escaped": 40,
+     "submitted": 460
+    },
+    "add_round": {
+     "escaped": 6,
+     "submitted": 89
+    },
+    "truncate_to_int": {
+     "escaped": 6,
+     "submitted": 92
+    },
+    "round_two_places": {
+     "escaped": 28,
+     "submitted": 90
+    },
+    "flip_comparison": {
+     "escaped": 0,
+     "submitted": 488
+    },
+    "plus_to_minus": {
+     "escaped": 0,
+     "submitted": 55
+    },
+    "drop_not": {
+     "escaped": 0,
+     "submitted": 27
+    },
+    "negate_result": {
+     "escaped": 0,
+     "submitted": 168
+    },
+    "minus_to_plus": {
+     "escaped": 0,
+     "submitted": 78
+    },
+    "div_to_mul_constant": {
+     "escaped": 0,
+     "submitted": 41
+    },
+    "drop_branch": {
+     "escaped": 0,
+     "submitted": 32
+    },
+    "swap_div_operands": {
+     "escaped": 1,
+     "submitted": 107
+    },
+    "drop_guard": {
+     "escaped": 2,
+     "submitted": 155
+    },
+    "drop_negative_literal": {
+     "escaped": 0,
+     "submitted": 50
+    },
+    "swap_call_args": {
+     "escaped": 0,
+     "submitted": 30
+    },
+    "strip_rounding": {
+     "escaped": 7,
+     "submitted": 10
+    },
+    "round_to_three_figures": {
+     "escaped": 0,
+     "submitted": 19
+    },
+    "flip_equality": {
+     "escaped": 0,
+     "submitted": 80
+    },
+    "result_minus_32": {
+     "escaped": 0,
+     "submitted": 12
+    },
+    "result_plus_32": {
+     "escaped": 0,
+     "submitted": 13
+    },
+    "mul_to_div_constant": {
+     "escaped": 1,
+     "submitted": 34
+    },
+    "min_max_swap": {
+     "escaped": 0,
+     "submitted": 2
+    },
+    "floor_to_ceil": {
+     "escaped": 0,
+     "submitted": 5
+    },
+    "floor_to_round": {
+     "escaped": 1,
+     "submitted": 6
+    }
+   },
+   "finiteVisible": {
+    "after": {
+     "escaped": 251,
+     "submitted": 7700
+    },
+    "before": {
+     "escaped": 258,
+     "submitted": 7700
+    }
+   },
+   "nonFiniteOnly": {
+    "after": {
+     "escaped": 29,
+     "submitted": 183
+    },
+    "before": {
+     "escaped": 183,
+     "submitted": 183
+    }
+   },
+   "caughtAt": {
+    "G4_tests": 6708,
+    "G4_tests+G7_glue": 439,
+    "G4_tests+G8_nonfinite": 284,
+    "G8_nonfinite": 161,
+    "G4_tests+G7_glue+G8_nonfinite": 11
+   },
+   "newlyCaught": 161,
+   "newlyEscaped": [],
+   "gateMs": {
+    "p50": 247.09847099985927,
+    "p95": 719.5636220001616
+   },
+   "elapsedMs": {
+    "p50": 3684.8167679999024
+   }
+  },
+  "add": {
+   "onPromotingPristine": {
+    "after": {
+     "escaped": 46,
+     "submitted": 2533
+    },
+    "before": {
+     "escaped": 46,
+     "submitted": 2533
+    }
+   },
+   "after": {
+    "escaped": 46,
+    "submitted": 2533
+   },
+   "before": {
+    "escaped": 46,
+    "submitted": 2533
+   },
+   "byClassAfter": {
+    "off_by_one": {
+     "escaped": 12,
+     "submitted": 586
+    },
+    "dropped_rows": {
+     "escaped": 0,
+     "submitted": 59
+    },
+    "wrong_join": {
+     "escaped": 7,
+     "submitted": 239
+    },
+    "stale_binding": {
+     "escaped": 0,
+     "submitted": 238
+    },
+    "wrong_constants": {
+     "escaped": 12,
+     "submitted": 396
+    },
+    "boundary_errors": {
+     "escaped": 13,
+     "submitted": 531
+    },
+    "sign_errors": {
+     "escaped": 0,
+     "submitted": 474
+    },
+    "swapped_units": {
+     "escaped": 0,
+     "submitted": 8
+    },
+    "wrong_rounding": {
+     "escaped": 2,
+     "submitted": 2
+    }
+   },
+   "byClassBefore": {
+    "dropped_rows": {
+     "escaped": 0,
+     "submitted": 59
+    },
+    "off_by_one": {
+     "escaped": 12,
+     "submitted": 586
+    },
+    "wrong_join": {
+     "escaped": 7,
+     "submitted": 239
+    },
+    "stale_binding": {
+     "escaped": 0,
+     "submitted": 238
+    },
+    "wrong_constants": {
+     "escaped": 12,
+     "submitted": 396
+    },
+    "boundary_errors": {
+     "escaped": 13,
+     "submitted": 531
+    },
+    "sign_errors": {
+     "escaped": 0,
+     "submitted": 474
+    },
+    "swapped_units": {
+     "escaped": 0,
+     "submitted": 8
+    },
+    "wrong_rounding": {
+     "escaped": 2,
+     "submitted": 2
+    }
+   },
+   "byOpAfter": {
+    "literal_minus_one": {
+     "escaped": 0,
+     "submitted": 234
+    },
+    "drop_term": {
+     "escaped": 0,
+     "submitted": 59
+    },
+    "literal_plus_one": {
+     "escaped": 12,
+     "submitted": 234
+    },
+    "result_plus_one": {
+     "escaped": 0,
+     "submitted": 59
+    },
+    "result_minus_one": {
+     "escaped": 0,
+     "submitted": 59
+    },
+    "or_to_and": {
+     "escaped": 7,
+     "submitted": 180
+    },
+    "revision_minus_0_2pct": {
+     "escaped": 0,
+     "submitted": 235
+    },
+    "plus_to_times": {
+     "escaped": 0,
+     "submitted": 59
+    },
+    "times_10": {
+     "escaped": 12,
+     "submitted": 197
+    },
+    "times_0_1": {
+     "escaped": 0,
+     "submitted": 199
+    },
+    "drop_guard": {
+     "escaped": 0,
+     "submitted": 59
+    },
+    "relax_or_tighten_comparison": {
+     "escaped": 0,
+     "submitted": 235
+    },
+    "drop_guard_disjunct": {
+     "escaped": 13,
+     "submitted": 237
+    },
+    "drop_negative_literal": {
+     "escaped": 0,
+     "submitted": 118
+    },
+    "plus_to_minus": {
+     "escaped": 0,
+     "submitted": 59
+    },
+    "flip_comparison": {
+     "escaped": 0,
+     "submitted": 236
+    },
+    "negate_result": {
+     "escaped": 0,
+     "submitted": 59
+    },
+    "result_times_unit_factor": {
+     "escaped": 0,
+     "submitted": 2
+    },
+    "input_times_unit_factor": {
+     "escaped": 0,
+     "submitted": 4
+    },
+    "result_over_unit_factor": {
+     "escaped": 0,
+     "submitted": 2
+    },
+    "strip_rounding": {
+     "escaped": 2,
+     "submitted": 2
+    },
+    "flip_equality": {
+     "escaped": 0,
+     "submitted": 2
+    },
+    "bound_to_other_literal": {
+     "escaped": 0,
+     "submitted": 3
+    }
+   },
+   "finiteVisible": {
+    "after": {
+     "escaped": 46,
+     "submitted": 2533
+    },
+    "before": {
+     "escaped": 46,
+     "submitted": 2533
+    }
+   },
+   "nonFiniteOnly": {},
+   "caughtAt": {
+    "G4_tests": 2486,
+    "G4_tests+G8_nonfinite": 1
+   },
+   "newlyCaught": 0,
+   "newlyEscaped": [],
+   "gateMs": {
+    "p50": 214.83044299995527,
+    "p95": 595.7188600001391
+   },
+   "elapsedMs": {
+    "p50": 3170.310560000129
+   }
+  },
+  "inconclusive": 0,
+  "harnessError": 0
+ },
+ "glue": {
+  "P21": {
+   "onRefusedPristine": {
+    "escaped": 0,
+    "submitted": 7
+   },
+   "onPromotingPristine": {
+    "after": {
+     "escaped": 295,
+     "submitted": 792
+    },
+    "before": {
+     "escaped": 686,
+     "submitted": 792
+    }
+   },
+   "after": {
+    "escaped": 295,
+    "submitted": 799
+   },
+   "before": {
+    "escaped": 691,
+    "submitted": 799
+   },
+   "byClassAfter": {
+    "reversed_inputs": {
+     "escaped": 0,
+     "submitted": 180
+    },
+    "dropped_rows": {
+     "escaped": 0,
+     "submitted": 108
+    },
+    "wrong_join": {
+     "escaped": 23,
+     "submitted": 54
+    },
+    "swapped_units": {
+     "escaped": 266,
+     "submitted": 268
+    },
+    "wrong_rounding": {
+     "escaped": 6,
+     "submitted": 189
+    }
+   },
+   "byClassBefore": {
+    "dropped_rows": {
+     "escaped": 0,
+     "submitted": 108
+    },
+    "reversed_inputs": {
+     "escaped": 180,
+     "submitted": 180
+    },
+    "wrong_rounding": {
+     "escaped": 189,
+     "submitted": 189
+    },
+    "swapped_units": {
+     "escaped": 268,
+     "submitted": 268
+    },
+    "wrong_join": {
+     "escaped": 54,
+     "submitted": 54
+    }
+   },
+   "byOpAfter": {
+    "glue_args_reordered": {
+     "escaped": 0,
+     "submitted": 180
+    },
+    "glue_code_row_dropped": {
+     "escaped": 0,
+     "submitted": 108
+    },
+    "glue_code_labels_swapped": {
+     "escaped": 23,
+     "submitted": 54
+    },
+    "glue_arg_units_swapped": {
+     "escaped": 102,
+     "submitted": 103
+    },
+    "glue_precision_changed": {
+     "escaped": 6,
+     "submitted": 189
+    },
+    "glue_result_unit_swapped": {
+     "escaped": 164,
+     "submitted": 165
+    }
+   },
+   "finiteVisible": {
+    "after": {
+     "escaped": 295,
+     "submitted": 799
+    },
+    "before": {
+     "escaped": 691,
+     "submitted": 799
+    }
+   },
+   "nonFiniteOnly": {},
+   "caughtAt": {
+    "G7_glue": 504
+   },
+   "newlyCaught": 396,
+   "newlyEscaped": [],
+   "gateMs": {
+    "p50": 707.466138000018,
+    "p95": 2046.160969999968
+   },
+   "elapsedMs": {
+    "p50": 6897.586051999999
+   }
+  },
+  "add": {
+   "onPromotingPristine": {
+    "after": {
+     "escaped": 0,
+     "submitted": 118
+    },
+    "before": {
+     "escaped": 118,
+     "submitted": 118
+    }
+   },
+   "after": {
+    "escaped": 0,
+    "submitted": 118
+   },
+   "before": {
+    "escaped": 118,
+    "submitted": 118
+   },
+   "byClassAfter": {
+    "wrong_rounding": {
+     "escaped": 0,
+     "submitted": 59
+    },
+    "reversed_inputs": {
+     "escaped": 0,
+     "submitted": 59
+    }
+   },
+   "byClassBefore": {
+    "reversed_inputs": {
+     "escaped": 59,
+     "submitted": 59
+    },
+    "wrong_rounding": {
+     "escaped": 59,
+     "submitted": 59
+    }
+   },
+   "byOpAfter": {
+    "glue_precision_changed": {
+     "escaped": 0,
+     "submitted": 59
+    },
+    "glue_args_reordered": {
+     "escaped": 0,
+     "submitted": 59
+    }
+   },
+   "finiteVisible": {
+    "after": {
+     "escaped": 0,
+     "submitted": 118
+    },
+    "before": {
+     "escaped": 118,
+     "submitted": 118
+    }
+   },
+   "nonFiniteOnly": {},
+   "caughtAt": {
+    "G7_glue": 118
+   },
+   "newlyCaught": 118,
+   "newlyEscaped": [],
+   "gateMs": {
+    "p50": 432.8376210000133,
+    "p95": 881.5866469999892
+   },
+   "elapsedMs": {
+    "p50": 5895.52482999998
+   }
+  },
+  "inconclusive": 0,
+  "harnessError": 0
+ }
+}

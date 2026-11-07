@@ -1,11 +1,13 @@
 import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { runGates } from './gates.mjs';
+import { allowedEffects, limits, measuredPort, signature, workloads } from './measure.mjs';
+export const implementationFiles = Object.freeze(['host.mjs', 'gates.mjs', 'glue.schema.json', 'measure.mjs', 'meter.mjs', 'contract.mjs']);
 export const hash = bytes => createHash('sha256').update(bytes).digest('hex');
-export const signature = { version: 1, name: 'x1', inputs: [{ path: 'token', type: 'number', unit: '1', domain: [0, 1] }], output: { type: 'number', unit: '1' } };
+export { signature };
 export const configuration = {
   gateInput: { version: 1, contract: { version: 1, signature, refusals: [], tolerance: 0, sources: ['X1'] },
-    cases: [{ id: 'envelope', inputs: { token: 1 } }], limits: { wallMs: 10, memoryBytes: 1024, fuel: 10 }, allowedEffects: [] },
+    cases: workloads.map(id => ({ id, inputs: { workload: id } })), limits: { ...limits }, allowedEffects: [...allowedEffects] },
   invariants: [], objectives: { bytes: 'min' },
 };
 export function createPort({ candidates }) {
@@ -15,13 +17,13 @@ export function createPort({ candidates }) {
     return candidate;
   };
   return {
-    describe: () => signature,
-    run: (_, cases) => ({ status: 'completed', outputs: cases.map(c => ({ caseId: c.id, value: 1 })),
-      usage: { wallMs: 0, memoryBytes: 0, fuel: 0 }, effects: [] }),
-    scanEffects: () => [],
+    ...measuredPort(identity => {
+      const candidate = candidates[identity];
+      return candidate && hash(JSON.stringify(candidate)) === identity ? candidate : null;
+    }),
     residual(identity, bundle) {
       const candidate = get(identity);
-      for (const name of ['host.mjs', 'gates.mjs', 'glue.schema.json']) {
+      for (const name of implementationFiles) {
         if (readFileSync(new URL(name, import.meta.url)).toString('hex') !== bundle.files[name]) throw Error('host implementation drift');
       }
       for (const name of ['CONTRACT.md', 'tests.json', 'frozen.sha256']) {

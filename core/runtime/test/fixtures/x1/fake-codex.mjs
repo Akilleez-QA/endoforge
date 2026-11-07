@@ -17,8 +17,8 @@ if (request.stage === 'specification') {
   }
   if (process.env.FAKE_CODEX_MODE === 'early') writeFileSync('kernel.ts', c.files['kernel.ts']);
 } else {
-  const glue = JSON.parse(c.files['glue.json']); glue.id = request.id;
-  writeFileSync('kernel.ts', c.files['kernel.ts']);
+  const glue = JSON.parse(process.env.FAKE_CODEX_GLUE ?? c.files['glue.json']); glue.id = request.id;
+  writeFileSync('kernel.ts', process.env.FAKE_CODEX_KERNEL ?? c.files['kernel.ts']);
   writeFileSync('glue.json', process.env.FAKE_CODEX_MODE === 'glue' || (process.env.FAKE_CODEX_MODE === 'terse-glue' && terse) || (process.env.FAKE_CODEX_MODE === 'repair' && request.stage === 'implementation') ? '{}' : JSON.stringify(glue));
   if (process.env.FAKE_CODEX_MODE === 'drift') writeFileSync('tests.json', '[]');
 }

@@ -1,0 +1,441 @@
+{
+ "table": [
+  {
+   "arm": "haiku-low",
+   "runs": 10,
+   "promoted": 10,
+   "accepted": 10,
+   "acceptedRate": 1,
+   "firstPassAccepted": 0.9,
+   "failedCandidates": 1,
+   "failedPerAccepted": 0.1,
+   "repairRoundsMean": 0.2,
+   "hPromoted": 5,
+   "escapes": 0,
+   "escapeRate": 0,
+   "escapedNeeds": [],
+   "secondsPerAccepted": 31.576953999199997,
+   "wallP50": 30.580261484000015,
+   "wallP95": 43.934874662999995,
+   "wallMean": 31.5769539992,
+   "wallSd": 8.718601875759004,
+   "modelP50": 30.429734404999994,
+   "nonModelP50": 0.1625803100001067,
+   "nonModelP95": 0.33096130999998424,
+   "turnsP50": 2,
+   "callsTotal": 22,
+   "tokensP50": 24861,
+   "outputTokensP50": 7352,
+   "listCostUsd": 0.059149190000000004,
+   "exits": {
+    "stop": 10
+   },
+   "loadedRuns": 0,
+   "apiKeySources": [
+    "none"
+   ],
+   "models": [
+    "claude-haiku-5-5"
+   ],
+   "gates": {
+    "quality": true,
+    "escapes": true,
+    "failedCandidates": true
+   },
+   "goodEnough": true
+  },
+  {
+   "arm": "haiku-high",
+   "runs": 10,
+   "promoted": 7,
+   "accepted": 7,
+   "acceptedRate": 0.7,
+   "firstPassAccepted": 0.7,
+   "failedCandidates": 0,
+   "failedPerAccepted": 0,
+   "repairRoundsMean": 0,
+   "hPromoted": 2,
+   "escapes": 0,
+   "escapeRate": 0,
+   "escapedNeeds": [],
+   "secondsPerAccepted": 107.5816215322857,
+   "wallP50": 59.41154135600006,
+   "wallP95": 142.4036246349999,
+   "wallMean": 75.30713507259999,
+   "wallSd": 31.294564169337246,
+   "modelP50": 59.231223995000065,
+   "nonModelP50": 0.16242340600001626,
+   "nonModelP95": 0.3413230060000205,
+   "turnsP50": 2,
+   "callsTotal": 18,
+   "tokensP50": 36977,
+   "outputTokensP50": 14832,
+   "listCostUsd": 0.11924744999999999,
+   "exits": {
+    "stop": 7,
+    "none": 3
+   },
+   "loadedRuns": 0,
+   "apiKeySources": [
+    "none"
+   ],
+   "models": [
+    "claude-haiku-5-5"
+   ],
+   "gates": {
+    "quality": false,
+    "escapes": true,
+    "failedCandidates": true
+   },
+   "goodEnough": false
+  },
+  {
+   "arm": "sonnet-low",
+   "runs": 10,
+   "promoted": 10,
+   "accepted": 10,
+   "acceptedRate": 1,
+   "firstPassAccepted": 1,
+   "failedCandidates": 0,
+   "failedPerAccepted": 0,
+   "repairRoundsMean": 0.1,
+   "hPromoted": 5,
+   "escapes": 0,
+   "escapeRate": 0,
+   "escapedNeeds": [],
+   "secondsPerAccepted": 21.468065328600037,
+   "wallP50": 21.13717599899997,
+   "wallP95": 26.263349607000126,
+   "wallMean": 21.468065328600037,
+   "wallSd": 3.475707422317393,
+   "modelP50": 20.96641936700011,
+   "nonModelP50": 0.17075663199985866,
+   "nonModelP95": 0.3692835099999793,
+   "turnsP50": 2,
+   "callsTotal": 21,
+   "tokensP50": 11338,
+   "outputTokensP50": 3092,
+   "listCostUsd": 0.5318019,
+   "exits": {
+    "stop": 10
+   },
+   "loadedRuns": 0,
+   "apiKeySources": [
+    "none"
+   ],
+   "models": [
+    "claude-sonnet-5-5"
+   ],
+   "gates": {
+    "quality": true,
+    "escapes": true,
+    "failedCandidates": true
+   },
+   "goodEnough": true
+  },
+  {
+   "arm": "sonnet-medium",
+   "runs": 10,
+   "promoted": 8,
+   "accepted": 8,
+   "acceptedRate": 0.8,
+   "firstPassAccepted": 0.8,
+   "failedCandidates": 12,
+   "failedPerAccepted": 1.5,
+   "repairRoundsMean": 1,
+   "hPromoted": 4,
+   "escapes": 0,
+   "escapeRate": 0,
+   "escapedNeeds": [],
+   "secondsPerAccepted": 32.94219058112502,
+   "wallP50": 24.220217218000034,
+   "wallP95": 41.488716399,
+   "wallMean": 26.353752464900015,
+   "wallSd": 7.1243714547494275,
+   "modelP50": 23.998133982,
+   "nonModelP50": 0.1803354419999523,
+   "nonModelP95": 0.23528270599999815,
+   "turnsP50": 2,
+   "callsTotal": 30,
+   "tokensP50": 12572,
+   "outputTokensP50": 3781,
+   "listCostUsd": 0.6192464,
+   "exits": {
+    "stop": 8,
+    "max_turns": 2
+   },
+   "loadedRuns": 0,
+   "apiKeySources": [
+    "none"
+   ],
+   "models": [
+    "claude-sonnet-5-5"
+   ],
+   "gates": {
+    "quality": false,
+    "escapes": true,
+    "failedCandidates": false
+   },
+   "goodEnough": false
+  },
+  {
+   "arm": "sonnet-high",
+   "runs": 10,
+   "promoted": 10,
+   "accepted": 10,
+   "acceptedRate": 1,
+   "firstPassAccepted": 1,
+   "failedCandidates": 0,
+   "failedPerAccepted": 0,
+   "repairRoundsMean": 0.3,
+   "hPromoted": 5,
+   "escapes": 0,
+   "escapeRate": 0,
+   "escapedNeeds": [],
+   "secondsPerAccepted": 34.3917744882,
+   "wallP50": 32.902906420999905,
+   "wallP95": 45.93801223399996,
+   "wallMean": 34.39177448820001,
+   "wallSd": 6.4508227328164995,
+   "modelP50": 32.65917585200002,
+   "nonModelP50": 0.1578231819998473,
+   "nonModelP95": 0.24373056899989023,
+   "turnsP50": 2,
+   "callsTotal": 23,
+   "tokensP50": 15219,
+   "outputTokensP50": 5134,
+   "listCostUsd": 0.7778607999999999,
+   "exits": {
+    "stop": 10
+   },
+   "loadedRuns": 0,
+   "apiKeySources": [
+    "none"
+   ],
+   "models": [
+    "claude-sonnet-5-5"
+   ],
+   "gates": {
+    "quality": true,
+    "escapes": true,
+    "failedCandidates": true
+   },
+   "goodEnough": true
+  },
+  {
+   "arm": "opus-low",
+   "runs": 10,
+   "promoted": 10,
+   "accepted": 10,
+   "acceptedRate": 1,
+   "firstPassAccepted": 1,
+   "failedCandidates": 0,
+   "failedPerAccepted": 0,
+   "repairRoundsMean": 0.4,
+   "hPromoted": 5,
+   "escapes": 0,
+   "escapeRate": 0,
+   "escapedNeeds": [],
+   "secondsPerAccepted": 21.67918824179999,
+   "wallP50": 19.696217070000014,
+   "wallP95": 29.308534436000045,
+   "wallMean": 21.67918824179999,
+   "wallSd": 4.7026329050112174,
+   "modelP50": 19.491496878999953,
+   "nonModelP50": 0.18872622299997602,
+   "nonModelP95": 0.2792577659999952,
+   "turnsP50": 2,
+   "callsTotal": 24,
+   "tokensP50": 10016,
+   "outputTokensP50": 2383,
+   "listCostUsd": 0.9296161999999999,
+   "exits": {
+    "stop": 10
+   },
+   "loadedRuns": 0,
+   "apiKeySources": [
+    "none"
+   ],
+   "models": [
+    "claude-opus-5-5"
+   ],
+   "gates": {
+    "quality": true,
+    "escapes": true,
+    "failedCandidates": true
+   },
+   "goodEnough": true
+  },
+  {
+   "arm": "opus-medium",
+   "runs": 10,
+   "promoted": 10,
+   "accepted": 10,
+   "acceptedRate": 1,
+   "firstPassAccepted": 1,
+   "failedCandidates": 0,
+   "failedPerAccepted": 0,
+   "repairRoundsMean": 0.1,
+   "hPromoted": 5,
+   "escapes": 0,
+   "escapeRate": 0,
+   "escapedNeeds": [],
+   "secondsPerAccepted": 30.681155387399997,
+   "wallP50": 31.667225586000132,
+   "wallP95": 45.653953219999906,
+   "wallMean": 30.681155387399997,
+   "wallSd": 6.348682444584711,
+   "modelP50": 31.491733104999877,
+   "nonModelP50": 0.1754924810002558,
+   "nonModelP95": 0.23655632099998183,
+   "turnsP50": 2,
+   "callsTotal": 21,
+   "tokensP50": 12252,
+   "outputTokensP50": 3664,
+   "listCostUsd": 1.1745108,
+   "exits": {
+    "stop": 10
+   },
+   "loadedRuns": 0,
+   "apiKeySources": [
+    "none"
+   ],
+   "models": [
+    "claude-opus-5-5"
+   ],
+   "gates": {
+    "quality": true,
+    "escapes": true,
+    "failedCandidates": true
+   },
+   "goodEnough": true
+  },
+  {
+   "arm": "opus-high",
+   "runs": 10,
+   "promoted": 10,
+   "accepted": 10,
+   "acceptedRate": 1,
+   "firstPassAccepted": 1,
+   "failedCandidates": 0,
+   "failedPerAccepted": 0,
+   "repairRoundsMean": 0.1,
+   "hPromoted": 5,
+   "escapes": 0,
+   "escapeRate": 0,
+   "escapedNeeds": [],
+   "secondsPerAccepted": 38.174567214199996,
+   "wallP50": 36.75024245999998,
+   "wallP95": 51.49241548600001,
+   "wallMean": 38.174567214199996,
+   "wallSd": 6.269290031638195,
+   "modelP50": 36.588941375999944,
+   "nonModelP50": 0.17794253999996,
+   "nonModelP95": 0.2881448390000005,
+   "turnsP50": 2,
+   "callsTotal": 21,
+   "tokensP50": 13183,
+   "outputTokensP50": 4322,
+   "listCostUsd": 1.4191928,
+   "exits": {
+    "stop": 10
+   },
+   "loadedRuns": 0,
+   "apiKeySources": [
+    "none"
+   ],
+   "models": [
+    "claude-opus-5-5"
+   ],
+   "gates": {
+    "quality": true,
+    "escapes": true,
+    "failedCandidates": true
+   },
+   "goodEnough": true
+  }
+ ],
+ "decision": {
+  "stage": "pilot",
+  "best": 1,
+  "minEscape": 0,
+  "minFailed": 0,
+  "qualifying": [
+   "sonnet-low",
+   "opus-low",
+   "opus-medium",
+   "haiku-low",
+   "sonnet-high",
+   "opus-high"
+  ],
+  "recommended": "sonnet-low"
+ },
+ "sizing": {
+  "keptArms": [
+   "haiku-low",
+   "haiku-high",
+   "sonnet-low",
+   "sonnet-medium",
+   "sonnet-high",
+   "opus-low",
+   "opus-medium",
+   "opus-high"
+  ],
+  "dropped": [],
+  "perArm": [
+   {
+    "arm": "haiku-low",
+    "cv": 0.27610648816791794,
+    "runsForSe10": 8,
+    "callsPerRun": 2.2
+   },
+   {
+    "arm": "haiku-high",
+    "cv": 0.4155590853266116,
+    "runsForSe10": 18,
+    "callsPerRun": 1.8
+   },
+   {
+    "arm": "sonnet-low",
+    "cv": 0.16190128775539964,
+    "runsForSe10": 3,
+    "callsPerRun": 2.1
+   },
+   {
+    "arm": "sonnet-medium",
+    "cv": 0.2703361300914631,
+    "runsForSe10": 8,
+    "callsPerRun": 3
+   },
+   {
+    "arm": "sonnet-high",
+    "cv": 0.18756876691633953,
+    "runsForSe10": 4,
+    "callsPerRun": 2.3
+   },
+   {
+    "arm": "opus-low",
+    "cv": 0.21691923390120277,
+    "runsForSe10": 5,
+    "callsPerRun": 2.4
+   },
+   {
+    "arm": "opus-medium",
+    "cv": 0.20692449043793054,
+    "runsForSe10": 5,
+    "callsPerRun": 2.1
+   },
+   {
+    "arm": "opus-high",
+    "cv": 0.16422687902290545,
+    "runsForSe10": 3,
+    "callsPerRun": 2.1
+   }
+  ],
+  "remainingCalls": 2217,
+  "callsPerRep": 675,
+  "varianceReps": 1,
+  "budgetReps": 3,
+  "reps": 1
+ }
+}

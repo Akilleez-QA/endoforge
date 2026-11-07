@@ -24,7 +24,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - name: Install test dependencies
-        run: sudo apt-get update && sudo apt-get install -y age bubblewrap
+        run: sudo apt-get update && sudo apt-get install -y age bubblewrap gcc
       - name: Install kernel test tools
         run: |
           python -m pip install -r tools/kernel/requirements.txt
@@ -33,6 +33,7 @@ jobs:
           tar -xzf "$RUNNER_TEMP/wasm-tools.tar.gz" -C "$RUNNER_TEMP" --strip-components=1
           echo "$RUNNER_TEMP" >> "$GITHUB_PATH"
       - name: Repository tests
-        run: make test
+        run: make -k test
       - name: Optimized Python tests
-        run: make test-optimized
+        if: ${{ !cancelled() }}
+        run: make -k test-optimized
