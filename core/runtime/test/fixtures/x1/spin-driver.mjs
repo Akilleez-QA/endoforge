@@ -1,0 +1,12 @@
+import { join } from 'node:path';
+import { createLoopPool } from '../../../x1/loop.mjs';
+import { runNeed } from '../../../x1/pipeline.mjs';
+import { scriptedProvider } from '../../../x1/transports.mjs';
+import { candidate } from './candidate.mjs';
+import { implementation, idOf, inputFor, reply, specification, stageOf } from './scripted-model.mjs';
+import { seeds } from './seeds.mjs';
+const { files } = candidate(), seed = seeds.find(entry => entry.name === 'infinite-loop'), input = inputFor(files['CONTRACT.md'], files['tests.json'], seed.kernel, seed.glue);
+const pool = createLoopPool({ primes: 1, isolation: 'process', jobTimeoutMs: 600000, provider: scriptedProvider(({ messages }) => reply(stageOf(messages) === 'specification' ? specification(input) : implementation(input, idOf(messages)))) });
+await pool.ready();
+runNeed({ need: 'integer add(a,b)', directory: join(process.argv[2], 'spin'), pool, env: { ENDOFORGE_LOOP: 'agent' } });
+setTimeout(() => process.stdout.write('ready\n'), 1500);

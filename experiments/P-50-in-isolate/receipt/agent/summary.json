@@ -1,0 +1,694 @@
+{
+ "commit": "86d05047ea749097792681a11bb691105c0c4f2b",
+ "precommit": "90dfc21e14124c2ee90f8193cf1bcbc0756f04d1ae58ee9af8f09fc84df23e10",
+ "testDouble": true,
+ "node": "v26.13.0",
+ "cpus": "AMD Ryzen 9 7950X 16-Core Processor",
+ "parallelism": 32,
+ "totalMemory": 134143877120,
+ "corpus": {
+  "digest": "35b10f688e9f383c0c1cfa2c14b5351c2215931bd6d4b214e210e976df772ea6",
+  "kernels": 21,
+  "expectPromoted": 18
+ },
+ "started": "2026-11-06T21:36:04.369Z",
+ "arms": {
+  "agent-thread": {
+   "size": 1,
+   "reps": 5,
+   "readyMs": 2940.676634000003,
+   "wallMs": 17410.439373,
+   "records": 105,
+   "promoted": 90,
+   "errors": 0,
+   "nonModel": {
+    "n": 105,
+    "p50": 140.49598000000697,
+    "p95": 309.4049069999892,
+    "max": 401.709983000037
+   },
+   "nonModelPromoted": {
+    "n": 90,
+    "p50": 141.2872020000068,
+    "p95": 314.19011399999727,
+    "max": 401.709983000037
+   },
+   "stages": {
+    "freeze": {
+     "n": 105,
+     "p50": 80.97759399999632,
+     "p95": 129.3396890000149,
+     "max": 155.82058200001484
+    },
+    "compile": {
+     "n": 105,
+     "p50": 42.0785329999926,
+     "p95": 124.73362499996438,
+     "max": 203.83042400001432
+    },
+    "gate": {
+     "n": 105,
+     "p50": 4.500746999983676,
+     "p95": 14.31292100000428,
+     "max": 67.13418699998874
+    },
+    "ledger": {
+     "n": 105,
+     "p50": 9.346867999993265,
+     "p95": 33.506935999990674,
+     "max": 43.72205899999244
+    },
+    "promote": {
+     "n": 105,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "wrongVerdicts": []
+  },
+  "agent-process": {
+   "size": 1,
+   "reps": 5,
+   "readyMs": 3039.83480099999,
+   "wallMs": 16835.25518899999,
+   "records": 105,
+   "promoted": 90,
+   "errors": 0,
+   "nonModel": {
+    "n": 105,
+    "p50": 137.81904300002498,
+    "p95": 282.1816129999934,
+    "max": 383.79509100000723
+   },
+   "nonModelPromoted": {
+    "n": 90,
+    "p50": 139.46611400000984,
+    "p95": 282.1816129999934,
+    "max": 383.79509100000723
+   },
+   "stages": {
+    "freeze": {
+     "n": 105,
+     "p50": 80.10255700000562,
+     "p95": 136.8213270000124,
+     "max": 156.0643449999916
+    },
+    "compile": {
+     "n": 105,
+     "p50": 40.23598800000036,
+     "p95": 110.24009800000113,
+     "max": 194.54953700000078
+    },
+    "gate": {
+     "n": 105,
+     "p50": 4.261973000002399,
+     "p95": 13.6713579999996,
+     "max": 42.564986999999746
+    },
+    "ledger": {
+     "n": 105,
+     "p50": 9.213680000015302,
+     "p95": 17.69523000001209,
+     "max": 44.34582800001954
+    },
+    "promote": {
+     "n": 105,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "wrongVerdicts": []
+  },
+  "agent-thread-8": {
+   "size": 8,
+   "reps": 3,
+   "readyMs": 7535.493029000005,
+   "wallMs": 6465.834419999999,
+   "records": 63,
+   "promoted": 54,
+   "errors": 0,
+   "nonModel": {
+    "n": 63,
+    "p50": 711.1525820000097,
+    "p95": 1174.3593350000156,
+    "max": 1478.6952650000167
+   },
+   "nonModelPromoted": {
+    "n": 54,
+    "p50": 715.6235029999807,
+    "p95": 1187.3404489999812,
+    "max": 1478.6952650000167
+   },
+   "stages": {
+    "freeze": {
+     "n": 63,
+     "p50": 352.38275799999246,
+     "p95": 643.6242539999948,
+     "max": 804.6362059999956
+    },
+    "compile": {
+     "n": 63,
+     "p50": 46.000193000014406,
+     "p95": 148.8761790000135,
+     "max": 175.26117499999236
+    },
+    "gate": {
+     "n": 63,
+     "p50": 4.350368999992497,
+     "p95": 30.192474999988917,
+     "max": 49.98966100002872
+    },
+    "ledger": {
+     "n": 63,
+     "p50": 314.63432700000703,
+     "p95": 526.6394549999968,
+     "max": 804.0415709999797
+    },
+    "promote": {
+     "n": 63,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "wrongVerdicts": []
+  },
+  "agent-process-8": {
+   "size": 8,
+   "reps": 3,
+   "readyMs": 6308.108345999994,
+   "wallMs": 6458.638750000013,
+   "records": 63,
+   "promoted": 54,
+   "errors": 0,
+   "nonModel": {
+    "n": 63,
+    "p50": 720.2368689999566,
+    "p95": 1207.454769999982,
+    "max": 1638.9701599999971
+   },
+   "nonModelPromoted": {
+    "n": 54,
+    "p50": 717.804616999958,
+    "p95": 1482.4034840000095,
+    "max": 1638.9701599999971
+   },
+   "stages": {
+    "freeze": {
+     "n": 63,
+     "p50": 394.5395950000093,
+     "p95": 655.3279209999891,
+     "max": 819.7207890000136
+    },
+    "compile": {
+     "n": 63,
+     "p50": 52.99216299999898,
+     "p95": 160.27941999999985,
+     "max": 206.2048450000002
+    },
+    "gate": {
+     "n": 63,
+     "p50": 4.324590000000171,
+     "p95": 15.998074999998607,
+     "max": 33.27512399999978
+    },
+    "ledger": {
+     "n": 63,
+     "p50": 333.0849089999974,
+     "p95": 590.0427020000061,
+     "max": 824.8334539999778
+    },
+    "promote": {
+     "n": 63,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "wrongVerdicts": []
+  }
+ },
+ "counting": {
+  "agent-thread": {
+   "candidates": 21,
+   "toAdmit": {
+    "spawns": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "writes": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "reads": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "admit": {
+    "spawns": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "writes": {
+     "n": 21,
+     "p50": 12,
+     "p95": 12,
+     "max": 12
+    },
+    "reads": {
+     "n": 21,
+     "p50": 3,
+     "p95": 3,
+     "max": 4
+    }
+   },
+   "toCommit": {
+    "spawns": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "writes": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "reads": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "commit": {
+    "spawns": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "writes": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "reads": {
+     "n": 21,
+     "p50": 5,
+     "p95": 5,
+     "max": 5
+    }
+   },
+   "handoffs": {
+    "n": 21,
+    "p50": 4,
+    "p95": 4,
+    "max": 4
+   },
+   "a1": true,
+   "sample": {
+    "name": "add",
+    "promoted": true,
+    "requestsAfter": [
+     "admit",
+     "commit"
+    ],
+    "jobsAfter": 1,
+    "toAdmit": {
+     "spawns": 0,
+     "execs": 0,
+     "writes": 0,
+     "reads": 0
+    },
+    "admit": {
+     "spawns": 0,
+     "execs": 0,
+     "writes": 12,
+     "reads": 4
+    },
+    "toCommit": {
+     "spawns": 0,
+     "execs": 0,
+     "writes": 0,
+     "reads": 0
+    },
+    "commit": {
+     "spawns": 0,
+     "execs": 0,
+     "writes": 0,
+     "reads": 5
+    },
+    "handoffs": 4,
+    "requests": [
+     "admit",
+     "commit"
+    ],
+    "writesToCommit": [],
+    "writesCommit": [],
+    "writesAdmit": [
+     "mkdir <work>/count-agent-thread/agent-thread-0",
+     "openat <work>/count-agent-thread/agent-thread-0/ledger.sqlite",
+     "openat <work>/count-agent-thread/agent-thread-0/ledger.sqlite-journal",
+     "unlink <work>/count-agent-thread/agent-thread-0/ledger.sqlite-journal",
+     "openat <work>/count-agent-thread/agent-thread-0/ledger.sqlite",
+     "openat <work>/count-agent-thread/agent-thread-0/ledger.sqlite-wal",
+     "openat <work>/count-agent-thread/agent-thread-0/ledger.sqlite-shm",
+     "unlink <work>/count-agent-thread/agent-thread-0/ledger.sqlite-shm",
+     "unlink <work>/count-agent-thread/agent-thread-0/ledger.sqlite-wal",
+     "openat <work>/count-agent-thread/agent-thread-0/ledger.sqlite",
+     "openat <work>/count-agent-thread/agent-thread-0/ledger.sqlite-wal",
+     "openat <work>/count-agent-thread/agent-thread-0/ledger.sqlite-shm"
+    ],
+    "readsToCommit": []
+   }
+  },
+  "agent-process": {
+   "candidates": 21,
+   "toAdmit": {
+    "spawns": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "writes": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "reads": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "admit": {
+    "spawns": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "writes": {
+     "n": 21,
+     "p50": 12,
+     "p95": 12,
+     "max": 12
+    },
+    "reads": {
+     "n": 21,
+     "p50": 3,
+     "p95": 3,
+     "max": 4
+    }
+   },
+   "toCommit": {
+    "spawns": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "writes": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "reads": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "commit": {
+    "spawns": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "writes": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "reads": {
+     "n": 21,
+     "p50": 5,
+     "p95": 5,
+     "max": 5
+    }
+   },
+   "handoffs": {
+    "n": 21,
+    "p50": 4,
+    "p95": 4,
+    "max": 4
+   },
+   "a1": true,
+   "sample": {
+    "name": "add",
+    "promoted": true,
+    "requestsAfter": [
+     "admit",
+     "commit"
+    ],
+    "jobsAfter": 1,
+    "toAdmit": {
+     "spawns": 0,
+     "execs": 0,
+     "writes": 0,
+     "reads": 0
+    },
+    "admit": {
+     "spawns": 0,
+     "execs": 0,
+     "writes": 12,
+     "reads": 4
+    },
+    "toCommit": {
+     "spawns": 0,
+     "execs": 0,
+     "writes": 0,
+     "reads": 0
+    },
+    "commit": {
+     "spawns": 0,
+     "execs": 0,
+     "writes": 0,
+     "reads": 5
+    },
+    "handoffs": 4,
+    "requests": [
+     "admit",
+     "commit"
+    ],
+    "writesToCommit": [],
+    "writesCommit": [],
+    "writesAdmit": [
+     "mkdir <work>/count-agent-process/agent-process-0",
+     "openat <work>/count-agent-process/agent-process-0/ledger.sqlite",
+     "openat <work>/count-agent-process/agent-process-0/ledger.sqlite-journal",
+     "unlink <work>/count-agent-process/agent-process-0/ledger.sqlite-journal",
+     "openat <work>/count-agent-process/agent-process-0/ledger.sqlite",
+     "openat <work>/count-agent-process/agent-process-0/ledger.sqlite-wal",
+     "openat <work>/count-agent-process/agent-process-0/ledger.sqlite-shm",
+     "unlink <work>/count-agent-process/agent-process-0/ledger.sqlite-shm",
+     "unlink <work>/count-agent-process/agent-process-0/ledger.sqlite-wal",
+     "openat <work>/count-agent-process/agent-process-0/ledger.sqlite",
+     "openat <work>/count-agent-process/agent-process-0/ledger.sqlite-wal",
+     "openat <work>/count-agent-process/agent-process-0/ledger.sqlite-shm"
+    ],
+    "readsToCommit": []
+   }
+  }
+ },
+ "parity": {
+  "inputs": 31,
+  "seeded": 10,
+  "differences": [],
+  "wrong": [],
+  "promoted": {
+   "current": 19,
+   "agent-thread": 19,
+   "agent-process": 19
+  },
+  "seededVectors": {
+   "seed-good": {
+    "promoted": true,
+    "error": null,
+    "vector": {
+     "outcome": "passed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": true,
+       "G3_exports": true,
+       "G4_tests": true,
+       "G6_bounded": true,
+       "G5_deterministic": true,
+       "G7_glue": true
+      },
+      {
+       "G1_frozen": true,
+       "G2_compiles": true,
+       "G3_exports": true,
+       "G4_tests": true,
+       "G6_bounded": true,
+       "G5_deterministic": true,
+       "G7_glue": true
+      }
+     ]
+    }
+   },
+   "seed-type-error": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": false
+      }
+     ]
+    }
+   },
+   "seed-wrong-answer": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": true,
+       "G3_exports": true,
+       "G4_tests": false,
+       "G6_bounded": true,
+       "G5_deterministic": true,
+       "G7_glue": true
+      }
+     ]
+    }
+   },
+   "seed-missing-export": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": true,
+       "G3_exports": false
+      }
+     ]
+    }
+   },
+   "seed-extra-import": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": false
+      }
+     ]
+    }
+   },
+   "seed-invalid-glue": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": true,
+       "G3_exports": true,
+       "G4_tests": true,
+       "G6_bounded": true,
+       "G5_deterministic": true,
+       "G7_glue": false
+      }
+     ]
+    }
+   },
+   "seed-host-path-import": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": false
+      }
+     ]
+    }
+   },
+   "seed-relative-host-import": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": false
+      }
+     ]
+    }
+   },
+   "seed-always-traps": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": true,
+       "G3_exports": true,
+       "G4_tests": false,
+       "G6_bounded": true,
+       "G5_deterministic": true,
+       "G7_glue": true
+      }
+     ]
+    }
+   },
+   "seed-infinite-loop": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "inconclusive",
+     "rounds": []
+    }
+   }
+  }
+ },
+ "finished": "2026-11-06T21:39:41.845Z"
+}

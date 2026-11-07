@@ -2,6 +2,7 @@ import { execFile } from 'node:child_process';
 import { readFile, writeFile, mkdir, readdir, lstat } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
+import { testProblems } from './gates.mjs';
 import { configuration, hash } from './host.mjs';
 import { ledger } from './ledger.mjs';
 import { fillExpected } from './reference.mjs';
@@ -70,7 +71,7 @@ function invoke(directory, prompt, env, timeout, { resume = null, effort = null 
     child.stdin.end(JSON.stringify(promptFor(prompt, env)));
   });
 }
-export async function generate({ need, directory, env = process.env, timeout = 600000, check = null, deadline = Infinity, library = null }) {
+export async function generate({ need, directory, env = process.env, timeout = 600000, check = null, deadline = Infinity, library = null, freeze = null, implementation = [] }) {
   const left = () => { const ms = Math.min(timeout, Math.floor(deadline - Date.now())); if (ms <= 0) throw Error('request deadline reached'); return ms; };
   if (typeof need !== 'string' || !need.trim()) throw Error('nonempty need required');
   if (!Number.isSafeInteger(timeout) || timeout <= 0) throw Error('positive generation timeout required');
@@ -81,8 +82,10 @@ export async function generate({ need, directory, env = process.env, timeout = 6
   const id = basename(directory);
   const effort = effortFor(need, env.ENDOFORGE_CODEX_EFFORT || 'auto'), session = env.ENDOFORGE_CODEX_SESSION || 'resume', warm = session === 'resume', packed = session === 'packed';
   const evaluated = (env.ENDOFORGE_CODEX_TERSE ?? 'exact') === 'reference', specNames = evaluated ? ['CONTRACT.md', 'reference.js', 'tests.json'] : ['CONTRACT.md', 'tests.json'];
+  let modelMs = 0;
+  const client = async (...args) => { const begin = performance.now(); try { return await invoke(...args); } finally { modelMs += performance.now() - begin; } };
   const start = performance.now();
-  const thread = await invoke(workspace, { stage: 'specification', need, id, instructions:
+  const thread = await client(workspace, { stage: 'specification', need, id, instructions:
     'The workspace starts empty; do not explore it or run commands. Write only CONTRACT.md and tests.json, CONTRACT.md under 40 lines. Do not write kernel.ts or glue.json yet. Define a pure bounded AssemblyScript kernel, explicit assumptions, exports and numeric tests. tests.json is a nonempty array of {name,fn,args,expect,tol?} or {name,fn,args,expectError:true}. Include boundary and trap cases. For every number result, state in CONTRACT.md the decimal places to show. These files will be frozen before implementation.', glueRules }, env, left(), { effort });
   const names = (await readdir(workspace)).sort();
   if (JSON.stringify(names) !== JSON.stringify(specNames)) throw Error('code or unexpected files before freeze');
@@ -106,18 +109,19 @@ export async function generate({ need, directory, env = process.env, timeout = 6
     await writeFile(join(workspace, 'tests.json'), files['tests.json']);
   }
   if (!files['CONTRACT.md'].trim() || !Array.isArray(tests) || !tests.length) throw Error('contract and nonempty tests required');
+  if (testProblems(tests).length) throw Error('frozen tests must each assert something a kernel can fail');
   const generatedSpecMs = performance.now() - start, freezeStart = performance.now();
   files['frozen.sha256'] = JSON.stringify({ contract: hash(files['CONTRACT.md']), tests: hash(files['tests.json']) });
   await writeFile(join(workspace, 'frozen.sha256'), files['frozen.sha256']);
   for (const name of Object.keys(files)) await writeFile(join(root, name), files[name]);
-  for (const name of ['host.mjs', 'gates.mjs', 'glue.schema.json']) await writeFile(join(root, name), await readFile(new URL(name, import.meta.url)));
-  const frozen = await ledger('freeze', { reference, need, configuration });
+  for (const name of ['host.mjs', 'gates.mjs', 'glue.schema.json', ...implementation]) await writeFile(join(root, name), await readFile(new URL(name, import.meta.url)));
+  const frozen = await (freeze ? freeze({ reference, need, configuration }) : ledger('freeze', { reference, need, configuration }));
   reference.identity = frozen.identity;
   const freezeMs = performance.now() - freezeStart;
   const reused = library ? await library.serve({ id, files }) : null;
-  if (reused?.verdict === 'pass') return { reused, reference, digest: frozen.digest, testDouble: env.ENDOFORGE_CODEX_TEST_DOUBLE === '1', timings: { generate: generatedSpecMs, freeze: freezeMs } };
+  if (reused?.verdict === 'pass') return { reused, reference, digest: frozen.digest, testDouble: env.ENDOFORGE_CODEX_TEST_DOUBLE === '1', modelMs, timings: { generate: generatedSpecMs, freeze: freezeMs } };
   const codeStart = performance.now();
-  await invoke(workspace, { stage: 'implementation', need, id, ...(packed ? { frozen: { 'CONTRACT.md': files['CONTRACT.md'], 'tests.json': files['tests.json'] } } : {}), glueSchema: schema, glueRules, glueTemplate, instructions:
+  await client(workspace, { stage: 'implementation', need, id, ...(packed ? { frozen: { 'CONTRACT.md': files['CONTRACT.md'], 'tests.json': files['tests.json'] } } : {}), glueSchema: schema, glueRules, glueTemplate, instructions:
     'You already wrote the frozen CONTRACT.md and tests.json; read them only if not in context. Do not run compilers, tests or other commands; the supervisor compiles and gates. Write kernel.ts and glue.json only. Do not change CONTRACT.md, tests.json or frozen.sha256. Use AssemblyScript 0.28.20, runtime stub, no imports except env.abort, explicit bounded memory. The compiler runs with --noAssert, which deletes assert() calls, so never use assert; make every expectError case trap with an explicit if (condition) abort() or throw. Implement all frozen tests and the closed glue schema; glue.id must equal id. glue.json must satisfy every rule in glueRules; glueTemplate shows the shape. No compiler or other output files.' }, env, left(), { effort, resume: warm ? thread : null });
   for (const [name, text] of Object.entries(files)) if (await read(workspace, name) !== text) throw Error('frozen specification changed during generation');
   if (JSON.stringify((await readdir(workspace)).sort()) !== JSON.stringify([...Object.keys(files), 'kernel.ts', 'glue.json'].sort())) throw Error('unexpected implementation files');
@@ -125,7 +129,7 @@ export async function generate({ need, directory, env = process.env, timeout = 6
   let repaired = false;
   const failures = env.ENDOFORGE_SELF_CHECK === '1' && check && thread ? await check({ id, files: { ...files } }) : null;
   if (failures) {
-    await invoke(workspace, { stage: 'repair', id, failures, instructions:
+    await client(workspace, { stage: 'repair', id, failures, instructions:
       'The supervisor compiled your kernel.ts and ran the frozen gates on it; failures are listed. Fix kernel.ts and glue.json only so every frozen test and gate passes. Do not change CONTRACT.md, tests.json or frozen.sha256 and do not run commands.' }, env, left(), { effort, resume: thread });
     for (const [name, text] of Object.entries(files)) if (!['kernel.ts', 'glue.json'].includes(name) && await read(workspace, name) !== text) throw Error('frozen specification changed during repair');
     if (JSON.stringify((await readdir(workspace)).sort()) !== JSON.stringify(Object.keys(files).sort())) throw Error('unexpected repair files');
@@ -137,5 +141,5 @@ export async function generate({ need, directory, env = process.env, timeout = 6
     ...(scalarFilter ? { scalarFilter } : {}),
     testDouble: env.ENDOFORGE_CODEX_TEST_DOUBLE === '1',
     session: { effort: effort ?? 'default', resumed: Boolean(warm && thread), packed }, repaired,
-    timings: { generate: generatedSpecMs + performance.now() - codeStart, freeze: freezeMs } };
+    modelMs, timings: { generate: generatedSpecMs + performance.now() - codeStart, freeze: freezeMs } };
 }
