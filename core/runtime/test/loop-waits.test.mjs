@@ -52,7 +52,7 @@ test('a candidate waiting on its model holds no cell, and a one-cell pool carrie
   pool = loopPool(t, async input => {
     busy.push(pool.stats.busy);
     most = Math.max(most, ++sending);
-    await sleep(400);
+    await sleep(1500);
     sending -= 1;
     return model(input);
   });
@@ -112,11 +112,11 @@ test('a deadline passed during the wait ends the attempt inconclusive with no jo
   const root = scratch(t), directory = join(root, 'late');
   let atWait = null, pool;
   pool = loopPool(t, async input => {
-    if (stageOf(input.messages) === 'implementation') { atWait = pool.busyMs; await sleep(1500); }
+    if (stageOf(input.messages) === 'implementation') { atWait = pool.busyMs; await sleep(6000); }
     return model(input);
   });
   await pool.ready();
-  const expired = await runNeed({ need, directory, pool, env, deadline: Date.now() + 1000 });
+  const expired = await runNeed({ need, directory, pool, env, deadline: Date.now() + 4000 });
   assert.equal(expired.promoted, false);
   assert.equal(expired.status, 'inconclusive');
   assert.notEqual(atWait, null);
