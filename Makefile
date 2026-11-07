@@ -2,9 +2,9 @@ PYTHON ?= python3
 export PYTHONDONTWRITEBYTECODE := 1
 export ENDOFORGE_TEST_OUTPUT := $(CURDIR)/.test-work
 
-.PHONY: test test-optimized check core-test ledger-test engine-test isolate-test tscheck-setup tscheck-test tscheck-requalify atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test seeded-fault-test escape-test
+.PHONY: test test-optimized check core-test ledger-test engine-test isolate-test tscheck-setup tscheck-test tscheck-requalify atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test seeded-fault-test escape-test compatibility-test
 
-test: pipeline-test check core-test ledger-test engine-test isolate-test tscheck-test atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test seeded-fault-test escape-test kernel-test
+test: pipeline-test check core-test ledger-test engine-test isolate-test tscheck-test atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test seeded-fault-test escape-test compatibility-test kernel-test
 
 test-optimized:
 	PYTHONOPTIMIZE=1 $(MAKE) test PYTHON="$(PYTHON) -O"
@@ -77,3 +77,6 @@ kernel-test:
 .PHONY: rust-lane-test
 rust-lane-test:
 	$(PYTHON) -B -m unittest tools.rust_lane.test_lane -v
+
+compatibility-test:
+	node --test tools/compatibility/*.test.mjs
