@@ -12,8 +12,9 @@ const compareRuns = async (runner, job) => {
   return { ...first, comparedRuns: 2 };
 };
 
-export function cohortArguments({ cohortSource = source('./cohort.cjs') } = {}) {
-  return ['--permission', '--allow-worker', '--no-addons', '--disallow-code-generation-from-strings', '--no-warnings', '--no-experimental-websocket', '--max-old-space-size=64', '-e', cohortSource];
+// `readPaths` are the only files the cohort may read: the pinned modules a preparer compiles once.
+export function cohortArguments({ cohortSource = source('./cohort.cjs'), readPaths = [] } = {}) {
+  return ['--permission', '--allow-worker', ...readPaths.map(path => `--allow-fs-read=${path}`), '--no-addons', '--disallow-code-generation-from-strings', '--no-warnings', '--no-experimental-websocket', '--max-old-space-size=64', '-e', cohortSource];
 }
 
 export function validateContract(contract = {}) {
@@ -30,19 +31,22 @@ export function validateContract(contract = {}) {
 }
 
 export function createContainedRunner({ width = 1, spare = width, heapMb = 64, youngMb = 8, stackMb = 2, deadlineMs = 1000, outputMaxBytes = 1048576,
-  stuckMs = 1500, bootAllowanceMs = 5000, rssMaxMb, reuse = true, harden = true, execPath = process.execPath, cohortArgs, onCohort, sources = {} } = {}) {
+  stuckMs = 1500, bootAllowanceMs = 5000, rssMaxMb, reuse = true, harden = true, execPath = process.execPath, cohortArgs, onCohort, sources = {}, prepare } = {}) {
   if (![width, spare, heapMb, youngMb, stackMb, deadlineMs, outputMaxBytes, stuckMs].every(positive)) throw new TypeError('positive integer limits required');
-  const rssLimit = rssMaxMb ?? (heapMb + youngMb * 3 + 48) * (width + spare) + 256;
+  const preparer = prepare ? preparerConfig(prepare, width) : null;
+  const rssLimit = rssMaxMb ?? (heapMb + youngMb * 3 + 48) * (width + spare) + 256 + (preparer ? preparer.memoryMb * width + (preparer.layout === 'sibling' ? 48 * preparer.count : 0) : 0);
   const bootstrap = sources.guest || source('./guest.js'), cellSource = sources.cell || source('./cell.cjs');
-  const config = { width, spare, reuse, harden, stuckMs, bootstrap, resourceLimits: { maxOldGenerationSizeMb: heapMb, maxYoungGenerationSizeMb: youngMb, stackSizeMb: stackMb } };
+  const config = { width, spare, reuse, harden, stuckMs, bootstrap, resourceLimits: { maxOldGenerationSizeMb: heapMb, maxYoungGenerationSizeMb: youngMb, stackSizeMb: stackMb },
+    ...(preparer ? { prepare: preparer } : {}) };
+  const args = cohortArgs || cohortArguments({ readPaths: preparer ? preparer.wasm.map(item => item.path) : [] });
   const inflight = new Map(), queue = [];
   let cohort, starting, nextId = 1, closed = false;
-  const stats = { cohortStarts: 0, cohortLosses: 0, completed: 0, refused: 0, unknown: 0, messages: 0 };
+  const stats = { cohortStarts: 0, cohortLosses: 0, completed: 0, refused: 0, unknown: 0, messages: 0, dispatched: 0 };
   const settle = (entry, result) => {
     clearTimeout(entry.watchdog);
     inflight.delete(entry.id);
     const body = { lane: LANE, node: process.versions.node, cohort: entry.cohort, contract: sha256(JSON.stringify(entry.job.contract)), ...result };
-    stats[body.status === 'completed' ? 'completed' : body.status === 'refused' ? 'refused' : 'unknown'] += 1;
+    stats[body.status === 'completed' || body.status === 'checked' ? 'completed' : body.status === 'refused' ? 'refused' : 'unknown'] += 1;
     entry.resolve(body);
     pump();
   };
@@ -55,11 +59,12 @@ export function createContainedRunner({ width = 1, spare = width, heapMb = 64, y
     if (cohort === target) { cohort = null; starting = null; }
     const fatal = target.tail.split('\n').find(line => /FATAL|Fatal/.test(line))?.slice(0, 160);
     const attributed = width === 1 ? { status: 'refused', reason: fatal && /memory/i.test(fatal) ? 'heap' : reason === 'cohort_rss' ? 'memory' : reason === 'deadline_stuck' || reason === 'watchdog' ? 'deadline' : 'process_exit' } : { status: 'outcome_unknown', reason };
-    for (const entry of [...inflight.values()]) if (entry.owner === target) settle(entry, { ...attributed, detail: fatal || `cohort lost: ${reason}` });
+    // A checked attempt may have been checking rather than running when the cohort died, so it is never attributed.
+    for (const entry of [...inflight.values()]) if (entry.owner === target) settle(entry, { ...(entry.attempt ? { status: 'outcome_unknown', reason } : attributed), detail: fatal || `cohort lost: ${reason}` });
     if (!closed) { start().catch(() => {}); pump(); }
   };
   const start = () => starting ||= new Promise((resolve, reject) => {
-    const child = spawn('/bin/sh', ['-c', 'ulimit -c 0; exec "$@"', 'sh', execPath, ...(cohortArgs || cohortArguments())], { env: { TZ: 'UTC', LC_ALL: 'C' }, cwd: '/', stdio: ['ignore', 'ignore', 'pipe', 'ipc'], serialization: 'json' });
+    const child = spawn('/bin/sh', ['-c', 'ulimit -c 0; exec "$@"', 'sh', execPath, ...args], { env: { TZ: 'UTC', LC_ALL: 'C' }, cwd: '/', stdio: ['ignore', 'ignore', 'pipe', 'ipc'], serialization: 'json' });
     const target = { child, tail: '' };
     stats.cohortStarts += 1;
     child.stderr.on('data', chunk => { target.tail = (target.tail + chunk).slice(-4096); });
@@ -71,7 +76,7 @@ export function createContainedRunner({ width = 1, spare = width, heapMb = 64, y
       if (message.type === 'configured') { target.pid = message.pid; cohort = target; onCohort?.(child.pid); return resolve(target); }
       if (message.type === 'result') {
         const entry = inflight.get(message.id);
-        if (entry) settle(entry, decode(message.result, outputMaxBytes));
+        if (entry) settle(entry, entry.attempt ? decodeAttempt(message.result, outputMaxBytes) : decode(message.result, outputMaxBytes));
       } else if (message.type === 'port') {
         handlePort(target, message);
       } else if (message.type === 'stuck') {
@@ -112,6 +117,10 @@ export function createContainedRunner({ width = 1, spare = width, heapMb = 64, y
     if (outcome.state === 'completed' && typeof outcome.output === 'string' && outcome.output.length <= bound) return { status: 'completed', output: outcome.output, outputSha256: sha256(outcome.output), cell };
     return { status: 'refused', reason: typeof outcome.reason === 'string' ? outcome.reason : outcome.state === 'never_settled' ? 'never_settled' : 'output_too_large', ...(typeof outcome.detail === 'string' ? { detail: outcome.detail.slice(0, 512) } : {}), cell };
   };
+  const decodeAttempt = ({ prepared, checkMs, runMs, texts, failure, cell }, bound) => {
+    if (failure) return { status: 'outcome_unknown', reason: typeof failure.reason === 'string' ? failure.reason : 'checker_error', ...(typeof failure.detail === 'string' ? { detail: failure.detail.slice(0, 512) } : {}), prepared, checkMs, cell };
+    return { status: 'checked', prepared, checkMs, runMs, runs: (texts || []).map(text => decode({ text, cell }, bound)), cell };
+  };
   const pump = () => {
     if (!queue.length || closed && !queue.length) return;
     if (!cohort) { start().then(pump, error => { for (const entry of queue.splice(0)) entry.resolve({ lane: LANE, status: 'outcome_unknown', reason: 'cohort_start_failed', detail: error.message }); }); return; }
@@ -123,6 +132,7 @@ export function createContainedRunner({ width = 1, spare = width, heapMb = 64, y
       inflight.set(entry.id, entry);
       entry.watchdog = setTimeout(() => lose(entry.owner, 'watchdog'), entry.deadline + bootAllowanceMs + stuckMs);
       stats.messages += 1;
+      stats.dispatched += 1;
       cohort.child.send({ type: 'run', job: { id: entry.id, deadlineMs: entry.deadline, ...entry.wire } });
     }
   };
@@ -145,6 +155,25 @@ export function createContainedRunner({ width = 1, spare = width, heapMb = 64, y
       });
     },
     runTwice(job) { return compareRuns(this, job); },
+    // One attempt, one handoff in and one result out: the cohort's preparer checks and emits from `prepare`, then
+    // the emitted modules plus `modules` run `runs` times in fresh guest contexts. Resolves to status `checked` with
+    // the preparer's report and each run's result, or `outcome_unknown` when the check itself failed or was lost.
+    runChecked({ prepare: payload, modules = {}, entry, exportName = 'main', input = null, contract, deadlineMs: jobDeadline = deadlineMs, runs = 2, ports }) {
+      if (closed) return Promise.reject(new Error('runner closed'));
+      if (!preparer) return Promise.reject(new Error('runner has no preparer'));
+      if (!positive(jobDeadline) || !positive(runs)) return Promise.reject(new TypeError('deadlineMs and runs must be positive integers'));
+      let checked;
+      try {
+        checked = validateContract(contract);
+        if (modules === null || typeof modules !== 'object' || typeof entry !== 'string' || !Object.values(modules).every(value => typeof value === 'string')) throw new TypeError('modules must map paths to sources');
+      } catch (error) { return Promise.reject(error); }
+      return new Promise(resolve => {
+        queue.push({ attempt: true, job: { contract: checked }, deadline: preparer.checkDeadlineMs + runs * jobDeadline, ports, portCalls: new Map(), resolve,
+          wire: { attempt: true, prepare: payload, repeat: runs, checkDeadlineMs: preparer.checkDeadlineMs, deadlineMs: jobDeadline, modules, entry, exportName,
+            input: JSON.stringify(input === undefined ? null : input), contract: { grants: checked.grants, ports: checked.ports }, outputMaxBytes } });
+        pump();
+      });
+    },
     async close() {
       closed = true;
       try { await starting; } catch {}
@@ -160,6 +189,17 @@ export function createContainedRunner({ width = 1, spare = width, heapMb = 64, y
       });
     },
   };
+}
+// A preparer runs in the cohort before the guest: `fused` in the guest's own Worker, `sibling` in `count` checker
+// Workers of the same process. `memoryMb` is what one preparation may hold outside the V8 heap.
+function preparerConfig({ layout = 'sibling', count, resourceLimits, checkDeadlineMs = 10000, memoryMb = 1024, sources, entry, wasm = [], config = {} }, width) {
+  if (!['fused', 'sibling'].includes(layout)) throw new TypeError(`unknown preparer layout ${layout}`);
+  if (!Array.isArray(sources) || !sources.every(item => typeof item?.name === 'string' && typeof item.text === 'string') || !sources.some(item => item.name === entry)) throw new TypeError('preparer needs sources including its entry');
+  if (!wasm.every(item => typeof item?.path === 'string' && item.path.startsWith('/') && /^[0-9a-f]{64}$/.test(item.sha256))) throw new TypeError('preparer modules need an absolute path and a digest');
+  const checkers = count ?? width;
+  if (![checkers, checkDeadlineMs, memoryMb].every(positive)) throw new TypeError('positive integer preparer limits required');
+  return { layout, count: checkers, checkDeadlineMs, memoryMb, sources, entry, wasm, config,
+    resourceLimits: { maxOldGenerationSizeMb: 64, maxYoungGenerationSizeMb: 8, stackSizeMb: 4, ...resourceLimits } };
 }
 export function createContainedPool({ width = 1, ...options } = {}) {
   if (!positive(width)) throw new TypeError('positive integer width required');
