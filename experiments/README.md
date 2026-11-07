@@ -30,5 +30,6 @@ precommit hashed before measurement and a result that states what it does not sh
 | [P-49](P-49-incremental/PRECOMMIT.md) | `.tsbuildinfo` feedback between checks: one-file edit 65–80% faster, no diagnostic difference in 220 comparisons, widely imported type edit 18–33% slower | [RESULT.md](P-49-incremental/RESULT.md) |
 | [P-50](P-50-in-isolate/PRECOMMIT.md) | The candidate and agent loop inside one workcell: 0 spawns and temp files up to commit, verdicts match on 31 inputs, no false promotion under real kills; non-model time 132–134 ms p50 and 326–357 ms p95 against 1,472 and 1,759 ms, missing the 100 ms line | [RESULT.md](P-50-in-isolate/RESULT.md) |
 | [P-52](P-52-real-gates/PRECOMMIT.md) | Gates that measure the candidate: real universal gates, fuel, a contract-judged non-finite probe and glue checks. On P-51's corpus, sampled escapes 441 to 280 of 7,883, glue 691 to 295 of 799, no stall refusals, about 1 ms per candidate; 176 of 177 pristine promote, so the bar isn't met | [RESULT.md](P-52-real-gates/RESULT.md) |
+| [P-56](P-56-evaluator-synthesis/PRECOMMIT.md) | Evaluator synthesis before any candidate: need sheet, binding, host vectors and meta-gates M1 to M5, through P-51's unmodified harness. Precommitted; running | Pending |
 
 Rebuild P-15 dependencies with `setup.sh` in its directory; `node_modules` is not committed.
