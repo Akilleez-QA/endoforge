@@ -22,6 +22,13 @@ const result = await pool.run({ reference, candidates, receipts, portOptions: { 
 
 Use a `jobTimeoutMs`, since a check can't stop itself. Don't lower `maxOldGenerationSizeMb` below the pinned limit: 256 MiB ran out of memory on a healthy job in [P-43](../../experiments/P-43-tsrs-workcell/RESULT.md). That probe also found throughput flat by 8 cells. On this stack [P-48](../../experiments/P-48-width/RESULT.md) found the compiler isn't the limit and the evaluator's frozen check is the likely one, though no arm removes the check.
 
-`make tscheck-setup` installs the exact pinned version without install scripts, and `make tscheck-test` runs the tests. On a version bump, update `pin.mjs` and rerun the probe.
+`make tscheck-setup` installs the exact pinned version without install scripts, and `make tscheck-test` runs the tests. On a version bump, update `pin.mjs` and run `make tscheck-requalify WORK=<dir> TSC=<path to tsc>`, which reruns [P-43](../../experiments/P-43-tsrs-workcell/RESULT.md)'s parity arm against whatever `pin.mjs` names and exits nonzero on any difference. A workload directory holds `<group>/<name>/proj/tsconfig.json`, and inputs aren't committed, so `pin.mjs` holds the digest of the workload tree and of the oracle: its launcher, package file and native compiler, per platform. Only `linux-x64` is pinned, so on any other platform requalification fails until a digest is added. Nonzero means any of these:
+
+- A location, first-line message or exit code that differs from the oracle's.
+- A job that doesn't complete, including a compiler that doesn't match its pin, since the checker refuses to load one, and a project the checker refuses, such as one with sources outside its program. These show as `not-completed`.
+- An oracle or workload whose digest isn't the pinned one, or an oracle whose version isn't the one in `TSRS_VERSION`.
+- A workload with fewer than 20 projects, the size of P-43's parity arm, or anything in it that isn't a project or a group's `manifest.json`, since a skipped project can't be counted as compared.
+- A workload without variety: fewer than 20 distinct projects by source, 3 clean, 3 with a diagnostic located in a source file, or 5 distinct codes among those. A configuration error doesn't count, so 20 broken tsconfigs can't qualify.
+- `host-option-effect`: the oracle also runs plain, with none of the host's options, in a copy of the project, and has to agree with its hosted run. The hosted oracle shares the checker's options, so an option that changes a result can't show there.
 
 Thread workcells aren't an OS sandbox. Running the emitted JavaScript isn't implemented here.

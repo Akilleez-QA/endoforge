@@ -2,7 +2,7 @@ PYTHON ?= python3
 export PYTHONDONTWRITEBYTECODE := 1
 export ENDOFORGE_TEST_OUTPUT := $(CURDIR)/.test-work
 
-.PHONY: test test-optimized check core-test ledger-test engine-test isolate-test tscheck-setup tscheck-test atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test
+.PHONY: test test-optimized check core-test ledger-test engine-test isolate-test tscheck-setup tscheck-test tscheck-requalify atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test
 
 test: pipeline-test check core-test ledger-test engine-test isolate-test tscheck-test atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test
 
@@ -29,6 +29,9 @@ tscheck-setup:
 
 tscheck-test: tscheck-setup
 	node --test tools/tscheck/test/*.test.mjs
+
+tscheck-requalify:
+	node tools/tscheck/requalify.mjs --work "$(WORK)" --tsc "$(TSC)"
 
 atomizer-test:
 	node tools/atomizer/test/trace.test.mjs
