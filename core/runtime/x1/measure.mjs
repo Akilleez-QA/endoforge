@@ -58,7 +58,7 @@ export function measuredPort(find) {
       if (!type) return observed('missing.export');
       if (!Array.isArray(test.args) || test.args.length !== type.params.length) return observed('arity');
     }
-    try { freshKernel(kernel); } catch { return observed('instantiation'); }
+    if (kernel.shape.start) try { freshKernel(kernel); } catch { return observed('instantiation'); }
     return signature;
   };
   const run = (identity, cases, limit) => {

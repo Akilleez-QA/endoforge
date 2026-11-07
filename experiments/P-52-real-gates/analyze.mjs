@@ -12,13 +12,14 @@ const where = row => {
 const table = (list, key) => { const out = {}; for (const row of list) { const name = key(row); out[name] ??= { escaped: 0, submitted: 0 }; out[name].submitted++; if (row.promoted) out[name].escaped++; } return out; };
 const quantile = (values, q) => { const s = values.filter(Number.isFinite).sort((a, b) => a - b); return s[Math.floor(q * (s.length - 1))]; };
 const summary = {};
+const refused = new Set(rows(after, 'control').filter(row => !row.promoted).map(row => row.key));
 for (const arm of ['control', 'sampled', 'glue']) {
   const now = rows(after, arm), old = arm === 'control' || arm === 'sampled' || arm === 'glue' ? rows(before, arm) : [];
   const was = new Map(old.map(row => [row.mutant, row]));
   const entry = summary[arm] = {};
   for (const cohort of [...new Set(now.map(row => row.cohort))]) {
     const list = now.filter(row => row.cohort === cohort), prior = old.filter(row => row.cohort === cohort);
-    entry[cohort] = { after: table(list, () => 'all').all, before: table(prior, () => 'all').all,
+    entry[cohort] = { onRefusedPristine: table(list.filter(row => refused.has(row.key)), () => 'all').all, onPromotingPristine: { after: table(list.filter(row => !refused.has(row.key)), () => 'all').all, before: table(prior.filter(row => !refused.has(row.key)), () => 'all').all }, after: table(list, () => 'all').all, before: table(prior, () => 'all').all,
       byClassAfter: table(list, row => row.class), byClassBefore: table(prior, row => row.class), byOpAfter: table(list, row => row.op),
       finiteVisible: { after: table(list.filter(r => !nonFiniteOnly(r)), () => 'all').all, before: table(prior.filter(r => !nonFiniteOnly(r)), () => 'all').all },
       nonFiniteOnly: { after: table(list.filter(nonFiniteOnly), () => 'all').all, before: table(prior.filter(nonFiniteOnly), () => 'all').all },

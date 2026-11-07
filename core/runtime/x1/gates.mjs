@@ -40,10 +40,10 @@ if (sha(f('tests.json')) !== frozen.tests) fail('G1_frozen', 'tests.json changed
 result.gates.G1_frozen = { ok: true };
 if (!compiled || compiled.error || compiled.source !== sha(f('kernel.ts'))) fail('G2_compiles', compiled?.error || 'compile binding differs');
 const bytes = Buffer.from(compiled.wasm, 'base64');
-let mod, loaded;
-try { mod = new WebAssembly.Module(bytes); loaded = loadKernel(bytes, kernelFuel); }
+let loaded;
+try { loaded = loadKernel(bytes, kernelFuel); }
 catch (error) { fail('G2_compiles', `module rejected: ${error.message}`); }
-const imports = WebAssembly.Module.imports(mod).filter(i => !(i.module === 'env' && i.name === 'abort'));
+const imports = loaded.shape.imports.filter(i => !(i.module === 'env' && i.name === 'abort'));
 if (imports.length) fail('G2_compiles', `unexpected imports: ${imports.map(i => i.module + '.' + i.name).join(', ')}`);
 result.gates.G2_compiles = { ok: true, wasmBytes: bytes.length, wasmSha256: crypto.createHash('sha256').update(bytes).digest('hex') };
 const tests = JSON.parse(fs.readFileSync(f('tests.json'), 'utf8'));
@@ -108,10 +108,9 @@ result.gates.G5_deterministic = { ok: same };
         for (const n of exportNames) if (!described.has(n)) problems.push(`export ${n} has no glue entry`);
         for (const n of described.keys()) if (!exportNames.has(n)) problems.push(`glue describes ${n}, which the module does not export`);
         if (described.size !== glue.exports.length) problems.push('duplicate export names in glue');
-        const { inst } = instantiate();
         for (const x of glue.exports) {
           if (!exportNames.has(x.name)) continue;
-          const arity = inst.exports[x.name].length;
+          const arity = loaded.shape.functions[x.name].params.length;
           if (x.args.length !== arity) problems.push(`${x.name}: glue lists ${x.args.length} args, the export takes ${arity}`);
           for (const a of x.args) if (a.kind === 'code' && !a.codes) problems.push(`${x.name}.${a.name}: code argument without a codes table`);
           const r = x.result;
@@ -136,7 +135,7 @@ result.gates.G5_deterministic = { ok: same };
 }
 {
   const expected = nonFiniteExpectation(fs.readFileSync(f('CONTRACT.md'), 'utf8'), Object.keys(loaded.shape.functions));
-  const calls = probeCalls(tests, loaded.shape.functions), kernel = freshKernel(loaded), problems = [], unjudged = {};
+  const calls = probeCalls(tests, loaded.shape.functions), kernel = calls.length ? freshKernel(loaded) : null, problems = [], unjudged = {};
   for (const { fn, args } of calls) {
     const outcome = callKernel(kernel, fn, args), expectation = expected[fn];
     if (outcome.limit) { problems.push(`${fn}(${args}): ${outcome.limit}`); break; }

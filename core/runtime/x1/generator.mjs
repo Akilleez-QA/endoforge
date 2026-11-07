@@ -9,7 +9,7 @@ import { filterScalarTests } from './scalar.mjs';
 const schema = JSON.parse(await readFile(new URL('./glue.schema.json', import.meta.url)));
 export const glueRules = [
   'Every export of kernel.ts has exactly one glue.exports entry, and glue describes no other names.',
-  'Each args list has one entry per parameter of the export, in order.',
+  'Each args list has one entry per parameter of the export, in order, named exactly as the kernel.ts parameter.',
   'A result of kind number must include an integer precision from 0 to 6 (decimal places shown).',
   'A result of kind code must include a codes table labelling every code the tests return.',
   'A result of kind boolean must include labels with true and false strings.',

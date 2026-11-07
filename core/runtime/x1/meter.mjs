@@ -132,11 +132,17 @@ export function meter(bytes, fuel) {
   extend(6, [0x7e, 1, 0x42, ...sleb(fuel), 0x0b]);
   extend(7, entry(fuelExport, 3, global));
   if (shape.memory && !shape.memoryName) extend(7, entry(memoryExport, 2, 0));
-  const out = [...bytes.subarray(0, 8)];
-  for (const { id, content } of parts) out.push(id, ...uleb(content.length), ...content);
-  return Uint8Array.from(out);
+  return Buffer.concat([bytes.subarray(0, 8), ...parts.flatMap(({ id, content }) => [Uint8Array.from([id, ...uleb(content.length)]), content])]);
 }
+let latest = null;
 export function loadKernel(bytes, fuel) {
+  const key = Buffer.from(bytes).toString('base64');
+  if (latest?.key === key && latest.fuel === fuel) return latest.kernel;
+  const kernel = compileKernel(bytes, fuel);
+  latest = { key, fuel, kernel };
+  return kernel;
+}
+function compileKernel(bytes, fuel) {
   const shape = inspect(bytes), module = new WebAssembly.Module(meter(bytes, fuel));
   const memoryName = shape.memoryName ?? (shape.memory ? memoryExport : null);
   const start = abort => {
