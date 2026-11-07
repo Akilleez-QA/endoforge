@@ -125,3 +125,9 @@ Escape rate on seeded faults, as Edition 3 section 7 defines it, through P-51's
 unmodified harness: experiment P-56. A synthesized evaluator is the "model,
 candidate-blind" row of the error-source table: partly independent. It isn't counted
 as an offline-qualified invariant, and a passing synthesized check grants no tier.
+
+## Follow-up: auditing the frozen tests themselves
+
+Input from a parallel experiment (draft PR 103, model effort): 30 of 38 failed candidates came from five specifications that froze a wrong expected value, for example `kwToHp(6.2)` frozen as 8.314471 where the stated formula gives 8.314337. Each cost about six repair turns that no code could pass.
+
+The stage already computes the evidence: M3 recomputes every frozen test from a reference written in a separate context, before the implementation turn. Today a disagreement only unqualifies the export, so the evaluator steps back and the wrong test stays. Proposed, not built: when both members of a dual-mode evaluator pass M2 and M5, agree with each other on a frozen test's arguments, and both disagree with its expected value beyond its `tol`, report that test as suspect before implementation starts. That fact goes to the requester or the task contract, and the specification turn can be repaired under the ledger's revision rule (new evidence, not a candidate's failure). It can't silently rewrite the test; the frozen value stays authoritative until a revision is recorded. P-56's precommit is unchanged by this; it's recorded as a finding.
