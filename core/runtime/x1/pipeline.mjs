@@ -22,13 +22,14 @@ export async function runNeed(options) {
   const second = await attempt({ ...options, directory: `${options.directory}-retry`, env: { ...env, ENDOFORGE_CODEX_TERSE: '0' }, deadline: begin + budget });
   return { ...second, retried: true, retryCancelled: !second.promoted && Date.now() >= begin + budget, first: { promoted: false, timings: first.timings } };
 }
-async function attempt({ need, directory, pool, env = process.env, compiler = env.ENDOFORGE_ASC_CMD, deadline = Infinity, containedRoute }) {
+async function attempt({ need, directory, pool, env = process.env, compiler = env.ENDOFORGE_ASC_CMD, deadline = Infinity, library = null, containedRoute }) {
   const timings = Object.fromEntries(['generate', 'freeze', 'compile', 'gate', 'ledger', 'promote'].map(k => [k, null]));
   let scalarFilter;
   try {
-    const generated = await generate({ need, directory, env, check: failures(compiler), deadline });
+    const generated = await generate({ need, directory, env, check: failures(compiler), deadline, library });
     scalarFilter = generated.scalarFilter;
     Object.assign(timings, generated.timings);
+    if (generated.reused) return { promoted: true, reused: generated.reused.receipt, decision: generated.reused.hash, testDouble: generated.testDouble, timings };
     let start = performance.now();
     const candidate = { ...generated.candidate, compiled: await compile(generated.candidate.files, compiler) };
     timings.compile = performance.now() - start;

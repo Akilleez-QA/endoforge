@@ -11,6 +11,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { withLock, writeJSONAtomic } from '../../lib/lock.mjs';
+import { StopError } from '../../lib/errors.mjs';
 
 export const SCHEMA = 'endoforge/conductor/1';
 export const PHASES = ['staged', 'go', 'smoke', 'fired', 'streaming', 'gates', 'locks', 'finals', 'compose', 'done'];
@@ -31,7 +32,16 @@ export function initState(job) {
 }
 
 export function loadState(job, file) {
-  try { return JSON.parse(fs.readFileSync(stateFile(job, file), 'utf8')); } catch { return initState(job); }
+  const f = stateFile(job, file);
+  let raw;
+  try { raw = fs.readFileSync(f, 'utf8'); } catch (e) {
+    if (e.code === 'ENOENT') return initState(job);
+    throw new StopError(`conductor state ${f} is unreadable: ${e.message}`);
+  }
+  let state;
+  try { state = JSON.parse(raw); } catch (e) { throw new StopError(`conductor state ${f} is unreadable: ${e.message}`); }
+  if (!state || typeof state !== 'object' || !state.atoms || !state.budget) throw new StopError(`conductor state ${f} is unreadable: it is not a state record`);
+  return state;
 }
 
 /** Read-modify-write under the state lock. fn mutates the state; the result is written atomically and returned. */

@@ -21,6 +21,8 @@ const requireProcessStack = stackSizeMb => {
   try { execFileSync('/bin/sh', ['-c', 'ulimit -s "$1"', 'sh', String(stackSizeMb * 1024)], { stdio: 'ignore' }); }
   catch { throw new Error('this host cannot raise the process stack limit to stackSizeMb'); }
 };
+const maxHostCalls = 4096;
+const maxHostCallBytes = 1048576;
 const killGraceMs = 1000;
 const exitGraceMs = 500;
 
@@ -48,15 +50,21 @@ export class IsolatePool {
   #warmOptions;
   #warmTimeoutMs;
   #startFailures = 0;
+  #hostCalls;
+  #frozenThroughLedger;
 
   constructor({ hostPort, size = availableParallelism(), resourceLimits = {}, wasmMemoryMaxMb = 64,
-    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, warm, warmTimeoutMs = 60000, jobTimeoutMs } = {}) {
+    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, warm, warmTimeoutMs = 60000, jobTimeoutMs, hostCalls, frozenThroughLedger = false } = {}) {
     if (!['thread', 'process'].includes(isolation)) throw new TypeError('isolation must be thread or process');
     if (cgroupRoot !== undefined && (typeof cgroupRoot !== 'string' || !cgroupRoot)) throw new TypeError('cgroupRoot path required');
     if (!positive(size)) throw new TypeError('positive integer pool size required');
     if (typeof prewarm !== 'boolean') throw new TypeError('prewarm must be boolean');
     if (warm !== undefined && (warm === null || typeof warm !== 'object')) throw new TypeError('warm must be an options object');
     if (!positive(warmTimeoutMs)) throw new TypeError('warmTimeoutMs must be a positive integer');
+    if (hostCalls !== undefined && typeof hostCalls !== 'function') throw new TypeError('hostCalls must be a function');
+    if (typeof frozenThroughLedger !== 'boolean') throw new TypeError('frozenThroughLedger must be boolean');
+    this.#hostCalls = hostCalls;
+    this.#frozenThroughLedger = frozenThroughLedger;
     this.#warmOptions = warm;
     this.#warmTimeoutMs = warmTimeoutMs;
     if (typeof hostPort !== 'string' || !hostPort) throw new TypeError('hostPort module path required');
@@ -182,7 +190,9 @@ export class IsolatePool {
         tail = (tail + chunk).slice(-8192);
         if (/FATAL ERROR:.*(?:heap out of memory|heap limit|Allocation failed)/i.test(tail)) cell.error = { code: 'ERR_WORKER_OUT_OF_MEMORY' };
       });
-      worker.postMessage = message => worker.send(message, error => { if (error) { cell.error = error; worker.kill(); } });
+      worker.postMessage = message => worker.send(message, error => {
+        if (error && cell.error?.code !== 'ERR_WORKCELL_DEADLINE') { cell.error = error; worker.kill(); }
+      });
       worker.terminate = () => new Promise(resolve => {
         const kill = setTimeout(() => worker.kill('SIGKILL'), killGraceMs);
         cell.gone.then(() => { clearTimeout(kill); resolve(); });
@@ -204,18 +214,19 @@ export class IsolatePool {
         clearTimeout(cell.warmTimer);
         return cell.markStarted(!result.warmError);
       }
-      if (!cell.job) return;
+      const job = cell.job;
+      if (!job || job.settled || job.deadlineFired) return;
+      if (result.type === 'host_call' || result.type === 'host_frozen') return this.#answer(cell, result);
       if (result.type === 'limit') {
         cell.error = { code: result.error };
         return;
       }
-      const job = cell.job;
-      clearTimeout(job.deadline);
+      if (!this.#claim(job)) return;
       cell.job = null;
       this.#finish(job, { ...result, ...cell.metadata });
       this.#pump();
     });
-    worker.on('error', error => { cell.error = error; });
+    worker.on('error', error => { if (cell.error?.code !== 'ERR_WORKCELL_DEADLINE') cell.error = error; });
     let exited = false;
     let exitTimer;
     const gone = (code, signal) => {
@@ -229,8 +240,10 @@ export class IsolatePool {
       releaseCgroup(directory);
       if (subprocess && code === 18) cell.error = { code: 'ERR_WORKCELL_WASM_MEMORY_LIMIT' };
       const limited = ['ERR_WORKER_OUT_OF_MEMORY', 'ERR_WORKCELL_WASM_MEMORY_LIMIT'].includes(cell.error?.code);
-      if (cell.job) clearTimeout(cell.job.deadline);
-      if (cell.job) this.#finish(cell.job, { status: subprocess && limited ? 'rejected' : 'outcome_unknown',
+      const job = cell.job;
+      const claimed = this.#claim(job);
+      if (job) cell.job = null;
+      if (claimed) this.#finish(job, { status: subprocess && limited ? 'rejected' : 'outcome_unknown',
         reason: cell.error?.code === 'ERR_WORKCELL_DEADLINE' ? 'deadline' : limited ? (subprocess ? (cell.error.code === 'ERR_WORKER_OUT_OF_MEMORY' ? 'heap' : 'wasm_memory') : 'limit') : 'worker_exit',
         error: cell.error?.code || null, exitCode: code, signal: signal || null, report: null, ...cell.metadata,
         workcell: cell.id, resourceLimits: this.#limits, wasmMemoryMaxMb: this.#wasmMemoryMaxMb });
@@ -265,19 +278,40 @@ export class IsolatePool {
         cell ||= this.#spawn();
         cell.job = job;
         if (this.#jobTimeoutMs) job.deadline = setTimeout(() => {
+          if (job.settled) return;
+          job.deadlineFired = true;
           cell.error = { code: 'ERR_WORKCELL_DEADLINE' };
           cell.stopping = true;
           cell.worker.terminate();
         }, this.#jobTimeoutMs);
         const { reference, candidates, portOptions } = job.data;
-        cell.worker.postMessage({ reference, candidates, portOptions, hostPort: this.#hostPort });
+        job.hostCalls = 0;
+        cell.worker.postMessage({ reference, candidates, portOptions, hostPort: this.#hostPort, frozenThroughLedger: this.#frozenThroughLedger });
       } catch (error) {
-        clearTimeout(job.deadline);
-        if (cell) cell.job = null;
-        this.#finish(job, { status: 'outcome_unknown', reason: error.message,
+        if (cell?.job === job) cell.job = null;
+        if (this.#claim(job)) this.#finish(job, { status: 'outcome_unknown', reason: error.message,
           report: null, workcell: cell?.id ?? null, ...cell?.metadata, resourceLimits: this.#limits, wasmMemoryMaxMb: this.#wasmMemoryMaxMb });
       }
     }
+  }
+
+  async #answer(cell, { type, id, request, reference }) {
+    const job = cell.job;
+    const reply = message => { try { cell.worker.postMessage({ type: 'host_reply', id, ...message }); } catch { } };
+    try {
+      if (type === 'host_frozen') return reply({ result: await this.#ledger.request('frozen', { reference }) });
+      if (!this.#hostCalls) throw new Error('no host calls are configured');
+      if (++job.hostCalls > maxHostCalls) throw new Error('host-call-limit');
+      if (JSON.stringify(request).length > maxHostCallBytes) throw new Error('host-call-size');
+      reply({ result: await this.#hostCalls(request, { candidates: job.data.candidates, workcell: cell.id }) });
+    } catch (error) { reply({ error: error.message || String(error) }); }
+  }
+
+  #claim(job) {
+    if (!job || job.settled) return false;
+    job.settled = true;
+    clearTimeout(job.deadline);
+    return true;
   }
 
   async #finish(job, result) {

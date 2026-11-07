@@ -6,6 +6,15 @@ Run agent-pool.mjs with an explicitly configured client and account directories.
 
 Worker-registry integration requires WORKERS_BIN explicitly; no host registry is discovered automatically.
 
+### Agent pool contract
+
+- **Accounts.** An account is a directory holding `auth.json`: `CODEX_POOL_PRIMARY`, logged as `default`, then each subdirectory of `CODEX_POOL_ACCOUNTS_DIR`. Only the file's presence is checked.
+- **Slots.** Each account takes at most `CODEX_POOL_PER_ACCOUNT` launches at once (default 2), tracked by owner-PID slot directories in `CODEX_POOL_STATE_DIR`. The least-loaded account goes first, and a dead owner's slot is reclaimed by rename, so one reclaimer wins.
+- **Rate limits.** A rate-limited account cools down until the time its error names, or for 300 s if it names none. The pool then fails over to the next account and logs each try to `<state>/log`.
+- **Child.** The child is `CODEX_POOL_BIN`, or the first `codex` on `PATH` that isn't this script. A regular file on stdin is reopened for each try, so a retry sees the whole prompt.
+- **Exits.** The child's code; 75 when every account is cooling down or no slot frees within `CODEX_POOL_WAIT`; the guard's code when `CODEX_POOL_GUARD` refuses; 2 when no client is found.
+- **Worker registry.** With `WORKERS_BIN` set, only the child runs under `workers run`, never this launcher, so the pool can't recurse. The registry's spawn-rate gate reaches the caller as exit 75 with no failover. Without `WORKERS_BIN` no gate applies, so a host relying on the gate must set it.
+
 ## V8 isolate workcells
 
 [IsolatePool](isolate-pool.mjs) schedules real

@@ -14,7 +14,7 @@ const policy = JSON.parse(fs.readFileSync(path.join(here, '../policy.json'), 'ut
 let failures = 0;
 const test = (name, fn) => { try { fn(); console.log(`PASS ${name}`); } catch (e) { failures++; console.log(`FAIL ${name}: ${e.message}`); } };
 const read = (p) => JSON.parse(fs.readFileSync(p, 'utf8'));
-function run(name, kinds, { limited = [], third = false, astra = false, guard, extra = [] } = {}) {
+function run(name, kinds, { limited = [], third = false, astra = false, guard, extra = [], vars = {} } = {}) {
   const root = path.join(tmp, name), prefix = path.join(root, 'stub');
   const homes = [path.join(root, 'acct-a'), path.join(root, 'accts/acct-b'), ...(third ? [path.join(root, 'accts/acct-c')] : [])];
   for (const home of homes) {
@@ -40,6 +40,7 @@ printf '\x60\x60\x60text\\nmodel=%s effort=%s home=%s\\n\x60\x60\x60\\n' "$model
   const input = path.join(root, 'atoms.json'), output = path.join(root, 'run'); fs.writeFileSync(input, JSON.stringify(doc));
   const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith('CODEX_POOL_') && !k.startsWith('ENDOFORGE_') && k !== 'CODEX_HOME'));
   Object.assign(env, { ENDOFORGE_CODEX_POOL: pool, CODEX_POOL_PRIMARY: homes[0], CODEX_POOL_ACCOUNTS_DIR: path.join(root, 'accts'), CODEX_POOL_STATE_DIR: path.join(root, 'pool-state'), CODEX_POOL_GUARD: 'none', CODEX_POOL_WAIT: '30', ATOMIZER_LEDGER_DIR: path.join(root, 'ledger'), ENDOFORGE_WORKER: 'codex', ENDOFORGE_TOOLCHAIN_CODEX: prefix, ENDOFORGE_THROTTLE: '0' });
+  Object.assign(env, vars);
   if (guard) { env.CODEX_POOL_GUARD = path.join(root, 'guard'); fs.writeFileSync(env.CODEX_POOL_GUARD, `#!/bin/sh\nexit ${guard}\n`, { mode: 0o755 }); }
   const result = spawnSync(process.execPath, [path.join(here, '../bin/schedule.mjs'), 'run', input, '--run-dir', output, '--no-augment', ...extra], { env, encoding: 'utf8', timeout: 60_000 });
   assert.ifError(result.error);
@@ -77,6 +78,14 @@ try {
   test('astra rejection falls back within the attempt', () => {
     const r = run('fallback', ['review'], { astra: true }); assert.equal(r.status, 0, r.stderr);
     assert.match(r.output(0), /model=gpt-6.1-sol effort=high/); assert.equal(r.receipts[0].attempts.length, 1); assert.equal(r.receipts[0].attempts[0].modelFallback, true);
+  });
+  test('a spawn-gate 75 is labelled as such, not as exhausted accounts', () => {
+    const workers = path.join(tmp, 'stub-workers');
+    fs.writeFileSync(workers, '#!/bin/sh\necho "workers: spawn-rate alarm" >&2\nexit 75\n', { mode: 0o755 });
+    const r = run('gate', ['review'], { vars: { WORKERS_BIN: workers } });
+    assert.notEqual(r.status, 0); const a = r.receipts[0].attempts;
+    assert.equal(a.length, 1); assert.equal(a[0].exit, 75);
+    assert.match(a[0].reason, /spawn-rate gate/); assert.doesNotMatch(a[0].reason, /exhausted/);
   });
   for (const guard of [75, 77]) test(`guard ${guard} stops without retry or failover`, () => {
     const r = run(`guard${guard}`, ['review'], { guard }); assert.notEqual(r.status, 0); const a = r.receipts[0].attempts;

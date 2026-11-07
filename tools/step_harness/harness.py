@@ -82,12 +82,12 @@ class Result:
 
 
 class StepHarness:
-    def __init__(self, *, goal, criteria, model, core, ledger, clock, limits=None, summarise=None):
+    def __init__(self, *, goal, criteria, model, core, ledger, clock, limits=None, summarise=None, constraints=None):
         if not criteria:
             raise ValueError("A completion contract needs at least one acceptance criterion")
         self.goal, self.criteria, self.model = dict(goal), tuple(criteria), model
         self.core, self.ledger, self.clock = core, ledger, clock
-        self.limits, self.summarise = limits or Limits(), summarise
+        self.limits, self.summarise, self.constraints = limits or Limits(), summarise, constraints
         self.steps, self.checkpoint, self.evidence = [], None, {}
         self._calls, self._running, self._done = {}, False, False
 
@@ -100,10 +100,13 @@ class StepHarness:
         return ref
 
     def _view(self, started):
-        return {"goal": self.goal, "criteria": [{"id": c.criterion_id, "text": c.text} for c in self.criteria],
+        view = {"goal": self.goal, "criteria": [{"id": c.criterion_id, "text": c.text} for c in self.criteria],
                 "checkpoint": self.checkpoint, "recent_steps": self.steps,
                 "remaining": {"steps": self.limits.max_steps - self._used,
                               "seconds": self.limits.max_seconds - (self.clock() - started)}}
+        if self.constraints is not None and self.checkpoint is not None:
+            view["constraint_record"] = self.constraints.resume_block()
+        return view
 
     def _finish(self, verdict, reason, step_no):
         self._record("verdict", {"step": step_no, "verdict": verdict, "reason": reason,
@@ -231,6 +234,8 @@ class StepHarness:
             return
         if estimate_tokens({"checkpoint": self.checkpoint, "steps": self.steps}) <= lim.compact_threshold_tokens:
             return
+        if self.constraints is not None:
+            self._record("constraints", self.constraints.cross())
         cut = len(self.steps) - lim.keep_recent_steps
         old, self.steps = self.steps[:cut], self.steps[cut:]
         prior = self.checkpoint or {"decisions": [], "ledger_refs": [], "folded_steps": 0, "notes": []}
