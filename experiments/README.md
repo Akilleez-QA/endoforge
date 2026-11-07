@@ -29,5 +29,6 @@ precommit hashed before measurement and a result that states what it does not sh
 | [P-48](P-48-width/PRECOMMIT.md) | What limits checker throughput at width: the evaluator's per-call frozen-check process, near 50–70 calls/s at any width; the compiler alone reached 96 checks/s; thread cells' shared address space is second; the ledger and desktop aren't the limit | [RESULT.md](P-48-width/RESULT.md) |
 | [P-49](P-49-incremental/PRECOMMIT.md) | `.tsbuildinfo` feedback between checks: one-file edit 65–80% faster, no diagnostic difference in 220 comparisons, widely imported type edit 18–33% slower | [RESULT.md](P-49-incremental/RESULT.md) |
 | [P-50](P-50-in-isolate/PRECOMMIT.md) | The candidate and agent loop inside one workcell: 0 spawns and temp files up to commit, verdicts match on 31 inputs, no false promotion under real kills; non-model time 132–134 ms p50 and 326–357 ms p95 against 1,472 and 1,759 ms, missing the 100 ms line | [RESULT.md](P-50-in-isolate/RESULT.md) |
+| [P-56](P-56-model-effort/PRECOMMIT.md) | Model and effort through the in-isolate agent loop, by failed code candidates, held-out escapes and seconds per accepted capability | pending |
 
 Rebuild P-15 dependencies with `setup.sh` in its directory; `node_modules` is not committed.
