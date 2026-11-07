@@ -6,7 +6,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
 import { discoverLogins, assignLanes, workerCommand, workerCapacity, waveSize } from '../../hillclimb/lib/fanout.mjs';
+import { exitWrapper, readExit } from '../../lib/exitfile.mjs';
 import { stateDir } from './state.mjs';
+
+export const LOST = -1;
 
 const git = (cwd, ...a) => { const r = spawnSync('git', ['-C', cwd, ...a], { encoding: 'utf8' }); if (r.status !== 0) throw new Error(`git ${a.join(' ')}: ${r.stderr.trim()}`); return r.stdout.trim(); };
 const codexOnPath = () => (process.env.PATH || '').split(':').map((d) => path.join(d, 'codex')).find((p) => { try { fs.accessSync(p, fs.constants.X_OK); return true; } catch { return false; } });
@@ -42,7 +45,7 @@ export function launchAtom(job, file, state, id, { prompt, images = [] }) {
   const lane = { engine: st.login?.engine ?? a.engine, account: st.login?.account ?? 'default', configDir: st.login?.configDir };
   const { argv, env } = workerCommand({ fanout: { codexPool: c.codexPool, claudeBin: c.claudeBin, claudeModel: c.claudeModel, codexModel: c.codexModel } }, lane, { worktree: wt, prompt, images });
   if (lane.engine === 'codex') { const bin = process.env.CODEX_POOL_BIN || codexOnPath(); if (bin) env.CODEX_POOL_BIN = bin; }
-  const wrapped = ['sh', '-c', `"$@"; code=$?; echo $code > '${exitFile}'; exit $code`, 'atom', ...argv];
+  const wrapped = ['sh', '-c', exitWrapper(exitFile), 'atom', ...argv];
   let handle;
   if ((c.launcher ?? 'systemd') === 'local') {
     const child = spawn(wrapped[0], wrapped.slice(1), { cwd: wt, env: { ...process.env, ...env }, detached: true, stdio: [fs.openSync(promptFile, 'r'), fs.openSync(log, 'a'), fs.openSync(log, 'a')] });
@@ -61,17 +64,36 @@ export function launchAtom(job, file, state, id, { prompt, images = [] }) {
   return { iter, ...handle };
 }
 
-/** The exit code of an atom's current lane, or null while it runs. */
+const groupAlive = (pgid) => { try { process.kill(-pgid, 0); return true; } catch (e) { return e.code === 'EPERM'; } };
+
+function unitEnded(unit) {
+  const ctl = process.env.ENDOFORGE_SYSTEMCTL ?? 'systemctl';
+  const active = spawnSync(ctl, ['--user', 'is-active', unit], { encoding: 'utf8' }).stdout?.trim();
+  if (!active || ['active', 'activating', 'reloading'].includes(active)) return null;
+  const show = spawnSync(ctl, ['--user', 'show', '-p', 'ExecMainStatus', '--value', unit], { encoding: 'utf8' });
+  if (show.status !== 0) return null;
+  const code = show.stdout.trim();
+  return { code: code === '' ? 0 : Number(code) };
+}
+
+/** The exit code of an atom's current lane, null while it runs, or LOST when it ended and left no exit code. */
 export function laneExit(st) {
-  if (st.lane?.exitFile) { try { return Number(fs.readFileSync(st.lane.exitFile, 'utf8')); } catch { return null; } }
-  if (!st.lane?.unit) return null;
+  const lane = st.lane;
+  if (lane?.exitFile) {
+    const code = readExit(lane.exitFile);
+    if (code != null) return code;
+    if (lane.unit) {
+      const ended = unitEnded(lane.unit);
+      if (!ended) return null;
+      return readExit(lane.exitFile) ?? (ended.code > 0 ? ended.code : LOST);
+    }
+    if (lane.pid && !groupAlive(lane.pid)) return readExit(lane.exitFile) ?? LOST;
+    return null;
+  }
+  if (!lane?.unit) return null;
   // An adopted lane (started by an older tool) has no exit file: ask systemd. A finished transient unit may be gone,
   // which counts as a clean exit; ENDOFORGE_SYSTEMCTL stubs it in tests.
-  const ctl = process.env.ENDOFORGE_SYSTEMCTL ?? 'systemctl';
-  const active = spawnSync(ctl, ['--user', 'is-active', st.lane.unit], { encoding: 'utf8' }).stdout.trim();
-  if (['active', 'activating', 'reloading'].includes(active)) return null;
-  const code = spawnSync(ctl, ['--user', 'show', '-p', 'ExecMainStatus', '--value', st.lane.unit], { encoding: 'utf8' }).stdout.trim();
-  return code === '' ? 0 : Number(code);
+  return unitEnded(lane.unit)?.code ?? null;
 }
 
 /** Stop every running lane (stop, budget exhaustion): units through systemctl, local children by process group. */

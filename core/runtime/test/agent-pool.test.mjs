@@ -48,6 +48,19 @@ try {
     assert.equal(r.stdout, 'bin=reg home=acct-a args=exec once stdin=\n');
     assert.equal(fs.readFileSync(path.join(root, 'calls'), 'utf8'), 'registered claude-code\n');
   });
+  test('a registry spawn-rate refusal reaches the caller as 75 with no failover', () => {
+    const { root, env } = setup('gate');
+    const bin = stub(path.join(root, 'bin'), 'gate');
+    const calls = path.join(root, 'calls');
+    const gate = path.join(root, 'gate-workers');
+    fs.writeFileSync(gate, `#!/bin/sh\necho call >> ${calls}\necho "workers: spawn-rate alarm" >&2\nexit 75\n`, { mode: 0o755 });
+    Object.assign(env, { CODEX_POOL_BIN: bin, WORKERS_BIN: gate });
+    const r = run(env, ['exec', 'once'], { input: '', timeout: 10_000 });
+    assert.equal(r.status, 75);
+    assert.match(r.stderr, /spawn-rate alarm/);
+    assert.equal(r.stdout, '');
+    assert.equal(fs.readFileSync(calls, 'utf8'), 'call\n');
+  });
   test('unset CODEX_POOL_BIN runs the codex found on PATH', () => {
     const { root, env } = setup('path');
     stub(path.join(root, 'bin'), 'path');

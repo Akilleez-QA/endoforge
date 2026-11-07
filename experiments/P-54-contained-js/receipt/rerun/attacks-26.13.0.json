@@ -1,0 +1,1085 @@
+{
+ "node": "26.13.0",
+ "started": "2026-11-07T03:33:17.604Z",
+ "arms": {
+  "cohort-cell": {
+   "rows": [
+    {
+     "attack": "ctor-global",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 11,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": {
+      "global.ctor.ctor": "blocked:Code generation from strings disallowed for this context",
+      "this.ctor.ctor": "blocked:Code generation from strings disallowed for this context"
+     },
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "ctor-function",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 3,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": {
+      "arrow.ctor": "blocked:Code generation from strings disallowed for this context",
+      "async.ctor": "blocked:Code generation from strings disallowed for this context",
+      "gen.ctor": "blocked:Code generation from strings disallowed for this context",
+      "agen.ctor": "blocked:Code generation from strings disallowed for this context"
+     },
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "ctor-handed",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 3,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": {
+      "require.ctor.ctor": "blocked:Code generation from strings disallowed for this context",
+      "module.ctor.ctor": "blocked:Code generation from strings disallowed for this context",
+      "exports.ctor.ctor": "blocked:Code generation from strings disallowed for this context",
+      "input.ctor.ctor": "blocked:Code generation from strings disallowed for this context",
+      "ports": "TypeError: Cannot read properties of undefined (reading 'constructor')"
+     },
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "caller-chain",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 2,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": {
+      "seen": [
+       ""
+      ]
+     },
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "proto-pollution",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 3,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": {
+      "backProto": true
+     },
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "prepare-stack",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 3,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": {
+      "assign": "allowed",
+      "define": "refused:Cannot redefine property: prepareStackTrace",
+      "replace": "allowed",
+      "range": "allowed",
+      "limit": "allowed",
+      "capture": "refused:Error.captureStackTrace is not a function",
+      "stack": "undefined",
+      "hits": []
+     },
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "import-rejection",
+     "status": "refused",
+     "reason": "dynamic_import",
+     "detail": "/guest/main.js",
+     "elapsedMs": 1,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": [
+      "dynamic_import"
+     ],
+     "reasonOk": true
+    },
+    {
+     "attack": "import-then-only",
+     "status": "refused",
+     "reason": "dynamic_import",
+     "detail": "/guest/main.js",
+     "elapsedMs": 1,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": [
+      "dynamic_import"
+     ],
+     "reasonOk": true
+    },
+    {
+     "attack": "import-near-overflow",
+     "status": "refused",
+     "reason": "dynamic_import",
+     "detail": "/guest/main.js",
+     "elapsedMs": 1,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": [
+      "dynamic_import"
+     ],
+     "reasonOk": true
+    },
+    {
+     "attack": "import-comment-forms",
+     "status": "refused",
+     "reason": "dynamic_import",
+     "detail": "/guest/main.js",
+     "elapsedMs": 1,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": [
+      "dynamic_import"
+     ],
+     "reasonOk": true
+    },
+    {
+     "attack": "import-html-comment",
+     "status": "refused",
+     "reason": "dynamic_import",
+     "detail": "/guest/main.js",
+     "elapsedMs": 1,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": [
+      "dynamic_import"
+     ],
+     "reasonOk": true
+    },
+    {
+     "attack": "import-in-string-false-positive",
+     "status": "refused",
+     "reason": "dynamic_import",
+     "detail": "/guest/main.js",
+     "elapsedMs": 1,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": [
+      "dynamic_import"
+     ],
+     "reasonOk": true
+    },
+    {
+     "attack": "unhandled-rejection",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 3,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "stack-near-port",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 548,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": {
+      "count": 2500
+     },
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "stack-near-error",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 101,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": {
+      "count": 2500
+     },
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "port-handler-throws",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 3,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": {
+      "m": "port refused: handler failed"
+     },
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "port-hostile-value",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 9,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": {
+      "getter": "threw:g",
+      "tojson": "threw:t",
+      "cycle": "threw:Converting circular structure to JSON\n  ",
+      "bigint": "threw:Do not know how to serialize a BigInt",
+      "fn": "threw:port refused: types",
+      "large": "threw:port refused: byte budget",
+      "ports": [
+       "echo"
+      ]
+     },
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "ungranted-port",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 2,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": {
+      "p": [],
+      "node:fs": "module not granted: node:fs",
+      "fs": "module not granted: fs",
+      "child_process": "module not granted: child_process",
+      "../../../etc/passwd": "module not granted: ../../../etc/passwd"
+     },
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "globals-walk",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 3,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": {
+      "walked": 424,
+      "absent": [],
+      "names": "AggregateError,Array,BigInt,Boolean,Date,Error,EvalError,Function,Infinity,Iterator,JSON,Map,Math,NaN,Number,Object,Promise,Proxy,RangeError,ReferenceError,Reflect,RegExp,Set,String,Symbol,SyntaxError,TypeError,URIError,WeakMap,WeakSet,decodeURI,decodeURIComponent,encodeURI,encodeURIComponent,escape,globalThis,isFinite,isNaN,parseFloat,parseInt,undefined,unescape"
+     },
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "codegen",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 3,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": {
+      "eval": "ReferenceError",
+      "indirect": "ReferenceError",
+      "Function": "EvalError",
+      "async": "EvalError",
+      "gen": "EvalError"
+     },
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "shared-memory",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 2,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": {
+      "SAB": "undefined",
+      "Atomics": "undefined",
+      "Wasm": "undefined",
+      "mem": "WebAssembly is not defined"
+     },
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "atomics-wait",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 2,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": {
+      "w": "SharedArrayBuffer is not defined"
+     },
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "wasm",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 5,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": {
+      "m": "WebAssembly is not defined",
+      "i": "WebAssembly is not defined"
+     },
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "off-heap",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 2,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": {
+      "ab": "ArrayBuffer is not defined",
+      "ta": "Uint8Array is not defined"
+     },
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "clock-random",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 4,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": {
+      "now": "refused:TypeError",
+      "newDate": "refused:TypeError",
+      "Date()": "refused:TypeError",
+      "ctorDate": "refused:TypeError",
+      "ctorNow": "refused:TypeError",
+      "random": "refused:TypeError",
+      "perf": "refused:ReferenceError",
+      "Intl": "refused:ReferenceError",
+      "Temporal": "refused:ReferenceError",
+      "WeakRef": "refused:ReferenceError",
+      "FR": "refused:ReferenceError",
+      "fixedDate": "1970-01-01T00:00:00.000Z",
+      "tz": "0",
+      "locale": "refused:TypeError"
+     },
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "async-microtask-loop",
+     "status": "refused",
+     "reason": "deadline",
+     "detail": null,
+     "elapsedMs": 1507,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": [
+      "deadline"
+     ],
+     "reasonOk": true
+    },
+    {
+     "attack": "async-thenable-chain",
+     "status": "refused",
+     "reason": "deadline",
+     "detail": null,
+     "elapsedMs": 1504,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": [
+      "deadline"
+     ],
+     "reasonOk": true
+    },
+    {
+     "attack": "async-never",
+     "status": "refused",
+     "reason": "never_settled",
+     "detail": null,
+     "elapsedMs": 3,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": [
+      "never_settled"
+     ],
+     "reasonOk": true
+    },
+    {
+     "attack": "loop",
+     "status": "refused",
+     "reason": "deadline",
+     "detail": null,
+     "elapsedMs": 1503,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": [
+      "deadline"
+     ],
+     "reasonOk": true
+    },
+    {
+     "attack": "loop-swallow",
+     "status": "refused",
+     "reason": "deadline",
+     "detail": null,
+     "elapsedMs": 1502,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": [
+      "deadline"
+     ],
+     "reasonOk": true
+    },
+    {
+     "attack": "heap",
+     "status": "refused",
+     "reason": "heap",
+     "detail": "ERR_WORKER_OUT_OF_MEMORY",
+     "elapsedMs": 92,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": [
+      "heap"
+     ],
+     "reasonOk": true
+    },
+    {
+     "attack": "heap-objects",
+     "status": "refused",
+     "reason": "heap",
+     "detail": "ERR_WORKER_OUT_OF_MEMORY",
+     "elapsedMs": 231,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": [
+      "heap"
+     ],
+     "reasonOk": true
+    },
+    {
+     "attack": "stack",
+     "status": "refused",
+     "reason": "stack",
+     "detail": "Maximum call stack size exceeded",
+     "elapsedMs": 3,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": [
+      "stack"
+     ],
+     "reasonOk": true
+    },
+    {
+     "attack": "string-repeat-limit",
+     "status": "refused",
+     "reason": "string_limit",
+     "detail": "Invalid string length",
+     "elapsedMs": 2,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "string-flatten",
+     "status": "refused",
+     "reason": "memory",
+     "detail": "cohort lost: cohort_rss",
+     "elapsedMs": 128,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "string-flatten-many",
+     "status": "refused",
+     "reason": "heap",
+     "detail": "FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory",
+     "elapsedMs": 175,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "leak-use",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 62,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": {
+      "count": 4000
+     },
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "string-concat",
+     "status": "refused",
+     "reason": "heap",
+     "detail": "ERR_WORKER_OUT_OF_MEMORY",
+     "elapsedMs": 73,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "string-pad",
+     "status": "refused",
+     "reason": "memory",
+     "detail": "cohort lost: cohort_rss",
+     "elapsedMs": 203,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "string-join",
+     "status": "refused",
+     "reason": "string_limit",
+     "detail": "Invalid string length",
+     "elapsedMs": 5,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "string-json",
+     "status": "refused",
+     "reason": "memory",
+     "detail": "cohort lost: cohort_rss",
+     "elapsedMs": 430,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "string-regex",
+     "status": "refused",
+     "reason": "heap",
+     "detail": "FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory",
+     "elapsedMs": 181,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "string-split",
+     "status": "refused",
+     "reason": "memory",
+     "detail": "cohort lost: cohort_rss",
+     "elapsedMs": 83,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "array-fatal",
+     "status": "refused",
+     "reason": "heap",
+     "detail": "FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory",
+     "elapsedMs": 2164,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "array-grow",
+     "status": "refused",
+     "reason": "heap",
+     "detail": "ERR_WORKER_OUT_OF_MEMORY",
+     "elapsedMs": 143,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "map-table-limit",
+     "status": "refused",
+     "reason": "heap",
+     "detail": "FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory",
+     "elapsedMs": 912,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "set-table-limit",
+     "status": "refused",
+     "reason": "heap",
+     "detail": "ERR_WORKER_OUT_OF_MEMORY",
+     "elapsedMs": 201,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "object-dictionary",
+     "status": "refused",
+     "reason": "heap",
+     "detail": "FATAL ERROR: CALL_AND_RETRY_LAST Allocation failed - JavaScript heap out of memory",
+     "elapsedMs": 736,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "bigint-big",
+     "status": "refused",
+     "reason": "deadline",
+     "detail": null,
+     "elapsedMs": 1632,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "bigint-pow",
+     "status": "refused",
+     "reason": "thrown",
+     "detail": "Maximum BigInt size exceeded",
+     "elapsedMs": 2,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "regex-catastrophe",
+     "status": "refused",
+     "reason": "deadline",
+     "detail": null,
+     "elapsedMs": 1502,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": [
+      "deadline"
+     ],
+     "reasonOk": true
+    },
+    {
+     "attack": "regex-huge-pattern",
+     "status": "refused",
+     "reason": "thrown",
+     "detail": "Invalid regular expression: /(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)",
+     "elapsedMs": 16,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "regex-deep-pattern",
+     "status": "refused",
+     "reason": "thrown",
+     "detail": "Invalid regular expression: /(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((",
+     "elapsedMs": 12,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "deep-json-parse",
+     "status": "refused",
+     "reason": "memory",
+     "detail": "cohort lost: cohort_rss",
+     "elapsedMs": 183,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "deep-json-stringify",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 356,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "deep-flat",
+     "status": "refused",
+     "reason": "stack",
+     "detail": "Maximum call stack size exceeded",
+     "elapsedMs": 81,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "deep-proxy",
+     "status": "refused",
+     "reason": "heap",
+     "detail": "ERR_WORKER_OUT_OF_MEMORY",
+     "elapsedMs": 210,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "deep-bind",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 57,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "deep-tostring",
+     "status": "refused",
+     "reason": "stack",
+     "detail": "Maximum call stack size exceeded",
+     "elapsedMs": 91,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "sort-big",
+     "status": "refused",
+     "reason": "heap",
+     "detail": "ERR_WORKER_OUT_OF_MEMORY",
+     "elapsedMs": 163,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "poison-result",
+     "status": "refused",
+     "reason": "thrown",
+     "detail": "poison thenable",
+     "elapsedMs": 4,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "poison-tojson-output",
+     "status": "completed",
+     "reason": null,
+     "detail": null,
+     "elapsedMs": 4,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "non-json-outputs",
+     "status": "refused",
+     "reason": "output_not_json",
+     "detail": null,
+     "elapsedMs": 2,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": null,
+     "reasonOk": null
+    },
+    {
+     "attack": "output-too-large",
+     "status": "refused",
+     "reason": "output_too_large",
+     "detail": null,
+     "elapsedMs": 6,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": [
+      "output_too_large"
+     ],
+     "reasonOk": true
+    },
+    {
+     "attack": "import-meta-syntax",
+     "status": "refused",
+     "reason": "compile",
+     "detail": "Cannot use 'import.meta' outside a module",
+     "elapsedMs": 2,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": [
+      "compile"
+     ],
+     "reasonOk": true
+    },
+    {
+     "attack": "esm-syntax",
+     "status": "refused",
+     "reason": "compile",
+     "detail": "Unexpected token 'export'",
+     "elapsedMs": 3,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": [
+      "compile"
+     ],
+     "reasonOk": true
+    },
+    {
+     "attack": "wrapper-break",
+     "status": "refused",
+     "reason": "compile",
+     "detail": "Unexpected token '}'",
+     "elapsedMs": 2,
+     "authority": [],
+     "polluted": false,
+     "foreign": [],
+     "reached": [],
+     "notes": null,
+     "expectedReason": [
+      "compile"
+     ],
+     "reasonOk": true
+    }
+   ],
+   "stats": {
+    "cohortStarts": 11,
+    "cohortLosses": 10,
+    "completed": 24,
+    "refused": 44,
+    "unknown": 0
+   },
+   "residualProbe": "{\"polluted\":null}"
+  }
+ }
+}

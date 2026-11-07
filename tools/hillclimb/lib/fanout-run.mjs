@@ -9,6 +9,7 @@ import { spawn, spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { loadCampaign, roundDir, lastRound, vars, expand } from './campaign.mjs';
 import { fanoutLessons } from './lessons.mjs';
+import { exitWrapper, readExit } from '../../lib/exitfile.mjs';
 import { loadJob, health } from '../../job/lib/load.mjs';
 import { validate as validateJob } from '../../job/lib/validate.mjs';
 import { compileAtom } from '../../job/lib/compile.mjs';
@@ -57,7 +58,7 @@ export function renderAndEval(c, n, phase, repo = c.repo) {
 function startLane(c, n, dir, lane, argv, env) {
   const id = laneId(lane), prompt = path.join(dir, 'prompts', `${id}.prompt`), logf = path.join(dir, 'logs', `${id}.log`), exitf = path.join(dir, 'logs', `${id}.exit`);
   fs.mkdirSync(path.dirname(logf), { recursive: true }); fs.rmSync(exitf, { force: true });
-  const wrapped = ['sh', '-c', `"$@"; code=$?; echo $code > '${exitf}'; exit $code`, 'lane', ...argv];
+  const wrapped = ['sh', '-c', exitWrapper(exitf), 'lane', ...argv];
   if ((c.fanout?.launcher ?? 'systemd') === 'local') {
     const child = spawn(wrapped[0], wrapped.slice(1), { cwd: lane.worktree, env: { ...process.env, ...env }, detached: true,
       stdio: [fs.openSync(prompt, 'r'), fs.openSync(logf, 'a'), fs.openSync(logf, 'a')] });
@@ -121,7 +122,7 @@ export async function launchAll(c, n, dir, lanes, { notes = {}, pre, wait = true
   }
   beforeStart?.(lanes);                                  // a job-backed round emits FIRED here, before any lane starts
   const meta = { base, lanes, load: [], capacity: [] };
-  const exitOf = (l) => { try { return Number(fs.readFileSync(path.join(dir, 'logs', `${laneId(l)}.exit`), 'utf8')); } catch { return null; } };
+  const exitOf = (l) => readExit(path.join(dir, 'logs', `${laneId(l)}.exit`));
   const poll = (c.fanout?.pollSec ?? 5) * 1000, deadline = Date.now() + (c.fanout?.laneTimeoutSec ?? 2400) * 1000 + 60_000;
   for (;;) {
     for (const l of lanes.filter((x) => x.started && x.exit == null)) { const e = exitOf(l); if (e != null) Object.assign(l, { exit: e, sec: sec(Date.parse(l.started)) }); }

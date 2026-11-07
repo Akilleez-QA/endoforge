@@ -1,0 +1,21 @@
+{
+ "sample": {"human_messages": 687, "label_set": 500, "labelled_constraints": 110, "standing": 65, "compaction_events": 48, "sessions_with_events": 8},
+ "retention_primary_first": {"pairs": 58, "retained": 51, "rate": 0.879, "ci95": [0.771, 0.94], "events": 16, "sessions": 5, "judge": "sonnet"},
+ "retention_first_verbatim": {"pairs": 58, "verbatim": 55, "rate": 0.948},
+ "retention_all_first": {"pairs": 97, "retained": 87, "rate": 0.897, "ci95": [0.821, 0.943]},
+ "retention_last": {"pairs": 58, "retained": 12, "rate": 0.207, "ci95": [0.123, 0.328], "events": 5},
+ "verbatim_at_last_by_later_compactions": {"0": [5, 5], "1-2": [2, 14], "3+": [0, 39]},
+ "judges": {"sonnet_haiku": {"n": 58, "agreement": 0.879, "kappa": 0.302}, "hand_sonnet_first": {"n": 30, "agree": 25, "hand_present": 28, "sonnet_present": 25}, "hand_sonnet_last": {"n": 15, "agree": 14, "hand_present": 2, "sonnet_present": 3}},
+ "violations_first_segment": {"retained": {"complied": 26, "violated_flagged": 7, "not_applicable": 7, "unclear": 11}, "dropped": {"complied": 1, "violated_flagged": 0, "not_applicable": 2, "unclear": 4}, "confirmed": 0, "ambiguous": 2},
+ "violations_last_segment_exploratory": {"retained": {"complied": 3, "violated_flagged": 2, "not_applicable": 4, "unclear": 3}, "dropped": {"complied": 2, "violated_flagged": 1, "not_applicable": 38, "unclear": 5}, "confirmed": 0, "ambiguous": 1},
+ "extraction": {
+  "rule-v1_all_splits": {"all": {"precision": 0.367, "recall": 0.3}, "standing": {"precision": 0.278, "recall": 0.338}},
+  "model-v1_all_splits": {"all": {"precision": 0.336, "recall": 0.718}, "standing": {"precision": 0.228, "recall": 0.708}, "failed_batches": 2},
+  "rule-v2_B": {"all": {"extracted": 33, "labelled": 56, "matched": 26, "precision": 0.788, "recall": 0.464}, "standing": {"extracted": 23, "labelled": 36, "matched": 16, "precision": 0.696, "precision_ci95": [0.491, 0.844], "recall": 0.444, "recall_ci95": [0.295, 0.604]}},
+  "model-v2_B": {"all": {"extracted": 53, "labelled": 56, "matched": 33, "precision": 0.623, "recall": 0.589}, "standing": {"extracted": 39, "labelled": 36, "matched": 19, "precision": 0.487, "precision_ci95": [0.339, 0.638], "recall": 0.528, "recall_ci95": [0.37, 0.68]}, "failed_batches": 0},
+  "union_B_exploratory": {"standing": {"extracted": 69, "labelled": 36, "matched": 25, "precision": 0.362, "recall": 0.694}}
+ },
+ "effect_last_compaction_B_exploratory": {"pairs": 30, "summary": 7, "summary_or_rule": 15, "summary_or_model": 18, "summary_or_union": 20, "union_ci95": [0.488, 0.808]},
+ "laundering": {"seeds_rule": {"cases": 20, "active": 0, "refused": 18}, "seeds_haiku": {"cases": 20, "active": 0, "refused": 18}, "reported_rule": {"cases": 6, "active": 0}, "reported_haiku_before_fix": {"cases": 6, "active": 1}, "reported_haiku_after_fix": {"cases": 6, "active": 0, "refused": 1}, "real_paste_items_rule-v1": 19, "real_paste_messages": 3},
+ "cost_ms": {"messages": 500, "observe_all": 4.28, "crossing_rule": 13.6, "durable_appends": 1}
+}
