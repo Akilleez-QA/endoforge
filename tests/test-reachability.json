@@ -1,0 +1,13 @@
+{
+  "indirect": {
+    "tools/atomizer/test/lessons.test.mjs": "tools/atomizer/test/run.mjs",
+    "tools/atomizer/test/routing.test.mjs": "tools/atomizer/test/run.mjs"
+  },
+  "excluded": {
+    "experiments/P-51-escape-rate/controls.test.mjs": "P-51's synthetic controls; they need ENDOFORGE_ASC_CMD set to AssemblyScript 0.28.20 and are run by hand as P-51's RESULT.md describes.",
+    "tools/conductor/test/helpers.mjs": "Shared helper imported by the conductor tests; it defines no tests.",
+    "tools/tscheck/test/global-scope-kernels.mjs": "Shared kernel list imported by cohort-check.test.mjs and tsrs-reuse.test.mjs; it defines no tests.",
+    "tools/rust_lane/test_lane.py": "Needs the pinned Rust toolchain; run by make rust-lane-test, which the lane's README keeps out of make test and CI."
+  },
+  "known_failing": {}
+}

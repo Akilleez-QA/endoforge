@@ -1,0 +1,75 @@
+{
+ "node": "26.13.0",
+ "rows": [
+  {
+   "arm": "breach-permission-only",
+   "attack": "assume-breach",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 15,
+   "authority": [
+    "decoyKilled"
+   ],
+   "polluted": false,
+   "foreign": [],
+   "reached": [
+    {
+     "via": "breach",
+     "read": "denied:ERR_ACCESS_DENIED",
+     "write": "denied:ERR_ACCESS_DENIED",
+     "spawn": "denied:ERR_ACCESS_DENIED",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "sent"
+    }
+   ],
+   "notes": {
+    "processKeysLeft": [
+     "binding",
+     "kill",
+     "_kill",
+     "getBuiltinModule",
+     "dlopen"
+    ],
+    "hasRequire": true,
+    "breach.Function": "blocked:Code generation from strings disallowed for this context",
+    "binding": "ERR_ACCESS_DENIED",
+    "dlopen": "ERR_DLOPEN_DISABLED"
+   },
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "arm": "breach-hardened-realm",
+   "attack": "assume-breach",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 9,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [
+    {
+     "via": "breach",
+     "read": "denied:Cannot read properties of null (reading 'readFileSync')",
+     "write": "denied:Cannot read properties of null (reading 'writeFileSync')",
+     "spawn": "denied:Cannot read properties of null (reading 'execFileSync')",
+     "net": "denied:Cannot read properties of null (reading 'connect')",
+     "worker": "denied:Cannot destructure property 'Worker' of 'need(...)' as it is null.",
+     "signal": "denied:P.kill is not a function"
+    }
+   ],
+   "notes": {
+    "processKeysLeft": [],
+    "hasRequire": false,
+    "breach.Function": "blocked:Code generation from strings disallowed for this context",
+    "binding": "absent",
+    "dlopen": "P.dlopen is not a function"
+   },
+   "expectedReason": null,
+   "reasonOk": null
+  }
+ ]
+}

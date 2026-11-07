@@ -122,7 +122,8 @@ async function runAtom(atom) {
       } catch (error) { if (error.code !== 'ENOENT') console.error(`codex-pool log unavailable: ${error.message}`); }
       meta.accounts.push(...accounts); meta.failovers.push(...failovers); meta.account = accounts.at(-1) ?? null;
       console.error(`codex ${atom.id} attempt=${attempt} tier=${sel.tier} (${sel.reason}) model=${sel.model} effort=${sel.effort} account=${meta.account ?? '?'} failover=${failovers.map((f) => `${f.account}:${f.class}`).join(',') || 'none'}`);
-      if (r.exit === 75) meta.reason = 'codex-pool: all accounts exhausted or guard blocked (exit 75)';
+      if (r.exit === 75 && /workers: spawn-rate alarm/.test(r.stderr)) meta.reason = 'workers spawn-rate gate refused the launch (exit 75): too many codex launches in 60 s';
+      else if (r.exit === 75) meta.reason = 'codex-pool: all accounts exhausted or guard blocked (exit 75)';
       else if (r.exit === 77) meta.reason = 'codex-guard ledger denied';
       else if (r.exit !== 0 && /codex-pool: all accounts exhausted/.test(r.stderr)) meta.reason = 'codex-pool: all accounts exhausted';
       if (meta.reason) break;

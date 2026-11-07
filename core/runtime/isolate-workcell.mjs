@@ -32,29 +32,32 @@ const warmed = options.warm ? (async () => { await (await import(options.hostPor
 
 const replies = new Map();
 let nextCall = 0;
-const host = call => new Promise((resolve, reject) => {
+const callHost = message => new Promise((resolve, reject) => {
   const id = ++nextCall;
   replies.set(id, { resolve, reject });
-  send({ type: 'host-call', id, call });
+  send({ ...message, id });
 });
+const host = call => callHost({ type: 'host-call', call });
+const hostCall = request => callHost({ type: 'host_call', request });
+const verifyFrozen = reference => callHost({ type: 'host_frozen', reference });
 
 (parentPort || process).on('message', async message => {
   if (message.type === 'ping') return send({ type: 'pong' });
-  if (message.type === 'host-reply') {
+  if (message.type === 'host-reply' || message.type === 'host_reply') {
     const reply = replies.get(message.id);
     replies.delete(message.id);
-    if (message.error === undefined) reply?.resolve(message.value);
+    if (message.error === undefined) reply?.resolve(message.type === 'host-reply' ? message.value : message.result);
     else reply?.reject(new Error(message.error));
     return;
   }
-  const { reference, candidates, hostPort, portOptions } = message;
+  const { reference, candidates, hostPort, portOptions, frozenThroughLedger } = message;
   try {
     const warmError = await warmed;
     if (warmError) throw new Error(`warm failed: ${warmError}`);
     checkWasm.begin();
     const { createPort } = await import(hostPort);
-    const port = await createPort(portOptions, { host });
-    const report = port.evaluate ? await port.evaluate(evaluateCandidates, reference) : await evaluateCandidates(reference, candidates, port);
+    const port = await createPort(portOptions, { host, hostCall });
+    const report = port.evaluate ? await port.evaluate(evaluateCandidates, reference) : await evaluateCandidates(reference, candidates, port, frozenThroughLedger ? { verifyFrozen } : {});
     checkWasm();
     const evidence = port.evidence?.();
     send({ status: report.stage === 'outcome_unknown' ? 'outcome_unknown' : report.stage === 'waiting' ? 'waiting' : 'completed',

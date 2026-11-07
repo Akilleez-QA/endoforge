@@ -5,7 +5,7 @@ import sys
 
 from core.ledger.frozen import FrozenEvaluators
 from core.ledger.ledger import Ledger
-from tools.x1_loop import FREEZE_FACTS, decide, refusal, store_decision
+from tools.x1_loop import FREEZE_FACTS, decide, refusal, sealed, store_decision
 
 action = sys.argv[1]
 r = json.load(sys.stdin)
@@ -36,9 +36,13 @@ elif action == 'promote':
             records, tip = ledger._read(db)
             stored = db.execute('SELECT hash FROM records WHERE id=?', (r['receipt']['id'],)).fetchone()
             decision = decide(records, tip, stored and stored[0], request)
-    except (ValueError, KeyError, TypeError, sqlite3.Error):
-        decision = refusal(dict(version=1, issuer='endoforge.local.x1', policy='X1-G1-G7/v1', scope='qualification',
+    except (ValueError, KeyError, TypeError, sqlite3.Error) as error:
+        decision = refusal(dict(version=1, issuer='endoforge.local.x1', policy='X1-G1-G8/v1', scope='qualification',
                                 candidate=r['candidate'], frozen_evaluator=r['reference']['identity'], receipt=r['receipt']))
+        if isinstance(error, sqlite3.OperationalError):
+            decision.pop('sha256')
+            decision.update(decision='inconclusive', reason='the ledger was unavailable; nothing was decided about the candidate')
+            decision = sealed(decision)
     store_decision(decision, r['decisionPath'])
     print(json.dumps(decision))
 else:

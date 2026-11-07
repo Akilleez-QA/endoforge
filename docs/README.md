@@ -6,7 +6,9 @@ Use synthetic identifiers and local paths in documentation, and keep generated e
 
 - [Requirements](requirements/requirements.md)
 - [Architecture](architecture/architecture.md)
+- [Evaluator synthesis design](architecture/evaluator-synthesis.md)
 - [Ledger interface control document](interfaces/ledger-icd.md)
+- [Constraint record interface](interfaces/constraint-record.md)
 
 ## Interface control
 

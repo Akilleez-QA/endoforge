@@ -1,0 +1,750 @@
+{
+ "precommit": "56b2f60b8b90c8915f78fd7bec8b2149f42371d8d5addf8775652bb3090bedb3",
+ "node": "v26.13.0",
+ "admission": {
+  "admitted": 177,
+  "refused": [],
+  "duplicates": 51,
+  "hostMatches": 177,
+  "wallMs": 1783.3636769999998
+ },
+ "heldOut": {
+  "P21": {
+   "cases": 118,
+   "contract.matched": 4,
+   "contract.full": 4,
+   "contract.mutants": 4,
+   "contract.none": 4,
+   "interface.matched": 13,
+   "interface.full": 5,
+   "interface.mutants": 5,
+   "interface.none": 12,
+   "prose.matched": 0,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 0,
+   "reasons": {
+    "no_contract_match": 114,
+    "served": 4
+   }
+  },
+  "add": {
+   "cases": 59,
+   "contract.matched": 51,
+   "contract.full": 51,
+   "contract.mutants": 51,
+   "contract.none": 51,
+   "interface.matched": 54,
+   "interface.full": 54,
+   "interface.mutants": 54,
+   "interface.none": 54,
+   "prose.matched": 0,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 0,
+   "reasons": {
+    "no_contract_match": 8,
+    "served": 51
+   }
+  }
+ },
+ "perNeed": {
+  "C-005": {
+   "n": 6,
+   "contractFull": 0,
+   "interfaceNone": 0
+  },
+  "C-006": {
+   "n": 6,
+   "contractFull": 0,
+   "interfaceNone": 0
+  },
+  "C-007": {
+   "n": 6,
+   "contractFull": 0,
+   "interfaceNone": 0
+  },
+  "C-010": {
+   "n": 6,
+   "contractFull": 0,
+   "interfaceNone": 0
+  },
+  "C-012": {
+   "n": 6,
+   "contractFull": 0,
+   "interfaceNone": 0
+  },
+  "C-015": {
+   "n": 6,
+   "contractFull": 0,
+   "interfaceNone": 0
+  },
+  "C-016": {
+   "n": 6,
+   "contractFull": 0,
+   "interfaceNone": 0
+  },
+  "C-019": {
+   "n": 6,
+   "contractFull": 0,
+   "interfaceNone": 0
+  },
+  "CC-001": {
+   "n": 6,
+   "contractFull": 0,
+   "interfaceNone": 0
+  },
+  "CC-002": {
+   "n": 6,
+   "contractFull": 0,
+   "interfaceNone": 3
+  },
+  "CC-007": {
+   "n": 6,
+   "contractFull": 0,
+   "interfaceNone": 0
+  },
+  "CC-009": {
+   "n": 5,
+   "contractFull": 0,
+   "interfaceNone": 0
+  },
+  "CC-011": {
+   "n": 6,
+   "contractFull": 2,
+   "interfaceNone": 3
+  },
+  "CC-014": {
+   "n": 6,
+   "contractFull": 0,
+   "interfaceNone": 0
+  },
+  "CC-022": {
+   "n": 6,
+   "contractFull": 0,
+   "interfaceNone": 0
+  },
+  "CC-025": {
+   "n": 6,
+   "contractFull": 2,
+   "interfaceNone": 1
+  },
+  "CC-026": {
+   "n": 6,
+   "contractFull": 0,
+   "interfaceNone": 0
+  },
+  "CC-027": {
+   "n": 6,
+   "contractFull": 0,
+   "interfaceNone": 0
+  },
+  "CC-036": {
+   "n": 5,
+   "contractFull": 0,
+   "interfaceNone": 1
+  },
+  "add": {
+   "n": 59,
+   "contractFull": 51,
+   "interfaceNone": 54
+  },
+  "CC-013": {
+   "n": 6,
+   "contractFull": 0,
+   "interfaceNone": 4
+  }
+ },
+ "audit": {
+  "compared": 235,
+  "disagreementCount": 0,
+  "disagreements": []
+ },
+ "adversarial": {
+  "A/units/blind": {
+   "cases": 177,
+   "contract.matched": 0,
+   "contract.full": 0,
+   "contract.mutants": 0,
+   "contract.none": 0,
+   "interface.matched": 0,
+   "interface.full": 0,
+   "interface.mutants": 0,
+   "interface.none": 0,
+   "prose.matched": 0,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 0,
+   "reasons": {
+    "no_contract_match": 177
+   }
+  },
+  "A/units/visible": {
+   "cases": 177,
+   "contract.matched": 0,
+   "contract.full": 0,
+   "contract.mutants": 0,
+   "contract.none": 0,
+   "interface.matched": 0,
+   "interface.full": 0,
+   "interface.mutants": 0,
+   "interface.none": 0,
+   "prose.matched": 0,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 0,
+   "reasons": {
+    "no_contract_match": 177
+   }
+  },
+  "A/units/blind_arg": {
+   "cases": 98,
+   "contract.matched": 0,
+   "contract.full": 0,
+   "contract.mutants": 0,
+   "contract.none": 0,
+   "interface.matched": 0,
+   "interface.full": 0,
+   "interface.mutants": 0,
+   "interface.none": 0,
+   "prose.matched": 0,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 0,
+   "reasons": {
+    "no_contract_match": 98
+   }
+  },
+  "A/rounding/blind": {
+   "cases": 177,
+   "contract.matched": 0,
+   "contract.full": 0,
+   "contract.mutants": 0,
+   "contract.none": 0,
+   "interface.matched": 3,
+   "interface.full": 0,
+   "interface.mutants": 0,
+   "interface.none": 3,
+   "prose.matched": 0,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 0,
+   "reasons": {
+    "no_contract_match": 177
+   }
+  },
+  "A/rounding/visible": {
+   "cases": 177,
+   "contract.matched": 0,
+   "contract.full": 0,
+   "contract.mutants": 0,
+   "contract.none": 0,
+   "interface.matched": 3,
+   "interface.full": 0,
+   "interface.mutants": 0,
+   "interface.none": 0,
+   "prose.matched": 0,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 0,
+   "reasons": {
+    "no_contract_match": 177
+   }
+  },
+  "A/rounding/blind_mode": {
+   "cases": 177,
+   "contract.matched": 0,
+   "contract.full": 0,
+   "contract.mutants": 0,
+   "contract.none": 0,
+   "interface.matched": 0,
+   "interface.full": 0,
+   "interface.mutants": 0,
+   "interface.none": 0,
+   "prose.matched": 0,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 0,
+   "reasons": {
+    "no_contract_match": 177
+   }
+  },
+  "C/rounding/prose_only": {
+   "cases": 177,
+   "contract.matched": 177,
+   "contract.full": 133,
+   "contract.mutants": 147,
+   "contract.none": 177,
+   "interface.matched": 173,
+   "interface.full": 129,
+   "interface.mutants": 143,
+   "interface.none": 173,
+   "prose.matched": 0,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 0,
+   "reasons": {
+    "served": 133,
+    "evaluator_cannot_discriminate": 44
+   }
+  },
+  "A/boundary/blind": {
+   "cases": 149,
+   "contract.matched": 0,
+   "contract.full": 0,
+   "contract.mutants": 0,
+   "contract.none": 0,
+   "interface.matched": 0,
+   "interface.full": 0,
+   "interface.mutants": 0,
+   "interface.none": 0,
+   "prose.matched": 0,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 0,
+   "reasons": {
+    "no_contract_match": 149
+   }
+  },
+  "A/boundary/visible": {
+   "cases": 149,
+   "contract.matched": 0,
+   "contract.full": 0,
+   "contract.mutants": 0,
+   "contract.none": 0,
+   "interface.matched": 0,
+   "interface.full": 0,
+   "interface.mutants": 0,
+   "interface.none": 0,
+   "prose.matched": 0,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 0,
+   "reasons": {
+    "no_contract_match": 149
+   }
+  },
+  "A/boundary/blind_open": {
+   "cases": 149,
+   "contract.matched": 0,
+   "contract.full": 0,
+   "contract.mutants": 0,
+   "contract.none": 0,
+   "interface.matched": 0,
+   "interface.full": 0,
+   "interface.mutants": 0,
+   "interface.none": 0,
+   "prose.matched": 0,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 0,
+   "reasons": {
+    "no_contract_match": 149
+   }
+  },
+  "A/sign/visible": {
+   "cases": 174,
+   "contract.matched": 174,
+   "contract.full": 0,
+   "contract.mutants": 0,
+   "contract.none": 0,
+   "interface.matched": 170,
+   "interface.full": 0,
+   "interface.mutants": 0,
+   "interface.none": 0,
+   "prose.matched": 0,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 0,
+   "reasons": {
+    "evaluator_failed": 174
+   }
+  },
+  "C/sign/prose_only": {
+   "cases": 177,
+   "contract.matched": 177,
+   "contract.full": 133,
+   "contract.mutants": 147,
+   "contract.none": 177,
+   "interface.matched": 173,
+   "interface.full": 129,
+   "interface.mutants": 143,
+   "interface.none": 173,
+   "prose.matched": 0,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 0,
+   "reasons": {
+    "served": 133,
+    "evaluator_cannot_discriminate": 44
+   }
+  },
+  "A/constants/blind": {
+   "cases": 177,
+   "contract.matched": 2,
+   "contract.full": 2,
+   "contract.mutants": 2,
+   "contract.none": 2,
+   "interface.matched": 173,
+   "interface.full": 121,
+   "interface.mutants": 140,
+   "interface.none": 173,
+   "prose.matched": 0,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 0,
+   "reasons": {
+    "no_contract_match": 175,
+    "served": 2
+   }
+  },
+  "A/constants/visible": {
+   "cases": 174,
+   "contract.matched": 1,
+   "contract.full": 0,
+   "contract.mutants": 0,
+   "contract.none": 0,
+   "interface.matched": 170,
+   "interface.full": 0,
+   "interface.mutants": 0,
+   "interface.none": 0,
+   "prose.matched": 0,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 0,
+   "reasons": {
+    "no_contract_match": 173,
+    "evaluator_failed": 1
+   }
+  },
+  "A/sign/blind": {
+   "cases": 3,
+   "contract.matched": 3,
+   "contract.full": 3,
+   "contract.mutants": 3,
+   "contract.none": 3,
+   "interface.matched": 3,
+   "interface.full": 3,
+   "interface.mutants": 3,
+   "interface.none": 3,
+   "prose.matched": 0,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 0,
+   "reasons": {
+    "served": 3
+   }
+  }
+ },
+ "mutantTable": {
+  "M/units": {
+   "cases": 891,
+   "contract.matched": 891,
+   "contract.full": 0,
+   "contract.mutants": 0,
+   "contract.none": 0,
+   "interface.matched": 861,
+   "interface.full": 0,
+   "interface.mutants": 0,
+   "interface.none": 0,
+   "prose.matched": 891,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 0,
+   "reasons": {
+    "evaluator_failed": 891
+   }
+  },
+  "M/constants": {
+   "cases": 1303,
+   "contract.matched": 1303,
+   "contract.full": 0,
+   "contract.mutants": 0,
+   "contract.none": 0,
+   "interface.matched": 1267,
+   "interface.full": 0,
+   "interface.mutants": 0,
+   "interface.none": 0,
+   "prose.matched": 1303,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 0,
+   "reasons": {
+    "evaluator_failed": 1301,
+    "cell_failed": 2
+   }
+  },
+  "M/rounding": {
+   "cases": 542,
+   "contract.matched": 542,
+   "contract.full": 0,
+   "contract.mutants": 0,
+   "contract.none": 0,
+   "interface.matched": 514,
+   "interface.full": 0,
+   "interface.mutants": 0,
+   "interface.none": 0,
+   "prose.matched": 542,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 0,
+   "reasons": {
+    "evaluator_failed": 542
+   }
+  },
+  "M/boundary": {
+   "cases": 1359,
+   "contract.matched": 1359,
+   "contract.full": 0,
+   "contract.mutants": 0,
+   "contract.none": 0,
+   "interface.matched": 1339,
+   "interface.full": 0,
+   "interface.mutants": 0,
+   "interface.none": 0,
+   "prose.matched": 1359,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 0,
+   "reasons": {
+    "evaluator_failed": 1356,
+    "cell_failed": 3
+   }
+  },
+  "B/rounding": {
+   "cases": 109,
+   "contract.matched": 109,
+   "contract.full": 40,
+   "contract.mutants": 87,
+   "contract.none": 109,
+   "interface.matched": 109,
+   "interface.full": 40,
+   "interface.mutants": 87,
+   "interface.none": 109,
+   "prose.matched": 109,
+   "prose.full": 40,
+   "prose.mutants": 87,
+   "prose.none": 109,
+   "reasons": {
+    "evaluator_cannot_discriminate": 69,
+    "served": 40
+   }
+  },
+  "M/sign": {
+   "cases": 1398,
+   "contract.matched": 1398,
+   "contract.full": 0,
+   "contract.mutants": 0,
+   "contract.none": 0,
+   "interface.matched": 1386,
+   "interface.full": 0,
+   "interface.mutants": 0,
+   "interface.none": 0,
+   "prose.matched": 1398,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 0,
+   "reasons": {
+    "evaluator_failed": 1398
+   }
+  },
+  "B/boundary": {
+   "cases": 159,
+   "contract.matched": 159,
+   "contract.full": 94,
+   "contract.mutants": 118,
+   "contract.none": 159,
+   "interface.matched": 155,
+   "interface.full": 90,
+   "interface.mutants": 114,
+   "interface.none": 155,
+   "prose.matched": 159,
+   "prose.full": 94,
+   "prose.mutants": 118,
+   "prose.none": 159,
+   "reasons": {
+    "served": 94,
+    "evaluator_cannot_discriminate": 65
+   }
+  },
+  "B/constants": {
+   "cases": 44,
+   "contract.matched": 44,
+   "contract.full": 15,
+   "contract.mutants": 15,
+   "contract.none": 44,
+   "interface.matched": 44,
+   "interface.full": 15,
+   "interface.mutants": 15,
+   "interface.none": 44,
+   "prose.matched": 44,
+   "prose.full": 15,
+   "prose.mutants": 15,
+   "prose.none": 44,
+   "reasons": {
+    "served": 15,
+    "evaluator_cannot_discriminate": 29
+   }
+  },
+  "B/units": {
+   "cases": 1,
+   "contract.matched": 1,
+   "contract.full": 0,
+   "contract.mutants": 0,
+   "contract.none": 1,
+   "interface.matched": 1,
+   "interface.full": 0,
+   "interface.mutants": 0,
+   "interface.none": 1,
+   "prose.matched": 1,
+   "prose.full": 0,
+   "prose.mutants": 0,
+   "prose.none": 1,
+   "reasons": {
+    "evaluator_cannot_discriminate": 1
+   }
+  }
+ },
+ "mutantRows": 5806,
+ "skippedNonFinite": 169,
+ "declaredCases": 2312,
+ "mutantStats": {
+  "reached": 388,
+  "unsupported": 0,
+  "capped": 0,
+  "invalid": 0,
+  "mutants": 27308
+ },
+ "warmPath": {
+  "pass": {
+   "n": 133,
+   "p50": 75.01001700002234,
+   "p95": 486.59590299997944,
+   "max": 964.4046150000067
+  },
+  "refused": {
+   "n": 44,
+   "p50": 653.4734219999809,
+   "p95": 1885.087359999976,
+   "max": 2457.5995810000168
+  },
+  "miss": {
+   "n": 177,
+   "p50": 0.4860740000149235,
+   "p95": 1.8301700000010896,
+   "max": 3.6877699999895412
+  },
+  "spawns": 0,
+  "spawnCounted": true
+ },
+ "memory": {
+  "entries": 177,
+  "heapPerEntry": 13847.864406779661,
+  "externalPerEntry": 0.22598870056497175,
+  "rssPerEntry": 54150.50847457627,
+  "serializedPerEntryMean": 8781.683615819209,
+  "journalNote": "heap includes retained journal records",
+  "journalBytesPerRecord": 2793.4745762711864
+ },
+ "generationPath": {
+  "replayed": [
+   {
+    "promoted": false,
+    "wallMs": 496.567269,
+    "spawns": [
+     "spawn python3",
+     "execFile node",
+     "execFile python3",
+     "execFile node",
+     "execFile replay-asc.mjs",
+     "execFile python3",
+     "execFile python3"
+    ]
+   },
+   {
+    "promoted": false,
+    "wallMs": 694.1962209999999,
+    "spawns": [
+     "spawn python3",
+     "execFile node",
+     "execFile python3",
+     "execFile node",
+     "execFile replay-asc.mjs",
+     "execFile python3",
+     "execFile python3"
+    ]
+   },
+   {
+    "promoted": false,
+    "wallMs": 1147.195199,
+    "spawns": [
+     "spawn python3",
+     "execFile node",
+     "execFile python3",
+     "execFile node",
+     "execFile replay-asc.mjs",
+     "execFile python3",
+     "execFile python3"
+    ]
+   },
+   {
+    "promoted": false,
+    "wallMs": 458.397822,
+    "spawns": [
+     "spawn python3",
+     "execFile node",
+     "execFile python3",
+     "execFile node",
+     "execFile replay-asc.mjs",
+     "execFile python3",
+     "execFile python3"
+    ]
+   },
+   {
+    "promoted": false,
+    "wallMs": 508.978023,
+    "spawns": [
+     "spawn python3",
+     "execFile node",
+     "execFile python3",
+     "execFile node",
+     "execFile replay-asc.mjs",
+     "execFile python3",
+     "execFile python3"
+    ]
+   }
+  ],
+  "recorded": {
+   "total": {
+    "n": 177,
+    "p50": 48649.466536,
+    "p95": 68612.636792,
+    "max": 100884.43229299999
+   },
+   "generate": {
+    "n": 177,
+    "p50": 47724.443805999996,
+    "p95": 67658.644108,
+    "max": 99809.02240200002
+   },
+   "spec": {
+    "n": 177,
+    "p50": 29915,
+    "p95": 44626,
+    "max": 68068
+   },
+   "implementation": {
+    "n": 177,
+    "p50": 14606,
+    "p95": 23518,
+    "max": 30037
+   },
+   "notModel": {
+    "n": 177,
+    "p50": 970.1602050000001,
+    "p95": 1108.0655939999997,
+    "max": 1333.4577890000219
+   }
+  }
+ }
+}
