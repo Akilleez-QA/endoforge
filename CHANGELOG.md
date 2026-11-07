@@ -6,6 +6,9 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Added
 
+- Contained execution of emitted JavaScript in a child isolate, one per owned
+  process, behind an off-by-default `runNeed` option, with P-54's evidence.
+
 - Local promotion decisions with verified chain/receipt and complete X1 pool
   evidence, plus P-22 prospective harness and explicit test-double validation.
 
