@@ -21,5 +21,6 @@ precommit hashed before measurement and a result that states what it does not sh
 | [P-27](P-27-g4-fix/PRECOMMIT.md) | P-23 re-run after the no-assert generator fix: 57/60 promoted, 0/60 kernels use `assert(`, every total p50 within 20% of P-23 | [RESULT.md](P-27-g4-fix/RESULT.md) |
 | [P-28](P-28-p21-nov2/PRECOMMIT.md) | The twenty P-21 requests end to end through runNeed in a pre-warmed thread pool on Nov 2: 16/20 promoted, median 72.6 s, wall 168.3 s (T1–T3 miss; the time goes to Codex) | [RESULT.md](P-28-p21-nov2/RESULT.md) |
 | [P-29](P-29-hillclimb/) | Hill-climb round 1: generator self-check, 3x30 per arm | No gain: 29.00 vs 28.67 promoted, p50 65.7 vs 68.0 s; stays off |
+| [P-55](P-55-constraints/PRECOMMIT.md) | Do user constraints survive our compaction summaries? | 87.9% at first compaction (17% claim not confirmed), 20.7% at the last; extractors below the adoption bar: [RESULT.md](P-55-constraints/RESULT.md) |
 
 Rebuild P-15 dependencies with `setup.sh` in its directory; `node_modules` is not committed.
