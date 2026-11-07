@@ -24,7 +24,8 @@ const sharedArguments = ({ model, system = transportSystem, effort }) => ['-p', 
 export const warmArguments = options => [...sharedArguments(options), '--input-format', 'stream-json', '--output-format', 'stream-json', '--verbose'];
 export const spawnArguments = options => [...sharedArguments(options), '--disable-slash-commands', '--output-format', 'stream-json', '--verbose'];
 export const usageOf = result => ['input_tokens', 'output_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens'].reduce((total, key) => total + (Number.isSafeInteger(result.usage?.[key]) ? result.usage[key] : 0), 0);
-const replyOf = (result, wallMs) => ({ text: result.structured_output ? JSON.stringify(result.structured_output) : result.result, usage: usageOf(result), wallMs, apiMs: result.duration_api_ms ?? null, usageDetail: result.usage ?? null });
+const replyOf = (result, wallMs) => ({ text: result.structured_output ? JSON.stringify(result.structured_output) : result.result, usage: usageOf(result), wallMs, apiMs: result.duration_api_ms ?? null, usageDetail: result.usage ?? null,
+  costUsd: Number.isFinite(result.total_cost_usd) ? result.total_cost_usd : null });
 const requireDirectory = configDir => {
   if (configDir && !statSync(configDir, { throwIfNoEntry: false })?.isDirectory()) throw Error('config directory must already exist');
 };
@@ -110,7 +111,7 @@ export class SpawnClaudeTransport {
 
 class Lane {
   constructor(transport, instance) {
-    Object.assign(this, { transport, instance, child: null, session: null, sent: 0, dirty: false, pending: null, generation: 0, startups: [], opened: null, idle: null, initSeen: false });
+    Object.assign(this, { transport, instance, child: null, session: null, sent: 0, dirty: false, pending: null, generation: 0, startups: [], inits: [], opened: null, idle: null, initSeen: false });
   }
   open(timeoutMs) {
     if (this.opened) return this.opened;
@@ -132,6 +133,7 @@ class Lane {
       if (event.type === 'system' && event.subtype === 'init') {
         if (!initIsAcceptable(event)) return fail(notSubscription);
         this.initSeen = true;
+        this.inits.push({ model: event.model ?? null, apiKeySource: event.apiKeySource ?? null });
         return undefined;
       }
       if (event.type === 'rate_limit_event' && event.rate_limit_info?.status === 'rejected') {
@@ -203,6 +205,7 @@ export class WarmClaudeTransport {
     return { startupMs: performance.now() - begin, lanes: this.#lanes.length };
   }
   get startups() { return this.#lanes.flatMap(lane => lane.startups); }
+  get inits() { return this.#lanes.flatMap(lane => lane.inits); }
   #assign() {
     clearTimeout(this.#recheck);
     while (this.#waiting.length) {
