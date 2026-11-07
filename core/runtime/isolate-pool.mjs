@@ -37,7 +37,10 @@ export class IsolatePool {
   #cells = new Set();
   #queue = [];
   #pending = new Set();
-  #ledger = new LedgerBridge();
+  #ledger;
+  #cellEnv;
+  #cellFlags;
+  #jobDeadlineMs;
   #closing = false;
   #stopping = false;
   #closed;
@@ -46,21 +49,29 @@ export class IsolatePool {
   #sharedModules = [];
   #sharing;
   #warmOptions;
+  #warmTimeoutMs;
   #startFailures = 0;
   #hostCall;
   #retireAfterJobs;
 
   constructor({ hostPort, size = availableParallelism(), resourceLimits = {}, wasmMemoryMaxMb = 64,
-    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, warm, jobTimeoutMs, hostCall, retireAfterJobs = 256 } = {}) {
+    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, warm, warmTimeoutMs = 60000, jobTimeoutMs, jobDeadlineMs, hostCall, cellEnv, cellFlags = [], ledgerBridge, retireAfterJobs = 256 } = {}) {
     if (!positive(retireAfterJobs)) throw new TypeError('retireAfterJobs must be a positive integer');
     this.#retireAfterJobs = retireAfterJobs;
     this.#hostCall = hostCall;
+    this.#cellEnv = cellEnv;
+    this.#cellFlags = cellFlags;
+    this.#ledger = new LedgerBridge(ledgerBridge);
+    if (jobDeadlineMs !== undefined && !positive(jobDeadlineMs)) throw new TypeError('jobDeadlineMs must be a positive integer');
+    this.#jobDeadlineMs = jobDeadlineMs;
     if (!['thread', 'process'].includes(isolation)) throw new TypeError('isolation must be thread or process');
     if (cgroupRoot !== undefined && (typeof cgroupRoot !== 'string' || !cgroupRoot)) throw new TypeError('cgroupRoot path required');
     if (!positive(size)) throw new TypeError('positive integer pool size required');
     if (typeof prewarm !== 'boolean') throw new TypeError('prewarm must be boolean');
     if (warm !== undefined && (warm === null || typeof warm !== 'object')) throw new TypeError('warm must be an options object');
+    if (!positive(warmTimeoutMs)) throw new TypeError('warmTimeoutMs must be a positive integer');
     this.#warmOptions = warm;
+    this.#warmTimeoutMs = warmTimeoutMs;
     if (typeof hostPort !== 'string' || !hostPort) throw new TypeError('hostPort module path required');
     if (!positive(wasmMemoryMaxMb) || wasmMemoryMaxMb > 4096) {
       throw new TypeError('wasmMemoryMaxMb must be an integer from 1 to 4096');
@@ -116,6 +127,10 @@ export class IsolatePool {
   }
 
   get halted() {
+    return this.#noStarts || this.#ledger.failed;
+  }
+
+  get #noStarts() {
     return this.#startFailures >= this.#size + 2;
   }
 
@@ -167,8 +182,8 @@ export class IsolatePool {
     const entry = new URL('./isolate-workcell.mjs', import.meta.url);
     const policy = { wasmMemoryMaxMb: this.#wasmMemoryMaxMb, trustedWasmModules: this.#trustedWasmModules,
       ...(this.#warmOptions ? { warm: this.#warmOptions, hostPort: this.#hostPort } : {}) };
-    const heapArgv = [`--max-old-space-size=${this.#limits.maxOldGenerationSizeMb}`, `--max-semi-space-size=${this.#limits.maxYoungGenerationSizeMb}`];
-    const processOptions = { serialization: 'advanced', stdio: ['ignore', 'ignore', 'pipe', 'ipc'] };
+    const heapArgv = [`--max-old-space-size=${this.#limits.maxOldGenerationSizeMb}`, `--max-semi-space-size=${this.#limits.maxYoungGenerationSizeMb}`, ...this.#cellFlags];
+    const processOptions = { serialization: 'advanced', stdio: ['ignore', 'ignore', 'pipe', 'ipc'], ...(this.#cellEnv ? { env: this.#cellEnv } : {}) };
     const processArguments = [JSON.stringify({ ...policy, resourceLimits: this.#limits })];
     const stackKb = this.#limits.stackSizeMb && this.#limits.stackSizeMb * 1024;
     const worker = subprocess ? (stackKb
@@ -198,20 +213,27 @@ export class IsolatePool {
     cell.started = new Promise(resolve => { cell.markStarted = resolve; });
     cell.gone = new Promise(resolve => { cell.markGone = resolve; });
     this.#cells.add(cell);
+    if (this.#warmOptions) cell.warmTimer = setTimeout(() => {
+      cell.error ||= { code: 'ERR_WORKCELL_WARM_TIMEOUT' };
+      cell.stopping = true;
+      worker.terminate();
+    }, this.#warmTimeoutMs);
     worker.on('message', result => {
       if (result?.type === 'ready') {
         cell.ready = true;
         this.#startFailures = 0;
+        clearTimeout(cell.warmTimer);
         return cell.markStarted(!result.warmError);
       }
       if (!cell.job) return;
       if (result.type === 'host-call') return this.#answer(cell, result);
+      if (result.type === 'pong') { cell.job.pong = performance.now(); return; }
       if (result.type === 'limit') {
         cell.error = { code: result.error };
         return;
       }
       const job = cell.job;
-      clearTimeout(job.deadline);
+      this.#disarm(job);
       cell.job = null;
       this.#finish(job, { ...result, ...cell.metadata });
       cell.jobs = (cell.jobs ?? 0) + 1;
@@ -225,25 +247,27 @@ export class IsolatePool {
       if (exited) return;
       exited = true;
       clearTimeout(exitTimer);
+      clearTimeout(cell.warmTimer);
       cell.markGone();
       this.#cells.delete(cell);
       cell.markStarted(false);
       releaseCgroup(directory);
       if (subprocess && code === 18) cell.error = { code: 'ERR_WORKCELL_WASM_MEMORY_LIMIT' };
       const limited = ['ERR_WORKER_OUT_OF_MEMORY', 'ERR_WORKCELL_WASM_MEMORY_LIMIT'].includes(cell.error?.code);
-      if (cell.job) clearTimeout(cell.job.deadline);
+      if (cell.job) this.#disarm(cell.job);
       if (cell.job) this.#finish(cell.job, { status: subprocess && limited ? 'rejected' : 'outcome_unknown',
         reason: cell.error?.code === 'ERR_WORKCELL_DEADLINE' ? 'deadline' : limited ? (subprocess ? (cell.error.code === 'ERR_WORKER_OUT_OF_MEMORY' ? 'heap' : 'wasm_memory') : 'limit') : 'worker_exit',
         error: cell.error?.code || null, exitCode: code, signal: signal || null, report: null, ...cell.metadata,
         workcell: cell.id, resourceLimits: this.#limits, wasmMemoryMaxMb: this.#wasmMemoryMaxMb });
       if (!cell.ready && cell.error?.code !== 'ERR_WORKCELL_DEADLINE') this.#startFailures += 1;
       if (!this.#stopping) {
-        if (!this.halted) try { this.#spawn(); } catch { }
+        if (!this.#noStarts) try { this.#spawn(); } catch { }
         this.#pump();
       }
     };
     worker.on(subprocess ? 'close' : 'exit', gone);
     if (subprocess) worker.on('exit', (code, signal) => {
+      cell.stopping = true;
       exitTimer = setTimeout(() => setImmediate(() => {
         if (!exited) worker.stderr.destroy();
         gone(code, signal);
@@ -255,9 +279,9 @@ export class IsolatePool {
   #pump() {
     while (this.#queue[0]?.ready) {
       let cell = [...this.#cells].find(cell => !cell.job && !cell.stopping);
-      if (!cell && (this.halted ? this.#cells.size : this.#cells.size >= this.#size)) return;
+      if (!cell && (this.#noStarts ? this.#cells.size : this.#cells.size >= this.#size)) return;
       const job = this.#queue.shift();
-      if (!cell && this.halted) {
+      if (!cell && this.#noStarts) {
         this.#finish(job, { status: 'outcome_unknown', reason: 'workcell_start_failed', report: null, workcell: null,
           isolation: this.#isolation, resourceLimits: this.#limits, wasmMemoryMaxMb: this.#wasmMemoryMaxMb });
         continue;
@@ -266,10 +290,11 @@ export class IsolatePool {
         cell ||= this.#spawn();
         cell.job = job;
         this.#arm(cell, job);
+        if (this.#jobDeadlineMs) job.total = setTimeout(() => this.#stop(cell), this.#jobDeadlineMs);
         const { reference, candidates, portOptions } = job.data;
         cell.worker.postMessage({ reference, candidates, portOptions, hostPort: this.#hostPort });
       } catch (error) {
-        clearTimeout(job.deadline);
+        this.#disarm(job);
         if (cell) cell.job = null;
         this.#finish(job, { status: 'outcome_unknown', reason: error.message,
           report: null, workcell: cell?.id ?? null, ...cell?.metadata, resourceLimits: this.#limits, wasmMemoryMaxMb: this.#wasmMemoryMaxMb });
@@ -277,23 +302,47 @@ export class IsolatePool {
     }
   }
 
+  #stop(cell) {
+    cell.error = { code: 'ERR_WORKCELL_DEADLINE' };
+    cell.stopping = true;
+    cell.worker.terminate();
+  }
+
   #arm(cell, job) {
-    if (this.#jobTimeoutMs) job.deadline = setTimeout(() => {
-      cell.error = { code: 'ERR_WORKCELL_DEADLINE' };
-      cell.stopping = true;
-      cell.worker.terminate();
-    }, this.#jobTimeoutMs);
+    if (!this.#jobTimeoutMs) return;
+    job.budget ??= this.#jobTimeoutMs;
+    job.armed = performance.now();
+    job.deadline = setTimeout(() => this.#stop(cell), Math.max(0, job.budget));
+  }
+
+  #disarm(job) {
+    clearTimeout(job.deadline);
+    clearTimeout(job.total);
+    clearInterval(job.liveness);
   }
 
   #answer(cell, { id, call }) {
     const job = cell.job;
-    clearTimeout(job.deadline);
+    job.calls = (job.calls ?? 0) + 1;
+    if (job.calls === 1 && this.#jobTimeoutMs) {
+      clearTimeout(job.deadline);
+      job.budget -= performance.now() - job.armed;
+      job.pong = performance.now();
+      job.liveness = setInterval(() => {
+        if (performance.now() - job.pong > this.#jobTimeoutMs) return this.#stop(cell);
+        try { cell.worker.postMessage({ type: 'ping' }); } catch { }
+      }, Math.ceil(this.#jobTimeoutMs / 3));
+    }
     Promise.resolve().then(() => {
       if (!this.#hostCall) throw new Error('no host call handler');
       return this.#hostCall(call, job.data);
     }).then(value => ({ id, value }), error => ({ id, error: error.message || String(error) })).then(reply => {
       if (cell.job !== job || cell.stopping) return;
-      this.#arm(cell, job);
+      job.calls -= 1;
+      if (job.calls === 0 && this.#jobTimeoutMs) {
+        clearInterval(job.liveness);
+        this.#arm(cell, job);
+      }
       try { cell.worker.postMessage({ type: 'host-reply', ...reply }); } catch { }
     });
   }

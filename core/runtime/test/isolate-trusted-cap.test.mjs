@@ -48,7 +48,21 @@ const assertStopped = ({ stopped, survivors, replacement }, isolation) => {
   assert.notEqual(replacement.workcell, stopped.workcell);
 };
 
+const importer = [0, 97, 115, 109, 1, 0, 0, 0, 2, 15, 1, 3, 101, 110, 118, 6, 109, 101, 109, 111, 114, 121, 2, 0, 1];
+const importerPolicy = [{ name: 'synthetic-importer', sha256: createHash('sha256').update(Uint8Array.from(importer)).digest('hex'), maximumPages: 2 }];
+
 for (const isolation of ['thread', 'process']) {
+  test(`${isolation}: JS growth of a pinned module's imported memory past maximumPages stops its cell, even if the RangeError is caught`, { timeout: 60000 }, async t => {
+    const { job } = await fixture(t);
+    const pool = new IsolatePool({ hostPort, size: 1, isolation, wasmMemoryMaxMb: 1, trustedWasmModules: importerPolicy });
+    t.after(() => pool.close());
+    const within = await pool.run(job(['pass'], { action: 'instantiate', bytes: importer, imports: true, importMaximum: 2, importGrow: true, pages: 1 }));
+    assert.equal(within.status, 'completed');
+    const stopped = await pool.run(job(['pass'], { action: 'instantiate', bytes: importer, imports: true, importMaximum: 2, importGrow: true, pages: 2 }));
+    assert.equal(stopped.error, 'ERR_WORKCELL_WASM_MEMORY_LIMIT');
+    assert.notEqual(stopped.receipts[0].record.data.outcome_state, 'passed');
+  });
+
   test(`${isolation}: a pinned module growing past maximumPages stops its cell and keeps its siblings`, { timeout: 60000 }, async t => {
     assertStopped(await breach(t, isolation, 2, { pages: 2 }), isolation);
   });

@@ -69,6 +69,16 @@ static void open_event(pid_t pid, const char *name, uint64_t address, uint64_t f
   event(writes ? "write" : "read", pid, name, path);
 }
 
+static void fd_change(pid_t pid, const char *name, uint64_t fd) {
+  char link[64], path[4096];
+  snprintf(link, sizeof link, "/proc/%d/fd/%d", pid, (int)fd);
+  ssize_t count = readlink(link, path, sizeof path - 1);
+  if (count <= 0) return;
+  path[count] = 0;
+  if (path[0] != '/' || (!strncmp(path, "/dev/", 5) && strncmp(path, "/dev/shm/", 9))) return;
+  event("write", pid, name, path);
+}
+
 static void on_entry(pid_t pid, struct syscall_info *info) {
   uint64_t nr = info->entry.nr, *a = info->entry.args;
   switch (nr) {
@@ -131,6 +141,13 @@ static void on_entry(pid_t pid, struct syscall_info *info) {
 #endif
     case SYS_symlinkat: file_change(pid, "symlinkat", a[2]); break;
     case SYS_truncate: file_change(pid, "truncate", a[0]); break;
+    case SYS_write: fd_change(pid, "write", a[0]); break;
+    case SYS_writev: fd_change(pid, "writev", a[0]); break;
+    case SYS_pwrite64: fd_change(pid, "pwrite64", a[0]); break;
+    case SYS_pwritev: fd_change(pid, "pwritev", a[0]); break;
+    case SYS_ftruncate: fd_change(pid, "ftruncate", a[0]); break;
+    case SYS_fallocate: fd_change(pid, "fallocate", a[0]); break;
+    case SYS_memfd_create: file_change(pid, "memfd_create", a[0]); break;
 #ifdef SYS_stat
     case SYS_stat: mark_or_nothing(pid, a[0]); break;
 #endif

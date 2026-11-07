@@ -39,7 +39,7 @@ const agentPool = (t, script, options = {}) => {
 const storedDecision = directory => python(`
 import json, sqlite3, sys
 db = sqlite3.connect(json.load(sys.stdin)['ledger'])
-print(db.execute('SELECT body FROM x1_decisions').fetchone()[0])
+print(db.execute('SELECT body FROM x1_decisions ORDER BY rowid DESC').fetchone()[0])
 `, { ledger: join(directory, 'ledger.sqlite') });
 const gateVector = async directory => {
   const receipt = (await records(join(directory, 'ledger.sqlite'))).find(record => record.kind === 'receipt');
@@ -80,13 +80,14 @@ test('a failed check goes straight back to the next model turn in the same job',
 
 test('turn and token limits stop the loop, and the attempt is a recorded failure', { timeout: 30000 }, async t => {
   const root = scratch(t);
-  const pool = agentPool(t, ({ messages, turn }) => (turn === 0 ? reply(specification(input(good))) : reply(implementation(input(seeds[1]), idOf(messages)))));
+  const pool = agentPool(t, ({ messages, turn }) => (turn === 0 ? reply(specification(input(good))) : reply({ calls: implementation(input(good), idOf(messages)).calls.filter(call => call.name !== 'done') })));
   const turns = await runNeed({ need, directory: join(root, 'turns'), pool, env, limits: { maxTurns: 3, maxTokens: 64000 } });
   assert.equal(turns.promoted, false);
   assert.equal(turns.agent.exit_reason, 'max_turns');
   assert.equal(turns.agent.turns, 4);
   assert.equal((await gateVector(join(root, 'turns'))).outcome, 'failed');
   const tokens = await runNeed({ need, directory: join(root, 'tokens'), pool, env, limits: { maxTurns: 3, maxTokens: 5 } });
+  assert(tokens.modelMs >= 0);
   assert.equal(tokens.promoted, false);
   assert.equal(tokens.error, 'pipeline stage failed; inspect local artifacts');
   assert.equal(existsSync(join(root, 'tokens', 'ledger.sqlite')), false);
@@ -137,8 +138,9 @@ test('seeded bad kernels get the same verdict as the current path', { timeout: 1
 
 test('the job deadline stops compute and does not count the model wait', { timeout: 30000 }, async t => {
   const root = scratch(t);
-  const slow = async args => { await new Promise(resolve => setTimeout(resolve, 900)); return modelFor(input(good))(args); };
-  const pool = agentPool(t, slow, { jobTimeoutMs: 600 });
+  const slow = async args => { await new Promise(resolve => setTimeout(resolve, 1000)); return modelFor(input(good))(args); };
+  const pool = agentPool(t, slow, { jobTimeoutMs: 800 });
+  await pool.ready();
   const result = await runNeed({ need, directory: join(root, 'slow'), pool, env });
   assert.equal(result.promoted, true, JSON.stringify(result));
   assert(result.modelMs >= 1800);
@@ -204,7 +206,7 @@ test('the warm transport spawns once, sends only new turns and clears between se
   const log = logOf(root);
   assert.equal(log.filter(line => line.start).length, 1);
   assert.deepEqual(log.filter(line => line.text).map(line => [line.text, line.history]), [['user: one', 1], ['user: two', 2], ['user: three', 1]]);
-  assert.equal(log.filter(line => line.clear).length, 1);
+  assert.equal(log.filter(line => line.clear).length, 2);
   const { argv, env: seen, cwd } = log[0];
   assert.equal(argv[argv.indexOf('--tools') + 1], '');
   for (const flag of ['--no-session-persistence', '--strict-mcp-config', '--safe-mode']) assert(argv.includes(flag));

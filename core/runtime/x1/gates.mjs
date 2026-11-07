@@ -5,6 +5,34 @@ import { glueProblems, nonFiniteExpectation, probeProblem, unitDisagreements } f
 import { callKernel, freshKernel, kernelFuel, probeCalls } from './measure.mjs';
 import { loadKernel } from './meter.mjs';
 const glueSchema = JSON.parse(readFileSync(new URL('./glue.schema.json', import.meta.url)));
+export const maximumRelativeTolerance = 0.01;
+export function testProblems(tests) {
+  if (!Array.isArray(tests) || !tests.length) return ['tests.json must be a nonempty array'];
+  const problems = [];
+  tests.forEach((test, index) => {
+    const at = `test ${index}`;
+    if (test === null || typeof test !== 'object' || Array.isArray(test)) return problems.push(`${at} must be an object`);
+    if (typeof test.fn !== 'string' || !test.fn) problems.push(`${at} needs fn`);
+    if (!Array.isArray(test.args)) problems.push(`${at} needs args`);
+    const expects = Object.hasOwn(test, 'expect');
+    if (test.expectError === true) return undefined;
+    if (Object.hasOwn(test, 'expectError') && test.expectError !== false) problems.push(`${at} has an expectError that is not a boolean`);
+    if (!expects) return problems.push(`${at} asserts nothing`);
+    const { expect, tol } = test;
+    if (typeof expect === 'number') {
+      if (!Number.isFinite(expect)) problems.push(`${at} expects a non-finite number`);
+      else if (Number.isInteger(expect) && !Number.isSafeInteger(expect)) problems.push(`${at} expects an integer past exact range; use a string`);
+    } else if (typeof expect !== 'boolean' && typeof expect !== 'string') problems.push(`${at} expects neither a number, boolean nor string`);
+    if (Object.hasOwn(test, 'tol')) {
+      if (typeof expect !== 'number') problems.push(`${at} has tol on a non-number`);
+      else if (typeof tol !== 'number' || !Number.isFinite(tol) || tol < 0) problems.push(`${at} has an invalid tol`);
+      else if (tol > maximumRelativeTolerance * Math.max(1, Math.abs(expect))) problems.push(`${at} has a tol above ${maximumRelativeTolerance} of its value`);
+    }
+    return undefined;
+  });
+  return problems;
+}
+class KernelAbort extends Error {}
 function functionNames(bytes) {
   let p = 8;
   const uint = () => { let n = 0, shift = 0, b; do { b = bytes[p++]; n += (b & 127) * 2 ** shift; shift += 7; } while (b & 128); return n; };
@@ -37,6 +65,10 @@ if (!fs.existsSync(f('frozen.sha256'))) fail('G1_frozen', 'no frozen.sha256');
 const frozen = JSON.parse(fs.readFileSync(f('frozen.sha256'), 'utf8'));
 if (sha(f('CONTRACT.md')) !== frozen.contract) fail('G1_frozen', 'CONTRACT.md changed after freeze');
 if (sha(f('tests.json')) !== frozen.tests) fail('G1_frozen', 'tests.json changed after freeze');
+let frozenTests;
+try { frozenTests = JSON.parse(fs.readFileSync(f('tests.json'), 'utf8')); } catch { fail('G1_frozen', 'tests.json is not JSON'); }
+const weak = testProblems(frozenTests);
+if (weak.length) fail('G1_frozen', weak.slice(0, 20).join('; '));
 result.gates.G1_frozen = { ok: true };
 if (!compiled || compiled.error || compiled.source !== sha(f('kernel.ts'))) fail('G2_compiles', compiled?.error || 'compile binding differs');
 const bytes = Buffer.from(compiled.wasm, 'base64');
@@ -52,7 +84,7 @@ const missing = [...new Set(tests.map(t => t.fn))].filter(n => !exportNames.has(
 if (missing.length) fail('G3_exports', `missing exports: ${missing.join(', ')}`);
 result.gates.G3_exports = { ok: true, exports: [...exportNames] };
 function instantiate() {
-  const kernel = loaded.start((m, fl, l, c) => { throw new Error(`abort at ${l}:${c}`); });
+  const kernel = loaded.start((m, fl, l, c) => { throw new KernelAbort(`abort at ${l}:${c}`); });
   return { inst: kernel.instance, kernel };
 }
 try { instantiate(); } catch (error) { fail('G2_compiles', `instantiation failed: ${error.message}`); }
@@ -63,14 +95,15 @@ function runAll() {
   const outs = [];
   for (const t of tests) {
     const t0 = process.hrtime.bigint();
-    let out, err = null;
+    let out, err = null, trap = false;
     try { out = inst.exports[t.fn](...t.args); } catch (e) {
       err = String(e.message || e);
+      trap = e instanceof WebAssembly.RuntimeError || e instanceof KernelAbort;
       if (kernel.exhausted()) bounds.push('fuel exhausted');
       else if (e instanceof RangeError) bounds.push('stack exhausted');
     }
     const ms = Number(process.hrtime.bigint() - t0) / 1e6;
-    outs.push({ out: typeof out === 'bigint' ? out.toString() : out, err, ms });
+    outs.push({ out: typeof out === 'bigint' ? out.toString() : out, err, trap, ms });
   }
   fuelUsed = Math.max(fuelUsed, Math.min(kernel.used(), kernelFuel));
   return outs;
@@ -80,13 +113,13 @@ let allPass = true;
 tests.forEach((t, i) => {
   const r = run1[i];
   let pass;
-  if (t.expectError) pass = r.err !== null;
+  if (t.expectError) pass = r.trap;
   else if (r.err !== null) pass = false;
   else if (typeof t.expect === 'boolean') pass = Boolean(r.out) === t.expect || r.out === (t.expect ? 1 : 0);
   else if (typeof t.expect === 'number') pass = Number.isFinite(t.tol) ? Math.abs(Number(r.out) - t.expect) <= t.tol : Number(r.out) === t.expect;
   else pass = String(r.out) === String(t.expect);
   allPass &&= pass;
-  result.tests.push({ name: t.name, fn: t.fn, args: t.args, expect: t.expectError ? 'error' : t.expect, got: r.err ?? r.out, ms: +r.ms.toFixed(3), pass });
+  result.tests.push({ name: t.name, fn: t.fn, args: t.args, expect: t.expectError ? 'error' : t.expect, got: r.err ?? r.out, ...(r.trap ? { trap: true } : {}), ms: +r.ms.toFixed(3), pass });
 });
 result.gates.G4_tests = { ok: allPass, passed: result.tests.filter(t => t.pass).length, total: tests.length };
 result.gates.G6_bounded = { ok: !bounds.length, ...(bounds.length ? { why: bounds[0] } : {}), maxMs: Math.max(...run1.map(r => r.ms)), fuelUsed };

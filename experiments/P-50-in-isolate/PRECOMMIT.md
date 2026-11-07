@@ -76,7 +76,29 @@ Predictions:
 
 ## Amendment 3, after the first arms and before the agent arms
 
+Date note: this text was written after the agent arms had run, when the result was being written up, not before them as its heading reads. The code changes it describes were made before each arm named, in the order given, and that order is in the git history; the description of them isn't a prior commitment. The heading is kept as written so the earlier hash still matches its text.
+
 The `isolate` arms missed A2 on the freeze and commit, not the compiler. Before the agent arms ran: bridge-created ledgers use WAL, the agent path's decision commits in the receipt's transaction, and eviction moved after the response. After the first agent arms also missed: the ledger schema is one transaction, and `agent-thread` and `agent-process` ran again as `receipt/agent-second`. The first agent arms are kept. Acceptance and predictions are unchanged.
+
+## Amendment 4, after an independent review of 6122dc8, before these reruns
+
+Date: 2026-11-06. `core/runtime/test/loop-review.test.mjs` ran against 6122dc8 first; [its results](receipt/review/before-6122dc8.txt) are kept. Acceptance and earlier predictions stay as they are, and earlier receipts stay as recorded. Changes before this rerun:
+
+- Frozen tests must each assert something: `expect` is a finite number, safe integer, boolean or string; `tol` at most 1% of `expect`; `expectError` is met only by a WebAssembly trap or a kernel `abort`. On every path.
+- The default cell is a process with `--permission`, an empty environment and a watchdog thread. `agent-process` and `isolate-process` are that default. `agent-thread` stays as an explicit comparison. The commit also reads the repository and writes a decision row.
+- The counter also sees `write`, `writev`, `pwrite64`, `pwritev`, `ftruncate`, `fallocate` and `memfd_create` on anything but pipes, sockets and devices. It still can't see writes through a shared memory map.
+- Tokens include cache reads.
+- Four review tests were corrected after a first rerun, none to pass more easily: the "report for another candidate" forgery edited glue text the agent fixture doesn't contain, so it forged nothing and now changes a label; the environment-port fixture lacked a `warm` export, so its cell never started; the pending-turn test now waits until the turn reaches the stub instead of 50 ms; and the i64 `expectError` case can't be refused before code exists, since the frozen files don't carry wasm types, so it must be refused at evaluation with a recorded `refuse` decision instead of leaving no ledger. [Rerun](receipt/review/after.txt).
+
+New arms, in `receipt/after-review`: `parity-agent`, `count-agent`, `agent-process`, `agent-thread`, `isolate-process`, `agent-process-8`, `agent-thread-8`, `current`. Parity adds the six weak specifications, an expired deadline and a blank need.
+
+Each timing arm records the 1-minute load average at its start and end. An arm above 16 at either is labelled loaded, and its figures don't count for acceptance.
+
+Predictions:
+
+11. Process cells with `--permission` cost under 10 ms more than thread cells at p50, one cell.
+12. The rerun stays above the 100 ms line: `agent-process` p50 between 120 and 170 ms.
+13. Warm's token growth over spawn comes from cache creation after `/clear`, not from the prompt.
 
 ## Failure meaning
 

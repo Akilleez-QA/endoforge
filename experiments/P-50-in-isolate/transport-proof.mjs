@@ -10,6 +10,7 @@ if (!configDir) throw Error('P50_CLAUDE_CONFIG_DIR required');
 mkdirSync(output, { recursive: true });
 const cwd = mkdtempSync(join(output, 'empty-'));
 const nearest = (values, q) => { const sorted = [...values].sort((a, b) => a - b); return sorted[Math.ceil(sorted.length * q) - 1] ?? null; };
+const detail = turns => turns.map(({ wallMs, apiMs, usage, usageDetail }) => ({ wallMs, apiMs, usage, input: usageDetail?.input_tokens, output: usageDetail?.output_tokens, cacheCreation: usageDetail?.cache_creation_input_tokens, cacheRead: usageDetail?.cache_read_input_tokens }));
 const overhead = turns => turns.map((turn, index) => turn.wallMs - ((turn.apiMs ?? 0) - (index && turn.apiMs >= turns[index - 1].apiMs && turn.apiMs > turn.wallMs ? turns[index - 1].apiMs : 0)));
 const summary = {};
 if (step === 'transports') {
@@ -23,14 +24,14 @@ if (step === 'transports') {
     warm.endSession(`w${i}`);
   }
   await warm.close();
-  summary.spawn = { turns: turns.map(({ wallMs, apiMs, usage }) => ({ wallMs, apiMs, usage })), overheadP50: nearest(overhead(turns), 0.5), spawns: spawned.spawns };
-  summary.warm = { startup: started, startups: warm.startups.length, turns: warmTurns.map(({ wallMs, apiMs, usage }) => ({ wallMs, apiMs, usage })), firstTurnOverhead: overhead(warmTurns)[0], laterOverheadP50: nearest(overhead(warmTurns).slice(1), 0.5) };
+  summary.spawn = { turns: detail(turns), wallP50: nearest(turns.map(turn => turn.wallMs), 0.5), overheadP50: nearest(overhead(turns), 0.5), spawns: spawned.spawns };
+  summary.warm = { startup: started, startups: warm.startups.length, turns: detail(warmTurns), wallP50: nearest(warmTurns.map(turn => turn.wallMs), 0.5), firstTurnOverhead: overhead(warmTurns)[0], laterOverheadP50: nearest(overhead(warmTurns).slice(1), 0.5) };
 } else {
   const provider = new WarmClaudeTransport({ instances: [{ name: 'proof', configDir }], model, cwd });
   const startupBegin = performance.now();
   const started = await provider.start();
   const replies = [], send = provider.send.bind(provider);
-  provider.send = async request => { const reply = await send(request); replies.push({ wallMs: reply.wallMs, apiMs: reply.apiMs, usage: reply.usage }); return reply; };
+  provider.send = async request => { const reply = await send(request); replies.push(reply); return reply; };
   const pool = createLoopPool({ provider, jobTimeoutMs: 60000 });
   await pool.ready();
   const readyMs = performance.now() - startupBegin;
@@ -41,7 +42,7 @@ if (step === 'transports') {
   const wall = performance.now() - begin;
   await pool.close(); await provider.close();
   summary.proof = { step, model, promoted: answer.promoted, error: answer.error ?? null, status: answer.status ?? null, problem: answer.problem ?? null, agent: answer.agent, wall, modelMs: answer.modelMs, nonModel: wall - answer.modelMs,
-    transportOverhead: overhead(replies), replies, startup: started, startups: provider.startups.length, readyMs, timings: answer.timings };
+    transportOverhead: overhead(replies), replies: detail(replies), startup: started, startups: provider.startups.length, readyMs, timings: answer.timings };
 }
 rmSync(cwd, { recursive: true, force: true });
 writeFileSync(out, JSON.stringify(summary, null, 1));

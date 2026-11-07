@@ -14,7 +14,8 @@ const script = ({ messages }) => {
   const stage = JSON.parse(messages.at(-1).content).stage;
   return reply(stage === 'specification' ? specification(model) : implementation(model, JSON.parse(messages.at(-1).content).id));
 };
-const pool = createLoopPool({ isolation, hostPort, primes: 1, jobTimeoutMs: 30000, ...(agent ? { provider: scriptedProvider(script) } : {}) });
+const cellEnv = Object.fromEntries(Object.entries(process.env).filter(([name]) => name.startsWith('EF_')));
+const pool = createLoopPool({ isolation, hostPort, primes: 1, jobTimeoutMs: 30000, cellEnv, ...(agent ? { provider: scriptedProvider(script) } : {}) });
 const env = { ...process.env, ENDOFORGE_LOOP: agent ? 'agent' : 'isolate', CODEX_HOME: join(root, 'unused-home'), ENDOFORGE_CODEX_TEST_DOUBLE: '1',
   ENDOFORGE_CODEX_CMD: JSON.stringify([process.execPath, new URL('./fake-codex.mjs', import.meta.url).pathname]) };
 const observe = stage => {
@@ -28,6 +29,11 @@ if (action === 'resume') {
   const files = Object.fromEntries(['CONTRACT.md', 'tests.json', 'frozen.sha256', 'kernel.ts', 'glue.json'].map(name => [name, read(name)]));
   const reference = { ledger: join(directory, 'ledger.sqlite'), root: join(directory, 'oracle'), identity: process.argv[3] };
   const admission = await admit(pool, reference);
+  if (admission.decision) {
+    process.stdout.write(`${JSON.stringify({ promoted: true, resumed: true })}\n`);
+    await pool.close();
+    process.exit(0);
+  }
   const candidate = { id: directory.split('/').pop(), files };
   const outcome = await evaluateAndCommit(pool, { candidate, reference, admission, decisionPath: join(directory, 'retry-promotion.json') });
   process.stdout.write(`${JSON.stringify(outcome)}\n`);

@@ -4,7 +4,36 @@ Status: **Recorded (probe)**, 2026-11-06, Node v26.13.0, 32 threads, under `heav
 
 **The process and temp-file crossings are gone and verdicts match, but the 100 ms line was not met.** With generation in the cell and a scripted model, non-model time per candidate is 132–134 ms at p50 and 326–357 ms at p95, against 1,472 ms and 1,759 ms on the current path. About half of the p50 is creating and freezing a new ledger for each task. Excluding that, it's 68–69 ms at p50 and 212–248 ms at p95. The p95 is mostly the compiler on a loaded machine. No model call was timed here beyond the transport arm and the two real runs below.
 
+## After the review of 6122dc8
+
+An independent review found fifteen problems ([PRECOMMIT amendment 4](PRECOMMIT.md)). The review's regression file failed on 6122dc8 ([before](receipt/review/before-6122dc8.txt)) and passes 43 of 43 on 5d63294 ([after](receipt/review/after.txt)). The arms were rerun at 5d63294 in [after-review](receipt/after-review/summary.json), with the 1-minute load between 10.0 and 12.0 at every arm's start and end, so each is labelled acceptance under the rule of 16. It wasn't a held quiet window.
+
+| Arm | Non-model p50 / p95 | Freeze | Compile | Gates | Ledger |
+|---|---|---|---|---|---|
+| `current` | 1,297 / 1,766 | 170 / 208 | 499 / 702 | 392 / 548 | 131 / 172 |
+| `isolate-process` | 148 / 173 | 69 / 73 | 48 / 64 | 7 / 12 | 22 / 25 |
+| `agent-process`, the default | 116 / 123 | 61 / 63 | 37 / 43 | 4 / 8 | 9 / 11 |
+| `agent-thread` | 124 / 150 | 63 / 72 | 42 / 58 | 4 / 8 | 9 / 12 |
+| `agent-process-8` | 562 / 815 | 295 / 412 | 56 / 78 | 6 / 12 | 247 / 383 |
+| `agent-thread-8` | 562 / 774 | 294 / 419 | 55 / 71 | 5 / 11 | 247 / 398 |
+
+B2 still fails: 116 ms at p50 against the 100 ms line, and the freeze, a new ledger per task, is 61 ms of it. Process cells with `--permission` didn't cost time; they were 8 ms faster than thread cells at p50. Parity covered 39 inputs, the six weak specifications, an expired deadline and a blank need included, with 0 differences and 0 wrong verdicts. The counter, now also seeing `write`, `writev`, `pwrite64`, `pwritev`, `ftruncate`, `fallocate` and `memfd_create`, saw 0 spawns and 0 writes from need to admission and from admission to commit on all 21 kernels in both cell kinds. It can't see writes through a shared memory map.
+
+Predictions in amendment 4: 11, process within 10 ms of thread, **held** (it was faster). 12, `agent-process` p50 between 120 and 170 ms, **failed**: 116 ms. 13, warm's token growth comes from cache creation after `/clear`, **not tested**: the transport proof wasn't rerun, because that needs real model calls.
+
+Corrections to the text below:
+
+- "0 file changes" in A1 and B1 meant no file opened for writing, before amendment 4. The rerun above is the first count of writes themselves.
+- Handoffs: the counter records 4 per candidate on the agent path with the scripted model. The review counted 6, plus 2 per model turn. The two counts haven't been reconciled, so neither is claimed as final.
+- Transport: warm stream-json's wall p50 was 3,040 ms per turn against 1,955 ms for spawn per turn, in the same receipt; its lower overhead is wall minus the CLI's API time, which hides that. The review read its tokens per turn as growing from 63 to between 146 and 1,357. That may be a real cost of `/clear` or the warm prompt and hasn't been investigated.
+- `run`, `scanEffects` and the usage figures in `loop-port.mjs` are constants, so `bounds`, `determinism` and `forbidden_effects` are vacuous there, and G5 and G6 aren't measured from outside the cell as E3 §4 asks. Replacing them is a separate change.
+- The conversation and the file overlay live only in cell memory. There's no durable continuation: losing a cell loses the attempt's turns, and the resumed attempt starts again from the frozen evaluator.
+- `isolate-ledger.mjs` imported `tools.x1_loop` by name, so a generic pool's `ready()` depended on that file. The ledger policy now reaches the pool through a port.
+- E3 §6 Qualified and Confirmed with context separation isn't built. The freeze record now says `none` for confirmation and qualification instead of the fixed values it carried.
+
 ## Acceptance
+
+The table below is from the earlier runs. The review's changes and the reruns are in the section above.
 
 | Item | Result | Evidence |
 |---|---|---|
@@ -18,6 +47,7 @@ Status: **Recorded (probe)**, 2026-11-06, Node v26.13.0, 32 threads, under `heav
 | A6, B6: forged receipt refused | **Pass** | 12 forgeries, with an unforged control that promotes. Limit below. |
 | A7, B7: real kills give no false promotion | **Pass** | `make loop-test`: SIGKILL of cell, supervisor and bridge at each point, plus 8 rounds of random kills on the `isolate` path. Not a power-loss test. |
 | B8: one durable crossing | **Fail on the strict reading** | One per candidate, plus one per task. |
+| E3 §9: waiting releases compute | **Fail** | The cell, its pool slot and its memory stay held through every model turn. |
 
 ## Time, per candidate
 

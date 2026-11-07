@@ -13,6 +13,7 @@ import { ledger } from '../x1/ledger.mjs';
 import { runNeed } from '../x1/pipeline.mjs';
 import { evaluate as evaluateReference } from '../x1/reference.mjs';
 import { candidate as additionCandidate } from './fixtures/x1/candidate.mjs';
+import { forgeries } from './fixtures/x1/forgeries.mjs';
 import { good, seeds } from './fixtures/x1/seeds.mjs';
 import { python } from './fixtures/ledger-fixture.mjs';
 
@@ -154,7 +155,7 @@ for (const mode of ['change', 'add', 'delete', 'replace']) {
 test('a frozen tree change during the job is refused', async t => {
   const root = scratch(t), directory = join(root, 'addition');
   process.env.EF_MUTATE_FILE = join(directory, 'oracle', 'tests.json');
-  const pool = createLoopPool({ primes: 1, hostPort: stagePort });
+  const pool = createLoopPool({ primes: 1, isolation: 'thread', hostPort: stagePort });
   await pool.ready();
   delete process.env.EF_MUTATE_FILE;
   t.after(() => pool.close());
@@ -202,7 +203,7 @@ test('a self-consistent changed bundle and digest cannot promote', async t => {
 test('a change to the bundle held in the cell fails at the next verification', async t => {
   const root = scratch(t);
   process.env.EF_FLIP_ADMISSION = '1';
-  const pool = createLoopPool({ primes: 1, hostPort: stagePort });
+  const pool = createLoopPool({ primes: 1, hostPort: stagePort, cellEnv: { EF_FLIP_ADMISSION: '1' } });
   await pool.ready();
   delete process.env.EF_FLIP_ADMISSION;
   t.after(() => pool.close());
@@ -231,37 +232,6 @@ test('an implementation in the frozen tree that differs from the cell code never
   assert.equal(outcome.status, 'inconclusive');
 });
 
-const residualOf = attempt => attempt.results.find(check => check.check === 'residual');
-const editX1 = (attempt, edit) => {
-  const residual = residualOf(attempt), x1 = JSON.parse(residual.reason);
-  edit(x1);
-  residual.reason = JSON.stringify(x1);
-};
-const forgeries = {
-  'evaluator digest in the report': evaluated => { evaluated.observed.report.evaluator_digest = '0'.repeat(64); },
-  'evaluator digest in an attempt': evaluated => { evaluated.observed.report.attempts[1].evaluator_digest = '0'.repeat(64); },
-  'evaluator identity in the report': evaluated => { evaluated.observed.report.frozen_evaluator = `evr:${'0'.repeat(64)}`; },
-  'a failing gate left in place': evaluated => { editX1(evaluated.observed.report.attempts[0], x1 => { x1.gates.G4_tests.ok = false; }); },
-  'a gate removed': evaluated => { editX1(evaluated.observed.report.attempts[0], x1 => { delete x1.gates.G7_glue; }); },
-  'a missing round': evaluated => { evaluated.observed.report.attempts.pop(); },
-  'tests dropped from the report': evaluated => { for (const attempt of evaluated.observed.report.attempts) editX1(attempt, x1 => { x1.tests.pop(); }); },
-  'a value that misses its expectation marked as passing': evaluated => { for (const attempt of evaluated.observed.report.attempts) editX1(attempt, x1 => { x1.tests[0].got = 99; x1.tests[0].pass = true; }); },
-  'a module digest that is not the candidate': evaluated => { for (const attempt of evaluated.observed.report.attempts) editX1(attempt, x1 => { x1.gates.G2_compiles.wasmSha256 = '0'.repeat(64); }); },
-  'a kernel swapped by the cell': evaluated => {
-    const swapped = JSON.parse(evaluated.content), source = 'export function add(a:i32,b:i32):i32{return a+b+0}';
-    swapped.files['kernel.ts'] = source; swapped.compiled.source = hash(source);
-    evaluated.content = JSON.stringify(swapped);
-    const identity = hash(evaluated.content);
-    for (const attempt of evaluated.observed.report.attempts) attempt.candidate = identity;
-    evaluated.observed.report.frontier = [identity];
-  },
-  'a frontier that names someone else': evaluated => { evaluated.observed.report.frontier = ['0'.repeat(64)]; },
-  'a report for another candidate': evaluated => {
-    const other = JSON.parse(evaluated.content);
-    other.files['glue.json'] = other.files['glue.json'].replace('Add two integers', 'Add two values');
-    evaluated.content = JSON.stringify(other);
-  },
-};
 for (const [name, forge] of Object.entries(forgeries)) {
   test(`a forged receipt is refused: ${name}`, async t => {
     const root = scratch(t), pool = createLoopPool({ primes: 1 });
@@ -356,7 +326,7 @@ test('one admission serves many candidates and each commits once, batched into o
 test('a lost cell leaves an inconclusive receipt and no promotion', { timeout: 30000 }, async t => {
   const root = scratch(t);
   process.env.EF_KILL_STAGE = 'compile:read';
-  const pool = createLoopPool({ primes: 0, isolation: 'process', hostPort: stagePort });
+  const pool = createLoopPool({ primes: 0, isolation: 'process', hostPort: stagePort, cellEnv: { EF_KILL_STAGE: 'compile:read' } });
   await pool.ready();
   delete process.env.EF_KILL_STAGE;
   t.after(() => pool.close());
