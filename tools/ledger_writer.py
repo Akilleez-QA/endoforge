@@ -15,7 +15,7 @@ import threading
 import time
 import traceback
 
-from .ledger import TABLES, Ledger
+from core.ledger.ledger import TABLES, Ledger
 
 MAGIC = b"EFJ1"
 HEADER = struct.Struct(">4sI32s")

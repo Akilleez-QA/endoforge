@@ -9,8 +9,7 @@ import unittest
 from unittest import mock
 
 from core.ledger.ledger import Ledger
-from core.ledger import writer as writer_module
-from core.ledger.writer import HEADER, Journal, JournalCorrupt, Writer
+from tools.ledger_writer import HEADER, Journal, JournalCorrupt, Writer
 
 
 def task(request, prior, append, _process, _db):

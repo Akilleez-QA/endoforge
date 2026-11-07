@@ -16,7 +16,7 @@ core-test:
 	$(PYTHON) -B -m unittest discover -s tests -v
 
 ledger-test:
-	$(PYTHON) -B -m unittest core.ledger.test_ledger core.ledger.test_frozen core.ledger.test_provenance core.ledger.test_writer -v
+	$(PYTHON) -B -m unittest core.ledger.test_ledger core.ledger.test_frozen core.ledger.test_provenance tools.test_ledger_writer -v
 
 engine-test:
 	node --test core/engine/*.test.mjs

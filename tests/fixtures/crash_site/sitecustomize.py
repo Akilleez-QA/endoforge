@@ -65,7 +65,7 @@ if point:
 
 writer_point = os.environ.get("EF_WRITER_KILL")
 if writer_point:
-    import core.ledger.writer as writer_module
+    import tools.ledger_writer as writer_module
 
     target, _, number = writer_point.partition(":")
     batches = dict(seen=0)

@@ -61,7 +61,7 @@ export function ledgerRequest(action, job, result) {
 export const persistentBridge = `
 import importlib, sys
 from core.ledger.ledger import Ledger, validate
-from core.ledger.writer import serve
+from tools.ledger_writer import serve
 ${operation}
 serve(process, importlib.import_module(sys.argv[1]) if len(sys.argv) > 1 else None)
 `;
