@@ -55,6 +55,7 @@ export function installWasmLimit(maxMb, breach, trustedWasmModules = []) {
   const native = Object.fromEntries(Object.getOwnPropertyNames(WebAssembly).map(key => [key, WebAssembly[key]]));
   const cap = maxMb * 1024 * 1024 / pageBytes;
   const modules = new WeakMap();
+  const memoryLimits = new WeakMap();
   const flags = new Set();
   const activeFlags = new Set();
   const fail = () => breach('ERR_WORKCELL_WASM_MEMORY_LIMIT');
@@ -66,13 +67,14 @@ export function installWasmLimit(maxMb, breach, trustedWasmModules = []) {
       else if (flag.value) fail();
     }
   };
-  const memoryType = (reader, trusted) => {
+  const memoryType = (reader, trusted, limits) => {
     const kind = reader.uint();
     if (kind > 3) unsupported();
     const initial = reader.uint();
     if (!(kind & 1) && !trusted) fail();
     const maximum = kind & 1 ? reader.uint() : trusted.maximumPages;
     if (initial > maximum || initial > cap || maximum > cap) fail();
+    limits.push(kind & 1 ? cap : maximum);
     return [...leb(kind | 1), ...leb(initial), ...leb(maximum)];
   };
   const valueType = reader => {
@@ -96,6 +98,7 @@ export function installWasmLimit(maxMb, breach, trustedWasmModules = []) {
       else sections.set(id, content);
     }
     let typeCount = 0, importedFunctions = 0, importedGlobals = 0, memories = 0;
+    const limits = [], importedMemories = [], exportedMemories = [];
     if (sections.has(1)) {
       const types = new Reader(Uint8Array.from(sections.get(1)));
       typeCount = types.uint();
@@ -110,10 +113,11 @@ export function installWasmLimit(maxMb, breach, trustedWasmModules = []) {
       const entries = [];
       for (let i = imports.uint(); i; i--) {
         const start = imports.offset;
-        imports.name(); imports.name();
+        const importModule = Buffer.from(imports.name()).toString(), importName = Buffer.from(imports.name()).toString();
         const kind = imports.byte(), prefix = imports.bytes.slice(start, imports.offset);
         if (kind === 2) {
-          entries.push([...prefix, ...memoryType(imports, trusted)]);
+          importedMemories.push({ module: importModule, name: importName, memory: memories });
+          entries.push([...prefix, ...memoryType(imports, trusted, limits)]);
           memories++;
           continue;
         }
@@ -133,7 +137,7 @@ export function installWasmLimit(maxMb, breach, trustedWasmModules = []) {
     if (sections.has(5)) {
       const memory = new Reader(Uint8Array.from(sections.get(5)));
       const entries = [];
-      for (let i = memory.uint(); i; i--) { entries.push(memoryType(memory, trusted)); memories++; }
+      for (let i = memory.uint(); i; i--) { entries.push(memoryType(memory, trusted, limits)); memories++; }
       sections.set(5, vector(entries));
     }
     if (!memories) return { bytes, flag: null, start: null };
@@ -148,7 +152,12 @@ export function installWasmLimit(maxMb, breach, trustedWasmModules = []) {
     const exportNames = new Set();
     if (sections.has(7)) {
       const exports = new Reader(Uint8Array.from(sections.get(7)));
-      for (let i = exports.uint(); i; i--) { exportNames.add(Buffer.from(exports.name()).toString('hex')); exports.byte(); exports.uint(); }
+      for (let i = exports.uint(); i; i--) {
+        const name = Buffer.from(exports.name());
+        const kind = exports.byte(), index = exports.uint();
+        exportNames.add(name.toString('hex'));
+        if (kind === 2) exportedMemories.push({ name: name.toString(), memory: index });
+      }
     }
     const privateName = base => {
       let name = base;
@@ -206,7 +215,7 @@ export function installWasmLimit(maxMb, breach, trustedWasmModules = []) {
       bodies.push([...leb(output.length), ...output]);
     }
     for (let memory = 0; memory < memories; memory++) {
-      const constant = leb(cap);
+      const constant = leb(limits[memory]);
       if (constant.at(-1) & 0x40) { constant[constant.length - 1] |= 0x80; constant.push(0); }
       const body = [0, 0x20, 0, 0x41, ...constant, 0x3f, ...leb(memory), 0x6b, 0x4b,
         0x04, 0x40, 0x41, 1, 0x24, ...leb(flagIndex), 0x00, 0x0b,
@@ -215,7 +224,7 @@ export function installWasmLimit(maxMb, breach, trustedWasmModules = []) {
     }
     sections.set(10, vector(bodies));
     const order = [1, 2, 3, 4, 5, 6, 7, 9, 12, 10, 11];
-    return { bytes: Uint8Array.from([...header, ...custom.flat(), ...order.flatMap(id => sections.has(id) ? section(id, sections.get(id)) : [])]), flag, start };
+    return { bytes: Uint8Array.from([...header, ...custom.flat(), ...order.flatMap(id => sections.has(id) ? section(id, sections.get(id)) : [])]), flag, start, limits, importedMemories, exportedMemories };
   };
   const wrapConstructor = (key, construct) => {
     const wrapped = new Proxy(native[key], { construct });
@@ -225,7 +234,7 @@ export function installWasmLimit(maxMb, breach, trustedWasmModules = []) {
   const grow = native.Memory.prototype.grow;
   Object.defineProperty(native.Memory.prototype, 'grow', { value(delta) {
     const pages = Number(delta);
-    if (this.buffer.byteLength / pageBytes + pages > cap) fail();
+    if (this.buffer.byteLength / pageBytes + pages > (memoryLimits.get(this) ?? cap)) fail();
     return grow.call(this, pages);
   } });
   wrapConstructor('Memory', (target, [descriptor], derived) => {
@@ -245,6 +254,9 @@ export function installWasmLimit(maxMb, breach, trustedWasmModules = []) {
     if (!data) throw new TypeError('workcell requires a locally checked WebAssembly.Module');
     const result = Reflect.construct(native.Instance, [module, imports], derived);
     if (data.flag) {
+      const limit = (object, memory) => { if (data.limits[memory] < cap) memoryLimits.set(object, data.limits[memory]); };
+      for (const { module: from, name, memory } of data.importedMemories) limit(imports[from][name], memory);
+      for (const { name, memory } of data.exportedMemories) limit(result.exports[name], memory);
       const flag = result.exports[data.flag];
       activeFlags.add(flag);
       flags.add(new WeakRef(flag));

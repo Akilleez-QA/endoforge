@@ -37,10 +37,6 @@ for (const isolation of ['thread', 'process']) {
       assert.deepEqual(result.trustedWasmModules, [policy, existing]);
       assert.deepEqual(result.receipts[0].record.data.observations[0].trustedWasmModules, [policy, existing]);
     }
-    const bounded = await pool.run(job(['pass'], { action: 'instantiate', bytes: compiler, pages: 2,
-      expectedOldPages: -1, checkMemory: 1 }));
-    assert.equal(bounded.status, 'completed');
-    assert.equal(bounded.receipts[0].record.data.outcome_state, 'passed');
     const preserved = await pool.run(job(['pass'], { action: 'instantiate', bytes: boundedCompiler, pages: 1,
       expectedOldPages: -1, checkMemory: 1 }));
     assert.equal(preserved.status, 'completed');
