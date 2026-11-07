@@ -46,18 +46,21 @@ export class IsolatePool {
   #sharedModules = [];
   #sharing;
   #warmOptions;
+  #warmTimeoutMs;
   #startFailures = 0;
   #hostCall;
 
   constructor({ hostPort, size = availableParallelism(), resourceLimits = {}, wasmMemoryMaxMb = 64,
-    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, warm, jobTimeoutMs, hostCall } = {}) {
+    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, warm, warmTimeoutMs = 60000, jobTimeoutMs, hostCall } = {}) {
     this.#hostCall = hostCall;
     if (!['thread', 'process'].includes(isolation)) throw new TypeError('isolation must be thread or process');
     if (cgroupRoot !== undefined && (typeof cgroupRoot !== 'string' || !cgroupRoot)) throw new TypeError('cgroupRoot path required');
     if (!positive(size)) throw new TypeError('positive integer pool size required');
     if (typeof prewarm !== 'boolean') throw new TypeError('prewarm must be boolean');
     if (warm !== undefined && (warm === null || typeof warm !== 'object')) throw new TypeError('warm must be an options object');
+    if (!positive(warmTimeoutMs)) throw new TypeError('warmTimeoutMs must be a positive integer');
     this.#warmOptions = warm;
+    this.#warmTimeoutMs = warmTimeoutMs;
     if (typeof hostPort !== 'string' || !hostPort) throw new TypeError('hostPort module path required');
     if (!positive(wasmMemoryMaxMb) || wasmMemoryMaxMb > 4096) {
       throw new TypeError('wasmMemoryMaxMb must be an integer from 1 to 4096');
@@ -195,10 +198,16 @@ export class IsolatePool {
     cell.started = new Promise(resolve => { cell.markStarted = resolve; });
     cell.gone = new Promise(resolve => { cell.markGone = resolve; });
     this.#cells.add(cell);
+    if (this.#warmOptions) cell.warmTimer = setTimeout(() => {
+      cell.error ||= { code: 'ERR_WORKCELL_WARM_TIMEOUT' };
+      cell.stopping = true;
+      worker.terminate();
+    }, this.#warmTimeoutMs);
     worker.on('message', result => {
       if (result?.type === 'ready') {
         cell.ready = true;
         this.#startFailures = 0;
+        clearTimeout(cell.warmTimer);
         return cell.markStarted(!result.warmError);
       }
       if (!cell.job) return;
@@ -220,6 +229,7 @@ export class IsolatePool {
       if (exited) return;
       exited = true;
       clearTimeout(exitTimer);
+      clearTimeout(cell.warmTimer);
       cell.markGone();
       this.#cells.delete(cell);
       cell.markStarted(false);
@@ -239,6 +249,7 @@ export class IsolatePool {
     };
     worker.on(subprocess ? 'close' : 'exit', gone);
     if (subprocess) worker.on('exit', (code, signal) => {
+      cell.stopping = true;
       exitTimer = setTimeout(() => setImmediate(() => {
         if (!exited) worker.stderr.destroy();
         gone(code, signal);
