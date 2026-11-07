@@ -113,7 +113,7 @@ check('compose receipt lists 8 inputs and a hashed output', rec.inputs.length ==
   try {
     for (const n of ['a', 'b']) {
       fs.mkdirSync(path.join(root, 'accts', n), { recursive: true });
-      fs.closeSync(fs.openSync(path.join(root, 'accts', n, '.credentials.json'), 'wx', 0o000));  // unreadable: never opened
+      fs.writeFileSync(path.join(root, 'accts', n, '.credentials.json'), JSON.stringify({ claudeAiOauth: { accessToken: 'synthetic', scopes: ['user:inference'], subscriptionType: 'max' } }), { mode: 0o600 });
     }
     fs.mkdirSync(path.join(root, 'accts', 'no-login'));
     const stub = path.join(root, 'claude'); fs.mkdirSync(stub);
@@ -131,6 +131,14 @@ check('compose receipt lists 8 inputs and a hashed output', rec.inputs.length ==
     check('pool logins: the folder is mounted read-write, so refreshed tokens persist', fs.existsSync(path.join(a, 'seen')) && fs.existsSync(path.join(b, 'seen')));
     const s = await runIsolated({ homeTemplate: home, toolchain: [{ host: stub, guest: stub, bin: stub }], cmd: ['sh', '-c', 'echo "${CLAUDE_CONFIG_DIR:-unset}"'], cwd: '/', mounts: [] });
     check('pool logins: non-claude commands get no login', s.stdout.trim() === 'unset' && !s.claudeAccount);
+    const refusal = async (spec) => { try { await runIsolated({ homeTemplate: home, toolchain: [{ host: stub, guest: stub, bin: stub }], cmd: ['claude'], cwd: '/', mounts: [], ...spec }); return null; } catch (e) { return e; } };
+    const keyed = await refusal({ env: { ANTHROPIC_API_KEY: 'synthetic' } });
+    check('subscription guard: an API key in the launch refuses with exit 78', keyed?.exitCode === 78 && /ANTHROPIC_API_KEY/.test(keyed.message), keyed?.message);
+    const api = path.join(root, 'api-login'); fs.mkdirSync(api);
+    fs.writeFileSync(path.join(api, '.credentials.json'), JSON.stringify({ claudeAiOauth: { accessToken: 'synthetic', scopes: ['user:inference'], subscriptionType: null } }));
+    const unproven = await refusal({ env: { CLAUDE_CONFIG_DIR: api } });
+    check('subscription guard: a login without a subscription type refuses with exit 78', unproven?.exitCode === 78, unproven?.message);
+    check('subscription guard: refusals launch nothing', !fs.existsSync(path.join(api, 'seen')));
   } finally {
     if (saved === undefined) delete process.env.ENDOFORGE_CLAUDE_ACCOUNTS; else process.env.ENDOFORGE_CLAUDE_ACCOUNTS = saved;
     fs.rmSync(root, { recursive: true, force: true });

@@ -2,6 +2,7 @@ import { fileURLToPath } from 'node:url';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { requireSubscription, unsetArguments } from '../../../core/runtime/subscription-guard.mjs';
 
 const KEY = /^[A-Z][A-Z0-9]*$/;
 const norm = (p) => p.replace(/\/\*\*$/, '').replace(/\/+$/, '');
@@ -73,9 +74,10 @@ export function workerCommand(c, lane, { worktree, prompt, images = [] }) {
       ...(f.codexModel ? ['-m', f.codexModel] : []), prompt, ...images.flatMap((i) => ['-i', i])], env: {} };
   }
   const dirs = [...new Set(images.map((i) => path.dirname(i)))];
-  return { argv: [f.claudeBin ?? 'claude', '-p', prompt, '--model', f.claudeModel ?? 'opus', '--permission-mode', 'acceptEdits',
-    '--allowedTools', f.claudeTools ?? 'Read Edit Write Glob Grep Bash(node:*) Bash(git diff:*) Bash(ls:*)', ...dirs.flatMap((d) => ['--add-dir', d])],
-  env: lane.configDir ? { CLAUDE_CONFIG_DIR: lane.configDir } : {} };
+  const env = lane.configDir ? { CLAUDE_CONFIG_DIR: lane.configDir } : {};
+  requireSubscription({ env: { ...process.env, ...env }, cwd: worktree });
+  return { argv: [...unsetArguments(), f.claudeBin ?? 'claude', '-p', prompt, '--model', f.claudeModel ?? 'opus', '--permission-mode', 'acceptEdits',
+    '--allowedTools', f.claudeTools ?? 'Read Edit Write Glob Grep Bash(node:*) Bash(git diff:*) Bash(ls:*)', ...dirs.flatMap((d) => ['--add-dir', d])], env };
 }
 export const pieceStills = (p, stillsDir) => (p.stills ?? []).map((s) => path.join(stillsDir, s)).filter((s) => fs.existsSync(s));
 export function piecePrompt(c, piece, { stills = [], found = [], note = '', round = 1 } = {}) {
