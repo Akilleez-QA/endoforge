@@ -70,7 +70,7 @@ export function ledgerRequest(action, job, result) {
 }
 
 export const persistentBridge = `
-import importlib, sys
+import importlib, json, sys
 from core.ledger.ledger import Ledger, validate
 from tools.ledger_writer import serve
 ${operation}
