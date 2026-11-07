@@ -36,7 +36,7 @@ const agentLimits = { maxTurns: 2, maxTokens: 64000 };
 const envFor = (arm, input) => ({ ...process.env, ...clientEnv, ...(arm.startsWith('isolate') ? { ENDOFORGE_LOOP: 'isolate' } : arm.startsWith('agent') ? { ENDOFORGE_LOOP: 'agent' } : {}),
   FAKE_CODEX_CONTRACT: input.contract, FAKE_CODEX_TESTS: input.tests, FAKE_CODEX_KERNEL: input.kernel, FAKE_CODEX_GLUE: input.glue });
 const makePool = (arm, size, jobTimeoutMs) => arm.startsWith('isolate') || arm.startsWith('agent')
-  ? createLoopPool({ size, isolation: arm.includes('process') ? 'process' : 'thread', ...(jobTimeoutMs ? { jobTimeoutMs } : {}), ...(arm.startsWith('agent') ? { provider: scriptedProvider(script) } : {}) })
+  ? createLoopPool({ size, waits: 'hold', isolation: arm.includes('process') ? 'process' : 'thread', ...(jobTimeoutMs ? { jobTimeoutMs } : {}), ...(arm.startsWith('agent') ? { provider: scriptedProvider(script) } : {}) })
   : new IsolatePool({ hostPort: here('../../core/runtime/x1/host.mjs'), size, ...(jobTimeoutMs ? { jobTimeoutMs } : {}) });
 const armNames = { current: ['current', 1, 5], 'isolate-thread': ['isolate-thread', 1, 5], 'isolate-process': ['isolate-process', 1, 5],
   'current-8': ['current', 8, 3], 'isolate-thread-8': ['isolate-thread', 8, 3], 'isolate-process-8': ['isolate-process', 8, 3],

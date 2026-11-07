@@ -184,8 +184,9 @@ with sqlite3.connect(sys.argv[1]) as db:
 
 test('a swapped provider leaves the loop unchanged', { timeout: 30000 }, async t => {
   const root = scratch(t), log = join(root, 'claude.log');
-  const pool = createLoopPool({ primes: 1, provider: new WarmClaudeTransport({ model: 'stub', command: fakeClaude, cwd: root, base: { ...process.env, FAKE_CLAUDE_LOG: log } }) });
-  t.after(() => pool.close());
+  const provider = new WarmClaudeTransport({ model: 'stub', command: fakeClaude, cwd: root, base: { ...process.env, FAKE_CLAUDE_LOG: log } });
+  const pool = createLoopPool({ primes: 1, provider });
+  t.after(async () => { await pool.close(); await provider.close(); });
   const result = await runNeed({ need, directory: join(root, 'addition'), pool, env, limits: { maxTurns: 1, maxTokens: 64000 } });
   assert.equal(result.promoted, false);
   assert.equal(result.modelMs > 0, true);

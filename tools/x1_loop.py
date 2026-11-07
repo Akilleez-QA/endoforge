@@ -106,7 +106,7 @@ def admit(request, prior, append, _process, db):
     if payload.get("resume"):
         frozen = [r for r in prior.values() if r["kind"] == "frozen_evaluator" and "freeze" in r["data"]]
         if not frozen:
-            return dict(fresh=True)
+            return dict(fresh=True, continuation=waiting(db))
         record = frozen[-1]
         if payload.get("need") is not None and prior["task"]["data"]["intent"] != payload["need"]:
             raise ValueError("need differs from the task in this ledger")
@@ -126,7 +126,40 @@ def admit(request, prior, append, _process, db):
         if frozen_drift(record, reference.get("root")):
             raise ValueError("running evaluator tree digest differs from frozen record")
     return dict(identity=record["id"], digest=record["data"]["freeze"]["digest"], encoded=encode(record["data"]),
-                decision=durable_promotion(record, prior, db))
+                decision=durable_promotion(record, prior, db), **(dict(continuation=waiting(db)) if payload.get("resume") else {}))
+
+
+CONTINUATIONS = ("CREATE TABLE IF NOT EXISTS x1_continuations (seq INTEGER PRIMARY KEY, state TEXT NOT NULL, "
+                 "sha256 TEXT NOT NULL, body TEXT NOT NULL)")
+
+
+def waiting(db):
+    db.execute(CONTINUATIONS)
+    row = db.execute("SELECT seq, sha256, body FROM x1_continuations WHERE state='waiting' ORDER BY seq DESC").fetchone()
+    return row and dict(seq=row[0], sha256=row[1], body=row[2])
+
+
+def settle(db, after, state):
+    db.execute(CONTINUATIONS)
+    latest = db.execute("SELECT seq, state FROM x1_continuations ORDER BY seq DESC").fetchone()
+    if after is None:
+        if latest is not None and latest[1] == "waiting":
+            raise ValueError("another continuation is still waiting")
+    elif latest != (after, "waiting"):
+        raise ValueError("continuation was already resumed or closed")
+    else:
+        db.execute("UPDATE x1_continuations SET state=? WHERE seq=?", (state, after))
+    return 0 if latest is None else latest[0] + 1
+
+
+def park(request, _prior, _append, _process, db):
+    payload = request["result"]
+    body = payload["body"]
+    if hashlib.sha256(body.encode()).hexdigest() != payload["sha256"]:
+        raise ValueError("continuation digest differs from its body")
+    seq = settle(db, payload.get("after"), "resumed")
+    db.execute("INSERT INTO x1_continuations (seq, state, sha256, body) VALUES (?, 'waiting', ?, ?)", (seq, payload["sha256"], body))
+    return dict(seq=seq)
 
 
 DECISIONS = "CREATE TABLE IF NOT EXISTS x1_decisions (receipt TEXT PRIMARY KEY, candidate TEXT NOT NULL, body TEXT NOT NULL)"
@@ -229,6 +262,8 @@ def commit(request, prior, append, process, db):
     if payload.get("nextReceipt"):
         attempt = 1 + sum(1 for r in prior.values() if r["kind"] == "receipt")
         job["receipts"][0]["id"] = "receipt" if attempt == 1 else f"receipt-{attempt}"
+    if "continuation" in payload:
+        settle(db, payload["continuation"], "closed")
     problem = evidence_problem(record, reference.get("root"), content, result, payload.get("sources"))
     if problem:
         result.update(status="rejected", reason=problem)
@@ -245,4 +280,4 @@ def commit(request, prior, append, process, db):
     return answer
 
 
-LOOP = dict(admit=admit, commit=commit)
+LOOP = dict(admit=admit, commit=commit, park=park)
