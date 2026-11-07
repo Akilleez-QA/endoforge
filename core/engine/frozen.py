@@ -1,6 +1,5 @@
 import json
 from pathlib import Path
-import sqlite3
 import sys
 
 from core.ledger.frozen import FrozenEvaluators
@@ -28,6 +27,8 @@ if __name__ == "__main__":
     except (ValueError, KeyError, TypeError, FileNotFoundError, NotADirectoryError) as error:
         print(error, file=sys.stderr)
         sys.exit(3)
-    except (sqlite3.Error, OSError, MemoryError) as error:
+    except Exception as error:
+        if not isinstance(error, (OSError, MemoryError)) and type(error).__module__ != "sqlite3":
+            raise
         print(error, file=sys.stderr)
         sys.exit(75)
