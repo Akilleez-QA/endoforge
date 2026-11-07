@@ -1,0 +1,3670 @@
+{
+ "control": {
+  "P21": {
+   "escaped": 118,
+   "submitted": 118
+  },
+  "add": {
+   "escaped": 59,
+   "submitted": 59
+  },
+  "beforeP21": {
+   "escaped": 117,
+   "submitted": 118
+  },
+  "beforeAdd": {
+   "escaped": 59,
+   "submitted": 59
+  },
+  "refusedAt": {},
+  "inconclusive": 0,
+  "gatesPassedDecisionRefused": 0,
+  "newlyEscaped": [
+   {
+    "mutant": "cand-r4/C-015#control",
+    "op": "pristine",
+    "before": "G7_glue"
+   }
+  ],
+  "newlyCaught": [],
+  "timing": {
+   "load1": {
+    "min": 3.55,
+    "p50": 5.9,
+    "max": 6.57
+   },
+   "quiet": {
+    "rows": 177,
+    "gateMs": {
+     "p50": 256,
+     "p95": 595.5
+    },
+    "elapsedMs": {
+     "p50": 2005.6,
+     "p95": 2153
+    }
+   },
+   "loaded": {
+    "rows": 0,
+    "gateMs": {
+     "p50": null,
+     "p95": null
+    },
+    "elapsedMs": {
+     "p50": null,
+     "p95": null
+    }
+   }
+  },
+  "refused": []
+ },
+ "glue": {
+  "P21": {
+   "escaped": 312,
+   "submitted": 799
+  },
+  "add": {
+   "escaped": 0,
+   "submitted": 118
+  },
+  "beforeP21": {
+   "escaped": 295,
+   "submitted": 799
+  },
+  "beforeAdd": {
+   "escaped": 0,
+   "submitted": 118
+  },
+  "refusedAt": {
+   "G7_glue": 605
+  },
+  "inconclusive": 0,
+  "gatesPassedDecisionRefused": 0,
+  "newlyEscaped": [
+   {
+    "mutant": "cand-r1/C-007#glue#9",
+    "op": "glue_code_labels_swapped",
+    "before": "G7_glue",
+    "g7": {
+     "problems": [],
+     "advisory": [
+      "compareSubcooling: labels for codes 0 and 1 fit the contract better swapped"
+     ]
+    }
+   },
+   {
+    "mutant": "cand-r1/C-019#glue#2",
+    "op": "glue_code_labels_swapped",
+    "before": "G7_glue",
+    "g7": {
+     "problems": [],
+     "advisory": [
+      "pressureOverCapacity: labels for codes 0 and 1 fit the contract better swapped"
+     ]
+    }
+   },
+   {
+    "mutant": "cand-r1/C-019#glue#8",
+    "op": "glue_code_labels_swapped",
+    "before": "G7_glue",
+    "g7": {
+     "problems": [],
+     "advisory": [
+      "condenserLevelAdequate: labels for codes 0 and 1 fit the contract better swapped"
+     ]
+    }
+   },
+   {
+    "mutant": "cand-r2/C-006#glue#5",
+    "op": "glue_code_labels_swapped",
+    "before": "G7_glue",
+    "g7": {
+     "problems": [],
+     "advisory": [
+      "chargeStatus: labels for codes 0 and 1 fit the contract better swapped"
+     ]
+    }
+   },
+   {
+    "mutant": "cand-r2/C-007#glue#6",
+    "op": "glue_code_labels_swapped",
+    "before": "G7_glue",
+    "g7": {
+     "problems": [],
+     "advisory": [
+      "classifySubcooling: labels for codes 0 and 1 fit the contract better swapped"
+     ]
+    }
+   },
+   {
+    "mutant": "cand-r2/C-015#glue#6",
+    "op": "glue_code_labels_swapped",
+    "before": "G7_glue",
+    "g7": {
+     "problems": [],
+     "advisory": [
+      "approvalAllowed: labels for codes 0 and 1 fit the contract better swapped"
+     ]
+    }
+   },
+   {
+    "mutant": "cand-r2/C-016#glue#5",
+    "op": "glue_code_labels_swapped",
+    "before": "G7_glue",
+    "g7": {
+     "problems": [],
+     "advisory": [
+      "statusCode: labels for codes 0 and 1 fit the contract better swapped"
+     ]
+    }
+   },
+   {
+    "mutant": "cand-r3/C-015#glue#3",
+    "op": "glue_code_labels_swapped",
+    "before": "G7_glue",
+    "g7": {
+     "problems": [],
+     "advisory": [
+      "approvalFloor: labels for codes 0 and 1 fit the contract better swapped"
+     ]
+    }
+   },
+   {
+    "mutant": "cand-r4/C-015#glue#0",
+    "op": "glue_result_unit_swapped",
+    "before": "G7_glue",
+    "g7": {
+     "problems": [],
+     "advisory": [
+      "approvalDecision: labels for codes 1 and 2 fit the contract better swapped"
+     ]
+    }
+   },
+   {
+    "mutant": "cand-r4/C-015#glue#1",
+    "op": "glue_arg_units_swapped",
+    "before": "G7_glue",
+    "g7": {
+     "problems": [],
+     "advisory": [
+      "approvalDecision: labels for codes 1 and 2 fit the contract better swapped"
+     ]
+    }
+   },
+   {
+    "mutant": "cand-r4/C-015#glue#4",
+    "op": "glue_code_labels_swapped",
+    "before": "G7_glue",
+    "g7": {
+     "problems": [],
+     "advisory": [
+      "approvalDecision: labels for codes 0 and 1 fit the contract better swapped",
+      "approvalDecision: labels for codes 0 and 2 fit the contract better swapped",
+      "approvalDecision: labels for codes 1 and 2 fit the contract better swapped"
+     ]
+    }
+   },
+   {
+    "mutant": "cand-r4/C-019#glue#2",
+    "op": "glue_code_labels_swapped",
+    "before": "G7_glue",
+    "g7": {
+     "problems": [],
+     "advisory": [
+      "pressureOverCapacity: labels for codes 0 and 1 fit the contract better swapped"
+     ]
+    }
+   },
+   {
+    "mutant": "cand-r4/C-019#glue#8",
+    "op": "glue_code_labels_swapped",
+    "before": "G7_glue",
+    "g7": {
+     "problems": [],
+     "advisory": [
+      "condenserLevelAdequate: labels for codes 0 and 1 fit the contract better swapped"
+     ]
+    }
+   },
+   {
+    "mutant": "cand-r5/C-015#glue#6",
+    "op": "glue_code_labels_swapped",
+    "before": "G7_glue",
+    "g7": {
+     "problems": [],
+     "advisory": [
+      "approvalFloor: labels for codes 0 and 1 fit the contract better swapped"
+     ]
+    }
+   },
+   {
+    "mutant": "cand-r5/C-019#glue#2",
+    "op": "glue_code_labels_swapped",
+    "before": "G7_glue",
+    "g7": {
+     "problems": [],
+     "advisory": [
+      "pressureState: labels for codes 0 and 1 fit the contract better swapped"
+     ]
+    }
+   },
+   {
+    "mutant": "cand-r5/C-019#glue#8",
+    "op": "glue_code_labels_swapped",
+    "before": "G7_glue",
+    "g7": {
+     "problems": [],
+     "advisory": [
+      "condenserState: labels for codes 0 and 1 fit the contract better swapped"
+     ]
+    }
+   },
+   {
+    "mutant": "cand-r6/C-007#glue#9",
+    "op": "glue_code_labels_swapped",
+    "before": "G7_glue",
+    "g7": {
+     "problems": [],
+     "advisory": [
+      "compareBand: labels for codes 0 and 1 fit the contract better swapped"
+     ]
+    }
+   }
+  ],
+  "newlyCaught": [],
+  "timing": {
+   "load1": {
+    "min": 6.57,
+    "p50": 16.8,
+    "max": 21.25
+   },
+   "quiet": {
+    "rows": 391,
+    "gateMs": {
+     "p50": 156.5,
+     "p95": 470.6
+    },
+    "elapsedMs": {
+     "p50": 1885.8,
+     "p95": 2239.6
+    }
+   },
+   "loaded": {
+    "rows": 526,
+    "gateMs": {
+     "p50": 142.5,
+     "p95": 428.3
+    },
+    "elapsedMs": {
+     "p50": 1822.2,
+     "p95": 2100.1
+    }
+   }
+  }
+ },
+ "binding": {
+  "P21": {
+   "escaped": 0,
+   "submitted": 236
+  },
+  "add": {
+   "escaped": 0,
+   "submitted": 118
+  },
+  "beforeP21": {
+   "escaped": 0,
+   "submitted": 236
+  },
+  "beforeAdd": {
+   "escaped": 0,
+   "submitted": 118
+  },
+  "refusedAt": {
+   "before_gates": 354
+  },
+  "inconclusive": 0,
+  "gatesPassedDecisionRefused": 0,
+  "newlyEscaped": [],
+  "newlyCaught": [],
+  "timing": {
+   "load1": {
+    "min": 21.21,
+    "p50": 21.2,
+    "max": 21.25
+   },
+   "quiet": {
+    "rows": 0,
+    "gateMs": {
+     "p50": null,
+     "p95": null
+    },
+    "elapsedMs": {
+     "p50": null,
+     "p95": null
+    }
+   },
+   "loaded": {
+    "rows": 354,
+    "gateMs": {
+     "p50": null,
+     "p95": null
+    },
+    "elapsedMs": {
+     "p50": 273.5,
+     "p95": 352.5
+    }
+   }
+  }
+ },
+ "sampled": {
+  "P21": {
+   "escaped": 280,
+   "submitted": 7883
+  },
+  "add": {
+   "escaped": 46,
+   "submitted": 2533
+  },
+  "beforeP21": {
+   "escaped": 280,
+   "submitted": 7883
+  },
+  "beforeAdd": {
+   "escaped": 46,
+   "submitted": 2533
+  },
+  "refusedAt": {
+   "G4_tests": 9216,
+   "G4_tests+G7_glue": 417,
+   "G4_tests+G8_nonfinite": 285,
+   "G8_nonfinite": 161,
+   "G4_tests+G7_glue+G8_nonfinite": 11
+  },
+  "inconclusive": 0,
+  "gatesPassedDecisionRefused": 0,
+  "newlyEscaped": [],
+  "newlyCaught": [],
+  "timing": {
+   "load1": {
+    "min": 7.8,
+    "p50": 22,
+    "max": 29.57
+   },
+   "quiet": {
+    "rows": 2993,
+    "gateMs": {
+     "p50": 91.7,
+     "p95": 252.2
+    },
+    "elapsedMs": {
+     "p50": 1911.5,
+     "p95": 2162.4
+    }
+   },
+   "loaded": {
+    "rows": 7423,
+    "gateMs": {
+     "p50": 95.6,
+     "p95": 264.5
+    },
+    "elapsedMs": {
+     "p50": 1897.2,
+     "p95": 2199.1
+    }
+   }
+  }
+ },
+ "correlated": {
+  "P21": {
+   "escaped": 6733,
+   "submitted": 7883
+  },
+  "add": {
+   "escaped": 2530,
+   "submitted": 2533
+  },
+  "beforeP21": {
+   "escaped": 7273,
+   "submitted": 7883
+  },
+  "beforeAdd": {
+   "escaped": 2517,
+   "submitted": 2533
+  },
+  "refusedAt": {
+   "G7_glue": 410,
+   "G8_nonfinite": 421,
+   "before_candidate": 311,
+   "G7_glue+G8_nonfinite": 11
+  },
+  "inconclusive": 0,
+  "gatesPassedDecisionRefused": 0,
+  "newlyEscaped": [
+   {
+    "mutant": "cand-r2/CC-014#wrong_constants#50",
+    "op": "times_0_1",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r2/CC-014#wrong_constants#54",
+    "op": "times_10",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r2/CC-014#wrong_rounding#56",
+    "op": "add_ceil",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r2/CC-014#wrong_rounding#55",
+    "op": "truncate_to_int",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r2/CC-014#wrong_rounding#59",
+    "op": "round_two_places",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r2/CC-014#wrong_rounding#57",
+    "op": "round_one_place",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r2/add-5#sign_errors#47",
+    "op": "drop_negative_literal",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r2/add-5#sign_errors#49",
+    "op": "flip_comparison",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r2/add-5#sign_errors#46",
+    "op": "flip_comparison",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r2/add-6#dropped_rows#0",
+    "op": "drop_term",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r2/add-6#off_by_one#2",
+    "op": "result_plus_one",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r2/add-6#off_by_one#3",
+    "op": "literal_plus_one",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r2/add-6#off_by_one#1",
+    "op": "literal_minus_one",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r3/C-019#sign_errors#60",
+    "op": "flip_equality",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r3/C-019#sign_errors#64",
+    "op": "flip_comparison",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r3/CC-001#swapped_units#1",
+    "op": "input_times_unit_factor",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r3/CC-001#off_by_one#4",
+    "op": "literal_plus_one",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r3/add-3#sign_errors#47",
+    "op": "flip_comparison",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r3/add-4#off_by_one#9",
+    "op": "literal_minus_one",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r3/add-4#off_by_one#10",
+    "op": "literal_plus_one",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r3/add-4#stale_binding#16",
+    "op": "revision_minus_0_2pct",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r3/add-4#wrong_join#13",
+    "op": "or_to_and",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r3/add-4#wrong_join#14",
+    "op": "or_to_and",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r3/add-4#stale_binding#17",
+    "op": "revision_minus_0_2pct",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r4/C-015#dropped_rows#0",
+    "op": "drop_term",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r4/C-015#off_by_one#6",
+    "op": "literal_minus_one",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r4/C-015#off_by_one#7",
+    "op": "literal_minus_one",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r4/CC-001#stale_binding#24",
+    "op": "revision_plus_0_2pct",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r4/CC-001#stale_binding#23",
+    "op": "bound_to_other_literal",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r4/CC-001#stale_binding#25",
+    "op": "revision_minus_0_2pct",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r4/CC-001#stale_binding#26",
+    "op": "revision_plus_0_2pct",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r4/CC-001#stale_binding#28",
+    "op": "revision_minus_0_2pct",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r4/CC-001#stale_binding#27",
+    "op": "bound_to_other_literal",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r4/CC-001#stale_binding#29",
+    "op": "bound_to_other_literal",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r4/CC-001#wrong_constants#32",
+    "op": "times_0_1",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r4/CC-001#wrong_rounding#38",
+    "op": "add_ceil",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r5/C-016#wrong_join#26",
+    "op": "or_to_and",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r5/C-016#stale_binding#31",
+    "op": "bound_to_other_literal",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r5/C-016#stale_binding#29",
+    "op": "bound_to_other_literal",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r5/C-016#stale_binding#30",
+    "op": "revision_minus_0_2pct",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r6/C-005#off_by_one#15",
+    "op": "literal_plus_one",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r6/C-005#off_by_one#20",
+    "op": "literal_plus_one",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r6/C-005#off_by_one#23",
+    "op": "literal_minus_one",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r6/C-005#reversed_inputs#29",
+    "op": "swap_minus_operands",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r6/CC-014#dropped_rows#12",
+    "op": "drop_term",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r6/CC-027#stale_binding#45",
+    "op": "revision_plus_0_2pct",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r6/CC-027#wrong_constants#48",
+    "op": "times_1_01",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r6/CC-027#wrong_constants#49",
+    "op": "times_1_01",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r6/CC-027#wrong_constants#50",
+    "op": "times_0_1",
+    "before": "gates_passed_decision_refused"
+   },
+   {
+    "mutant": "cand-r6/CC-027#wrong_constants#51",
+    "op": "times_0_1",
+    "before": "gates_passed_decision_refused"
+   }
+  ],
+  "newlyCaught": [
+   {
+    "mutant": "cand-r1/C-005#reversed_inputs#24",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/C-005#reversed_inputs#27",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/C-005#reversed_inputs#25",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/C-005#wrong_join#28",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-005#wrong_join#29",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-005#wrong_join#33",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-005#wrong_join#30",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-005#wrong_join#31",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-005#wrong_join#35",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-005#boundary_errors#69",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-005#sign_errors#75",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-005#sign_errors#79",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-005#sign_errors#77",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-005#sign_errors#80",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-005#sign_errors#81",
+    "op": "drop_not",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-005#sign_errors#83",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-006#reversed_inputs#24",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/C-006#reversed_inputs#27",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/C-006#wrong_join#28",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-006#wrong_join#29",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-006#wrong_join#32",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-006#wrong_join#35",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-006#boundary_errors#72",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-006#boundary_errors#76",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-007#reversed_inputs#24",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/C-007#reversed_inputs#25",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/C-007#reversed_inputs#28",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/C-007#wrong_join#33",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-007#wrong_join#35",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-007#wrong_join#40",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-007#wrong_join#37",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-007#wrong_join#41",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-007#boundary_errors#80",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-007#boundary_errors#81",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-007#boundary_errors#82",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-010#reversed_inputs#27",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/C-015#reversed_inputs#12",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/C-015#reversed_inputs#13",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/C-016#reversed_inputs#22",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/C-016#reversed_inputs#23",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/C-019#reversed_inputs#20",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/C-019#wrong_join#21",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-019#wrong_join#22",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-019#wrong_join#25",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-019#boundary_errors#51",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-019#boundary_errors#52",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-019#boundary_errors#55",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/C-019#boundary_errors#57",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-001#reversed_inputs#22",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/CC-001#reversed_inputs#24",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/CC-001#wrong_join#28",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-001#wrong_join#29",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-001#wrong_join#31",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-001#wrong_join#33",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-001#boundary_errors#69",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-001#boundary_errors#74",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-001#boundary_errors#75",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-002#reversed_inputs#27",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/CC-002#wrong_join#41",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-002#wrong_join#42",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-002#boundary_errors#73",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-002#boundary_errors#76",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-007#wrong_join#18",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-007#wrong_join#17",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-007#reversed_inputs#15",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/CC-007#boundary_errors#46",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-007#boundary_errors#51",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-007#boundary_errors#53",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-007#sign_errors#59",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-009#reversed_inputs#24",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/CC-009#reversed_inputs#25",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/CC-009#reversed_inputs#28",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/CC-009#wrong_join#34",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-009#wrong_join#39",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-009#boundary_errors#68",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-009#boundary_errors#69",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-009#boundary_errors#71",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-011#wrong_join#13",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-011#boundary_errors#39",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-011#boundary_errors#40",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-013#reversed_inputs#25",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/CC-013#wrong_join#35",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-013#wrong_join#42",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-013#boundary_errors#74",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-013#boundary_errors#77",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-014#reversed_inputs#25",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/CC-014#wrong_join#29",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-014#boundary_errors#59",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-014#sign_errors#69",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-014#sign_errors#72",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-014#sign_errors#71",
+    "op": "drop_not",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-014#sign_errors#73",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-022#wrong_join#14",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-022#boundary_errors#40",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-022#boundary_errors#42",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-025#wrong_join#14",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-025#boundary_errors#44",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-025#boundary_errors#45",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-027#reversed_inputs#25",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/CC-027#wrong_join#26",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-027#reversed_inputs#23",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r1/CC-027#wrong_join#27",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-027#wrong_join#28",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-027#wrong_join#34",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-027#boundary_errors#68",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-027#boundary_errors#75",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-036#wrong_join#11",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-036#boundary_errors#41",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r1/CC-036#boundary_errors#39",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-005#reversed_inputs#24",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/C-005#reversed_inputs#26",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/C-005#reversed_inputs#28",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/C-005#reversed_inputs#30",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/C-005#wrong_join#34",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-005#wrong_join#39",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-005#wrong_join#37",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-005#wrong_join#40",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-005#wrong_join#41",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-005#boundary_errors#77",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-005#boundary_errors#82",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-006#reversed_inputs#25",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/C-006#reversed_inputs#27",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/C-006#wrong_join#37",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-006#wrong_join#39",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-006#boundary_errors#71",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-006#boundary_errors#77",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-007#reversed_inputs#25",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/C-007#reversed_inputs#27",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/C-007#reversed_inputs#26",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/C-007#wrong_join#34",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-007#wrong_join#37",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-007#wrong_join#38",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-007#wrong_join#36",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-007#wrong_join#41",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-007#boundary_errors#73",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-007#boundary_errors#74",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-007#boundary_errors#76",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-010#reversed_inputs#28",
+    "op": "swap_call_args",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-010#wrong_join#35",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-010#wrong_join#38",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-010#wrong_join#39",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-010#boundary_errors#77",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-010#boundary_errors#76",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-010#boundary_errors#80",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-015#reversed_inputs#12",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/C-015#reversed_inputs#15",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/C-016#wrong_join#24",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-016#reversed_inputs#23",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/C-016#wrong_join#30",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-016#boundary_errors#62",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-019#reversed_inputs#31",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/C-019#reversed_inputs#27",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/C-019#wrong_join#37",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-019#wrong_join#40",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-019#boundary_errors#74",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-019#boundary_errors#73",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/C-019#boundary_errors#76",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-001#boundary_errors#57",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-002#reversed_inputs#32",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/CC-007#reversed_inputs#12",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/CC-007#wrong_join#15",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-007#wrong_join#14",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-007#boundary_errors#51",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-009#reversed_inputs#22",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/CC-009#reversed_inputs#23",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/CC-009#reversed_inputs#24",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/CC-009#wrong_join#30",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-009#wrong_join#29",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-009#wrong_join#33",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-009#boundary_errors#61",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-009#boundary_errors#67",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-009#boundary_errors#68",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-011#wrong_join#17",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-011#wrong_join#18",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-011#boundary_errors#43",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-011#boundary_errors#44",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-013#reversed_inputs#32",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/CC-013#wrong_join#36",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-013#wrong_join#38",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-013#boundary_errors#71",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-013#boundary_errors#74",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-014#reversed_inputs#22",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/CC-014#wrong_join#33",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-014#boundary_errors#65",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-014#boundary_errors#66",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-014#boundary_errors#67",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-014#boundary_errors#71",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-022#reversed_inputs#17",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/CC-022#wrong_join#22",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-022#wrong_join#21",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-022#boundary_errors#54",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-022#boundary_errors#50",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-022#boundary_errors#52",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-025#wrong_join#12",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-025#boundary_errors#42",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-025#boundary_errors#38",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-026#wrong_join#27",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-026#boundary_errors#55",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-026#boundary_errors#59",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-027#reversed_inputs#23",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/CC-027#reversed_inputs#25",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r2/CC-027#wrong_join#27",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-027#wrong_join#33",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-027#wrong_join#34",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-027#wrong_join#35",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-027#boundary_errors#66",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-027#boundary_errors#69",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-027#boundary_errors#72",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-027#boundary_errors#73",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-036#wrong_join#11",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-036#boundary_errors#42",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r2/CC-036#boundary_errors#40",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/C-005#reversed_inputs#24",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/C-005#reversed_inputs#26",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/C-005#reversed_inputs#27",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/C-005#reversed_inputs#28",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/C-005#reversed_inputs#29",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/C-006#reversed_inputs#21",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/C-006#reversed_inputs#23",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/C-006#wrong_join#28",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/C-006#wrong_join#30",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/C-006#wrong_join#31",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/C-006#boundary_errors#65",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/C-006#boundary_errors#72",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/C-007#reversed_inputs#26",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/C-007#reversed_inputs#29",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/C-007#reversed_inputs#28",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/C-010#wrong_join#34",
+    "op": "plus_to_times",
+    "at": "before_candidate"
+   },
+   {
+    "mutant": "cand-r3/C-010#reversed_inputs#27",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/C-010#reversed_inputs#29",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/C-010#reversed_inputs#28",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/C-012#reversed_inputs#17",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/C-015#reversed_inputs#15",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/C-016#wrong_join#23",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/C-016#wrong_join#24",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/C-016#boundary_errors#53",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/C-016#boundary_errors#55",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/C-016#sign_errors#63",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/C-016#sign_errors#65",
+    "op": "drop_not",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/C-016#sign_errors#66",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-002#reversed_inputs#31",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/CC-002#wrong_join#41",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-002#boundary_errors#70",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-002#boundary_errors#76",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-007#reversed_inputs#12",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/CC-007#wrong_join#14",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-007#wrong_join#15",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-007#boundary_errors#54",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-007#boundary_errors#55",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-009#reversed_inputs#22",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/CC-009#reversed_inputs#23",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/CC-009#reversed_inputs#25",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/CC-009#wrong_join#27",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-009#wrong_join#30",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-009#boundary_errors#61",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-009#boundary_errors#65",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-013#reversed_inputs#25",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/CC-013#wrong_join#36",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-013#wrong_join#34",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-013#boundary_errors#71",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-013#boundary_errors#76",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-014#reversed_inputs#24",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/CC-014#wrong_join#32",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-014#boundary_errors#66",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-014#boundary_errors#69",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-022#wrong_join#18",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-022#reversed_inputs#17",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/CC-022#wrong_join#22",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-022#boundary_errors#49",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-022#boundary_errors#50",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-022#boundary_errors#51",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-025#wrong_join#16",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-025#boundary_errors#46",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-025#boundary_errors#45",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-026#wrong_join#11",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-026#boundary_errors#31",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-026#boundary_errors#32",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-027#reversed_inputs#22",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/CC-027#reversed_inputs#25",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r3/CC-027#wrong_join#29",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-027#wrong_join#28",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-027#wrong_join#32",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-027#wrong_join#30",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-027#boundary_errors#70",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r3/CC-027#boundary_errors#75",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-005#reversed_inputs#26",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/C-005#reversed_inputs#29",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/C-005#reversed_inputs#32",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/C-005#reversed_inputs#28",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/C-005#reversed_inputs#30",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/C-005#wrong_join#38",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-005#wrong_join#42",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-005#wrong_join#45",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-005#wrong_join#44",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-005#wrong_join#43",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-005#sign_errors#83",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-005#sign_errors#90",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-005#sign_errors#87",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-005#sign_errors#86",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-005#sign_errors#85",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-006#reversed_inputs#20",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/C-006#reversed_inputs#21",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/C-006#wrong_join#24",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-006#wrong_join#26",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-006#wrong_join#27",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-006#wrong_join#32",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-006#wrong_join#25",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-006#boundary_errors#60",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-006#boundary_errors#63",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-006#boundary_errors#64",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-006#boundary_errors#68",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-007#reversed_inputs#27",
+    "op": "swap_call_args",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-007#reversed_inputs#23",
+    "op": "swap_call_args",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-007#reversed_inputs#24",
+    "op": "swap_call_args",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-007#reversed_inputs#28",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/C-007#reversed_inputs#31",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/C-007#wrong_join#36",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-007#wrong_join#35",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-007#boundary_errors#71",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-007#boundary_errors#76",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-007#boundary_errors#75",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-010#swapped_units#0",
+    "op": "div_to_mul_constant",
+    "at": "before_candidate"
+   },
+   {
+    "mutant": "cand-r4/C-007#boundary_errors#79",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-010#reversed_inputs#24",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/C-010#reversed_inputs#30",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/C-010#reversed_inputs#31",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/C-010#wrong_join#38",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-010#boundary_errors#73",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-012#wrong_join#27",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-012#wrong_join#30",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-012#wrong_join#28",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-012#wrong_join#31",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-012#boundary_errors#64",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-012#boundary_errors#70",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-012#sign_errors#73",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-012#sign_errors#72",
+    "op": "drop_not",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-012#sign_errors#78",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-015#reversed_inputs#11",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/C-015#reversed_inputs#12",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/C-016#reversed_inputs#10",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/C-019#reversed_inputs#20",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/C-019#wrong_join#22",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-019#wrong_join#25",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-019#wrong_join#26",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-019#boundary_errors#54",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/C-019#boundary_errors#58",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-002#reversed_inputs#27",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/CC-002#wrong_join#37",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-002#wrong_join#42",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-002#boundary_errors#76",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-002#boundary_errors#80",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-007#reversed_inputs#22",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/CC-007#wrong_join#28",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-007#wrong_join#26",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-007#wrong_join#27",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-007#boundary_errors#65",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-007#boundary_errors#66",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-007#sign_errors#71",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-007#sign_errors#70",
+    "op": "drop_not",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-011#reversed_inputs#14",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/CC-011#wrong_join#16",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-011#wrong_join#18",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-011#boundary_errors#44",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-011#boundary_errors#51",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-013#reversed_inputs#28",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/CC-014#reversed_inputs#23",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/CC-022#wrong_join#22",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-022#wrong_join#23",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-022#wrong_join#24",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-022#boundary_errors#50",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-022#boundary_errors#52",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-022#boundary_errors#53",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-022#sign_errors#55",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-022#sign_errors#57",
+    "op": "drop_not",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-022#sign_errors#58",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-022#sign_errors#59",
+    "op": "drop_not",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-022#sign_errors#62",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-022#sign_errors#61",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-025#wrong_join#15",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-025#boundary_errors#46",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-025#boundary_errors#48",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-026#wrong_join#30",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-026#boundary_errors#68",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-026#boundary_errors#64",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-027#reversed_inputs#22",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/CC-027#reversed_inputs#25",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r4/CC-027#wrong_join#28",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-027#wrong_join#33",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-027#wrong_join#32",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-027#wrong_join#35",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-027#boundary_errors#69",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-027#boundary_errors#73",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-036#wrong_join#11",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-036#boundary_errors#38",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/CC-036#boundary_errors#42",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r4/add-9#boundary_errors#57",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/C-005#reversed_inputs#27",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/C-005#reversed_inputs#28",
+    "op": "swap_call_args",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/C-005#reversed_inputs#31",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/C-005#reversed_inputs#30",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/C-005#wrong_join#34",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/C-005#reversed_inputs#26",
+    "op": "swap_call_args",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/C-005#boundary_errors#67",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/C-005#boundary_errors#69",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/C-006#reversed_inputs#26",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/C-006#wrong_join#30",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/C-006#boundary_errors#66",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/C-007#reversed_inputs#25",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/C-007#reversed_inputs#26",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/C-007#reversed_inputs#24",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/C-010#reversed_inputs#31",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/C-010#reversed_inputs#30",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/C-010#wrong_join#35",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/C-010#wrong_join#37",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/C-010#boundary_errors#74",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/C-010#boundary_errors#75",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/C-012#reversed_inputs#20",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/C-015#reversed_inputs#11",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/C-016#reversed_inputs#22",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/C-016#boundary_errors#51",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/C-019#reversed_inputs#20",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/CC-001#reversed_inputs#26",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/CC-002#reversed_inputs#28",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/CC-007#reversed_inputs#14",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/CC-007#wrong_join#16",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-007#boundary_errors#48",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-007#boundary_errors#51",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-009#reversed_inputs#22",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/CC-009#reversed_inputs#23",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/CC-009#reversed_inputs#24",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/CC-009#wrong_join#29",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-009#wrong_join#32",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-009#wrong_join#34",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-009#boundary_errors#68",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-009#boundary_errors#61",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-009#boundary_errors#62",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-009#boundary_errors#63",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-011#wrong_join#16",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-011#reversed_inputs#14",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/CC-011#wrong_join#15",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-011#wrong_join#17",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-011#boundary_errors#40",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-011#boundary_errors#46",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-011#boundary_errors#44",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-011#sign_errors#50",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-011#sign_errors#48",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-011#sign_errors#49",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-011#sign_errors#51",
+    "op": "drop_not",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-011#sign_errors#52",
+    "op": "drop_not",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-011#sign_errors#53",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-013#reversed_inputs#28",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/CC-014#reversed_inputs#25",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/CC-022#wrong_join#21",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-022#wrong_join#24",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-022#boundary_errors#46",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-022#boundary_errors#54",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-022#boundary_errors#49",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-026#wrong_join#34",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-026#boundary_errors#66",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-026#boundary_errors#69",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-027#reversed_inputs#26",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/CC-027#reversed_inputs#28",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/CC-027#reversed_inputs#24",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r5/CC-027#wrong_join#31",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-027#wrong_join#33",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-027#wrong_join#32",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-027#wrong_join#35",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-036#wrong_join#12",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-036#boundary_errors#40",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r5/CC-036#boundary_errors#38",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-005#reversed_inputs#32",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/C-005#wrong_join#34",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-005#wrong_join#40",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-005#wrong_join#39",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-005#wrong_join#36",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-005#wrong_join#43",
+    "op": "and_to_or",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-005#boundary_errors#76",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-005#sign_errors#85",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-005#boundary_errors#82",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-005#sign_errors#84",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-005#boundary_errors#79",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-005#sign_errors#87",
+    "op": "drop_not",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-005#boundary_errors#83",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-005#sign_errors#90",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-005#sign_errors#89",
+    "op": "drop_not",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-005#sign_errors#91",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-005#sign_errors#92",
+    "op": "flip_comparison",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-006#reversed_inputs#24",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/C-006#reversed_inputs#25",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/C-006#wrong_join#30",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-006#wrong_join#34",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-006#wrong_join#37",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-006#boundary_errors#70",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-006#boundary_errors#74",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-007#reversed_inputs#23",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/C-007#reversed_inputs#26",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/C-007#reversed_inputs#27",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/C-007#wrong_join#30",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-007#wrong_join#36",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-010#swapped_units#7",
+    "op": "div_to_mul_constant",
+    "at": "before_candidate"
+   },
+   {
+    "mutant": "cand-r6/C-010#swapped_units#8",
+    "op": "result_times_unit_factor",
+    "at": "before_candidate"
+   },
+   {
+    "mutant": "cand-r6/C-010#reversed_inputs#24",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/C-010#reversed_inputs#27",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/C-010#boundary_errors#75",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-012#reversed_inputs#30",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/C-012#reversed_inputs#32",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/C-012#boundary_errors#80",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/C-015#reversed_inputs#12",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/C-016#reversed_inputs#14",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/C-019#reversed_inputs#31",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/C-019#reversed_inputs#33",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/CC-001#reversed_inputs#26",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/CC-001#reversed_inputs#25",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/CC-001#reversed_inputs#30",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/CC-001#wrong_join#32",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-001#wrong_join#33",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-001#wrong_join#38",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-001#boundary_errors#69",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-001#boundary_errors#71",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-001#boundary_errors#76",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-002#reversed_inputs#29",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/CC-002#wrong_join#39",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-002#wrong_join#38",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-002#boundary_errors#75",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-007#reversed_inputs#11",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/CC-007#wrong_join#14",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-007#boundary_errors#38",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-007#boundary_errors#41",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-009#reversed_inputs#22",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/CC-009#reversed_inputs#25",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/CC-009#reversed_inputs#29",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/CC-009#reversed_inputs#27",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/CC-009#wrong_join#38",
+    "op": "plus_to_times",
+    "at": "before_candidate"
+   },
+   {
+    "mutant": "cand-r6/CC-009#wrong_join#34",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-009#wrong_join#37",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-009#wrong_join#36",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-009#boundary_errors#73",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-009#boundary_errors#70",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-009#boundary_errors#75",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-009#boundary_errors#76",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-011#reversed_inputs#14",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/CC-011#wrong_join#18",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-011#wrong_join#20",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-011#boundary_errors#42",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-011#boundary_errors#50",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-011#boundary_errors#48",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-013#reversed_inputs#35",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/CC-013#wrong_join#39",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-013#boundary_errors#77",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-013#boundary_errors#82",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-014#stale_binding#35",
+    "op": "bound_to_other_literal",
+    "at": "before_candidate"
+   },
+   {
+    "mutant": "cand-r6/CC-014#reversed_inputs#28",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/CC-014#wrong_join#33",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-014#boundary_errors#64",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-014#boundary_errors#68",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-014#boundary_errors#69",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-022#reversed_inputs#17",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/CC-022#wrong_join#18",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-022#wrong_join#22",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-022#boundary_errors#46",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-022#boundary_errors#49",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-022#boundary_errors#51",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-022#boundary_errors#52",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-025#wrong_join#15",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-025#boundary_errors#47",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-025#boundary_errors#48",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-027#reversed_inputs#25",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/CC-027#reversed_inputs#24",
+    "op": "swap_adjacent_params",
+    "at": "G7_glue"
+   },
+   {
+    "mutant": "cand-r6/CC-027#wrong_join#27",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-027#wrong_join#30",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-027#wrong_join#33",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-027#wrong_join#35",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-027#boundary_errors#70",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-027#boundary_errors#71",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-036#wrong_join#10",
+    "op": "or_to_and",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-036#boundary_errors#40",
+    "op": "drop_guard",
+    "at": "G8_nonfinite"
+   },
+   {
+    "mutant": "cand-r6/CC-036#boundary_errors#42",
+    "op": "drop_guard_disjunct",
+    "at": "G8_nonfinite"
+   }
+  ],
+  "timing": {
+   "load1": {
+    "min": 12.25,
+    "p50": 23.4,
+    "max": 37.63
+   },
+   "quiet": {
+    "rows": 1382,
+    "gateMs": {
+     "p50": 281.8,
+     "p95": 529.4
+    },
+    "elapsedMs": {
+     "p50": 2019,
+     "p95": 2280.8
+    }
+   },
+   "loaded": {
+    "rows": 9034,
+    "gateMs": {
+     "p50": 293.4,
+     "p95": 570.1
+    },
+    "elapsedMs": {
+     "p50": 1980.7,
+     "p95": 2496.1
+    }
+   }
+  }
+ },
+ "base": {
+  "promoted": 168,
+  "submitted": 172,
+  "refused": [
+   {
+    "mutant": "base-r1/add-6#control",
+    "at": "before_candidate",
+    "decision": null,
+    "error": "pipeline stage failed; inspect local artifacts"
+   },
+   {
+    "mutant": "base-r2/CC-026#control",
+    "at": "before_candidate",
+    "decision": null,
+    "error": "pipeline stage failed; inspect local artifacts"
+   },
+   {
+    "mutant": "base-r3/CC-009#control",
+    "at": "before_candidate",
+    "decision": null,
+    "error": "pipeline stage failed; inspect local artifacts"
+   },
+   {
+    "mutant": "base-r5/C-005#control",
+    "at": "before_candidate",
+    "decision": null,
+    "error": "pipeline stage failed; inspect local artifacts"
+   }
+  ],
+  "timing": {
+   "load1": {
+    "min": 16.91,
+    "p50": 19.2,
+    "max": 19.18
+   },
+   "quiet": {
+    "rows": 0,
+    "gateMs": {
+     "p50": null,
+     "p95": null
+    },
+    "elapsedMs": {
+     "p50": null,
+     "p95": null
+    }
+   },
+   "loaded": {
+    "rows": 172,
+    "gateMs": {
+     "p50": 261.3,
+     "p95": 542.6
+    },
+    "elapsedMs": {
+     "p50": 1956.4,
+     "p95": 2147.2
+    }
+   }
+  }
+ }
+}
