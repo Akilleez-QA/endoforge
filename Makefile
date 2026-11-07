@@ -53,6 +53,8 @@ lib-test:
 	node tools/conductor/test/stream.test.mjs
 	node tools/conductor/test/failopen.test.mjs
 	node tools/hillclimb/test/lessons.test.mjs
+	node tools/job/test/failopen.test.mjs
+	$(PYTHON) -B tools/job-locks/test_job_locks.py
 
 portability-test:
 	$(PYTHON) -B tools/factory_portability/test_checkpoint.py
