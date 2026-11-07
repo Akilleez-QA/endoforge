@@ -111,3 +111,16 @@ test('a clean emit returns a hashed artifact and a failed one returns none', { t
   assert.equal(good.artifact.sha256[path].length, 64);
   assert.equal((await typecheck(emitting('export const n: number = "x";\n'), { emit: true })).artifact, null);
 });
+
+test('warm compiles in ready(), and the first job compiles nothing and keeps its verdicts', { timeout: 120000 }, async t => {
+  const { job, directory } = await fixture(t, { invariants: ['identity', TS_INVARIANT] });
+  const pool = new IsolatePool({ hostPort, size: 1, warm: {}, ...WORKCELL });
+  t.after(() => pool.close());
+  await pool.ready();
+  const reportFile = join(directory, 'reports.jsonl');
+  const result = await pool.run(job(['pass', 'dominated'], options({ reportFile })));
+  assert.equal(result.status, 'completed');
+  assert.equal(result.receipts[0].record.data.outcome_state, 'passed');
+  assert.equal(result.receipts[1].record.data.outcome_state, 'failed');
+  assert.ok(reports(reportFile).every(row => row.warm && row.compileMs === 0));
+});
