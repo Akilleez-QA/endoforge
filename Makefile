@@ -72,4 +72,4 @@ escape-test:
 
 .PHONY: kernel-test
 kernel-test:
-	$(PYTHON) -B -m unittest tools.kernel.test_contract -v
+	$(PYTHON) -B -m unittest tools.kernel.test_contract tools.kernel.test_workcell tools.kernel.test_broker -v
