@@ -1,0 +1,939 @@
+{
+  "probe": "P-03-escape-rate-method",
+  "label": "Recorded (probe)",
+  "scope": "METHOD validation on a toy task; not Endoforge's escape rate",
+  "precommit_sha256": "a3f1af419335648c7510d38d4909a7b4a752dc55e2ddffe4dddaf9c87db4d139  PRECOMMIT.md",
+  "evaluator_sha256": [
+    "bdf09502705529efab59ec4ecbd09f38792bfecf1b4889819db203f336944331  src/evaluator.mjs",
+    "861582b56a85745c93afd1cc8d62ef6cf0a9e43822225f5ee86ddf7c688421dd  src/inputs.mjs"
+  ],
+  "freeze_timestamp": "2026-10-17T17:04:25Z",
+  "run_timestamp": "2026-10-17T17:12:48.981Z",
+  "reference_passes_evaluator": true,
+  "differential": {
+    "seed": 1592590338,
+    "inputs": 2000,
+    "invariant_inputs": 60,
+    "invariant_seed": 1592590337
+  },
+  "per_stratum": {
+    "S1": {
+      "generated": 303,
+      "uncompilable": 1,
+      "equivalent": 20,
+      "non_equivalent": 282,
+      "full_harness": {
+        "escapes": 5,
+        "n": 282,
+        "point": 0.01773049645390071,
+        "cp95_lower": 0.005781482184213302,
+        "cp95_upper": 0.04088974465075118,
+        "one_sided_upper95": 0.036916803096244954
+      },
+      "universal_plus_invariants_only": {
+        "escapes": 68,
+        "n": 282,
+        "point": 0.24113475177304963,
+        "cp95_lower": 0.19238982783778535,
+        "cp95_upper": 0.29540979843522164,
+        "one_sided_upper95": 0.28674229765482406
+      },
+      "universal_plus_residual_only": {
+        "escapes": 17,
+        "n": 282,
+        "point": 0.06028368794326241,
+        "cp95_lower": 0.03550608625234415,
+        "cp95_upper": 0.09476737185802081,
+        "one_sided_upper95": 0.08905461270708265
+      },
+      "universal_only": {
+        "escapes": 169,
+        "n": 282,
+        "point": 0.599290780141844,
+        "cp95_lower": 0.5395256370853847,
+        "cp95_upper": 0.6569463672074456,
+        "one_sided_upper95": 0.6481119978563186
+      },
+      "escapees_failing_holdout": 5,
+      "killed_by": {
+        "universal": 113,
+        "invariants_only": 101,
+        "residual_only_after_others_pass": 63
+      }
+    },
+    "S2": {
+      "generated": 24,
+      "uncompilable": 0,
+      "equivalent": 1,
+      "non_equivalent": 23,
+      "full_harness": {
+        "escapes": 1,
+        "n": 23,
+        "point": 0.043478260869565216,
+        "cp95_lower": 0.0011001686304415005,
+        "cp95_upper": 0.21948660745348042,
+        "one_sided_upper95": 0.19020396669201184
+      },
+      "universal_plus_invariants_only": {
+        "escapes": 4,
+        "n": 23,
+        "point": 0.17391304347826086,
+        "cp95_lower": 0.04950764530579348,
+        "cp95_upper": 0.38781188995479743,
+        "one_sided_upper95": 0.3549324062193885
+      },
+      "universal_plus_residual_only": {
+        "escapes": 4,
+        "n": 23,
+        "point": 0.17391304347826086,
+        "cp95_lower": 0.04950764530579348,
+        "cp95_upper": 0.38781188995479743,
+        "one_sided_upper95": 0.3549324062193885
+      },
+      "universal_only": {
+        "escapes": 23,
+        "n": 23,
+        "point": 1,
+        "cp95_lower": 0.8518148710847755,
+        "cp95_upper": 1,
+        "one_sided_upper95": 1
+      },
+      "escapees_failing_holdout": 0,
+      "killed_by": {
+        "universal": 0,
+        "invariants_only": 19,
+        "residual_only_after_others_pass": 3
+      }
+    },
+    "S3": {
+      "generated": 22,
+      "uncompilable": 0,
+      "equivalent": 2,
+      "non_equivalent": 20,
+      "full_harness": {
+        "escapes": 6,
+        "n": 20,
+        "point": 0.3,
+        "cp95_lower": 0.1189315904057279,
+        "cp95_upper": 0.5427891822762887,
+        "one_sided_upper95": 0.5078184066147928
+      },
+      "universal_plus_invariants_only": {
+        "escapes": 7,
+        "n": 20,
+        "point": 0.35,
+        "cp95_lower": 0.1539092047845414,
+        "cp95_upper": 0.5921885345328279,
+        "one_sided_upper95": 0.5580345113154885
+      },
+      "universal_plus_residual_only": {
+        "escapes": 9,
+        "n": 20,
+        "point": 0.45,
+        "cp95_lower": 0.23057789677592427,
+        "cp95_upper": 0.684721866959451,
+        "one_sided_upper95": 0.6530686023569066
+      },
+      "universal_only": {
+        "escapes": 14,
+        "n": 20,
+        "point": 0.7,
+        "cp95_lower": 0.4572108177237111,
+        "cp95_upper": 0.881068409594272,
+        "one_sided_upper95": 0.8604462509976134
+      },
+      "escapees_failing_holdout": 0,
+      "killed_by": {
+        "universal": 6,
+        "invariants_only": 7,
+        "residual_only_after_others_pass": 1
+      }
+    },
+    "S4": {
+      "generated": 56,
+      "uncompilable": 0,
+      "equivalent": 0,
+      "non_equivalent": 56,
+      "full_harness": {
+        "escapes": 56,
+        "n": 56,
+        "point": 1,
+        "cp95_lower": 0.9362499033376386,
+        "cp95_upper": 1,
+        "one_sided_upper95": 1
+      },
+      "universal_plus_invariants_only": {
+        "escapes": 56,
+        "n": 56,
+        "point": 1,
+        "cp95_lower": 0.9362499033376386,
+        "cp95_upper": 1,
+        "one_sided_upper95": 1
+      },
+      "universal_plus_residual_only": {
+        "escapes": 56,
+        "n": 56,
+        "point": 1,
+        "cp95_lower": 0.9362499033376386,
+        "cp95_upper": 1,
+        "one_sided_upper95": 1
+      },
+      "universal_only": {
+        "escapes": 56,
+        "n": 56,
+        "point": 1,
+        "cp95_lower": 0.9362499033376386,
+        "cp95_upper": 1,
+        "one_sided_upper95": 1
+      },
+      "escapees_failing_holdout": 35,
+      "killed_by": {
+        "universal": 0,
+        "invariants_only": 0,
+        "residual_only_after_others_pass": 0
+      }
+    },
+    "ALL": {
+      "generated": 405,
+      "uncompilable": 1,
+      "equivalent": 23,
+      "non_equivalent": 381,
+      "full_harness": {
+        "escapes": 68,
+        "n": 381,
+        "point": 0.1784776902887139,
+        "cp95_lower": 0.14134322495153978,
+        "cp95_upper": 0.22069433001614663,
+        "one_sided_upper95": 0.21389230591606107
+      },
+      "universal_plus_invariants_only": {
+        "escapes": 135,
+        "n": 381,
+        "point": 0.3543307086614173,
+        "cp95_lower": 0.3062866855032442,
+        "cp95_upper": 0.4046581763162932,
+        "one_sided_upper95": 0.3966971940142242
+      },
+      "universal_plus_residual_only": {
+        "escapes": 86,
+        "n": 381,
+        "point": 0.22572178477690288,
+        "cp95_lower": 0.18470412847536716,
+        "cp95_upper": 0.2710597438586443,
+        "one_sided_upper95": 0.26379619002781196
+      },
+      "universal_only": {
+        "escapes": 262,
+        "n": 381,
+        "point": 0.6876640419947506,
+        "cp95_lower": 0.6384882556840723,
+        "cp95_upper": 0.733894912145014,
+        "one_sided_upper95": 0.7268430983845247
+      },
+      "escapees_failing_holdout": 40,
+      "killed_by": {
+        "universal": 119,
+        "invariants_only": 127,
+        "residual_only_after_others_pass": 67
+      }
+    },
+    "S4b_post_hoc": {
+      "generated": 52,
+      "uncompilable": 0,
+      "equivalent": 0,
+      "non_equivalent": 52,
+      "full_harness": {
+        "escapes": 0,
+        "n": 52,
+        "point": 0,
+        "cp95_lower": 0,
+        "cp95_upper": 0.0684822087033195,
+        "one_sided_upper95": 0.055982180126235404
+      },
+      "universal_plus_invariants_only": {
+        "escapes": 52,
+        "n": 52,
+        "point": 1,
+        "cp95_lower": 0.9315177912966806,
+        "cp95_upper": 1,
+        "one_sided_upper95": 1
+      },
+      "universal_plus_residual_only": {
+        "escapes": 0,
+        "n": 52,
+        "point": 0,
+        "cp95_lower": 0,
+        "cp95_upper": 0.0684822087033195,
+        "one_sided_upper95": 0.055982180126235404
+      },
+      "universal_only": {
+        "escapes": 52,
+        "n": 52,
+        "point": 1,
+        "cp95_lower": 0.9315177912966806,
+        "cp95_upper": 1,
+        "one_sided_upper95": 1
+      },
+      "escapees_failing_holdout": 0,
+      "killed_by": {
+        "universal": 0,
+        "invariants_only": 0,
+        "residual_only_after_others_pass": 52
+      }
+    }
+  },
+  "kill_histogram": {
+    "invariant:dimensional": 79,
+    "residual:R1": 24,
+    "universal:schema": 83,
+    "universal:resource_bound": 25,
+    "universal:forbidden_effects": 10,
+    "invariant:totals": 34,
+    "residual:R2": 15,
+    "residual:R3": 7,
+    "invariant:source_bound": 14,
+    "residual:R4": 12,
+    "residual:R5": 7,
+    "escape": 68,
+    "residual:R6": 2,
+    "universal:purity": 1
+  },
+  "s4b_post_hoc_escapees": [],
+  "escapees": [
+    {
+      "id": "S1-155",
+      "stratum": "S1",
+      "description": "string 'unconvertible' -> 'match' @3718",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S1-156",
+      "stratum": "S1",
+      "description": "string 'unconvertible' -> 'minor' @3718",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S1-157",
+      "stratum": "S1",
+      "description": "string 'unconvertible' -> 'major' @3718",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S1-158",
+      "stratum": "S1",
+      "description": "string 'unconvertible' -> 'no-reference' @3718",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S1-159",
+      "stratum": "S1",
+      "description": "string 'unconvertible' -> 'unresolved-basis' @3718",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S2-324",
+      "stratum": "S2",
+      "description": "prior state discarded (seen rebuilt from this event only)",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S3-334",
+      "stratum": "S3",
+      "description": "epsilon-tolerant boundary comparison (accepts d within 1e-9 above minor)",
+      "note": "expected near-equivalent",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S3-336",
+      "stratum": "S3",
+      "description": "row.sources sorted alphabetically",
+      "note": "spec-ambiguous: order of sources is not specified",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S3-337",
+      "stratum": "S3",
+      "description": "duplicate-source guard dropped for converted sources",
+      "note": "spec-ambiguous: duplicates in row.sources",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S3-338",
+      "stratum": "S3",
+      "description": "major tolerance widened by the minor tolerance",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S3-343",
+      "stratum": "S3",
+      "description": "atmosphere required even when no basis shift is needed",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S3-347",
+      "stratum": "S3",
+      "description": "effects emitted in the other order (summary first)",
+      "note": "spec-ambiguous: effect order",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S4-001",
+      "stratum": "S4",
+      "description": "compose [S1-155] + [S2-324]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-002",
+      "stratum": "S4",
+      "description": "compose [S1-155] + [S3-334]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-003",
+      "stratum": "S4",
+      "description": "compose [S1-155] + [S3-336]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-004",
+      "stratum": "S4",
+      "description": "compose [S1-155] + [S3-337]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-005",
+      "stratum": "S4",
+      "description": "compose [S1-155] + [S3-338]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-006",
+      "stratum": "S4",
+      "description": "compose [S1-155] + [S3-343]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-007",
+      "stratum": "S4",
+      "description": "compose [S1-155] + [S3-347]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-008",
+      "stratum": "S4",
+      "description": "compose [S1-156] + [S2-324]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-009",
+      "stratum": "S4",
+      "description": "compose [S1-156] + [S3-334]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-010",
+      "stratum": "S4",
+      "description": "compose [S1-156] + [S3-336]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-011",
+      "stratum": "S4",
+      "description": "compose [S1-156] + [S3-337]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-012",
+      "stratum": "S4",
+      "description": "compose [S1-156] + [S3-338]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-013",
+      "stratum": "S4",
+      "description": "compose [S1-156] + [S3-343]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-014",
+      "stratum": "S4",
+      "description": "compose [S1-156] + [S3-347]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-015",
+      "stratum": "S4",
+      "description": "compose [S1-157] + [S2-324]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-016",
+      "stratum": "S4",
+      "description": "compose [S1-157] + [S3-334]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-017",
+      "stratum": "S4",
+      "description": "compose [S1-157] + [S3-336]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-018",
+      "stratum": "S4",
+      "description": "compose [S1-157] + [S3-337]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-019",
+      "stratum": "S4",
+      "description": "compose [S1-157] + [S3-338]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-020",
+      "stratum": "S4",
+      "description": "compose [S1-157] + [S3-343]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-021",
+      "stratum": "S4",
+      "description": "compose [S1-157] + [S3-347]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-022",
+      "stratum": "S4",
+      "description": "compose [S1-158] + [S2-324]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-023",
+      "stratum": "S4",
+      "description": "compose [S1-158] + [S3-334]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-024",
+      "stratum": "S4",
+      "description": "compose [S1-158] + [S3-336]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-025",
+      "stratum": "S4",
+      "description": "compose [S1-158] + [S3-337]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-026",
+      "stratum": "S4",
+      "description": "compose [S1-158] + [S3-338]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-027",
+      "stratum": "S4",
+      "description": "compose [S1-158] + [S3-343]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-028",
+      "stratum": "S4",
+      "description": "compose [S1-158] + [S3-347]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-029",
+      "stratum": "S4",
+      "description": "compose [S1-159] + [S2-324]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-030",
+      "stratum": "S4",
+      "description": "compose [S1-159] + [S3-334]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-031",
+      "stratum": "S4",
+      "description": "compose [S1-159] + [S3-336]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-032",
+      "stratum": "S4",
+      "description": "compose [S1-159] + [S3-337]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-033",
+      "stratum": "S4",
+      "description": "compose [S1-159] + [S3-338]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-034",
+      "stratum": "S4",
+      "description": "compose [S1-159] + [S3-343]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-035",
+      "stratum": "S4",
+      "description": "compose [S1-159] + [S3-347]",
+      "holdout_pass": false,
+      "holdout_failed": [
+        "H4 reference with unusable basis makes the row unconvertible even though the reading converts"
+      ]
+    },
+    {
+      "id": "S4-036",
+      "stratum": "S4",
+      "description": "compose [S2-324] + [S3-334]",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S4-037",
+      "stratum": "S4",
+      "description": "compose [S2-324] + [S3-336]",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S4-038",
+      "stratum": "S4",
+      "description": "compose [S2-324] + [S3-337]",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S4-039",
+      "stratum": "S4",
+      "description": "compose [S2-324] + [S3-338]",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S4-040",
+      "stratum": "S4",
+      "description": "compose [S2-324] + [S3-343]",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S4-041",
+      "stratum": "S4",
+      "description": "compose [S2-324] + [S3-347]",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S4-042",
+      "stratum": "S4",
+      "description": "compose [S3-334] + [S3-336]",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S4-043",
+      "stratum": "S4",
+      "description": "compose [S3-334] + [S3-337]",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S4-044",
+      "stratum": "S4",
+      "description": "compose [S3-334] + [S3-338]",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S4-045",
+      "stratum": "S4",
+      "description": "compose [S3-334] + [S3-343]",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S4-046",
+      "stratum": "S4",
+      "description": "compose [S3-334] + [S3-347]",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S4-047",
+      "stratum": "S4",
+      "description": "compose [S3-336] + [S3-337]",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S4-048",
+      "stratum": "S4",
+      "description": "compose [S3-336] + [S3-338]",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S4-049",
+      "stratum": "S4",
+      "description": "compose [S3-336] + [S3-343]",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S4-050",
+      "stratum": "S4",
+      "description": "compose [S3-336] + [S3-347]",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S4-051",
+      "stratum": "S4",
+      "description": "compose [S3-337] + [S3-338]",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S4-052",
+      "stratum": "S4",
+      "description": "compose [S3-337] + [S3-343]",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S4-053",
+      "stratum": "S4",
+      "description": "compose [S3-337] + [S3-347]",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S4-054",
+      "stratum": "S4",
+      "description": "compose [S3-338] + [S3-343]",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S4-055",
+      "stratum": "S4",
+      "description": "compose [S3-338] + [S3-347]",
+      "holdout_pass": true,
+      "holdout_failed": []
+    },
+    {
+      "id": "S4-056",
+      "stratum": "S4",
+      "description": "compose [S3-343] + [S3-347]",
+      "holdout_pass": true,
+      "holdout_failed": []
+    }
+  ],
+  "disagreement": {
+    "pairs_total": 2346,
+    "pairs_found": 2331,
+    "draws_median": 1,
+    "draws_max": 20000,
+    "example": {
+      "A": "REFERENCE",
+      "B": "S1-155",
+      "draws": 42,
+      "choice": {
+        "where": "row 0 (pt-05, rd-0) .classification",
+        "A": "unconvertible",
+        "B": "match"
+      }
+    },
+    "rerun": {
+      "previously_escaping": 68,
+      "now_killed": 58,
+      "still_escaping": [
+        "S2-324",
+        "S3-334",
+        "S3-336",
+        "S3-338",
+        "S4-036",
+        "S4-037",
+        "S4-039",
+        "S4-042",
+        "S4-044",
+        "S4-048"
+      ],
+      "killed_among_subjects": 58,
+      "subjects": 68
+    }
+  },
+  "cost_ms": {
+    "harness_per_mutant": {
+      "n": 381,
+      "median": 4.6545679999999265,
+      "p95": 7.510446000000002,
+      "min": 1.1258960000000116,
+      "max": 9.295169999999871,
+      "sum": 1784.4122769999988
+    },
+    "differential_per_mutant": {
+      "n": 404,
+      "median": 0.17468800000000329,
+      "p95": 23.79154700000001,
+      "min": 0.05185699999992721,
+      "max": 31.346787000000006,
+      "sum": 737.4406090000014
+    },
+    "total_run": 10156.596336999999
+  },
+  "environment": {
+    "before": {
+      "loadavg": [
+        27.29,
+        17.29,
+        16.02
+      ],
+      "mem_available": "84416052 kB"
+    },
+    "after": {
+      "loadavg": [
+        25.78,
+        17.3,
+        16.04
+      ],
+      "mem_available": "83030452 kB"
+    },
+    "cpu": "AMD Ryzen 9 7950X 16-Core Processor",
+    "cpus": 32,
+    "node": "v26.8.1",
+    "kernel": "7.2.5-3-omarchy"
+  }
+}

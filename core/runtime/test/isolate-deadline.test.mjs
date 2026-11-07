@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { setTimeout as sleep } from 'node:timers/promises';
 import test from 'node:test';
 import { IsolatePool } from '../isolate-pool.mjs';
-import { fixture, hostPort } from './fixtures/ledger-fixture.mjs';
+import { fixture, hostPort, python } from './fixtures/ledger-fixture.mjs';
 import { holdTimers, liveTimers } from './fixtures/hold-timers.mjs';
 
 const stubborn = fileURLToPath(new URL('./fixtures/stubborn-port.mjs', import.meta.url));
@@ -204,7 +204,110 @@ test('when the supervisor stalls past a deadline, the next job does not go to th
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, stallMs);
   deadlines.fire();
   const results = await Promise.all([first, second]);
-  assert.equal(results[0].status, 'completed', 'the result that arrived is kept');
+  assert.deepEqual([results[0].status, results[0].reason], ['outcome_unknown', 'deadline']);
   assert.equal(results[1].status, 'completed', 'the next job ran');
   assert.notEqual(results[1].workcell, results[0].workcell);
+});
+
+function receiptCount(ledger) {
+  return python(`
+import json, sys
+from core.ledger.ledger import Ledger
+print(json.dumps(sum(row['kind'] == 'receipt' for row in Ledger(json.load(sys.stdin)['ledger']).records())))
+`, { ledger });
+}
+
+test('a verdict is kept only when it is claimed before the deadline', { timeout: 60000 }, async t => {
+  const deadlines = holdTimers(t, heldDeadline);
+  const { job, directory } = await fixture(t);
+  const release = join(directory, 'release');
+  const early = new IsolatePool({ hostPort, size: 1, isolation: 'process', jobTimeoutMs: heldDeadline });
+  t.after(() => early.close());
+  await early.ready();
+  const running = early.run(job(['pass'], { release }));
+  await until(() => deadlines.count);
+  writeFileSync(release, 'go');
+  const kept = await running;
+  assert.equal(kept.status, 'completed');
+  assert.equal(kept.receipts[0].record.data.outcome_state, 'passed');
+  assert.equal(deadlines.count, 0);
+  const again = await early.run(job(['pass'], { release }));
+  assert.equal(again.status, 'completed');
+  assert.equal(again.workcell, kept.workcell);
+
+  const startedFile = join(directory, 'started-late');
+  const verdictFile = join(directory, 'verdict-late');
+  const late = new IsolatePool({ hostPort: stubborn, size: 1, isolation: 'process', jobTimeoutMs: heldDeadline });
+  t.after(() => late.close());
+  await late.ready();
+  const pending = late.run(job(['pass'], { verdictOnTerm: true, startedFile, verdictFile }));
+  await until(() => existsSync(startedFile) && deadlines.count);
+  deadlines.fire();
+  const stopped = await pending;
+  assert.equal(existsSync(verdictFile), true);
+  assert.equal(stopped.status, 'outcome_unknown');
+  assert.equal(stopped.reason, 'deadline');
+  assert.equal(stopped.report, null);
+  assert.equal(stopped.receipts[0].record.data.outcome_state, 'inconclusive');
+  assert.equal(stopped.receipts[0].record.data.delivery_state, 'outcome_unknown');
+  const followed = await late.run(job(['pass'], { quick: true }));
+  assert.equal(followed.status, 'completed');
+  assert.equal(followed.receipts[0].record.data.outcome_state, 'passed');
+  assert.notEqual(followed.workcell, stopped.workcell);
+});
+
+test('a process cell that traps SIGTERM and then returns a verdict stays inconclusive', { timeout: 60000 }, async t => {
+  const { job, reference, directory } = await fixture(t);
+  const verdictFile = join(directory, 'verdict');
+  const pool = new IsolatePool({ hostPort: stubborn, size: 1, isolation: 'process', jobTimeoutMs: 400 });
+  t.after(() => pool.close());
+  await pool.ready();
+  const started = performance.now();
+  const stopped = await pool.run(job(['pass'], { verdictOnTerm: true, verdictFile }));
+  assert.equal(existsSync(verdictFile), true);
+  assert.equal(stopped.status, 'outcome_unknown');
+  assert.equal(stopped.reason, 'deadline');
+  assert.equal(stopped.report, null);
+  assert.equal(stopped.receipts.length, 1);
+  assert.equal(stopped.receipts[0].record.data.outcome_state, 'inconclusive');
+  assert.equal(stopped.receipts[0].record.data.delivery_state, 'outcome_unknown');
+  assert.equal(stopped.receipts[0].record.data.observations[0].status, 'outcome_unknown');
+  assert.equal(stopped.receipts[0].record.data.observations[0].reason, 'deadline');
+  assert.ok(performance.now() - started < 8000);
+  assert.equal(alive(stopped.workcell), false);
+  assert.equal(pool.stats.busy, 0);
+  assert.equal(pool.stats.workers, 1);
+  assert.equal(await receiptCount(reference.ledger), 1);
+});
+
+test('a late verdict and the cell exit settle a deadline once', { timeout: 60000 }, async t => {
+  const deadlines = holdTimers(t, heldDeadline);
+  const { job, reference, directory } = await fixture(t);
+  const startedFile = join(directory, 'started');
+  const verdictFile = join(directory, 'verdict');
+  const pool = new IsolatePool({ hostPort: stubborn, size: 1, isolation: 'process', jobTimeoutMs: heldDeadline });
+  t.after(() => pool.close());
+  await pool.ready();
+  const pending = pool.run(job(['pass'], { verdictOnTerm: true, exitAfterVerdict: true, startedFile, verdictFile }));
+  await until(() => existsSync(startedFile) && deadlines.count);
+  deadlines.fire();
+  const giveUp = performance.now() + 2000;
+  while (!existsSync(verdictFile)) {
+    if (performance.now() > giveUp) break;
+  }
+  assert.equal(existsSync(verdictFile), true);
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 500);
+  const stopped = await pending;
+  assert.equal(stopped.status, 'outcome_unknown');
+  assert.equal(stopped.reason, 'deadline');
+  assert.equal(stopped.report, null);
+  assert.equal(stopped.receipts.length, 1);
+  assert.equal(stopped.receipts[0].record.data.outcome_state, 'inconclusive');
+  assert.equal(await receiptCount(reference.ledger), 1);
+  const next = await pool.run(job(['pass'], { quick: true }));
+  assert.equal(next.status, 'completed');
+  assert.equal(next.receipts[0].record.data.outcome_state, 'passed');
+  assert.notEqual(next.workcell, stopped.workcell);
+  assert.equal(pool.stats.busy, 0);
+  assert.equal(await receiptCount(reference.ledger), 2);
 });

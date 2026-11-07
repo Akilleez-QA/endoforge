@@ -6,14 +6,14 @@ eddd38ff5911682b430c8ca090c746d22eae09c5e325f8b0ec3eceee5290b949  ../core/ledger
 a7128c8e48c57a42228234a532417eea7c8139fa57111984eed4ca2313eeee81  ../core/ledger/test_frozen.py
 fe3d34f7283ba95832990668bfc426d6358bf7753f56069400b98eb121804614  ../core/ledger/test_ledger.py
 a2c606e60afbe386dcd51cf1407b367c49b3b349655fa61910586995971b78ac  ../core/ledger/test_provenance.py
-b581f101221569bdebfba72b5dfddc0427d23b85c123d7d834af5aa28245909f  ../core/engine/evaluator.mjs
+9a4f7072b1859911e6a17c85630e39d3ca29d3bbe94d9cc2cd9aedd3b8fafe8f  ../core/engine/evaluator.mjs
 e5ac4781c0fa2b3325db360b88eb61b5ff2e439f3796eeb2e8dfb544c7ddce27  ../core/engine/evaluator.test.mjs
 ae9337586cd743bd3c998ade9ab822f0676a4bf1c9b1ec76f5faaa9c04c3372c  ../core/engine/frozen.py
 ea8fee25f4089f5ac199dd739965c971da0a209fdca8d79b32c21dda81563881  ../core/engine/gates.mjs
 551bd10538785c3389720abfa48f858d1c575daf2ba7a486df4c8c49806252a6  ../core/engine/gates.test.mjs
 a6bab5d891cd34f93b5d9e2b995281fcbda795faa3651a1e3ebc2b1566f0231c  ../core/runtime/agent-pool.mjs
 b97b5e72e4de01262c53ef103bb11abd155c1223cc234acc29f0270c78e062f3  ../core/runtime/stub-pool.mjs
-28a6b0a05e9d273dc92634fdc4b828e07a6f1d57ff95d16b382aa0389c329005  ../core/runtime/test/agent-pool.test.mjs
+e79e8d467eaf694557785b343ed50fa51381ffed07799677fa863ce54a29d385  ../core/runtime/test/agent-pool.test.mjs
 bcdc83487dad0fcbb53b55356ec989090faecb292f51d3d1de3959f6d1dbc2c8  ../TODELETE/tools/film/README.md
 5b8244846aff2174a97d93d1c11ae466c6eb191191e08803a14458f4d9192ead  ../TODELETE/tools/film/audiostats.py
 72a3d34547381fc76b11172b0fb9b3e89d1cb3ff68a9f7f6180dd94294968eb5  ../TODELETE/tools/film/audiotags.py
@@ -24,10 +24,10 @@ bcdc83487dad0fcbb53b55356ec989090faecb292f51d3d1de3959f6d1dbc2c8  ../TODELETE/to
 787d0944b3582c41edc846baffbcce77539b235bc994097b28646ff54f183aac  ../TODELETE/tools/film/wan_i2v.py
 96fc5d2026a82baec67806b1f8fcfad72bc8fa0e39add5e6645df303421b87a0  ../TODELETE/tools/invariants/README.md
 1cc91313ab675320dec7920924d581274ab611ea9994f4d77cbbc21883366e05  ../TODELETE/tools/invariants/refrigeration.py
-8513ad1f877b179233a956e7922833a21e7846867c8eb8bb04cdadbd6af50df1  ../core/runtime/README.md
-dded1f96ba95b59d1464347938edd0bec72f93734e57a4dc57f5cf5cd1d3dc00  ../core/runtime/isolate-ledger.mjs
-9d13ea8d577656ecb74413c96864751dce82dc6cdb8f88600fd55cec0215604a  ../core/runtime/isolate-pool.mjs
-0d1fd77041217741ad7708d82fb2049e8e885235ec4b96311f48f207e8d5523c  ../core/runtime/isolate-workcell.mjs
+e58e26edf99676d24f7cc79c6a905cdcfc1c420977f9265e271d88fd10c2b749  ../core/runtime/README.md
+9653fbf3838008a033ab255a424ecf99066423c3713a06fb5c629ca72813134f  ../core/runtime/isolate-ledger.mjs
+cf9692f5909b961ea25d899c7e5a09727489f10960a5e353f3290ae72a01ee66  ../core/runtime/isolate-pool.mjs
+1f2ade84b5f2d09d6c0edb097f1b2a663f6ea18a2841f223526a58128256648a  ../core/runtime/isolate-workcell.mjs
 212c64be3297a20f69bc82d1aefdd09b297c61208ca649fa508a95b4434292ca  ../core/runtime/isolate-wasm.mjs
 edfbe4dfba789febf2972da08694ea069b2ff582aa3f3d1e67482698807c32eb  ../core/runtime/test/isolate-pool.test.mjs
 d2e5eac12efeb5fc9bb34cb92b4b9b75306d507b87c4f93222d32bac3cddfad6  ../core/runtime/test/fixtures/identity-port.mjs
@@ -75,3 +75,5 @@ b2d3e0a0a1402b1263a40e568ca5fe430d98dde3335126b97fd8915904041936  ../core/runtim
 f9426cc0d6522a2a5cc6c3ed3a35932d44b6e6626d389f0663ab2fed8cd140e8  ../core/runtime/x1/reference.mjs
 66fb70fc4c9b4ce781d9f283801d4856b7154359db21f324fa269a9a43607b21  ../core/runtime/x1/scalar.mjs
 c4231ee796b307a0b693dec717e244a8d83eaf902060a904e06ecf15ddce162e  ../core/runtime/test/generator-scalar.test.mjs
+9fbbbd1f2131e6ce97329a1dd75e0b6b19016824d342acbed85f1d8fb2e1befb  ../core/runtime/test/fixtures/host-call-port.mjs
+c0266c20ac037427b35dc64a293c18d87d7109a0377c9aec196d0747f4a26c3a  ../core/runtime/test/isolate-host-call.test.mjs
