@@ -31,4 +31,4 @@ Use a `jobTimeoutMs`, since a check can't stop itself. Don't lower `maxOldGenera
 - A workload without variety: fewer than 20 distinct projects by source, 3 clean, 3 with a diagnostic located in a source file, or 5 distinct codes among those. A configuration error doesn't count, so 20 broken tsconfigs can't qualify.
 - `host-option-effect`: the oracle also runs plain, with none of the host's options, in a copy of the project, and has to agree with its hosted run. The hosted oracle shares the checker's options, so an option that changes a result can't show there.
 
-Thread workcells aren't an OS sandbox. Running the emitted JavaScript isn't implemented here.
+Thread workcells aren't an OS sandbox. `contained-route.mjs` runs what a clean check emits, in [contained cells](../../core/runtime/README.md#contained-javascript), twice, and compares the results and the candidate's tests. It's off unless a caller passes it to `runNeed`, and its report doesn't change a promotion.
