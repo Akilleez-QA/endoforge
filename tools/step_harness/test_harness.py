@@ -4,6 +4,10 @@ Run from .:  python3 -B -m unittest tools.step_harness.test_harness -v
 """
 import unittest
 
+from core.constraints.extract import RuleExtractor
+from core.constraints.port import Message, Origin
+from core.constraints.record import ConstraintRecord
+from core.constraints.store import MemoryStore
 from tools.step_harness.harness import (BLOCKED, DONE, STOP_BUDGET, STOP_CLOCK, STOP_REPEAT,
                                         STOP_UNCERTAIN, Criterion, Limits, StepHarness)
 
@@ -102,6 +106,20 @@ class StepHarnessTests(unittest.TestCase):
         self.assertEqual((result.verdict, result.steps), (STOP_REPEAT, 3))
         self.assertEqual(len(core.decided), 2)
         self.assertEqual(ledger.events[-2]["data"]["kind"], "repeated_call")
+
+    def test_compaction_crosses_once_and_reinjects_constraints(self):
+        store = MemoryStore()
+        record = ConstraintRecord(store, RuleExtractor())
+        record.observe(Message("m1", Origin.HUMAN, "Never touch production."))
+        model = ScriptedModel(*[call(i, "other") for i in range(8)])
+        h = harness(model, max_steps=8, compact_threshold_tokens=200, keep_recent_steps=2)
+        h.constraints = record
+        h.run()
+        compactions = sum(e["kind"] == "harness.checkpoint" for e in h.ledger.events)
+        self.assertGreater(compactions, 0)
+        self.assertEqual(store.crossings, 1)
+        self.assertIn("Never touch production.", model.views[-1]["constraint_record"])
+        self.assertNotIn("constraint_record", model.views[0])
 
     def test_compaction_keeps_ledger_references(self):
         ledger = FakeLedger()
