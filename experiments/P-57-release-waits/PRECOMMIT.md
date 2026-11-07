@@ -57,3 +57,9 @@ W1 or W5 failing means `hold` becomes the default again and the failure is named
 ## Limits
 
 One shared desktop, no quiet gate, Node as recorded. Stub models: their delay is a constant distribution, not a real model's, and no tokens are spent. The corpus kernels are synthetic. RSS isn't PSS. A power loss isn't tested; WAL with `synchronous=FULL` is relied on, as in P-50.
+
+## Amendment 1, after the first run and before the second
+
+Date: 2026-11-07. The first run, `receipt/first`, put its ledgers under `/tmp`, which is tmpfs, so every `fsync` was free: freeze 2 ms and park 1 ms at p50, against P-50's ledgers on btrfs NVMe. Its numbers are kept as recorded and labelled tmpfs. They don't count for W4 or prediction 7, which are about durable crossings. W1, W2, W3, W5 and W6 don't depend on the disk, and the first run's figures for them stand beside the second's.
+
+The second run, `receipt/disk`, is the same harness at the same commit with its output on btrfs NVMe (`/mnt/cold-steam`). Nothing else changes: same bar, predictions and arms, and no retuning.
