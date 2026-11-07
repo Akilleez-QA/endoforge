@@ -35,7 +35,7 @@ test('a check in the cohort gives the same verdicts as the check on the supervis
 
 for (const check of ['sibling', 'fused']) {
   test(`${check}: a checker Worker that dies loses only its own attempt, as outcome_unknown, and it isn't run again`, { timeout: 180000 }, async t => {
-    const route = createContainedRoute({ check, width: 4, deadlineMs: 1000 });
+    const route = createContainedRoute({ check, width: 4, deadlineMs: 1000, checker: { checkDeadlineMs: 120000 } });
     t.after(() => route.close());
     await route.ready();
     const good = CORPUS[0];
