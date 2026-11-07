@@ -48,9 +48,12 @@ export class IsolatePool {
   #warmOptions;
   #startFailures = 0;
   #hostCall;
+  #retireAfterJobs;
 
   constructor({ hostPort, size = availableParallelism(), resourceLimits = {}, wasmMemoryMaxMb = 64,
-    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, warm, jobTimeoutMs, hostCall } = {}) {
+    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, warm, jobTimeoutMs, hostCall, retireAfterJobs = 256 } = {}) {
+    if (!positive(retireAfterJobs)) throw new TypeError('retireAfterJobs must be a positive integer');
+    this.#retireAfterJobs = retireAfterJobs;
     this.#hostCall = hostCall;
     if (!['thread', 'process'].includes(isolation)) throw new TypeError('isolation must be thread or process');
     if (cgroupRoot !== undefined && (typeof cgroupRoot !== 'string' || !cgroupRoot)) throw new TypeError('cgroupRoot path required');
@@ -211,6 +214,8 @@ export class IsolatePool {
       clearTimeout(job.deadline);
       cell.job = null;
       this.#finish(job, { ...result, ...cell.metadata });
+      cell.jobs = (cell.jobs ?? 0) + 1;
+      if (cell.jobs >= this.#retireAfterJobs) { cell.stopping = true; cell.worker.terminate(); }
       this.#pump();
     });
     worker.on('error', error => { cell.error = error; });
