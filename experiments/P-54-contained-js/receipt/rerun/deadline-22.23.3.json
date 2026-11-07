@@ -1,0 +1,97 @@
+{
+ "node": "22.23.3",
+ "deadline": 200,
+ "rows": [
+  {
+   "arm": "cohort-cell",
+   "kind": "loop",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 24.5,
+   "overrunP95": 35.9,
+   "overrunMax": 35.9
+  },
+  {
+   "arm": "cohort-cell",
+   "kind": "loop-swallow",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 23.3,
+   "overrunP95": 27.6,
+   "overrunMax": 27.6
+  },
+  {
+   "arm": "cohort-cell",
+   "kind": "async-microtask-loop",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 23.9,
+   "overrunP95": 28.8,
+   "overrunMax": 28.8
+  },
+  {
+   "arm": "cohort-cell",
+   "kind": "async-thenable-chain",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 22.9,
+   "overrunP95": 27.6,
+   "overrunMax": 27.6
+  },
+  {
+   "arm": "cohort-cell",
+   "kind": "regex-catastrophe",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 22.7,
+   "overrunP95": 26.4,
+   "overrunMax": 26.4
+  },
+  {
+   "arm": "cohort-cell",
+   "kind": "bigint-big",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 58.1,
+   "overrunP95": 61.7,
+   "overrunMax": 61.7
+  },
+  {
+   "arm": "cohort-cell",
+   "kind": "sort-big",
+   "reasons": {
+    "heap": 3,
+    "deadline": 7
+   },
+   "overrunP50": 28.2,
+   "overrunP95": 34,
+   "overrunMax": 34
+  },
+  {
+   "arm": "cohort-cell",
+   "kind": "string-join",
+   "reasons": {
+    "string_limit": 10
+   },
+   "overrunP50": -180,
+   "overrunP95": -177.8,
+   "overrunMax": -177.8
+  },
+  {
+   "arm": "cohort-cell",
+   "kind": "deep-json-stringify",
+   "reasons": {
+    "stack": 10
+   },
+   "overrunP50": -74.6,
+   "overrunP95": -53.3,
+   "overrunMax": -53.3
+  }
+ ]
+}
