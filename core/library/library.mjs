@@ -47,7 +47,7 @@ export async function openLibrary({ journal: path = null, cells = 1, deadlineMs 
   const survivors = (discrimination, level) => {
     if (level === 'none') return 0;
     if (!discrimination || discrimination.unsupported) return Infinity;
-    return discrimination.survivors.length + (level === 'full' ? discrimination.wrappers.survivors.length : 0);
+    return discrimination.survivors.length + (level === 'full' ? discrimination.wrappers.survivors.length + discrimination.bounds.length : 0);
   };
   const library = {
     get size() { return entries.size; },
@@ -106,7 +106,7 @@ export async function openLibrary({ journal: path = null, cells = 1, deadlineMs 
       const run = await qualify(entry, need, tests);
       const result = run.result ?? null, base = { need: { id: need.id ?? null, contract: sha256(need.files['CONTRACT.md']), tests: sha256(need.files['tests.json']), frozen: sha256(need.files['frozen.sha256']) },
         source: entry.promotion, wasm: entry.wasmSha, sourceSha: entry.sourceSha, key, binding: map, host: hostDigest,
-        gates: result?.gates ?? null, discrimination: result?.discrimination ? { ...result.discrimination, survivors: result.discrimination.survivors.length, wrappers: { ...result.discrimination.wrappers, survivors: result.discrimination.wrappers.survivors.length } } : null };
+        gates: result?.gates ?? null, discrimination: result?.discrimination ? { ...result.discrimination, survivors: result.discrimination.survivors.length, wrappers: { ...result.discrimination.wrappers, survivors: result.discrimination.wrappers.survivors.length }, bounds: result.discrimination.bounds.length } : null };
       const reason = run.error ?? (!result.promotable ? 'evaluator_failed' : survivors(result.discrimination, gate) > 0 ? 'evaluator_cannot_discriminate' : null);
       if (reason) {
         const refusal = { kind: 'library_refused', reason, ...base };

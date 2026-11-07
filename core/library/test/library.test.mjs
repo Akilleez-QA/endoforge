@@ -10,8 +10,8 @@ import { runNeed } from '../../runtime/x1/pipeline.mjs';
 import { candidate } from '../../runtime/test/fixtures/x1/candidate.mjs';
 import { openLibrary } from '../library.mjs';
 import { binding, capabilityFromGlue, keysOf, numerals, range, sha256, unit } from '../key.mjs';
-import { discriminate } from '../discriminate.mjs';
-import { mutantsOf } from '../mutants.mjs';
+import { discriminate, uncoveredBounds } from '../discriminate.mjs';
+import { applied, mutantsOf } from '../mutants.mjs';
 const fixture = name => fileURLToPath(new URL(`../../runtime/test/fixtures/x1/${name}`, import.meta.url));
 const base = candidate();
 const glue = { ...JSON.parse(base.files['glue.json']) };
@@ -61,6 +61,11 @@ test('wasm mutants are valid modules in each class and unknown opcodes fail clos
   assert(weak.wrappers.survivors.some(s => s.kind === 'negate'));
   const strong = discriminate({ bytes: double, tests: [{ fn: 'f', args: [1.37], expect: 2.74, tol: 1e-12 }], capability: shape, numbers: [] });
   assert.equal(strong.survivors.length + strong.wrappers.survivors.length, 0);
+  assert(weak.survivors.length > 0 && mutantsOf(double).sites.some(s => s.insert));
+  for (const site of mutantsOf(double).sites) new WebAssembly.Module(applied(double, site));
+  const guarded = { exports: [{ ...shape.exports[0] }], traps: ['f'] };
+  assert.deepEqual(uncoveredBounds(guarded, [{ fn: 'f', args: [-1], expectError: true }]), [{ fn: 'f', arg: 0, side: 'high' }]);
+  assert.deepEqual(uncoveredBounds(guarded, [{ fn: 'f', args: [-1], expectError: true }, { fn: 'f', args: [9], expectError: true }]), []);
   const prefixed = Buffer.from(double); prefixed[prefixed.length - 2] = 0xfd;
   assert.throws(() => mutantsOf(prefixed), /opcode/);
 });
@@ -127,6 +132,18 @@ test('the full gate refuses an evaluator that cannot discriminate', async t => {
   const outcome = await library.serve(need({ tests: thin }));
   assert.equal(outcome.verdict, 'refused'); assert.equal(outcome.reason, 'evaluator_cannot_discriminate');
   assert(outcome.receipt.discrimination.survivors + outcome.receipt.discrimination.wrappers.survivors > 0);
+});
+test('nothing a cell imports can start a process', async () => {
+  const pending = ['../cell.mjs'].map(name => new URL(name, import.meta.url)), seen = new Set();
+  while (pending.length) {
+    const url = pending.pop();
+    if (seen.has(url.href)) continue;
+    seen.add(url.href);
+    const text = await readFile(url, 'utf8');
+    assert.doesNotMatch(text, /child_process/, url.pathname);
+    for (const [, name] of text.matchAll(/from '(\.[^']+)'/g)) pending.push(new URL(name, url));
+  }
+  assert(seen.size >= 5);
 });
 test('cell deadline turns a hang into a refusal', async t => {
   const { Cells } = await import('../cells.mjs');

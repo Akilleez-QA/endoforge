@@ -10,7 +10,11 @@ const OPS = new Map(Object.entries({
   0x9d: [[0x9b, 'rounding'], [0x9c, 'rounding'], [0x9e, 'rounding']], 0x9e: [[0x9b, 'rounding'], [0x9c, 'rounding'], [0x9d, 'rounding']],
   0xa0: [[0xa1, 'sign']], 0xa1: [[0xa0, 'sign']], 0xa2: [[0xa3, 'units']], 0xa3: [[0xa2, 'units']], 0xa4: [[0xa5, 'join']], 0xa5: [[0xa4, 'join']],
 }).map(([k, v]) => [Number(k), v]));
-const MAX_SITES = 600;
+const MAX_SITES = 1000;
+const f64 = value => { const out = new Uint8Array(8); new DataView(out.buffer).setFloat64(0, value, true); return [...out]; };
+const scaledRound = f => [0x44, ...f64(f), 0xa2, 0x9e, 0x44, ...f64(f), 0xa3];
+const INSERTS = [[[0xb6, 0xbb], 'single_precision'], [[0x9c], 'floor'], [[0x9b], 'ceil'], [[0x9e], 'nearest'], [scaledRound(100), 'round2'], [scaledRound(10), 'round1']];
+const uleb = value => { const out = []; do { const part = value % 128; value = Math.floor(value / 128); out.push(part | (value ? 128 : 0)); } while (value); return out; };
 const unsupported = reason => Object.assign(Error(reason), { unsupported: true });
 function scan(bytes) {
   let p = 8;
@@ -18,14 +22,15 @@ function scan(bytes) {
   const leb = () => { const start = p; while (bytes[p++] & 128); return p - start; };
   const sites = [];
   while (p < bytes.length) {
-    const id = bytes[p++], size = uint(), end = p + size;
+    const id = bytes[p++], sectionAt = p, size = uint(), end = p + size, section = { at: sectionAt, width: p - sectionAt, size };
     if (id !== 10) { p = end; continue; }
     for (let count = uint(); count; count--) {
-      const bodySize = uint(), bodyEnd = p + bodySize;
+      const bodyAt = p, bodySize = uint(), bodyEnd = p + bodySize, body = { at: bodyAt, width: p - bodyAt, size: bodySize };
       for (let groups = uint(); groups; groups--) { uint(); p++; }
       while (p < bodyEnd) {
         const at = p, op = bytes[p++];
         for (const [to, kind] of OPS.get(op) ?? []) sites.push({ at, write: [to], kind, op: `${op.toString(16)}>${to.toString(16)}` });
+        if (op >= 0xa0 && op <= 0xa3) for (const [insert, name] of INSERTS) sites.push({ at: p, insert, section, body, kind: 'rounding', op: name });
         if (op === 0x02 || op === 0x03 || op === 0x04) leb();
         else if (op === 0x0c || op === 0x0d || op === 0x10 || (op >= 0x20 && op <= 0x24)) leb();
         else if (op === 0x0e) { for (let n = uint() + 1; n; n--) leb(); }
@@ -81,6 +86,11 @@ export function mutantsOf(bytes) {
   return { total: all.length, sites };
 }
 export function applied(bytes, site) {
+  if (site.insert) {
+    const { at, insert, section, body } = site, grownBody = uleb(body.size + insert.length);
+    const grownSection = uleb(section.size + insert.length + grownBody.length - body.width);
+    return Uint8Array.from([...bytes.subarray(0, section.at), ...grownSection, ...bytes.subarray(section.at + section.width, body.at), ...grownBody, ...bytes.subarray(body.at + body.width, at), ...insert, ...bytes.subarray(at)]);
+  }
   const copy = Uint8Array.from(bytes);
   copy.set(site.write, site.at);
   return copy;

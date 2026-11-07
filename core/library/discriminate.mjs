@@ -48,6 +48,20 @@ export function gridFor(item, tests, numbers) {
   for (let i = 0; i < all.length; i += stride) picked.push(all[Math.floor(i)]);
   return picked;
 }
+export function uncoveredBounds(capability, tests) {
+  const missing = [], traps = new Set(capability.traps ?? []);
+  for (const item of capability.exports) {
+    if (!traps.has(item.name)) continue;
+    const refused = tests.filter(test => test.fn === item.name && test.expectError);
+    item.args.forEach((arg, i) => {
+      const r = range(arg.range);
+      if (!r || !('low' in r)) return;
+      if (!refused.some(test => test.args[i] < r.low || (r.lowOpen && test.args[i] === r.low))) missing.push({ fn: item.name, arg: i, side: 'low' });
+      if (!refused.some(test => test.args[i] > r.high || (r.highOpen && test.args[i] === r.high))) missing.push({ fn: item.name, arg: i, side: 'high' });
+    });
+  }
+  return missing;
+}
 const wrappersFor = result => {
   const places = new Set([0, 2, result.precision ?? 0]);
   const list = [['negate', v => -v], ['scale', v => v * 1.001]];
@@ -61,7 +75,7 @@ export function discriminate({ bytes, tests, capability, numbers, engine = WebAs
   const base = loaded(bytes, engine);
   const items = capability.exports;
   const grids = Object.fromEntries(items.map(item => [item.name, gridFor(item, tests, numbers)]));
-  const outcome = { mutants: 0, invalid: 0, killed: 0, equivalent: 0, survivors: [], wrappers: { total: 0, killed: 0, equivalent: 0, survivors: [] }, unsupported: null, capped: false };
+  const outcome = { mutants: 0, invalid: 0, killed: 0, equivalent: 0, survivors: [], wrappers: { total: 0, killed: 0, equivalent: 0, survivors: [] }, unsupported: null, capped: false, bounds: uncoveredBounds(capability, tests) };
   let sites;
   try { const scanned = mutantsOf(bytes); sites = scanned.sites; outcome.capped = scanned.total > sites.length; }
   catch (error) { if (!error.unsupported) throw error; outcome.unsupported = error.message; return outcome; }

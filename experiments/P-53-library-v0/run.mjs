@@ -6,7 +6,7 @@ import { performance } from 'node:perf_hooks';
 import { createInterface } from 'node:readline';
 import { fileURLToPath } from 'node:url';
 import { openLibrary } from '../../core/library/library.mjs';
-import { capabilityFromGlue, numerals, sha256 } from '../../core/library/key.mjs';
+import { capabilityFromGlue, numerals, range, sha256 } from '../../core/library/key.mjs';
 import { accepted, gridFor, loaded } from '../../core/library/discriminate.mjs';
 import { declaredCases, mutantCase } from './near-miss.mjs';
 const here = fileURLToPath(new URL('./', import.meta.url));
@@ -95,6 +95,25 @@ await limit(declared, async c => {
 });
 const stream = createInterface({ input: createReadStream(join(p51, 'prep/mutants.jsonl')) });
 const rows = [];
+const LOW = 4096;
+const inDomainDiffers = (kernel, kBase, wasm) => {
+  const a = loaded(Buffer.from(kBase, 'base64')), b = loaded(Buffer.from(wasm, 'base64'));
+  let state = 12345;
+  const next = () => { state = (state * 1664525 + 1013904223) % 4294967296; return state / 4294967296; };
+  for (const item of kernel.capability.exports) {
+    const ranges = item.args.map(arg => range(arg.range));
+    const numeric = ranges.map((r, i) => r && 'low' in r ? r : null);
+    const inside = args => args.every((v, i) => { const r = numeric[i]; return !r || ((r.lowOpen ? v > r.low : v >= r.low) && (r.highOpen ? v < r.high : v <= r.high)); });
+    const samples = gridFor(item, kernel.tests, numerals(kernel.contract)).filter(inside);
+    if (numeric.every(Boolean)) for (let n = 0; n < LOW; n++) samples.push(numeric.map((r, i) => { const v = r.low + next() * (r.high - r.low); return item.args[i].kind === 'number' ? v : Math.round(v); })); 
+    for (const args of samples.filter(inside)) {
+      const x = a(item.name, args), y = b(item.name, args);
+      const same = x.trap || y.trap ? Boolean(x.trap) === Boolean(y.trap) : Object.is(x.value, y.value) || Math.abs(x.value - y.value) <= 1e-9 * Math.max(1, Math.abs(x.value), Math.abs(y.value));
+      if (!same) return true;
+    }
+  }
+  return false;
+};
 let mutantRows = 0, skippedNonFinite = 0;
 for await (const line of stream) {
   const row = JSON.parse(line);
@@ -104,11 +123,21 @@ for await (const line of stream) {
   const c = mutantCase(row, kernel, tests => tests.every(t => accepted(t, call(t.fn, t.args))));
   if (!c) { if (row.correlatedNonFinite) skippedNonFinite++; continue; }
   mutantRows++;
+  c.finite = row.witness.finite;
+  if (c.arm === 'B') c.wasm = row.wasm;
   rows.push(c);
 }
 const mutantTable = {};
+const hidden = {};
 await limit(rows, async c => {
-  await record(mutantTable, `${c.arm}/${c.class}`, { id: c.key, capability: c.capability, files: frozenFiles(c.contract, c.tests) });
+  const served = await record(mutantTable, `${c.arm}/${c.class}`, { id: c.key, capability: c.capability, files: frozenFiles(c.contract, c.tests) });
+  if (c.arm !== 'B') return;
+  const kernel = kernels.get(c.key), inDomain = inDomainDiffers(kernel, byKey.get(c.key).wasm, c.wasm);
+  const row = hidden[`${c.class}/${c.finite ? 'finite' : 'non_finite_only'}/${inDomain ? 'in_domain' : 'out_of_domain'}`] ??= { n: 0, servedFull: 0, servedMutants: 0, servedNone: 0 };
+  row.n++;
+  if (served.contract?.outcome.full) row.servedFull++;
+  if (served.contract?.outcome.mutants) row.servedMutants++;
+  if (served.contract?.outcome.none) row.servedNone++;
 });
 const mutantStats = { reached: 0, unsupported: 0, capped: 0, invalid: 0, mutants: 0 };
 for (const pending of cache.values()) {
@@ -126,6 +155,13 @@ rmSync(journalPath, { force: true });
 const spawnLog = process.env.P53_SPAWN_LOG;
 const warm = await openLibrary({ journal: journalPath, cells: 1, deadlineMs: 30000 });
 await warm.admit([...kernels.values()].map(k => ({ ledger: join(k.directory, 'ledger.sqlite'), promotion: join(k.directory, 'promotion.json'), label: { key: k.key, run: k.run, need: k.need, cohort: k.cohort } })));
+const shim = join(output, 'shim');
+mkdirSync(shim, { recursive: true });
+const shimLog = join(output, 'python-shim.log');
+writeFileSync(shimLog, '');
+writeFileSync(join(shim, 'python3'), `#!/bin/sh\necho python3 >> "${shimLog}"\nPATH="${process.env.PATH}" exec python3 "$@"\n`, { mode: 0o755 });
+const pathBefore = process.env.PATH;
+process.env.PATH = `${shim}:${pathBefore}`;
 const spawnsBefore = spawnLog && existsSync(spawnLog) ? readFileSync(spawnLog, 'utf8').trim().split('\n').length : 0;
 const timing = { pass: [], refused: [], miss: [] };
 for (const round of [0, 1]) for (const kernel of kernels.values()) {
@@ -139,6 +175,7 @@ for (const round of [0, 1]) for (const kernel of kernels.values()) {
   if (round) timing.miss.push(performance.now() - begin);
 }
 const warmSpawns = (spawnLog && existsSync(spawnLog) ? readFileSync(spawnLog, 'utf8').trim().split('\n').length : 0) - spawnsBefore;
+const warmPython = readFileSync(shimLog, 'utf8').trim().split('\n').filter(Boolean).length;
 await warm.close();
 const journalBytes = statSync(journalPath).size;
 const memory = JSON.parse(execFileSync(process.execPath, ['--expose-gc', join(here, 'memory.mjs'), journalPath], { encoding: 'utf8' }));
@@ -146,9 +183,11 @@ const generation = [];
 const ids = [...kernels.values()].filter(k => k.run === 'cand-r1').slice(0, 5);
 for (const k of ids) {
   const log = join(output, `spawns-${k.id}.log`);
+  writeFileSync(shimLog, '');
   rmSync(log, { force: true });
   writeFileSync(log, '');
   generation.push(JSON.parse(execFileSync(process.execPath, ['--import', join(here, 'count-spawns.mjs'), join(here, 'generation-path.mjs'), k.candidate, byKey.get(k.key).wasm, k.id, log], { encoding: 'utf8', env: { ...process.env, P53_SPAWN_LOG: log } })));
+  generation.at(-1).pythonViaShim = readFileSync(shimLog, 'utf8').trim().split('\n').filter(Boolean).length;
 }
 const stages = { total: [], generate: [], spec: [], implementation: [], notModel: [] };
 for (const k of kernels.values()) {
@@ -159,8 +198,8 @@ for (const k of kernels.values()) {
   const span = name => { const times = [...readFileSync(join(trace, name), 'utf8').matchAll(/"t":(\d+)/g)].map(m => Number(m[1])); return times.at(-1) - times[0]; };
   if (files.length === 2) { stages.spec.push(span(files[0])); stages.implementation.push(span(files[1])); }
 }
-const summary = { precommit, node: process.version, admission, heldOut, perNeed, audit: { compared: audit.compared, disagreementCount: audit.disagreements.length, disagreements: audit.disagreements }, adversarial, mutantTable, mutantRows, skippedNonFinite, declaredCases: declared.length, mutantStats,
-  warmPath: { pass: stats(timing.pass), refused: stats(timing.refused), miss: stats(timing.miss), spawns: warmSpawns, spawnCounted: Boolean(spawnLog) }, memory: { ...memory, journalBytesPerRecord: journalBytes / (kernels.size + 2 * kernels.size * 2) },
+const summary = { precommit, node: process.version, admission, heldOut, perNeed, audit: { compared: audit.compared, disagreementCount: audit.disagreements.length, disagreements: audit.disagreements }, adversarial, mutantTable, hidden, mutantRows, skippedNonFinite, declaredCases: declared.length, mutantStats,
+  warmPath: { pass: stats(timing.pass), refused: stats(timing.refused), miss: stats(timing.miss), spawns: warmSpawns, spawnCounted: Boolean(spawnLog), pythonViaShim: warmPython }, memory: { ...memory, journalBytesPerRecord: journalBytes / (kernels.size + 2 * kernels.size * 2) },
   generationPath: { replayed: generation, recorded: Object.fromEntries(Object.entries(stages).map(([k, v]) => [k, stats(v)])) } };
 writeFileSync(join(output, 'summary.json'), JSON.stringify(summary, null, 2));
 console.log('wrote', join(output, 'summary.json'));

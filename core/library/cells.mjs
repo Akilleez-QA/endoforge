@@ -31,7 +31,7 @@ export class Cells {
         if (reply.breach) finish({ error: 'cell_limit' }, true);
         else if (reply.job === job) finish(reply.error ? { error: reply.error } : { result: reply.result }, false);
       };
-      const failed = () => finish({ error: 'cell_failed' }, true);
+      const failed = error => finish({ error: `cell_failed:${error?.code ?? 'unknown'}` }, true);
       const exited = () => finish({ error: 'cell_exit' }, true);
       const timer = setTimeout(() => finish({ error: 'cell_timeout' }, true), this.#deadlineMs);
       worker.on('message', message); worker.once('error', failed); worker.once('exit', exited);
