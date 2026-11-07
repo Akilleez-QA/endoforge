@@ -58,7 +58,7 @@ for (const isolation of ['thread', 'process']) {
         assert.equal(run.result.promoted, false);
         assert.deepEqual(seen.ids, [...before, 'candidate', 'receipt']);
         assert.equal(seen.outcome, 'inconclusive');
-        assert.equal(decision(directory), 'refuse');
+        assert.equal(decision(directory), 'inconclusive');
         await verifyRerun(root, directory, seen.evaluator, isolation);
       }
     });
@@ -189,7 +189,7 @@ for (const isolation of ['thread', 'process']) {
       const seen = await state(directory);
       if (stage === 'model:wait') await agentNoRecords(directory);
       else if (isolation === 'thread') { assert.deepEqual(seen.ids, before); assert.equal(await agentDecision(directory), null); }
-      else { assert.deepEqual(seen.ids, [...before, 'candidate', 'receipt']); assert.equal(seen.outcome, 'inconclusive'); assert.equal(await agentDecision(directory), 'refuse'); }
+      else { assert.deepEqual(seen.ids, [...before, 'candidate', 'receipt']); assert.equal(seen.outcome, 'inconclusive'); assert.equal(await agentDecision(directory), 'inconclusive'); }
       const again = await launch({ root, directory, isolation, agent: true, resume: true });
       assert.equal(again.result.promoted, true, JSON.stringify(again.result));
     });

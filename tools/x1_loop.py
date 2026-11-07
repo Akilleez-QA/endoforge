@@ -10,9 +10,9 @@ from core.ledger.ledger import encode
 
 REPOSITORY = Path(__file__).resolve().parents[1]
 ROUND_CHECKS = ["schema", "interface", "bounds", "determinism", "forbidden_effects", "residual"]
-GATES = {"G1_frozen", "G2_compiles", "G3_exports", "G4_tests", "G5_deterministic", "G6_bounded", "G7_glue"}
+GATES = {"G1_frozen", "G2_compiles", "G3_exports", "G4_tests", "G5_deterministic", "G6_bounded", "G7_glue", "G8_nonfinite"}
 ORACLE_FILES = ("CONTRACT.md", "tests.json", "frozen.sha256")
-IMPLEMENTATION_FILES = ("host.mjs", "gates.mjs", "glue.schema.json", "loop-port.mjs", "agent.mjs")
+IMPLEMENTATION_FILES = ("host.mjs", "gates.mjs", "glue.schema.json", "measure.mjs", "meter.mjs", "contract.mjs", "loop-port.mjs", "agent.mjs")
 
 
 FREEZE_FACTS = dict(confirmed_by="none: frozen by the host with no reviewer",
@@ -21,12 +21,18 @@ FREEZE_FACTS = dict(confirmed_by="none: frozen by the host with no reviewer",
 
 
 def decide(records, tip, stored_hash, request):
-    decision = dict(version=1, issuer="endoforge.local.x1", policy="X1-G1-G7/v1", scope="qualification",
+    decision = dict(version=1, issuer="endoforge.local.x1", policy="X1-G1-G8/v1", scope="qualification",
                     candidate=request["candidate"], frozen_evaluator=request["reference"]["identity"],
                     receipt=request["receipt"])
     try:
         candidate, receipt = records[request["candidate"]], records[request["receipt"]["id"]]
         data = receipt["data"]
+        if (data["outcome_state"] == "inconclusive" and data["delivery_state"] == "outcome_unknown"
+                and candidate["kind"] == "candidate" and receipt["kind"] == "receipt"
+                and stored_hash == request["receipt"]["hash"] and data["candidate"] == candidate["id"]
+                and data["frozen_evaluator"] == request["reference"]["identity"]):
+            decision.update(decision="inconclusive", reason="the evaluation did not reach an outcome; nothing was decided about the candidate")
+            return sealed(decision)
         if (candidate["kind"] != "candidate"
                 or hashlib.sha256(candidate["data"]["content"].encode()).hexdigest() != candidate["id"]
                 or receipt["kind"] != "receipt" or stored_hash != request["receipt"]["hash"]

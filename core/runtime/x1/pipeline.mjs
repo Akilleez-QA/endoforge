@@ -52,7 +52,7 @@ async function attemptCurrent({ need, directory, pool, env = process.env, compil
     timings.promote = performance.now() - start;
     const contained = containedRoute ? await containedRoute.check(generated.candidate).catch(error => ({ lane: 'compatibility', status: 'outcome_unknown', reason: error.message })) : undefined;
     observe?.('returned');
-    return { promoted: decision.decision === 'promote', candidate: identity, receipt: decision.receipt,
+    return { promoted: decision.decision === 'promote', ...(decision.decision === 'inconclusive' ? { inconclusive: true } : {}), candidate: identity, receipt: decision.receipt,
       decision: decision.sha256, testDouble: generated.testDouble, modelMs: generated.modelMs, timings, ...(scalarFilter ? { scalarFilter } : {}), ...(contained ? { contained } : {}) };
   } catch (error) {
     scalarFilter ??= error?.scalarFilter;
