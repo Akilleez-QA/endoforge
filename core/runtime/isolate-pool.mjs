@@ -56,10 +56,13 @@ export class IsolatePool {
   #hostCalls;
   #frozenThroughLedger;
   #hostCall;
+  #retireAfterJobs;
   #busyMs = 0;
 
   constructor({ hostPort, size = availableParallelism(), resourceLimits = {}, wasmMemoryMaxMb = 64,
-    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, warm, warmTimeoutMs = 60000, jobTimeoutMs, jobDeadlineMs, hostCall, hostCalls, frozenThroughLedger = false, cellEnv, cellFlags = [], ledgerBridge } = {}) {
+    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, warm, warmTimeoutMs = 60000, jobTimeoutMs, jobDeadlineMs, hostCall, hostCalls, frozenThroughLedger = false, cellEnv, cellFlags = [], ledgerBridge, retireAfterJobs = 256 } = {}) {
+    if (!positive(retireAfterJobs)) throw new TypeError('retireAfterJobs must be a positive integer');
+    this.#retireAfterJobs = retireAfterJobs;
     this.#hostCall = hostCall;
     this.#cellEnv = cellEnv;
     this.#cellFlags = cellFlags;
@@ -249,6 +252,8 @@ export class IsolatePool {
       if (!this.#claim(job)) return;
       cell.job = null;
       this.#finish(job, { ...result, ...cell.metadata });
+      cell.jobs = (cell.jobs ?? 0) + 1;
+      if (cell.jobs >= this.#retireAfterJobs) { cell.stopping = true; cell.worker.terminate(); }
       this.#pump();
     });
     worker.on('error', error => { if (cell.error?.code !== 'ERR_WORKCELL_DEADLINE') cell.error = error; });

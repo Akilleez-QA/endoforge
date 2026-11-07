@@ -1,0 +1,89 @@
+{
+  "tally": {
+    "development": {
+      "kernels": 29,
+      "flagged": 0,
+      "names": 0,
+      "precision": 0,
+      "unit": 0,
+      "codes": 0,
+      "nonFiniteFlagged": 0,
+      "expectations": {
+        "trap": 16,
+        "finite": 8,
+        "silent": 2,
+        "excluded": 2
+      },
+      "details": []
+    },
+    "held-out": {
+      "kernels": 148,
+      "flagged": 1,
+      "names": 0,
+      "precision": 0,
+      "unit": 3,
+      "codes": 1,
+      "nonFiniteFlagged": 0,
+      "expectations": {
+        "finite": 55,
+        "trap": 60,
+        "silent": 18,
+        "excluded": 18
+      },
+      "details": [
+        "cand-r4/C-015: approvalDecision: labels for codes 1 and 2 fit the contract better swapped",
+        "cand-r4/CC-007 advisory: liquidSupplyKgS: glue unit kg/s disagrees with the name, which says s | evaporatedKgS: glue unit kg/s disagrees with the name, which says s",
+        "cand-r5/CC-025 advisory: horsepowerFromKw: glue unit hp disagrees with the name, which says kW",
+        "cand-r6/CC-007 advisory: liquidFeedKgS: glue unit kg/s disagrees with the name, which says s | evaporatedKgS: glue unit kg/s disagrees with the name, which says s"
+      ]
+    },
+    "base": {
+      "kernels": 172,
+      "flagged": 0,
+      "names": 0,
+      "precision": 0,
+      "unit": 3,
+      "codes": 0,
+      "nonFiniteFlagged": 0,
+      "expectations": {
+        "silent": 33,
+        "trap": 115,
+        "excluded": 10,
+        "permitted": 1,
+        "finite": 6
+      },
+      "details": [
+        "base-r4/CC-007 advisory: suppliedKgS: glue unit kg/s disagrees with the name, which says s | evaporatedKgS: glue unit kg/s disagrees with the name, which says s",
+        "base-r5/CC-007 advisory: liquidSupplyKgS: glue unit kg/s disagrees with the name, which says s | evaporatedKgS: glue unit kg/s disagrees with the name, which says s",
+        "base-r6/CC-011 advisory: costFor15Lb: glue unit USD disagrees with the name, which says lb"
+      ]
+    }
+  },
+  "mislabel": {
+    "unit suffix dropped from a name": {
+      "total": 310,
+      "byNames": 310,
+      "byAnyRule": 310
+    },
+    "whole argument entries in the wrong order": {
+      "total": 255,
+      "byNames": 255,
+      "byAnyRule": 255
+    },
+    "names swapped, units and order kept": {
+      "total": 255,
+      "byNames": 255,
+      "byAnyRule": 255
+    },
+    "units swapped, names kept": {
+      "total": 103,
+      "byNames": 0,
+      "byAnyRule": 40
+    },
+    "same wrong order in kernel signature and glue": {
+      "total": 255,
+      "byNames": 31,
+      "byAnyRule": 33
+    }
+  }
+}

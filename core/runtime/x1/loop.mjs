@@ -160,7 +160,7 @@ export async function attemptAgent({ need, directory, pool, observe, limits = ag
     observe?.('returned');
     timings.promote = 0;
     timings.total = performance.now() - begin;
-    return { promoted: outcome.promoted, candidate: outcome.candidate, receipt: outcome.receipt, decision: outcome.decision, problem: outcome.problem, status: outcome.status,
+    return { promoted: outcome.promoted, ...(outcome.inconclusive ? { inconclusive: true } : {}), candidate: outcome.candidate, receipt: outcome.receipt, decision: outcome.decision, problem: outcome.problem, status: outcome.status,
       agent: kept.agent ?? null, testDouble: provider.testDouble, modelMs: context.modelMs, timings };
   } catch {
     provider?.endSession(jobKey);
@@ -203,7 +203,7 @@ export async function commitCandidate(pool, { evaluated: { observed, content, so
   const committed = await pool.ledger.request('commit', { reference, candidates: [identity], receipts: [template] },
     { content, decisionPath, result: observed, ...(receiptId ? {} : { nextReceipt: true }), ...(sources ? { sources } : {}), ...(continuation === null ? {} : { continuation }) });
   timings.ledger = performance.now() - start;
-  return { promoted: committed.decision.decision === 'promote', candidate: identity, receipt: committed.decision.receipt,
+  return { promoted: committed.decision.decision === 'promote', ...(committed.decision.decision === 'inconclusive' ? { inconclusive: true } : {}), candidate: identity, receipt: committed.decision.receipt,
     decision: committed.decision.sha256, problem: committed.problem, status: committed.receipts[0].record.data.outcome_state,
     report: observed.report, rounds: observed.evidence?.rounds ?? [] };
 }
@@ -234,7 +234,7 @@ export async function attemptInIsolate({ need, directory, pool, env = process.en
       admission, decisionPath: join(directory, 'promotion.json'), observe, timings, repair });
     timings.promote = 0;
     timings.total = performance.now() - begin;
-    return { promoted: outcome.promoted, candidate: outcome.candidate, receipt: outcome.receipt, decision: outcome.decision, problem: outcome.problem, rounds: outcome.rounds,
+    return { promoted: outcome.promoted, ...(outcome.inconclusive ? { inconclusive: true } : {}), candidate: outcome.candidate, receipt: outcome.receipt, decision: outcome.decision, problem: outcome.problem, rounds: outcome.rounds,
       testDouble: generated.testDouble, modelMs: generated.modelMs, timings, ...(scalarFilter ? { scalarFilter } : {}) };
   } catch (error) {
     scalarFilter ??= error?.scalarFilter;

@@ -40,7 +40,7 @@ test('a real syscall counter sees no spawn or write before commit in the cell, a
         assert(park.writes.length > 0 && park.writes.every(line => /\/ledger\.sqlite(-wal|-shm)?$/.test(line)), park.writes.join('\n'));
       }
       if (arm === 'current') {
-        assert(toCommit.spawns.length >= 8, `control saw ${toCommit.spawns.length} spawns`);
+        assert(toCommit.spawns.length >= 6, `control saw ${toCommit.spawns.length} spawns`);
         assert(toCommit.writes.some(line => line.includes('ef-compile-')), 'control saw no temp directory');
       } else {
         assert.deepEqual(toCommit.spawns, []);

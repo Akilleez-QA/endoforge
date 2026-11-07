@@ -6,9 +6,9 @@ import { compile as compileKernel, loadCompiler, x1Flags } from '../../../experi
 import { ASC_FILES, ASC_PATH, ASC_VERSION } from '../../../tools/asc/pin.mjs';
 import { agentStage, specificationProblems, stagePrompts, takeReply } from './agent.mjs';
 import { runGates } from './gates.mjs';
-import { createPort as x1Port, hash, signature } from './host.mjs';
+import { createPort as x1Port, hash, implementationFiles as hostFiles } from './host.mjs';
 
-export const implementationFiles = Object.freeze(['host.mjs', 'gates.mjs', 'glue.schema.json', 'loop-port.mjs', 'agent.mjs']);
+export const implementationFiles = Object.freeze([...hostFiles, 'loop-port.mjs', 'agent.mjs']);
 const oracleFiles = ['CONTRACT.md', 'tests.json', 'frozen.sha256'];
 const maximumKernelPages = 1024;
 const implementation = Object.fromEntries(implementationFiles.map(name => [name, readFileSync(new URL(name, import.meta.url)).toString('hex')]));
@@ -178,10 +178,9 @@ export function createPort(options, { stage = () => {}, host } = {}) {
     return { waiting: state };
   };
   const port = {
-    describe: () => signature,
-    run: (_, cases) => ({ status: 'completed', outputs: cases.map(c => ({ caseId: c.id, value: 1 })),
-      usage: { wallMs: 0, memoryBytes: 0, fuel: 0 }, effects: [] }),
-    scanEffects: () => [],
+    describe: value => base.describe(value),
+    run: (...args) => base.run(...args),
+    scanEffects: value => base.scanEffects(value),
     residual(_, bundle) {
       stage('gates:start');
       for (const name of implementationFiles) if (implementation[name] !== bundle.files[name]) throw Error('host implementation drift');

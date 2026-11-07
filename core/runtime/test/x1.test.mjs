@@ -5,7 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { IsolatePool } from '../isolate-pool.mjs';
-import { configuration, hash } from '../x1/host.mjs';
+import { configuration, hash, implementationFiles } from '../x1/host.mjs';
 import { runGates } from '../x1/gates.mjs';
 import { ledger } from '../x1/ledger.mjs';
 import { candidate } from './fixtures/x1/candidate.mjs';
@@ -15,7 +15,7 @@ export async function job(t, c) {
   const reference = { ledger: join(directory, 'ledger.sqlite'), root: join(directory, 'oracle') };
   await mkdir(reference.root);
   for (const name of ['CONTRACT.md', 'tests.json', 'frozen.sha256']) await writeFile(join(reference.root, name), c.files[name]);
-  for (const name of ['host.mjs', 'gates.mjs', 'glue.schema.json']) await writeFile(join(reference.root, name), await readFile(new URL(`../x1/${name}`, import.meta.url)));
+  for (const name of implementationFiles) await writeFile(join(reference.root, name), await readFile(new URL(`../x1/${name}`, import.meta.url)));
   const frozen = await ledger('freeze', { reference, need: 'add integers', configuration });
   reference.identity = frozen.identity;
   const content = JSON.stringify(c), identity = hash(content);
@@ -39,7 +39,15 @@ for (const isolation of ['thread', 'process']) test(`X1 native/pool gate parity:
     if (mutation === 'glue') c.files['glue.json'] = '{}';
     const expected = runGates(c), result = await pool.run(await job(t, c));
     assert.equal(result.status, 'completed');
-    const actual = JSON.parse(result.report.attempts[0].results.find(r => r.check === 'residual').reason);
+    const attempt = result.report.attempts[0];
+    if (['compile', 'exports'].includes(mutation)) {
+      assert.equal(attempt.firstFailure, 'interface', mutation);
+      assert.equal(expected.promotable, false);
+      assert.deepEqual(Object.entries(expected.gates).filter(([, v]) => !v.ok).map(([k]) => k), [mutation === 'compile' ? 'G2_compiles' : 'G3_exports']);
+      assert.equal(result.receipts[0].record.data.outcome_state, 'failed');
+      continue;
+    }
+    const actual = JSON.parse(attempt.results.find(r => r.check === 'residual').reason);
     const verdicts = r => Object.fromEntries(Object.entries(r.gates).map(([k, v]) => [k, v.ok]));
     assert.deepEqual(verdicts(actual), verdicts(expected));
     assert.equal(actual.promotable, mutation === 'pass', mutation);
