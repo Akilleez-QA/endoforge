@@ -36,8 +36,9 @@ const warmed = options.warm ? (async () => { await (await import(options.hostPor
     const port = await createPort(portOptions);
     const report = await evaluateCandidates(reference, candidates, port);
     checkWasm();
+    const evidence = port.evidence?.();
     send({ status: report.stage === 'outcome_unknown' ? 'outcome_unknown' : 'completed',
-      reason: null, report, ...metadata });
+      reason: null, report, ...(evidence === undefined ? {} : { evidence }), ...metadata });
   } catch (error) {
     checkWasm();
     send({ status: 'outcome_unknown', reason: error.message || String(error),

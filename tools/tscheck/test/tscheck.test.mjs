@@ -137,3 +137,28 @@ test('in process cells, deep input needs the stack limit as it does in threads',
   assert.equal(passed.isolation, 'process');
   assert.equal(passed.report.attempts[0].stage, 'passed');
 });
+
+test('a clean emit binds its artifact hashes and compiler identity into the receipt, and a failed one binds nothing', { timeout: 120000 }, async t => {
+  const { job, directory } = await fixture(t, { invariants: ['identity', TS_INVARIANT] });
+  const pool = new IsolatePool({ hostPort, size: 1, ...WORKCELL });
+  t.after(() => pool.close());
+  const emitting = source => ({ ...project(source), tsconfig: { compilerOptions: { ...compilerOptions, outDir: './out' }, files: ['./a.ts'] } });
+  const reportFile = join(directory, 'emit.jsonl');
+  const projects = { pass: emitting('export const n: number = 1;\n'), dominated: emitting('export const n: number = "x";\n') };
+  const result = await pool.run(job(['pass', 'dominated'], options({ projects, emit: true, reportFile })));
+  assert.equal(result.status, 'completed');
+  const [path, digest] = Object.entries(reports(reportFile).find(row => row.artifact).artifact.sha256)[0];
+  assert.match(path, /out\/a\.js$/);
+  const [good, bad] = result.receipts.map(receipt => receipt.record.data);
+  assert.equal(good.outcome_state, 'passed');
+  assert.equal(bad.outcome_state, 'failed');
+  const rows = good.observations[0].evidence.typescript;
+  assert.deepEqual(rows.map(row => [row.candidate, row.round]), [['pass', 0], ['pass', 1]]);
+  for (const row of rows) {
+    assert.deepEqual(row.compiler, { name: TSRS_MODULE.name, sha256: TSRS_MODULE.sha256 });
+    assert.deepEqual(row.sha256, { [path]: digest });
+  }
+  assert.deepEqual(bad.observations[0].evidence, good.observations[0].evidence);
+  const plain = await pool.run(job(['pass'], options({ projects })));
+  assert.equal(plain.receipts[0].record.data.observations[0].evidence, undefined);
+});
