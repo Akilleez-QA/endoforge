@@ -81,3 +81,7 @@ Misses are reported as misses, with no retuning of the rule, the needs, the loop
 ## Limits
 
 One account, one machine, one day; the subscription service's own latency varies over the day, which the interleaved order spreads across arms but doesn't remove. 30 needs is a small sample. R needs have no ground truth. Wall time includes the loop's fixed limits: an arm that runs out of turns or tokens fails there, which is a property of this loop and not of the model in general.
+
+## Amendment 1, 2026-11-07, before the first experiment call
+
+The first pilot launch stopped before any model call: the seeded shuffle in `run.mjs` let its state go negative, which produced undefined items. The runner had already passed the auth check and the environment check (the child saw the account directory and no credential-shaped name). The fix keeps the state unsigned; nothing else changes. The order is still seeded by this file's hash and the stage name, so it changes with this amendment.
