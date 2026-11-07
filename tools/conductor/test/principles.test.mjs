@@ -65,6 +65,16 @@ test('U5: a judged item list is frozen on first use; a check that changes its it
   assert.deepEqual(JSON.parse(fs.readFileSync(path.join(d, 'conductor/slices/B1/rubric-crit.json'), 'utf8')).items, ['A']);
   assert.equal(s.atoms.B1.status, 'landed'); assert.match(firstNeeds(f).summary, /check crit is unstable \(crit is unstable: its item list changed \(A → Z\)/);
 });
+test('U5: a frozen item list that cannot be read is not frozen again from the current run', async () => {
+  const c = path.join(tmp, 'torn-n.txt');
+  const check = `n=$(cat ${c} 2>/dev/null || echo 0); n=$((n+1)); echo $n > ${c}; ` +
+    `if [ $n -eq 1 ]; then printf '{"check":"crit","ite' > \${rubric}; fi; echo '{"pass": true, "findings": [{"name": "Z", "pass": true}]}' > \${out}`;
+  const { f, d } = setup('torn-rubric', { 'b1.txt': 'items' }, { gate: null, maxIterations: 4, checks: [{ id: 'crit', json: true, run: check }] });
+  const s = await run(f);
+  assert.equal(fs.readFileSync(path.join(d, 'conductor/slices/B1/rubric-crit.json'), 'utf8'), '{"check":"crit","ite');
+  assert.notEqual(s.atoms.B1.status, 'frozen');
+  assert.match(firstNeeds(f).summary, /frozen item list .* is unreadable/);
+});
 test('U5: two runs of a check on the same slice that disagree mark it unstable (its own noise)', async () => {
   const c = path.join(tmp, 'flip.txt');
   const flip = `n=$(cat ${c} 2>/dev/null || echo 0); n=$((n+1)); echo $n > ${c}; [ $((n % 2)) -eq 1 ] && p=true || p=false; echo "{\\"pass\\": $p}" > \${out}`;

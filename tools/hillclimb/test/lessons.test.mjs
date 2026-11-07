@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { autoLessons, mergeLedger, openLessons, lessonsMarkdown, competeLessons, lessonsCommand } from '../lib/lessons.mjs';
+import { autoLessons, mergeLedger, openLessons, lessonsMarkdown, competeLessons, lessonsCommand, recordLessons } from '../lib/lessons.mjs';
 
 let fails = 0;
 const test = (name, fn) => { try { fn(); console.log(`PASS ${name}`); } catch (e) { fails++; console.log(`FAIL ${name}: ${e.message}`); } };
@@ -57,6 +57,27 @@ test('lessons --close records the tool change; --add records one by hand', () =>
   const added = lessonsCommand(c, flags({ '--add': 'sleep-blocked', '--stage': 'harness', '--text': 'use a background until-loop', '--round': '2' }));
   assert(added.some((l) => l.key === 'sleep-blocked' && l.stage === 'harness'));
   assert.equal(JSON.parse(fs.readFileSync(path.join(tmp, 'w/lessons.json'), 'utf8'))['scope-y'].tool, 'PR #386');
+});
+test('a torn ledger is left as it was: closed lessons survive and the round says the ledger was not updated', () => {
+  const c = { workdir: path.join(tmp, 'torn') }, dir = path.join(tmp, 'torn/r2'), flags = (o) => (k) => o[k] ?? null;
+  fs.mkdirSync(dir, { recursive: true });
+  const f = path.join(c.workdir, 'lessons.json');
+  fs.writeFileSync(f, JSON.stringify({ closed: { stage: 's', lesson: 'x', first: 1, last: 1, count: 1, tool: 'PR #1' } }));
+  const torn = fs.readFileSync(f, 'utf8').slice(0, 30); fs.writeFileSync(f, torn);
+  const round = { round: 2, mode: 'fanout', rows: [], perPiece: [], timings: {}, failures: [] };
+  recordLessons(c, dir, round, [{ key: 'new', stage: 's', lesson: 'y' }]);
+  assert.equal(fs.readFileSync(f, 'utf8'), torn);
+  assert.match(fs.readFileSync(path.join(dir, 'LESSONS.md'), 'utf8'), /lessons ledger \| NOT UPDATED/);
+  assert.throws(() => lessonsCommand(c, flags({ '--close': 'closed', '--by': 'PR #2' })), /unreadable/);
+  assert.throws(() => lessonsCommand(c, flags({})), /unreadable/);
+  assert.equal(fs.readFileSync(f, 'utf8'), torn);
+});
+test('a missing ledger is empty, and the next write leaves no temporary', () => {
+  const c = { workdir: path.join(tmp, 'fresh') }, dir = path.join(tmp, 'fresh/r1');
+  fs.mkdirSync(dir, { recursive: true });
+  recordLessons(c, dir, { round: 1, mode: 'fanout', rows: [], perPiece: [], timings: {}, failures: [] }, [{ key: 'a', stage: 's', lesson: 'x' }]);
+  assert.deepEqual(Object.keys(JSON.parse(fs.readFileSync(path.join(c.workdir, 'lessons.json'), 'utf8'))), ['a']);
+  assert.deepEqual(fs.readdirSync(c.workdir).filter((n) => n.includes('tmp')), []);
 });
 fs.rmSync(tmp, { recursive: true, force: true });
 console.log(fails ? `${fails} failure(s)` : 'all lessons tests passed');
