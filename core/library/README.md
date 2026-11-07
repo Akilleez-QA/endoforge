@@ -8,7 +8,7 @@ The specification stage still runs, because the frozen evaluator is what a hit i
 
 | Step | Module | Process cost |
 |---|---|---|
-| Admit: verify chain, promotion, receipt, candidate and evaluator bindings; re-pass the kernel's own tests under the current gates | `verify_promotion.py`, `library.mjs` | One Python process per batch, cold path |
+| Admit: verify chain, promotion, receipt, candidate and evaluator bindings; re-pass the kernel's own tests under the current gates | `tools/library_verify_promotion.py`, `library.mjs` | One Python process per batch, cold path |
 | Look up by canonical contract key | `key.mjs` | In memory |
 | Run the new need's frozen tests through `runGates`, then the discrimination gate | `cell.mjs`, `cells.mjs`, `discriminate.mjs`, `mutants.mjs` | Warm worker thread, no spawn |
 | Write a reuse or refusal receipt naming the source promotion | `journal.mjs` | One `fsync` |

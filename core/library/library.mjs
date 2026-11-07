@@ -7,7 +7,7 @@ import { binding, bindTests, canonical, capabilityFromContract, capabilityFromGl
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const digestOf = name => sha256(readFileSync(new URL(`../runtime/x1/${name}`, import.meta.url)));
 const verified = rows => new Promise((resolve, reject) => {
-  const child = execFile('python3', ['-B', '-m', 'core.library.verify_promotion'], { cwd: root, timeout: 300000, maxBuffer: 1024 * 1024 * 1024 }, (error, stdout) => {
+  const child = execFile('python3', ['-B', '-m', 'tools.library_verify_promotion'], { cwd: root, timeout: 300000, maxBuffer: 1024 * 1024 * 1024 }, (error, stdout) => {
     if (error) return reject(Error('promotion verifier failed'));
     resolve(stdout.split('\n').filter(Boolean).map(line => JSON.parse(line)));
   });
