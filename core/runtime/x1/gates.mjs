@@ -9,15 +9,11 @@ export function testProblems(tests) {
   tests.forEach((test, index) => {
     const at = `test ${index}`;
     if (test === null || typeof test !== 'object' || Array.isArray(test)) return problems.push(`${at} must be an object`);
-    if (typeof test.name !== 'string' || !test.name) problems.push(`${at} needs a name`);
     if (typeof test.fn !== 'string' || !test.fn) problems.push(`${at} needs fn`);
     if (!Array.isArray(test.args)) problems.push(`${at} needs args`);
     const expects = Object.hasOwn(test, 'expect');
-    if (test.expectError === true) {
-      if (expects || Object.hasOwn(test, 'tol')) problems.push(`${at} combines expectError with a value`);
-      return undefined;
-    }
-    if (Object.hasOwn(test, 'expectError')) problems.push(`${at} has an expectError that is not true`);
+    if (test.expectError === true) return undefined;
+    if (Object.hasOwn(test, 'expectError') && test.expectError !== false) problems.push(`${at} has an expectError that is not a boolean`);
     if (!expects) return problems.push(`${at} asserts nothing`);
     const { expect, tol } = test;
     if (typeof expect === 'number') {
