@@ -82,3 +82,37 @@ New arm, decided before any measurement of it: `cohort-cell`, one `--permission`
 Predictions for it, in the terms of the originals: 0 neighbours lost at width 8 and 16 on every breach kind, because no two guests share a process. Per-candidate wall under 8 ms p50 at width 1. Marginal RSS 50–90 MiB per cell, or about twice `process-cell`. A fatal breach costs 1 spawn; the deadline and heap paths that a Worker contains cost 0.
 
 New attacks: `string-flatten-many`, which holds several flat strings to test whether the heap limit applies to them, and `leak-use`. Decision rule unchanged. An arm with no ports doesn't meet the host-port requirement and can't be the default, whatever its speed.
+
+## Amendment 2, 2026-11-06, before any measurement under it
+
+The question changes. Containment was the first question; this one is speed, concurrency and resource pressure for the compatibility lane, which runs TypeScript emitted as JavaScript in a child V8 isolate. The strict path stays a WebAssembly kernel plus declarative glue, and nothing here changes it. The topology follows Edition 3 section 15 and Atlas diagram 18: isolates in one supervised process are a trust-compatible cohort sharing one failure scope, the controller and its watchdog stay outside the cohort, and a separate process is for a different trust level or failure budget. A lost attempt is `outcome_unknown` (REQ-ISO-003): no arm retries it, and a retry would be a fresh admission.
+
+Arms, all on Node 26.13.0, the selected one also on 22.23.3:
+
+| Arm | Layout | On a fatal V8 error |
+|---|---|---|
+| `cohort-cell` | One `--permission` process per cell, fresh Worker per attempt (the shipped arm) | That cell's attempt is refused; a new process |
+| `process-cell` | One `--permission` process per cell, guest on its main thread, no ports | That attempt is refused; a new process |
+| `shared-fresh` | One supervised `--permission` child process, W Workers, a fresh Worker per attempt | Kill the cohort, every in-flight attempt `outcome_unknown`, one replacement process, the queue continues |
+| `shared-reuse` | The same, Workers kept, a fresh stripped context per attempt | The same |
+
+Measures at width 1, 8, 16 and 32, with the 1-minute load average recorded at the start and end of every row:
+
+- Two workloads. A trivial guest, for the runtime's own overhead. The contained route over the 20 P-15 scalar needs: type check and emit, run twice, compare and score. That is accepted work.
+- Accepted attempts per second; p50 and p95 latency, and for the route its split into check, run and evaluate, with queue wait.
+- CPU-seconds per attempt, supervisor plus children, from `/proc`.
+- Peak RSS of the supervisor's children, per active attempt, and the marginal RSS per extra cell from a fit over widths; from that, the number of active attempts within a 4 GiB budget.
+- Process spawns and Worker starts per attempt, and IPC messages per attempt as the count of process crossings.
+- Recovery, shared arms, width 8, 16 and 32, 3 reps each with `map-table-limit` and `string-regex`: one fatal attempt injected into a stream of benign ones. Blast radius is the attempts reported `outcome_unknown`; cost is the spawns, the time from the loss to the replacement's first result, and the elapsed time against the same stream without the fatal. `cohort-cell` gets the same stream for comparison.
+
+Rows taken at load above 16 are labelled loaded and aren't acceptance figures. Heavy runs go through `heavy-run` with 4 slots and wait while load is over 20.
+
+Predictions:
+
+13. `shared-reuse` is within 20% of `process-cell` in attempts per second at every width on the trivial guest, and both beat `cohort-cell` by at least 3× at width 8 and above.
+14. RSS per active attempt at width 16: `shared-reuse` 15–30 MiB, `shared-fresh` 20–35, `cohort-cell` and `process-cell` 60–80. In 4 GiB, `shared-reuse` fits at least twice as many active attempts as either per-process arm.
+15. On the route workload the type check dominates, and the runtime arms differ by less than 25% in accepted per second at width 16.
+16. A fatal in a shared cohort reports every attempt then in flight as `outcome_unknown`, between 1 and W, loses nothing queued, and costs 1 spawn and under 100 ms from the loss to the replacement's first result. The elapsed cost over the stream is dominated by the breacher's own time to reach the fatal limit.
+17. 0 process spawns and 0 Worker starts per warm attempt for `shared-reuse`; 1 Worker start per attempt for `shared-fresh` and `cohort-cell`; 2 IPC messages per attempt for every arm without ports.
+
+Decision: the default is the arm with ports and 0 authority reached in the attack suite that has the highest accepted attempts per second on the route workload at width 16. Within 10% of each other, the lower RSS per active attempt wins. A shared arm is eligible only if a fatal's blast radius is bounded to the attempts then in flight, every one of them is recorded `outcome_unknown`, and nothing is retried silently. The others stay as options, and the result says plainly if one process per cell still wins.
