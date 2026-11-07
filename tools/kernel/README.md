@@ -121,3 +121,34 @@ denial, plus an exact total count. Records contain operation, buffer index and
 reason, never source bytes or authority-service exception text.
 
 Declarations are tested at admission and the broker through real guest calls. Effects remain return data. There is no durable record of denials yet.
+
+## Supervised candidates
+
+Use `tools.kernel.limits.run_candidate(component, schemas, state, event, inputs,
+limits=Limits(...))` for per-candidate supervision. Each call starts a new host
+session; the caller watches from outside Wasmtime, including admission and
+compilation, and kills the process group on timeout or transport overflow.
+It reaps the host and checks group absence before reporting success. Failure
+to verify closure produces `cleanup_failed`; failure to reap within one second
+raises rather than waiting without a bound. Existing `Workcell.run` remains the
+in-process primitive, with fuel and configurable linear memory only.
+
+`Limits` accepts fuel 1–10,000,000 (default 100,000), linear memory 64 KiB–16 MiB
+(default 16 MiB), combined stdout/stderr 1 byte–1 MiB (default 1 MiB), and wall
+seconds 0.01–60 (default 5). Transport accounting includes the timing header,
+JSON envelope, base64 expansion and diagnostics. Overflow observes at most one
+extra byte, retains no more than the cap, and withholds the candidate result.
+The frozen WIT still grants no timers or process/IO capabilities to guests.
+
+Receipts distinguish `wall_ns` (launch through host reap), `time_to_stop_ns`
+(host's pre-instantiation marker through reap, excluding startup/compile), and
+`time_to_kill_ns` (SIGKILL request through reap, only on a supervisor limit).
+Runtime traps have no kill latency: they stopped without watchdog termination.
+Missing execution markers stay null. These are functional containment timings,
+not calibrated performance claims or proof of outcome recovery.
+
+The new tests exercise loop, recursion, allocation, initial memory, output flood,
+combined-stream limits, stalled hosts (including closed pipes), invalid budgets,
+and recovery by a fresh process. They derive new WAT controls without editing
+existing fixtures. The flood must hit its cap before the deadline.
+This Linux process-group slice doesn't claim cgroup or hostile native-code containment.
