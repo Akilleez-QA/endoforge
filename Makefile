@@ -42,6 +42,7 @@ lib-test:
 	node tools/lib/test/errors.test.mjs
 	node tools/conductor/test/principles.test.mjs
 	node tools/conductor/test/stream.test.mjs
+	node tools/conductor/test/failopen.test.mjs
 	node tools/hillclimb/test/lessons.test.mjs
 
 portability-test:
