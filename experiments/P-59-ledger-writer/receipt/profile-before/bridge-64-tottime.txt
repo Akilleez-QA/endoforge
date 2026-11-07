@@ -1,0 +1,36 @@
+Sat Nov  7 15:01:38 2026    <scratch>/bridge-2604156.prof
+
+         371317 function calls (343386 primitive calls) in 13.375 seconds
+
+   Ordered by: internal time
+   List reduced from 683 to 25 due to restriction <25>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+      238    9.724    0.041    9.724    0.041 {built-in method posix.read}
+      201    1.824    0.009    1.824    0.009 {method 'commit' of 'sqlite3.Connection' objects}
+       64    1.003    0.016    1.003    0.016 {method 'executescript' of 'sqlite3.Connection' objects}
+      128    0.373    0.003    0.373    0.003 {method 'close' of 'sqlite3.Connection' objects}
+     1509    0.083    0.000    0.083    0.000 encoder.py:207(iterencode)
+     1510    0.078    0.000    0.078    0.000 decoder.py:351(raw_decode)
+     2056    0.061    0.000    0.061    0.000 {method 'execute' of 'sqlite3.Connection' objects}
+20352/576    0.032    0.000    0.052    0.000 ledger.py:14(conforms)
+     1601    0.024    0.000    0.024    0.000 {built-in method _hashlib.openssl_sha256}
+      192    0.010    0.000    0.013    0.000 {built-in method _sqlite3.connect}
+    79524    0.008    0.000    0.008    0.000 {method 'get' of 'dict' objects}
+      265    0.007    0.000    0.108    0.000 ledger.py:135(_read)
+    73402    0.007    0.000    0.007    0.000 {built-in method builtins.isinstance}
+        6    0.006    0.001    0.006    0.001 {built-in method builtins.compile}
+     7386    0.005    0.000    0.010    0.000 x1_loop.py:181(value_meets)
+     1765    0.005    0.000    0.005    0.000 {method 'encode' of 'str' objects}
+      128    0.005    0.000    0.069    0.001 frozen.py:33(validate_frozen)
+16896/10944    0.005    0.000    0.030    0.000 ledger.py:37(<genexpr>)
+      201    0.005    0.000    0.005    0.000 {built-in method builtins.print}
+     1509    0.005    0.000    0.005    0.000 {method 'hex' of 'bytes' objects}
+      576    0.004    0.000    0.128    0.000 ledger.py:59(validate)
+     1079    0.004    0.000    0.004    0.000 {built-in method fromhex}
+      104    0.003    0.000    0.003    0.000 {method 'split' of 'bytes' objects}
+       55    0.003    0.000    0.031    0.001 x1_loop.py:202(report_problem)
+     1509    0.003    0.000    0.090    0.000 __init__.py:185(dumps)
+
+
+
