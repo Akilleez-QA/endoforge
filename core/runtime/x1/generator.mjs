@@ -3,14 +3,14 @@ import { readFile, writeFile, mkdir, readdir, lstat } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { testProblems } from './gates.mjs';
-import { configuration, hash } from './host.mjs';
+import { configuration, hash, implementationFiles } from './host.mjs';
 import { ledger } from './ledger.mjs';
 import { fillExpected } from './reference.mjs';
 import { filterScalarTests } from './scalar.mjs';
 const schema = JSON.parse(await readFile(new URL('./glue.schema.json', import.meta.url)));
 export const glueRules = [
   'Every export of kernel.ts has exactly one glue.exports entry, and glue describes no other names.',
-  'Each args list has one entry per parameter of the export, in order.',
+  'Each args list has one entry per parameter of the export, in order, named exactly as the kernel.ts parameter.',
   'A result of kind number must include an integer precision from 0 to 6 (decimal places shown).',
   'A result of kind code must include a codes table labelling every code the tests return.',
   'A result of kind boolean must include labels with true and false strings.',
@@ -114,7 +114,7 @@ export async function generate({ need, directory, env = process.env, timeout = 6
   files['frozen.sha256'] = JSON.stringify({ contract: hash(files['CONTRACT.md']), tests: hash(files['tests.json']) });
   await writeFile(join(workspace, 'frozen.sha256'), files['frozen.sha256']);
   for (const name of Object.keys(files)) await writeFile(join(root, name), files[name]);
-  for (const name of ['host.mjs', 'gates.mjs', 'glue.schema.json', ...implementation]) await writeFile(join(root, name), await readFile(new URL(name, import.meta.url)));
+  for (const name of [...implementationFiles, ...implementation]) await writeFile(join(root, name), await readFile(new URL(name, import.meta.url)));
   const frozen = await (freeze ? freeze({ reference, need, configuration }) : ledger('freeze', { reference, need, configuration }));
   reference.identity = frozen.identity;
   const freezeMs = performance.now() - freezeStart, codeStart = performance.now();

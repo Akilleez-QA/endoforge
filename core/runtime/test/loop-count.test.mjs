@@ -36,7 +36,7 @@ test('a real syscall counter sees no spawn or write before commit in the cell, a
         assert.deepEqual(row.requestsAfter, ['admit', 'commit']);
       }
       if (arm === 'current') {
-        assert(toCommit.spawns.length >= 8, `control saw ${toCommit.spawns.length} spawns`);
+        assert(toCommit.spawns.length >= 6, `control saw ${toCommit.spawns.length} spawns`);
         assert(toCommit.writes.some(line => line.includes('ef-compile-')), 'control saw no temp directory');
       } else {
         assert.deepEqual(toCommit.spawns, []);

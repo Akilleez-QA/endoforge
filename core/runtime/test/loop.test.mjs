@@ -8,7 +8,7 @@ import test from 'node:test';
 import { ASC_PATH } from '../../../tools/asc/pin.mjs';
 import { IsolatePool } from '../isolate-pool.mjs';
 import { admit, checkCandidate, commitCandidate, createLoopPool, evaluateAndCommit, evaluateInCell } from '../x1/loop.mjs';
-import { configuration, hash } from '../x1/host.mjs';
+import { configuration, hash, implementationFiles } from '../x1/host.mjs';
 import { ledger } from '../x1/ledger.mjs';
 import { runNeed } from '../x1/pipeline.mjs';
 import { evaluate as evaluateReference } from '../x1/reference.mjs';
@@ -51,7 +51,7 @@ async function task(pool, directory) {
   mkdirSync(oracle);
   const { files } = additionCandidate();
   for (const name of ['CONTRACT.md', 'tests.json', 'frozen.sha256']) writeFileSync(join(oracle, name), files[name]);
-  for (const name of ['host.mjs', 'gates.mjs', 'glue.schema.json', 'loop-port.mjs', 'agent.mjs']) writeFileSync(join(oracle, name), readFileSync(join(x1Directory, name)));
+  for (const name of [...implementationFiles, 'loop-port.mjs', 'agent.mjs']) writeFileSync(join(oracle, name), readFileSync(join(x1Directory, name)));
   const reference = { ledger: join(directory, 'ledger.sqlite'), root: oracle };
   const admission = await admit(pool, reference, { need: 'integer add(a,b)', configuration });
   reference.identity = admission.identity;

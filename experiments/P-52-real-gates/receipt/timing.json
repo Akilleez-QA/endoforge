@@ -1,0 +1,127 @@
+{
+ "measured": "2026-11-06T22:13-22:21 EST",
+ "loadavg1": "3.3 to 7.9",
+ "path": "in-isolate, one thread cell, 177 kernels, passes 2 and 3",
+ "old": "6122dc8",
+ "new": "6194dad",
+ "pipelineGateMs": [
+  {
+   "tree": "old",
+   "kernels": 177,
+   "promoted": 177,
+   "gate": {
+    "p50": 4.607267999992473,
+    "p95": 7.146796999993967
+   },
+   "compile": {
+    "p50": 24.281723000007332
+   }
+  },
+  {
+   "tree": "new",
+   "kernels": 177,
+   "promoted": 176,
+   "gate": {
+    "p50": 4.162534999995842,
+    "p95": 6.411179999995511
+   },
+   "compile": {
+    "p50": 25.09572399999888
+   }
+  },
+  {
+   "tree": "old",
+   "kernels": 177,
+   "promoted": 177,
+   "gate": {
+    "p50": 4.737352999989525,
+    "p95": 7.702774999997928
+   },
+   "compile": {
+    "p50": 26.17153999999573
+   }
+  },
+  {
+   "tree": "new",
+   "kernels": 177,
+   "promoted": 176,
+   "gate": {
+    "p50": 5.277998000005027,
+    "p95": 9.230605000004289
+   },
+   "compile": {
+    "p50": 31.647438999993028
+   }
+  }
+ ],
+ "microbenchMs": {
+  "note": "two universal-gate calls and two residual runGates calls per kernel, 177 kernels, passes 2 and 3, p50/p95",
+  "old": [
+   {
+    "universal2": [
+     0.1,
+     0.19
+    ],
+    "residual2": [
+     1.15,
+     1.87
+    ]
+   },
+   {
+    "universal2": [
+     0.09,
+     0.18
+    ],
+    "residual2": [
+     1.06,
+     1.62
+    ]
+   }
+  ],
+  "new": [
+   {
+    "universal2": [
+     1.11,
+     1.97
+    ],
+    "residual2": [
+     1.06,
+     1.74
+    ]
+   },
+   {
+    "universal2": [
+     1.12,
+     1.99
+    ],
+    "residual2": [
+     1.1,
+     1.82
+    ]
+   }
+  ]
+ },
+ "frozenSpawns": {
+  "note": "python3 shim counting core.engine.frozen invocations over the control arm at width 14",
+  "old": {
+   "candidates": 177,
+   "spawns": 885
+  },
+  "new": {
+   "candidates": 177,
+   "spawns": 529
+  }
+ },
+ "hang": {
+  "old": {
+   "outcome": "no result",
+   "seconds": 60.0
+  },
+  "new": {
+   "promoted": false,
+   "inconclusive": false,
+   "gateMs": 178.5,
+   "seconds": 0.88
+  }
+ }
+}
