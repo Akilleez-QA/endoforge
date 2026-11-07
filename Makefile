@@ -4,7 +4,7 @@ export ENDOFORGE_TEST_OUTPUT := $(CURDIR)/.test-work
 
 .PHONY: test test-optimized check core-test ledger-test engine-test isolate-test tscheck-setup tscheck-test tscheck-requalify atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test seeded-fault-test escape-test
 
-test: pipeline-test check core-test ledger-test engine-test isolate-test tscheck-test atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test seeded-fault-test escape-test
+test: pipeline-test check core-test ledger-test engine-test isolate-test tscheck-test atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test seeded-fault-test escape-test kernel-test
 
 test-optimized:
 	PYTHONOPTIMIZE=1 $(MAKE) test PYTHON="$(PYTHON) -O"
@@ -69,3 +69,7 @@ seeded-fault-test:
 
 escape-test:
 	$(PYTHON) -B -m unittest tools.escape_harness.test_harness -v
+
+.PHONY: kernel-test
+kernel-test:
+	$(PYTHON) -B -m unittest tools.kernel.test_contract -v
