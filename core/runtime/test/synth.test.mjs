@@ -133,3 +133,14 @@ test('a model failure leaves an abstaining evaluator, never a refusal', async ()
     assert.equal((await stage.evaluate({ compiled: { wasm: kernel(add) }, files: { 'glue.json': glue() } })).decision, 'abstain');
   } finally { await rm(root, { recursive: true, force: true }); }
 });
+
+test('a range with one open side survives the frozen file (JSON has no Infinity)', async () => {
+  const open = binding();
+  open.exports[0].result.min = -1e6;
+  const { root, stage } = await frozenRoot({}, provider([open]));
+  try {
+    const evaluator = JSON.parse(await readFile(join(root, 'synth', 'evaluator.json'), 'utf8'));
+    assert.deepEqual(evaluator.checks.ranges, [{ fn: 'f', min: -1e6 }]);
+    assert.equal((await stage.evaluate({ compiled: { wasm: kernel(mul) }, files: { 'glue.json': glue() } })).decision, 'pass');
+  } finally { await rm(root, { recursive: true, force: true }); }
+});
