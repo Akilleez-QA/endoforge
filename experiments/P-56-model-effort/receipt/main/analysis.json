@@ -1,0 +1,378 @@
+{
+ "table": [
+  {
+   "arm": "haiku-low",
+   "runs": 30,
+   "promoted": 25,
+   "accepted": 25,
+   "acceptedRate": 0.8333333333333334,
+   "firstPassAccepted": 0.7666666666666667,
+   "failedCandidates": 2,
+   "failedPerAccepted": 0.08,
+   "repairRoundsMean": 0.1,
+   "hPromoted": 7,
+   "escapes": 0,
+   "escapeRate": 0,
+   "escapedNeeds": [],
+   "secondsPerAccepted": 38.40664026232,
+   "wallP50": 28.665498039999978,
+   "wallP95": 56.907632816000145,
+   "wallMean": 32.00553355193334,
+   "wallSd": 10.593070216259656,
+   "modelP50": 28.157106520000845,
+   "nonModelP50": 0.3242358969998313,
+   "nonModelP95": 0.5368809189996682,
+   "turnsP50": 2,
+   "callsTotal": 75,
+   "tokensP50": 21849,
+   "outputTokensP50": 6284,
+   "listCostUsd": 0.16679374000000005,
+   "exits": {
+    "stop": 25,
+    "none": 3,
+    "pipeline stage failed; inspect local artifacts": 2
+   },
+   "loadedRuns": 30,
+   "apiKeySources": [
+    "none"
+   ],
+   "models": [
+    "claude-haiku-5-5"
+   ],
+   "gates": {
+    "quality": false,
+    "escapes": true,
+    "failedCandidates": true
+   },
+   "goodEnough": false
+  },
+  {
+   "arm": "haiku-high",
+   "runs": 30,
+   "promoted": 25,
+   "accepted": 25,
+   "acceptedRate": 0.8333333333333334,
+   "firstPassAccepted": 0.8333333333333334,
+   "failedCandidates": 0,
+   "failedPerAccepted": 0,
+   "repairRoundsMean": 0,
+   "hPromoted": 7,
+   "escapes": 0,
+   "escapeRate": 0,
+   "escapedNeeds": [],
+   "secondsPerAccepted": 81.72330733808003,
+   "wallP50": 64.93395975599996,
+   "wallP95": 105.97740336799994,
+   "wallMean": 68.10275611506668,
+   "wallSd": 21.798977846121673,
+   "modelP50": 64.57366319799982,
+   "nonModelP50": 0.2863948280001059,
+   "nonModelP95": 0.5890332140000537,
+   "turnsP50": 2,
+   "callsTotal": 69,
+   "tokensP50": 43111,
+   "outputTokensP50": 15716,
+   "listCostUsd": 0.35001855000000004,
+   "exits": {
+    "stop": 25,
+    "pipeline stage failed; inspect local artifacts": 1,
+    "none": 4
+   },
+   "loadedRuns": 29,
+   "apiKeySources": [
+    "none"
+   ],
+   "models": [
+    "claude-haiku-5-5"
+   ],
+   "gates": {
+    "quality": false,
+    "escapes": true,
+    "failedCandidates": true
+   },
+   "goodEnough": false
+  },
+  {
+   "arm": "sonnet-low",
+   "runs": 30,
+   "promoted": 28,
+   "accepted": 28,
+   "acceptedRate": 0.9333333333333333,
+   "firstPassAccepted": 0.9333333333333333,
+   "failedCandidates": 12,
+   "failedPerAccepted": 0.42857142857142855,
+   "repairRoundsMean": 0.4666666666666667,
+   "hPromoted": 10,
+   "escapes": 0,
+   "escapeRate": 0,
+   "escapedNeeds": [],
+   "secondsPerAccepted": 27.44636331210707,
+   "wallP50": 23.97200107599981,
+   "wallP95": 42.73439845899958,
+   "wallMean": 25.616605757966596,
+   "wallSd": 7.261142912849798,
+   "modelP50": 23.43941643500002,
+   "nonModelP50": 0.2952449539997615,
+   "nonModelP95": 0.49450277200015264,
+   "turnsP50": 2,
+   "callsTotal": 75,
+   "tokensP50": 11826,
+   "outputTokensP50": 3376,
+   "listCostUsd": 1.7326061,
+   "exits": {
+    "stop": 28,
+    "max_turns": 2
+   },
+   "loadedRuns": 30,
+   "apiKeySources": [
+    "none"
+   ],
+   "models": [
+    "claude-sonnet-5-5"
+   ],
+   "gates": {
+    "quality": true,
+    "escapes": true,
+    "failedCandidates": true
+   },
+   "goodEnough": true
+  },
+  {
+   "arm": "sonnet-medium",
+   "runs": 30,
+   "promoted": 30,
+   "accepted": 30,
+   "acceptedRate": 1,
+   "firstPassAccepted": 0.9333333333333333,
+   "failedCandidates": 3,
+   "failedPerAccepted": 0.1,
+   "repairRoundsMean": 0.36666666666666664,
+   "hPromoted": 10,
+   "escapes": 0,
+   "escapeRate": 0,
+   "escapedNeeds": [],
+   "secondsPerAccepted": 29.03262822529997,
+   "wallP50": 27.113245879000054,
+   "wallP95": 37.043845300000044,
+   "wallMean": 29.032628225299973,
+   "wallSd": 7.728539432796558,
+   "modelP50": 26.620113356000278,
+   "nonModelP50": 0.2975449349996634,
+   "nonModelP95": 0.5595008399998769,
+   "turnsP50": 2,
+   "callsTotal": 71,
+   "tokensP50": 13981,
+   "outputTokensP50": 3850,
+   "listCostUsd": 2.0035239999999996,
+   "exits": {
+    "stop": 30
+   },
+   "loadedRuns": 30,
+   "apiKeySources": [
+    "none"
+   ],
+   "models": [
+    "claude-sonnet-5-5"
+   ],
+   "gates": {
+    "quality": true,
+    "escapes": true,
+    "failedCandidates": true
+   },
+   "goodEnough": true
+  },
+  {
+   "arm": "sonnet-high",
+   "runs": 30,
+   "promoted": 30,
+   "accepted": 30,
+   "acceptedRate": 1,
+   "firstPassAccepted": 0.9666666666666667,
+   "failedCandidates": 1,
+   "failedPerAccepted": 0.03333333333333333,
+   "repairRoundsMean": 0.6,
+   "hPromoted": 10,
+   "escapes": 0,
+   "escapeRate": 0,
+   "escapedNeeds": [],
+   "secondsPerAccepted": 45.98511133430002,
+   "wallP50": 44.087348796000235,
+   "wallP95": 69.19706275300001,
+   "wallMean": 45.98511133430002,
+   "wallSd": 14.376115119048055,
+   "modelP50": 43.74430611000024,
+   "nonModelP50": 0.31990381800010803,
+   "nonModelP95": 0.5212992070000618,
+   "turnsP50": 3,
+   "callsTotal": 78,
+   "tokensP50": 23607,
+   "outputTokensP50": 6163,
+   "listCostUsd": 3.0503420999999995,
+   "exits": {
+    "stop": 30
+   },
+   "loadedRuns": 30,
+   "apiKeySources": [
+    "none"
+   ],
+   "models": [
+    "claude-sonnet-5-5"
+   ],
+   "gates": {
+    "quality": true,
+    "escapes": true,
+    "failedCandidates": true
+   },
+   "goodEnough": true
+  },
+  {
+   "arm": "opus-low",
+   "runs": 30,
+   "promoted": 29,
+   "accepted": 29,
+   "acceptedRate": 0.9666666666666667,
+   "firstPassAccepted": 0.9666666666666667,
+   "failedCandidates": 6,
+   "failedPerAccepted": 0.20689655172413793,
+   "repairRoundsMean": 0.7,
+   "hPromoted": 10,
+   "escapes": 0,
+   "escapeRate": 0,
+   "escapedNeeds": [],
+   "secondsPerAccepted": 28.621354692517297,
+   "wallP50": 27.289408759000246,
+   "wallP95": 38.04202303700009,
+   "wallMean": 27.667309536100056,
+   "wallSd": 6.672666009086555,
+   "modelP50": 27.019000281999993,
+   "nonModelP50": 0.29353587300051004,
+   "nonModelP95": 0.5037066090009176,
+   "turnsP50": 3,
+   "callsTotal": 81,
+   "tokensP50": 15087,
+   "outputTokensP50": 3066,
+   "listCostUsd": 3.2439506000000002,
+   "exits": {
+    "stop": 29,
+    "max_turns": 1
+   },
+   "loadedRuns": 29,
+   "apiKeySources": [
+    "none"
+   ],
+   "models": [
+    "claude-opus-5-5"
+   ],
+   "gates": {
+    "quality": true,
+    "escapes": true,
+    "failedCandidates": true
+   },
+   "goodEnough": true
+  },
+  {
+   "arm": "opus-medium",
+   "runs": 30,
+   "promoted": 30,
+   "accepted": 30,
+   "acceptedRate": 1,
+   "firstPassAccepted": 1,
+   "failedCandidates": 0,
+   "failedPerAccepted": 0,
+   "repairRoundsMean": 0.4,
+   "hPromoted": 10,
+   "escapes": 0,
+   "escapeRate": 0,
+   "escapedNeeds": [],
+   "secondsPerAccepted": 39.462293932933314,
+   "wallP50": 35.598817822999784,
+   "wallP95": 64.7094014969999,
+   "wallMean": 39.462293932933314,
+   "wallSd": 11.40183912924372,
+   "modelP50": 35.35914467999991,
+   "nonModelP50": 0.32782128799986093,
+   "nonModelP95": 0.5622275609998032,
+   "turnsP50": 2,
+   "callsTotal": 72,
+   "tokensP50": 15885,
+   "outputTokensP50": 4173,
+   "listCostUsd": 4.4103769999999995,
+   "exits": {
+    "stop": 30
+   },
+   "loadedRuns": 30,
+   "apiKeySources": [
+    "none"
+   ],
+   "models": [
+    "claude-opus-5-5"
+   ],
+   "gates": {
+    "quality": true,
+    "escapes": true,
+    "failedCandidates": true
+   },
+   "goodEnough": true
+  },
+  {
+   "arm": "opus-high",
+   "runs": 30,
+   "promoted": 30,
+   "accepted": 30,
+   "acceptedRate": 1,
+   "firstPassAccepted": 0.9666666666666667,
+   "failedCandidates": 1,
+   "failedPerAccepted": 0.03333333333333333,
+   "repairRoundsMean": 0.3,
+   "hPromoted": 10,
+   "escapes": 0,
+   "escapeRate": 0,
+   "escapedNeeds": [],
+   "secondsPerAccepted": 49.58737563593324,
+   "wallP50": 43.580013638000004,
+   "wallP95": 89.77423408300002,
+   "wallMean": 49.58737563593325,
+   "wallSd": 18.68769155456626,
+   "modelP50": 43.274959886000026,
+   "nonModelP50": 0.3116688660006039,
+   "nonModelP95": 0.6636013789991848,
+   "turnsP50": 2,
+   "callsTotal": 69,
+   "tokensP50": 15003,
+   "outputTokensP50": 5149,
+   "listCostUsd": 5.2439328000000005,
+   "exits": {
+    "stop": 30
+   },
+   "loadedRuns": 30,
+   "apiKeySources": [
+    "none"
+   ],
+   "models": [
+    "claude-opus-5-5"
+   ],
+   "gates": {
+    "quality": true,
+    "escapes": true,
+    "failedCandidates": true
+   },
+   "goodEnough": true
+  }
+ ],
+ "decision": {
+  "stage": "main",
+  "best": 1,
+  "minEscape": 0,
+  "minFailed": 0,
+  "qualifying": [
+   "sonnet-low",
+   "opus-low",
+   "sonnet-medium",
+   "opus-medium",
+   "sonnet-high",
+   "opus-high"
+  ],
+  "recommended": "sonnet-low"
+ },
+ "sizing": null
+}
