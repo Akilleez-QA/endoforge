@@ -81,7 +81,7 @@ export async function compileMember(binding, tests) {
     const score = discriminationScore(reference.slice(nOwn), runs.slice(2).map(run => ({ results: run.results?.slice(offset - nFrozen - nDense, offset) })), nFrozen);
     if (score.score < discrimination) record.failures.push(`M5 frozen vectors reject ${score.rejected} of ${score.distinguishable} distinguishable reference faults`);
     Object.assign(record, { qualified: !record.failures.length, dropped: dropped.map(x => `M4 ${x}`), discrimination: score, kept,
-      vectors: p.frozen.calls.map((c, i) => ({ args: c.args, ...('value' in vectorResults[i] ? { value: vectorResults[i].value } : { throws: true }) })) });
+      vectors: p.frozen.calls.map((c, i) => ({ args: c.args, ...('value' in vectorResults[i] ? { value: vectorResults[i].value } : { throws: true }) })).filter(v => v.throws || Number.isFinite(v.value)) });
   }
   return { hash, exports, reference: binding.reference };
 }
@@ -121,7 +121,8 @@ export async function combine(members) {
       return map;
     });
     const [x, y = x] = sides.map(s => s.kept);
-    if (x.range && y.range) checks.ranges.push({ fn, min: Math.min(x.range.min ?? -Infinity, y.range.min ?? -Infinity), max: Math.max(x.range.max ?? Infinity, y.range.max ?? Infinity) });
+    const bound = (u, v, pick) => (Number.isFinite(u) && Number.isFinite(v) ? pick(u, v) : undefined);
+    if (x.range && y.range) checks.ranges.push({ fn, min: bound(x.range.min, y.range.min, Math.min), max: bound(x.range.max, y.range.max, Math.max) });
     if (x.codes && y.codes) checks.codes.push({ fn, codes: [...new Set([...x.codes, ...y.codes])] });
     for (const m of x.monotone) if (y.monotone.some(n => n.param === m.param && n.direction === m.direction)) checks.monotone.push({ fn, param: m.param, direction: m.direction, chain: m.chain.filter(i => maps[0].has(i)).map(i => maps[0].get(i)) });
   }
