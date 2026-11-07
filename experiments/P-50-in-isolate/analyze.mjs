@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 
 const blank = () => ({ spawns: [], execs: [], writes: [], reads: [] });
-const buckets = { generated: 'toCommit', need: 'toAdmit', admitting: 'admit', admitted: 'toCommit', committing: 'commit' };
+const buckets = { generated: 'toCommit', need: 'toAdmit', admitting: 'admit', admitted: 'toCommit', committing: 'commit', parking: 'park', parked: 'toCommit' };
 export function windows(file) {
   const events = readFileSync(file, 'utf8').split('\n').filter(Boolean).map(line => JSON.parse(line));
   const parent = new Map(), transportRoots = new Set();
@@ -15,7 +15,7 @@ export function windows(file) {
   };
   const out = {};
   let current = null, id = null, bucket = null;
-  const fresh = () => ({ toAdmit: blank(), admit: blank(), toCommit: blank(), commit: blank(), model: blank(), transport: blank() });
+  const fresh = () => ({ toAdmit: blank(), admit: blank(), toCommit: blank(), commit: blank(), park: blank(), model: blank(), transport: blank() });
   for (const event of events) {
     if (event.kind === 'mark') {
       const [name, stage] = event.path.split('/');
