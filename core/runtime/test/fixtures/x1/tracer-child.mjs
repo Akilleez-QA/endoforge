@@ -1,0 +1,21 @@
+import { openSync, ftruncateSync, fsyncSync, statSync, writeFileSync, writeSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { join } from 'node:path';
+import { Worker } from 'node:worker_threads';
+const directory = process.argv[2], mark = name => statSync(`/__ef_mark__/${name}`, { throwIfNoEntry: false });
+const fd = openSync(join(directory, 'preopen'), 'w');
+mark('x/need');
+writeSync(fd, 'hello');
+ftruncateSync(fd, 100);
+fsyncSync(fd);
+mark('x/returned');
+mark('y/need');
+await new Promise(resolve => {
+  const worker = new Worker(`const fs=require('fs');fs.writeFileSync(${JSON.stringify(join(directory, 'from-worker'))},'x');require('child_process').spawnSync('/bin/true');require('worker_threads').parentPort.postMessage(1)`, { eval: true });
+  worker.once('message', resolve);
+});
+mark('y/returned');
+mark('z/need');
+process.stderr.write('');
+await new Promise(resolve => setTimeout(resolve, 5));
+mark('z/returned');

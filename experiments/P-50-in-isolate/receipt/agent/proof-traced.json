@@ -1,0 +1,50 @@
+{
+ "proof": {
+  "step": "traced",
+  "model": "haiku",
+  "promoted": true,
+  "error": null,
+  "status": "passed",
+  "problem": null,
+  "agent": {
+   "turns": 2,
+   "tokens": 10828,
+   "tool_calls": 6,
+   "exit_reason": "stop"
+  },
+  "wall": 21224.79127,
+  "modelMs": 21081.627021000004,
+  "nonModel": 143.16424899999765,
+  "transportOverhead": [
+   145.87393900000097,
+   -14874.184749
+  ],
+  "replies": [
+   {
+    "wallMs": 15038.873939000001,
+    "apiMs": 14893,
+    "usage": 4631
+   },
+   {
+    "wallMs": 6041.815251,
+    "apiMs": 20916,
+    "usage": 6197
+   }
+  ],
+  "startup": {
+   "startupMs": 4.491592000000004,
+   "lanes": 1
+  },
+  "startups": 1,
+  "readyMs": 2761.9105250000002,
+  "timings": {
+   "generate": 21081.627021000004,
+   "freeze": 74.39815299999827,
+   "compile": 44.0339469999999,
+   "gate": 1.783698999999615,
+   "ledger": 12.112680999998702,
+   "promote": 0,
+   "total": 21223.996776
+  }
+ }
+}

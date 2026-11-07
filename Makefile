@@ -4,7 +4,7 @@ export ENDOFORGE_TEST_OUTPUT := $(CURDIR)/.test-work
 
 .PHONY: test test-optimized check core-test ledger-test engine-test isolate-test tscheck-setup tscheck-test tscheck-requalify atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test
 
-test: pipeline-test check core-test ledger-test engine-test isolate-test tscheck-test atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test
+test: pipeline-test loop-test check core-test ledger-test engine-test isolate-test tscheck-test atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test
 
 test-optimized:
 	PYTHONOPTIMIZE=1 $(MAKE) test PYTHON="$(PYTHON) -O"
@@ -59,6 +59,13 @@ portability-test:
 factory-state-test:
 	$(PYTHON) -B -m tools.factory_campaign.test_state
 	$(PYTHON) -B -m tools.factory_campaign.test_model_journal
+
+.PHONY: loop-setup loop-test
+loop-setup:
+	npm ci --ignore-scripts --no-audit --no-fund --prefix tools/asc
+
+loop-test: loop-setup
+	node --test core/runtime/test/loop.test.mjs core/runtime/test/loop-agent.test.mjs core/runtime/test/loop-review.test.mjs core/runtime/test/loop-count.test.mjs core/runtime/test/loop-crash.test.mjs
 
 .PHONY: pipeline-test
 pipeline-test:

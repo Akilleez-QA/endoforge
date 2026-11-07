@@ -1,0 +1,889 @@
+{
+ "commit": "5d6329434f7130ef51f114555a89b3e1ad5065d6",
+ "precommit": "f0f8b8656c9b02245c9cd0ad31c54f5722c1c579b015c64532080f328c75d0b0",
+ "testDouble": true,
+ "node": "v26.13.0",
+ "cpus": "AMD Ryzen 9 7950X 16-Core Processor",
+ "parallelism": 32,
+ "totalMemory": 134143877120,
+ "corpus": {
+  "digest": "35b10f688e9f383c0c1cfa2c14b5351c2215931bd6d4b214e210e976df772ea6",
+  "kernels": 21,
+  "expectPromoted": 18
+ },
+ "started": "2026-11-07T03:21:52.256Z",
+ "arms": {
+  "agent-process": {
+   "loadStart": 11.65,
+   "loadEnd": 10.03,
+   "label": "acceptance",
+   "size": 1,
+   "reps": 5,
+   "readyMs": 2075.7430220000097,
+   "wallMs": 11918.259529000003,
+   "records": 105,
+   "promoted": 90,
+   "errors": 0,
+   "nonModel": {
+    "n": 105,
+    "p50": 115.50348300000769,
+    "p95": 123.06057800003327,
+    "max": 127.6419809999934
+   },
+   "nonModelPromoted": {
+    "n": 90,
+    "p50": 116.46251500002109,
+    "p95": 124.04984900000272,
+    "max": 127.6419809999934
+   },
+   "stages": {
+    "freeze": {
+     "n": 105,
+     "p50": 60.885040000022855,
+     "p95": 63.29655800000182,
+     "max": 64.83890600001905
+    },
+    "compile": {
+     "n": 105,
+     "p50": 36.5881730000001,
+     "p95": 42.9386370000002,
+     "max": 52.119072999999844
+    },
+    "gate": {
+     "n": 105,
+     "p50": 3.884985000000597,
+     "p95": 8.079234999999244,
+     "max": 8.650601999999708
+    },
+    "ledger": {
+     "n": 105,
+     "p50": 9.02439899998717,
+     "p95": 10.874916000000667,
+     "max": 11.69181699998444
+    },
+    "promote": {
+     "n": 105,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "wrongVerdicts": []
+  },
+  "agent-thread": {
+   "loadStart": 10.03,
+   "loadEnd": 10.39,
+   "label": "acceptance",
+   "size": 1,
+   "reps": 5,
+   "readyMs": 2000.5505010000197,
+   "wallMs": 13085.542528999998,
+   "records": 105,
+   "promoted": 90,
+   "errors": 0,
+   "nonModel": {
+    "n": 105,
+    "p50": 123.81240799999796,
+    "p95": 150.31854300000123,
+    "max": 163.33419699998922
+   },
+   "nonModelPromoted": {
+    "n": 90,
+    "p50": 125.91015499999048,
+    "p95": 153.87899299999117,
+    "max": 163.33419699998922
+   },
+   "stages": {
+    "freeze": {
+     "n": 105,
+     "p50": 63.1204340000113,
+     "p95": 71.97161599999527,
+     "max": 80.61985000001732
+    },
+    "compile": {
+     "n": 105,
+     "p50": 42.49784399996861,
+     "p95": 57.57518500002334,
+     "max": 68.87303800001973
+    },
+    "gate": {
+     "n": 105,
+     "p50": 3.96805100000347,
+     "p95": 8.246075000031851,
+     "max": 10.668220999999903
+    },
+    "ledger": {
+     "n": 105,
+     "p50": 9.200305999984266,
+     "p95": 11.760752999980468,
+     "max": 15.04305999999633
+    },
+    "promote": {
+     "n": 105,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "wrongVerdicts": []
+  },
+  "isolate-process": {
+   "loadStart": 10.39,
+   "loadEnd": 10.72,
+   "label": "acceptance",
+   "size": 1,
+   "reps": 5,
+   "readyMs": 3261.259183999995,
+   "wallMs": 25648.258996999997,
+   "records": 105,
+   "promoted": 90,
+   "errors": 0,
+   "nonModel": {
+    "n": 105,
+    "p50": 148.3926190000202,
+    "p95": 173.36674800000037,
+    "max": 186.0793850000191
+   },
+   "nonModelPromoted": {
+    "n": 90,
+    "p50": 149.25576200001524,
+    "p95": 174.166596999974,
+    "max": 186.0793850000191
+   },
+   "stages": {
+    "freeze": {
+     "n": 105,
+     "p50": 68.76254600001266,
+     "p95": 73.3113069999963,
+     "max": 75.63878100001602
+    },
+    "compile": {
+     "n": 105,
+     "p50": 48.24172299999918,
+     "p95": 63.70429299999887,
+     "max": 87.6415619999998
+    },
+    "gate": {
+     "n": 105,
+     "p50": 6.587274000019534,
+     "p95": 12.404548999980761,
+     "max": 16.19981399997414
+    },
+    "ledger": {
+     "n": 105,
+     "p50": 21.68194399998174,
+     "p95": 25.32224799998221,
+     "max": 27.948326999990968
+    },
+    "promote": {
+     "n": 105,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "wrongVerdicts": []
+  },
+  "agent-process-8": {
+   "loadStart": 10.72,
+   "loadEnd": 11.26,
+   "label": "acceptance",
+   "size": 8,
+   "reps": 3,
+   "readyMs": 7029.908207,
+   "wallMs": 4950.650159000012,
+   "records": 63,
+   "promoted": 54,
+   "errors": 0,
+   "nonModel": {
+    "n": 63,
+    "p50": 562.2051260000153,
+    "p95": 815.0772899999865,
+    "max": 1031.418816999998
+   },
+   "nonModelPromoted": {
+    "n": 54,
+    "p50": 562.5921499999822,
+    "p95": 820.2196169999661,
+    "max": 1031.418816999998
+   },
+   "stages": {
+    "freeze": {
+     "n": 63,
+     "p50": 295.2772120000154,
+     "p95": 412.40442999999505,
+     "max": 542.804925000004
+    },
+    "compile": {
+     "n": 63,
+     "p50": 55.67550299999857,
+     "p95": 77.72593500000039,
+     "max": 90.1105690000004
+    },
+    "gate": {
+     "n": 63,
+     "p50": 5.71772399999918,
+     "p95": 11.875025000001187,
+     "max": 21.846933999999237
+    },
+    "ledger": {
+     "n": 63,
+     "p50": 246.69580699998187,
+     "p95": 382.57401500002015,
+     "max": 436.86077200001455
+    },
+    "promote": {
+     "n": 63,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "wrongVerdicts": []
+  },
+  "agent-thread-8": {
+   "loadStart": 11.26,
+   "loadEnd": 11.97,
+   "label": "acceptance",
+   "size": 8,
+   "reps": 3,
+   "readyMs": 7044.111834999989,
+   "wallMs": 4872.347801000025,
+   "records": 63,
+   "promoted": 54,
+   "errors": 0,
+   "nonModel": {
+    "n": 63,
+    "p50": 561.7552699999651,
+    "p95": 774.0031529999687,
+    "max": 1032.2521239999915
+   },
+   "nonModelPromoted": {
+    "n": 54,
+    "p50": 563.5291520000319,
+    "p95": 778.2090579999785,
+    "max": 1032.2521239999915
+   },
+   "stages": {
+    "freeze": {
+     "n": 63,
+     "p50": 293.6678050000046,
+     "p95": 419.051357999997,
+     "max": 547.9862230000144
+    },
+    "compile": {
+     "n": 63,
+     "p50": 55.08521000001929,
+     "p95": 70.52542600000743,
+     "max": 89.85952800000086
+    },
+    "gate": {
+     "n": 63,
+     "p50": 4.971174999984214,
+     "p95": 11.250663999991957,
+     "max": 13.566598999983398
+    },
+    "ledger": {
+     "n": 63,
+     "p50": 247.2011749999947,
+     "p95": 398.24880299999495,
+     "max": 419.643235000025
+    },
+    "promote": {
+     "n": 63,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "wrongVerdicts": []
+  },
+  "current": {
+   "loadStart": 11.97,
+   "loadEnd": 11.35,
+   "label": "acceptance",
+   "size": 1,
+   "reps": 5,
+   "readyMs": 92.64020500000333,
+   "wallMs": 149092.05994900002,
+   "records": 105,
+   "promoted": 90,
+   "errors": 0,
+   "nonModel": {
+    "n": 105,
+    "p50": 1297.3185130000347,
+    "p95": 1765.545748000004,
+    "max": 2107.672009000031
+   },
+   "nonModelPromoted": {
+    "n": 90,
+    "p50": 1317.8294880000176,
+    "p95": 1784.9163460000418,
+    "max": 2107.672009000031
+   },
+   "stages": {
+    "freeze": {
+     "n": 105,
+     "p50": 170.45452400000067,
+     "p95": 207.90201999997953,
+     "max": 249.39580700002261
+    },
+    "compile": {
+     "n": 105,
+     "p50": 498.5891110000084,
+     "p95": 702.2387520000048,
+     "max": 832.1862650000257
+    },
+    "gate": {
+     "n": 105,
+     "p50": 391.599664999987,
+     "p95": 548.4199240000162,
+     "max": 801.1755270000431
+    },
+    "ledger": {
+     "n": 105,
+     "p50": 130.6587779999827,
+     "p95": 172.3353740000166,
+     "max": 257.95161799993366
+    },
+    "promote": {
+     "n": 105,
+     "p50": 91.15316300000995,
+     "p95": 129.80150300002424,
+     "max": 161.5381940000225
+    }
+   },
+   "wrongVerdicts": []
+  }
+ },
+ "counting": {
+  "agent-thread": {
+   "candidates": 21,
+   "toAdmit": {
+    "spawns": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "writes": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "reads": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "admit": {
+    "spawns": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "writes": {
+     "n": 21,
+     "p50": 89,
+     "p95": 95,
+     "max": 95
+    },
+    "reads": {
+     "n": 21,
+     "p50": 3,
+     "p95": 3,
+     "max": 4
+    }
+   },
+   "toCommit": {
+    "spawns": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "writes": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "reads": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "commit": {
+    "spawns": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "writes": {
+     "n": 21,
+     "p50": 32,
+     "p95": 48,
+     "max": 52
+    },
+    "reads": {
+     "n": 21,
+     "p50": 5,
+     "p95": 5,
+     "max": 5
+    }
+   },
+   "handoffs": {
+    "n": 21,
+    "p50": 4,
+    "p95": 4,
+    "max": 4
+   },
+   "a1": true,
+   "sample": {
+    "name": "add",
+    "promoted": true,
+    "requestsAfter": [
+     "admit",
+     "commit"
+    ],
+    "jobsAfter": 1,
+    "toAdmit": {
+     "spawns": 0,
+     "execs": 0,
+     "writes": 0,
+     "reads": 0
+    },
+    "admit": {
+     "spawns": 0,
+     "execs": 0,
+     "writes": 87,
+     "reads": 4
+    },
+    "toCommit": {
+     "spawns": 0,
+     "execs": 0,
+     "writes": 0,
+     "reads": 0
+    },
+    "commit": {
+     "spawns": 0,
+     "execs": 0,
+     "writes": 16,
+     "reads": 5
+    },
+    "handoffs": 4,
+    "requests": [
+     "admit",
+     "commit"
+    ],
+    "writesToCommit": [],
+    "writesCommit": [
+     "pwrite64 <work>/count-agent-thread/agent-thread-0/ledger.sqlite-wal",
+     "pwrite64 <work>/count-agent-thread/agent-thread-0/ledger.sqlite-wal",
+     "pwrite64 <work>/count-agent-thread/agent-thread-0/ledger.sqlite-wal",
+     "pwrite64 <work>/count-agent-thread/agent-thread-0/ledger.sqlite-wal",
+     "pwrite64 <work>/count-agent-thread/agent-thread-0/ledger.sqlite-wal",
+     "pwrite64 <work>/count-agent-thread/agent-thread-0/ledger.sqlite-wal",
+     "pwrite64 <work>/count-agent-thread/agent-thread-0/ledger.sqlite-wal",
+     "pwrite64 <work>/count-agent-thread/agent-thread-0/ledger.sqlite-wal",
+     "pwrite64 <work>/count-agent-thread/agent-thread-0/ledger.sqlite-wal",
+     "pwrite64 <work>/count-agent-thread/agent-thread-0/ledger.sqlite-wal",
+     "pwrite64 <work>/count-agent-thread/agent-thread-0/ledger.sqlite-wal",
+     "pwrite64 <work>/count-agent-thread/agent-thread-0/ledger.sqlite-wal"
+    ],
+    "writesAdmit": [
+     "mkdir <work>/count-agent-thread/agent-thread-0",
+     "openat <work>/count-agent-thread/agent-thread-0/ledger.sqlite",
+     "openat <work>/count-agent-thread/agent-thread-0/ledger.sqlite-journal",
+     "pwrite64 <work>/count-agent-thread/agent-thread-0/ledger.sqlite-journal",
+     "pwrite64 <work>/count-agent-thread/agent-thread-0/ledger.sqlite-journal",
+     "pwrite64 <work>/count-agent-thread/agent-thread-0/ledger.sqlite",
+     "unlink <work>/count-agent-thread/agent-thread-0/ledger.sqlite-journal",
+     "openat <work>/count-agent-thread/agent-thread-0/ledger.sqlite",
+     "openat <work>/count-agent-thread/agent-thread-0/ledger.sqlite-wal",
+     "openat <work>/count-agent-thread/agent-thread-0/ledger.sqlite-shm",
+     "ftruncate <work>/count-agent-thread/agent-thread-0/ledger.sqlite-shm",
+     "pwrite64 <work>/count-agent-thread/agent-thread-0/ledger.sqlite-shm"
+    ],
+    "readsToCommit": []
+   }
+  },
+  "agent-process": {
+   "candidates": 21,
+   "toAdmit": {
+    "spawns": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "writes": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "reads": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "admit": {
+    "spawns": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "writes": {
+     "n": 21,
+     "p50": 89,
+     "p95": 95,
+     "max": 95
+    },
+    "reads": {
+     "n": 21,
+     "p50": 3,
+     "p95": 3,
+     "max": 4
+    }
+   },
+   "toCommit": {
+    "spawns": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "writes": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "reads": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "commit": {
+    "spawns": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "writes": {
+     "n": 21,
+     "p50": 32,
+     "p95": 48,
+     "max": 52
+    },
+    "reads": {
+     "n": 21,
+     "p50": 5,
+     "p95": 5,
+     "max": 5
+    }
+   },
+   "handoffs": {
+    "n": 21,
+    "p50": 4,
+    "p95": 4,
+    "max": 4
+   },
+   "a1": true,
+   "sample": {
+    "name": "add",
+    "promoted": true,
+    "requestsAfter": [
+     "admit",
+     "commit"
+    ],
+    "jobsAfter": 1,
+    "toAdmit": {
+     "spawns": 0,
+     "execs": 0,
+     "writes": 0,
+     "reads": 0
+    },
+    "admit": {
+     "spawns": 0,
+     "execs": 0,
+     "writes": 87,
+     "reads": 4
+    },
+    "toCommit": {
+     "spawns": 0,
+     "execs": 0,
+     "writes": 0,
+     "reads": 0
+    },
+    "commit": {
+     "spawns": 0,
+     "execs": 0,
+     "writes": 16,
+     "reads": 5
+    },
+    "handoffs": 4,
+    "requests": [
+     "admit",
+     "commit"
+    ],
+    "writesToCommit": [],
+    "writesCommit": [
+     "pwrite64 <work>/count-agent-process/agent-process-0/ledger.sqlite-wal",
+     "pwrite64 <work>/count-agent-process/agent-process-0/ledger.sqlite-wal",
+     "pwrite64 <work>/count-agent-process/agent-process-0/ledger.sqlite-wal",
+     "pwrite64 <work>/count-agent-process/agent-process-0/ledger.sqlite-wal",
+     "pwrite64 <work>/count-agent-process/agent-process-0/ledger.sqlite-wal",
+     "pwrite64 <work>/count-agent-process/agent-process-0/ledger.sqlite-wal",
+     "pwrite64 <work>/count-agent-process/agent-process-0/ledger.sqlite-wal",
+     "pwrite64 <work>/count-agent-process/agent-process-0/ledger.sqlite-wal",
+     "pwrite64 <work>/count-agent-process/agent-process-0/ledger.sqlite-wal",
+     "pwrite64 <work>/count-agent-process/agent-process-0/ledger.sqlite-wal",
+     "pwrite64 <work>/count-agent-process/agent-process-0/ledger.sqlite-wal",
+     "pwrite64 <work>/count-agent-process/agent-process-0/ledger.sqlite-wal"
+    ],
+    "writesAdmit": [
+     "mkdir <work>/count-agent-process/agent-process-0",
+     "openat <work>/count-agent-process/agent-process-0/ledger.sqlite",
+     "openat <work>/count-agent-process/agent-process-0/ledger.sqlite-journal",
+     "pwrite64 <work>/count-agent-process/agent-process-0/ledger.sqlite-journal",
+     "pwrite64 <work>/count-agent-process/agent-process-0/ledger.sqlite-journal",
+     "pwrite64 <work>/count-agent-process/agent-process-0/ledger.sqlite",
+     "unlink <work>/count-agent-process/agent-process-0/ledger.sqlite-journal",
+     "openat <work>/count-agent-process/agent-process-0/ledger.sqlite",
+     "openat <work>/count-agent-process/agent-process-0/ledger.sqlite-wal",
+     "openat <work>/count-agent-process/agent-process-0/ledger.sqlite-shm",
+     "ftruncate <work>/count-agent-process/agent-process-0/ledger.sqlite-shm",
+     "pwrite64 <work>/count-agent-process/agent-process-0/ledger.sqlite-shm"
+    ],
+    "readsToCommit": []
+   }
+  }
+ },
+ "parity": {
+  "inputs": 39,
+  "seeded": 16,
+  "differences": [],
+  "wrong": [],
+  "promoted": {
+   "current": 19,
+   "agent-thread": 19,
+   "agent-process": 19
+  },
+  "seededVectors": {
+   "seed-good": {
+    "promoted": true,
+    "error": null,
+    "vector": {
+     "outcome": "passed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": true,
+       "G3_exports": true,
+       "G4_tests": true,
+       "G6_bounded": true,
+       "G5_deterministic": true,
+       "G7_glue": true
+      },
+      {
+       "G1_frozen": true,
+       "G2_compiles": true,
+       "G3_exports": true,
+       "G4_tests": true,
+       "G6_bounded": true,
+       "G5_deterministic": true,
+       "G7_glue": true
+      }
+     ]
+    }
+   },
+   "seed-type-error": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": false
+      }
+     ]
+    }
+   },
+   "seed-wrong-answer": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": true,
+       "G3_exports": true,
+       "G4_tests": false,
+       "G6_bounded": true,
+       "G5_deterministic": true,
+       "G7_glue": true
+      }
+     ]
+    }
+   },
+   "seed-missing-export": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": true,
+       "G3_exports": false
+      }
+     ]
+    }
+   },
+   "seed-extra-import": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": false
+      }
+     ]
+    }
+   },
+   "seed-invalid-glue": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": true,
+       "G3_exports": true,
+       "G4_tests": true,
+       "G6_bounded": true,
+       "G5_deterministic": true,
+       "G7_glue": false
+      }
+     ]
+    }
+   },
+   "seed-host-path-import": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": false
+      }
+     ]
+    }
+   },
+   "seed-relative-host-import": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": false
+      }
+     ]
+    }
+   },
+   "seed-always-traps": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": true,
+       "G3_exports": true,
+       "G4_tests": false,
+       "G6_bounded": true,
+       "G5_deterministic": true,
+       "G7_glue": true
+      }
+     ]
+    }
+   },
+   "seed-infinite-loop": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "inconclusive",
+     "rounds": []
+    }
+   },
+   "weak-0": {
+    "promoted": false,
+    "error": "pipeline stage failed; inspect local artifacts",
+    "vector": null
+   },
+   "weak-1": {
+    "promoted": false,
+    "error": "pipeline stage failed; inspect local artifacts",
+    "vector": null
+   },
+   "weak-2": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": true,
+       "G3_exports": true,
+       "G4_tests": false,
+       "G6_bounded": true,
+       "G5_deterministic": true,
+       "G7_glue": true
+      }
+     ]
+    }
+   },
+   "weak-3": {
+    "promoted": false,
+    "error": "pipeline stage failed; inspect local artifacts",
+    "vector": null
+   },
+   "weak-4": {
+    "promoted": false,
+    "error": "pipeline stage failed; inspect local artifacts",
+    "vector": null
+   },
+   "weak-5": {
+    "promoted": false,
+    "error": "pipeline stage failed; inspect local artifacts",
+    "vector": null
+   }
+  }
+ },
+ "finished": "2026-11-07T03:28:01.348Z"
+}

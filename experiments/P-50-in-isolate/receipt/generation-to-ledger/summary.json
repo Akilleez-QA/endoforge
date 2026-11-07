@@ -1,0 +1,773 @@
+{
+ "commit": "77db75d2a78c189f832133a676e5ae25251d3756",
+ "precommit": "0f2b41a042ef175a027f20d495ed24b9752276821ec9aa8a81b37f06b8390d1e",
+ "testDouble": true,
+ "node": "v26.13.0",
+ "cpus": "AMD Ryzen 9 7950X 16-Core Processor",
+ "parallelism": 32,
+ "totalMemory": 134143877120,
+ "corpus": {
+  "digest": "35b10f688e9f383c0c1cfa2c14b5351c2215931bd6d4b214e210e976df772ea6",
+  "kernels": 21,
+  "expectPromoted": 18
+ },
+ "started": "2026-11-06T19:51:57.126Z",
+ "arms": {
+  "current": {
+   "size": 1,
+   "reps": 5,
+   "readyMs": 66.08567400000175,
+   "wallMs": 164363.691091,
+   "records": 105,
+   "promoted": 90,
+   "errors": 0,
+   "nonModel": {
+    "n": 105,
+    "p50": 1472.1485209999955,
+    "p95": 1759.3620099999825,
+    "max": 2143.389993000019
+   },
+   "nonModelPromoted": {
+    "n": 90,
+    "p50": 1491.837753000087,
+    "p95": 1784.4409310000483,
+    "max": 2143.389993000019
+   },
+   "stages": {
+    "freeze": {
+     "n": 105,
+     "p50": 338.46943699999247,
+     "p95": 537.5242329999455,
+     "max": 824.7170179999666
+    },
+    "compile": {
+     "n": 105,
+     "p50": 531.8189869999769,
+     "p95": 624.9577139999892,
+     "max": 695.8884700000053
+    },
+    "gate": {
+     "n": 105,
+     "p50": 340.219076999987,
+     "p95": 392.74811399995815,
+     "max": 460.44883799998206
+    },
+    "ledger": {
+     "n": 105,
+     "p50": 155.6654639999033,
+     "p95": 279.3081439999514,
+     "max": 383.3430880000233
+    },
+    "promote": {
+     "n": 105,
+     "p50": 90.55702800001018,
+     "p95": 106.6540629999945,
+     "max": 172.0792290000245
+    }
+   },
+   "wrongVerdicts": []
+  },
+  "isolate-thread": {
+   "size": 1,
+   "reps": 5,
+   "readyMs": 2474.0217650000122,
+   "wallMs": 41783.81215299998,
+   "records": 105,
+   "promoted": 90,
+   "errors": 0,
+   "nonModel": {
+    "n": 105,
+    "p50": 301.3686630000593,
+    "p95": 479.49244399997406,
+    "max": 634.5718610000331
+   },
+   "nonModelPromoted": {
+    "n": 90,
+    "p50": 304.02661900006933,
+    "p95": 479.49244399997406,
+    "max": 634.5718610000331
+   },
+   "stages": {
+    "freeze": {
+     "n": 105,
+     "p50": 193.95965999999316,
+     "p95": 334.22520899999654,
+     "max": 527.0496979999589
+    },
+    "compile": {
+     "n": 105,
+     "p50": 41.479237999999896,
+     "p95": 48.1215979999979,
+     "max": 56.69210699998075
+    },
+    "gate": {
+     "n": 105,
+     "p50": 5.3006659999955446,
+     "p95": 8.675290999992285,
+     "max": 12.26739799999632
+    },
+    "ledger": {
+     "n": 105,
+     "p50": 59.963051999977324,
+     "p95": 89.08341500000097,
+     "max": 197.50705399998697
+    },
+    "promote": {
+     "n": 105,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "wrongVerdicts": []
+  },
+  "isolate-process": {
+   "size": 1,
+   "reps": 5,
+   "readyMs": 2569.2358349999995,
+   "wallMs": 38925.002731000015,
+   "records": 105,
+   "promoted": 90,
+   "errors": 0,
+   "nonModel": {
+    "n": 105,
+    "p50": 291.5224650000455,
+    "p95": 324.3139310000115,
+    "max": 491.21562599996105
+   },
+   "nonModelPromoted": {
+    "n": 90,
+    "p50": 292.8301999999676,
+    "p95": 324.3139310000115,
+    "max": 491.21562599996105
+   },
+   "stages": {
+    "freeze": {
+     "n": 105,
+     "p50": 188.22774499998195,
+     "p95": 215.02013499999885,
+     "max": 375.99244499998167
+    },
+    "compile": {
+     "n": 105,
+     "p50": 38.34065399999963,
+     "p95": 47.41597900000488,
+     "max": 61.227898000000096
+    },
+    "gate": {
+     "n": 105,
+     "p50": 4.351360999997269,
+     "p95": 6.734401000001526,
+     "max": 15.693594000029407
+    },
+    "ledger": {
+     "n": 105,
+     "p50": 58.6148529999773,
+     "p95": 64.70428300002823,
+     "max": 170.96477500000037
+    },
+    "promote": {
+     "n": 105,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "wrongVerdicts": []
+  },
+  "current-8": {
+   "size": 8,
+   "reps": 3,
+   "readyMs": 72.26577200001338,
+   "wallMs": 20224.195155000023,
+   "records": 63,
+   "promoted": 54,
+   "errors": 0,
+   "nonModel": {
+    "n": 63,
+    "p50": 2369.0824919999577,
+    "p95": 2741.9642319999402,
+    "max": 2965.2393000000156
+   },
+   "nonModelPromoted": {
+    "n": 54,
+    "p50": 2384.6400520000025,
+    "p95": 2843.2663649999886,
+    "max": 2965.2393000000156
+   },
+   "stages": {
+    "freeze": {
+     "n": 63,
+     "p50": 676.2570500000147,
+     "p95": 863.537135999999,
+     "max": 890.2621490000165
+    },
+    "compile": {
+     "n": 63,
+     "p50": 864.8676930000074,
+     "p95": 1137.8004000000074,
+     "max": 1157.498534000013
+    },
+    "gate": {
+     "n": 63,
+     "p50": 429.58418399997754,
+     "p95": 574.8519119999837,
+     "max": 621.7551960000419
+    },
+    "ledger": {
+     "n": 63,
+     "p50": 272.0335490000434,
+     "p95": 394.65616499999305,
+     "max": 509.4052959999535
+    },
+    "promote": {
+     "n": 63,
+     "p50": 117.32293399999617,
+     "p95": 156.53161800000817,
+     "max": 245.35000199999195
+    }
+   },
+   "wrongVerdicts": []
+  },
+  "isolate-thread-8": {
+   "size": 8,
+   "reps": 3,
+   "readyMs": 6322.953815000015,
+   "wallMs": 15565.832204000035,
+   "records": 63,
+   "promoted": 54,
+   "errors": 0,
+   "nonModel": {
+    "n": 63,
+    "p50": 1773.4252010000055,
+    "p95": 1865.2716839999775,
+    "max": 2242.807419000077
+   },
+   "nonModelPromoted": {
+    "n": 54,
+    "p50": 1772.1197999999276,
+    "p95": 1856.1060660000076,
+    "max": 2242.807419000077
+   },
+   "stages": {
+    "freeze": {
+     "n": 63,
+     "p50": 897.9781129999319,
+     "p95": 1303.1421090000076,
+     "max": 1474.4249019999988
+    },
+    "compile": {
+     "n": 63,
+     "p50": 44.2844740000437,
+     "p95": 60.31597900000634,
+     "max": 72.74746199999936
+    },
+    "gate": {
+     "n": 63,
+     "p50": 5.481814999948256,
+     "p95": 10.014890999998897,
+     "max": 43.506277000007685
+    },
+    "ledger": {
+     "n": 63,
+     "p50": 780.6432860000059,
+     "p95": 1276.0863019999815,
+     "max": 1296.2578680000152
+    },
+    "promote": {
+     "n": 63,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "wrongVerdicts": []
+  },
+  "isolate-process-8": {
+   "size": 8,
+   "reps": 3,
+   "readyMs": 6239.1520350000355,
+   "wallMs": 16351.709774999996,
+   "records": 63,
+   "promoted": 54,
+   "errors": 0,
+   "nonModel": {
+    "n": 63,
+    "p50": 1919.5901620000368,
+    "p95": 2118.1526689999737,
+    "max": 2395.5777910001343
+   },
+   "nonModelPromoted": {
+    "n": 54,
+    "p50": 1919.5901620000368,
+    "p95": 2195.466179999872,
+    "max": 2395.5777910001343
+   },
+   "stages": {
+    "freeze": {
+     "n": 63,
+     "p50": 1022.2988109999569,
+     "p95": 1507.4008860000176,
+     "max": 1773.9934010000434
+    },
+    "compile": {
+     "n": 63,
+     "p50": 38.559158000000025,
+     "p95": 47.13503700000001,
+     "max": 64.76717000000008
+    },
+    "gate": {
+     "n": 63,
+     "p50": 5.318185999925845,
+     "p95": 11.082566000029146,
+     "max": 15.956210999979703
+    },
+    "ledger": {
+     "n": 63,
+     "p50": 812.0146240000613,
+     "p95": 1324.2734669999918,
+     "max": 1476.0219839999918
+    },
+    "promote": {
+     "n": 63,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "wrongVerdicts": []
+  }
+ },
+ "counting": {
+  "current": {
+   "candidates": 3,
+   "toCommit": {
+    "spawns": {
+     "n": 3,
+     "p50": 9,
+     "p95": 9,
+     "max": 9
+    },
+    "writes": {
+     "n": 3,
+     "p50": 795,
+     "p95": 795,
+     "max": 795
+    },
+    "reads": {
+     "n": 3,
+     "p50": 2551,
+     "p95": 2555,
+     "max": 2555
+    }
+   },
+   "commit": {
+    "spawns": {
+     "n": 3,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "writes": {
+     "n": 3,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "reads": {
+     "n": 3,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "handoffs": {
+    "n": 3,
+    "p50": 13,
+    "p95": 13,
+    "max": 13
+   },
+   "a1": false,
+   "sample": {
+    "name": "add",
+    "promoted": true,
+    "requestsAfter": [
+     "prepare",
+     "append"
+    ],
+    "jobsAfter": 1,
+    "toCommit": {
+     "spawns": 9,
+     "execs": 88,
+     "writes": 795,
+     "reads": 2555
+    },
+    "commit": {
+     "spawns": 0,
+     "execs": 0,
+     "writes": 0,
+     "reads": 0
+    },
+    "handoffs": 13,
+    "writesToCommit": [
+     "mkdir /tmp/ef-compile-lvGbgD",
+     "openat /tmp/ef-compile-lvGbgD/kernel.ts",
+     "openat /etc/ssl/certs",
+     "mkdir /tmp/ef-compile-lvGbgD",
+     "openat /tmp/ef-compile-lvGbgD/kernel.wasm",
+     "rmdir /tmp/ef-compile-lvGbgD",
+     "openat /tmp/ef-compile-lvGbgD",
+     "unlink /tmp/ef-compile-lvGbgD/kernel.ts",
+     "unlink /tmp/ef-compile-lvGbgD/kernel.wasm",
+     "rmdir /tmp/ef-compile-lvGbgD",
+     "openat /etc/mise/conf.d",
+     "openat /lib"
+    ],
+    "writesCommit": [],
+    "readsToCommit": [
+     "/etc/ld.so.cache",
+     "/usr/lib/libc.so.6",
+     "/usr/lib/locale/locale-archive",
+     "/etc/ld.so.cache",
+     "/usr/lib/libatomic.so.1",
+     "/usr/lib/libdl.so.2",
+     "/usr/lib/libm.so.6",
+     "/usr/lib/libstdc++.so.6",
+     "/usr/lib/libgcc_s.so.1",
+     "/usr/lib/libpthread.so.0",
+     "/usr/lib/libc.so.6",
+     "/etc/ssl/openssl.cnf"
+    ]
+   }
+  },
+  "isolate-thread": {
+   "candidates": 21,
+   "toCommit": {
+    "spawns": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "writes": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "reads": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "commit": {
+    "spawns": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "writes": {
+     "n": 21,
+     "p50": 5,
+     "p95": 5,
+     "max": 5
+    },
+    "reads": {
+     "n": 21,
+     "p50": 13,
+     "p95": 13,
+     "max": 13
+    }
+   },
+   "handoffs": {
+    "n": 21,
+    "p50": 3,
+    "p95": 3,
+    "max": 3
+   },
+   "a1": true,
+   "sample": {
+    "name": "add",
+    "promoted": true,
+    "requestsAfter": [
+     "commit"
+    ],
+    "jobsAfter": 1,
+    "toCommit": {
+     "spawns": 0,
+     "execs": 0,
+     "writes": 0,
+     "reads": 0
+    },
+    "commit": {
+     "spawns": 0,
+     "execs": 0,
+     "writes": 5,
+     "reads": 13
+    },
+    "handoffs": 3,
+    "writesToCommit": [],
+    "writesCommit": [
+     "openat <work>/count-isolate-thread/isolate-thread-0/ledger.sqlite-journal",
+     "openat <work>/count-isolate-thread/isolate-thread-0/oracle/",
+     "openat <work>/count-isolate-thread/isolate-thread-0/oracle/",
+     "unlink <work>/count-isolate-thread/isolate-thread-0/ledger.sqlite-journal",
+     "openat <work>/count-isolate-thread/isolate-thread-0/promotion.json"
+    ],
+    "readsToCommit": []
+   }
+  },
+  "isolate-process": {
+   "candidates": 21,
+   "toCommit": {
+    "spawns": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "writes": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "reads": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    }
+   },
+   "commit": {
+    "spawns": {
+     "n": 21,
+     "p50": 0,
+     "p95": 0,
+     "max": 0
+    },
+    "writes": {
+     "n": 21,
+     "p50": 5,
+     "p95": 5,
+     "max": 5
+    },
+    "reads": {
+     "n": 21,
+     "p50": 13,
+     "p95": 13,
+     "max": 13
+    }
+   },
+   "handoffs": {
+    "n": 21,
+    "p50": 3,
+    "p95": 3,
+    "max": 3
+   },
+   "a1": true,
+   "sample": {
+    "name": "add",
+    "promoted": true,
+    "requestsAfter": [
+     "commit"
+    ],
+    "jobsAfter": 1,
+    "toCommit": {
+     "spawns": 0,
+     "execs": 0,
+     "writes": 0,
+     "reads": 0
+    },
+    "commit": {
+     "spawns": 0,
+     "execs": 0,
+     "writes": 5,
+     "reads": 13
+    },
+    "handoffs": 3,
+    "writesToCommit": [],
+    "writesCommit": [
+     "openat <work>/count-isolate-process/isolate-process-0/ledger.sqlite-journal",
+     "openat <work>/count-isolate-process/isolate-process-0/oracle/",
+     "openat <work>/count-isolate-process/isolate-process-0/oracle/",
+     "unlink <work>/count-isolate-process/isolate-process-0/ledger.sqlite-journal",
+     "openat <work>/count-isolate-process/isolate-process-0/promotion.json"
+    ],
+    "readsToCommit": []
+   }
+  }
+ },
+ "parity": {
+  "inputs": 31,
+  "seeded": 10,
+  "differences": [],
+  "wrong": [],
+  "promoted": {
+   "current": 19,
+   "isolate-thread": 19,
+   "isolate-process": 19
+  },
+  "seededVectors": {
+   "seed-good": {
+    "promoted": true,
+    "error": null,
+    "vector": {
+     "outcome": "passed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": true,
+       "G3_exports": true,
+       "G4_tests": true,
+       "G6_bounded": true,
+       "G5_deterministic": true,
+       "G7_glue": true
+      },
+      {
+       "G1_frozen": true,
+       "G2_compiles": true,
+       "G3_exports": true,
+       "G4_tests": true,
+       "G6_bounded": true,
+       "G5_deterministic": true,
+       "G7_glue": true
+      }
+     ]
+    }
+   },
+   "seed-type-error": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": false
+      }
+     ]
+    }
+   },
+   "seed-wrong-answer": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": true,
+       "G3_exports": true,
+       "G4_tests": false,
+       "G6_bounded": true,
+       "G5_deterministic": true,
+       "G7_glue": true
+      }
+     ]
+    }
+   },
+   "seed-missing-export": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": true,
+       "G3_exports": false
+      }
+     ]
+    }
+   },
+   "seed-extra-import": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": false
+      }
+     ]
+    }
+   },
+   "seed-invalid-glue": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": true,
+       "G3_exports": true,
+       "G4_tests": true,
+       "G6_bounded": true,
+       "G5_deterministic": true,
+       "G7_glue": false
+      }
+     ]
+    }
+   },
+   "seed-host-path-import": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": false
+      }
+     ]
+    }
+   },
+   "seed-relative-host-import": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": false
+      }
+     ]
+    }
+   },
+   "seed-always-traps": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "failed",
+     "rounds": [
+      {
+       "G1_frozen": true,
+       "G2_compiles": true,
+       "G3_exports": true,
+       "G4_tests": false,
+       "G6_bounded": true,
+       "G5_deterministic": true,
+       "G7_glue": true
+      }
+     ]
+    }
+   },
+   "seed-infinite-loop": {
+    "promoted": false,
+    "error": null,
+    "vector": {
+     "outcome": "inconclusive",
+     "rounds": []
+    }
+   }
+  }
+ },
+ "finished": "2026-11-06T20:00:58.998Z"
+}

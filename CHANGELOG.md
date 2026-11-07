@@ -6,6 +6,8 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Added
 
+- X1 candidate loop inside the workcell, off by default: `ENDOFORGE_LOOP=isolate` compiles, verifies the frozen evaluator from memory, gates and repairs in one warm cell, with one bridge commit per candidate. `ENDOFORGE_LOOP=agent` adds the agent turn loop over an in-memory overlay, with the model behind a provider port and a warm no-tools Claude transport. [P-50](experiments/P-50-in-isolate/RESULT.md) records 0 spawns and temp files up to commit, matching verdicts, and a missed 100 ms line.
+
 - Local promotion decisions with verified chain/receipt and complete X1 pool
   evidence, plus P-22 prospective harness and explicit test-double validation.
 
