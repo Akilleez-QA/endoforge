@@ -1,0 +1,1320 @@
+{
+ "node": "26.13.0",
+ "arm": "vm-thread",
+ "rows": [
+  {
+   "attack": "ctor-global",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 37,
+   "authority": [
+    "canaryInOutput",
+    "wrote",
+    "spawned",
+    "network",
+    "decoyKilled"
+   ],
+   "polluted": false,
+   "foreign": [
+    "global.constructor",
+    "this.constructor"
+   ],
+   "reached": [
+    {
+     "via": "global",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "sent"
+    },
+    {
+     "via": "this",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "denied:ESRCH"
+    },
+    {
+     "via": "global.ctor.ctor",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "denied:ESRCH"
+    },
+    {
+     "via": "this.ctor.ctor",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "denied:ESRCH"
+    }
+   ],
+   "notes": {},
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "ctor-function",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 16,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [
+    {
+     "via": "async.ctor",
+     "read": "denied:Cannot read properties of null (reading 'readFileSync')",
+     "write": "denied:Cannot read properties of null (reading 'writeFileSync')",
+     "spawn": "denied:Cannot read properties of null (reading 'execFileSync')",
+     "net": "denied:Cannot read properties of null (reading 'connect')",
+     "worker": "denied:Cannot destructure property 'Worker' of 'need(...)' as it is null.",
+     "signal": "denied:P.kill is not a function"
+    },
+    {
+     "via": "gen.ctor",
+     "read": "denied:Cannot read properties of null (reading 'readFileSync')",
+     "write": "denied:Cannot read properties of null (reading 'writeFileSync')",
+     "spawn": "denied:Cannot read properties of null (reading 'execFileSync')",
+     "net": "denied:Cannot read properties of null (reading 'connect')",
+     "worker": "denied:Cannot destructure property 'Worker' of 'need(...)' as it is null.",
+     "signal": "denied:P.kill is not a function"
+    },
+    {
+     "via": "agen.ctor",
+     "read": "denied:Cannot read properties of null (reading 'readFileSync')",
+     "write": "denied:Cannot read properties of null (reading 'writeFileSync')",
+     "spawn": "denied:Cannot read properties of null (reading 'execFileSync')",
+     "net": "denied:Cannot read properties of null (reading 'connect')",
+     "worker": "denied:Cannot destructure property 'Worker' of 'need(...)' as it is null.",
+     "signal": "denied:P.kill is not a function"
+    }
+   ],
+   "notes": {
+    "arrow.ctor": "no process"
+   },
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "ctor-handed",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 89,
+   "authority": [
+    "canaryInOutput",
+    "wrote",
+    "spawned",
+    "network",
+    "decoyKilled"
+   ],
+   "polluted": false,
+   "foreign": [
+    "require",
+    "module",
+    "exports",
+    "input",
+    "ports"
+   ],
+   "reached": [
+    {
+     "via": "require",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "sent"
+    },
+    {
+     "via": "require.ctor.ctor",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "denied:ESRCH"
+    },
+    {
+     "via": "module",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "denied:ESRCH"
+    },
+    {
+     "via": "module.ctor.ctor",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "denied:ESRCH"
+    },
+    {
+     "via": "exports",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "denied:ESRCH"
+    },
+    {
+     "via": "exports.ctor.ctor",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "denied:ESRCH"
+    },
+    {
+     "via": "input",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "denied:ESRCH"
+    },
+    {
+     "via": "input.ctor.ctor",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "denied:ESRCH"
+    },
+    {
+     "via": "ports",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "denied:ESRCH"
+    },
+    {
+     "via": "ports.ctor.ctor",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "denied:ESRCH"
+    }
+   ],
+   "notes": {
+    "leakUse": {
+     "fired": [],
+     "keys": 15
+    }
+   },
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "caller-chain",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 27,
+   "authority": [
+    "canaryInOutput",
+    "wrote",
+    "spawned",
+    "network",
+    "decoyKilled"
+   ],
+   "polluted": false,
+   "foreign": [
+    "caller1"
+   ],
+   "reached": [
+    {
+     "via": "caller1",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "sent"
+    }
+   ],
+   "notes": {
+    "leakUse": {
+     "fired": [],
+     "keys": 15
+    },
+    "caller2": "'caller', 'callee', and 'arguments' properties may not be accessed on strict mode functions or the arguments objects for calls to them",
+    "seen": [
+     "",
+     "run"
+    ]
+   },
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "proto-pollution",
+   "skipped": "arm has no port"
+  },
+  {
+   "attack": "prepare-stack",
+   "status": "refused",
+   "reason": "thrown",
+   "detail": "Error is not a constructor",
+   "elapsedMs": 15,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "import-rejection",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 40,
+   "authority": [
+    "canaryInOutput",
+    "wrote",
+    "spawned",
+    "decoyKilled"
+   ],
+   "polluted": false,
+   "foreign": [
+    "import:node:fs",
+    "import:file://<checkout>/.scratch/p54/canary.txt",
+    "import:data:text/javascript,export default 1",
+    "import:./nope.js"
+   ],
+   "reached": [
+    {
+     "via": "import:node:fs",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "sent"
+    },
+    {
+     "via": "import:file://<checkout>/.scratch/p54/canary.txt",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "denied:ESRCH"
+    },
+    {
+     "via": "import:data:text/javascript,export default 1",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "denied:ESRCH"
+    },
+    {
+     "via": "import:./nope.js",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "denied:ESRCH"
+    }
+   ],
+   "notes": {
+    "leakUse": {
+     "fired": [],
+     "keys": 15
+    },
+    "rej:node:fs": "ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING",
+    "rej:file://<checkout>/.scratch/p54/canary.txt": "ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING",
+    "rej:data:text/javascript,export default 1": "ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING",
+    "rej:./nope.js": "ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING"
+   },
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "import-then-only",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 25,
+   "authority": [
+    "canaryInOutput",
+    "wrote",
+    "spawned",
+    "network",
+    "decoyKilled"
+   ],
+   "polluted": false,
+   "foreign": [
+    "importrej"
+   ],
+   "reached": [
+    {
+     "via": "importrej",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "sent"
+    }
+   ],
+   "notes": {
+    "leakUse": {
+     "fired": [],
+     "keys": 15
+    },
+    "rej": "ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING"
+   },
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "stack-near-port",
+   "skipped": "arm has no port"
+  },
+  {
+   "attack": "stack-near-error",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 333,
+   "authority": [],
+   "polluted": false,
+   "foreign": [
+    "overflow",
+    "stackgetter",
+    "stackgetter",
+    "stackgetter",
+    "stackgetter",
+    "stackgetter",
+    "stackgetter",
+    "stackgetter",
+    "stackgetter",
+    "stackgetter",
+    "stackgetter",
+    "stackgetter"
+   ],
+   "reached": [],
+   "notes": {
+    "leakUse": {
+     "fired": [],
+     "keys": 15
+    },
+    "stackgetter": "blocked:Maximum call stack size exceeded"
+   },
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "port-handler-throws",
+   "skipped": "arm has no port"
+  },
+  {
+   "attack": "port-hostile-value",
+   "skipped": "arm has no port"
+  },
+  {
+   "attack": "ungranted-port",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 34,
+   "authority": [
+    "canaryInOutput",
+    "wrote",
+    "spawned",
+    "network",
+    "decoyKilled"
+   ],
+   "polluted": false,
+   "foreign": [
+    "node:fs",
+    "fs",
+    "child_process",
+    "../../../etc/passwd"
+   ],
+   "reached": [
+    {
+     "via": "node:fs",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "sent"
+    },
+    {
+     "via": "fs",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "denied:ESRCH"
+    },
+    {
+     "via": "child_process",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "denied:ESRCH"
+    },
+    {
+     "via": "../../../etc/passwd",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "denied:ESRCH"
+    }
+   ],
+   "notes": {
+    "e": "no module host:ports",
+    "node:fs": "no module node:fs",
+    "leakUse": {
+     "fired": [],
+     "keys": 15
+    },
+    "fs": "no module fs",
+    "child_process": "no module child_process",
+    "../../../etc/passwd": "no module ../../../etc/passwd"
+   },
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "globals-walk",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 23,
+   "authority": [
+    "canaryInOutput",
+    "wrote",
+    "spawned",
+    "network",
+    "decoyKilled"
+   ],
+   "polluted": false,
+   "foreign": [
+    "global.constructor"
+   ],
+   "reached": [
+    {
+     "via": "global",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "spawned",
+     "net": "attempted",
+     "worker": "started",
+     "signal": "sent"
+    }
+   ],
+   "notes": {
+    "walked": 689,
+    "absent": [
+     "console",
+     "WebAssembly",
+     "SharedArrayBuffer",
+     "Atomics",
+     "ArrayBuffer",
+     "Uint8Array",
+     "Intl",
+     "Temporal",
+     "WeakRef",
+     "FinalizationRegistry",
+     "eval"
+    ],
+    "names": "AggregateError,Array,ArrayBuffer,AsyncDisposableStack,Atomics,BigInt,BigInt64Array,BigUint64Array,Boolean,DataView,Date,DisposableStack,Error,EvalError,FinalizationRegistry,Float16Array,Float32Array,Float64Array,Function,Infinity,Int16Array,Int32Array,Int8Array,Intl,Iterator,JSON,Map,Math,NaN,Number,Object,Promise,Proxy,RangeError,ReferenceError,Reflect,RegExp,Set,SharedArrayBuffer,String,SuppressedError,Symbol,SyntaxError,Temporal,TypeError,URIError,Uint16Array,Uint32Array,Uint8Array,Uint8ClampedArray,WeakMap,WeakRef,WeakSet,WebAssembly,console,decodeURI,decodeURIComponent,encodeURI,encodeURIComponent,escape,eval,globalThis,isFinite,isNaN,parseFloat,parseInt,undefined,unescape"
+   },
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "codegen",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 13,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": {
+    "eval": "ran:2",
+    "indirect": "ran:2",
+    "Function": "ran:1",
+    "async": "ran:[object Promise]",
+    "gen": "ran:[object Object]"
+   },
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "shared-memory",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 14,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": {
+    "SAB": "function",
+    "Atomics": "object",
+    "Wasm": "object",
+    "sab": "[object SharedArrayBuffer]"
+   },
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "atomics-wait",
+   "status": "refused",
+   "reason": "deadline",
+   "detail": null,
+   "elapsedMs": 1505,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "wasm",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 13,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": {
+    "m": "compiled",
+    "i": "instantiated"
+   },
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "off-heap",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 17,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": {
+    "ab": 8589934592,
+    "ta": "present"
+   },
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "clock-random",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 28,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": {
+    "now": "1794015081562",
+    "newDate": "1794015081562",
+    "Date()": "Fri Nov 06 2026 20:31:21 GMT-0500 (Eastern Standard Time)",
+    "ctorDate": "1794015081562",
+    "ctorNow": "1794015081562",
+    "random": "0.830489984016232",
+    "perf": "refused:ReferenceError",
+    "Intl": "America/New_York",
+    "Temporal": "2026-11-07T01:31:21.572941895Z",
+    "WeakRef": "[object Object]",
+    "FR": "[object FinalizationRegistry]",
+    "fixedDate": "1970-01-01T00:00:00.000Z",
+    "tz": "300",
+    "locale": "-1"
+   },
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "async-microtask-loop",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 19,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": [
+    "deadline"
+   ],
+   "reasonOk": false
+  },
+  {
+   "attack": "async-thenable-chain",
+   "status": "refused",
+   "reason": "deadline",
+   "detail": null,
+   "elapsedMs": 1512,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": [
+    "deadline"
+   ],
+   "reasonOk": true
+  },
+  {
+   "attack": "async-never",
+   "status": "refused",
+   "reason": "deadline",
+   "detail": null,
+   "elapsedMs": 1512,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": [
+    "never_settled"
+   ],
+   "reasonOk": false
+  },
+  {
+   "attack": "loop",
+   "status": "refused",
+   "reason": "deadline",
+   "detail": null,
+   "elapsedMs": 1511,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": [
+    "deadline"
+   ],
+   "reasonOk": true
+  },
+  {
+   "attack": "loop-swallow",
+   "status": "refused",
+   "reason": "deadline",
+   "detail": null,
+   "elapsedMs": 1512,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": [
+    "deadline"
+   ],
+   "reasonOk": true
+  },
+  {
+   "attack": "heap",
+   "status": "refused",
+   "reason": "heap",
+   "detail": "ERR_WORKER_OUT_OF_MEMORY",
+   "elapsedMs": 103,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": [
+    "heap"
+   ],
+   "reasonOk": true
+  },
+  {
+   "attack": "heap-objects",
+   "status": "refused",
+   "reason": "heap",
+   "detail": "ERR_WORKER_OUT_OF_MEMORY",
+   "elapsedMs": 183,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": [
+    "heap"
+   ],
+   "reasonOk": true
+  },
+  {
+   "attack": "stack",
+   "status": "refused",
+   "reason": "thrown",
+   "detail": "Maximum call stack size exceeded",
+   "elapsedMs": 16,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": [
+    "stack"
+   ],
+   "reasonOk": false
+  },
+  {
+   "attack": "string-repeat-limit",
+   "status": "refused",
+   "reason": "thrown",
+   "detail": "Invalid string length",
+   "elapsedMs": 18,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "string-flatten",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 168,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "string-flatten-many",
+   "status": "supervisor_lost",
+   "reason": "exit SIGABRT",
+   "authority": [],
+   "foreign": [],
+   "detail": "FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory"
+  },
+  {
+   "attack": "leak-use",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 265,
+   "authority": [
+    "canaryInOutput",
+    "wrote",
+    "decoyKilled"
+   ],
+   "polluted": false,
+   "foreign": [
+    "near",
+    "near",
+    "near",
+    "near",
+    "near",
+    "near",
+    "near",
+    "near"
+   ],
+   "reached": [
+    {
+     "via": "near",
+     "env": "p54-canary-secret-env",
+     "read": "p54-canary-secret",
+     "write": "wrote",
+     "spawn": "denied:Maximum call stack size exceeded",
+     "net": "denied:Maximum call stack size exceeded",
+     "worker": "denied:Maximum call stack size exceeded",
+     "signal": "sent"
+    }
+   ],
+   "notes": {
+    "leakUse": {
+     "fired": [],
+     "keys": 15
+    },
+    "near": "blocked:Maximum call stack size exceeded"
+   },
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "string-concat",
+   "status": "refused",
+   "reason": "heap",
+   "detail": "ERR_WORKER_OUT_OF_MEMORY",
+   "elapsedMs": 102,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "string-pad",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 336,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "string-join",
+   "status": "refused",
+   "reason": "thrown",
+   "detail": "Invalid string length",
+   "elapsedMs": 11,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "string-json",
+   "status": "refused",
+   "reason": "thrown",
+   "detail": "Invalid string length",
+   "elapsedMs": 930,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "string-regex",
+   "status": "supervisor_lost",
+   "reason": "exit SIGABRT",
+   "authority": [],
+   "foreign": [],
+   "detail": "FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory"
+  },
+  {
+   "attack": "string-split",
+   "status": "refused",
+   "reason": "heap",
+   "detail": "ERR_WORKER_OUT_OF_MEMORY",
+   "elapsedMs": 154,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "array-fatal",
+   "status": "supervisor_lost",
+   "reason": "exit SIGABRT",
+   "authority": [],
+   "foreign": [],
+   "detail": "FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory"
+  },
+  {
+   "attack": "array-grow",
+   "status": "refused",
+   "reason": "heap",
+   "detail": "ERR_WORKER_OUT_OF_MEMORY",
+   "elapsedMs": 264,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "map-table-limit",
+   "status": "supervisor_lost",
+   "reason": "exit SIGABRT",
+   "authority": [],
+   "foreign": [],
+   "detail": "FATAL ERROR: Reached heap limit Allocation failed - JavaScript heap out of memory"
+  },
+  {
+   "attack": "set-table-limit",
+   "status": "refused",
+   "reason": "heap",
+   "detail": "ERR_WORKER_OUT_OF_MEMORY",
+   "elapsedMs": 174,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "object-dictionary",
+   "status": "supervisor_lost",
+   "reason": "exit SIGABRT",
+   "authority": [],
+   "foreign": [],
+   "detail": "FATAL ERROR: CALL_AND_RETRY_LAST Allocation failed - JavaScript heap out of memory"
+  },
+  {
+   "attack": "bigint-big",
+   "status": "refused",
+   "reason": "deadline",
+   "detail": null,
+   "elapsedMs": 1757,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "bigint-pow",
+   "status": "refused",
+   "reason": "thrown",
+   "detail": "Maximum BigInt size exceeded",
+   "elapsedMs": 27,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "regex-catastrophe",
+   "status": "refused",
+   "reason": "deadline",
+   "detail": null,
+   "elapsedMs": 1521,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": [
+    "deadline"
+   ],
+   "reasonOk": true
+  },
+  {
+   "attack": "regex-huge-pattern",
+   "status": "refused",
+   "reason": "thrown",
+   "detail": "Invalid regular expression: /(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)*(a|b)",
+   "elapsedMs": 44,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "regex-deep-pattern",
+   "status": "refused",
+   "reason": "thrown",
+   "detail": "Invalid regular expression: /(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((",
+   "elapsedMs": 34,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "deep-json-parse",
+   "status": "refused",
+   "reason": "thrown",
+   "detail": "Unexpected end of JSON input",
+   "elapsedMs": 488,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "deep-json-stringify",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 361,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "deep-flat",
+   "status": "refused",
+   "reason": "thrown",
+   "detail": "Maximum call stack size exceeded",
+   "elapsedMs": 131,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "deep-proxy",
+   "status": "refused",
+   "reason": "heap",
+   "detail": "ERR_WORKER_OUT_OF_MEMORY",
+   "elapsedMs": 325,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "deep-bind",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 111,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "deep-tostring",
+   "status": "refused",
+   "reason": "thrown",
+   "detail": "Maximum call stack size exceeded",
+   "elapsedMs": 150,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "sort-big",
+   "status": "refused",
+   "reason": "heap",
+   "detail": "ERR_WORKER_OUT_OF_MEMORY",
+   "elapsedMs": 164,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "poison-result",
+   "status": "refused",
+   "reason": "thrown",
+   "detail": "poison thenable",
+   "elapsedMs": 13,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "poison-tojson-output",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 13,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "non-json-outputs",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 11,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": null,
+   "reasonOk": null
+  },
+  {
+   "attack": "output-too-large",
+   "status": "completed",
+   "reason": null,
+   "detail": null,
+   "elapsedMs": 25,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": [
+    "output_too_large"
+   ],
+   "reasonOk": false
+  },
+  {
+   "attack": "import-meta-syntax",
+   "status": "refused",
+   "reason": "thrown",
+   "detail": "Cannot use 'import.meta' outside a module",
+   "elapsedMs": 20,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": [
+    "compile"
+   ],
+   "reasonOk": false
+  },
+  {
+   "attack": "esm-syntax",
+   "status": "refused",
+   "reason": "thrown",
+   "detail": "Unexpected token 'export'",
+   "elapsedMs": 23,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": [
+    "compile"
+   ],
+   "reasonOk": false
+  },
+  {
+   "attack": "wrapper-break",
+   "status": "refused",
+   "reason": "thrown",
+   "detail": "Unexpected token '}'",
+   "elapsedMs": 27,
+   "authority": [],
+   "polluted": false,
+   "foreign": [],
+   "reached": [],
+   "notes": null,
+   "expectedReason": [
+    "compile"
+   ],
+   "reasonOk": false
+  }
+ ]
+}
