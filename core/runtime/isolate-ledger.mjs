@@ -5,6 +5,17 @@ import { fileURLToPath } from 'node:url';
 const operation = `
 def process(request, prior, append):
     job = request['job']
+    if request['action'] == 'frozen':
+        from core.ledger.frozen import digest, snapshot
+        reference = job['reference']
+        record = prior.get(reference['identity'])
+        if record is None or record['kind'] != 'frozen_evaluator' or 'freeze' not in record['data']:
+            raise ValueError('content-hashed frozen evaluator required')
+        stored = json.loads(record['data']['content'])
+        content = snapshot(reference['root'], stored['configuration'], stored['residual'], stored['invariant_version'])
+        if digest(content) != record['data']['freeze']['digest']:
+            raise ValueError('running evaluator tree digest differs from frozen record')
+        return dict(identity=record['id'], digest=record['data']['freeze']['digest'], bundle=json.loads(content))
     receipts = job['receipts']
     if [r['data']['candidate'] for r in receipts] != job['candidates'] or not receipts:
         raise ValueError('one receipt per candidate in candidate order required')

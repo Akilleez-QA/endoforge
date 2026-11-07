@@ -29,15 +29,16 @@ async function attempt(options) {
   const path = (options.env ?? process.env).ENDOFORGE_LOOP;
   return path === 'agent' ? attemptAgent(options) : path === 'isolate' ? attemptInIsolate(options) : attemptCurrent(options);
 }
-async function attemptCurrent({ need, directory, pool, env = process.env, compiler = env.ENDOFORGE_ASC_CMD, deadline = Infinity, observe, synthProvider, confirm }) {
+async function attemptCurrent({ need, directory, pool, env = process.env, compiler = env.ENDOFORGE_ASC_CMD, deadline = Infinity, library = null, containedRoute, observe, synthProvider, confirm }) {
   const timings = Object.fromEntries(['generate', 'freeze', 'compile', 'gate', 'ledger', 'promote'].map(k => [k, null]));
   let scalarFilter;
   const synth = synthesis.enabled(env) ? synthesis.begin({ need, env, provider: synthProvider, confirm }) : null;
   try {
     const freeze = synth ? async request => { await synth.finish(request.reference.root); return ledger('freeze', request); } : null;
-    const generated = await generate({ need, directory, env, check: failures(compiler), deadline, ...(freeze ? { freeze } : {}) });
+    const generated = await generate({ need, directory, env, check: failures(compiler), deadline, library, ...(freeze ? { freeze } : {}) });
     scalarFilter = generated.scalarFilter;
     Object.assign(timings, generated.timings);
+    if (generated.reused) return { promoted: true, reused: generated.reused.receipt, decision: generated.reused.hash, testDouble: generated.testDouble, timings };
     observe?.('generated');
     let start = performance.now();
     const candidate = { ...generated.candidate, compiled: await compile(generated.candidate.files, compiler) };
@@ -58,9 +59,10 @@ async function attemptCurrent({ need, directory, pool, env = process.env, compil
     const decision = await ledger('promote', { reference, candidate: identity,
       receipt: { id: result.receipts[0].record.id, hash: result.receipts[0].hash }, decisionPath: join(directory, 'promotion.json') });
     timings.promote = performance.now() - start;
+    const contained = containedRoute ? await containedRoute.check(generated.candidate).catch(error => ({ lane: 'compatibility', status: 'outcome_unknown', reason: error.message })) : undefined;
     observe?.('returned');
     return { promoted: decision.decision === 'promote', ...(decision.decision === 'inconclusive' ? { inconclusive: true } : {}), candidate: identity, receipt: decision.receipt,
-      decision: decision.sha256, ...(synth ? { synthTimings: synth.timings } : {}), testDouble: generated.testDouble, modelMs: generated.modelMs, timings, ...(scalarFilter ? { scalarFilter } : {}) };
+      decision: decision.sha256, ...(synth ? { synthTimings: synth.timings } : {}), testDouble: generated.testDouble, modelMs: generated.modelMs, timings, ...(scalarFilter ? { scalarFilter } : {}), ...(contained ? { contained } : {}) };
   } catch (error) {
     scalarFilter ??= error?.scalarFilter;
     return { promoted: false, error: 'pipeline stage failed; inspect local artifacts', testDouble: env.ENDOFORGE_CODEX_TEST_DOUBLE === '1', timings, ...(scalarFilter ? { scalarFilter } : {}) };

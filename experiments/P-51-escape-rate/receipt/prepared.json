@@ -1,0 +1,121 @@
+{
+  "counts": {
+    "kernels": 177,
+    "enumerated": 18939,
+    "deduplicatedSelected": 11599,
+    "stillborn": 89,
+    "identicalWasm": 124,
+    "duplicateWasm": 23,
+    "equivalent": 947,
+    "nonEquivalent": 10416,
+    "witnessFiniteOnly": 10233,
+    "witnessNonFiniteOnly": 183,
+    "baselineCompileFailed": 0,
+    "perClass": {
+      "swapped_units": {
+        "available": 1782,
+        "selected": 974,
+        "stillborn": 0,
+        "identicalWasm": 48,
+        "duplicateWasm": 1,
+        "equivalent": 33,
+        "nonEquivalent": 892,
+        "nonFiniteOnly": 0
+      },
+      "dropped_rows": {
+        "available": 337,
+        "selected": 334,
+        "stillborn": 0,
+        "identicalWasm": 0,
+        "duplicateWasm": 0,
+        "equivalent": 4,
+        "nonEquivalent": 330,
+        "nonFiniteOnly": 0
+      },
+      "off_by_one": {
+        "available": 2603,
+        "selected": 1626,
+        "stillborn": 0,
+        "identicalWasm": 0,
+        "duplicateWasm": 14,
+        "equivalent": 71,
+        "nonEquivalent": 1541,
+        "nonFiniteOnly": 0
+      },
+      "reversed_inputs": {
+        "available": 576,
+        "selected": 539,
+        "stillborn": 4,
+        "identicalWasm": 30,
+        "duplicateWasm": 1,
+        "equivalent": 101,
+        "nonEquivalent": 403,
+        "nonFiniteOnly": 0
+      },
+      "wrong_join": {
+        "available": 1170,
+        "selected": 1048,
+        "stillborn": 0,
+        "identicalWasm": 0,
+        "duplicateWasm": 0,
+        "equivalent": 9,
+        "nonEquivalent": 1039,
+        "nonFiniteOnly": 64
+      },
+      "stale_binding": {
+        "available": 3411,
+        "selected": 1589,
+        "stillborn": 53,
+        "identicalWasm": 5,
+        "duplicateWasm": 7,
+        "equivalent": 289,
+        "nonEquivalent": 1235,
+        "nonFiniteOnly": 0
+      },
+      "wrong_constants": {
+        "available": 3041,
+        "selected": 1603,
+        "stillborn": 32,
+        "identicalWasm": 0,
+        "duplicateWasm": 0,
+        "equivalent": 224,
+        "nonEquivalent": 1347,
+        "nonFiniteOnly": 0
+      },
+      "wrong_rounding": {
+        "available": 1582,
+        "selected": 863,
+        "stillborn": 0,
+        "identicalWasm": 32,
+        "duplicateWasm": 0,
+        "equivalent": 180,
+        "nonEquivalent": 651,
+        "nonFiniteOnly": 0
+      },
+      "boundary_errors": {
+        "available": 2167,
+        "selected": 1582,
+        "stillborn": 0,
+        "identicalWasm": 0,
+        "duplicateWasm": 0,
+        "equivalent": 24,
+        "nonEquivalent": 1558,
+        "nonFiniteOnly": 119
+      },
+      "sign_errors": {
+        "available": 1753,
+        "selected": 1441,
+        "stillborn": 0,
+        "identicalWasm": 9,
+        "duplicateWasm": 0,
+        "equivalent": 12,
+        "nonEquivalent": 1420,
+        "nonFiniteOnly": 0
+      }
+    },
+    "glueProposed": 917,
+    "glueUnchanged": 0,
+    "binding": 354
+  },
+  "capPerClass": 10
+}
