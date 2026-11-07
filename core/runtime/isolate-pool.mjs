@@ -58,11 +58,13 @@ export class IsolatePool {
   #hostCall;
   #retireAfterJobs;
   #busyMs = 0;
+  #rates;
 
   constructor({ hostPort, size = availableParallelism(), resourceLimits = {}, wasmMemoryMaxMb = 64,
-    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, warm, warmTimeoutMs = 60000, jobTimeoutMs, jobDeadlineMs, hostCall, hostCalls, frozenThroughLedger = false, cellEnv, cellFlags = [], ledgerBridge, retireAfterJobs = 256 } = {}) {
+    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, warm, warmTimeoutMs = 60000, jobTimeoutMs, jobDeadlineMs, hostCall, hostCalls, frozenThroughLedger = false, cellEnv, cellFlags = [], ledgerBridge, retireAfterJobs = 256, rates = null } = {}) {
     if (!positive(retireAfterJobs)) throw new TypeError('retireAfterJobs must be a positive integer');
     this.#retireAfterJobs = retireAfterJobs;
+    this.#rates = rates;
     this.#hostCall = hostCall;
     this.#cellEnv = cellEnv;
     this.#cellFlags = cellFlags;
@@ -177,10 +179,11 @@ export class IsolatePool {
           new Set(data.candidates).size !== data.candidates.length) throw new Error('unique candidates required');
     } catch (error) { return Promise.reject(error); }
     const promise = new Promise((resolve, reject) => {
-      const job = { data, resolve, reject, ready: false, started: performance.now() };
+      const job = { data, resolve, reject, ready: false, started: performance.now(), rate: this.#rates?.arrive('cell') };
       this.#queue.push(job);
       Promise.all([data.ledger === 'caller' ? null : this.#persist('prepare', data), this.#share()]).then(() => { job.prepared = performance.now(); job.ready = true; this.#pump(); }, error => {
         this.#queue.splice(this.#queue.indexOf(job), 1);
+        this.#rates?.done(job.rate);
         reject(error);
         this.#pump();
       });
@@ -300,6 +303,7 @@ export class IsolatePool {
       if (!cell && (this.#noStarts ? this.#cells.size : this.#cells.size >= this.#size)) return;
       const job = this.#queue.shift();
       if (!cell && this.#noStarts) {
+        this.#rates?.done(job.rate);
         this.#finish(job, { status: 'outcome_unknown', reason: 'workcell_start_failed', report: null, workcell: null,
           isolation: this.#isolation, resourceLimits: this.#limits, wasmMemoryMaxMb: this.#wasmMemoryMaxMb });
         continue;
@@ -308,6 +312,7 @@ export class IsolatePool {
         cell ||= this.#spawn();
         cell.job = job;
         job.dispatched = performance.now();
+        this.#rates?.start(job.rate);
         this.#arm(cell, job);
         if (this.#jobDeadlineMs) job.total = setTimeout(() => this.#stop(cell), this.#jobDeadlineMs);
         const { reference, candidates, portOptions } = job.data;
@@ -351,6 +356,7 @@ export class IsolatePool {
   #disarm(job) {
     if (job.dispatched) this.#busyMs += performance.now() - job.dispatched;
     job.dispatched = 0;
+    this.#rates?.done(job.rate);
     clearTimeout(job.deadline);
     clearTimeout(job.total);
     clearInterval(job.liveness);
