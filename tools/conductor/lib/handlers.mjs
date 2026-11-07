@@ -9,7 +9,7 @@ import { compileAtom } from '../../job/lib/compile.mjs';
 import { retrieveLessons } from '../../job/lib/lessons.mjs';
 import { emit, firedEvent } from '../../job/lib/events.mjs';
 import { allSettled } from './state.mjs';
-import { assignLogins, slotsFree, launchAtom, laneExit, stopLanes } from './launch.mjs';
+import { assignLogins, slotsFree, launchAtom, laneExit, stopLanes, LOST } from './launch.mjs';
 import { collectAtom, gateFeedback, collectLock } from './collect.mjs';
 import { withLock } from '../../lib/lock.mjs';
 import { escalate } from './daemon.mjs';
@@ -41,7 +41,7 @@ function launchPending(ctx) {
 /** One atom has landed: run the collect gate, then its checks (stage 3), then freeze it or relaunch it. */
 export async function settleAtom(ctx, id, checkAtom = sliceCheck) {
   const { job, file } = ctx, st = ctx.update(() => {}).atoms[id], exit = laneExit(st);
-  if (exit !== 0) return relaunchOrEscalate(ctx, id, `the worker exited ${exit}; see ${st.lane.log}`, { stage: 'worker', exit });
+  if (exit !== 0) return relaunchOrEscalate(ctx, id, exit === LOST ? `the worker ended with no recorded exit code; see ${st.lane.log}` : `the worker exited ${exit}; see ${st.lane.log}`, { stage: 'worker', exit });
   const g = collectAtom(job, file, st, id);
   if (!st.lane.adopted) spawnSync('git', ['-C', job.repo, 'worktree', 'remove', '--force', st.lane.worktree], { stdio: 'ignore' });   // collected: the lane's copy goes (adopted lanes are left as they were)
   if (g.status === 'reverted') return relaunchOrEscalate(ctx, id, gateFeedback(g), { stage: g.stage, error: g.error });
