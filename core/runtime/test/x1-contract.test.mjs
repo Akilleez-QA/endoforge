@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { hash } from '../x1/host.mjs';
 import { runGates } from '../x1/gates.mjs';
-import { glueProblems, kernelParameters, nonFiniteExpectation, unitDisagreements } from '../x1/contract.mjs';
+import { glueFindings, glueProblems, kernelParameters, nonFiniteExpectation, statesComputation, unitDisagreements } from '../x1/contract.mjs';
 import { candidate } from './fixtures/x1/candidate.mjs';
 import { wasm } from './fixtures/x1/wasm.mjs';
 const passThrough = { name: 'scale', params: ['f64'], results: ['f64'], body: [0x20, 0] };
@@ -87,6 +87,21 @@ test('an exclusion written under the last export still covers the others', () =>
 test('a closing section is not read as part of the last export', () => {
   const contract = 'Results are finite.\n\n`first(x: f64): f64`\nDouble it.\n\n`second(x: f64): f64`\nTriple it.\n\n## Tests\nNonfinite inputs are outside the caller contract.';
   assert.deepEqual(nonFiniteExpectation(contract, ['first', 'second']), { first: 'excluded', second: 'excluded' });
+});
+test('a code table beside a stated computation records a swap and does not refuse', () => {
+  const swapped = glueFor([arg('massLb', 'lb'), arg('tempF', '°F')], { kind: 'code', unit: 'code', precision: 0, codes: { 0: 'too cold', 1: 'within range' } });
+  for (const contract of ['`f(massLb, tempF)`\nCodes: 0 = within range, 1 = too cold.\nFormula: return 1 if tempF < 32.',
+    '`f(massLb, tempF)`\nCodes: 0 = within range, 1 = too cold.\nThe result is `tempF < 32 ? 1 : 0`.']) {
+    const found = glueFindings(swapped, { source, contract });
+    assert.deepEqual(found.problems, []);
+    assert.match(found.advisory.join(), /fit the contract better swapped/);
+  }
+});
+test('only an expression over the parameters counts as a stated computation', () => {
+  assert.equal(statesComputation(['`f(massLb, tempF)`'], ['massLb', 'tempF']), false);
+  assert.equal(statesComputation(['## Formula and display', 'All tests follow the formula exactly.'], ['massLb', 'tempF']), false);
+  assert.equal(statesComputation(['Range `0..1`, message `too-cold`.'], ['massLb', 'tempF']), false);
+  assert.equal(statesComputation(['Formula after validation: `massLb + 2 * tempF`.'], ['massLb', 'tempF']), true);
 });
 test('G7 stays quiet when glue matches the kernel and contract', () => {
   const glue = glueFor([arg('massLb', 'lb'), arg('tempF', '°F difference')], { kind: 'code', unit: 'code', precision: 0, codes: { 0: 'within range', 1: 'too cold' } });

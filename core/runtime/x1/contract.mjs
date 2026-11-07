@@ -76,8 +76,21 @@ export function unitDisagreements(glue) {
   }
   return found;
 }
-export function glueProblems(glue, { source, contract }) {
-  const problems = [], parameters = kernelParameters(source), names = glue.exports.map(entry => entry.name);
+// A contract can state a result twice: as a code table, and as a computation from the parameters, whose
+// codes the input code tables and the frozen tests then fix. When it gives a computation, the table isn't the
+// only basis for what a code means, and a gate can't tell from text which statement the glue should follow.
+const computation = /\bformula\b[^:\n]*:\s*(.+)$/i;
+export function statesComputation(lines, parameters) {
+  return lines.some(line => {
+    const expressions = [...line.matchAll(/`([^`]+)`/g)].map(match => match[1]), labelled = computation.exec(line);
+    if (labelled) expressions.push(labelled[1]);
+    return expressions.some(expression => !/^\s*[A-Za-z_]\w*\s*\(/.test(expression) && /[-+*/%<>]/.test(expression)
+      && parameters.some(name => new RegExp(`\\b${name}\\b`).test(expression)));
+  });
+}
+export function glueProblems(glue, inputs) { return glueFindings(glue, inputs).problems; }
+export function glueFindings(glue, { source, contract }) {
+  const problems = [], advisory = [], parameters = kernelParameters(source), names = glue.exports.map(entry => entry.name);
   const { blocks, shared } = exportBlocks(contract, names);
   for (const entry of glue.exports) {
     const declared = parameters.get(entry.name), glueNames = entry.args.map(arg => arg.name);
@@ -88,12 +101,13 @@ export function glueProblems(glue, { source, contract }) {
     if (entry.result.codes) {
       const table = new Map([...block.join('\n').matchAll(/(?<![\w.])(-?\d+)\s*(?:=|→|means)\s*([^,;\n]+)/g)].map(match => [match[1], match[2]]));
       const codes = Object.keys(entry.result.codes).filter(code => table.has(code));
+      const found = statesComputation(block, declared ?? glueNames) ? advisory : problems;
       for (const a of codes) for (const b of codes) if (a < b) {
         const straight = overlap(entry.result.codes[a], table.get(a)) + overlap(entry.result.codes[b], table.get(b));
         const crossed = overlap(entry.result.codes[a], table.get(b)) + overlap(entry.result.codes[b], table.get(a));
-        if (crossed > straight) problems.push(`${entry.name}: labels for codes ${a} and ${b} fit the contract better swapped`);
+        if (crossed > straight) found.push(`${entry.name}: labels for codes ${a} and ${b} fit the contract better swapped`);
       }
     }
   }
-  return problems;
+  return { problems, advisory };
 }

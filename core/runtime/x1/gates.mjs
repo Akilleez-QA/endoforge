@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import path from 'node:path';
 import { readFileSync } from 'node:fs';
-import { glueProblems, nonFiniteExpectation, probeProblem, unitDisagreements } from './contract.mjs';
+import { glueFindings, nonFiniteExpectation, probeProblem, unitDisagreements } from './contract.mjs';
 import { callKernel, freshKernel, kernelFuel, probeCalls } from './measure.mjs';
 import { loadKernel } from './meter.mjs';
 const glueSchema = JSON.parse(readFileSync(new URL('./glue.schema.json', import.meta.url)));
@@ -127,7 +127,7 @@ const run2 = runAll();
 const same = run1.every((r, i) => String(r.out) === String(run2[i].out) && (r.err === null) === (run2[i].err === null));
 result.gates.G5_deterministic = { ok: same };
 {
-  const problems = [];
+  const problems = [], codeAdvisory = [];
   if (!fs.existsSync(f('glue.json'))) problems.push('no glue.json');
   else {
     let glue = null;
@@ -158,12 +158,14 @@ result.gates.G5_deterministic = { ok: same };
         const trapFns = new Set(glue.traps.map(t => t.fn));
         for (const t of glue.traps) if (!exportNames.has(t.fn)) problems.push(`trap for ${t.fn}, which the module does not export`);
         for (const fn of new Set(tests.filter(t => t.expectError).map(t => t.fn))) if (!trapFns.has(fn)) problems.push(`${fn} traps in tests.json but the glue has no trap message for it`);
-        problems.push(...glueProblems(glue, { source: fs.readFileSync(f('kernel.ts'), 'utf8'), contract: fs.readFileSync(f('CONTRACT.md'), 'utf8') }));
+        const findings = glueFindings(glue, { source: fs.readFileSync(f('kernel.ts'), 'utf8'), contract: fs.readFileSync(f('CONTRACT.md'), 'utf8') });
+        problems.push(...findings.problems);
+        codeAdvisory.push(...findings.advisory);
       }
     }
   }
-  let advisory = [];
-  try { advisory = unitDisagreements(JSON.parse(fs.readFileSync(f('glue.json'), 'utf8'))); } catch {}
+  const advisory = [...codeAdvisory];
+  try { advisory.push(...unitDisagreements(JSON.parse(fs.readFileSync(f('glue.json'), 'utf8')))); } catch {}
   result.gates.G7_glue = problems.length ? { ok: false, why: problems.slice(0, 20).join('; ') } : { ok: true, ...(advisory.length ? { advisory: advisory.slice(0, 20) } : {}) };
 }
 {
