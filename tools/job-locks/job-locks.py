@@ -10,18 +10,41 @@ SessionStart hook adds them to the context.
 Hook (in ~/.claude/settings.json):
     "SessionStart": [{"hooks": [{"type": "command", "command": "python3 -B ~/.local/bin/job-locks"}]}]
 """
-import json, os, sys
+import json, os, sys, tempfile
 from pathlib import Path
 
 REG = Path(os.environ.get('XDG_CONFIG_HOME', Path.home() / '.config')) / 'job-locks' / 'active.json'
 WIDTH = 300
 
 
+class RegistryError(Exception):
+    pass
+
+
 def active():
     try:
-        return [p for p in json.loads(REG.read_text()) if isinstance(p, str)]
-    except (OSError, ValueError):
+        paths = json.loads(REG.read_text())
+    except FileNotFoundError:
         return []
+    except (OSError, ValueError) as error:
+        raise RegistryError(f'the job-locks registry {REG} is unreadable: {error}') from None
+    if not isinstance(paths, list):
+        raise RegistryError(f'the job-locks registry {REG} is unreadable: it is not a list')
+    return [p for p in paths if isinstance(p, str)]
+
+
+def save(paths):
+    REG.parent.mkdir(parents=True, exist_ok=True)
+    fd, tmp = tempfile.mkstemp(prefix='.active-tmp-', dir=REG.parent)
+    try:
+        with os.fdopen(fd, 'w') as fh:
+            fh.write(json.dumps(paths, indent=1))
+            fh.flush()
+            os.fsync(fh.fileno())
+        os.replace(tmp, REG)
+    except BaseException:
+        Path(tmp).unlink(missing_ok=True)
+        raise
 
 
 def summary(lock):
@@ -40,7 +63,9 @@ def render(paths):
     for p in paths:
         try:
             m = json.loads(Path(p).read_text())
-        except (OSError, ValueError):
+        except (OSError, ValueError) as error:
+            out.append(f'WARNING: locked decisions for {p} could not be read ({error}); '
+                       'read that manifest before any brief, render or deliverable.')
             continue
         locks = m.get('locks') or {}
         if not locks:
@@ -54,14 +79,22 @@ def render(paths):
 
 def main(argv):
     if argv[:1] in (['add'], ['rm']) and len(argv) == 2:
-        paths = active()
-        target = str(Path(argv[1]).resolve())
-        paths = [p for p in paths if p != target] + ([target] if argv[0] == 'add' else [])
-        REG.parent.mkdir(parents=True, exist_ok=True)
-        REG.write_text(json.dumps(paths, indent=1))
+        try:
+            paths = active()
+            target = str(Path(argv[1]).resolve())
+            paths = [p for p in paths if p != target] + ([target] if argv[0] == 'add' else [])
+            save(paths)
+        except (RegistryError, OSError) as error:
+            print(f'job-locks: not changed: {error}', file=sys.stderr)
+            return 1
         print('\n'.join(paths) or '(no active jobs)')
         return 0
-    text = render(active())
+    try:
+        text = render(active())
+    except RegistryError as error:
+        print(f'WARNING: {error}; locked decisions of active jobs may be missing. Read each job manifest before any '
+              'brief, render or deliverable.')
+        return 0
     if text:
         print(text)
     return 0
@@ -70,5 +103,6 @@ def main(argv):
 if __name__ == '__main__':
     try:
         sys.exit(main(sys.argv[1:]))
-    except Exception:
+    except Exception as exc:
+        print(f'WARNING: job-locks failed ({exc}); locked decisions of active jobs may be missing.')
         sys.exit(0)                                        # a hook must never break session start

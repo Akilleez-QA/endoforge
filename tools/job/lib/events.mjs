@@ -22,7 +22,25 @@ export const EVENT_KINDS = ['STAGED', 'FIRED', 'SMOKE', 'SCORED', 'GATE', 'NEEDS
 export const PUSH_KINDS = ['FIRED', 'GATE', 'NEEDS-YOU', 'DONE'];
 export const eventsDir = (job, file) => job.events?.dir ?? path.dirname(path.resolve(file));
 export function readEvents(job, file) {
-  try { return fs.readFileSync(path.join(eventsDir(job, file), 'events.jsonl'), 'utf8').trim().split('\n').filter(Boolean).map((l) => JSON.parse(l)); } catch { return []; }
+  let text;
+  try { text = fs.readFileSync(path.join(eventsDir(job, file), 'events.jsonl'), 'utf8'); } catch (e) { if (e.code === 'ENOENT') return []; throw e; }
+  const events = [];
+  let unreadable = 0;
+  for (const line of text.split('\n')) {
+    if (!line) continue;
+    try { events.push(JSON.parse(line)); } catch { unreadable++; }
+  }
+  if (unreadable) events.unreadable = unreadable;
+  return events;
+}
+function appendLine(file, line) {
+  const fd = fs.openSync(file, 'a+');
+  try {
+    const { size } = fs.fstatSync(fd), last = Buffer.alloc(1);
+    if (size) fs.readSync(fd, last, 0, 1, size - 1);
+    fs.writeFileSync(fd, `${size && last[0] !== 10 ? '\n' : ''}${line}\n`);
+    fs.fsyncSync(fd);
+  } finally { fs.closeSync(fd); }
 }
 const hooksFrom = (list, env) => [...(list ?? []).map((h) => (Array.isArray(h) ? h : [h])), ...(env ? env.split(':').filter(Boolean).map((h) => [h]) : [])];
 
@@ -31,7 +49,7 @@ export function emit(job, file, { kind, summary, detail = '', data = {} }, { env
   if (!EVENT_KINDS.includes(kind)) throw new Error(`unknown event kind ${kind} (${EVENT_KINDS.join(', ')})`);
   const dir = eventsDir(job, file); fs.mkdirSync(dir, { recursive: true });
   const ev = { ts: new Date().toISOString(), job: job.id, kind, summary, detail, data, push: PUSH_KINDS.includes(kind) };
-  fs.appendFileSync(path.join(dir, 'events.jsonl'), JSON.stringify(ev) + '\n');
+  appendLine(path.join(dir, 'events.jsonl'), JSON.stringify(ev));
   const md = path.join(dir, 'EVENTS.md');
   if (!fs.existsSync(md)) fs.writeFileSync(md, `# ${job.title ?? job.id}: job events\n`);
   fs.appendFileSync(md, `\n### ${ev.ts.slice(11, 19)} · ${kind} · ${summary}\n${detail}\n`);
@@ -46,7 +64,7 @@ export function emit(job, file, { kind, summary, detail = '', data = {} }, { env
     const r = spawnSync(h[0], h.slice(1), { input: JSON.stringify(ev), stdio: ['pipe', 'ignore', 'ignore'], timeout: 10_000, env: { ...env, ENDOFORGE_EVENT_KIND: kind, ENDOFORGE_EVENT_PUSH: ev.push ? '1' : '0' } });
     if (r.status !== 0) failed.push(h[0]);
   }
-  if (failed.length) fs.appendFileSync(path.join(dir, 'events.jsonl'), JSON.stringify({ ts: new Date().toISOString(), job: job.id, kind: 'DELIVERY-FAILED', of: kind, channels: failed }) + '\n');
+  if (failed.length) appendLine(path.join(dir, 'events.jsonl'), JSON.stringify({ ts: new Date().toISOString(), job: job.id, kind: 'DELIVERY-FAILED', of: kind, channels: failed }));
   return ev;
 }
 
@@ -82,10 +100,11 @@ export function renderStatus(job, events) {
   for (const e of real) L.push(`${e.ts.slice(11, 19)}  ${e.push ? '*' : ' '} ${e.kind.padEnd(9)} ${e.summary}`);
   const last = real.at(-1), fired = real.filter((e) => e.kind === 'FIRED').at(-1), scored = real.filter((e) => e.kind === 'SCORED').at(-1);
   const blocking = real.findLastIndex((e) => e.kind === 'NEEDS-YOU') > real.findLastIndex((e) => ['GATE', 'DONE', 'FIRED'].includes(e.kind));
-  L.push('', `state: ${last ? last.kind : 'not staged'}${fired ? `; ${fired.data?.atoms?.length ?? '?'} atoms fired at ${fired.ts.slice(11, 19)}` : ''}${scored ? `; last score ${scored.summary}` : ''}`);
+  L.push('', `state: ${last ? last.kind : events.unreadable ? 'unknown' : 'not staged'}${fired ? `; ${fired.data?.atoms?.length ?? '?'} atoms fired at ${fired.ts.slice(11, 19)}` : ''}${scored ? `; last score ${scored.summary}` : ''}`);
   if (blocking) L.push(`NEEDS YOU: ${real.filter((e) => e.kind === 'NEEDS-YOU').at(-1).summary}`);
   const failed = events.filter((e) => e.kind === 'DELIVERY-FAILED');
   if (failed.length) L.push(`${failed.length} deliveries failed (${[...new Set(failed.flatMap((f) => f.channels))].join(', ')})`);
+  if (events.unreadable) L.push(`WARNING: ${events.unreadable} event line(s) are unreadable; this timeline is incomplete`);
   L.push('(* = pushed to phone hooks)');
   return L.join('\n') + '\n';
 }
