@@ -205,7 +205,7 @@ class Journal:
             data = handle.read()
         frames, end = scan(data)
         if end < len(data):
-            quarantine = path.with_name(f"{path.name}.torn-{end}")
+            quarantine = path.with_name(f"{path.name}.torn-{end}.{time.time_ns()}")
             with open(quarantine, "xb") as output:
                 output.write(data[end:])
                 output.flush()

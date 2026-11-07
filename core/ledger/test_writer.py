@@ -174,7 +174,7 @@ class WriterTests(unittest.TestCase):
         self.assertEqual(recovered.counts["torn_tails"], 1)
         quarantined = list(self.journal_dir.glob("*.torn-*"))
         self.assertEqual(len(quarantined), 1)
-        end = int(quarantined[0].name.rsplit("-", 1)[1])
+        end = int(quarantined[0].name.split(".torn-")[1].split(".")[0])
         self.assertEqual(quarantined[0].read_bytes(), damaged[end:])
         for path in paths:
             self.assertEqual(ids(path), expected[str(path)][:kept])
@@ -191,6 +191,16 @@ class WriterTests(unittest.TestCase):
 
     def test_trailing_garbage_is_quarantined_with_every_frame_kept(self):
         self.assert_torn_tail_quarantined(lambda data: data + b"\x00garbage", 3)
+
+    def test_recovery_interrupted_after_quarantine_can_run_again(self):
+        segment, data, expected, paths = self.damaged(lambda data: data + b"\x00garbage")
+        first = segment.with_name(f"{segment.name}.torn-{len(data)}.1")
+        first.write_bytes(b"\x00garbage")
+        recovered = Journal(self.journal_dir)
+        self.assertEqual(recovered.counts["torn_tails"], 1)
+        self.assertEqual(len(list(self.journal_dir.glob("*.torn-*"))), 2)
+        for path in paths:
+            self.assertEqual(ids(path), expected[str(path)])
 
     def test_corruption_before_a_valid_frame_refuses_to_start(self):
         def middle(data):
