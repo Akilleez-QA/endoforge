@@ -22,7 +22,7 @@ export async function runNeed(options) {
   const second = await attempt({ ...options, directory: `${options.directory}-retry`, env: { ...env, ENDOFORGE_CODEX_TERSE: '0' }, deadline: begin + budget });
   return { ...second, retried: true, retryCancelled: !second.promoted && Date.now() >= begin + budget, first: { promoted: false, timings: first.timings } };
 }
-async function attempt({ need, directory, pool, env = process.env, compiler = env.ENDOFORGE_ASC_CMD, deadline = Infinity }) {
+async function attempt({ need, directory, pool, env = process.env, compiler = env.ENDOFORGE_ASC_CMD, deadline = Infinity, containedRoute }) {
   const timings = Object.fromEntries(['generate', 'freeze', 'compile', 'gate', 'ledger', 'promote'].map(k => [k, null]));
   let scalarFilter;
   try {
@@ -43,8 +43,9 @@ async function attempt({ need, directory, pool, env = process.env, compiler = en
     const decision = await ledger('promote', { reference, candidate: identity,
       receipt: { id: result.receipts[0].record.id, hash: result.receipts[0].hash }, decisionPath: join(directory, 'promotion.json') });
     timings.promote = performance.now() - start;
+    const contained = containedRoute ? await containedRoute.check(generated.candidate).catch(error => ({ lane: 'compatibility', status: 'outcome_unknown', reason: error.message })) : undefined;
     return { promoted: decision.decision === 'promote', candidate: identity, receipt: decision.receipt,
-      decision: decision.sha256, testDouble: generated.testDouble, timings, ...(scalarFilter ? { scalarFilter } : {}) };
+      decision: decision.sha256, testDouble: generated.testDouble, timings, ...(scalarFilter ? { scalarFilter } : {}), ...(contained ? { contained } : {}) };
   } catch (error) {
     scalarFilter ??= error?.scalarFilter;
     return { promoted: false, error: 'pipeline stage failed; inspect local artifacts', testDouble: env.ENDOFORGE_CODEX_TEST_DOUBLE === '1', timings, ...(scalarFilter ? { scalarFilter } : {}) };
