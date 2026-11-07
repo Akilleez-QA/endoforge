@@ -129,7 +129,7 @@ export async function attemptAgent({ need, directory, pool, observe, limits = ag
     timings.promote = 0;
     timings.total = performance.now() - begin;
     return { promoted: outcome.promoted, ...(outcome.inconclusive ? { inconclusive: true } : {}), candidate: outcome.candidate, receipt: outcome.receipt, decision: outcome.decision, problem: outcome.problem, status: outcome.status,
-      agent: kept.agent ?? null, testDouble: provider.testDouble, modelMs: context.modelMs, timings };
+      agent: kept.agent ?? null, rounds: kept.rounds ?? [], content: returned ?? null, testDouble: provider.testDouble, modelMs: context.modelMs, timings };
   } catch {
     provider?.endSession(jobKey);
     timings.total = performance.now() - begin;

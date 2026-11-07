@@ -36,9 +36,10 @@ precommit hashed before measurement and a result that states what it does not sh
 | [P-55](P-55-code-label-basis/PRECOMMIT.md) | The G7 code-label rule refuses only where the contract's code table is its only statement of the result. All 177 pristine promote; glue escapes 295 to 312 of 799, inside the precommitted allowance; sampled unchanged at 280. The correlated arm caught more than predicted, and 4 of 172 `base` kernels were refused by the scalar test filter before any gate | [RESULT.md](P-55-code-label-basis/RESULT.md) |
 | [P-55](P-55-constraints/PRECOMMIT.md) | Do user constraints survive our compaction summaries? | 87.9% at first compaction (17% claim not confirmed), 20.7% at the last; extractors below the adoption bar: [RESULT.md](P-55-constraints/RESULT.md) |
 | [P-56](P-56-evaluator-synthesis/PRECOMMIT.md) | Evaluator synthesis before any candidate, through P-51's unmodified harness. Same tree, synthesis off to on (two agreeing evaluators): sampled P-21 escapes 280 to 105 of 7,883, rounding 107 to 12, glue 312 to 184 of 799, 177 of 177 pristine. The glue half of the bar (at most 156) isn't met | [RESULT.md](P-56-evaluator-synthesis/RESULT.md) |
+| [P-56](P-56-model-effort/PRECOMMIT.md) | Model and effort through the in-isolate agent loop: `sonnet-low` recommended at 27.4 s per accepted capability against 49.6 s for `opus-high`; six of eight arms good enough, both Haiku arms fail quality; 0 held-out escapes; most failed candidates came from wrong frozen tests | [RESULT.md](P-56-model-effort/RESULT.md) |
 | [P-58](P-58-cohort-typecheck/PRECOMMIT.md) | The contained route's type check moved into the cohort: 380–516 accepted per second at width 16 against 58–63 on the supervisor, 0 verdict differences in 80, fatal losses confined to attempts in flight; missed 700 per second and the CPU bar (45 against 27.3 ms per accepted), so the default stays on the supervisor | [RESULT.md](P-58-cohort-typecheck/RESULT.md) |
 
-Parallel lanes reused P-55, so the full directory name, such as `P-55-constraints`, is the experiment ID.
+Parallel lanes reused P-55 and P-56, so the full directory name, such as `P-55-constraints`, `P-56-model-effort` or `P-56-evaluator-synthesis`, is the experiment ID.
 
 Rebuild P-15 dependencies with `setup.sh` in its directory; `node_modules` is not committed.
 
