@@ -2,9 +2,9 @@ PYTHON ?= python3
 export PYTHONDONTWRITEBYTECODE := 1
 export ENDOFORGE_TEST_OUTPUT := $(CURDIR)/.test-work
 
-.PHONY: test test-optimized check core-test ledger-test engine-test isolate-test tscheck-setup tscheck-test tscheck-requalify atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test
+.PHONY: test test-optimized check core-test ledger-test engine-test isolate-test tscheck-setup tscheck-test tscheck-requalify atomizer-test harness-test hardware-test runtime-test lib-test library-test portability-test factory-state-test seeded-fault-test escape-test compatibility-test
 
-test: pipeline-test loop-test check core-test ledger-test engine-test isolate-test tscheck-test atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test
+test: pipeline-test loop-test check core-test ledger-test engine-test isolate-test tscheck-test atomizer-test harness-test hardware-test runtime-test lib-test library-test portability-test factory-state-test seeded-fault-test escape-test compatibility-test kernel-test
 
 test-optimized:
 	PYTHONOPTIMIZE=1 $(MAKE) test PYTHON="$(PYTHON) -O"
@@ -22,7 +22,7 @@ engine-test:
 	node --test core/engine/*.test.mjs
 
 isolate-test:
-	node --test core/runtime/test/isolate-pool.test.mjs core/runtime/test/isolate-process.test.mjs core/runtime/test/isolate-deadline.test.mjs core/runtime/test/isolate-toolchain.test.mjs core/runtime/test/isolate-limits.test.mjs core/runtime/test/isolate-offheap.test.mjs core/runtime/test/isolate-trusted-cap.test.mjs core/runtime/test/isolate-shared-module.test.mjs
+	node --test core/runtime/test/isolate-pool.test.mjs core/runtime/test/isolate-process.test.mjs core/runtime/test/isolate-deadline.test.mjs core/runtime/test/isolate-toolchain.test.mjs core/runtime/test/isolate-limits.test.mjs core/runtime/test/isolate-offheap.test.mjs core/runtime/test/isolate-trusted-cap.test.mjs core/runtime/test/isolate-shared-module.test.mjs core/runtime/test/isolate-host-call.test.mjs core/runtime/test/contained-js.test.mjs
 
 tscheck-setup:
 	npm ci --ignore-scripts --no-audit --no-fund --prefix tools/tscheck
@@ -51,7 +51,13 @@ lib-test:
 	node tools/lib/test/errors.test.mjs
 	node tools/conductor/test/principles.test.mjs
 	node tools/conductor/test/stream.test.mjs
+	node tools/conductor/test/failopen.test.mjs
 	node tools/hillclimb/test/lessons.test.mjs
+	node tools/job/test/failopen.test.mjs
+	$(PYTHON) -B tools/job-locks/test_job_locks.py
+
+library-test:
+	node --test core/library/test/*.test.mjs
 
 portability-test:
 	$(PYTHON) -B tools/factory_portability/test_checkpoint.py
@@ -69,4 +75,21 @@ loop-test: loop-setup
 
 .PHONY: pipeline-test
 pipeline-test:
-	node --test core/runtime/test/x1.test.mjs core/runtime/test/generator*.test.mjs core/runtime/test/promotion.test.mjs
+	node --test core/runtime/test/x1.test.mjs core/runtime/test/generator*.test.mjs core/runtime/test/promotion.test.mjs core/runtime/test/pipeline-contained.test.mjs
+
+seeded-fault-test:
+	$(PYTHON) -B -m unittest tools.seeded_faults.test_generator -v
+
+escape-test:
+	$(PYTHON) -B -m unittest tools.escape_harness.test_harness -v
+
+.PHONY: kernel-test
+kernel-test:
+	$(PYTHON) -B -m unittest tools.kernel.test_contract tools.kernel.test_workcell tools.kernel.test_broker tools.kernel.test_limits -v
+
+.PHONY: rust-lane-test
+rust-lane-test:
+	$(PYTHON) -B -m unittest tools.rust_lane.test_lane -v
+
+compatibility-test:
+	node --test tools/compatibility/*.test.mjs

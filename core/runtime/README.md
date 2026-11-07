@@ -6,6 +6,15 @@ Run agent-pool.mjs with an explicitly configured client and account directories.
 
 Worker-registry integration requires WORKERS_BIN explicitly; no host registry is discovered automatically.
 
+### Agent pool contract
+
+- **Accounts.** An account is a directory holding `auth.json`: `CODEX_POOL_PRIMARY`, logged as `default`, then each subdirectory of `CODEX_POOL_ACCOUNTS_DIR`. Only the file's presence is checked.
+- **Slots.** Each account takes at most `CODEX_POOL_PER_ACCOUNT` launches at once (default 2), tracked by owner-PID slot directories in `CODEX_POOL_STATE_DIR`. The least-loaded account goes first, and a dead owner's slot is reclaimed by rename, so one reclaimer wins.
+- **Rate limits.** A rate-limited account cools down until the time its error names, or for 300 s if it names none. The pool then fails over to the next account and logs each try to `<state>/log`.
+- **Child.** The child is `CODEX_POOL_BIN`, or the first `codex` on `PATH` that isn't this script. A regular file on stdin is reopened for each try, so a retry sees the whole prompt.
+- **Exits.** The child's code; 75 when every account is cooling down or no slot frees within `CODEX_POOL_WAIT`; the guard's code when `CODEX_POOL_GUARD` refuses; 2 when no client is found.
+- **Worker registry.** With `WORKERS_BIN` set, only the child runs under `workers run`, never this launcher, so the pool can't recurse. The registry's spawn-rate gate reaches the caller as exit 75 with no failover. Without `WORKERS_BIN` no gate applies, so a host relying on the gate must set it.
+
 ## V8 isolate workcells
 
 [IsolatePool](isolate-pool.mjs) schedules real
@@ -221,6 +230,29 @@ A deadline can't interrupt a thread cell in a blocking native call such as `exec
 [P-18](../../experiments/P-18-pool-breach/RESULT.md) records N=8 breach results
 for both modes, including the unavailable-delegation limitation.
 
+## Contained JavaScript
+
+`contained/` runs JavaScript emitted by the TypeScript route in a child V8 isolate. It's the compatibility lane's executor, for imported code and behaviour that resists the kernel split; the strict path stays a WebAssembly kernel plus declarative glue, and nothing here runs on it. Every result carries `lane: compatibility`, and nothing runs it unless a caller asks.
+
+```js
+import { createContainedRunner } from './contained/runner.mjs';
+
+const cohort = createContainedRunner({ width: 8, heapMb: 64, deadlineMs: 1000 });
+await cohort.ready();
+const result = await cohort.run({ modules: { '/proj/a.js': source }, entry: '/proj/a.js', exportName: 'main', input: {} });
+```
+
+- **Layout.** The default is one supervised cohort: a single `node --permission` child process with an empty environment and no file grant, holding `width` Worker isolates that are kept between attempts. Each attempt gets a fresh guest context with an allowlist of standard globals and code generation off. The supervisor, its watchdog and the caller's ledger stay outside the cohort. [P-54](../../experiments/P-54-contained-js/RESULT.md) measured this layout at the throughput of one process per cell with about a third of the memory, and at a twentieth of the CPU of a fresh Worker per attempt.
+- **Failure scope.** Isolates in one process share its death. A V8 fatal allocation error ends the cohort whatever a Worker's `resourceLimits` say. The supervisor then kills what's left, reports every attempt the cohort held as `outcome_unknown`, starts one replacement and carries on with the queue. It retries nothing: a retry is a new admission by the caller. Heap, stack and deadline breaches that a Worker contains cost only that attempt.
+- **Preparation in the cohort.** With `prepare` (from `tools/tscheck/cohort-check.mjs`), `runChecked()` sends one job and gets one result per attempt: the cohort type checks and emits in checker Workers of its own process (`layout: 'sibling'`) or in the guest's Worker (`'fused'`), then runs the output twice. The cohort may read only the pinned compiler module, which it verifies and compiles once for every Worker. A check that traps, loses its Worker or overruns `checkDeadlineMs` is `outcome_unknown`, and a cohort loss makes every checked attempt in flight `outcome_unknown`. [P-58](../../experiments/P-58-cohort-typecheck/RESULT.md) measured 380–516 accepted per second at width 16 against 58–63 with the check on the supervisor, at 1.1–1.5× the CPU per attempt.
+- **Other layouts.** `reuse: false` gives a fresh Worker per attempt. `createContainedPool({ width })` runs one process per cell, for a cohort whose failure budget can't share a process; it loses no neighbour to a fatal error and costs about 70 MiB per cell. `tools/tscheck/contained-route.mjs` takes `layout: 'shared-reuse' | 'shared-fresh' | 'process-per-cell'`.
+- **Modules.** CommonJS only, since `import` needs host hooks. A source containing `import` followed by `(`, even in a string or after comments, is refused as `dynamic_import`, because `import()` near a stack overflow throws a host-realm error into the guest. Set `module: commonjs` in the project.
+- **Authority.** Nothing unless the contract grants it: `contract: { grants: { clock: { fixedMs }, random: { seed } }, ports: { name: { maxCalls, maxBytes } } }`. The two grants are deterministic. A real clock or anything else goes through a port. Ports are reached by `require('host:ports')`, carry JSON text, and reject with guest-realm errors.
+- **Refusals.** `heap`, `memory`, `deadline`, `stack`, `string_limit`, `thrown`, `never_settled`, `output_not_json`, `output_too_large`, `compile`, `dynamic_import`, `process_exit`. A lost process is attributed to its attempt only when it held one; otherwise every attempt it held is `outcome_unknown`. The deadline is enforced by the cell's main thread, with a process kill behind it from the supervisor, and an RSS watchdog behind that, since a single flat string can pass the heap limit.
+- **Determinism.** `runTwice` compares two runs and refuses a difference. A guest that catches its own stack overflow can make depth-dependent output, and only the comparison sees that. Mathematical and Unicode results follow the V8 and ICU of the running Node.
+
+This isn't an OS sandbox and it isn't a Spectre boundary. The permission model doesn't cover signals, and on Node 22 it doesn't cover the network. Passing the attack suite doesn't mean no escape exists; it doesn't test V8 memory-safety bugs. Requires Node 22.8 or later.
+
 ## X1 host port
 
 [x1/host.mjs](x1/host.mjs) runs the seven X1 gates as the real evaluator's
@@ -295,4 +327,4 @@ decision bound to candidate, oracle, receipt hash and verified chain tip. It ref
 incomplete rounds, any failed X1 gate or chain/hash mismatch. It does not activate
 artifacts. Host and ledger writers are trusted; the hash chain is not a signature
 or an external witness. [P-22](../../experiments/P-22-real-need-to-candidate/README.md)
-provides the sixty-request harness and prospective measurement protocol.
+provides the sixty-request harness and prospective measurement protocol. `runNeed` takes an optional `containedRoute`; with one, the candidate's TypeScript is also checked, emitted and run contained, and the report joins the result under `contained` without changing the decision. See `tools/tscheck/contained-route.mjs`.

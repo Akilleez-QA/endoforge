@@ -1,0 +1,66 @@
+{
+ "node": "22.23.3",
+ "arm": "cohort-cell",
+ "rows": [
+  {
+   "name": "benign",
+   "distinct": 1,
+   "sample": "{\"total\":985009,\"kind\":\"benign\"}",
+   "sampleHash": "203d7da50c27333fa03d3427b8e6e00907adaf1dfa6138d449ff21ab4235dd3e"
+  },
+  {
+   "name": "depth",
+   "distinct": 1,
+   "sample": "23458",
+   "sampleHash": "9d001c7dfc498a7797c6b9a069fdbcbd0b17c1724db194e0202860b004bcd486"
+  },
+  {
+   "name": "clock-random",
+   "distinct": 1,
+   "sample": "{\"reached\":[],\"foreign\":[],\"notes\":{\"now\":\"refused:TypeError\",\"newDate\":\"refused:TypeError\",\"Date()\":\"refused:TypeError\",\"ctorDate\":\"refused:TypeError\",\"ctorNow\":\"refused:TypeError\",\"random\":\"refused:TypeError\",\"perf\":\"refused:ReferenceError\",\"Intl\":\"refused:ReferenceError\",\"Temporal\":\"refused:ReferenceError\",\"WeakRef\":\"refused:ReferenceError\",\"FR\":\"refused:ReferenceError\",\"fixedDate\":\"1970-01-01T00:00:00.000Z\",\"tz\":\"0\",\"locale\":\"refused:TypeError\"}}",
+   "sampleHash": "5fa05251fb66df8cd1a70d483f7b41667bb197ab8e0cf920e8a048b5f8773b6f"
+  },
+  {
+   "name": "globals-walk",
+   "distinct": 1,
+   "sample": "{\"reached\":[],\"foreign\":[],\"notes\":{\"walked\":413,\"absent\":[],\"names\":\"AggregateError,Array,BigInt,Boolean,Date,Error,EvalError,Function,Infinity,Iterator,JSON,Map,Math,NaN,Number,Object,Promise,Proxy,RangeError,ReferenceError,Reflect,RegExp,Set,String,Symbol,SyntaxError,TypeError,URIError,WeakMap,WeakSet,decodeURI,decodeURIComponent,encodeURI,encodeURIComponent,escape,globalThis,isFinite,isNaN,parseFloat,parseInt,undefined,unescape\"}}",
+   "sampleHash": "de0f890cc3f40841f69f8ac981a46ee4992a9592a1205672e561d28dbf778aa1"
+  },
+  {
+   "name": "codegen",
+   "distinct": 1,
+   "sample": "{\"reached\":[],\"foreign\":[],\"notes\":{\"eval\":\"ReferenceError\",\"indirect\":\"ReferenceError\",\"Function\":\"EvalError\",\"async\":\"EvalError\",\"gen\":\"EvalError\"}}",
+   "sampleHash": "1d54609a969c47bc90cde9f98e511d2460c125037a5563572ec0a7113867afd3"
+  },
+  {
+   "name": "prepare-stack",
+   "distinct": 1,
+   "sample": "{\"reached\":[],\"foreign\":[],\"notes\":{\"assign\":\"allowed\",\"define\":\"refused:Cannot redefine property: prepareStackTrace\",\"replace\":\"allowed\",\"range\":\"allowed\",\"limit\":\"allowed\",\"capture\":\"refused:Error.captureStackTrace is not a function\",\"stack\":\"undefined\",\"hits\":[]}}",
+   "sampleHash": "f928ddc19fd036d7c0027e2bbe38072e14b2bce48335b9f2fd2888cd1013cd91"
+  },
+  {
+   "name": "poison-tojson-output",
+   "distinct": 1,
+   "sample": "{\"value\":\"from toJSON\",\"proto\":{\"__proto__\":{\"polluted\":\"output\"}}}",
+   "sampleHash": "8b563a2c05d657ed3d3b16c6553b8535fef831f1cee25fdc1bf303f6f88f9892"
+  },
+  {
+   "name": "ctor-function",
+   "distinct": 1,
+   "sample": "{\"reached\":[],\"foreign\":[],\"notes\":{\"arrow.ctor\":\"blocked:Code generation from strings disallowed for this context\",\"async.ctor\":\"blocked:Code generation from strings disallowed for this context\",\"gen.ctor\":\"blocked:Code generation from strings disallowed for this context\",\"agen.ctor\":\"blocked:Code generation from strings disallowed for this context\"}}",
+   "sampleHash": "4d8223801b91efc80d2a471ab6298186dadb4074fe7d7647ed64a02925115d5b"
+  },
+  {
+   "name": "math",
+   "distinct": 1,
+   "sample": "{\"sorted\":[\"-0.9999902065507035\",\"-0.9997551733586199\",\"-0.9992080341070627\",\"-0.9992068341863537\",\"-0.9983470937967718\",\"-0.9983453608739179\",\"-0.9971732887740798\",\"-0.997171023392149\",\"-0.9956869868891794\",\"-0.9956841897581032\",\"-0.9938886539233752\",\"-0.9938853259197261\",\"-0.9917788534431158\",\"-0.9880316240928618\",\"-0.9851514363288851\",\"-0.9851462604682474\",\"-0.9819578697820255\",\"-0.9819521690440836\",\"-0.9784565746221131\",\"-0.9784503507933796\",\"-0.9746486480944947\",\"-0.97464190312541\",\"-0.9705352835374847\",\"-0.9705280195418053\",\"-0.9661177700083929\",\"-0.9661099892625297\",\"-0.9613974918795568\",\"-0.9589242746631385\",\"-0.9537526527594719\",\"-0.9482917095220488\",\"-0.9482821412699473\",\"-0.9425245273294025\",\"-0.9425144545582509\",\"-0.9364619742512132\",\"-0.936451400117644\",\"-0.9301059501867618\",\"-0.9300948780045254\",\"-0.9234584470040598\",\"-0.9234468802429867\",\"-0.9165215479156338\",\"-0.9055783620066238\",\"-0.8979409481081247\",\"-0.8979276806892913\",\"-0.8900093488562771\",\"-0.8899956043668333\",\"-0.8817988360675502\",\"-0.8817846188147811\",\"-0.8733119827746476\",\"-0.8732972972139946\",\"-0.8645514486106083\",\"-0.8645362993442719\",\"-0.8555199789753223\",\"-0.8555043707508208\",\"-0.8462204041751706\",\"-0.8317747426285983\",\"-0.8218350110128397\",\"-0.8218178366308225\",\"-0.8116209973649744\",\"-0.8116033871367005\",\"-0.8011526357338304\",\"-0.8011345951780408\",\"-0.7904332067228887\",\"-0.7904147414931815\",\"-0.7794660696158047\",\"-0.7794471854988634\",\"-0.7682546613236668\",\"-0.7568024953079282\",\"-0.7509872467716762\",\"-0.739200998751274\",\"-0.7391806966492229\",\"-0.727163193443649\",\"-0.7271425000808526\",\"-0.7148975077677643\",\"-0.7148764296291646\",\"-0.702407785577371\",\"-0.7023863292684921\",\"-0.689697940935389\",\"-0.6896761131802671\",\"-0.6767719568873076\",\"-0.6767497645263835\",\"-0.6636338842129675\",\"-0.6435381333569995\",\"-0.6299114066849614\",\"-0.6298879942744539\",\"-0.6160642040533645\",\"-0.6160404591886565\",\"-0.6020239375552833\",\"-0.6019998676776046\",\"-0.5877950071674065\",\"-0.5877706198198406\",\"-0.5733818719904",
+   "sampleHash": "fb905925b68bcb72b79e57695b3dcf1620a792648113b0cec38d80c894b069c2"
+  },
+  {
+   "name": "granted",
+   "distinct": 1,
+   "sample": "[1000,1000,0.011704753153026104,0.06195825757458806]",
+   "sampleHash": "5c96a65528848b702b8d42d84a09a62b91a451a12e00d8309469f31838bb0d3f"
+  }
+ ]
+}

@@ -1,0 +1,954 @@
+{
+  "precommit": "56b2f60b8b90c8915f78fd7bec8b2149f42371d8d5addf8775652bb3090bedb3",
+  "node": "v26.13.0",
+  "admission": {
+    "admitted": 177,
+    "refused": [],
+    "duplicates": 51,
+    "hostMatches": 177,
+    "wallMs": 803.5658900000001
+  },
+  "heldOut": {
+    "P21": {
+      "cases": 118,
+      "contract.matched": 4,
+      "contract.full": 3,
+      "contract.mutants": 3,
+      "contract.none": 4,
+      "interface.matched": 13,
+      "interface.full": 5,
+      "interface.mutants": 5,
+      "interface.none": 12,
+      "prose.matched": 0,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "no_contract_match": 114,
+        "evaluator_cannot_discriminate": 1,
+        "served": 3
+      }
+    },
+    "add": {
+      "cases": 59,
+      "contract.matched": 51,
+      "contract.full": 45,
+      "contract.mutants": 51,
+      "contract.none": 51,
+      "interface.matched": 54,
+      "interface.full": 48,
+      "interface.mutants": 54,
+      "interface.none": 54,
+      "prose.matched": 0,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "no_contract_match": 8,
+        "served": 45,
+        "evaluator_cannot_discriminate": 6
+      }
+    }
+  },
+  "perNeed": {
+    "C-005": {
+      "n": 6,
+      "contractFull": 0,
+      "interfaceNone": 0
+    },
+    "C-006": {
+      "n": 6,
+      "contractFull": 0,
+      "interfaceNone": 0
+    },
+    "C-007": {
+      "n": 6,
+      "contractFull": 0,
+      "interfaceNone": 0
+    },
+    "C-010": {
+      "n": 6,
+      "contractFull": 0,
+      "interfaceNone": 0
+    },
+    "C-012": {
+      "n": 6,
+      "contractFull": 0,
+      "interfaceNone": 0
+    },
+    "C-015": {
+      "n": 6,
+      "contractFull": 0,
+      "interfaceNone": 0
+    },
+    "C-016": {
+      "n": 6,
+      "contractFull": 0,
+      "interfaceNone": 0
+    },
+    "C-019": {
+      "n": 6,
+      "contractFull": 0,
+      "interfaceNone": 0
+    },
+    "CC-001": {
+      "n": 6,
+      "contractFull": 0,
+      "interfaceNone": 0
+    },
+    "CC-002": {
+      "n": 6,
+      "contractFull": 0,
+      "interfaceNone": 3
+    },
+    "CC-007": {
+      "n": 6,
+      "contractFull": 0,
+      "interfaceNone": 0
+    },
+    "CC-009": {
+      "n": 5,
+      "contractFull": 0,
+      "interfaceNone": 0
+    },
+    "CC-011": {
+      "n": 6,
+      "contractFull": 2,
+      "interfaceNone": 3
+    },
+    "CC-014": {
+      "n": 6,
+      "contractFull": 0,
+      "interfaceNone": 0
+    },
+    "CC-022": {
+      "n": 6,
+      "contractFull": 0,
+      "interfaceNone": 0
+    },
+    "CC-025": {
+      "n": 6,
+      "contractFull": 1,
+      "interfaceNone": 1
+    },
+    "CC-026": {
+      "n": 6,
+      "contractFull": 0,
+      "interfaceNone": 0
+    },
+    "CC-027": {
+      "n": 6,
+      "contractFull": 0,
+      "interfaceNone": 0
+    },
+    "CC-036": {
+      "n": 5,
+      "contractFull": 0,
+      "interfaceNone": 1
+    },
+    "add": {
+      "n": 59,
+      "contractFull": 45,
+      "interfaceNone": 54
+    },
+    "CC-013": {
+      "n": 6,
+      "contractFull": 0,
+      "interfaceNone": 4
+    }
+  },
+  "audit": {
+    "compared": 222,
+    "disagreementCount": 0,
+    "disagreements": []
+  },
+  "adversarial": {
+    "A/units/blind": {
+      "cases": 177,
+      "contract.matched": 0,
+      "contract.full": 0,
+      "contract.mutants": 0,
+      "contract.none": 0,
+      "interface.matched": 0,
+      "interface.full": 0,
+      "interface.mutants": 0,
+      "interface.none": 0,
+      "prose.matched": 0,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "no_contract_match": 177
+      }
+    },
+    "A/units/visible": {
+      "cases": 177,
+      "contract.matched": 0,
+      "contract.full": 0,
+      "contract.mutants": 0,
+      "contract.none": 0,
+      "interface.matched": 0,
+      "interface.full": 0,
+      "interface.mutants": 0,
+      "interface.none": 0,
+      "prose.matched": 0,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "no_contract_match": 177
+      }
+    },
+    "A/units/blind_arg": {
+      "cases": 98,
+      "contract.matched": 0,
+      "contract.full": 0,
+      "contract.mutants": 0,
+      "contract.none": 0,
+      "interface.matched": 0,
+      "interface.full": 0,
+      "interface.mutants": 0,
+      "interface.none": 0,
+      "prose.matched": 0,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "no_contract_match": 98
+      }
+    },
+    "A/rounding/blind": {
+      "cases": 177,
+      "contract.matched": 0,
+      "contract.full": 0,
+      "contract.mutants": 0,
+      "contract.none": 0,
+      "interface.matched": 3,
+      "interface.full": 0,
+      "interface.mutants": 0,
+      "interface.none": 3,
+      "prose.matched": 0,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "no_contract_match": 177
+      }
+    },
+    "A/rounding/visible": {
+      "cases": 177,
+      "contract.matched": 0,
+      "contract.full": 0,
+      "contract.mutants": 0,
+      "contract.none": 0,
+      "interface.matched": 3,
+      "interface.full": 0,
+      "interface.mutants": 0,
+      "interface.none": 0,
+      "prose.matched": 0,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "no_contract_match": 177
+      }
+    },
+    "A/rounding/blind_mode": {
+      "cases": 177,
+      "contract.matched": 0,
+      "contract.full": 0,
+      "contract.mutants": 0,
+      "contract.none": 0,
+      "interface.matched": 0,
+      "interface.full": 0,
+      "interface.mutants": 0,
+      "interface.none": 0,
+      "prose.matched": 0,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "no_contract_match": 177
+      }
+    },
+    "C/rounding/prose_only": {
+      "cases": 177,
+      "contract.matched": 177,
+      "contract.full": 114,
+      "contract.mutants": 124,
+      "contract.none": 177,
+      "interface.matched": 173,
+      "interface.full": 111,
+      "interface.mutants": 121,
+      "interface.none": 173,
+      "prose.matched": 0,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "served": 114,
+        "evaluator_cannot_discriminate": 63
+      }
+    },
+    "A/boundary/blind": {
+      "cases": 149,
+      "contract.matched": 0,
+      "contract.full": 0,
+      "contract.mutants": 0,
+      "contract.none": 0,
+      "interface.matched": 0,
+      "interface.full": 0,
+      "interface.mutants": 0,
+      "interface.none": 0,
+      "prose.matched": 0,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "no_contract_match": 149
+      }
+    },
+    "A/boundary/visible": {
+      "cases": 149,
+      "contract.matched": 0,
+      "contract.full": 0,
+      "contract.mutants": 0,
+      "contract.none": 0,
+      "interface.matched": 0,
+      "interface.full": 0,
+      "interface.mutants": 0,
+      "interface.none": 0,
+      "prose.matched": 0,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "no_contract_match": 149
+      }
+    },
+    "A/boundary/blind_open": {
+      "cases": 149,
+      "contract.matched": 0,
+      "contract.full": 0,
+      "contract.mutants": 0,
+      "contract.none": 0,
+      "interface.matched": 0,
+      "interface.full": 0,
+      "interface.mutants": 0,
+      "interface.none": 0,
+      "prose.matched": 0,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "no_contract_match": 149
+      }
+    },
+    "A/sign/visible": {
+      "cases": 174,
+      "contract.matched": 174,
+      "contract.full": 0,
+      "contract.mutants": 0,
+      "contract.none": 0,
+      "interface.matched": 170,
+      "interface.full": 0,
+      "interface.mutants": 0,
+      "interface.none": 0,
+      "prose.matched": 0,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "evaluator_failed": 174
+      }
+    },
+    "C/sign/prose_only": {
+      "cases": 177,
+      "contract.matched": 177,
+      "contract.full": 114,
+      "contract.mutants": 124,
+      "contract.none": 177,
+      "interface.matched": 173,
+      "interface.full": 111,
+      "interface.mutants": 121,
+      "interface.none": 173,
+      "prose.matched": 0,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "served": 114,
+        "evaluator_cannot_discriminate": 63
+      }
+    },
+    "A/constants/blind": {
+      "cases": 177,
+      "contract.matched": 2,
+      "contract.full": 2,
+      "contract.mutants": 2,
+      "contract.none": 2,
+      "interface.matched": 173,
+      "interface.full": 96,
+      "interface.mutants": 105,
+      "interface.none": 173,
+      "prose.matched": 0,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "no_contract_match": 175,
+        "served": 2
+      }
+    },
+    "A/constants/visible": {
+      "cases": 174,
+      "contract.matched": 1,
+      "contract.full": 0,
+      "contract.mutants": 0,
+      "contract.none": 0,
+      "interface.matched": 170,
+      "interface.full": 0,
+      "interface.mutants": 0,
+      "interface.none": 0,
+      "prose.matched": 0,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "no_contract_match": 173,
+        "evaluator_failed": 1
+      }
+    },
+    "A/sign/blind": {
+      "cases": 3,
+      "contract.matched": 3,
+      "contract.full": 3,
+      "contract.mutants": 3,
+      "contract.none": 3,
+      "interface.matched": 3,
+      "interface.full": 3,
+      "interface.mutants": 3,
+      "interface.none": 3,
+      "prose.matched": 0,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "served": 3
+      }
+    }
+  },
+  "mutantTable": {
+    "M/units": {
+      "cases": 891,
+      "contract.matched": 891,
+      "contract.full": 0,
+      "contract.mutants": 0,
+      "contract.none": 0,
+      "interface.matched": 861,
+      "interface.full": 0,
+      "interface.mutants": 0,
+      "interface.none": 0,
+      "prose.matched": 891,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "evaluator_failed": 891
+      }
+    },
+    "M/constants": {
+      "cases": 1303,
+      "contract.matched": 1303,
+      "contract.full": 0,
+      "contract.mutants": 0,
+      "contract.none": 0,
+      "interface.matched": 1267,
+      "interface.full": 0,
+      "interface.mutants": 0,
+      "interface.none": 0,
+      "prose.matched": 1303,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "evaluator_failed": 1303
+      }
+    },
+    "M/rounding": {
+      "cases": 542,
+      "contract.matched": 542,
+      "contract.full": 0,
+      "contract.mutants": 0,
+      "contract.none": 0,
+      "interface.matched": 514,
+      "interface.full": 0,
+      "interface.mutants": 0,
+      "interface.none": 0,
+      "prose.matched": 542,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "evaluator_failed": 542
+      }
+    },
+    "M/boundary": {
+      "cases": 1359,
+      "contract.matched": 1359,
+      "contract.full": 0,
+      "contract.mutants": 0,
+      "contract.none": 0,
+      "interface.matched": 1339,
+      "interface.full": 0,
+      "interface.mutants": 0,
+      "interface.none": 0,
+      "prose.matched": 1359,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "evaluator_failed": 1358,
+        "cell_failed:ERR_WORKER_OUT_OF_MEMORY": 1
+      }
+    },
+    "B/rounding": {
+      "cases": 109,
+      "contract.matched": 109,
+      "contract.full": 28,
+      "contract.mutants": 38,
+      "contract.none": 105,
+      "interface.matched": 109,
+      "interface.full": 28,
+      "interface.mutants": 38,
+      "interface.none": 105,
+      "prose.matched": 109,
+      "prose.full": 28,
+      "prose.mutants": 38,
+      "prose.none": 105,
+      "reasons": {
+        "evaluator_cannot_discriminate": 77,
+        "served": 28,
+        "cell_failed:ERR_WORKER_OUT_OF_MEMORY": 4
+      }
+    },
+    "M/sign": {
+      "cases": 1398,
+      "contract.matched": 1398,
+      "contract.full": 0,
+      "contract.mutants": 0,
+      "contract.none": 0,
+      "interface.matched": 1386,
+      "interface.full": 0,
+      "interface.mutants": 0,
+      "interface.none": 0,
+      "prose.matched": 1398,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "evaluator_failed": 1398
+      }
+    },
+    "B/boundary": {
+      "cases": 159,
+      "contract.matched": 159,
+      "contract.full": 65,
+      "contract.mutants": 82,
+      "contract.none": 156,
+      "interface.matched": 155,
+      "interface.full": 62,
+      "interface.mutants": 79,
+      "interface.none": 152,
+      "prose.matched": 159,
+      "prose.full": 65,
+      "prose.mutants": 82,
+      "prose.none": 156,
+      "reasons": {
+        "served": 65,
+        "evaluator_cannot_discriminate": 91,
+        "cell_failed:ERR_WORKER_OUT_OF_MEMORY": 3
+      }
+    },
+    "B/constants": {
+      "cases": 44,
+      "contract.matched": 44,
+      "contract.full": 0,
+      "contract.mutants": 15,
+      "contract.none": 40,
+      "interface.matched": 44,
+      "interface.full": 0,
+      "interface.mutants": 15,
+      "interface.none": 40,
+      "prose.matched": 44,
+      "prose.full": 0,
+      "prose.mutants": 15,
+      "prose.none": 40,
+      "reasons": {
+        "evaluator_cannot_discriminate": 40,
+        "cell_failed:ERR_WORKER_OUT_OF_MEMORY": 4
+      }
+    },
+    "B/units": {
+      "cases": 1,
+      "contract.matched": 1,
+      "contract.full": 0,
+      "contract.mutants": 0,
+      "contract.none": 0,
+      "interface.matched": 1,
+      "interface.full": 0,
+      "interface.mutants": 0,
+      "interface.none": 0,
+      "prose.matched": 1,
+      "prose.full": 0,
+      "prose.mutants": 0,
+      "prose.none": 0,
+      "reasons": {
+        "cell_failed:ERR_WORKER_OUT_OF_MEMORY": 1
+      }
+    }
+  },
+  "hidden": {
+    "rounding/finite/in_domain": {
+      "n": 84,
+      "servedFull": 16,
+      "servedMutants": 26,
+      "servedNone": 80
+    },
+    "boundary/non_finite_only/out_of_domain": {
+      "n": 119,
+      "servedFull": 55,
+      "servedMutants": 59,
+      "servedNone": 117
+    },
+    "constants/finite/out_of_domain": {
+      "n": 40,
+      "servedFull": 0,
+      "servedMutants": 15,
+      "servedNone": 40
+    },
+    "boundary/finite/out_of_domain": {
+      "n": 37,
+      "servedFull": 10,
+      "servedMutants": 23,
+      "servedNone": 37
+    },
+    "rounding/finite/out_of_domain": {
+      "n": 25,
+      "servedFull": 12,
+      "servedMutants": 12,
+      "servedNone": 25
+    },
+    "boundary/finite/in_domain": {
+      "n": 3,
+      "servedFull": 0,
+      "servedMutants": 0,
+      "servedNone": 2
+    },
+    "units/finite/in_domain": {
+      "n": 1,
+      "servedFull": 0,
+      "servedMutants": 0,
+      "servedNone": 0
+    },
+    "constants/finite/in_domain": {
+      "n": 4,
+      "servedFull": 0,
+      "servedMutants": 0,
+      "servedNone": 0
+    }
+  },
+  "mutantRows": 5806,
+  "skippedNonFinite": 169,
+  "declaredCases": 2312,
+  "mutantStats": {
+    "reached": 387,
+    "unsupported": 0,
+    "capped": 0,
+    "invalid": 0,
+    "mutants": 49121
+  },
+  "warmPath": {
+    "pass": {
+      "n": 114,
+      "p50": 50.109350999991875,
+      "p95": 761.0009480000008,
+      "max": 1966.7439259999665
+    },
+    "refused": {
+      "n": 63,
+      "p50": 682.5015340000391,
+      "p95": 4583.050185,
+      "max": 6129.115309000015
+    },
+    "miss": {
+      "n": 177,
+      "p50": 0.5432290000026114,
+      "p95": 1.54602700000396,
+      "max": 2.424152999999933
+    },
+    "spawns": 0,
+    "spawnCounted": true,
+    "pythonViaShim": 0
+  },
+  "memory": {
+    "entries": 177,
+    "heapPerEntry": 13434.892655367232,
+    "externalPerEntry": 0.22598870056497175,
+    "rssPerEntry": 57413.42372881356,
+    "serializedPerEntryMean": 8781.683615819209,
+    "journalNote": "heap includes retained journal records",
+    "journalBytesPerRecord": 2800.84406779661
+  },
+  "generationPath": {
+    "replayed": [
+      {
+        "promoted": true,
+        "error": null,
+        "decision": "promote",
+        "seen": [
+          {
+            "status": "completed",
+            "reason": null,
+            "stage": "completed",
+            "fail": [
+              [
+                "passed",
+                null,
+                null
+              ],
+              [
+                "passed",
+                null,
+                null
+              ]
+            ]
+          }
+        ],
+        "wallMs": 1010.5463940000001,
+        "timings": {
+          "generate": 123.35985599999998,
+          "freeze": 147.12701400000003,
+          "compile": 80.69080500000001,
+          "gate": 394.985415,
+          "ledger": 195.31218900000005,
+          "promote": 67.27910799999995
+        },
+        "spawns": [
+          "spawn python3",
+          "execFile node",
+          "execFile python3",
+          "execFile node",
+          "execFile replay-asc.mjs",
+          "execFile python3",
+          "execFile python3"
+        ],
+        "pythonViaShim": 9
+      },
+      {
+        "promoted": true,
+        "error": null,
+        "decision": "promote",
+        "seen": [
+          {
+            "status": "completed",
+            "reason": null,
+            "stage": "completed",
+            "fail": [
+              [
+                "passed",
+                null,
+                null
+              ],
+              [
+                "passed",
+                null,
+                null
+              ]
+            ]
+          }
+        ],
+        "wallMs": 1071.2489469999998,
+        "timings": {
+          "generate": 90.174533,
+          "freeze": 126.73480800000002,
+          "compile": 51.76655499999998,
+          "gate": 555.0358130000001,
+          "ledger": 166.55719399999998,
+          "promote": 79.30182100000002
+        },
+        "spawns": [
+          "spawn python3",
+          "execFile node",
+          "execFile python3",
+          "execFile node",
+          "execFile replay-asc.mjs",
+          "execFile python3",
+          "execFile python3"
+        ],
+        "pythonViaShim": 9
+      },
+      {
+        "promoted": true,
+        "error": null,
+        "decision": "promote",
+        "seen": [
+          {
+            "status": "completed",
+            "reason": null,
+            "stage": "completed",
+            "fail": [
+              [
+                "passed",
+                null,
+                null
+              ],
+              [
+                "passed",
+                null,
+                null
+              ]
+            ]
+          }
+        ],
+        "wallMs": 825.8284530000001,
+        "timings": {
+          "generate": 71.32138,
+          "freeze": 86.28172799999999,
+          "compile": 34.920593,
+          "gate": 450.597134,
+          "ledger": 99.73572199999995,
+          "promote": 80.17845299999999
+        },
+        "spawns": [
+          "spawn python3",
+          "execFile node",
+          "execFile python3",
+          "execFile node",
+          "execFile replay-asc.mjs",
+          "execFile python3",
+          "execFile python3"
+        ],
+        "pythonViaShim": 9
+      },
+      {
+        "promoted": true,
+        "error": null,
+        "decision": "promote",
+        "seen": [
+          {
+            "status": "completed",
+            "reason": null,
+            "stage": "completed",
+            "fail": [
+              [
+                "passed",
+                null,
+                null
+              ],
+              [
+                "passed",
+                null,
+                null
+              ]
+            ]
+          }
+        ],
+        "wallMs": 971.2467199999999,
+        "timings": {
+          "generate": 70.09323800000001,
+          "freeze": 82.729682,
+          "compile": 35.96683300000001,
+          "gate": 529.3664200000001,
+          "ledger": 95.2814679999999,
+          "promote": 156.02406500000006
+        },
+        "spawns": [
+          "spawn python3",
+          "execFile node",
+          "execFile python3",
+          "execFile node",
+          "execFile replay-asc.mjs",
+          "execFile python3",
+          "execFile python3"
+        ],
+        "pythonViaShim": 9
+      },
+      {
+        "promoted": true,
+        "error": null,
+        "decision": "promote",
+        "seen": [
+          {
+            "status": "completed",
+            "reason": null,
+            "stage": "completed",
+            "fail": [
+              [
+                "passed",
+                null,
+                null
+              ],
+              [
+                "passed",
+                null,
+                null
+              ]
+            ]
+          }
+        ],
+        "wallMs": 1028.6005380000001,
+        "timings": {
+          "generate": 149.541399,
+          "freeze": 201.03417900000002,
+          "compile": 53.49508000000003,
+          "gate": 399.6964139999999,
+          "ledger": 121.63266199999998,
+          "promote": 101.37475100000006
+        },
+        "spawns": [
+          "spawn python3",
+          "execFile node",
+          "execFile python3",
+          "execFile node",
+          "execFile replay-asc.mjs",
+          "execFile python3",
+          "execFile python3"
+        ],
+        "pythonViaShim": 9
+      }
+    ],
+    "recorded": {
+      "total": {
+        "n": 177,
+        "p50": 48649.466536,
+        "p95": 68612.636792,
+        "max": 100884.43229299999
+      },
+      "generate": {
+        "n": 177,
+        "p50": 47724.443805999996,
+        "p95": 67658.644108,
+        "max": 99809.02240200002
+      },
+      "spec": {
+        "n": 177,
+        "p50": 29915,
+        "p95": 44626,
+        "max": 68068
+      },
+      "implementation": {
+        "n": 177,
+        "p50": 14606,
+        "p95": 23518,
+        "max": 30037
+      },
+      "notModel": {
+        "n": 177,
+        "p50": 970.1602050000001,
+        "p95": 1108.0655939999997,
+        "max": 1333.4577890000219
+      }
+    }
+  }
+}
