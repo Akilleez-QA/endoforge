@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { createContainedPool, LANE } from '../../core/runtime/contained/runner.mjs';
+import { createContainedPool, createContainedRunner, LANE } from '../../core/runtime/contained/runner.mjs';
 import { typecheck } from './checker.mjs';
 
 export const ROUTE = 'typescript';
@@ -19,8 +19,15 @@ const passes = (test, result) => {
   return String(result.out) === String(test.expect);
 };
 
-export function createContainedRoute({ width = 1, deadlineMs = 1000, ...limits } = {}) {
-  const pool = createContainedPool({ width, deadlineMs, ...limits });
+export const LAYOUTS = Object.freeze({
+  'shared-reuse': options => createContainedRunner({ ...options, reuse: true }),
+  'shared-fresh': options => createContainedRunner({ ...options, reuse: false }),
+  'process-per-cell': options => createContainedPool({ ...options, reuse: false }),
+});
+
+export function createContainedRoute({ width = 1, deadlineMs = 1000, layout = 'shared-reuse', ...limits } = {}) {
+  if (!Object.hasOwn(LAYOUTS, layout)) throw new TypeError(`unknown layout ${layout}`);
+  const pool = LAYOUTS[layout]({ width, deadlineMs, ...limits });
   const receipt = fields => ({ lane: LANE, route: ROUTE, ...fields });
   return {
     pool,

@@ -30,14 +30,14 @@ export function validateContract(contract = {}) {
 }
 
 export function createContainedRunner({ width = 1, spare = width, heapMb = 64, youngMb = 8, stackMb = 2, deadlineMs = 1000, outputMaxBytes = 1048576,
-  stuckMs = 1500, bootAllowanceMs = 5000, rssMaxMb, reuse = false, harden = true, execPath = process.execPath, cohortArgs, onCohort, sources = {} } = {}) {
+  stuckMs = 1500, bootAllowanceMs = 5000, rssMaxMb, reuse = true, harden = true, execPath = process.execPath, cohortArgs, onCohort, sources = {} } = {}) {
   if (![width, spare, heapMb, youngMb, stackMb, deadlineMs, outputMaxBytes, stuckMs].every(positive)) throw new TypeError('positive integer limits required');
   const rssLimit = rssMaxMb ?? (heapMb + youngMb * 3 + 48) * (width + spare) + 256;
   const bootstrap = sources.guest || source('./guest.js'), cellSource = sources.cell || source('./cell.cjs');
   const config = { width, spare, reuse, harden, stuckMs, bootstrap, resourceLimits: { maxOldGenerationSizeMb: heapMb, maxYoungGenerationSizeMb: youngMb, stackSizeMb: stackMb } };
   const inflight = new Map(), queue = [];
   let cohort, starting, nextId = 1, closed = false;
-  const stats = { cohortStarts: 0, cohortLosses: 0, completed: 0, refused: 0, unknown: 0 };
+  const stats = { cohortStarts: 0, cohortLosses: 0, completed: 0, refused: 0, unknown: 0, messages: 0 };
   const settle = (entry, result) => {
     clearTimeout(entry.watchdog);
     inflight.delete(entry.id);
@@ -66,7 +66,8 @@ export function createContainedRunner({ width = 1, spare = width, heapMb = 64, y
     child.on('error', error => { reject(error); lose(target, 'cohort_error'); });
     child.on('close', () => { reject(new Error(`cohort exited before ready: ${target.tail.slice(-400)}`)); if (!closed || inflight.size) lose(target, 'cohort_exit'); });
     child.on('message', message => {
-      if (message.type === 'started') return child.send({ type: 'configure', config, cellSource });
+      stats.messages += 1;
+      if (message.type === 'started') { stats.messages += 1; return child.send({ type: 'configure', config, cellSource }); }
       if (message.type === 'configured') { target.pid = message.pid; cohort = target; onCohort?.(child.pid); return resolve(target); }
       if (message.type === 'result') {
         const entry = inflight.get(message.id);
@@ -102,6 +103,7 @@ export function createContainedRunner({ width = 1, spare = width, heapMb = 64, y
       }
     } catch { reply = { refused: 'handler failed' }; }
     if (target.lost || !inflight.has(id)) return;
+    stats.messages += 1;
     try { target.child.send({ type: 'port-reply', id, text: JSON.stringify(reply) }); } catch {}
   };
   const decode = ({ text, cell }, bound) => {
@@ -120,6 +122,7 @@ export function createContainedRunner({ width = 1, spare = width, heapMb = 64, y
       entry.cohort = cohort.child.pid;
       inflight.set(entry.id, entry);
       entry.watchdog = setTimeout(() => lose(entry.owner, 'watchdog'), entry.deadline + bootAllowanceMs + stuckMs);
+      stats.messages += 1;
       cohort.child.send({ type: 'run', job: { id: entry.id, deadlineMs: entry.deadline, ...entry.wire } });
     }
   };

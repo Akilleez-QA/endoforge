@@ -85,6 +85,24 @@ test('a fatal error in a shared cohort is reported as unknown for all it held', 
   assert.equal((await sibling).status, 'outcome_unknown');
 });
 
+test('a shared cohort loses only its in-flight attempts to a fatal error, retries none, and runs the queue in a replacement', { timeout: 120000 }, async t => {
+  const runner = scoped(t, createContainedRunner, { width: 2, reuse: true });
+  await runner.ready();
+  let ticks = 0;
+  const sibling = runner.run({ ...one('const p = require("host:ports"); exports.main = () => { p.tick(1); for (;;); };'), deadlineMs: 60000, contract: { ports: { tick: { maxCalls: 5, maxBytes: 16 } } }, ports: { tick: () => { ticks += 1; return 1; } } });
+  const fatal = runner.run({ ...one(FATAL), deadlineMs: 60000 });
+  const queued = runner.run(one('exports.main = () => 7;'));
+  const [lostSibling, lostFatal, next] = await Promise.all([sibling, fatal, queued]);
+  assert.equal(lostSibling.status, 'outcome_unknown');
+  assert.equal(lostFatal.status, 'outcome_unknown');
+  assert.equal(next.status, 'completed');
+  assert.equal(next.output, '7');
+  assert.notEqual(next.cohort, lostFatal.cohort);
+  assert.equal(ticks, 1);
+  assert.equal(runner.stats.cohortStarts, 2);
+  assert.equal(runner.stats.unknown, 2);
+});
+
 test('a deadline is enforced from outside against async work', async t => {
   const runner = scoped(t, createContainedRunner);
   for (const source of ['exports.main = () => { (function loop() { Promise.resolve().then(loop); })(); return 1; };', 'exports.main = () => { const t = { then(r) { Promise.resolve().then(() => t.then(r)); } }; return Promise.resolve(t); };']) {

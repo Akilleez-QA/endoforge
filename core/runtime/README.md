@@ -223,20 +223,22 @@ for both modes, including the unavailable-delegation limitation.
 
 ## Contained JavaScript
 
-`contained/` runs JavaScript emitted by the TypeScript route in a child V8 isolate. It's the compatibility lane's executor, and every result carries `lane: compatibility`. It isn't part of the kernel path, and nothing runs it unless a caller asks.
+`contained/` runs JavaScript emitted by the TypeScript route in a child V8 isolate. It's the compatibility lane's executor, for imported code and behaviour that resists the kernel split; the strict path stays a WebAssembly kernel plus declarative glue, and nothing here runs on it. Every result carries `lane: compatibility`, and nothing runs it unless a caller asks.
 
 ```js
-import { createContainedPool } from './contained/runner.mjs';
+import { createContainedRunner } from './contained/runner.mjs';
 
-const pool = createContainedPool({ width: 8, heapMb: 64, deadlineMs: 1000 });
-await pool.ready();
-const result = await pool.run({ modules: { '/proj/a.js': source }, entry: '/proj/a.js', exportName: 'main', input: {} });
+const cohort = createContainedRunner({ width: 8, heapMb: 64, deadlineMs: 1000 });
+await cohort.ready();
+const result = await cohort.run({ modules: { '/proj/a.js': source }, entry: '/proj/a.js', exportName: 'main', input: {} });
 ```
 
-- **Layout.** Each cell is one `node --permission` process with an empty environment and no file grant, running one guest at a time in a fresh Worker, with one prepared spare so the warm path doesn't spawn. The Worker's guest context has an allowlist of standard globals and code generation off. [P-54](../../experiments/P-54-contained-js/RESULT.md) measured why one guest per process: V8's fatal allocation errors end the process whatever a Worker's `resourceLimits` say, so isolates sharing a process share that failure. `createContainedRunner` with `width` above 1 shares a process and reports those losses as `outcome_unknown`; use it only for one trust cohort that accepts that.
+- **Layout.** The default is one supervised cohort: a single `node --permission` child process with an empty environment and no file grant, holding `width` Worker isolates that are kept between attempts. Each attempt gets a fresh guest context with an allowlist of standard globals and code generation off. The supervisor, its watchdog and the caller's ledger stay outside the cohort. [P-54](../../experiments/P-54-contained-js/RESULT.md) measured this layout at the throughput of one process per cell with about a third of the memory, and at a twentieth of the CPU of a fresh Worker per attempt.
+- **Failure scope.** Isolates in one process share its death. A V8 fatal allocation error ends the cohort whatever a Worker's `resourceLimits` say. The supervisor then kills what's left, reports every attempt the cohort held as `outcome_unknown`, starts one replacement and carries on with the queue. It retries nothing: a retry is a new admission by the caller. Heap, stack and deadline breaches that a Worker contains cost only that attempt.
+- **Other layouts.** `reuse: false` gives a fresh Worker per attempt. `createContainedPool({ width })` runs one process per cell, for a cohort whose failure budget can't share a process; it loses no neighbour to a fatal error and costs about 70 MiB per cell. `tools/tscheck/contained-route.mjs` takes `layout: 'shared-reuse' | 'shared-fresh' | 'process-per-cell'`.
 - **Modules.** CommonJS only, since `import` needs host hooks. A source containing `import` followed by `(`, even in a string or after comments, is refused as `dynamic_import`, because `import()` near a stack overflow throws a host-realm error into the guest. Set `module: commonjs` in the project.
 - **Authority.** Nothing unless the contract grants it: `contract: { grants: { clock: { fixedMs }, random: { seed } }, ports: { name: { maxCalls, maxBytes } } }`. The two grants are deterministic. A real clock or anything else goes through a port. Ports are reached by `require('host:ports')`, carry JSON text, and reject with guest-realm errors.
-- **Refusals.** `heap`, `memory`, `deadline`, `stack`, `string_limit`, `thrown`, `never_settled`, `output_not_json`, `output_too_large`, `compile`, `dynamic_import`, `process_exit`. In a pool, a lost process is attributed to its one guest. The deadline is enforced by the cell's main thread, with a process kill behind it from the supervisor, and an RSS watchdog behind that, since a single flat string can pass the heap limit.
+- **Refusals.** `heap`, `memory`, `deadline`, `stack`, `string_limit`, `thrown`, `never_settled`, `output_not_json`, `output_too_large`, `compile`, `dynamic_import`, `process_exit`. A lost process is attributed to its attempt only when it held one; otherwise every attempt it held is `outcome_unknown`. The deadline is enforced by the cell's main thread, with a process kill behind it from the supervisor, and an RSS watchdog behind that, since a single flat string can pass the heap limit.
 - **Determinism.** `runTwice` compares two runs and refuses a difference. A guest that catches its own stack overflow can make depth-dependent output, and only the comparison sees that. Mathematical and Unicode results follow the V8 and ICU of the running Node.
 
 This isn't an OS sandbox and it isn't a Spectre boundary. The permission model doesn't cover signals, and on Node 22 it doesn't cover the network. Passing the attack suite doesn't mean no escape exists; it doesn't test V8 memory-safety bugs. Requires Node 22.8 or later.
