@@ -349,6 +349,48 @@ test('an emit over a prior build info file records the files it really wrote', {
   for (const row of rows) assert.deepEqual(Object.keys(row.sha256), ['/proj/out/a.js']);
 });
 
+test('build info feedback keeps the host options and refuses a candidate build info file', { timeout: 60000 }, async () => {
+  const seed = await typecheck(project(listed()), { buildInfo: null });
+  assert.deepEqual(seed.diagnostics.map(d => d.code), [2322]);
+  const quiet = await typecheck(project(listed({ noCheck: true })), { buildInfo: seed.buildInfo });
+  assert.deepEqual(quiet.diagnostics.map(d => d.code), [2322], 'noCheck stays off with feedback');
+  const forged = project(listed({ incremental: true, tsBuildInfoFile: './.tsbuildinfo' }), { '/proj/a.ts': bad, '/proj/.tsbuildinfo': '{}' });
+  await assert.rejects(typecheck(forged, { buildInfo: null }), /build info/);
+  const renamed = project(listed({ incremental: true, tsBuildInfoFile: './info.json' }));
+  renamed.files = { ...renamed.files, '/proj/info.json': forgedInfo(renamed, '/proj/info.json', ['--noEmit']) };
+  assert.deepEqual((await typecheck(renamed, { buildInfo: null })).diagnostics.map(d => d.code), [2322], 'only the host chooses the build info file');
+  const coverage = project({ compilerOptions, include: ['ok.ts'] }, { '/proj/a.ts': bad, '/proj/ok.ts': good });
+  await assert.rejects(typecheck(coverage, { buildInfo: null }), /outside the program/);
+});
+
+test('a build info key in any spelling is refused when the caller feeds build info too', { timeout: 60000 }, async () => {
+  const seedless = project(listed());
+  const forgedAt = infoKey => ({ ...seedless, files: { '/proj/a.ts': bad, [infoKey]: forgedInfo(seedless, '/proj/.tsbuildinfo', ['--incremental', '--tsBuildInfoFile', '/proj/.tsbuildinfo', '--noEmit']) } });
+  for (const key of ['/proj/.tsbuildinfo/', '/proj/.tsbuildinfo\\', '/proj/./.tsbuildinfo', '/proj/x/../.tsbuildinfo', '/proj//.tsbuildinfo', '/proj/.TSBUILDINFO']) {
+    await assert.rejects(typecheck(forgedAt(key), { buildInfo: null }), /build info|project path/, key);
+    await assert.rejects(typecheck(forgedAt(key)), /build info|project path/, key);
+  }
+});
+
+test('feeding back build info with nothing changed still proves the program', { timeout: 60000 }, async () => {
+  const clean = project(listed(), { '/proj/a.ts': good });
+  const seed = await typecheck(clean, { buildInfo: null });
+  const again = await typecheck(clean, { buildInfo: seed.buildInfo });
+  assert.deepEqual(again.diagnostics, []);
+  assert.equal(again.checkedSources, 1);
+  const excluding = project({ compilerOptions, files: ['./a.ts'] }, { '/proj/a.ts': good });
+  const excludingSeed = await typecheck(excluding, { buildInfo: null });
+  await assert.rejects(typecheck({ ...excluding, files: { ...excluding.files, '/proj/x.ts': bad } }, { buildInfo: excludingSeed.buildInfo }), /outside the program/);
+});
+
+test('assumeChangesOnlyAffectDirectDependencies does not hide an indirect error from a fed check', { timeout: 60000 }, async () => {
+  const chain = value => project({ compilerOptions: { ...compilerOptions, assumeChangesOnlyAffectDirectDependencies: true }, include: ['*.ts'] }, {
+    '/proj/c.ts': value, '/proj/b.ts': 'import { v } from "./c";\nexport const w = v;\n', '/proj/a.ts': 'import { w } from "./b";\nexport const n: number = w;\n' });
+  const seed = await typecheck(chain('export const v: number = 1;\n'), { buildInfo: null });
+  const fed = await typecheck(chain('export const v: string = "x";\n'), { buildInfo: seed.buildInfo });
+  assert.deepEqual(fed.diagnostics.map(d => [d.file, d.code]), [['/proj/a.ts', 2322]]);
+});
+
 function vendorCopy(t, change) {
   const directory = mkdtempSync(join(tmpdir(), 'ef-tscheck-pin-'));
   t.after(() => rmSync(directory, { recursive: true, force: true }));
