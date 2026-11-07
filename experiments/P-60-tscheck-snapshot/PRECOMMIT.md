@@ -67,3 +67,18 @@ A new arm's options become the route default (`createContainedRoute`'s `checker`
 ## Receipts
 
 `experiments/P-60-tscheck-snapshot/receipt/`: the raw rows per round (`route-*.json`), parity and adversarial diffs (`parity-*.json`), the fatal runs (`fatal-*.json`), and this file's digest in `precommit.sha256`.
+
+## Amendment 1 (2026-11-07, after round 1, before measuring the arms it adds)
+
+Round 1 put the reused-instance arms at 138–182 MiB peak RSS per active attempt at width 16, against 51 MiB for `fused`. An off-acceptance spike found why: a restored allocator can only grow linear memory, never reuse what earlier runs grew, so each reused run touches about 3 MiB of new pages (46 new non-zero 64 KiB pages per run, RSS up 3 MiB per check), and an instance holds them until it's 256 MiB above its initial size. Every guest Worker, spares included, holds one. The original arms, bars and rounds 1–2 stand as frozen and are reported as measured.
+
+Two arms are added, defined now, before either is measured:
+
+| Arm | Placement | tsrs instance | Build info |
+|---|---|---|---|
+| `fused-base` | the guest's Worker | fresh per check | host baseline seeded |
+| `fused-reuse16-base` | the guest's Worker | reused, but discarded once linear memory is more than 16 MiB above its initial size | host baseline seeded |
+
+Procedure: rounds 3 and 4 run all seven arms, interleaved, at widths 1, 8, 16 and 32, as above. Parity (bar 4) and fatal (bar 5) are run for the two new arms as for the others. For the original five arms the acceptance figure is the worst of rounds 1–4; for the new arms, the worse of rounds 3–4. The decision rule is applied to rounds 3–4 for every arm, so all comparisons with `fused` are same-session.
+
+One tightening of the decision rule: an arm qualifies for the default only if, in addition to the conditions above, its peak RSS per active attempt at width 16 is at most **1.5×** the same-session `fused` arm's. Bars 1–5 are unchanged.
