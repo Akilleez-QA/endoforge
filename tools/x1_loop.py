@@ -10,7 +10,7 @@ from core.ledger.ledger import encode
 
 REPOSITORY = Path(__file__).resolve().parents[1]
 ROUND_CHECKS = ["schema", "interface", "bounds", "determinism", "forbidden_effects", "residual"]
-GATES = {"G1_frozen", "G2_compiles", "G3_exports", "G4_tests", "G5_deterministic", "G6_bounded", "G7_glue", "G8_nonfinite"}
+GATES = {"G1_frozen", "G2_compiles", "G3_exports", "G4_tests", "G5_deterministic", "G6_bounded", "G7_glue", "G8_nonfinite", "G9_units"}
 ORACLE_FILES = ("CONTRACT.md", "tests.json", "frozen.sha256")
 IMPLEMENTATION_FILES = ("host.mjs", "gates.mjs", "glue.schema.json", "measure.mjs", "meter.mjs", "contract.mjs", "loop-port.mjs", "agent.mjs")
 
