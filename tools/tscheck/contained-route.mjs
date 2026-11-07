@@ -38,7 +38,7 @@ const compare = runs => {
   return { ...first, comparedRuns: 2 };
 };
 
-export function createContainedRoute({ width = 1, deadlineMs = 1000, layout = 'shared-reuse', check = 'supervisor', checker = {}, ...limits } = {}) {
+export function createContainedRoute({ width = 1, deadlineMs = 1000, layout = 'shared-reuse', check = layout === 'process-per-cell' ? 'supervisor' : 'fused', checker = {}, ...limits } = {}) {
   if (!Object.hasOwn(LAYOUTS, layout)) throw new TypeError(`unknown layout ${layout}`);
   if (!CHECKS.includes(check)) throw new TypeError(`unknown check placement ${check}`);
   if (check !== 'supervisor' && layout === 'process-per-cell') throw new TypeError('a cohort check needs a shared cohort layout');

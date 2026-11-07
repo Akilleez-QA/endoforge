@@ -37,7 +37,7 @@ for (const { name } of manifest) {
   needs.push({ name, full: source, scalar: helper && convert ? `${helper}\n${convert}\n` : null });
 }
 const whole = await Promise.all(needs.map(async need => { const report = await typecheck(projectFor(need.full), { emit: false }); return report.diagnostics.length; }));
-const route = createContainedRoute({ deadlineMs: 2000 });
+const route = createContainedRoute({ deadlineMs: 2000, check: 'supervisor' });
 await route.ready();
 const rows = [];
 for (const need of needs.filter(item => item.scalar)) {

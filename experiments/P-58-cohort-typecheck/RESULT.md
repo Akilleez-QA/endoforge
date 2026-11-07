@@ -77,6 +77,11 @@ The rule picks the cohort arm with the higher width-16 throughput, or within 10%
 
 For whoever decides next: in the same session the gap is smaller than against P-54's figure. `fused` used 45.0 / 32.6 ms against the supervisor's 33.4 / 30.3, which is 1.08–1.35×, for 6.5–8.2× the accepted work per second. The rule compared against P-54's 27.3, and today's `supervisor` arm doesn't reproduce that figure either.
 
+
+### Override after the result (2026-11-07)
+
+The precommitted rule kept `supervisor`. After reading this result, Craig chose `fused` as the route default anyway ("Yes, fused default"), accepting 1.08–1.35× the CPU per accepted attempt for 6.5–8.2× the accepted work per second. The measured bars and their misses above are unchanged; this is a decision taken on them, not a retuned result. `supervisor` stays selectable, and stays the default for `layout: 'process-per-cell'`, which can't host a cohort check.
+
 ## Trust budget
 
 The check runs in the candidate's own cohort. It reads only that candidate's project, and its failures are that attempt's failures: a tsrs trap is `outcome_unknown` / `checker_error`, a Worker loss during the check is `checker_lost`, and an overrun is `check_deadline`, 10 s by default. A cohort death already costs every attempt in flight. No different trust or failure budget calls for a separate process.
@@ -87,7 +92,7 @@ The check runs in the candidate's own cohort. It reads only that candidate's pro
 - `tools/tscheck/cohort-preparer.mjs` runs in the Worker. `tools/tscheck/cohort-check.mjs` builds what the cohort needs on the supervisor and checks `core.js` against its pin.
 - `core/runtime/contained/runner.mjs` takes a `prepare` option (`layout: 'fused' | 'sibling'`, `count`, `checkDeadlineMs`, `memoryMb`) and adds `runChecked()`: one job in, one result out. A cohort loss reports every checked attempt `outcome_unknown`, whatever the width, because the supervisor can't tell whether it was checking or running. `stats.dispatched` counts jobs sent to a cohort. The RSS watchdog's default adds `memoryMb` (1,024) per slot for the check's linear memory.
 - `cohort.cjs` and `cell.cjs`: checker Workers (sibling) or a preparer in the guest Worker, imported before the realm is hardened (fused). Per-phase deadlines. Each run's result is posted as soon as it exists, and an attempt's remaining run moves to a new Worker if the first one dies, as the second run job did before.
-- `tools/tscheck/contained-route.mjs`: `check: 'supervisor' | 'sibling' | 'fused'`, default `supervisor`. Scoring stays on the supervisor in every placement.
+- `tools/tscheck/contained-route.mjs`: `check: 'supervisor' | 'sibling' | 'fused'`, default `fused` (see the override below; `supervisor` for `layout: 'process-per-cell'`). Scoring stays on the supervisor in every placement.
 - Tests: `tools/tscheck/test/cohort-check.test.mjs` covers verdict parity across all three placements on 10 candidates covering accepted, `typescript`, `tests` and `deadline`, a checker heap death per placement, and a cohort kill per placement.
 
 ## Not shown or unverified
