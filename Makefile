@@ -2,9 +2,9 @@ PYTHON ?= python3
 export PYTHONDONTWRITEBYTECODE := 1
 export ENDOFORGE_TEST_OUTPUT := $(CURDIR)/.test-work
 
-.PHONY: test test-optimized check core-test ledger-test engine-test isolate-test tscheck-setup tscheck-test tscheck-requalify atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test
+.PHONY: test test-optimized check core-test ledger-test engine-test isolate-test tscheck-setup tscheck-test tscheck-requalify atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test seeded-fault-test escape-test compatibility-test
 
-test: pipeline-test check core-test ledger-test engine-test isolate-test tscheck-test atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test
+test: pipeline-test check core-test ledger-test engine-test isolate-test tscheck-test atomizer-test harness-test hardware-test runtime-test lib-test portability-test factory-state-test seeded-fault-test escape-test compatibility-test kernel-test
 
 test-optimized:
 	PYTHONOPTIMIZE=1 $(MAKE) test PYTHON="$(PYTHON) -O"
@@ -63,3 +63,20 @@ factory-state-test:
 .PHONY: pipeline-test
 pipeline-test:
 	node --test core/runtime/test/x1.test.mjs core/runtime/test/generator*.test.mjs core/runtime/test/promotion.test.mjs
+
+seeded-fault-test:
+	$(PYTHON) -B -m unittest tools.seeded_faults.test_generator -v
+
+escape-test:
+	$(PYTHON) -B -m unittest tools.escape_harness.test_harness -v
+
+.PHONY: kernel-test
+kernel-test:
+	$(PYTHON) -B -m unittest tools.kernel.test_contract tools.kernel.test_workcell tools.kernel.test_broker tools.kernel.test_limits -v
+
+.PHONY: rust-lane-test
+rust-lane-test:
+	$(PYTHON) -B -m unittest tools.rust_lane.test_lane -v
+
+compatibility-test:
+	node --test tools/compatibility/*.test.mjs

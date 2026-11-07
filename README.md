@@ -12,7 +12,7 @@ Research software. The core contains the lifecycle model, evidence ledger, engin
 
 ## Quickstart
 
-Requirements: Python 3.11+, Node.js 20+, GNU Make, and bubblewrap for isolate checks.
+Requirements: Python 3.11+, Node.js 20+, GNU Make, bubblewrap for isolate checks, and the kernel tools in [tools/kernel/README.md](tools/kernel/README.md).
 
 Run from the repository root:
 

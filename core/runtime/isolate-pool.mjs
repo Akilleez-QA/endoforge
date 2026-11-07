@@ -190,7 +190,9 @@ export class IsolatePool {
         tail = (tail + chunk).slice(-8192);
         if (/FATAL ERROR:.*(?:heap out of memory|heap limit|Allocation failed)/i.test(tail)) cell.error = { code: 'ERR_WORKER_OUT_OF_MEMORY' };
       });
-      worker.postMessage = message => worker.send(message, error => { if (error) { cell.error = error; worker.kill(); } });
+      worker.postMessage = message => worker.send(message, error => {
+        if (error && cell.error?.code !== 'ERR_WORKCELL_DEADLINE') { cell.error = error; worker.kill(); }
+      });
       worker.terminate = () => new Promise(resolve => {
         const kill = setTimeout(() => worker.kill('SIGKILL'), killGraceMs);
         cell.gone.then(() => { clearTimeout(kill); resolve(); });
@@ -212,19 +214,19 @@ export class IsolatePool {
         clearTimeout(cell.warmTimer);
         return cell.markStarted(!result.warmError);
       }
-      if (!cell.job) return;
+      const job = cell.job;
+      if (!job || job.settled || job.deadlineFired) return;
       if (result.type === 'host_call' || result.type === 'host_frozen') return this.#answer(cell, result);
       if (result.type === 'limit') {
         cell.error = { code: result.error };
         return;
       }
-      const job = cell.job;
-      clearTimeout(job.deadline);
+      if (!this.#claim(job)) return;
       cell.job = null;
       this.#finish(job, { ...result, ...cell.metadata });
       this.#pump();
     });
-    worker.on('error', error => { cell.error = error; });
+    worker.on('error', error => { if (cell.error?.code !== 'ERR_WORKCELL_DEADLINE') cell.error = error; });
     let exited = false;
     let exitTimer;
     const gone = (code, signal) => {
@@ -238,8 +240,10 @@ export class IsolatePool {
       releaseCgroup(directory);
       if (subprocess && code === 18) cell.error = { code: 'ERR_WORKCELL_WASM_MEMORY_LIMIT' };
       const limited = ['ERR_WORKER_OUT_OF_MEMORY', 'ERR_WORKCELL_WASM_MEMORY_LIMIT'].includes(cell.error?.code);
-      if (cell.job) clearTimeout(cell.job.deadline);
-      if (cell.job) this.#finish(cell.job, { status: subprocess && limited ? 'rejected' : 'outcome_unknown',
+      const job = cell.job;
+      const claimed = this.#claim(job);
+      if (job) cell.job = null;
+      if (claimed) this.#finish(job, { status: subprocess && limited ? 'rejected' : 'outcome_unknown',
         reason: cell.error?.code === 'ERR_WORKCELL_DEADLINE' ? 'deadline' : limited ? (subprocess ? (cell.error.code === 'ERR_WORKER_OUT_OF_MEMORY' ? 'heap' : 'wasm_memory') : 'limit') : 'worker_exit',
         error: cell.error?.code || null, exitCode: code, signal: signal || null, report: null, ...cell.metadata,
         workcell: cell.id, resourceLimits: this.#limits, wasmMemoryMaxMb: this.#wasmMemoryMaxMb });
@@ -274,6 +278,8 @@ export class IsolatePool {
         cell ||= this.#spawn();
         cell.job = job;
         if (this.#jobTimeoutMs) job.deadline = setTimeout(() => {
+          if (job.settled) return;
+          job.deadlineFired = true;
           cell.error = { code: 'ERR_WORKCELL_DEADLINE' };
           cell.stopping = true;
           cell.worker.terminate();
@@ -282,9 +288,8 @@ export class IsolatePool {
         job.hostCalls = 0;
         cell.worker.postMessage({ reference, candidates, portOptions, hostPort: this.#hostPort, frozenThroughLedger: this.#frozenThroughLedger });
       } catch (error) {
-        clearTimeout(job.deadline);
-        if (cell) cell.job = null;
-        this.#finish(job, { status: 'outcome_unknown', reason: error.message,
+        if (cell?.job === job) cell.job = null;
+        if (this.#claim(job)) this.#finish(job, { status: 'outcome_unknown', reason: error.message,
           report: null, workcell: cell?.id ?? null, ...cell?.metadata, resourceLimits: this.#limits, wasmMemoryMaxMb: this.#wasmMemoryMaxMb });
       }
     }
@@ -300,6 +305,13 @@ export class IsolatePool {
       if (JSON.stringify(request).length > maxHostCallBytes) throw new Error('host-call-size');
       reply({ result: await this.#hostCalls(request, { candidates: job.data.candidates, workcell: cell.id }) });
     } catch (error) { reply({ error: error.message || String(error) }); }
+  }
+
+  #claim(job) {
+    if (!job || job.settled) return false;
+    job.settled = true;
+    clearTimeout(job.deadline);
+    return true;
   }
 
   async #finish(job, result) {
