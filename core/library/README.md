@@ -26,7 +26,7 @@ The key hashes per-export and positional, without export or argument names: argu
 | A declared range bound or its openness | Key |
 | A constant or threshold written as a numeral in the contract | Key |
 | Sign, or any behaviour the tests can see | Evaluator in the cell |
-| A variant the tests can't see | Discrimination gate refuses, if a wasm mutant or result wrapper of the kernel reaches it |
+| A variant the tests can't see | Discrimination gate refuses, if a wasm mutant or result wrapper of the kernel reaches it, or a declared bound of a trapping export is never tested from outside |
 
 Where it can't decide:
 
@@ -34,7 +34,7 @@ Where it can't decide:
 - A wrong label. Glue units and code labels aren't verified by any gate, so an admitted kernel can carry a unit it doesn't compute. A need declaring that unit matches, and only its tests stand in the way.
 - Unit aliases are a small closed table, and `F` and `C` read as temperature, not farad or coulomb. Any other spelling keeps its exact case and misses.
 - Equivalent contracts written with different numerals miss. That is a cost, not a soundness risk.
-- A fault the mutant set and probe grid can't reach. Both are bounded: 600 sites and 512 rows per export.
+- A fault the mutant set and probe grid can't reach. Both are bounded: 1,000 sites and 512 rows per export. The grid is finite, so a difference only on NaN or infinity isn't seen. P-53 served 16 of 92 seeded faults with an in-range witness when the need's frozen files matched the kernel's own.
 
 Two kernels with different fingerprints under one key prove the key doesn't pin the meaning, so that key is a miss, `ambiguous_key`.
 
@@ -50,4 +50,8 @@ A live need declares its capability in a fenced `capability` JSON block in the f
 
 Cells here are worker threads with the pool's heap limits and memory guard, but not `IsolatePool`: `evaluateCandidates` starts a Python process per frozen check, which the warm path must not do. The receipts live in their own hash chain, not `core/ledger`, whose schema has no reuse record.
 
-Run `make library-test`. Measurements: [P-53](../../experiments/P-53-library-v0/PRECOMMIT.md).
+## Not in v0
+
+Composition is one kernel with export names bound: no union of kernels, no pipeline from one output to another input, no argument adapters. Retrieval is a key match, not semantic search. Also deferred: tenant scoping, lineage scopes, reclamation (duplicates are flagged, not reclaimed), counterexamples narrowing search (refusals are journaled only), per-environment qualification records, permission checks on reuse, and a re-admitted reuse with transitive dependants.
+
+Run `make library-test`. Measurements: [P-53](../../experiments/P-53-library-v0/RESULT.md).
