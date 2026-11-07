@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { createContainedRoute } from '../contained-route.mjs';
+import { BASELINE, createContainedRoute } from '../contained-route.mjs';
+import { globalScopeKernels } from './global-scope-kernels.mjs';
 
 const candidate = (kernel, tests = [{ name: 'add', fn: 'add', args: [2, 3], expect: 5 }]) => ({ files: { 'kernel.ts': kernel, 'tests.json': JSON.stringify(tests) } });
 const add = body => `export function add(a: i32, b: i32): i32 { ${body} }`;
@@ -33,9 +34,26 @@ test('a check in the cohort gives the same verdicts as the check on the supervis
   assert.deepEqual(verdicts.fused, verdicts.supervisor);
 });
 
-for (const check of ['sibling', 'fused']) {
-  test(`${check}: a checker Worker that dies loses only its own attempt, as outcome_unknown, and it isn't run again`, { timeout: 180000 }, async t => {
-    const route = createContainedRoute({ check, width: 4, deadlineMs: 1000, checker: { checkDeadlineMs: 120000 } });
+const FRESH = { reuse: false, incremental: false };
+const CHEAPER = [['fused', { reuse: true, incremental: false }], ['fused', { reuse: false, incremental: true }], ['fused', {}], ['sibling', {}]];
+const label = (check, checker) => `${check}${checker.reuse === false ? '' : '+reuse'}${checker.incremental === false ? '' : '+baseline'}`;
+
+test('a reused instance and a host baseline give the fresh full check verdicts, including global-scope kernels', { timeout: 300000 }, async t => {
+  const corpus = [...CORPUS, candidate(BASELINE), ...globalScopeKernels().map(item => candidate(item.kernel))];
+  const verdictsOf = async (check, checker) => {
+    const route = createContainedRoute({ check, width: 4, deadlineMs: 300, checker });
+    t.after(() => route.close());
+    return Promise.all(corpus.map(item => route.check(item).then(verdict)));
+  };
+  const expected = await verdictsOf('fused', FRESH);
+  assert.ok(expected.every(item => item.status !== 'outcome_unknown'));
+  assert.ok(expected.filter(item => item.reason === 'typescript').length >= 20);
+  for (const [check, checker] of CHEAPER) assert.deepEqual(await verdictsOf(check, checker), expected, label(check, checker));
+});
+
+for (const [check, checker] of [['sibling', FRESH], ['fused', FRESH], ...CHEAPER]) {
+  test(`${label(check, checker)}: a checker Worker that dies loses only its own attempt, as outcome_unknown, and it isn't run again`, { timeout: 180000 }, async t => {
+    const route = createContainedRoute({ check, width: 4, deadlineMs: 1000, checker: { checkDeadlineMs: 120000, ...checker } });
     t.after(() => route.close());
     await route.ready();
     const good = CORPUS[0];
@@ -49,9 +67,9 @@ for (const check of ['sibling', 'fused']) {
     assert.equal((await route.check(good)).status, 'completed');
   });
 
-  test(`${check}: a cohort killed mid-check reports every attempt in flight outcome_unknown and retries none`, { timeout: 180000 }, async t => {
+  test(`${label(check, checker)}: a cohort killed mid-check reports every attempt in flight outcome_unknown and retries none`, { timeout: 180000 }, async t => {
     const width = 4;
-    const route = createContainedRoute({ check, width, deadlineMs: 1000 });
+    const route = createContainedRoute({ check, width, deadlineMs: 1000, checker });
     t.after(() => route.close());
     await route.ready();
     const slow = candidate(`${add('return a + b;')}\n${Array.from({ length: 4000 }, (_, index) => `export const v${index}: number = ${index};`).join('\n')}`);

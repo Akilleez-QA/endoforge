@@ -1,0 +1,108 @@
+{
+ "commit": "e965901bc4c87896bfb8bad338054e04508e1712",
+ "precommit": "59df00f8f626a19f798eaf0bfcaa02298f25093ee3278da05f3e15f215e7536b",
+ "testDouble": true,
+ "node": "v26.13.0",
+ "cpus": "AMD Ryzen 9 7950X 16-Core Processor",
+ "parallelism": 32,
+ "totalMemory": 134143877120,
+ "corpus": {
+  "digest": "35b10f688e9f383c0c1cfa2c14b5351c2215931bd6d4b214e210e976df772ea6",
+  "kernels": 21
+ },
+ "started": "2026-11-07T20:02:07.794Z",
+ "arms": {
+  "swarm-release-256": {
+   "waits": "release",
+   "size": 4,
+   "count": 256,
+   "width": 256,
+   "delay": [
+    2000,
+    4000
+   ],
+   "loadStart": 4.17,
+   "loadEnd": 5.31,
+   "label": "acceptance",
+   "wallMs": 31931.848596,
+   "throughputPerMinute": 481.02445286941816,
+   "promoted": 220,
+   "errors": 0,
+   "wrongVerdicts": [],
+   "nonModel": {
+    "n": 256,
+    "p50": 19330.931962999995,
+    "p95": 21201.497688000003,
+    "max": 21440.964527
+   },
+   "model": {
+    "n": 256,
+    "p50": 6000.335313,
+    "p95": 8887.152183000002,
+    "max": 11388.498510000001
+   },
+   "stages": {
+    "freeze": {
+     "n": 256,
+     "p50": 297.60540799999944,
+     "p95": 320.6541060000018,
+     "max": 336.21453699999984
+    },
+    "compile": {
+     "n": 256,
+     "p50": 47.031113999997615,
+     "p95": 62.77182299999913,
+     "max": 81.46343999999954
+    },
+    "gate": {
+     "n": 256,
+     "p50": 4.553191999999399,
+     "p95": 13.194924999999785,
+     "max": 17.51846899999873
+    },
+    "ledger": {
+     "n": 256,
+     "p50": 2453.601068,
+     "p95": 3440.532181999999,
+     "max": 3531.720378000002
+    }
+   },
+   "parkMs": {
+    "n": 292,
+    "p50": 235.23438200000237,
+    "p95": 1693.956049999997,
+    "max": 3525.4063459999998
+   },
+   "crossings": {
+    "bridgeRequestsPerCandidate": {
+     "admit": 1,
+     "park": 1.140625,
+     "commit": 1
+    },
+    "jobsPerCandidate": 3.140625
+   },
+   "busyAtSend": {
+    "values": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "sends": 548,
+    "zero": 12
+   },
+   "peakInFlight": 256,
+   "peakWaiting": 256,
+   "occupancy": 0.7056935286412694,
+   "usefulOccupancy": 0.7056935286412694,
+   "memory": {
+    "idleBytes": 2641620992,
+    "peakBytes": 2653052928,
+    "peakProcesses": 6,
+    "inFlightPerGiB": 103.60815046053993
+   }
+  }
+ },
+ "finished": "2026-11-07T20:02:43.584Z"
+}
