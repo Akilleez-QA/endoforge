@@ -35,6 +35,8 @@ Peak RSS is the largest `cellRssMiB` of the three reps, divided by 1,024. It was
 
 Throughput flattens by 8 cells and falls by 28. That is narrower than P-17's 20–32 for AssemblyScript kernels. This probe doesn't separate the compiler, the ledger, the evaluator's Python frozen check or the shared desktop as the cause.
 
+Added later, from [P-48](../P-48-width/RESULT.md): under `heavy-run`'s 1,792% CPU quota, every arm that reached the quota was throttled at 28 cells, so a quota can produce a fall at that width. This probe didn't record its CPU limit, so it can't say whether that explains the fall here.
+
 ## Breach
 
 **The first run failed:** 7 of 7 siblings lost and no replacement. It is kept as `breach_first_run_invalid`. The harness had lowered the heap to 256 MiB, and a healthy job alone, with no breach and no neighbour, also ran out of memory at that limit, which shows the arm did not test containment. It also shows that a `tsrs` cell needs more than 256 MiB of old generation on this input.
