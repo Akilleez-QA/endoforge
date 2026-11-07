@@ -4,7 +4,7 @@ Precommit: `PRECOMMIT.md` (56b2f60b…), committed before any lookup. The first 
 
 **On the shipped configuration, a lookup served 3 of 118 P-21 held-out needs (2.5%) and 45 of 59 add needs (76%). False hits were 0 of 5,493 where a need's tests carried the difference, and 5 of 1,958 on declared near-misses, all five degenerate. It also served 93 of 313 needs (30%) whose frozen files say exactly what the kernel's own say while a seeded fault lies hidden, 16 of them with a witness inside the declared range. That class can't reach 0 without a stronger evaluator, so activation stays off.** A hit saves about 15 s of a 48.6 s median need, not the whole need, because the specification turn still runs.
 
-This is a probe, not C12, and moves no rung.
+This is a probe, not C12, and moves no rung. The promotion verifier named in the precommit moved to `tools/library_verify_promotion.py` after both runs, because the core boundary test refuses its imports. Its code didn't change.
 
 ## Hit rate
 Leave one run out, six runs, with no model call. Each cell is hits over needs.
