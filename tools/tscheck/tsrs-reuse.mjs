@@ -42,7 +42,7 @@ export function createReusingRunTsc(core, { growthMb = REUSE_DEFAULTS.growthMb, 
   const host = Object.fromEntries(['readFile', 'stat', 'readDir', 'realpath', 'writeFile', 'remove', 'chtimes'].map(name => [name, (...args) => current.host[name](...args)]));
   const io = { env: {}, stdout: chunk => current.io.stdout?.(chunk), stderr: chunk => current.io.stderr?.(chunk),
     beforeRun: memory => current.io.beforeRun?.(memory), afterRun: memory => current.io.afterRun?.(memory) };
-  const stats = { instances: 0, reused: 0, discarded: 0 };
+  const stats = { instances: 0, reused: 0, discarded: 0, shed: 0 };
   let slot = null, image = shared ?? null;
   const fresh = module => {
     const state = { exited: false };
@@ -80,5 +80,13 @@ export function createReusingRunTsc(core, { growthMb = REUSE_DEFAULTS.growthMb, 
       current.request = null; current.host = null; current.io = null;
     }
   };
-  return { runTsc, stats };
+  const held = () => (slot ? Math.max(0, slot.instance.exports.memory.buffer.byteLength - image.start) : 0) + (image && image !== shared ? image.bytes.byteLength : 0);
+  const shed = () => {
+    if (current.request) return 0;
+    const freed = held();
+    if (slot) { slot = null; stats.shed += 1; }
+    if (image !== shared) image = shared ?? null;
+    return freed;
+  };
+  return { runTsc, stats, held, shed };
 }

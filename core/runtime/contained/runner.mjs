@@ -1,11 +1,13 @@
 import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
+import { dumpListEnabled, registerHolder } from '../dump-list.mjs';
 
 const source = name => readFileSync(new URL(name, import.meta.url), 'utf8');
 const positive = value => Number.isSafeInteger(value) && value > 0;
 const sha256 = text => createHash('sha256').update(text).digest('hex');
 export const LANE = 'compatibility';
+export const DUMP_DEFAULTS = Object.freeze({ name: 'endoforge-cohort', priority: 40, floor: 1, holdMs: 30000, intervalMs: 2000, settleMs: 1500 });
 const compareRuns = async (runner, job) => {
   const first = await runner.run(job), second = await runner.run(job);
   if (first.status !== second.status || first.output !== second.output || first.reason !== second.reason) return { ...first, status: 'refused', reason: 'nondeterministic', second: { status: second.status, reason: second.reason, outputSha256: second.outputSha256 } };
@@ -31,13 +33,14 @@ export function validateContract(contract = {}) {
 }
 
 export function createContainedRunner({ width = 1, spare = width, heapMb = 64, youngMb = 8, stackMb = 2, deadlineMs = 1000, outputMaxBytes = 1048576,
-  stuckMs = 1500, bootAllowanceMs = 5000, rssMaxMb, reuse = true, harden = true, execPath = process.execPath, cohortArgs, onCohort, sources = {}, prepare } = {}) {
+  stuckMs = 1500, bootAllowanceMs = 5000, rssMaxMb, reuse = true, harden = true, execPath = process.execPath, cohortArgs, onCohort, sources = {}, prepare, dumpList } = {}) {
   if (![width, spare, heapMb, youngMb, stackMb, deadlineMs, outputMaxBytes, stuckMs].every(positive)) throw new TypeError('positive integer limits required');
   const preparer = prepare ? preparerConfig(prepare, width) : null;
   const rssLimit = rssMaxMb ?? (heapMb + youngMb * 3 + 48) * (width + spare) + 256 + (preparer ? preparer.memoryMb * width + (preparer.layout === 'sibling' ? 48 * preparer.count : 0) : 0);
   const bootstrap = sources.guest || source('./guest.js'), cellSource = sources.cell || source('./cell.cjs');
+  const dump = dumpOptions(dumpList);
   const config = { width, spare, reuse, harden, stuckMs, bootstrap, resourceLimits: { maxOldGenerationSizeMb: heapMb, maxYoungGenerationSizeMb: youngMb, stackSizeMb: stackMb },
-    ...(preparer ? { prepare: preparer } : {}) };
+    ...(preparer ? { prepare: preparer } : {}), ...(dump ? { dump: { floor: dump.floor, holdMs: dump.holdMs, intervalMs: dump.intervalMs, settleMs: dump.settleMs } } : {}) };
   const args = cohortArgs || cohortArguments({ readPaths: preparer ? preparer.wasm.map(item => item.path) : [] });
   const inflight = new Map(), queue = [];
   let cohort, starting, nextId = 1, closed = false;
@@ -55,6 +58,7 @@ export function createContainedRunner({ width = 1, spare = width, heapMb = 64, y
     target.lost = true;
     stats.cohortLosses += 1;
     clearInterval(target.rssTimer);
+    target.holder?.close();
     try { target.child.kill('SIGKILL'); } catch {}
     if (cohort === target) { cohort = null; starting = null; }
     const fatal = target.tail.split('\n').find(line => /FATAL|Fatal/.test(line))?.slice(0, 160);
@@ -73,7 +77,19 @@ export function createContainedRunner({ width = 1, spare = width, heapMb = 64, y
     child.on('message', message => {
       stats.messages += 1;
       if (message.type === 'started') { stats.messages += 1; return child.send({ type: 'configure', config, cellSource }); }
-      if (message.type === 'configured') { target.pid = message.pid; cohort = target; onCohort?.(child.pid); return resolve(target); }
+      if (message.type === 'configured') {
+        target.pid = message.pid;
+        if (dump && message.dump && !target.lost) target.holder = registerHolder({ name: dump.name, priority: dump.priority, pid: message.pid, listen: false, measure: () => target.sheddable || 0, directory: dump.directory, env: dump.env, refreshMs: dump.intervalMs, enabled: true });
+        cohort = target;
+        onCohort?.(child.pid);
+        return resolve(target);
+      }
+      if (message.type === 'dump') {
+        target.sheddable = message.bytes;
+        target.dumpState = { live: message.live, idle: message.idle, holding: message.holding, ratio: message.ratio };
+        target.holder?.refresh(message.shed);
+        return;
+      }
       if (message.type === 'result') {
         const entry = inflight.get(message.id);
         if (entry) settle(entry, entry.attempt ? decodeAttempt(message.result, outputMaxBytes) : decode(message.result, outputMaxBytes));
@@ -140,6 +156,8 @@ export function createContainedRunner({ width = 1, spare = width, heapMb = 64, y
     stats,
     ready: () => start().then(() => undefined),
     get pid() { return cohort?.child.pid; },
+    get dump() { return cohort?.holder ? { path: cohort.holder.path, bytes: cohort.holder.bytes, writes: cohort.holder.writes, ...cohort.dumpState } : null; },
+    shed() { try { cohort?.child.send({ type: 'shed' }); } catch {} },
     run({ modules, entry, exportName = 'main', input = null, contract, deadlineMs: jobDeadline = deadlineMs, ports }) {
       if (closed) return Promise.reject(new Error('runner closed'));
       if (!positive(jobDeadline)) return Promise.reject(new TypeError('deadlineMs must be a positive integer'));
@@ -182,6 +200,7 @@ export function createContainedRunner({ width = 1, spare = width, heapMb = 64, y
       if (!target) return;
       clearInterval(target.rssTimer);
       target.lost = true;
+      target.holder?.close();
       await new Promise(resolve => {
         const force = setTimeout(() => target.child.kill('SIGKILL'), 1000);
         target.child.once('close', () => { clearTimeout(force); resolve(); });
@@ -189,6 +208,14 @@ export function createContainedRunner({ width = 1, spare = width, heapMb = 64, y
       });
     },
   };
+}
+function dumpOptions(options) {
+  if (options === false) return null;
+  const { enabled, directory, env = process.env, ...rest } = options && typeof options === 'object' ? options : {};
+  if (!(enabled ?? (options === true || directory !== undefined || dumpListEnabled(env)))) return null;
+  const merged = { ...DUMP_DEFAULTS, ...rest, directory, env };
+  if (![merged.floor + 1, merged.holdMs, merged.intervalMs, merged.settleMs].every(positive)) throw new TypeError('dump list floor, holdMs, intervalMs and settleMs must be non-negative and positive integers');
+  return merged;
 }
 // A preparer runs in the cohort before the guest: `fused` in the guest's own Worker, `sibling` in `count` checker
 // Workers of the same process. `memoryMb` is what one preparation may hold outside the V8 heap.
