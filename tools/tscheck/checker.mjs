@@ -46,8 +46,8 @@ function refuseInputs(root, files) {
   }
 }
 
-function programOf(root, host, infoPath) {
-  const { fileNames = [] } = JSON.parse(host.written.get(infoPath) ?? '{}');
+function programOf(root, info) {
+  const { fileNames = [] } = JSON.parse(info ?? '{}');
   return new Set(fileNames.filter(name => name.startsWith('./')).map(name => `${root}/${name.slice(2)}`));
 }
 
@@ -78,14 +78,17 @@ export async function warm({ vendor = VENDOR } = {}) {
   if (!loaded.has(String(vendor))) loaded.set(String(vendor), await load(vendor));
 }
 
-export async function typecheck(project, { emit = false, vendor = VENDOR } = {}) {
+export async function typecheck(project, { emit = false, vendor = VENDOR, buildInfo } = {}) {
+  if (emit && buildInfo !== undefined) throw new Error('emit needs a full check');
+  const incremental = buildInfo !== undefined;
   const key = String(vendor);
   const warm = loaded.has(key);
   if (!warm) loaded.set(key, await load(vendor));
   const { core, module, compileMs } = loaded.get(key);
   refuseInputs(project.root, project.files);
   const infoPath = `${project.root}/${INFO_NAME}`;
-  const files = project.tsconfig ? { ...project.files, [`${project.root}/tsconfig.json`]: JSON.stringify(project.tsconfig) } : project.files;
+  const files = { ...project.files, ...(project.tsconfig ? { [`${project.root}/tsconfig.json`]: JSON.stringify(project.tsconfig) } : {}),
+    ...(typeof buildInfo === 'string' ? { [infoPath]: buildInfo } : {}) };
   const host = core.memoryFileSystem(files);
   let stderr = '';
   const started = performance.now();
@@ -103,7 +106,7 @@ export async function typecheck(project, { emit = false, vendor = VENDOR } = {})
   }));
   if (result.exitCode !== 0 && !diagnostics.length) throw new Error(`tsrs failed without diagnostics: ${stderr.slice(0, 300)}`);
   const clean = !diagnostics.length;
-  const sources = clean ? checkedSources(project.root, files, programOf(project.root, host, infoPath)) : null;
+  const sources = clean ? checkedSources(project.root, files, programOf(project.root, host.written.get(infoPath) ?? files[infoPath])) : null;
   const written = Object.fromEntries([...host.written].filter(([path]) => path !== infoPath));
   if (emit && clean && !Object.keys(written).length) throw new Error('emit produced no files');
   if (emit && clean) for (const path of Object.keys(written)) {
@@ -119,6 +122,7 @@ export async function typecheck(project, { emit = false, vendor = VENDOR } = {})
     wallMs,
     memoryBytes: result.memoryBytes,
     checkedSources: sources,
+    ...(incremental ? { buildInfo: host.written.get(infoPath) ?? buildInfo } : {}),
     artifact: emit && clean
       ? { files: written, sha256: Object.fromEntries(Object.entries(written).map(([path, value]) => [path, sha256(value)])) }
       : null,
