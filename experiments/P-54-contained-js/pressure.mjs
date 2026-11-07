@@ -132,7 +132,7 @@ async function route() {
     if (rows.some(row => row.layout === layout && row.width === width)) continue;
     await gate();
     const loadStart = load(), created = performance.now();
-    const route = createContainedRoute({ width, deadlineMs: 2000, layout });
+    const route = createContainedRoute({ width, deadlineMs: 2000, layout, check: 'supervisor' });
     await route.ready();
     await Promise.all(Array.from({ length: width }, (_, index) => route.check(candidates[index % candidates.length])));
     const readyMs = performance.now() - created;

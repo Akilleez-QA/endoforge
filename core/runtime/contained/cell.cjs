@@ -38,8 +38,9 @@ function harden() {
 if (isMainThread) {
   module.exports = { runGuest };
 } else {
-  const { bootstrap } = workerData;
-  const flag = new Int32Array(workerData.flag);
+  const { bootstrap, role = 'guest' } = workerData;
+  const now = performance.now.bind(performance);
+  const flag = workerData.flag && new Int32Array(workerData.flag);
   const replies = workerData.replies;
   const post = parentPort.postMessage.bind(parentPort);
   const wait = Atomics.wait, store = Atomics.store, receive = receiveMessageOnPort;
@@ -53,11 +54,58 @@ if (isMainThread) {
       return reply && typeof reply.message === 'string' ? reply.message : '{"refused":"no reply"}';
     } catch { return '{"refused":"host"}'; }
   };
+  const message = error => String(error && error.message || error).slice(0, 512);
+  let prepare = null;
+  // A preparer (the type check) runs in this Worker's own realm before the guest's context exists. Its failure
+  // is the attempt's failure but not a verdict on the candidate: it comes back as `failure`, never as a refusal.
+  const check = payload => {
+    const started = now();
+    let out;
+    try { out = prepare(payload); } catch (error) { return { failure: { reason: 'checker_error', detail: message(error) }, checkMs: now() - started }; }
+    return { out, checkMs: now() - started };
+  };
+  // Each run's text goes back as soon as it exists, so a death in a later run doesn't lose an earlier one.
+  const runAll = (job, modules) => {
+    const started = now();
+    for (let index = 0; index < (job.repeat || 1); index++) {
+      let text;
+      try { text = runGuest({ ...job, modules }, hostCall, bootstrap); } catch (error) { text = refusal('host_error', error && error.message); }
+      post({ type: 'ran', text });
+    }
+    return now() - started;
+  };
   parentPort.on('message', job => {
-    let text;
-    try { text = runGuest(job, hostCall, bootstrap); } catch (error) { text = refusal('host_error', error && error.message); }
-    post({ type: 'result', text });
+    if (role === 'checker') {
+      const { out, failure, checkMs } = check(job.prepare);
+      return post({ type: 'result', checkMs, ...(failure ? { failure } : out) });
+    }
+    if (!job.prepare && !job.repeat) {
+      let text;
+      try { text = runGuest(job, hostCall, bootstrap); } catch (error) { text = refusal('host_error', error && error.message); }
+      return post({ type: 'result', text });
+    }
+    let modules = job.modules;
+    if (job.prepare) {
+      const { out, failure, checkMs } = check(job.prepare);
+      if (failure) return post({ type: 'result', failure, checkMs });
+      post({ type: 'checked', prepared: out.info, ok: out.ok, checkMs, ...(out.ok ? { modules: out.modules } : {}) });
+      if (!out.ok) return post({ type: 'result' });
+      modules = { ...out.modules, ...job.modules };
+    }
+    post({ type: 'result', runMs: runAll(job, modules) });
   });
-  if (workerData.harden) harden();
-  post({ type: 'ready' });
+  // The preparer's sources arrive as text, already checked against their pins by the supervisor, and are imported
+  // in order before the realm is hardened. Each gets the two globals tsrs's WASI shim reads bound at import time.
+  const load = async spec => {
+    const modules = {};
+    for (const { name, text } of spec.sources) {
+      const bound = `const performance = globalThis.performance, crypto = globalThis.crypto;\n${text}`;
+      modules[name] = await import(`data:text/javascript;base64,${Buffer.from(bound).toString('base64')}`);
+    }
+    prepare = modules[spec.entry].createPreparer({ modules, wasm: workerData.wasm, config: spec.config });
+  };
+  (workerData.prepare ? load(workerData.prepare) : Promise.resolve()).then(() => {
+    if (workerData.harden && role !== 'checker') harden();
+    post({ type: 'ready' });
+  }, error => { post({ type: 'boot_failed', detail: message(error) }); });
 }
