@@ -29,6 +29,7 @@ precommit hashed before measurement and a result that states what it does not sh
 | [P-48](P-48-width/PRECOMMIT.md) | What limits checker throughput at width: the evaluator's per-call frozen-check process, near 50–70 calls/s at any width; the compiler alone reached 96 checks/s; thread cells' shared address space is second; the ledger and desktop aren't the limit | [RESULT.md](P-48-width/RESULT.md) |
 | [P-49](P-49-incremental/PRECOMMIT.md) | `.tsbuildinfo` feedback between checks: one-file edit 65–80% faster, no diagnostic difference in 220 comparisons, widely imported type edit 18–33% slower | [RESULT.md](P-49-incremental/RESULT.md) |
 | [P-51](P-51-escape-rate/PRECOMMIT.md) | How often seeded faults get past the real gate path, no model calls: 441 of 7,883 kernel faults promoted (5.6%, sampled, not searched); at least 92.7% in a simulation where tests fully share the fault, a floor for that simulation and not an estimate of how often correlation happens; 86.5% of label-only glue faults | [RESULT.md](P-51-escape-rate/RESULT.md) |
+| [P-53](P-53-library-v0/PRECOMMIT.md) | Library v0: when a promoted kernel can stand in for generation, and when it serves the wrong one: 3/118 P-21 and 45/59 add held-out hits; 0/5,493 false hits where tests carry the fault, but 93/313 where nothing frozen differs; stays off | [RESULT.md](P-53-library-v0/RESULT.md) |
 
 Rebuild P-15 dependencies with `setup.sh` in its directory; `node_modules` is not committed.
 
