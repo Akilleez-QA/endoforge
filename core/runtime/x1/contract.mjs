@@ -16,7 +16,7 @@ export function exportBlocks(contract, names) {
   for (const line of lines) {
     const named = mention(line);
     if (named.length === 1) current = named[0];
-    else if (named.length > 1) current = null;
+    else if (named.length > 1 || /^#/.test(line)) current = null;
     (current ? blocks[current] : shared).push(line);
   }
   return { blocks, shared };
@@ -24,11 +24,12 @@ export function exportBlocks(contract, names) {
 const sentences = lines => lines.join('\n').split(/(?<=\.)\s+|\n/).filter(Boolean);
 export function nonFiniteExpectation(contract, names) {
   const { blocks, shared } = exportBlocks(contract, names);
+  const excluded = sentences(contract.split('\n')).some(sentence => excludes.test(sentence));
   return Object.fromEntries(names.map(name => {
     const relevant = sentences([...shared, ...blocks[name]]), any = pattern => relevant.some(sentence => pattern(sentence));
     if (any(s => permits.test(s) && !negated.test(s) && !trapVerb.test(s))) return [name, 'permitted'];
     if (any(s => (nonFinite.test(s) || statedFinite.test(s)) && trapVerb.test(s) && !aboutTests.test(s))) return [name, 'trap'];
-    if (any(s => excludes.test(s))) return [name, 'excluded'];
+    if (excluded) return [name, 'excluded'];
     if (any(s => promises.test(s) && !aboutTests.test(s))) return [name, 'finite'];
     return [name, 'silent'];
   }));
@@ -65,6 +66,16 @@ const nameFamily = name => {
 };
 const tokens = text => new Set(String(text).toLowerCase().split(/[^a-z0-9]+/).filter(word => word.length > 1));
 const overlap = (a, b) => [...tokens(a)].filter(word => tokens(b).has(word)).length;
+export function unitDisagreements(glue) {
+  const found = [];
+  for (const entry of glue.exports) {
+    for (const [label, unit] of [...entry.args.map(arg => [arg.name, arg.unit]), [entry.name, entry.result.unit]]) {
+      const fromName = nameFamily(label), fromUnit = unitFamily(unit);
+      if (fromName && fromUnit && fromName !== fromUnit) found.push(`${label}: glue unit ${unit} disagrees with the name, which says ${fromName}`);
+    }
+  }
+  return found;
+}
 export function glueProblems(glue, { source, contract }) {
   const problems = [], parameters = kernelParameters(source), names = glue.exports.map(entry => entry.name);
   const { blocks, shared } = exportBlocks(contract, names);
@@ -74,10 +85,6 @@ export function glueProblems(glue, { source, contract }) {
     const block = blocks[entry.name] ?? [], stated = lines => [...new Set([...lines.join('\n').matchAll(decimals)].map(match => words[match[1].toLowerCase()] ?? Number(match[1])))];
     const own = stated(block), expected = own.length ? own : stated([...shared, ...Object.values(blocks).flat()]);
     if (expected.length === 1 && Number.isInteger(entry.result.precision) && entry.result.precision !== expected[0]) problems.push(`${entry.name}: glue precision ${entry.result.precision}, contract states ${expected[0]} decimal places`);
-    for (const [label, unit] of [...entry.args.map(arg => [arg.name, arg.unit]), [entry.name, entry.result.unit]]) {
-      const fromName = nameFamily(label), fromUnit = unitFamily(unit);
-      if (fromName && fromUnit && fromName !== fromUnit) problems.push(`${label}: glue unit ${unit} disagrees with the name, which says ${fromName}`);
-    }
     if (entry.result.codes) {
       const table = new Map([...block.join('\n').matchAll(/(?<![\w.])(-?\d+)\s*(?:=|→|means)\s*([^,;\n]+)/g)].map(match => [match[1], match[2]]));
       const codes = Object.keys(entry.result.codes).filter(code => table.has(code));

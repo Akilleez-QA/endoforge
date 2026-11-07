@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import path from 'node:path';
 import { readFileSync } from 'node:fs';
-import { glueProblems, nonFiniteExpectation, probeProblem } from './contract.mjs';
+import { glueProblems, nonFiniteExpectation, probeProblem, unitDisagreements } from './contract.mjs';
 import { callKernel, freshKernel, kernelFuel, probeCalls } from './measure.mjs';
 import { loadKernel } from './meter.mjs';
 const glueSchema = JSON.parse(readFileSync(new URL('./glue.schema.json', import.meta.url)));
@@ -130,7 +130,9 @@ result.gates.G5_deterministic = { ok: same };
       }
     }
   }
-  result.gates.G7_glue = problems.length ? { ok: false, why: problems.slice(0, 20).join('; ') } : { ok: true };
+  let advisory = [];
+  try { advisory = unitDisagreements(JSON.parse(fs.readFileSync(f('glue.json'), 'utf8'))); } catch {}
+  result.gates.G7_glue = problems.length ? { ok: false, why: problems.slice(0, 20).join('; ') } : { ok: true, ...(advisory.length ? { advisory: advisory.slice(0, 20) } : {}) };
 }
 {
   const expected = nonFiniteExpectation(fs.readFileSync(f('CONTRACT.md'), 'utf8'), Object.keys(loaded.shape.functions));

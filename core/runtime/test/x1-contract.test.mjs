@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { hash } from '../x1/host.mjs';
 import { runGates } from '../x1/gates.mjs';
-import { glueProblems, kernelParameters, nonFiniteExpectation } from '../x1/contract.mjs';
+import { glueProblems, kernelParameters, nonFiniteExpectation, unitDisagreements } from '../x1/contract.mjs';
 import { candidate } from './fixtures/x1/candidate.mjs';
 import { wasm } from './fixtures/x1/wasm.mjs';
 const passThrough = { name: 'scale', params: ['f64'], results: ['f64'], body: [0x20, 0] };
@@ -65,10 +65,29 @@ test('kernel parameters survive comments and defaults', () => assert.deepEqual(k
 for (const [name, glue, contract, match] of [
   ['swapped argument names', glueFor([arg('tempF', 'F'), arg('massLb', 'lb')]), '', /differ from kernel parameters/],
   ['a renamed argument', glueFor([arg('mass', 'lb'), arg('tempF', 'F')]), '', /differ from kernel parameters/],
-  ['units swapped between arguments', glueFor([arg('massLb', '°F'), arg('tempF', 'lb')]), '', /disagrees with the name/],
   ['a changed precision', glueFor([arg('massLb', 'lb'), arg('tempF', '°F')], { kind: 'number', unit: '1', precision: 4 }), '`f(massLb, tempF)`\nShow 2 decimal places.', /contract states 2/],
   ['swapped code labels', glueFor([arg('massLb', 'lb'), arg('tempF', '°F')], { kind: 'code', unit: 'code', precision: 0, codes: { 0: 'too cold', 1: 'within range' } }), '`f(massLb, tempF)`\nCodes: 0 = within range, 1 = too cold.', /fit the contract better swapped/],
 ]) test(`G7 finds ${name}`, () => assert.match(glueProblems(glue, { source, contract }).join(), match));
+test('a unit that disagrees with a name is recorded, and never refuses', () => {
+  const glue = glueFor([arg('massLb', '°F'), arg('tempF', 'lb')]);
+  assert.match(unitDisagreements(glue).join(), /disagrees with the name/);
+  assert.deepEqual(glueProblems(glue, { source, contract: '' }), []);
+  const c = kernel(toZero, 'Results are finite numbers.');
+  c.files['kernel.ts'] = 'export function scale(valueF: f64): f64 { return 0 }';
+  c.compiled.source = hash(c.files['kernel.ts']);
+  c.files['glue.json'] = JSON.stringify({ ...JSON.parse(c.files['glue.json']), exports: [{ name: 'scale', label: 'Scale a value', args: [{ name: 'valueF', kind: 'number', unit: 'lb' }], result: { kind: 'number', unit: '1', precision: 2 } }] });
+  const result = runGates(c);
+  assert.equal(result.promotable, true, JSON.stringify(result.gates));
+  assert.equal(result.gates.G7_glue.advisory.length, 1);
+});
+test('an exclusion written under the last export still covers the others', () => {
+  const contract = 'Results are finite.\n\n`first(x: f64): f64`\nDouble it.\n\n`second(x: f64): f64`\nTriple it.\nNonfinite inputs are outside the caller contract.';
+  assert.deepEqual(nonFiniteExpectation(contract, ['first', 'second']), { first: 'excluded', second: 'excluded' });
+});
+test('a closing section is not read as part of the last export', () => {
+  const contract = 'Results are finite.\n\n`first(x: f64): f64`\nDouble it.\n\n`second(x: f64): f64`\nTriple it.\n\n## Tests\nNonfinite inputs are outside the caller contract.';
+  assert.deepEqual(nonFiniteExpectation(contract, ['first', 'second']), { first: 'excluded', second: 'excluded' });
+});
 test('G7 stays quiet when glue matches the kernel and contract', () => {
   const glue = glueFor([arg('massLb', 'lb'), arg('tempF', '°F difference')], { kind: 'code', unit: 'code', precision: 0, codes: { 0: 'within range', 1: 'too cold' } });
   assert.deepEqual(glueProblems(glue, { source, contract: '`f(massLb, tempF)`\nCodes: 0 = within range, 1 = too cold. Show 0 decimal places.' }), []);

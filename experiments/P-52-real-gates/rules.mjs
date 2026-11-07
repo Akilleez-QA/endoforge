@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { glueProblems, nonFiniteExpectation, probeProblem } from '../../core/runtime/x1/contract.mjs';
+import { glueProblems, nonFiniteExpectation, probeProblem, unitDisagreements } from '../../core/runtime/x1/contract.mjs';
 import { callKernel, freshKernel, kernelFuel, probeCalls } from '../../core/runtime/x1/measure.mjs';
 import { loadKernel } from '../../core/runtime/x1/meter.mjs';
 import { loadCorpus } from '../P-51-escape-rate/prepare.mjs';
@@ -23,7 +23,8 @@ const dropSuffix = name => name.replace(/([a-z0-9])[A-Z][A-Za-z0-9]*$/, '$1');
 for (const arm of ['cand', 'base']) for (const kernel of loadCorpus(corpusRoot, arm)) {
   const row = tally[split(kernel.key)], glue = JSON.parse(kernel.glue), base = { source: kernel.source, contract: kernel.contract };
   row.kernels++;
-  const problems = glueProblems(glue, base);
+  const problems = glueProblems(glue, base), advisory = unitDisagreements(glue);
+  if (advisory.length) { row.unit++; row.details.push(`${kernel.key} advisory: ${advisory.join(' | ')}`); }
   if (problems.length) { row.flagged++; row.details.push(`${kernel.key}: ${problems.join(' | ')}`); }
   for (const [kind] of kinds) if (problems.some(p => kindOf(p) === kind)) row[kind]++;
   if (baselines[kernel.key]) {
@@ -46,7 +47,7 @@ for (const arm of ['cand', 'base']) for (const kernel of loadCorpus(corpusRoot, 
       if (!next) return;
       count('whole argument entries in the wrong order', glueProblems(change(args => { [args[a], args[a + 1]] = [args[a + 1], args[a]]; }), base));
       count('names swapped, units and order kept', glueProblems(change(args => { [args[a].name, args[a + 1].name] = [args[a + 1].name, args[a].name]; }), base));
-      if (arg.unit !== next.unit) count('units swapped, names kept', glueProblems(change(args => { [args[a].unit, args[a + 1].unit] = [args[a + 1].unit, args[a].unit]; }), base));
+      if (arg.unit !== next.unit) count('units swapped, names kept', unitDisagreements(change(args => { [args[a].unit, args[a + 1].unit] = [args[a + 1].unit, args[a].unit]; })));
       const swapped = kernel.source.replace(new RegExp(`\\b(${arg.name})\\b(\\s*:[^,)]*,\\s*)\\b(${next.name})\\b`), `$3$2$1`);
       if (swapped !== kernel.source) count('same wrong order in kernel signature and glue', glueProblems(change(args => { [args[a].name, args[a + 1].name] = [args[a + 1].name, args[a].name]; }), { ...base, source: swapped }));
     });
