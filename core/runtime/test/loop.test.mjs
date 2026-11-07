@@ -155,7 +155,7 @@ for (const mode of ['change', 'add', 'delete', 'replace']) {
 test('a frozen tree change during the job is refused', async t => {
   const root = scratch(t), directory = join(root, 'addition');
   process.env.EF_MUTATE_FILE = join(directory, 'oracle', 'tests.json');
-  const pool = createLoopPool({ primes: 1, hostPort: stagePort });
+  const pool = createLoopPool({ primes: 1, isolation: 'thread', hostPort: stagePort });
   await pool.ready();
   delete process.env.EF_MUTATE_FILE;
   t.after(() => pool.close());
@@ -203,7 +203,7 @@ test('a self-consistent changed bundle and digest cannot promote', async t => {
 test('a change to the bundle held in the cell fails at the next verification', async t => {
   const root = scratch(t);
   process.env.EF_FLIP_ADMISSION = '1';
-  const pool = createLoopPool({ primes: 1, hostPort: stagePort });
+  const pool = createLoopPool({ primes: 1, hostPort: stagePort, cellEnv: { EF_FLIP_ADMISSION: '1' } });
   await pool.ready();
   delete process.env.EF_FLIP_ADMISSION;
   t.after(() => pool.close());
@@ -326,7 +326,7 @@ test('one admission serves many candidates and each commits once, batched into o
 test('a lost cell leaves an inconclusive receipt and no promotion', { timeout: 30000 }, async t => {
   const root = scratch(t);
   process.env.EF_KILL_STAGE = 'compile:read';
-  const pool = createLoopPool({ primes: 0, isolation: 'process', hostPort: stagePort });
+  const pool = createLoopPool({ primes: 0, isolation: 'process', hostPort: stagePort, cellEnv: { EF_KILL_STAGE: 'compile:read' } });
   await pool.ready();
   delete process.env.EF_KILL_STAGE;
   t.after(() => pool.close());

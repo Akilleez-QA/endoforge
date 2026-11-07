@@ -1,8 +1,11 @@
-import { parentPort, threadId, resourceLimits, workerData } from 'node:worker_threads';
+import { parentPort, threadId, resourceLimits, workerData, Worker } from 'node:worker_threads';
 import { evaluateCandidates } from '../engine/evaluator.mjs';
 import { installWasmLimit } from './isolate-wasm.mjs';
 
 const options = workerData || JSON.parse(process.argv[2]);
+if (!parentPort) new Worker(`const { workerData: parent } = require('node:worker_threads');
+setInterval(() => { if (process.ppid !== parent) process.kill(process.pid, 'SIGKILL'); }, 250);`, { eval: true, workerData: process.ppid,
+  resourceLimits: { maxOldGenerationSizeMb: 8, maxYoungGenerationSizeMb: 2 } }).unref();
 const { wasmMemoryMaxMb } = options;
 const send = result => parentPort ? parentPort.postMessage(result) : process.send(result);
 const metadata = { workcell: parentPort ? threadId : process.pid,
@@ -36,6 +39,7 @@ const host = call => new Promise((resolve, reject) => {
 });
 
 (parentPort || process).on('message', async message => {
+  if (message.type === 'ping') return send({ type: 'pong' });
   if (message.type === 'host-reply') {
     const reply = replies.get(message.id);
     replies.delete(message.id);

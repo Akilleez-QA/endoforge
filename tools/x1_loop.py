@@ -15,6 +15,11 @@ ORACLE_FILES = ("CONTRACT.md", "tests.json", "frozen.sha256")
 IMPLEMENTATION_FILES = ("host.mjs", "gates.mjs", "glue.schema.json", "loop-port.mjs", "agent.mjs")
 
 
+FREEZE_FACTS = dict(confirmed_by="none: frozen by the host with no reviewer",
+                    qualification="none: structural test checks only, no qualification receipt",
+                    synthesis_context=dict(id="need", candidate_blind="not_established", inputs=["input"]))
+
+
 def decide(records, tip, stored_hash, request):
     decision = dict(version=1, issuer="endoforge.local.x1", policy="X1-G1-G7/v1", scope="qualification",
                     candidate=request["candidate"], frozen_evaluator=request["reference"]["identity"],
@@ -82,13 +87,29 @@ def write_decision(result):
         store_decision(result["decision"], result.pop("decisionPath"))
 
 
-def admit(request, prior, append, _process, _db):
+def durable_promotion(record, prior, db):
+    db.execute(DECISIONS)
+    for receipt, candidate, body in db.execute("SELECT receipt, candidate, body FROM x1_decisions ORDER BY rowid"):
+        stored = db.execute("SELECT hash FROM records WHERE id=?", (receipt,)).fetchone()
+        decision = json.loads(body)
+        if stored is None or decision["decision"] != "promote":
+            continue
+        checked = decide(prior, stored[0], stored[0], dict(reference=dict(identity=record["id"]), candidate=candidate,
+                                                           receipt=dict(id=receipt, hash=stored[0])))
+        if checked["decision"] == "promote":
+            return decision
+    return None
+
+
+def admit(request, prior, append, _process, db):
     reference, payload = request["job"]["reference"], request["result"]
     if payload.get("resume"):
         frozen = [r for r in prior.values() if r["kind"] == "frozen_evaluator" and "freeze" in r["data"]]
         if not frozen:
-            raise ValueError("content-hashed frozen evaluator required")
+            return dict(fresh=True)
         record = frozen[-1]
+        if payload.get("need") is not None and prior["task"]["data"]["intent"] != payload["need"]:
+            raise ValueError("need differs from the task in this ledger")
         if frozen_drift(record, reference.get("root")):
             raise ValueError("running evaluator tree digest differs from frozen record")
     elif "identity" not in reference:
@@ -96,9 +117,7 @@ def admit(request, prior, append, _process, _db):
         append(dict(version=0, kind="task", id="task", data=dict(intent=need, acceptance="X1 G1-G7")))
         append(dict(version=0, kind="admitted_input", id="input", data=dict(task="task", content=need, origin="caller")))
         record = frozen_record(reference.get("root"), files=payload.get("files"), task="task", admitted_input="input",
-                               confirmed_by="freeze-before-code supervisor", qualification="X1 acceptance boundary",
-                               synthesis_context=dict(id="need", candidate_blind="confirmed", inputs=["input"]),
-                               configuration=payload["configuration"], residual="X1 G1-G7", invariant_version="1")
+                               **FREEZE_FACTS, configuration=payload["configuration"], residual="X1 G1-G7", invariant_version="1")
         append(record)
     else:
         record = prior.get(reference["identity"])
@@ -106,7 +125,11 @@ def admit(request, prior, append, _process, _db):
             raise ValueError("content-hashed frozen evaluator required")
         if frozen_drift(record, reference.get("root")):
             raise ValueError("running evaluator tree digest differs from frozen record")
-    return dict(identity=record["id"], digest=record["data"]["freeze"]["digest"], encoded=encode(record["data"]))
+    return dict(identity=record["id"], digest=record["data"]["freeze"]["digest"], encoded=encode(record["data"]),
+                decision=durable_promotion(record, prior, db))
+
+
+DECISIONS = "CREATE TABLE IF NOT EXISTS x1_decisions (receipt TEXT PRIMARY KEY, candidate TEXT NOT NULL, body TEXT NOT NULL)"
 
 
 def frozen_drift(record, root):
@@ -122,9 +145,10 @@ def frozen_drift(record, root):
                for name in IMPLEMENTATION_FILES)
 
 
-def value_meets(frozen, got):
+def value_meets(frozen, seen):
+    got = seen.get("got")
     if frozen.get("expectError"):
-        return isinstance(got, str)
+        return isinstance(got, str) and seen.get("trap") is True
     expect = frozen.get("expect")
     if isinstance(expect, bool):
         return bool(got) == expect or got == (1 if expect else 0)
@@ -171,7 +195,7 @@ def report_problem(record, candidate, result, sources):
             return "report does not cover the frozen tests"
         for frozen, seen in zip(tests, x1["tests"]):
             if (seen["fn"] != frozen["fn"] or seen["args"] != frozen["args"] or seen["pass"] is not True
-                    or not value_meets(frozen, seen.get("got"))):
+                    or not value_meets(frozen, seen)):
                 return "reported test result does not meet the frozen test"
     return None
 
@@ -199,8 +223,12 @@ def commit(request, prior, append, process, db):
     record = prior.get(reference["identity"])
     if record is None or record["kind"] != "frozen_evaluator" or "freeze" not in record["data"]:
         raise ValueError("content-hashed frozen evaluator required")
-    append(dict(version=0, kind="candidate", id=identity,
-                data=dict(task="task", admitted_input="input", content=content, proposer="configured generator")))
+    if identity not in prior:
+        append(dict(version=0, kind="candidate", id=identity,
+                    data=dict(task="task", admitted_input="input", content=content, proposer="configured generator")))
+    if payload.get("nextReceipt"):
+        attempt = 1 + sum(1 for r in prior.values() if r["kind"] == "receipt")
+        job["receipts"][0]["id"] = "receipt" if attempt == 1 else f"receipt-{attempt}"
     problem = evidence_problem(record, reference.get("root"), content, result, payload.get("sources"))
     if problem:
         result.update(status="rejected", reason=problem)
@@ -209,11 +237,11 @@ def commit(request, prior, append, process, db):
     decision = decide(prior, written["hash"], written["hash"],
                       dict(reference=reference, candidate=identity, receipt=dict(id=written["record"]["id"], hash=written["hash"])))
     answer = dict(receipts=receipts, decision=decision, problem=problem)
-    if "decisionPath" in payload:
+    if payload.get("decisionPath"):
         answer["decisionPath"] = payload["decisionPath"]
-    else:
-        db.execute("CREATE TABLE IF NOT EXISTS x1_decisions (candidate TEXT PRIMARY KEY, body TEXT NOT NULL)")
-        db.execute("INSERT INTO x1_decisions VALUES (?, ?)", (identity, json.dumps(decision, sort_keys=True)))
+    db.execute(DECISIONS)
+    db.execute("INSERT INTO x1_decisions (receipt, candidate, body) VALUES (?, ?, ?)",
+               (written["record"]["id"], identity, json.dumps(decision, sort_keys=True)))
     return answer
 
 

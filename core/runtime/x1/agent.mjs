@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { testProblems } from './gates.mjs';
 import { glueRules, glueTemplate, exactRule } from './generator.mjs';
 
 const glueSchema = JSON.parse(readFileSync(new URL('./glue.schema.json', import.meta.url)));
@@ -13,7 +14,7 @@ export const replySchema = Object.freeze({
 export const transportSystem = 'You turn prompts into structured replies. You have no tools and no files except the ones each prompt describes. Reply with one object: {"calls":[...]} and nothing else. Each call is {"name":"read_file","path":...}, {"name":"edit_file","path":...,"content":...}, {"name":"edit_file","path":...,"old":...,"new":...} replacing exactly one match, {"name":"check"} to compile and run the frozen checks, or {"name":"done"} when finished.';
 export const stagePrompts = {
   specification: ({ need, id }) => JSON.stringify({ stage: 'specification', need, id, glueRules, instructions:
-    `Write only CONTRACT.md and tests.json, CONTRACT.md under 40 lines. Do not write kernel.ts or glue.json yet. Define a pure bounded AssemblyScript kernel, explicit assumptions, exports and numeric tests. tests.json is a nonempty array of {name,fn,args,expect,tol?} or {name,fn,args,expectError:true}. Include boundary and trap cases. For every number result, state in CONTRACT.md the decimal places to show. These files will be frozen before implementation. ${exactRule} Send every file in one reply, then done.` }),
+    `Write only CONTRACT.md and tests.json, CONTRACT.md under 40 lines. Do not write kernel.ts or glue.json yet. Define a pure bounded AssemblyScript kernel, explicit assumptions, exports and numeric tests. tests.json is a nonempty array of {name,fn,args,expect,tol?} or {name,fn,args,expectError:true}. Include boundary and trap cases. For every number result, state in CONTRACT.md the decimal places to show. Every value test needs expect (a finite number, boolean or string); tol is at most 1% of expect; expectError tests must trap in the kernel. These files will be frozen before implementation. ${exactRule} Send every file in one reply, then done.` }),
   implementation: ({ id, overlay }) => JSON.stringify({ stage: 'implementation', id, ...(overlay ? { frozen: { 'CONTRACT.md': overlay['CONTRACT.md'], 'tests.json': overlay['tests.json'] } } : {}), glueSchema, glueRules, glueTemplate, instructions:
     'CONTRACT.md and tests.json are frozen; you can read them but not change them. Write kernel.ts and glue.json only. Use AssemblyScript 0.28.20, runtime stub, no imports except env.abort, explicit bounded memory. The compiler runs with --noAssert, which deletes assert() calls, so never use assert; make every expectError case trap with an explicit if (condition) abort() or throw. Implement all frozen tests and the closed glue schema; glue.id must equal id. glue.json must satisfy every rule in glueRules; glueTemplate shows the shape. Send every file in one reply, then done. A failed check comes back as your next prompt.' }),
 };
@@ -45,13 +46,17 @@ export function applyCall(overlay, editable, call) {
   overlay[path] = next;
   return { written: Buffer.byteLength(next) };
 }
+export function applyReply(overlay, editable, text) {
+  const parsed = parseReply(text);
+  if (!parsed || parsed.calls.length > MAX_CALLS) return;
+  for (const call of parsed.calls) if (call?.name === 'edit_file') applyCall(overlay, editable, call);
+}
 export function specificationProblems(overlay) {
   const problems = [];
   if (!overlay['CONTRACT.md']?.trim()) problems.push('CONTRACT.md is empty');
   let tests = null;
   try { tests = JSON.parse(overlay['tests.json'] ?? ''); } catch { problems.push('tests.json is not JSON'); }
-  if (tests !== null && !(Array.isArray(tests) && tests.length && tests.every(test => typeof test?.name === 'string' && typeof test?.fn === 'string' && Array.isArray(test?.args))))
-    problems.push('tests.json must be a nonempty array of {name,fn,args,...}');
+  if (tests !== null) problems.push(...testProblems(tests));
   return problems.length ? { problems } : null;
 }
 export async function agentStage({ ask, messages, overlay, editable, prompt, check, receipt, limits: { maxTurns, maxTokens } }) {

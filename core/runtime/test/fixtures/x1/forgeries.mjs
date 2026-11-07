@@ -27,7 +27,9 @@ export const forgeries = {
   'a frontier that names someone else': evaluated => { evaluated.observed.report.frontier = ['0'.repeat(64)]; },
   'a report for another candidate': evaluated => {
     const other = JSON.parse(evaluated.content);
-    other.files['glue.json'] = other.files['glue.json'].replace('Add two integers', 'Add two values');
+    const glue = JSON.parse(other.files['glue.json']);
+    glue.exports[0].label = `${glue.exports[0].label} for another candidate`;
+    other.files['glue.json'] = JSON.stringify(glue);
     evaluated.content = JSON.stringify(other);
   },
 };

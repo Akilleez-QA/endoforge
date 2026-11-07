@@ -1,14 +1,14 @@
 import assert from 'node:assert/strict';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { availableParallelism, cpus, totalmem } from 'node:os';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { availableParallelism, cpus, loadavg, totalmem } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createLoopPool } from '../../core/runtime/x1/loop.mjs';
 import { runNeed } from '../../core/runtime/x1/pipeline.mjs';
 import { IsolatePool } from '../../core/runtime/isolate-pool.mjs';
 import { hash } from '../../core/runtime/x1/host.mjs';
-import { good, seeds } from '../../core/runtime/test/fixtures/x1/seeds.mjs';
+import { good, seeds, weak } from '../../core/runtime/test/fixtures/x1/seeds.mjs';
 import { scriptedProvider } from '../../core/runtime/x1/transports.mjs';
 import { idOf, implementation, reply, specification } from '../../core/runtime/test/fixtures/x1/scripted-model.mjs';
 import { candidate } from '../../core/runtime/test/fixtures/x1/candidate.mjs';
@@ -19,7 +19,7 @@ import { counts, windows } from './analyze.mjs';
 const here = path => fileURLToPath(new URL(path, import.meta.url));
 const [outputArg, stampArg, ...selected] = process.argv.slice(2);
 const output = resolve(outputArg), receiptDirectory = here(`./receipt/${stampArg}`);
-assert.equal(readFileSync(here('./receipt/precommit.sha256'), 'utf8').trim(), hash(readFileSync(here('./PRECOMMIT.md'))));
+assert.equal(readFileSync(here('./receipt/precommit.sha256'), 'utf8').trim().split('\n').at(-1), hash(readFileSync(here('./PRECOMMIT.md'))));
 mkdirSync(output, { recursive: true }); mkdirSync(receiptDirectory, { recursive: true });
 const clientEnv = { CODEX_HOME: join(output, 'unused-home'), ENDOFORGE_CODEX_TEST_DOUBLE: '1', ENDOFORGE_ASC_CMD: here('../../tools/asc/node_modules/.bin/asc'),
   ENDOFORGE_CODEX_CMD: JSON.stringify([process.execPath, here('../../core/runtime/test/fixtures/x1/fake-codex.mjs')]) };
@@ -42,6 +42,7 @@ const armNames = { current: ['current', 1, 5], 'isolate-thread': ['isolate-threa
   'current-8': ['current', 8, 3], 'isolate-thread-8': ['isolate-thread', 8, 3], 'isolate-process-8': ['isolate-process', 8, 3],
   'agent-thread': ['agent-thread', 1, 5], 'agent-process': ['agent-process', 1, 5], 'agent-thread-8': ['agent-thread', 8, 3], 'agent-process-8': ['agent-process', 8, 3] };
 const gateVector = async directory => {
+  if (!existsSync(join(directory, 'ledger.sqlite'))) return null;
   const records = await python(`
 import json, sys
 from core.ledger.ledger import Ledger
@@ -57,11 +58,12 @@ print(json.dumps(Ledger(json.load(sys.stdin)['ledger']).records()))
 const corpus = await buildCorpus();
 for (const entry of corpus) known.set(entry.name, entry);
 const corpusDigest = hash(JSON.stringify(corpus));
-const result = { commit: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: here('../../'), encoding: 'utf8' }).trim(), precommit: readFileSync(here('./receipt/precommit.sha256'), 'utf8').trim(), testDouble: true, node: process.version, cpus: cpus()[0]?.model, parallelism: availableParallelism(), totalMemory: totalmem(),
+const result = { commit: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: here('../../'), encoding: 'utf8' }).trim(), precommit: readFileSync(here('./receipt/precommit.sha256'), 'utf8').trim().split('\n').at(-1), testDouble: true, node: process.version, cpus: cpus()[0]?.model, parallelism: availableParallelism(), totalMemory: totalmem(),
   corpus: { digest: corpusDigest, kernels: corpus.length, expectPromoted: corpus.filter(entry => entry.expectPromoted).length }, started: new Date().toISOString(), arms: {}, counting: {}, parity: null };
 const rowsByArm = {};
 async function timing(name) {
   const [arm, size, reps] = armNames[name];
+  const loadStart = loadavg()[0];
   const pool = makePool(arm, size), began = performance.now();
   await pool.ready();
   const readyMs = performance.now() - began, rows = [], base = join(output, name);
@@ -82,7 +84,8 @@ async function timing(name) {
   const wallMs = performance.now() - wallStart;
   await pool.close();
   rowsByArm[name] = rows;
-  result.arms[name] = { size, reps, readyMs, wallMs, records: rows.length, promoted: rows.filter(row => row.promoted).length, errors: rows.filter(row => row.error).length,
+  const loadEnd = loadavg()[0];
+  result.arms[name] = { loadStart, loadEnd, label: Math.max(loadStart, loadEnd) > 16 ? 'loaded, not for acceptance' : 'acceptance', size, reps, readyMs, wallMs, records: rows.length, promoted: rows.filter(row => row.promoted).length, errors: rows.filter(row => row.error).length,
     nonModel: stat(rows.map(row => row.nonModel)), nonModelPromoted: stat(rows.filter(row => row.promoted).map(row => row.nonModel)),
     stages: Object.fromEntries(['freeze', 'compile', 'gate', 'ledger', 'promote'].map(stage => [stage, stat(rows.map(row => row.stages[stage]).filter(Number.isFinite))])),
     wrongVerdicts: rows.filter(row => row.promoted !== corpus.find(entry => entry.name === row.name).expectPromoted).map(row => `${row.name}-${row.rep}`) };
@@ -109,7 +112,8 @@ function counting(arm, inputs) {
 }
 async function parity(arms = ['current', 'isolate-thread', 'isolate-process']) {
   const { files } = candidate();
-  const inputs = [...corpus.map(entry => ({ ...entry, slow: false })), ...[good, ...seeds].map(seed => ({ name: `seed-${seed.name}`, contract: files['CONTRACT.md'], tests: files['tests.json'], kernel: seed.kernel, glue: seed.glue, slow: seed.slow, seeded: true }))];
+  const inputs = [...corpus.map(entry => ({ ...entry, slow: false })), ...[good, ...seeds].map(seed => ({ name: `seed-${seed.name}`, contract: files['CONTRACT.md'], tests: files['tests.json'], kernel: seed.kernel, glue: seed.glue, slow: seed.slow, seeded: true })),
+    ...(arms.includes('agent-process') ? Object.entries(weak).map(([name, entry], index) => ({ name: `weak-${index}`, label: name, contract: 'Synthetic contract for one kernel.', tests: entry.raw ?? JSON.stringify(entry.tests), kernel: entry.kernel, glue: entry.glue, seeded: true })) : [])];
   const answers = {};
   for (const input of inputs) known.set(input.name, input);
   for (const arm of arms) {
@@ -122,8 +126,13 @@ async function parity(arms = ['current', 'isolate-thread', 'isolate-process']) {
       const answer = await runNeed({ need: `TEST DOUBLE ONLY: ${input.name}`, directory, pool, env: envFor(arm, input), limits: agentLimits });
       answers[arm][input.name] = { promoted: answer.promoted, error: answer.error ?? null, vector: await gateVector(directory) };
     }
+    if (arms.includes('agent-process')) for (const [name, options] of [['expired-deadline', { deadline: Date.now() - 60000 }], ['blank-need', { need: '   ' }]]) {
+      const input = known.get('add'), answer = await runNeed({ need: `TEST DOUBLE ONLY: ${input.name}`, directory: join(base, name), pool, env: envFor(arm, input), limits: agentLimits, ...options });
+      answers[arm][name] = { promoted: answer.promoted, error: answer.error ?? null, vector: await gateVector(join(base, name)) };
+    }
     await pool.close();
   }
+  if (arms.includes('agent-process')) inputs.push({ name: 'expired-deadline' }, { name: 'blank-need' });
   const differences = inputs.flatMap(input => arms.slice(1).flatMap(arm => JSON.stringify([answers[arm][input.name].promoted, answers[arm][input.name].vector]) === JSON.stringify([answers.current[input.name].promoted, answers.current[input.name].vector]) ? [] : [{ input: input.name, arm, current: answers.current[input.name], other: answers[arm][input.name] }]));
   const expectation = name => name === 'seed-good' || (corpus.find(entry => entry.name === name)?.expectPromoted ?? false);
   const wrong = inputs.filter(input => arms.some(arm => answers[arm][input.name].promoted !== expectation(input.name))).map(input => input.name);

@@ -59,6 +59,7 @@ for (const isolation of ['thread', 'process']) {
         assert.deepEqual(seen.ids, [...before, 'candidate', 'receipt']);
         assert.equal(seen.outcome, 'inconclusive');
         assert.equal(decision(directory), 'refuse');
+        await verifyRerun(root, directory, seen.evaluator, isolation);
       }
     });
   }
@@ -87,6 +88,7 @@ test('SIGKILL of the supervisor just after the commit request stays consistent a
     assert.deepEqual(seen.ids, [...before, 'candidate', 'receipt']);
     assert.equal(seen.outcome, 'passed');
   } else assert.deepEqual(seen.ids, before);
+  await verifyRerun(root, directory, seen.evaluator, 'thread');
 });
 
 const bridgeEnv = point => ({ PYTHONPATH: `${crashSite}:${repository}`, EF_BRIDGE_KILL: point });
@@ -114,6 +116,7 @@ for (const point of ['after_commit', 'after_decision']) {
     assert.deepEqual(seen.ids, [...before, 'candidate', 'receipt']);
     assert.equal(seen.outcome, 'passed');
     assert.equal(decision(directory), point === 'after_decision' ? 'promote' : null);
+    await verifyRerun(root, directory, seen.evaluator, 'thread');
   });
 }
 
@@ -171,7 +174,7 @@ from pathlib import Path
 path = Path(json.load(sys.stdin)['directory']) / 'ledger.sqlite'
 db = sqlite3.connect(path) if path.exists() else None
 try:
-    row = db.execute('SELECT body FROM x1_decisions').fetchone() if db else None
+    row = db.execute('SELECT body FROM x1_decisions ORDER BY rowid DESC').fetchone() if db else None
 except sqlite3.OperationalError:
     row = None
 print(json.dumps(json.loads(row[0])['decision'] if row else None))
@@ -187,6 +190,8 @@ for (const isolation of ['thread', 'process']) {
       if (stage === 'model:wait') await agentNoRecords(directory);
       else if (isolation === 'thread') { assert.deepEqual(seen.ids, before); assert.equal(await agentDecision(directory), null); }
       else { assert.deepEqual(seen.ids, [...before, 'candidate', 'receipt']); assert.equal(seen.outcome, 'inconclusive'); assert.equal(await agentDecision(directory), 'refuse'); }
+      const again = await launch({ root, directory, isolation, agent: true, resume: true });
+      assert.equal(again.result.promoted, true, JSON.stringify(again.result));
     });
   }
 }
@@ -198,11 +203,9 @@ for (const stage of ['model', 'admitting', 'admitted', 'committing']) {
     const seen = await state(directory);
     assert(!seen.ids.includes('candidate'));
     assert.equal(await agentDecision(directory), null);
-    if (seen.ids.length) {
-      assert.deepEqual(seen.ids, before);
-      const again = await launch({ root, directory, agent: true, resume: true });
-      assert.equal(again.result.promoted, true, JSON.stringify(again.result));
-    }
+    if (seen.ids.length) assert.deepEqual(seen.ids, before);
+    const again = await launch({ root, directory, agent: true, resume: true });
+    assert.equal(again.result.promoted, true, JSON.stringify(again.result));
   });
 }
 for (const point of ['admit_start', 'admit_before_commit', 'commit_start', 'after_register', 'after_receipt', 'before_commit']) {
@@ -213,6 +216,8 @@ for (const point of ['admit_start', 'admit_before_commit', 'commit_start', 'afte
     const seen = await state(directory);
     assert.deepEqual(seen.ids, point.startsWith('admit') ? [] : before);
     assert.equal(await agentDecision(directory), null);
+    const again = await launch({ root, directory, agent: true, resume: true });
+    assert.equal(again.result.promoted, true, JSON.stringify(again.result));
   });
 }
 for (const point of ['after_db_commit']) {
@@ -224,5 +229,8 @@ for (const point of ['after_db_commit']) {
     assert.deepEqual(seen.ids, [...before, 'candidate', 'receipt']);
     assert.equal(seen.outcome, 'passed');
     assert.equal(await agentDecision(directory), 'promote');
+    const again = await launch({ root, directory, agent: true, resume: true });
+    assert.equal(again.result.promoted, true, JSON.stringify(again.result));
+    assert.equal(again.result.resumed, true);
   });
 }

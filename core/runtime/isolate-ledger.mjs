@@ -59,10 +59,11 @@ export function ledgerRequest(action, job, result) {
 }
 
 export const persistentBridge = `
-import json, os, select, sys
+import importlib, json, os, select, sqlite3, sys
 from core.ledger.ledger import Ledger, validate
-import sqlite3
-from tools.x1_loop import LOOP, write_decision
+extension = importlib.import_module(sys.argv[1]) if len(sys.argv) > 1 else None
+LOOP = extension.LOOP if extension else {}
+write_decision = extension.write_decision if extension else (lambda result: None)
 ${operation}
 paths = {}
 sys.stdout.write(json.dumps(dict(id=0, result='ready')) + '\\n')
@@ -142,6 +143,20 @@ export class LedgerBridge {
   #failure;
   #exit;
   #started;
+  #extension;
+  #restart;
+  #restarts = 0;
+  #ready = false;
+  #closing = false;
+
+  constructor({ extension, restart = false } = {}) {
+    this.#extension = extension;
+    this.#restart = restart;
+  }
+
+  get failed() {
+    return Boolean(this.#failure);
+  }
 
   request(action, job, result) {
     if (this.#failure) return Promise.reject(this.#failure);
@@ -161,12 +176,18 @@ export class LedgerBridge {
   start() {
     if (this.#failure) return Promise.reject(this.#failure);
     if (!this.#child) {
-      const child = this.#child = spawn('python3', ['-B', '-c', persistentBridge], {
+      const child = this.#child = spawn('python3', ['-B', '-c', persistentBridge, ...(this.#extension ? [this.#extension] : [])], {
         cwd: fileURLToPath(new URL('../../', import.meta.url)), stdio: ['pipe', 'pipe', 'pipe'],
       });
       const fail = error => {
-        this.#failure ||= new Error(`isolate ledger bridge failed: ${error.message}`);
-        for (const pending of this.#pending.values()) pending.reject(this.#failure);
+        if (this.#child !== child) return;
+        const failure = new Error(`isolate ledger bridge failed: ${error.message}`);
+        if (this.#restart && this.#ready && !this.#closing && this.#restarts < 3) {
+          this.#restarts += 1;
+          this.#child = this.#started = null;
+          this.#ready = false;
+        } else this.#failure ||= failure;
+        for (const pending of this.#pending.values()) pending.reject(this.#failure ?? failure);
         this.#pending.clear();
       };
       this.#exit = new Promise(resolve => child.once('close', (code, signal) => {
@@ -182,6 +203,8 @@ export class LedgerBridge {
           const pending = this.#pending.get(response.id);
           if (!pending) throw new Error('unknown response id');
           this.#pending.delete(response.id);
+          if (response.id === 0) this.#ready = true;
+          else if (response.error === undefined) this.#restarts = 0;
           if (response.error !== undefined) pending.reject(new Error(`isolate ledger ${pending.action} failed: ${response.error}`));
           else pending.resolve(response.result);
         } catch (error) { fail(error); child.kill(); }
@@ -192,7 +215,8 @@ export class LedgerBridge {
   }
 
   async close() {
-    if (!this.#child) return;
+    this.#closing = true;
+    if (!this.#child) { this.#failure ||= new Error('isolate ledger bridge closed'); return; }
     await Promise.allSettled([...this.#pending.values()].map(pending => new Promise(resolve => {
       const done = pending.resolve, failed = pending.reject;
       pending.resolve = value => { done(value); resolve(); };

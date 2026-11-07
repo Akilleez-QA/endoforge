@@ -1,0 +1,54 @@
+Run of the review regression test file after the fixes, on the working tree that became the next commit. Load (1, 5, 15 min) at start and end below.
+start 2026-11-06T22:19:46-05:00 4.45 3.76 8.75
+end 2026-11-06T22:21:09-05:00 rc=0 9.52 5.45 8.90
+✔ 1, 12: both paths refuse a wrong kernel under an unbounded tolerance
+✔ 1, 12: both paths refuse a test that asserts nothing
+✔ 1, 12: both paths refuse expectError met by a JavaScript type error, not a trap
+✔ 1, 12: both paths refuse expect as an array
+✔ 1, 12: both paths refuse expect that parses to infinity
+✔ 1, 12: both paths refuse an integer expectation past exact range
+✔ 1: expectError on a real trap still passes, in both paths
+✔ 1: the freeze record says what is known, not a blanket confirmation
+✔ 2: the agent path refuses a forged report: evaluator digest in the report
+✔ 2: the agent path refuses a forged report: evaluator digest in an attempt
+✔ 2: the agent path refuses a forged report: evaluator identity in the report
+✔ 2: the agent path refuses a forged report: a failing gate left in place
+✔ 2: the agent path refuses a forged report: a gate removed
+✔ 2: the agent path refuses a forged report: a missing round
+✔ 2: the agent path refuses a forged report: tests dropped from the report
+✔ 2: the agent path refuses a forged report: a value that misses its expectation marked as passing
+✔ 2: the agent path refuses a forged report: a module digest that is not the candidate
+✔ 2: the agent path refuses a forged report: a kernel swapped by the cell
+✔ 2: the agent path refuses a forged report: a frontier that names someone else
+✔ 2: the agent path refuses a forged report: a report for another candidate
+✔ 2: a kernel swapped with its module kept is refused on the agent path, and an unforged run promotes
+✔ 3: a transport failure after admission loses the attempt, and the task promotes on resume
+✔ 3: a process cell killed after admission loses the attempt, and the task promotes on resume
+✔ 3: resume returns a durable promotion without a model call
+✔ 4: an expired deadline and a blank need stop before any model call, as on the current path
+✔ 4: a deadline reached between turns stops the attempt
+✔ 5: the queue for a lane is bounded
+✔ 5: a rate-limited lane is rechecked after it resets
+✔ 5: a job stuck on the transport ends, and pool.close stays bounded
+✔ 6: ending a session with a turn pending retires the lane, and the next session gets its own reply
+✔ 7: a bridge death does not poison the pool, and no specification turn is spent on a dead bridge
+✔ 7: a bridge that cannot start halts the pool honestly, before any model call
+✔ 8: host calls do not extend a job, and a cell spinning during a call is stopped
+✔ 8: the host limits model calls and tokens, whatever the cell asks
+✔ 8: a provider refuses a turn past its remaining budget
+✔ 9: a process cell in a tight loop dies with a killed supervisor
+✔ 10: the spawn transport refuses an API key source
+✔ 10: warm fails closed with no init, refuses key variables, and sends no prompt before init
+✔ 11: the default cell is a separate process that cannot read the environment or other files
+✔ 13: reaching the turn or token limit does not promote, even with a good kernel in the overlay
+✔ 13: cache reads count against the token budget
+✔ 14: the counter sees writes on an open file and memfd, not only opens
+✔ 15: a generic pool does not need the X1 ledger policy
+ℹ tests 43
+ℹ suites 0
+ℹ pass 43
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 83178.19395

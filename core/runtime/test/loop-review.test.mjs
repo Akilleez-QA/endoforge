@@ -15,7 +15,7 @@ import { scriptedProvider, SpawnClaudeTransport, WarmClaudeTransport } from '../
 import { candidate } from './fixtures/x1/candidate.mjs';
 import { forgeries } from './fixtures/x1/forgeries.mjs';
 import { idOf, implementation, inputFor, modelFor, reply, specification, stageOf } from './fixtures/x1/scripted-model.mjs';
-import { good, seeds } from './fixtures/x1/seeds.mjs';
+import { good, seeds, weak } from './fixtures/x1/seeds.mjs';
 import { python } from './fixtures/ledger-fixture.mjs';
 
 const here = path => fileURLToPath(new URL(path, import.meta.url));
@@ -43,18 +43,13 @@ import json, sys
 from core.ledger.ledger import Ledger
 print(json.dumps(Ledger(json.load(sys.stdin)['ledger']).records()))
 `, { ledger: ledgerPath });
+const decisions = directory => python(`
+import json, sqlite3, sys
+from pathlib import Path
+db = sqlite3.connect(Path(json.load(sys.stdin)['directory']) / 'ledger.sqlite')
+print(json.dumps([json.loads(body)['decision'] for body, in db.execute('SELECT body FROM x1_decisions ORDER BY rowid')]))
+`, { directory });
 const baseEnv = root => ({ ...process.env, CODEX_HOME: join(root, 'h'), ENDOFORGE_CODEX_TEST_DOUBLE: '1', ENDOFORGE_ASC_CMD: asc, ENDOFORGE_CODEX_CMD: JSON.stringify([process.execPath, here('./fixtures/x1/fake-codex.mjs')]) });
-const glueFor = (name, args, result) => JSON.stringify({ id: 'x', assumption: 'Inputs are synthetic integers for this check.', question: 'Do these synthetic exports answer the question?',
-  exports: [{ name, label: `Call ${name}`, args: args.map(arg => ({ name: arg, kind: 'integer', unit: '1' })), result: { kind: 'integer', unit: '1' } }], traps: [] });
-const weak = {
-  'a wrong kernel under an unbounded tolerance': { tests: [{ name: 't', fn: 'add', args: [2, 3], expect: 5, tol: 1e308 }], kernel: seeds[1].kernel, glue: good.glue },
-  'a test that asserts nothing': { tests: [{ name: 't', fn: 'add', args: [2, 3] }], kernel: 'export function add(a:i32,b:i32):void{}', glue: good.glue },
-  'expectError met by a JavaScript type error, not a trap': { tests: [{ name: 't', fn: 'add', args: [2, 3], expectError: true }], kernel: 'export function add(a:i64,b:i64):i64{return a-b}',
-    glue: JSON.stringify({ ...JSON.parse(good.glue), traps: [{ fn: 'add', when: 'inputs are out of range', message: 'Out of range input.' }] }) },
-  'expect as an array': { tests: [{ name: 't', fn: 'add', args: [2, 3], expect: [5] }], kernel: good.kernel, glue: good.glue },
-  'expect that parses to infinity': { raw: '[{"name":"t","fn":"add","args":[2,3],"expect":1e400}]', kernel: 'export function add(a:i32,b:i32):f64{return 1.0/0.0}', glue: good.glue },
-  'an integer expectation past exact range': { raw: '[{"name":"t","fn":"big","args":[],"expect":9007199254740993}]', kernel: 'export function big():i64{return 9007199254740993}', glue: glueFor('big', [], {}) },
-};
 const inputOf = entry => inputFor('Synthetic contract for one kernel.', entry.raw ?? JSON.stringify(entry.tests), entry.kernel, entry.glue);
 
 for (const [name, entry] of Object.entries(weak)) {
@@ -68,7 +63,8 @@ for (const [name, entry] of Object.entries(weak)) {
       env: { ...baseEnv(root), FAKE_CODEX_CONTRACT: input.contract, FAKE_CODEX_TESTS: input.tests, FAKE_CODEX_KERNEL: input.kernel, FAKE_CODEX_GLUE: input.glue } });
     assert.equal(right.promoted, false, 'agent');
     assert.equal(left.promoted, false, 'current');
-    assert.equal(existsSync(join(root, 'agent', 'ledger.sqlite')), false);
+    if (entry.refusedAt !== 'evaluation') assert.equal(existsSync(join(root, 'agent', 'ledger.sqlite')), false);
+    else assert.deepEqual(await decisions(join(root, 'agent')), ['refuse']);
   });
 }
 
@@ -231,7 +227,8 @@ test('6: ending a session with a turn pending retires the lane, and the next ses
   const root = scratch(t), warm = warmTransport(root, { timeoutMs: 3000, environment: { FAKE_CLAUDE_MS: '300' } });
   t.after(() => warm.close());
   const pending = warm.send({ session: 'A', messages: say('A-turn') }).then(() => 'resolved', () => 'rejected');
-  await new Promise(resolve => setTimeout(resolve, 50));
+  const received = () => existsSync(join(root, 'log')) && logOf(root).some(line => line.text?.includes('A-turn'));
+  while (!received()) await new Promise(resolve => setTimeout(resolve, 10));
   warm.endSession('A');
   const first = await warm.send({ session: 'B', messages: say('B1') });
   assert.equal(JSON.parse(first.text).to, 'user: B1');
@@ -351,9 +348,8 @@ test('11: the default cell is a separate process that cannot read the environmen
   writeFileSync(path, 'readable');
   process.env.SYNTHETIC_SECRET = 'synthetic';
   const pool = createLoopPool({ primes: 0, hostPort: here('./fixtures/x1/env-port.mjs') });
-  await pool.ready();
-  delete process.env.SYNTHETIC_SECRET;
   t.after(() => pool.close());
+  await pool.ready().finally(() => { delete process.env.SYNTHETIC_SECRET; });
   const result = await pool.run({ ledger: 'caller', reference: {}, candidates: ['c'], portOptions: { path } });
   assert.equal(result.isolation, 'process');
   assert.notEqual(result.report?.file, 'readable');

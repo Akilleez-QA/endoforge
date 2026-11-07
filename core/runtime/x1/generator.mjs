@@ -2,6 +2,7 @@ import { execFile } from 'node:child_process';
 import { readFile, writeFile, mkdir, readdir, lstat } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
+import { testProblems } from './gates.mjs';
 import { configuration, hash } from './host.mjs';
 import { ledger } from './ledger.mjs';
 import { fillExpected } from './reference.mjs';
@@ -108,6 +109,7 @@ export async function generate({ need, directory, env = process.env, timeout = 6
     await writeFile(join(workspace, 'tests.json'), files['tests.json']);
   }
   if (!files['CONTRACT.md'].trim() || !Array.isArray(tests) || !tests.length) throw Error('contract and nonempty tests required');
+  if (testProblems(tests).length) throw Error('frozen tests must each assert something a kernel can fail');
   const generatedSpecMs = performance.now() - start, freezeStart = performance.now();
   files['frozen.sha256'] = JSON.stringify({ contract: hash(files['CONTRACT.md']), tests: hash(files['tests.json']) });
   await writeFile(join(workspace, 'frozen.sha256'), files['frozen.sha256']);
