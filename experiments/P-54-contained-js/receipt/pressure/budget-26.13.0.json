@@ -1,0 +1,58 @@
+{
+ "node": "26.13.0",
+ "budgetMiB": 4096,
+ "rows": {
+  "spin10": [
+   {
+    "arm": "shared-reuse",
+    "marginalMiB": 22.6,
+    "baseMiB": 54.9,
+    "activeIn4GiB": 178
+   },
+   {
+    "arm": "shared-fresh",
+    "marginalMiB": 14.3,
+    "baseMiB": 125.9,
+    "activeIn4GiB": 276
+   },
+   {
+    "arm": "process-cell",
+    "marginalMiB": 68.4,
+    "baseMiB": 10.7,
+    "activeIn4GiB": 59
+   },
+   {
+    "arm": "cohort-cell",
+    "marginalMiB": 74.1,
+    "baseMiB": 18.8,
+    "activeIn4GiB": 55
+   }
+  ],
+  "spin200000": [
+   {
+    "arm": "shared-reuse",
+    "marginalMiB": 17.9,
+    "baseMiB": 83.2,
+    "activeIn4GiB": 224
+   },
+   {
+    "arm": "shared-fresh",
+    "marginalMiB": 14.2,
+    "baseMiB": 124.3,
+    "activeIn4GiB": 280
+   },
+   {
+    "arm": "process-cell",
+    "marginalMiB": 70.4,
+    "baseMiB": 17.6,
+    "activeIn4GiB": 57
+   },
+   {
+    "arm": "cohort-cell",
+    "marginalMiB": 78.8,
+    "baseMiB": 11.5,
+    "activeIn4GiB": 51
+   }
+  ]
+ }
+}

@@ -38,7 +38,7 @@ function breached({ handRequire, ...options }) {
   const source = coreText('cell.cjs');
   if (!source.includes(anchor)) throw new Error('breach anchor is gone');
   const hand = `const breachSet = { process, Function, ...(${handRequire ? 'true' : 'false'} ? { require } : {}) }; context.__breach = () => breachSet; ${anchor}`;
-  return cohort({ ...options, sources: { cell: source.replace(anchor, hand) } });
+  return cohort({ reuse: false, ...options, sources: { cell: source.replace(anchor, hand) } });
 }
 
 function processCells({ width = 1, heapMb = 64, youngMb = 8, stackKb = 1800 } = {}) {
@@ -47,13 +47,14 @@ function processCells({ width = 1, heapMb = 64, youngMb = 8, stackKb = 1800 } = 
     process.on('message', job => { let text; try { text = runGuest(job, () => '{"refused":"no port in this arm"}', ${JSON.stringify(bootstrap)}); } catch (error) { text = JSON.stringify({ state: 'refused', reason: 'host_error', detail: String(error && error.message) }); } process.send(text); });
     process.send('ready');`;
   const args = ['--permission', '--no-addons', '--no-warnings', `--max-old-space-size=${heapMb}`, `--max-semi-space-size=${youngMb}`, `--stack-size=${stackKb}`, '-e', main];
-  const cells = new Set(), idle = [], queue = [], stats = { cohortLosses: 0, spawns: 0, cohortStarts: 0 };
+  const cells = new Set(), idle = [], queue = [], stats = { cohortLosses: 0, spawns: 0, cohortStarts: 0, messages: 0 };
   let closing = false;
   const boot = () => new Promise(resolve => {
     const child = spawn('/bin/sh', ['-c', 'ulimit -c 0; exec "$@"', 'sh', process.execPath, ...args], { env: { TZ: 'UTC', LC_ALL: 'C' }, cwd: '/', stdio: ['ignore', 'ignore', 'pipe', 'ipc'] });
     const cell = { child, tail: '' }; stats.spawns += 1; cells.add(cell);
     child.stderr.on('data', chunk => { cell.tail = (cell.tail + chunk).slice(-2000); });
     child.on('message', message => {
+      stats.messages += 1;
       if (message === 'ready') { resolve(cell); idle.push(cell); pump(); return; }
       if (cell.job) { const { resolve: done, timer } = cell.job; clearTimeout(timer); cell.job = null; done(asResult(message, { cell: child.pid })); idle.push(cell); pump(); }
     });
@@ -64,7 +65,7 @@ function processCells({ width = 1, heapMb = 64, youngMb = 8, stackKb = 1800 } = 
       resolve(cell);
     });
   });
-  const pump = () => { while (queue.length && idle.length) { const cell = idle.shift(), item = queue.shift(); cell.job = { resolve: item.resolve, timer: setTimeout(() => { cell.expired = true; cell.child.kill('SIGKILL'); }, item.job.deadlineMs || 1000) }; cell.child.send(single(item.job)); } };
+  const pump = () => { while (queue.length && idle.length) { const cell = idle.shift(), item = queue.shift(); cell.job = { resolve: item.resolve, timer: setTimeout(() => { cell.expired = true; cell.child.kill('SIGKILL'); }, item.job.deadlineMs || 1000) }; stats.messages += 1; cell.child.send(single(item.job)); } };
   return { stats, ready: () => Promise.all(Array.from({ length: width }, boot)).then(() => {}), run: job => new Promise(resolve => { queue.push({ job, resolve }); pump(); }),
     close: async () => { closing = true; for (const cell of cells) cell.child.kill('SIGKILL'); }, pids: () => [...cells].map(cell => cell.child.pid) };
 }
@@ -104,15 +105,17 @@ function isolatedVm({ width = 1, heapMb = 64, modulePath } = {}) {
 }
 
 function cohortCell(options) {
-  const pool = createContainedPool({ deadlineMs: 1000, ...options });
+  const pool = createContainedPool({ deadlineMs: 1000, reuse: false, ...options });
   return { get stats() { return pool.stats; }, ready: () => pool.ready(), run: job => pool.run(job), close: () => pool.close(), pids: () => pool.pids };
 }
 
 export const ARMS = {
   'cohort-cell': cohortCell,
   'vm-thread': vmThread,
-  'cohort-oneshot': options => cohort(options),
+  'cohort-oneshot': options => cohort({ ...options, reuse: false }),
   'cohort-reuse': options => cohort({ ...options, reuse: true }),
+  'shared-fresh': options => cohort({ ...options, reuse: false }),
+  'shared-reuse': options => cohort({ ...options, reuse: true }),
   'process-cell': processCells,
   'isolated-vm': isolatedVm,
   'breach-permission-only': options => breached({ ...options, harden: false, handRequire: true }),
