@@ -34,6 +34,7 @@ class Candidate:
     text: str
     kind: str
     scope: str
+    verified: bool = True
 
 
 class ExtractionFailed(RuntimeError):

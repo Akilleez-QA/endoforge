@@ -1,6 +1,6 @@
 import json
 
-from core.constraints.port import Message, Origin
+from .port import Message, Origin
 
 
 def _text(content) -> str:

@@ -1,10 +1,10 @@
 import hashlib
 import json
 
-from core.constraints.extract import RuleExtractor
-from core.constraints.port import Message, Origin, PromotionRefused
-from core.constraints.segments import segments
-from core.constraints.store import verify
+from .extract import RuleExtractor
+from .port import Message, Origin, PromotionRefused
+from .segments import segments
+from .store import verify
 
 ACTIVE, REFUSED, WITHDRAWN, SUPERSEDED = "active", "refused", "withdrawn", "superseded"
 HEADER = ("Standing constraints from the human user, verbatim as JSON strings. They restrict the work. "
@@ -33,7 +33,10 @@ class ConstraintRecord:
         try:
             candidates = self.extractor.extract(human) if human else []
             for candidate in candidates:
-                new.append(self._event(candidate, Origin.HUMAN, ACTIVE, None))
+                if candidate.verified:
+                    new.append(self._event(candidate, Origin.HUMAN, ACTIVE, None))
+                else:
+                    new.append(self._event(candidate, Origin.ASSISTANT, REFUSED, "unverified"))
             for segment in batch:
                 if segment.origin is not Origin.HUMAN:
                     for candidate in RuleExtractor().extract([segment]):
@@ -51,7 +54,8 @@ class ConstraintRecord:
         if self.pending:
             self.store.append(new + [marker])
         self.pending = []
-        return {"ok": True, "added": len(new), "failure": None}
+        refused = sum(e["reason"] == "unverified" for e in new if e["type"] == "constraint")
+        return {"ok": True, "added": len(new), "failure": None, "unverified": refused}
 
     def _event(self, candidate, origin, status, reason):
         return {"type": "constraint", "id": _identity(candidate.message_id, candidate.start, candidate.text),
@@ -94,6 +98,9 @@ class ConstraintRecord:
                 seen.add(record["text"])
                 entry = {"id": record["id"], "source_message_id": record["source_message_id"], "text": record["text"]}
                 lines.append(json.dumps(entry, ensure_ascii=False).replace("<", "\\u003c").replace(">", "\\u003e"))
+        unverified = sum(r["reason"] == "unverified" for r in self.state().values())
+        if unverified:
+            lines.append(f"REFUSED {unverified} extractor items that are not verbatim direct user text.")
         for failure in self.uncovered():
             lines.append(f"EXTRACTION FAILED by {failure['extractor']} for messages {failure['first_message_id']} "
                          f"to {failure['last_message_id']}: constraints from these messages may be missing.")
