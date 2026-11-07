@@ -75,3 +75,12 @@ L3 or L4 failing means the writer does not become the default and the failure is
 ## Limits
 
 One shared desktop with other lanes writing to the same btrfs filesystem, so `syncfs` at retirement flushes their data too. Stub models with a fixed delay distribution. Synthetic kernels. A real power loss isn't tested; it is simulated by deleting the trial's ledger files after the kill, which is harsher than losing a WAL suffix but doesn't test the disk's own write ordering. RSS isn't PSS.
+
+## Amendment 1, after implementation and before any acceptance measurement
+
+Date: 2026-11-07. Development smoke runs (smaller or differently sized `ledger-new` runs and five crash trials, outside `receipt/`) changed four implementation details. The bar, arms, measures and predictions are unchanged.
+
+- **SQLite sync mode.** A WAL ledger written by the writer uses `synchronous=OFF` with `wal_autocheckpoint=0` and no checkpoint on close, not `NORMAL`. `NORMAL` still synced twice at a new WAL's first commit and three or four times at the switch to WAL, about 7 syncs per new ledger. With no checkpoint run by the writer, `OFF` changes nothing else in WAL mode: a power loss leaves a valid prefix of SQLite's commits, which the journal replay completes. Where `setconfig` is missing (Python before 3.12), the writer falls back to `NORMAL`, since a checkpoint on close at `OFF` could damage the file.
+- **Pipelined group commit.** The journal is written and synced on its own thread. Batches applied while a sync runs are coalesced into the next frame, and when requests have recently arrived closer together than 5 ms the thread waits up to 10 ms, or for 16 requests, before syncing. Answers still leave only after the sync of the frame holding their writes. A batch is capped at 128 requests.
+- **Line reading.** The reader no longer concatenates its whole input buffer for every chunk, which was quadratic in a burst of large requests.
+- **Chain read.** `Ledger._read` with a cache still checks every row's sequence, link and hash on each read; for a row whose sequence, hash and id equal an already verified cached row, it reuses the parsed record instead of decoding and re-encoding the body. Rows that differ are verified and validated in full, as before.
