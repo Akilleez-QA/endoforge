@@ -62,3 +62,45 @@ if point:
     loop.write_decision = write_decision
     ledger_module.Ledger._append = counted_append
     ledger_module.Ledger._connect = connect
+
+writer_point = os.environ.get("EF_WRITER_KILL")
+if writer_point:
+    import core.ledger.writer as writer_module
+
+    target, _, number = writer_point.partition(":")
+    batches = dict(seen=0)
+    armed = lambda: batches["seen"] >= int(number or 1)
+    original_batch, original_write = writer_module.Writer.batch, writer_module.Journal.write
+    original_append, original_sync, original_respond = writer_module.Journal.append, writer_module.Journal.sync, writer_module.Writer.respond
+
+    def batch(self, lines):
+        batches["seen"] += 1
+        return original_batch(self, lines)
+
+    def write(self, entries):
+        if target == "after_apply" and armed():
+            os.kill(os.getpid(), signal.SIGKILL)
+        return original_write(self, entries)
+
+    def append(self, data):
+        if target == "half_frame" and armed():
+            os.write(self.fd, data[:len(data) // 2])
+            os.kill(os.getpid(), signal.SIGKILL)
+        return original_append(self, data)
+
+    def sync(self):
+        original_sync(self)
+        if target == "after_sync" and armed():
+            os.kill(os.getpid(), signal.SIGKILL)
+
+    def respond(self, lines):
+        if target == "half_acks" and armed() and len(lines) > 1:
+            original_respond(self, lines[:len(lines) // 2])
+            os.kill(os.getpid(), signal.SIGKILL)
+        return original_respond(self, lines)
+
+    writer_module.Writer.batch = batch
+    writer_module.Journal.write = write
+    writer_module.Journal.append = append
+    writer_module.Journal.sync = sync
+    writer_module.Writer.respond = respond

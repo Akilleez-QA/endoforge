@@ -16,7 +16,8 @@ const input = { name: 'add', contract: files['CONTRACT.md'], tests: files['tests
 test('a real syscall counter sees no spawn or write before commit in the cell, and sees both on the current path', { timeout: 180000 }, async t => {
   const root = mkdtempSync(join(tmpdir(), 'ef-loop-count-'));
   t.after(() => rmSync(root, { recursive: true, force: true }));
-  const tracer = join(root, 'syscount');
+  const tracer = join(root, 'syscount'), journal = join(root, 'journal');
+  const ledgerJournal = new RegExp(`^\\S+ ${journal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/[^/]+\\.journal$`);
   execFileSync('gcc', ['-O1', '-o', tracer, here('../../../experiments/P-50-in-isolate/syscount.c')]);
   const extra = { CODEX_HOME: join(root, 'unused-home'), ENDOFORGE_CODEX_TEST_DOUBLE: '1', ENDOFORGE_ASC_CMD: here('../../../tools/asc/node_modules/.bin/asc'),
     ENDOFORGE_CODEX_CMD: JSON.stringify([process.execPath, here('./fixtures/x1/fake-codex.mjs')]) };
@@ -24,7 +25,8 @@ test('a real syscall counter sees no spawn or write before commit in the cell, a
     const output = join(root, arm), log = join(root, `${arm}.jsonl`);
     const plan = join(root, `${arm}.plan.json`);
     writeFileSync(plan, JSON.stringify({ arm, output, env: extra, inputs: [input, input] }));
-    const run = spawnSync(tracer, [log, process.execPath, here('../../../experiments/P-50-in-isolate/count-child.mjs'), plan], { encoding: 'utf8', timeout: 120000 });
+    const run = spawnSync(tracer, [log, process.execPath, here('../../../experiments/P-50-in-isolate/count-child.mjs'), plan],
+      { encoding: 'utf8', timeout: 120000, env: { ...process.env, ENDOFORGE_LEDGER_JOURNAL: journal } });
     assert.equal(run.status, 0, run.stderr);
     const rows = JSON.parse(readFileSync(join(output, 'rows.json')));
     assert.deepEqual(rows.map(row => row.promoted), [true, true]);
@@ -37,7 +39,7 @@ test('a real syscall counter sees no spawn or write before commit in the cell, a
       }
       if (arm.includes('release')) {
         assert.deepEqual([park.spawns, park.execs], [[], []]);
-        assert(park.writes.length > 0 && park.writes.every(line => /\/ledger\.sqlite(-wal|-shm)?$/.test(line)), park.writes.join('\n'));
+        assert(park.writes.length > 0 && park.writes.every(line => /\/ledger\.sqlite(-wal|-shm)?$/.test(line) || ledgerJournal.test(line)), park.writes.join('\n'));
       }
       if (arm === 'current') {
         assert(toCommit.spawns.length >= 8, `control saw ${toCommit.spawns.length} spawns`);
