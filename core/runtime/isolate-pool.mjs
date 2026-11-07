@@ -1,14 +1,26 @@
 import { performance } from 'node:perf_hooks';
 import { availableParallelism } from 'node:os';
 import { resolve } from 'node:path';
-import { pathToFileURL } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Worker } from 'node:worker_threads';
-import { fork } from 'node:child_process';
+import { execFileSync, fork, spawn } from 'node:child_process';
 import { attachCgroup, prepareCgroup, releaseCgroup } from './isolate-cgroup.mjs';
 import { LedgerBridge } from './isolate-ledger.mjs';
 import { trustedWasmPolicy } from './isolate-wasm.mjs';
 
 const positive = value => Number.isSafeInteger(value) && value > 0;
+const stackMargin = 192;
+const stackFlag = (stackKb, args) => {
+  const block = [...args, ...Object.entries(process.env).map(([name, value]) => `${name}=${value}`)];
+  const bytes = block.reduce((total, entry) => total + Buffer.byteLength(entry) + 9, 0);
+  const size = stackKb - stackMargin - Math.ceil(bytes / 1024);
+  if (size < stackMargin) throw new Error('stackSizeMb is too small for this environment and its arguments');
+  return `--stack-size=${size}`;
+};
+const requireProcessStack = stackSizeMb => {
+  try { execFileSync('/bin/sh', ['-c', 'ulimit -s "$1"', 'sh', String(stackSizeMb * 1024)], { stdio: 'ignore' }); }
+  catch { throw new Error('this host cannot raise the process stack limit to stackSizeMb'); }
+};
 const killGraceMs = 1000;
 const exitGraceMs = 500;
 
@@ -56,7 +68,7 @@ export class IsolatePool {
     if (Object.keys(unknownLimits).length || !Object.values(limits).every(positive)) {
       throw new TypeError('positive integer old and young generation limits required');
     }
-    if (stackSizeMb !== undefined && isolation !== 'thread') throw new TypeError('stackSizeMb requires thread isolation');
+    if (stackSizeMb !== undefined && isolation === 'process') requireProcessStack(stackSizeMb);
     if (jobTimeoutMs !== undefined && !positive(jobTimeoutMs)) throw new TypeError('jobTimeoutMs must be a positive integer');
     this.#jobTimeoutMs = jobTimeoutMs;
     if (process.execArgv.some(arg => /^--max[-_](old[-_]space|semi[-_]space)[-_]size/.test(arg)) ||
@@ -149,10 +161,14 @@ export class IsolatePool {
     const entry = new URL('./isolate-workcell.mjs', import.meta.url);
     const policy = { wasmMemoryMaxMb: this.#wasmMemoryMaxMb, trustedWasmModules: this.#trustedWasmModules,
       ...(this.#warmOptions ? { warm: this.#warmOptions, hostPort: this.#hostPort } : {}) };
-    const worker = subprocess ? fork(entry, [JSON.stringify({ ...policy, resourceLimits: this.#limits })], {
-      execArgv: [`--max-old-space-size=${this.#limits.maxOldGenerationSizeMb}`, `--max-semi-space-size=${this.#limits.maxYoungGenerationSizeMb}`],
-      serialization: 'advanced', stdio: ['ignore', 'ignore', 'pipe', 'ipc'],
-    }) : new Worker(entry, {
+    const heapArgv = [`--max-old-space-size=${this.#limits.maxOldGenerationSizeMb}`, `--max-semi-space-size=${this.#limits.maxYoungGenerationSizeMb}`];
+    const processOptions = { serialization: 'advanced', stdio: ['ignore', 'ignore', 'pipe', 'ipc'] };
+    const processArguments = [JSON.stringify({ ...policy, resourceLimits: this.#limits })];
+    const stackKb = this.#limits.stackSizeMb && this.#limits.stackSizeMb * 1024;
+    const worker = subprocess ? (stackKb
+      ? spawn('/bin/sh', ['-c', 'ulimit -s "$1" && shift && exec "$@"', 'sh', String(stackKb), process.execPath, ...heapArgv,
+        stackFlag(stackKb, [process.execPath, ...heapArgv, fileURLToPath(entry), ...processArguments]), fileURLToPath(entry), ...processArguments], processOptions)
+      : fork(entry, processArguments, { execArgv: heapArgv, ...processOptions })) : new Worker(entry, {
       resourceLimits: this.#limits, execArgv: [],
       workerData: { ...policy, sharedWasmModules: this.#sharedModules },
     });
