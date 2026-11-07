@@ -119,3 +119,7 @@ The run stops at the call budget (600), at the end of the need list, or at the h
 ## Limits
 
 One account, one machine, one evening. The race is replayed, not run with live cancellation, and a cancelled call isn't refunded mid-reply. `opus-high` and `sonnet-medium` have one sample per need, so their pass rates are per-need 0/1 and the rival is tested on `sonnet-low` only. H needs and references were written by Opus 5.5, also an arm. The router is fitted and judged on about a dozen needs each; its result is a probe of the mechanism, not a stable policy.
+
+## Amendment 1, 2026-11-07, during the main run and before the analysis
+
+A check of `analyze.mjs` on the first four complete needs (all strategies passed all four) showed the gap-closed ratio is unstable when the best fixed arm is already almost the oracle: a denominator of a fraction of a cent turned a small cost difference into −1,082. Gap closed is now reported as undefined when C_best − C_oracle is under 1% of C_best. Nothing else changes: the router, the bar (still judged on the exploring router's mean), the rule and the classifier are as frozen. That check is the only look at results before this amendment.

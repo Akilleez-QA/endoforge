@@ -53,7 +53,7 @@ function routerView(name, viewNeeds) {
     timeP50: quantile(runs.flatMap(r => r.s.times.map(x => ({ t: x.t, w: x.w / runs.length }))), 0.5) };
   const oracleDecisions = oracle(perNeed, heldNeeds);
   const oracleScore = score(perNeed, oracleDecisions);
-  const gap = (c) => bestRow && oracleScore.costPerPromoted !== null && bestRow.costPerPromoted > oracleScore.costPerPromoted ? (bestRow.costPerPromoted - c) / (bestRow.costPerPromoted - oracleScore.costPerPromoted) : null;
+  const gap = (c) => bestRow && oracleScore.costPerPromoted !== null && bestRow.costPerPromoted - oracleScore.costPerPromoted >= 0.01 * bestRow.costPerPromoted ? (bestRow.costPerPromoted - c) / (bestRow.costPerPromoted - oracleScore.costPerPromoted) : null;
   const frequency = Object.fromEntries(heldNeeds.map(need => [need, Object.fromEntries(strategies.map(s => [s, round(runs.filter(r => r.d.find(x => x.need === need).chosen === s).length / runs.length, 3)]).filter(([, v]) => v > 0))]));
   const bar = { costMet: exploring.costPerPromoted <= (bestRow?.costPerPromoted ?? Infinity) + 1e-12, passMet: exploring.passRate >= bestPass - 0.02 - 1e-12 };
   return { name, fitNeeds, heldNeeds, groups: Object.fromEntries(viewNeeds.map(n => [n, groupOf(n)])), fixedOnHeldOut: fixed, bestFixed: best, bestPass: round(bestPass),
