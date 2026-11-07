@@ -43,7 +43,11 @@ def record(jobdir,state,fault=None):
         rows,previous=chain(jobdir)
         row={'version':1,'seq':len(rows)+1,'previous':previous,'state':state}
         event=jobdir/'state-events'/f'{row["seq"]:08}.json'
-        with event.open('xb') as f:f.write(encoded(row));f.flush();os.fsync(f.fileno())
+        tmp=event.with_name(f'.{event.name}.{os.getpid()}.tmp')
+        try:
+            with tmp.open('xb') as f:f.write(encoded(row));f.flush();os.fsync(f.fileno())
+            os.link(tmp,event)
+        finally:tmp.unlink(missing_ok=True)
         sync_dir(event.parent)
         if fault:fault('event-durable')
         atomic(jobdir/'state.json',state)

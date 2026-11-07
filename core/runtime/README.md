@@ -6,6 +6,15 @@ Run agent-pool.mjs with an explicitly configured client and account directories.
 
 Worker-registry integration requires WORKERS_BIN explicitly; no host registry is discovered automatically.
 
+### Agent pool contract
+
+- **Accounts.** An account is a directory holding `auth.json`: `CODEX_POOL_PRIMARY`, logged as `default`, then each subdirectory of `CODEX_POOL_ACCOUNTS_DIR`. Only the file's presence is checked.
+- **Slots.** Each account takes at most `CODEX_POOL_PER_ACCOUNT` launches at once (default 2), tracked by owner-PID slot directories in `CODEX_POOL_STATE_DIR`. The least-loaded account goes first, and a dead owner's slot is reclaimed by rename, so one reclaimer wins.
+- **Rate limits.** A rate-limited account cools down until the time its error names, or for 300 s if it names none. The pool then fails over to the next account and logs each try to `<state>/log`.
+- **Child.** The child is `CODEX_POOL_BIN`, or the first `codex` on `PATH` that isn't this script. A regular file on stdin is reopened for each try, so a retry sees the whole prompt.
+- **Exits.** The child's code; 75 when every account is cooling down or no slot frees within `CODEX_POOL_WAIT`; the guard's code when `CODEX_POOL_GUARD` refuses; 2 when no client is found.
+- **Worker registry.** With `WORKERS_BIN` set, only the child runs under `workers run`, never this launcher, so the pool can't recurse. The registry's spawn-rate gate reaches the caller as exit 75 with no failover. Without `WORKERS_BIN` no gate applies, so a host relying on the gate must set it.
+
 ## V8 isolate workcells
 
 [IsolatePool](isolate-pool.mjs) schedules real
@@ -41,8 +50,9 @@ defines all fields and failure states; the
 `synthetic fixture` demonstrates their construction.
 [isolate-ledger.mjs](isolate-ledger.mjs) invokes Python's existing `Ledger` validation
 and append implementation on the host. Every batch produces one receipt per
-candidate, preserving candidate/oracle binding without changing the schema.
+candidate, preserving candidate/oracle binding without changing the schema. A host port may export `evidence()`; its JSON value joins that batch's result as `evidence`, and so the observation of each of the batch's receipts.
 Unknown worker outcomes produce inconclusive receipts and never a retry or a pass.
+`warm: {...}`, off by default, has each cell import the host module and await its exported `warm(options)` before it reports ready. A failure, or a `warm` still running after `warmTimeoutMs` (default 60000), rejects `ready()` and makes that cell's jobs unknown, never a pass. Replacement cells warm themselves and aren't awaited. Cells that exit before reporting ready, as a `warm` calling `process.exit` does, stop being respawned after `size + 2` in a row. `halted` turns true, and later jobs get `outcome_unknown` with reason `workcell_start_failed` and start no cell.
 Keep ledger files and other generated evidence outside the source tree.
 
 Run `make isolate-test` for native evaluator parity, multi-isolate chain verification
@@ -80,8 +90,11 @@ defines worker heap limits and termination. Its
 `Worker::UpdateResourceConstraints` and `Worker::NearHeapLimit`, supplies the embedding:
 separate isolates, generation constraints, and `ERR_WORKER_OUT_OF_MEMORY` shutdown.
 The pool waits for exit before replacement. Heap flags that override these limits
-are refused. Limits exclude ArrayBuffers, native allocations, and total RSS;
-global OOM can still terminate the host, as can native crashes in thread mode. Host modules are
+are refused. Limits exclude ArrayBuffers, native allocations, and total RSS:
+[P-44](../../experiments/P-44-offheap/RESULT.md) measured a job with a 128 MiB heap retain 3 GiB of ArrayBuffer,
+Buffer, Blob or separate WASM memories and still pass, in thread mode and in process mode without a cgroup.
+Thread mode can't bound off-heap memory; only a delegated cgroup in process mode can.
+Global OOM can still terminate the host, as can native crashes in thread mode. Host modules are
 trusted code with normal Node privileges. Workcells are not an OS sandbox.
 
 ## WebAssembly memory enforcement
@@ -114,9 +127,15 @@ allocation. Each cap must fit `wasmMemoryMaxMb`; initial sizes must fit the cap.
 Names label the policy; SHA-256 of the complete original bytes establishes the
 match. Candidate inputs and `portOptions` cannot add trust. The supervisor copies
 the policy into every result and ledger observation, including worker losses.
+Growth past a cap the policy supplied, from an instruction or from JS, is a breach:
+it stops the cell and leaves its siblings running, so a pinned compiler can't continue on a `-1` the policy produced.
 An empty policy is the default. All binary parsing, growth instrumentation and
 unsupported-feature checks still apply. This is a toolchain compatibility policy,
 not authority for arbitrary candidate modules.
+
+`sharedWasmModules: [{sha256, path}]` lets a thread pool instrument and compile a pinned module once, in a short-lived guarded worker, and post it to its cells. It must name a `trustedWasmModules` digest. A cell given matching bytes gets that module instead of recompiling; other bytes are still checked, and modules from anywhere else stay refused. Bytes that don't match the digest fall back to compiling per cell, and results list what was shared. A `Module` can't cross a process boundary, so process cells always compile their own. [P-45](../../experiments/P-45-shared-module/RESULT.md) records the measurements.
+
+[`tools/tscheck`](../../tools/tscheck/README.md) uses the same policy for the pinned TypeScript checker, with `stackSizeMb` for deep input.
 
 [AssemblyScript toolchain helper](../../experiments/assemblyscript-toolchain.mjs)
 pins the AssemblyScript 0.28.20 `f64_pow` helper to 16 pages (1 MiB).
@@ -139,7 +158,7 @@ features in memory-bearing modules (including SIMD, atomics, GC types, exception
 and memory64) fail closed with a compilation error; there is no unchecked fallback.
 Modules without memories need no growth instrumentation. Modules transferred from
 outside the workcell cannot be instantiated: they must be compiled locally through
-the guard. Ports are trusted Node code and must use this realm’s checked API;
+the guard, or come from the supervisor's `sharedWasmModules`. Ports are trusted Node code and must use this realm’s checked API;
 new realms, native addons, or other workers can bypass JavaScript wrappers and are
 outside this interface. No Wasmtime dependency is introduced.
 
@@ -178,6 +197,7 @@ Node runtime to demonstrate actual worker-local enforcement.
 
 `isolation: 'process'` forks one Node child per cell with the same configured
 old/young values passed as `--max-old-space-size` and `--max-semi-space-size`.
+With `stackSizeMb`, the child starts through `/bin/sh`, which raises `RLIMIT_STACK` and `exec`s Node with `--stack-size` 192 KiB below it, less the size of the environment and arguments, which share that stack; the constructor refuses if the host won't raise the limit. The flag alone dies with SIGSEGV on deep recursion, as [P-47](../../experiments/P-47-process-stack/RESULT.md) measured, and with the rlimit raised the same probes throw `RangeError`.
 V8's young generation can include several semi-spaces; these are heap settings,
 not RSS quotas. The child uses V8's fatal heap-limit exit; it does not install
 `v8.setHeapSnapshotNearHeapLimit`, which is a snapshot API, or a native callback.
@@ -198,12 +218,40 @@ root must expose memory/cpu/pids and writable migration/controller files; a
 populated shared desktop cgroup is insufficient. A suitably delegated user
 scope or empty writable `cgroupRoot` can supply this. Setup follows the kernel's
 [no-internal-process constraint](https://docs.kernel.org/admin-guide/cgroup-v2.html#no-internal-process-constraint).
-Each attached child gets its own group with `memory.max`, `memory.oom.group=1`,
-`cpu.max` and `pids.max`. Failure records `cgroup: 'unavailable'`; V8 limits and
+Each attached child gets its own group with `memory.max`, `memory.swap.max=0` where the kernel has it,
+`memory.oom.group=1`, `cpu.max` and `pids.max`. Without the swap limit, P-44 saw every off-heap kind reach its 3 GiB cap
+with no kill on a host with swap, and with it every kind was killed. Its receipt has no swap reading, so swap as
+where the excess went is inferred. The limit is part of the bound, so a kernel without `memory.swap.max` on a host
+with swap in `/proc/swaps` gets no cgroup. Failure records `cgroup: 'unavailable'`; V8 limits and
 the WASM gate still apply. Cgroup OOM kills without V8 diagnostics remain unknown
 and are not mislabeled as JS heap exhaustion. Host ports remain trusted Node code.
+The supervisor stops waiting 500 ms after a child's exit even if a grandchild still holds its stderr. Without a cgroup, that grandchild keeps running; with one, the group kill ends it. A cell whose process has exited takes no job during that wait, so the next job goes to its replacement.
+A deadline can't interrupt a thread cell in a blocking native call such as `execSync`: `terminate()` waits for the call to return, so the job can overrun by that call's length. Its outcome stays unknown, never a pass. Use process cells where the bound has to hold for code like that.
 [P-18](../../experiments/P-18-pool-breach/RESULT.md) records N=8 breach results
 for both modes, including the unavailable-delegation limitation.
+
+## Contained JavaScript
+
+`contained/` runs JavaScript emitted by the TypeScript route in a child V8 isolate. It's the compatibility lane's executor, for imported code and behaviour that resists the kernel split; the strict path stays a WebAssembly kernel plus declarative glue, and nothing here runs on it. Every result carries `lane: compatibility`, and nothing runs it unless a caller asks.
+
+```js
+import { createContainedRunner } from './contained/runner.mjs';
+
+const cohort = createContainedRunner({ width: 8, heapMb: 64, deadlineMs: 1000 });
+await cohort.ready();
+const result = await cohort.run({ modules: { '/proj/a.js': source }, entry: '/proj/a.js', exportName: 'main', input: {} });
+```
+
+- **Layout.** The default is one supervised cohort: a single `node --permission` child process with an empty environment and no file grant, holding `width` Worker isolates that are kept between attempts. Each attempt gets a fresh guest context with an allowlist of standard globals and code generation off. The supervisor, its watchdog and the caller's ledger stay outside the cohort. [P-54](../../experiments/P-54-contained-js/RESULT.md) measured this layout at the throughput of one process per cell with about a third of the memory, and at a twentieth of the CPU of a fresh Worker per attempt.
+- **Failure scope.** Isolates in one process share its death. A V8 fatal allocation error ends the cohort whatever a Worker's `resourceLimits` say. The supervisor then kills what's left, reports every attempt the cohort held as `outcome_unknown`, starts one replacement and carries on with the queue. It retries nothing: a retry is a new admission by the caller. Heap, stack and deadline breaches that a Worker contains cost only that attempt.
+- **Preparation in the cohort.** With `prepare` (from `tools/tscheck/cohort-check.mjs`), `runChecked()` sends one job and gets one result per attempt: the cohort type checks and emits in checker Workers of its own process (`layout: 'sibling'`) or in the guest's Worker (`'fused'`), then runs the output twice. The cohort may read only the pinned compiler module, which it verifies and compiles once for every Worker. A check that traps, loses its Worker or overruns `checkDeadlineMs` is `outcome_unknown`, and a cohort loss makes every checked attempt in flight `outcome_unknown`. [P-58](../../experiments/P-58-cohort-typecheck/RESULT.md) measured 380–516 accepted per second at width 16 against 58–63 with the check on the supervisor, at 1.1–1.5× the CPU per attempt.
+- **Other layouts.** `reuse: false` gives a fresh Worker per attempt. `createContainedPool({ width })` runs one process per cell, for a cohort whose failure budget can't share a process; it loses no neighbour to a fatal error and costs about 70 MiB per cell. `tools/tscheck/contained-route.mjs` takes `layout: 'shared-reuse' | 'shared-fresh' | 'process-per-cell'`.
+- **Modules.** CommonJS only, since `import` needs host hooks. A source containing `import` followed by `(`, even in a string or after comments, is refused as `dynamic_import`, because `import()` near a stack overflow throws a host-realm error into the guest. Set `module: commonjs` in the project.
+- **Authority.** Nothing unless the contract grants it: `contract: { grants: { clock: { fixedMs }, random: { seed } }, ports: { name: { maxCalls, maxBytes } } }`. The two grants are deterministic. A real clock or anything else goes through a port. Ports are reached by `require('host:ports')`, carry JSON text, and reject with guest-realm errors.
+- **Refusals.** `heap`, `memory`, `deadline`, `stack`, `string_limit`, `thrown`, `never_settled`, `output_not_json`, `output_too_large`, `compile`, `dynamic_import`, `process_exit`. A lost process is attributed to its attempt only when it held one; otherwise every attempt it held is `outcome_unknown`. The deadline is enforced by the cell's main thread, with a process kill behind it from the supervisor, and an RSS watchdog behind that, since a single flat string can pass the heap limit.
+- **Determinism.** `runTwice` compares two runs and refuses a difference. A guest that catches its own stack overflow can make depth-dependent output, and only the comparison sees that. Mathematical and Unicode results follow the V8 and ICU of the running Node.
+
+This isn't an OS sandbox and it isn't a Spectre boundary. The permission model doesn't cover signals, and on Node 22 it doesn't cover the network. Passing the attack suite doesn't mean no escape exists; it doesn't test V8 memory-safety bugs. Requires Node 22.8 or later.
 
 ## X1 host port
 
@@ -249,6 +297,27 @@ without changing gates. [P-42 precommit](../../experiments/P-42-scalar/PRECOMMIT
 defines the prospective comparison; its copied harness uses `P22_OUTPUT` outside
 the checkout and `ENDOFORGE_CODEX_TERSE=exact` or `scalar` for each arm.
 
+### The loop inside the workcell
+
+`ENDOFORGE_LOOP=isolate` runs everything between generation and promotion in one warm cell, with a pool from [x1/loop.mjs](x1/loop.mjs)'s `createLoopPool`. The existing path stays the default until parity is accepted, and it is unchanged. [P-50](../../experiments/P-50-in-isolate/RESULT.md) has the measurements.
+
+- **Compile.** [x1/loop-port.mjs](x1/loop-port.mjs) compiles in the cell through the pinned AssemblyScript toolchain, over an in-memory overlay holding only `kernel.ts`, with the existing flags. No process or temp file. `import` of any other path fails, because the compiler's only reader is the overlay. `warm` checks the toolchain's digests from [tools/asc/pin.mjs](../../tools/asc/pin.mjs) and primes the compiler. The compiler needs the pool's WASM ceiling raised to 4 GiB, because binaryen declares that maximum, so the port refuses any kernel declaring more than the existing 1024 pages (64 MiB). Compile now counts against the cell's heap limit; a job past `jobTimeoutMs`, default 60 s here, loses the cell and records an unknown outcome.
+- **Frozen check.** The freeze and the admission are one bridge request, which returns the frozen record's encoded data. The cell recomputes the evaluator identity and digest from that string at each of the evaluator's verifications, so a change to what it holds fails at the next one. A change on disk after admission, or a repository implementation file that no longer matches the bundle, is caught by the commit, which re-reads both inside its transaction: the receipt records `failed` and the decision refuses. A self-consistent forged bundle doesn't match the ledger's digest, and the commit refuses that too.
+- **Gates and repair.** Round evaluation is unchanged and runs in the same cell. `repair: {module, maxRounds, options}` runs a host-supplied module in the cell, with a new compile and fresh instances each round, and may not change the oracle. A generator repair uses `checkCandidate`, one job with no durable effect, and releases the cell while the model works.
+- **Durable crossing.** One `commit` request per candidate, batched with others by the persistent bridge. In one transaction it registers the candidate, appends the receipt and evaluates the unchanged promotion rule, then writes and fsyncs the decision after commit and before answering. A crash before commit leaves nothing of the attempt, and a crash after it returns no promotion over complete records, which the existing `promote` can read. The commit also checks the report against the frozen bundle and candidate: oracle files, source and module digests, every frozen test present, and each recorded value against its expectation.
+- **Left outside.** The ledger and supervisor stay out of every cohort: the cell never gets the ledger path or the frozen root. Generation, including the freeze's oracle files, is still a client process and a workspace. [x1/reference.mjs](x1/reference.mjs) keeps its process: a `vm` context is not a boundary, and from a cell its escape reaches the file system, while under `--permission` in its own process it doesn't. `make loop-test` shows this. The cell's report is trusted code's: one that is self-consistent in every field can't be told from a real one without running the kernel again.
+
+### The agent loop in the workcell
+
+`ENDOFORGE_LOOP=agent` also moves generation in. Create the pool with `createLoopPool({ provider })`.
+
+- **Cell.** [x1/agent.mjs](x1/agent.mjs) holds the turn loop in the bounded style of a thin agent: turn and token limits, one reply object with up to 16 calls, `read_file`, `edit_file`, `check`, `done`, an error reply instead of a crash on junk. Files are an in-memory overlay. Editable paths are `CONTRACT.md` and `tests.json`, then `kernel.ts` and `glue.json`. A failed check is the next prompt in the same job.
+- **Freeze.** The cell sends the frozen files and its implementation bytes over the worker channel, and the host writes them into the ledger. There is no frozen tree on disk. The ledger's own chain guards the bundle, and the commit still compares the repository's implementation files with it. `resume: true` starts a lost attempt again from the ledger's evaluator.
+- **Decision.** It commits in the receipt's transaction, in a separate `x1_decisions` table outside the hash chain. `promote` reaches the same answer from the chain. The ledger's WAL file sits beside it.
+- **Deadline.** `jobTimeoutMs` covers compute. It stops while the host answers a call and restarts after, and the transport's own timeout bounds the model.
+- **Provider port.** `{name, testDouble, start(), send({session, messages}), endSession(session), close()}`, returning `{text, usage}`. Only those two reach the cell. [x1/transports.mjs](x1/transports.mjs) has `WarmClaudeTransport`, `SpawnClaudeTransport` and `scriptedProvider`. Another source, such as a warm `codex app-server`, can replace them without touching the loop.
+- **Warm Claude.** One long-lived `claude -p --input-format stream-json` per lane, with `--tools ""`, `--no-session-persistence`, `--strict-mcp-config`, `--setting-sources ""`, `--safe-mode`, a structured reply schema, and an allow-listed environment that has no API key variables. Each `instances` entry has one existing `CLAUDE_CONFIG_DIR`, so accounts never share state; the transport never reads credentials. A session reporting another tool, an API key source or an MCP server is refused. `/clear` separates sessions. A dead lane takes no further prompt, and the next send starts a new process with the full history. An idle lane is released after `idleMs` if its generation hasn't changed, and a usage-limit event routes work away from that instance until it resets. Nothing retries a lost attempt automatically.
+
 [x1/pipeline.mjs](x1/pipeline.mjs) connects generation, supervisor compilation,
 pool evaluation, receipt storage and local promotion. POODO currently supplies
 instructions, not a callable approval API. EndoForge's `ledger('promote', request)`
@@ -257,4 +326,4 @@ decision bound to candidate, oracle, receipt hash and verified chain tip. It ref
 incomplete rounds, any failed X1 gate or chain/hash mismatch. It does not activate
 artifacts. Host and ledger writers are trusted; the hash chain is not a signature
 or an external witness. [P-22](../../experiments/P-22-real-need-to-candidate/README.md)
-provides the sixty-request harness and prospective measurement protocol.
+provides the sixty-request harness and prospective measurement protocol. `runNeed` takes an optional `containedRoute`; with one, the candidate's TypeScript is also checked, emitted and run contained, and the report joins the result under `contained` without changing the decision. See `tools/tscheck/contained-route.mjs`.

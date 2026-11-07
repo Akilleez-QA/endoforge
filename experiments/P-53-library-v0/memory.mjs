@@ -1,0 +1,11 @@
+import { openLibrary } from '../../core/library/library.mjs';
+const settle = () => { globalThis.gc(); globalThis.gc(); const m = process.memoryUsage(); return { heap: m.heapUsed, external: m.external, arrays: m.arrayBuffers, rss: m.rss }; };
+const empty = await openLibrary({});
+await empty.close();
+const before = settle();
+const library = await openLibrary({ journal: process.argv[2] });
+const after = settle(), n = library.size;
+const perEntry = key => (after[key] - before[key]) / n;
+const bytes = [...library.entries.values()].map(e => Buffer.byteLength(JSON.stringify(e)));
+await library.close();
+console.log(JSON.stringify({ entries: n, heapPerEntry: perEntry('heap'), externalPerEntry: perEntry('external'), rssPerEntry: perEntry('rss'), serializedPerEntryMean: bytes.reduce((a, b) => a + b, 0) / n, journalNote: 'heap includes retained journal records' }));

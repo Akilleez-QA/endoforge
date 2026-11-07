@@ -24,6 +24,18 @@ def main():
         try:state.recover(d);raise AssertionError('altered ancestor accepted')
         except ValueError:pass
         rows.append({'boundary':boundary,'exit':process.returncode,'latestStateRecovered':True,'partialSnapshotRepaired':True,'changedAncestorDenied':True,'path':str(d)})
+    d=Path(tempfile.mkdtemp(prefix='failed-write-',dir=root))
+    state.record(d,{'version':1,'job':'crash-test','stage':'frozen'})
+    real=os.fsync
+    def nospace(fd):raise OSError(28,'No space left on device')
+    os.fsync=nospace
+    try:
+        state.record(d,{'version':1,'job':'crash-test','stage':'lost'});raise AssertionError('failed write reported')
+    except OSError:pass
+    finally:os.fsync=real
+    assert [p.name for p in (d/'state-events').iterdir()]==['00000001.json']
+    assert state.recover(d)['stage']=='frozen'
+    assert state.record(d,{'version':1,'job':'crash-test','stage':'next'})['seq']==2
     result={'passed':True,'scope':'metadata controller-kill checks, no hosted-model or power-loss claim','cases':rows}
     receipt=root/'state-recovery.json';receipt.write_text(json.dumps(result,indent=2)+'\n')
     print(json.dumps({'passed':True,'boundaries':len(rows),'receipt':str(receipt)}))

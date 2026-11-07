@@ -30,6 +30,7 @@ private inputs, or sensitive receipts.
 The README requires Python 3.11+, Node.js 20+, GNU Make, and bubblewrap for
 isolate checks. CI uses Python 3.12 and Node.js 22 and 26 and installs `age`, bubblewrap and `gcc`.
 Public agent clients are optional; tests use synthetic inputs and stubs.
+`make test` also needs the kernel tools in [tools/kernel/README.md](tools/kernel/README.md).
 
 Run from the repository root:
 

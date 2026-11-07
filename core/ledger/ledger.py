@@ -111,6 +111,7 @@ class Ledger:
             raise ValueError("ledger requires durable storage")
         with closing(self._connect()) as db:
             db.executescript("""
+                BEGIN;
                 CREATE TABLE IF NOT EXISTS records (
                     seq INTEGER PRIMARY KEY, id TEXT UNIQUE NOT NULL,
                     body TEXT NOT NULL, previous TEXT NOT NULL, hash TEXT NOT NULL
@@ -122,6 +123,7 @@ class Ledger:
                 CREATE TRIGGER IF NOT EXISTS no_replace BEFORE INSERT ON records
                     WHEN EXISTS (SELECT 1 FROM records WHERE id = NEW.id OR seq = NEW.seq)
                     BEGIN SELECT RAISE(ABORT, 'ledger identity already exists'); END;
+                COMMIT;
             """)
             self._read(db)
 
