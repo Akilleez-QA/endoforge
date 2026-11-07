@@ -30,9 +30,12 @@ export class IsolatePool {
   #stopping = false;
   #closed;
   #warm;
+  #sharedSources;
+  #sharedModules = [];
+  #sharing;
 
   constructor({ hostPort, size = availableParallelism(), resourceLimits = {}, wasmMemoryMaxMb = 64,
-    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], prewarm = false, jobTimeoutMs } = {}) {
+    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, jobTimeoutMs } = {}) {
     if (!['thread', 'process'].includes(isolation)) throw new TypeError('isolation must be thread or process');
     if (cgroupRoot !== undefined && (typeof cgroupRoot !== 'string' || !cgroupRoot)) throw new TypeError('cgroupRoot path required');
     if (!positive(size)) throw new TypeError('positive integer pool size required');
@@ -59,6 +62,9 @@ export class IsolatePool {
     this.#wasmMemoryMaxMb = wasmMemoryMaxMb;
     this.#trustedWasmModules = trustedWasmPolicy(trustedWasmModules, wasmMemoryMaxMb);
     this.#isolation = isolation;
+    if (!Array.isArray(sharedWasmModules) || !sharedWasmModules.every(({ sha256, path }) => typeof path === 'string' && path &&
+        this.#trustedWasmModules.some(entry => entry.sha256 === sha256))) throw new TypeError('sharedWasmModules must name trustedWasmModules digests and paths');
+    this.#sharedSources = isolation === 'thread' ? sharedWasmModules.map(({ sha256, path }) => ({ sha256, path })) : [];
     this.#cgroupLimits = Object.freeze({ memoryMax: Math.max(256, limits.maxOldGenerationSizeMb + 3 * limits.maxYoungGenerationSizeMb + 128) * 1048576,
       cpuMax: '100000 100000', pidsMax: 64, ...cgroupLimits });
     const { memoryMax, cpuMax, pidsMax } = this.#cgroupLimits;
@@ -71,6 +77,8 @@ export class IsolatePool {
   ready() {
     if (this.#closing) return Promise.reject(new Error('isolate pool is closing'));
     return this.#warm ||= (async () => {
+      await this.#share();
+      if (this.#closing) throw new Error('isolate pool is closing');
       while (this.#cells.size < this.#size) this.#spawn();
       const [started] = await Promise.all([Promise.all([...this.#cells].map(cell => cell.started)), this.#ledger.start()]);
       if (!started.every(Boolean)) throw new Error('workcell exited before ready');
@@ -80,6 +88,22 @@ export class IsolatePool {
   get stats() {
     return { size: this.#size, workers: this.#cells.size,
       busy: [...this.#cells].filter(cell => cell.job).length, queued: this.#queue.length };
+  }
+
+  #share() {
+    return this.#sharing ||= (async () => {
+      if (!this.#sharedSources.length) return;
+      const worker = new Worker(new URL('./isolate-wasm-compile.mjs', import.meta.url), {
+        resourceLimits: this.#limits, execArgv: [],
+        workerData: { wasmMemoryMaxMb: this.#wasmMemoryMaxMb, trustedWasmModules: this.#trustedWasmModules, sources: this.#sharedSources },
+      });
+      this.#sharedModules = await new Promise(resolve => {
+        worker.once('message', resolve);
+        worker.once('error', () => resolve([]));
+        worker.once('exit', () => resolve([]));
+      });
+      await worker.terminate();
+    })();
   }
 
   #persist(action, job, result) {
@@ -98,7 +122,7 @@ export class IsolatePool {
     const promise = new Promise((resolve, reject) => {
       const job = { data, resolve, reject, ready: false, started: performance.now() };
       this.#queue.push(job);
-      this.#persist('prepare', data).then(() => { job.prepared = performance.now(); job.ready = true; this.#pump(); }, error => {
+      Promise.all([this.#persist('prepare', data), this.#share()]).then(() => { job.prepared = performance.now(); job.ready = true; this.#pump(); }, error => {
         this.#queue.splice(this.#queue.indexOf(job), 1);
         reject(error);
         this.#pump();
@@ -118,11 +142,11 @@ export class IsolatePool {
       serialization: 'advanced', stdio: ['ignore', 'ignore', 'pipe', 'ipc'],
     }) : new Worker(entry, {
       resourceLimits: this.#limits, execArgv: [],
-      workerData: policy,
+      workerData: { ...policy, sharedWasmModules: this.#sharedModules },
     });
     const directory = subprocess ? attachCgroup(worker.pid, this.#cgroupRoot, this.#cgroupLimits) : null;
     const cell = { worker, id: subprocess ? worker.pid : worker.threadId, job: null, error: null,
-      metadata: { isolation: this.#isolation, cgroup: subprocess ? (directory ? 'enabled' : 'unavailable') : 'not_applicable',
+      metadata: { ...(this.#sharedSources.length ? { sharedWasmModules: this.#sharedModules.map(entry => entry.sha256) } : {}), isolation: this.#isolation, cgroup: subprocess ? (directory ? 'enabled' : 'unavailable') : 'not_applicable',
         ...(directory ? { cgroupLimits: this.#cgroupLimits } : {}) } };
     if (subprocess) {
       let tail = '';
@@ -237,7 +261,7 @@ export class IsolatePool {
   close() {
     this.#closing = true;
     return this.#closed ||= (async () => {
-      await Promise.allSettled([...this.#pending]);
+      await Promise.allSettled([...this.#pending, this.#sharing]);
       await this.#ledger.close();
       this.#stopping = true;
       await Promise.all([...this.#cells].map(cell => cell.worker.terminate()));
