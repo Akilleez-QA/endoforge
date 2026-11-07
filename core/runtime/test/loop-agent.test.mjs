@@ -131,7 +131,7 @@ test('seeded bad kernels get the same verdict as the current path', { timeout: 1
     assert.equal(right.promoted, left.promoted, seed.name);
     assert.equal(right.promoted, seed === good, seed.name);
     if (!seed.slow) assert.deepEqual(await gateVector(join(root, 'agent', seed.name)), await gateVector(join(root, 'current', seed.name)), seed.name);
-    else assert.equal((await gateVector(join(root, 'agent', seed.name))).outcome, 'inconclusive');
+    else assert.equal((await gateVector(join(root, 'agent', seed.name))).outcome, 'failed');
   }
 });
 

@@ -2,7 +2,7 @@ import { execFile } from 'node:child_process';
 import { readFile, writeFile, mkdir, readdir, lstat } from 'node:fs/promises';
 import { basename, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { configuration, hash } from './host.mjs';
+import { configuration, hash, implementationFiles } from './host.mjs';
 import { ledger } from './ledger.mjs';
 import { fillExpected } from './reference.mjs';
 import { filterScalarTests } from './scalar.mjs';
@@ -112,7 +112,7 @@ export async function generate({ need, directory, env = process.env, timeout = 6
   files['frozen.sha256'] = JSON.stringify({ contract: hash(files['CONTRACT.md']), tests: hash(files['tests.json']) });
   await writeFile(join(workspace, 'frozen.sha256'), files['frozen.sha256']);
   for (const name of Object.keys(files)) await writeFile(join(root, name), files[name]);
-  for (const name of ['host.mjs', 'gates.mjs', 'glue.schema.json', ...implementation]) await writeFile(join(root, name), await readFile(new URL(name, import.meta.url)));
+  for (const name of [...implementationFiles, ...implementation]) await writeFile(join(root, name), await readFile(new URL(name, import.meta.url)));
   const frozen = await (freeze ? freeze({ reference, need, configuration }) : ledger('freeze', { reference, need, configuration }));
   reference.identity = frozen.identity;
   const freezeMs = performance.now() - freezeStart, codeStart = performance.now();

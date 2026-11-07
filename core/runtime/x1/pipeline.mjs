@@ -50,7 +50,7 @@ async function attemptCurrent({ need, directory, pool, env = process.env, compil
       receipt: { id: result.receipts[0].record.id, hash: result.receipts[0].hash }, decisionPath: join(directory, 'promotion.json') });
     timings.promote = performance.now() - start;
     observe?.('returned');
-    return { promoted: decision.decision === 'promote', candidate: identity, receipt: decision.receipt,
+    return { promoted: decision.decision === 'promote', ...(decision.decision === 'inconclusive' ? { inconclusive: true } : {}), candidate: identity, receipt: decision.receipt,
       decision: decision.sha256, testDouble: generated.testDouble, modelMs: generated.modelMs, timings, ...(scalarFilter ? { scalarFilter } : {}) };
   } catch (error) {
     scalarFilter ??= error?.scalarFilter;

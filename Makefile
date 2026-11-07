@@ -69,4 +69,4 @@ loop-test: loop-setup
 
 .PHONY: pipeline-test
 pipeline-test:
-	node --test core/runtime/test/x1.test.mjs core/runtime/test/generator*.test.mjs core/runtime/test/promotion.test.mjs
+	node --test core/runtime/test/x1.test.mjs core/runtime/test/x1-measured.test.mjs core/runtime/test/x1-contract.test.mjs core/runtime/test/x1-frozen.test.mjs core/runtime/test/generator*.test.mjs core/runtime/test/promotion.test.mjs

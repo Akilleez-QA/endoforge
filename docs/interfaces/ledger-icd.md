@@ -173,10 +173,10 @@ when a `thread.started` id was observed and resume is enabled. The result adds
 `x1/ledger.mjs:ledger('promote', {reference, candidate, receipt: {id, hash},
 decisionPath})` replays the existing Python ledger under a SQLite write lock,
 checks exact candidate/oracle/receipt bindings and both complete evaluator rounds,
-and verifies each G1–G7 verdict. It exclusively writes and fsyncs a version-1
-JSON decision with issuer `endoforge.local.x1`, policy `X1-G1-G7/v1`, scope
-`qualification`, candidate/oracle/receipt identities, and `decision: promote|refuse`.
-Promotion adds evaluator digest and chain tip; refusal records a reason. `sha256`
+and verifies each G1–G8 verdict. It exclusively writes and fsyncs a version-1
+JSON decision with issuer `endoforge.local.x1`, policy `X1-G1-G8/v1`, scope
+`qualification`, candidate/oracle/receipt identities, and `decision: promote|refuse|inconclusive`.
+Promotion adds evaluator digest and chain tip; refusal and inconclusive record a reason. Inconclusive means no outcome was reached, so nothing was decided. `sha256`
 hashes the other fields as sorted compact JSON. Existing output paths fail closed.
 This is a local trusted-host policy, not a POODO-issued lifecycle authorization or
 signature. POODO has no callable approval API today; neither sibling repo changes.

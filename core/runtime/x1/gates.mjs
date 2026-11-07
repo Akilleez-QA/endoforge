@@ -1,6 +1,9 @@
 import crypto from 'node:crypto';
 import path from 'node:path';
 import { readFileSync } from 'node:fs';
+import { glueProblems, nonFiniteExpectation, probeProblem } from './contract.mjs';
+import { callKernel, freshKernel, kernelFuel, probeCalls } from './measure.mjs';
+import { loadKernel } from './meter.mjs';
 const glueSchema = JSON.parse(readFileSync(new URL('./glue.schema.json', import.meta.url)));
 function functionNames(bytes) {
   let p = 8;
@@ -37,7 +40,9 @@ if (sha(f('tests.json')) !== frozen.tests) fail('G1_frozen', 'tests.json changed
 result.gates.G1_frozen = { ok: true };
 if (!compiled || compiled.error || compiled.source !== sha(f('kernel.ts'))) fail('G2_compiles', compiled?.error || 'compile binding differs');
 const bytes = Buffer.from(compiled.wasm, 'base64');
-const mod = new WebAssembly.Module(bytes);
+let mod, loaded;
+try { mod = new WebAssembly.Module(bytes); loaded = loadKernel(bytes, kernelFuel); }
+catch (error) { fail('G2_compiles', `module rejected: ${error.message}`); }
 const imports = WebAssembly.Module.imports(mod).filter(i => !(i.module === 'env' && i.name === 'abort'));
 if (imports.length) fail('G2_compiles', `unexpected imports: ${imports.map(i => i.module + '.' + i.name).join(', ')}`);
 result.gates.G2_compiles = { ok: true, wasmBytes: bytes.length, wasmSha256: crypto.createHash('sha256').update(bytes).digest('hex') };
@@ -47,20 +52,27 @@ const missing = [...new Set(tests.map(t => t.fn))].filter(n => !exportNames.has(
 if (missing.length) fail('G3_exports', `missing exports: ${missing.join(', ')}`);
 result.gates.G3_exports = { ok: true, exports: [...exportNames] };
 function instantiate() {
-  let aborted = null;
-  const inst = new WebAssembly.Instance(mod, { env: { abort: (m, fl, l, c) => { aborted = `abort at ${l}:${c}`; throw new Error(aborted); } } });
-  return { inst, abortedRef: () => aborted };
+  const kernel = loaded.start((m, fl, l, c) => { throw new Error(`abort at ${l}:${c}`); });
+  return { inst: kernel.instance, kernel };
 }
+try { instantiate(); } catch (error) { fail('G2_compiles', `instantiation failed: ${error.message}`); }
+const bounds = [];
+let fuelUsed = 0;
 function runAll() {
-  const { inst } = instantiate();
+  const { inst, kernel } = instantiate();
   const outs = [];
   for (const t of tests) {
     const t0 = process.hrtime.bigint();
     let out, err = null;
-    try { out = inst.exports[t.fn](...t.args); } catch (e) { err = String(e.message || e); }
+    try { out = inst.exports[t.fn](...t.args); } catch (e) {
+      err = String(e.message || e);
+      if (kernel.exhausted()) bounds.push('fuel exhausted');
+      else if (e instanceof RangeError) bounds.push('stack exhausted');
+    }
     const ms = Number(process.hrtime.bigint() - t0) / 1e6;
     outs.push({ out: typeof out === 'bigint' ? out.toString() : out, err, ms });
   }
+  fuelUsed = Math.max(fuelUsed, Math.min(kernel.used(), kernelFuel));
   return outs;
 }
 const run1 = runAll();
@@ -73,12 +85,11 @@ tests.forEach((t, i) => {
   else if (typeof t.expect === 'boolean') pass = Boolean(r.out) === t.expect || r.out === (t.expect ? 1 : 0);
   else if (typeof t.expect === 'number') pass = Number.isFinite(t.tol) ? Math.abs(Number(r.out) - t.expect) <= t.tol : Number(r.out) === t.expect;
   else pass = String(r.out) === String(t.expect);
-  if (r.ms > 2000) { pass = false; r.err = (r.err || '') + ' [over 2000 ms]'; }
   allPass &&= pass;
   result.tests.push({ name: t.name, fn: t.fn, args: t.args, expect: t.expectError ? 'error' : t.expect, got: r.err ?? r.out, ms: +r.ms.toFixed(3), pass });
 });
 result.gates.G4_tests = { ok: allPass, passed: result.tests.filter(t => t.pass).length, total: tests.length };
-result.gates.G6_bounded = { ok: run1.every(r => r.ms <= 2000), maxMs: Math.max(...run1.map(r => r.ms)) };
+result.gates.G6_bounded = { ok: !bounds.length, ...(bounds.length ? { why: bounds[0] } : {}), maxMs: Math.max(...run1.map(r => r.ms)), fuelUsed };
 const run2 = runAll();
 const same = run1.every((r, i) => String(r.out) === String(run2[i].out) && (r.err === null) === (run2[i].err === null));
 result.gates.G5_deterministic = { ok: same };
@@ -115,10 +126,23 @@ result.gates.G5_deterministic = { ok: same };
         const trapFns = new Set(glue.traps.map(t => t.fn));
         for (const t of glue.traps) if (!exportNames.has(t.fn)) problems.push(`trap for ${t.fn}, which the module does not export`);
         for (const fn of new Set(tests.filter(t => t.expectError).map(t => t.fn))) if (!trapFns.has(fn)) problems.push(`${fn} traps in tests.json but the glue has no trap message for it`);
+        problems.push(...glueProblems(glue, { source: fs.readFileSync(f('kernel.ts'), 'utf8'), contract: fs.readFileSync(f('CONTRACT.md'), 'utf8') }));
       }
     }
   }
   result.gates.G7_glue = problems.length ? { ok: false, why: problems.slice(0, 20).join('; ') } : { ok: true };
+}
+{
+  const expected = nonFiniteExpectation(fs.readFileSync(f('CONTRACT.md'), 'utf8'), Object.keys(loaded.shape.functions));
+  const calls = probeCalls(tests, loaded.shape.functions), kernel = freshKernel(loaded), problems = [], unjudged = {};
+  for (const { fn, args } of calls) {
+    const outcome = callKernel(kernel, fn, args), expectation = expected[fn];
+    if (outcome.limit) { problems.push(`${fn}(${args}): ${outcome.limit}`); break; }
+    const problem = probeProblem(expectation, outcome);
+    if (problem) problems.push(`${fn}(${args}): ${problem}`);
+    else if (!outcome.trap && ['permitted', 'excluded', 'silent'].includes(expectation) && !Number.isFinite(Number(outcome.value))) unjudged[expectation] = (unjudged[expectation] ?? 0) + 1;
+  }
+  result.gates.G8_nonfinite = { ok: !problems.length, probes: calls.length, ...(problems.length ? { why: problems.slice(0, 5).join('; ') } : {}), ...(Object.keys(unjudged).length ? { unjudged } : {}) };
 }
 function validate(v, s, root, at) {
   const out = [];
