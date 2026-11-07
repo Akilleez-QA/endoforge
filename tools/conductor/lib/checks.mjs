@@ -20,12 +20,18 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { runTypedAsync, StopError } from '../../lib/errors.mjs';
 import { stateDir } from './state.mjs';
+import { writeJSONAtomic } from '../../lib/lock.mjs';
 
 const expandAll = (cmd, vars) => {
   const sub = (x) => Object.entries(vars).reduce((s, [k, v]) => s.replaceAll(`\${${k}}`, v), x);
   return Array.isArray(cmd) ? cmd.map(sub) : ['sh', '-c', sub(cmd)];
 };
 const readJSON = (f) => { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch { return null; } };
+function readRubric(f) {
+  let raw;
+  try { raw = fs.readFileSync(f, 'utf8'); } catch (e) { return e.code === 'ENOENT' ? null : { unreadable: e.message }; }
+  try { const r = JSON.parse(raw); return Array.isArray(r?.items) ? r : { unreadable: 'it has no item list' }; } catch (e) { return { unreadable: e.message }; }
+}
 /** Judged items as { name: true|false }; items without a verdict (no pass, no numeric score) are left out. */
 export function items(findings, itemPass = 1) {
   const out = {};
@@ -82,8 +88,9 @@ export async function checkAtom(ctx, id) {
       if (!r2.unscored && (r2.pass !== r.pass || !same(items(r2.findings, k.itemPass), it))) return { id: k.id, unstable: 'two runs on the same slice disagree' };
     }
     if (Object.keys(it).length) {                                   // U5: freeze the item list on first use
-      const frozen = readJSON(rubric);
-      if (!frozen) fs.writeFileSync(rubric, JSON.stringify({ check: k.id, items: Object.keys(it).sort(), frozenAt: new Date().toISOString() }, null, 1));
+      const frozen = readRubric(rubric);
+      if (frozen?.unreadable) return { id: k.id, unstable: `its frozen item list ${rubric} is unreadable (${frozen.unreadable}); restore or remove it` };
+      if (!frozen) writeJSONAtomic(rubric, { check: k.id, items: Object.keys(it).sort(), frozenAt: new Date().toISOString() });
       else if (JSON.stringify(frozen.items) !== JSON.stringify(Object.keys(it).sort())) return { id: k.id, unstable: `its item list changed (${frozen.items.join(', ')} → ${Object.keys(it).sort().join(', ')}); it must re-score the frozen items in ${rubric}` };
     }
     const before = st.items?.[k.id] ?? {};                          // U6: the keep-list

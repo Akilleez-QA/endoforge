@@ -1,0 +1,277 @@
+{
+ "node": "26.13.0",
+ "deadline": 200,
+ "rows": [
+  {
+   "arm": "cohort-cell",
+   "kind": "loop",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 10.3,
+   "overrunP95": 13.5,
+   "overrunMax": 13.5
+  },
+  {
+   "arm": "cohort-cell",
+   "kind": "loop-swallow",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 22,
+   "overrunP95": 62.4,
+   "overrunMax": 62.4
+  },
+  {
+   "arm": "cohort-cell",
+   "kind": "async-microtask-loop",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 9.9,
+   "overrunP95": 13.1,
+   "overrunMax": 13.1
+  },
+  {
+   "arm": "cohort-cell",
+   "kind": "async-thenable-chain",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 16.3,
+   "overrunP95": 52,
+   "overrunMax": 52
+  },
+  {
+   "arm": "cohort-cell",
+   "kind": "regex-catastrophe",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 11,
+   "overrunP95": 18.7,
+   "overrunMax": 18.7
+  },
+  {
+   "arm": "cohort-cell",
+   "kind": "bigint-big",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 19.4,
+   "overrunP95": 60.9,
+   "overrunMax": 60.9
+  },
+  {
+   "arm": "cohort-cell",
+   "kind": "sort-big",
+   "reasons": {
+    "heap": 7,
+    "deadline": 3
+   },
+   "overrunP50": -46.2,
+   "overrunP95": 81.2,
+   "overrunMax": 81.2
+  },
+  {
+   "arm": "cohort-cell",
+   "kind": "string-join",
+   "reasons": {
+    "string_limit": 10
+   },
+   "overrunP50": -180.1,
+   "overrunP95": -147.1,
+   "overrunMax": -147.1
+  },
+  {
+   "arm": "cohort-cell",
+   "kind": "deep-json-stringify",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 26.8,
+   "overrunP95": 51.8,
+   "overrunMax": 51.8
+  },
+  {
+   "arm": "process-cell",
+   "kind": "loop",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 59.3,
+   "overrunP95": 121.9,
+   "overrunMax": 121.9
+  },
+  {
+   "arm": "process-cell",
+   "kind": "loop-swallow",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 33.1,
+   "overrunP95": 36.9,
+   "overrunMax": 36.9
+  },
+  {
+   "arm": "process-cell",
+   "kind": "async-microtask-loop",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 37.3,
+   "overrunP95": 98.2,
+   "overrunMax": 98.2
+  },
+  {
+   "arm": "process-cell",
+   "kind": "async-thenable-chain",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 45.1,
+   "overrunP95": 111.8,
+   "overrunMax": 111.8
+  },
+  {
+   "arm": "process-cell",
+   "kind": "regex-catastrophe",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 33.4,
+   "overrunP95": 53.3,
+   "overrunMax": 53.3
+  },
+  {
+   "arm": "process-cell",
+   "kind": "bigint-big",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 45.5,
+   "overrunP95": 104,
+   "overrunMax": 104
+  },
+  {
+   "arm": "process-cell",
+   "kind": "sort-big",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 36.5,
+   "overrunP95": 106.4,
+   "overrunMax": 106.4
+  },
+  {
+   "arm": "process-cell",
+   "kind": "string-join",
+   "reasons": {
+    "string_limit": 10
+   },
+   "overrunP50": -198.9,
+   "overrunP95": -110.5,
+   "overrunMax": -110.5
+  },
+  {
+   "arm": "process-cell",
+   "kind": "deep-json-stringify",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 39.4,
+   "overrunP95": 115.4,
+   "overrunMax": 115.4
+  },
+  {
+   "arm": "isolated-vm",
+   "kind": "loop",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 5.1,
+   "overrunP95": 7.3,
+   "overrunMax": 7.3
+  },
+  {
+   "arm": "isolated-vm",
+   "kind": "loop-swallow",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 3.1,
+   "overrunP95": 7.1,
+   "overrunMax": 7.1
+  },
+  {
+   "arm": "isolated-vm",
+   "kind": "async-microtask-loop",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 6.1,
+   "overrunP95": 12.3,
+   "overrunMax": 12.3
+  },
+  {
+   "arm": "isolated-vm",
+   "kind": "async-thenable-chain",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 3.2,
+   "overrunP95": 6.8,
+   "overrunMax": 6.8
+  },
+  {
+   "arm": "isolated-vm",
+   "kind": "regex-catastrophe",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 5.1,
+   "overrunP95": 21.9,
+   "overrunMax": 21.9
+  },
+  {
+   "arm": "isolated-vm",
+   "kind": "bigint-big",
+   "reasons": {
+    "process_lost": 10
+   },
+   "overrunP50": 3069.1,
+   "overrunP95": 3192.7,
+   "overrunMax": 3192.7
+  },
+  {
+   "arm": "isolated-vm",
+   "kind": "sort-big",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 3.2,
+   "overrunP95": 106.6,
+   "overrunMax": 106.6
+  },
+  {
+   "arm": "isolated-vm",
+   "kind": "string-join",
+   "reasons": {
+    "string_limit": 10
+   },
+   "overrunP50": -197.9,
+   "overrunP95": -197.4,
+   "overrunMax": -197.4
+  },
+  {
+   "arm": "isolated-vm",
+   "kind": "deep-json-stringify",
+   "reasons": {
+    "deadline": 10
+   },
+   "overrunP50": 100.9,
+   "overrunP95": 685.5,
+   "overrunMax": 685.5
+  }
+ ]
+}
