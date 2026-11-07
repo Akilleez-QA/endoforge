@@ -255,16 +255,15 @@ This isn't an OS sandbox and it isn't a Spectre boundary. The permission model d
 
 ## X1 host port
 
-[x1/host.mjs](x1/host.mjs) runs the seven X1 gates as the real evaluator's
-residual check in either workcell mode. Universal gates validate the host envelope;
-they do not claim to infer an AssemblyScript signature or scan arbitrary effects.
+[x1/host.mjs](x1/host.mjs) runs the eight X1 gates as the real evaluator's
+residual check in either workcell mode. Universal gates measure the candidate through [x1/measure.mjs](x1/measure.mjs): two fresh instances in opposite call orders, usage read from outside the guest, and a scan of imports and calls. A wall-only overrun reads as an unknown outcome; fuel, stack and memory overruns refuse.
 [x1/compiler.mjs](x1/compiler.mjs) compiles on the supervisor with a 60-second
 watchdog, bounded diagnostic output and `--maximumMemory 1024` (64 MiB). Set
 `ENDOFORGE_ASC_CMD` to the AssemblyScript 0.28.20 `asc` executable. Compilation
 is outside the workcell heap quota. Candidate identity binds source, glue, frozen
 checks and compiler bytes; the port checks source and frozen implementation bindings.
 Original WASM exports exclude guard helpers; the closed glue schema preserves X1 constraints.
-G6 retains X1's observed 2000-ms call boundary, not a preemptive CPU watchdog.
+[x1/meter.mjs](x1/meter.mjs) adds fuel to the module at function entry and each loop header, charging an upper bound on instructions executed, so a kernel that never returns stops in the guest. G6 reports that bound; bulk memory operations are charged a fixed cost, so the pool's `jobTimeoutMs` stays a backstop. G7 also checks glue against kernel parameters and the frozen contract, and G8 probes float parameters with NaN and infinity, judged by [x1/contract.mjs](x1/contract.mjs) ([P-52](../../experiments/P-52-real-gates/RESULT.md)).
 Host ports are trusted; workcells are not an OS sandbox.
 
 [x1/generator.mjs](x1/generator.mjs) exposes
