@@ -69,3 +69,16 @@ The result reports what the permission model doesn't cover, and that a thread bo
 - Three reruns of one arm for infrastructure reasons: stop and report it unmeasured.
 
 Scratch stays under `.scratch/` in the clone, and generated files that aren't small receipts aren't committed. Nothing touches the core gates, the x1 stages or the agent loop beyond one off-by-default option.
+
+## Amendment 1, 2026-11-06, after one first pass of `cohort-oneshot` only
+
+The first pass is kept in `receipt/initial/`. No other arm had run, and no speed, memory or width number existed. It showed two things.
+
+- Prediction 4 fails as written: on both Nodes `string-regex`, `array-fatal`, `map-table-limit` and `object-dictionary` end the cohort with V8's `FATAL ERROR ... heap out of memory`, whatever the Worker's limits. A thread's `resourceLimits` doesn't contain a large allocation near the limit. That stands as a failed prediction, and these four kinds join the breach arm for every arm.
+- `stack-near-error` obtained a host-realm error object: a stack overflow in Node's stack-trace callback, reached through `.stack` near the limit. Code generation was blocked, so no authority was reached, but it's a leak through the context boundary. The attacks now also try to use a leaked host object beyond `Function`, and the harness's false positives on null-prototype objects are fixed.
+
+New arm, decided before any measurement of it: `cohort-cell`, one `--permission` process per cell, with one fresh guest Worker per run and one prepared spare. It's the `cohort-oneshot` code at width 1, N times. Its failure boundary is the process, as in `process-cell`, but it has ports and a deadline enforcer inside the process.
+
+Predictions for it, in the terms of the originals: 0 neighbours lost at width 8 and 16 on every breach kind, because no two guests share a process. Per-candidate wall under 8 ms p50 at width 1. Marginal RSS 50–90 MiB per cell, or about twice `process-cell`. A fatal breach costs 1 spawn; the deadline and heap paths that a Worker contains cost 0.
+
+New attacks: `string-flatten-many`, which holds several flat strings to test whether the heap limit applies to them, and `leak-use`. Decision rule unchanged. An arm with no ports doesn't meet the host-port requirement and can't be the default, whatever its speed.
