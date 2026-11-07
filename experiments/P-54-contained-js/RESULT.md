@@ -108,6 +108,14 @@ The P-15 corpus has 20 AssemblyScript kernels. None of them type-checks as TypeS
 
 All 20 passed their tests on the contained JavaScript route, and the two runs were equal on all 20.
 
+## Rerun on the committed runner, at load 7–11
+
+The attack and deadline batches above ran before two fixes went into the shipped runner: `close()` waits for a cohort that's still starting, and a port is looked up only among the contract's and caller's own names. After those, with load 7.5–10.5, `cohort-cell` alone was run again on both Nodes. Raw files are in [receipt/rerun/](receipt/rerun/).
+
+- Attacks: 67 on each Node, 0 reached, 0 host-realm objects.
+- Deadline overrun, ms, p95 on 26.13.0 then 22.23.3: `loop` 11.9, 35.9; `loop-swallow` 9.9, 27.6; microtask loop 10.2, 28.8; thenable chain 10.7, 27.6; regex 10.3, 26.4; `bigint-big` 17.7, 61.7; `deep-json-stringify` 38.0 on 26 and refused as `stack` on 22. Every interruptible runaway was within 50 ms.
+- Speed on 26.13.0, p50 and p95 ms: `cohort-cell` 4.9 and 9.2 at width 1, 7.7 and 15.4 at 8, 17.5 and 60.9 at 16, with 205, 1,017 and 734 per second. `process-cell` 0.34 and 0.75, 0.47 and 1.18, 0.67 and 1.78. RSS per cell 76–77 and 69 MiB. Ready 24–46 ms.
+
 ## Predictions
 
 1. Control reaches the file system by `this.constructor.constructor`: **held**, both Nodes.
@@ -115,10 +123,10 @@ All 20 passed their tests on the contained JavaScript route, and the two runs we
 3. Assume-breach: file read, write, child process and addon denied: **held**. Worker denied: **failed**, since the cells need `--allow-worker`. Network reached on 22 and denied on 26: **held**. Signals reach the decoy: **held**, unless the worker realm removes the route, which it does.
 4. `cohort-oneshot` loses no neighbour on heap, loop or stack: **held**. The 1 in 3 chance of a fatal kind taking the cohort down: **failed**, all four did on both Nodes (Amendment 1).
 5. `isolated-vm` doesn't build on 26 or takes the process down: **held**, it built on both and took the process down on both.
-6. Width 1 p50, `cohort-oneshot` under 40 ms, `cohort-reuse` and `process-cell` under 5, `isolated-vm` under 10: **held**, 7.3, 0.46, 0.42 and 2.5 (loaded). Amendment 1's `cohort-cell` under 8 ms: **held on 26** at 7.4 (loaded), **failed on 22** at 18.9.
+6. Width 1 p50, `cohort-oneshot` under 40 ms, `cohort-reuse` and `process-cell` under 5, `isolated-vm` under 10: **held**, 7.3, 0.46, 0.42 and 2.5 (loaded). Amendment 1's `cohort-cell` under 8 ms: **held on 26**, 7.4 loaded and 4.9 in the rerun, **failed on 22** at 18.9 (load 15.9).
 7. Marginal RSS: thread cells 8–15 MiB, **failed**, about 19–22; `process-cell` 40–60, **failed**, 62–69; `isolated-vm` under 8, **held**, about 2. `cohort-cell` 50–90: **held**, 75–79.
 8. 0 warm spawns: **held** in every arm. A breach costs `process-cell` 1 spawn: **held**, except stack, which it contains. Thread arms 0 on a breach: **failed** for fatal kinds, which restart the cohort. `cohort-cell` 1 on fatal and 0 on deadline and heap: **held**.
-9. Interruptible runaway within 50 ms at p95: **failed**. `cohort-cell` met it on 26 for `loop`, the microtask loop and the regex, not for `loop-swallow` (62) or the thenable chain (52), and on 22 only for `loop-swallow` and the regex. Long builtins within 500 ms: **held** for `cohort-cell`, not for `isolated-vm`. All loaded.
+9. Interruptible runaway within 50 ms at p95: **failed**. `cohort-cell` met it on 26 for `loop`, the microtask loop and the regex, not for `loop-swallow` (62) or the thenable chain (52), and on 22 only for `loop-swallow` and the regex, all at high load. In the rerun at load 7–11 it **held** on both Nodes, 36 ms at worst. Long builtins within 500 ms: **held** for `cohort-cell`, not for `isolated-vm`.
 10. Byte-equal runs, and 22 equal to 26 except stack depth: **held** within a Node, **failed** across Nodes for `globals-walk` and `Math.pow`.
 11. No `ArrayBuffer` without a grant: **held**, binary types aren't in the context. The granted case wasn't measured.
 12. JS run at least 10× a fresh wasm instance: **held**, about 140×. AS total including compile within 3× of the JS check and run: **held**, 31.7 against 29.7 ms at p50.
@@ -129,4 +137,4 @@ All 20 passed their tests on the contained JavaScript route, and the two runs we
 - Results across Node versions aren't equal, so a verdict is bound to the Node that produced it.
 - The granted-binary path (prediction 11), the RSS watchdog against a guest that passes the heap limit with one flat string at width above 1, and a cgroup bound on a cell weren't measured.
 - The AssemblyScript comparison uses scalar extracts, not whole kernels, and 20 needs.
-- Every timing here is from a loaded desktop.
+- Apart from the rerun, every timing here is from a loaded desktop, and even the rerun had other agents' work running. The rerun didn't repeat the breach, spawn or route batches, which ran on the runner before the two fixes.
