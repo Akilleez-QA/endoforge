@@ -1,6 +1,9 @@
 PYTHON ?= python3
 export PYTHONDONTWRITEBYTECODE := 1
 export ENDOFORGE_TEST_OUTPUT := $(CURDIR)/.test-work
+TOOLS_DIR := $(CURDIR)/.tools
+KERNEL_PYTHON = $(if $(wildcard $(TOOLS_DIR)/venv/bin/python),$(TOOLS_DIR)/venv/bin/python $(wordlist 2,$(words $(PYTHON)),$(PYTHON)),$(PYTHON))
+KERNEL_ENV = $(if $(wildcard $(TOOLS_DIR)/bin/wasm-tools),PATH="$(TOOLS_DIR)/bin:$$PATH")
 
 .PHONY: test test-optimized check core-test ledger-test engine-test isolate-test tscheck-setup tscheck-test tscheck-requalify atomizer-test harness-test hardware-test runtime-test lib-test library-test portability-test factory-state-test seeded-fault-test escape-test compatibility-test
 
@@ -11,6 +14,14 @@ test-optimized:
 
 check:
 	$(PYTHON) -I tools/check-docs.py
+	$(PYTHON) -I tools/check-privacy.py
+
+.PHONY: check-privacy tools
+check-privacy:
+	$(PYTHON) -I tools/check-privacy.py
+
+tools:
+	$(firstword $(PYTHON)) -B -m tools.kernel.install_tools
 
 core-test:
 	$(PYTHON) -B -m unittest discover -s tests -v
@@ -96,7 +107,8 @@ escape-test:
 
 .PHONY: kernel-test
 kernel-test:
-	$(PYTHON) -B -m unittest tools.kernel.test_contract tools.kernel.test_workcell tools.kernel.test_broker tools.kernel.test_limits -v
+	@$(KERNEL_ENV) $(KERNEL_PYTHON) -B -m tools.kernel.install_tools --check
+	$(KERNEL_ENV) $(KERNEL_PYTHON) -B -m unittest tools.kernel.test_contract tools.kernel.test_workcell tools.kernel.test_broker tools.kernel.test_limits -v
 
 .PHONY: rust-lane-test
 rust-lane-test:

@@ -47,7 +47,12 @@ used here has SHA-256
 `655b8df67d54c3ef9b52fc237c4e94bbfbb5f5f43825245cb0940a7002a9ed65`.
 See the [upstream release](https://github.com/bytecodealliance/wasm-tools/releases/tag/v1.262.0)
 and [WIT reference](https://component-model.bytecodealliance.org/design/wit.html).
-`make test` runs `make kernel-test`, so it needs this executable too, and CI installs it from that archive.
+`make test` runs `make kernel-test`, so it needs this executable and Python
+`wasmtime` 49.0.0 too. `make tools` installs both, hash-checked, into the
+git-ignored `.tools/` (a venv and `.tools/bin/wasm-tools`); CI runs the same
+target. `make kernel-test` uses `.tools/` automatically when present and fails
+with a message naming `make tools` when either tool is missing. Pins live in
+`requirements.txt` and `install_tools.py`; `make test` itself never downloads.
 From the repository root, run `make kernel-test` or
 `python3 -B -m tools.kernel.contract component.wasm` for a JSON artifact record.
 The validator accepts binary components up to 16 MiB, caps each tool call at
