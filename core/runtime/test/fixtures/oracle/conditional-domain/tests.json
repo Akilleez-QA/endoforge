@@ -1,0 +1,15 @@
+[
+  {"name":"non-name preserved","fn":"genericIdentifier","args":[0,0],"expect":0},
+  {"name":"first name neutralized","fn":"genericIdentifier","args":[1,1],"expect":1},
+  {"name":"second name also neutralized","fn":"genericIdentifier","args":[1,2],"expect":2},
+  {"name":"repeated entity stable","fn":"genericIdentifier","args":[1,1],"expect":1},
+  {"name":"interior ordinal","fn":"genericIdentifier","args":[1,543210],"expect":543210},
+  {"name":"upper boundary","fn":"genericIdentifier","args":[1,1000000],"expect":1000000},
+  {"name":"name cannot use sentinel","fn":"genericIdentifier","args":[1,0],"expectError":true},
+  {"name":"negative ordinal","fn":"genericIdentifier","args":[1,-1],"expectError":true},
+  {"name":"ordinal overflow","fn":"genericIdentifier","args":[1,1000001],"expectError":true},
+  {"name":"non-name cannot carry entity","fn":"genericIdentifier","args":[0,1],"expectError":true},
+  {"name":"non-name negative ordinal","fn":"genericIdentifier","args":[0,-1],"expectError":true},
+  {"name":"flag above boundary","fn":"genericIdentifier","args":[2,1],"expectError":true},
+  {"name":"negative flag","fn":"genericIdentifier","args":[-1,0],"expectError":true}
+]

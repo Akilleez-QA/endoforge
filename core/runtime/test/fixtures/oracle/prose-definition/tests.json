@@ -1,0 +1,16 @@
+[
+  {"name":"fourfold total feed","fn":"recirculationRatio","args":[4,1],"expect":4,"tol":0},
+  {"name":"fractional ratio","fn":"recirculationRatio","args":[10,3],"expect":3.3333333333333335,"tol":1e-15},
+  {"name":"complete evaporation","fn":"recirculationRatio","args":[1,1],"expect":1,"tol":0},
+  {"name":"both minimum flows","fn":"recirculationRatio","args":[0.000001,0.000001],"expect":1,"tol":0},
+  {"name":"both maximum flows","fn":"recirculationRatio","args":[1000000,1000000],"expect":1,"tol":0},
+  {"name":"maximum ratio","fn":"recirculationRatio","args":[1000000,0.000001],"expect":1000000000000,"tol":0},
+  {"name":"zero evaporation","fn":"recirculationRatio","args":[4,0],"expectError":true},
+  {"name":"zero circulation","fn":"recirculationRatio","args":[0,1],"expectError":true},
+  {"name":"negative flow","fn":"recirculationRatio","args":[4,-1],"expectError":true},
+  {"name":"evaporation exceeds feed","fn":"recirculationRatio","args":[1,2],"expectError":true},
+  {"name":"circulation below minimum","fn":"recirculationRatio","args":[0.0000005,0.000001],"expectError":true},
+  {"name":"evaporation below minimum","fn":"recirculationRatio","args":[1,0.0000005],"expectError":true},
+  {"name":"circulation above maximum","fn":"recirculationRatio","args":[1000001,1],"expectError":true},
+  {"name":"evaporation above maximum","fn":"recirculationRatio","args":[1000000,1000001],"expectError":true}
+]
