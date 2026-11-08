@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { createContainedPool, createContainedRunner, LANE, validateContract } from '../contained/runner.mjs';
+import { timingOnly } from './fixtures/timing.mjs';
 
 const one = source => ({ modules: { '/g/main.js': source }, entry: '/g/main.js' });
 const scoped = (t, make, options) => { const runner = make(options); t.after(() => runner.close()); return runner; };
@@ -108,7 +109,8 @@ test('a deadline is enforced from outside against async work', async t => {
   for (const source of ['exports.main = () => { (function loop() { Promise.resolve().then(loop); })(); return 1; };', 'exports.main = () => { const t = { then(r) { Promise.resolve().then(() => t.then(r)); } }; return Promise.resolve(t); };']) {
     const started = performance.now();
     assert.equal((await runner.run({ ...one(source), deadlineMs: 150 })).reason, 'deadline');
-    assert.ok(performance.now() - started < 3000);
+    const took = performance.now() - started;
+    timingOnly(t, 'external deadline stops async work within 3000 ms', () => assert.ok(took < 3000, `${took} ms`));
   }
   assert.equal((await runner.run(one('exports.main = () => new Promise(() => {});'))).reason, 'never_settled');
 });
@@ -118,7 +120,8 @@ test('a port that never answers cannot extend the deadline', async t => {
   const started = performance.now();
   const result = await runner.run({ ...one('exports.main = () => require("host:ports").hang(1);'), deadlineMs: 200, contract: { ports: { hang: { maxCalls: 1, maxBytes: 64 } } }, ports: { hang: () => new Promise(() => {}) } });
   assert.equal(result.reason, 'deadline');
-  assert.ok(performance.now() - started < 3000);
+  const took = performance.now() - started;
+  timingOnly(t, 'a hung port is cut off within 3000 ms', () => assert.ok(took < 3000, `${took} ms`));
   assert.equal(runner.stats.cohortLosses, 0);
 });
 

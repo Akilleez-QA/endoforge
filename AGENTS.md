@@ -19,6 +19,7 @@ Follow [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) and
 - `tests/` exercises lifecycle behavior and the core boundary.
 - `campaigns/`, `experiments/`, and `docs/` provide guidance for supplying inputs.
 - `sources/SHA256SUMS` records source digests checked by `make check`.
+- `experiments/README.md`'s index and `sources/SHA256SUMS` are generated (`make index`, `make sums`); reserve experiment numbers with `tools/experiment_id.py reserve` (see `experiments/README.md`).
 
 Keep changes focused. Open an issue before larger work, as CONTRIBUTING requires.
 Use synthetic identifiers and local paths in examples. Keep generated evidence

@@ -30,13 +30,15 @@ export function validateContract(contract = {}) {
   return { grants: { ...(clock ? { clock } : {}), ...(random ? { random } : {}) }, ports: Object.keys(ports), limits: ports };
 }
 
-export function createContainedRunner({ width = 1, spare = width, heapMb = 64, youngMb = 8, stackMb = 2, deadlineMs = 1000, outputMaxBytes = 1048576,
+export function createContainedRunner({ width = 1, maxWidth = width, affinity = null, taskset = '/usr/bin/taskset', spare = width, heapMb = 64, youngMb = 8, stackMb = 2, deadlineMs = 1000, outputMaxBytes = 1048576,
   stuckMs = 1500, bootAllowanceMs = 5000, rssMaxMb, reuse = true, harden = true, execPath = process.execPath, cohortArgs, onCohort, sources = {}, prepare } = {}) {
-  if (![width, spare, heapMb, youngMb, stackMb, deadlineMs, outputMaxBytes, stuckMs].every(positive)) throw new TypeError('positive integer limits required');
-  const preparer = prepare ? preparerConfig(prepare, width) : null;
-  const rssLimit = rssMaxMb ?? (heapMb + youngMb * 3 + 48) * (width + spare) + 256 + (preparer ? preparer.memoryMb * width + (preparer.layout === 'sibling' ? 48 * preparer.count : 0) : 0);
+  if (![width, maxWidth, spare, heapMb, youngMb, stackMb, deadlineMs, outputMaxBytes, stuckMs].every(positive) || width > maxWidth) throw new TypeError('positive integer limits required');
+  if (affinity !== null && !(Array.isArray(affinity) && affinity.length && affinity.every(cpu => Number.isSafeInteger(cpu) && cpu >= 0))) throw new TypeError('affinity must list CPU numbers');
+  const preparer = prepare ? preparerConfig(prepare, maxWidth) : null;
+  const rssLimit = rssMaxMb ?? (heapMb + youngMb * 3 + 48) * (maxWidth + spare) + 256 + (preparer ? preparer.memoryMb * maxWidth + (preparer.layout === 'sibling' ? 48 * preparer.count : 0) : 0);
+  let limit = width;
   const bootstrap = sources.guest || source('./guest.js'), cellSource = sources.cell || source('./cell.cjs');
-  const config = { width, spare, reuse, harden, stuckMs, bootstrap, resourceLimits: { maxOldGenerationSizeMb: heapMb, maxYoungGenerationSizeMb: youngMb, stackSizeMb: stackMb },
+  const config = { width: maxWidth, spare, reuse, harden, stuckMs, bootstrap, resourceLimits: { maxOldGenerationSizeMb: heapMb, maxYoungGenerationSizeMb: youngMb, stackSizeMb: stackMb },
     ...(preparer ? { prepare: preparer } : {}) };
   const args = cohortArgs || cohortArguments({ readPaths: preparer ? preparer.wasm.map(item => item.path) : [] });
   const inflight = new Map(), queue = [];
@@ -58,13 +60,14 @@ export function createContainedRunner({ width = 1, spare = width, heapMb = 64, y
     try { target.child.kill('SIGKILL'); } catch {}
     if (cohort === target) { cohort = null; starting = null; }
     const fatal = target.tail.split('\n').find(line => /FATAL|Fatal/.test(line))?.slice(0, 160);
-    const attributed = width === 1 ? { status: 'refused', reason: fatal && /memory/i.test(fatal) ? 'heap' : reason === 'cohort_rss' ? 'memory' : reason === 'deadline_stuck' || reason === 'watchdog' ? 'deadline' : 'process_exit' } : { status: 'outcome_unknown', reason };
+    const attributed = maxWidth === 1 ? { status: 'refused', reason: fatal && /memory/i.test(fatal) ? 'heap' : reason === 'cohort_rss' ? 'memory' : reason === 'deadline_stuck' || reason === 'watchdog' ? 'deadline' : 'process_exit' } : { status: 'outcome_unknown', reason };
     // A checked attempt may have been checking rather than running when the cohort died, so it is never attributed.
     for (const entry of [...inflight.values()]) if (entry.owner === target) settle(entry, { ...(entry.attempt ? { status: 'outcome_unknown', reason } : attributed), detail: fatal || `cohort lost: ${reason}` });
     if (!closed) { start().catch(() => {}); pump(); }
   };
   const start = () => starting ||= new Promise((resolve, reject) => {
-    const child = spawn('/bin/sh', ['-c', 'ulimit -c 0; exec "$@"', 'sh', execPath, ...args], { env: { TZ: 'UTC', LC_ALL: 'C' }, cwd: '/', stdio: ['ignore', 'ignore', 'pipe', 'ipc'], serialization: 'json' });
+    const pin = affinity ? [taskset, '-c', affinity.join(',')] : [];
+    const child = spawn('/bin/sh', ['-c', 'ulimit -c 0; exec "$@"', 'sh', ...pin, execPath, ...args], { env: { TZ: 'UTC', LC_ALL: 'C' }, cwd: '/', stdio: ['ignore', 'ignore', 'pipe', 'ipc'], serialization: 'json' });
     const target = { child, tail: '' };
     stats.cohortStarts += 1;
     child.stderr.on('data', chunk => { target.tail = (target.tail + chunk).slice(-4096); });
@@ -124,7 +127,7 @@ export function createContainedRunner({ width = 1, spare = width, heapMb = 64, y
   const pump = () => {
     if (!queue.length || closed && !queue.length) return;
     if (!cohort) { start().then(pump, error => { for (const entry of queue.splice(0)) entry.resolve({ lane: LANE, status: 'outcome_unknown', reason: 'cohort_start_failed', detail: error.message }); }); return; }
-    while (queue.length && inflight.size < width) {
+    while (queue.length && inflight.size < limit) {
       const entry = queue.shift();
       entry.id = nextId++;
       entry.owner = cohort;
@@ -140,6 +143,15 @@ export function createContainedRunner({ width = 1, spare = width, heapMb = 64, y
     stats,
     ready: () => start().then(() => undefined),
     get pid() { return cohort?.child.pid; },
+    get width() { return limit; },
+    get maxWidth() { return maxWidth; },
+    get load() { return inflight.size + queue.length; },
+    setWidth(value) {
+      if (!positive(value)) throw new TypeError('width must be a positive integer');
+      limit = Math.min(maxWidth, value);
+      pump();
+      return limit;
+    },
     run({ modules, entry, exportName = 'main', input = null, contract, deadlineMs: jobDeadline = deadlineMs, ports }) {
       if (closed) return Promise.reject(new Error('runner closed'));
       if (!positive(jobDeadline)) return Promise.reject(new TypeError('deadlineMs must be a positive integer'));
