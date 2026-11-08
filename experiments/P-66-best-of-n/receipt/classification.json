@@ -1,0 +1,130 @@
+[
+ {
+  "need": "CC-007",
+  "arm": "sonnet-low",
+  "sample": 6,
+  "class": "other",
+  "evidence": {
+   "failingTests": 1,
+   "exit": "max_turns"
+  }
+ },
+ {
+  "need": "H02",
+  "arm": "sonnet-low",
+  "sample": 0,
+  "class": "other",
+  "evidence": {
+   "failingTests": 1,
+   "exit": "max_turns"
+  }
+ },
+ {
+  "need": "H02",
+  "arm": "sonnet-low",
+  "sample": 2,
+  "class": "frozen-wrong",
+  "evidence": {
+   "test": "max amps min volts",
+   "fn": "threePhaseHp",
+   "args": [
+    100,
+    2000,
+    1,
+    1
+   ],
+   "frozen": {
+    "trap": false,
+    "value": 464.5449524
+   },
+   "reference": {
+    "trap": false,
+    "value": 464.54367838992397
+   },
+   "kernel": {
+    "trap": false,
+    "value": 464.54367838992397
+   }
+  }
+ },
+ {
+  "need": "H02",
+  "arm": "sonnet-low",
+  "sample": 5,
+  "class": "frozen-wrong",
+  "evidence": {
+   "test": "max volts amps",
+   "fn": "threePhaseHp",
+   "args": [
+    1000,
+    2000,
+    1,
+    1
+   ],
+   "frozen": {
+    "trap": false,
+    "value": 2322.71704
+   },
+   "reference": {
+    "trap": false,
+    "value": 4645.436783899239
+   },
+   "kernel": {
+    "trap": false,
+    "value": 4645.436783899239
+   }
+  }
+ },
+ {
+  "need": "H08",
+  "arm": "sonnet-low",
+  "sample": 3,
+  "class": "frozen-wrong",
+  "evidence": {
+   "test": "nominal 1ft dia",
+   "fn": "lineChargeLb",
+   "args": [
+    10,
+    12,
+    70
+   ],
+   "frozen": {
+    "trap": false,
+    "value": 549.7787143782137
+   },
+   "reference": {
+    "trap": true
+   },
+   "kernel": {
+    "trap": true
+   }
+  }
+ },
+ {
+  "need": "H08",
+  "arm": "sonnet-low",
+  "sample": 5,
+  "class": "frozen-wrong",
+  "evidence": {
+   "test": "all upper bounds",
+   "fn": "lineChargeLb",
+   "args": [
+    1000,
+    6,
+    100
+   ],
+   "frozen": {
+    "trap": false,
+    "value": 19634954.0849362
+   },
+   "reference": {
+    "trap": false,
+    "value": 19634.954084936206
+   },
+   "kernel": {
+    "trap": false,
+    "value": 19634.954084936206
+   }
+  }
+ }
+]
