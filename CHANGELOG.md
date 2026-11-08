@@ -6,6 +6,39 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Added
 
+- Documentation: a getting-started tutorial that runs the candidate loop on a fresh clone with a scripted model, an
+  explanation of the candidate loop, a configuration reference covering every environment variable, `limits` key and
+  options object with defaults from the code, a tools index and READMEs for every tool, and a refreshed docs index.
+- Formula oracle behind `limits.oracle`, off by default: frozen expectations are recomputed from the contract's
+  formula, ranges and a model-written `reference.js`, with `verified`, `corrected`, `flagged`, `unverified` and
+  `abstained` statuses (#126, #127; P-69, P-70).
+- Weekly usage governor in both Claude transports: new calls park at a 0.85 ceiling, on `allowed_warning` or
+  `rejected`, or when a login draws on usage credits, as `USAGE_PARKED` with exit 75 (#125).
+- Subscription guard: every `claude -p` launch must prove a claude.ai subscription login, or it is refused with exit
+  78 (#113).
+- Capacity planner (`core/runtime/capacity/`, Mjölnir): width, L3-domain placement and split from a machine probe,
+  with a fixed default and an opt-in occupancy-capped tuner; `docs/interfaces/capacity-icd.md` (#114, #124; P-67, P-68).
+- Gate `G9_units`, a static units check independent of the evaluators; promotion now requires G1–G9 (#119; P-65).
+- Live per-stage rates and a bottleneck verdict for the loop, opt-in through `rates`, and `tools/stage-rates.mjs`
+  (#117; P-62).
+- Memory dump list: the contained cohort, isolate pool and ledger writer register sheddable memory and shed idle
+  capacity on `SIGUSR2` when a memory guard asks; off unless the directory exists or `ENDOFORGE_DUMP_LIST=1` (#111; P-61).
+- Group-commit ledger writer with one journal `fdatasync` per batch (#110; P-59).
+- Type check inside the contained cohort, with tsrs instance reuse and a host incremental baseline; `fused` is the
+  route's default placement (#108, #109; P-58, P-60).
+- Evaluator synthesis stage behind `ENDOFORGE_SYNTH=1` (#104, #105, #106; P-56).
+- The agent loop releases its cell while it waits on the model (`waits: 'release'`, the default) (#107, #121; P-57).
+- Library v0: a need that a promoted kernel already satisfies skips implementation (#95).
+- Constraint records kept separately from compaction (#96, #97, #98; P-55).
+- Kernel contract, Wasmtime host and broker, seeded-fault generator, escape-rate harness, Rust and TypeScript lanes
+  (#83–#87, #90–#92).
+- TypeScript checker in pool workcells, with emit hashes in receipts, incremental build info and requalification
+  (#71, #78–#80); workcell off-heap limits, policy caps, shared modules, warm start, stack size and host calls
+  (#72–#76, #88).
+- `make tools` installs pinned kernel test tools; `make check` adds a privacy lint over experiment records (#120).
+- `make index`, `make sums`, glob test discovery and an experiment-number allocator (#123).
+
+
 - Contained execution of emitted JavaScript in a child isolate, one per owned
   process, behind an off-by-default `runNeed` option, with P-54's evidence.
 
@@ -44,6 +77,10 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Changed
 
+- `IsolatePool`'s default size is `availableParallelism()` again (#124; P-68).
+- A job's budget starts when its cell is warm (#115).
+- Tests not reached by any target now run, and `tests/test_reachability.py` fails on an unreached test (#94).
+
 - WASM compilation now rejects missing module memory maxima instead of supplying
   them; explicit limits and existing growth instrumentation remain enforced.
 
@@ -56,6 +93,10 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Fixed
 
+- A missing exit code or a torn state is no longer read as success, and ledgers and locked decisions survive a
+  failed read (#99, #100).
+- The random-kill loop-crash test is bounded by progress, not wall clock (#122).
+
 - Synthetic atomizer fan-out timing now disables host headroom throttling for
   that scheduler invocation. The fixture sleeps rather than consuming a core;
   inherited load and memory limits could serialize its independent workers on
@@ -65,4 +106,4 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
   for two-core before/after measurements.
 - Node 22 X1 test discovery by passing explicit test-file paths in
   [PR #3](https://github.com/Akilleez-QA/endoforge/pull/3).
-  This is a historical fix; the current Makefile has no X1 test target.
+  This is a historical fix; the current Makefile discovers tests by glob.

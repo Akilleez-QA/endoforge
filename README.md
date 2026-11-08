@@ -8,48 +8,64 @@ In-isolate software workshop for running many coding agents with fast checks, ca
 
 ## Status
 
-Research software. The core contains the lifecycle model, evidence ledger, engine evaluator and gates, and local agent execution pools. The lifecycle model validates proposals, evidence, and decision references. The evaluator checks candidates through caller-supplied host callbacks; runtime pools launch configured agent clients, while workflow orchestration and scheduling utilities live under `tools/`. Interfaces may change; lifecycle transitions validate references without granting authority.
+Research software. EndoForge turns a short need into a small numeric WebAssembly kernel. A model writes a contract
+and tests, the supervisor freezes them in a hash-chained ledger, the model writes the kernel, and a frozen evaluator
+runs nine gates inside V8 workcells. A candidate is promoted only when every gate passes for its exact bytes; a lost
+cell or a parked model call is an unknown outcome, never a pass. Defaults change only after a precommitted
+measurement in [experiments](experiments/README.md). Interfaces may change.
 
 ## Quickstart
 
-Requirements: Python 3.11+, Node.js 20+, GNU Make, bubblewrap for isolate checks, and the kernel tools in [tools/kernel/README.md](tools/kernel/README.md).
-
-Run from the repository root:
+Requirements: Git, GNU Make, Python 3.11+ and Node.js 22.8+ (CI runs Node 22 and 26). The full suite also needs
+bubblewrap, `age` and `gcc`, and kernel tools installed by `make tools`.
 
 ```sh
+git clone https://github.com/Akilleez-QA/endoforge.git
+cd endoforge
 make check
+make tools
 make test
 ```
 
-Tests use synthetic inputs and stubs. Public agent clients are optional. Keep generated evidence outside the source tree; the test output directory can be set with `make test ENDOFORGE_TEST_OUTPUT=/tmp/endoforge-test-output`.
+The [getting-started tutorial](docs/guides/tutorials/getting-started.md) runs the candidate loop with a scripted model in
+about five minutes, with no model account. Tests use synthetic inputs and test doubles. Keep generated evidence
+outside the source tree: `make test ENDOFORGE_TEST_OUTPUT="$(mktemp -d)"`.
 
 ## What is inside
 
 | Component | Purpose |
 |---|---|
-| [Lifecycle model](core/lifecycle.py) | Validate artifact identities, state changes, evidence, and decision bindings |
-| [Ledger](core/ledger/ledger.py) | Store and validate linked evidence records |
-| [Evaluator](core/engine/evaluator.mjs) | Evaluate candidates against frozen checks |
-| [Runtime](core/runtime/README.md) | Manage local execution pools |
+| [Candidate loop](docs/architecture/candidate-loop.md) | Need to specification, freeze, implementation, compile, gates, commit and decision (`core/runtime/x1/`) |
+| [Runtime](core/runtime/README.md) | V8 isolate workcells, WebAssembly memory limits, contained JavaScript, model transports, subscription guard, usage governor, dump list |
+| [Capacity planner](docs/interfaces/capacity-icd.md) | Width, placement on cache domains and split into cohorts (Mjölnir) |
+| [Ledger](docs/interfaces/ledger-icd.md) | Hash-chained evidence records and a group-commit writer |
+| [Evaluator](core/engine/evaluator.mjs) | Evaluate candidates against frozen checks through host callbacks |
+| [Library](core/library/README.md) | Reuse a promoted kernel for a need it already satisfies |
+| [Lifecycle model](core/lifecycle.py) | Validate artifact identities, state changes, evidence and decision references |
+| [Tools](tools/README.md) | Atomizer, conductor, job intake, hillclimb, TypeScript checker, kernel host and repository scripts |
 
 ## Documentation
 
-Start with the [documentation index](docs/README.md) and [local check guide](docs/guides/how-to/local-checks.md). Archived input placeholders are preserved in [campaigns](TODELETE/campaigns/README.md) and [experiments](TODELETE/experiments/README.md). The digest-checked source example remains in [sources](sources/README.md).
+Start with the [documentation index](docs/README.md). It links the tutorial, the
+[configuration reference](docs/configuration/configuration-reference.md), the architecture, interface documents and
+[local checks](docs/guides/how-to/local-checks.md).
 
 ## Related projects
 
-[Cstack](https://github.com/Akilleez-QA/cstack) and [poodo](https://github.com/Akilleez-QA/poodo) are related projects. This repository does not implement the external Cstack bridge.
+[Cstack](https://github.com/Akilleez-QA/cstack) (code name Mjölnir) vendors part of EndoForge; the
+[Cstack ICD](docs/icd/icd-cstack.md) lists what. [poodo](https://github.com/Akilleez-QA/poodo) is a related project.
 
 ## Layout
 
 | Path | Contents |
 |---|---|
-| `core/` | Lifecycle model, evidence ledger, engine evaluator and gates, local execution pools |
-| `tools/` | Workflow orchestration, quality support, and scheduling utilities |
-| `tests/` | Lifecycle and core boundary tests |
+| `core/` | Lifecycle model, ledger, engine evaluator and gates, constraints, library and runtime (workcells, X1 loop, capacity planner) |
+| `tools/` | Workflow tools and repository scripts; see [tools/README.md](tools/README.md) |
+| `tests/` | Lifecycle, boundary and repository-check tests |
+| `experiments/` | Precommitted measurements, one P-number each, indexed in [experiments/README.md](experiments/README.md) |
 | `docs/` | Documentation |
-| `TODELETE/` | Archived unused placeholders, preserving their original relative paths |
-| `sources/` | Source example and digest manifest |
+| `sources/` | Source digest manifest checked by `make check` |
+| `TODELETE/` | Archived unused placeholders at their original relative paths |
 
 ## Contributing
 

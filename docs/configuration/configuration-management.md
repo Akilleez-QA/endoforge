@@ -2,16 +2,14 @@
 
 ## Baseline and version identity
 
-The implementation baseline is `3083a5a5c277d6caec99eba698f6040698751400`,
-obtained with `git rev-parse origin/main` during this documentation pass.
-Use a full commit SHA to identify a source baseline. Capture local changes with
-`git status --short` before using results as evidence.
+Identify a source baseline by its full commit SHA (`git rev-parse HEAD`). Capture local changes with
+`git status --short` before using results as evidence. This page was last checked against `main` at
+`d4d7efa7` on 2026-11-08.
 
-`git tag --list` returned no tags in this clone on 2026-10-30.
-The [changelog](../../CHANGELOG.md) records an Unreleased section, not a released
-version. No released SemVer version is asserted here. SemVer is the standard's
-release naming convention for future releases; it is not an existing automated
-release mechanism in this repository.
+The repository has no release tags and no released version; `experiment-id/P-*` tags are reservations made by `tools/experiment_id.py`, not releases. The [changelog](../../CHANGELOG.md) records an Unreleased
+section. SemVer is the naming convention for future releases; there is no automated release mechanism.
+
+Every runtime setting and its default is listed in the [configuration reference](configuration-reference.md).
 
 ## Controlled inputs
 
@@ -21,7 +19,11 @@ release mechanism in this repository.
 | Lifecycle model | Git revision and `make core-test` | Decision references are supplied by the caller |
 | Evaluator files and configuration | [Frozen evaluator](../../core/ledger/frozen.py), tested by `make ledger-test` | Requires callers to use the freeze and evaluation path |
 | Execution policy and routing | [Policy](../../tools/atomizer/policy.json) and [routing](../../tools/atomizer/routing.json) tracked in Git | Local tool paths and model names are not immutable dependency pins |
-| CI environment | [Workflow](../../.github/workflows/ci.yml) selects Python and Node versions | Action major-version references and OS packages are not content pins |
+| CI environment | [Workflow](../../.github/workflows/ci.yml) selects Python 3.12 and Node 22 and 26 | Action major-version references and OS packages are not content pins |
+| AssemblyScript compiler for the loop | [tools/asc/pin.mjs](../../tools/asc/pin.mjs) digests and `package-lock.json` | Checked by the loop's warm step before use |
+| TypeScript checker | [tools/tscheck/pin.mjs](../../tools/tscheck/pin.mjs) digests; `make tscheck-requalify` reruns parity | A version bump needs requalification |
+| Kernel test tools | [install_tools.py](../../tools/kernel/install_tools.py) pins Wasmtime 49.0.0 and wasm-tools 1.262.0; `make tools` installs them into `.tools/` | `kernel-test` checks versions first |
+| Experiment numbers and index | `experiments/ALLOCATED`, `tools/experiment_id.py`; index generated from `INDEX.md` fragments | Checked by `make check` |
 
 The [README](../../README.md) lists local prerequisites. CI's selected runtimes
 are visible in its workflow; they do not define the runtime installed on a local
@@ -47,7 +49,6 @@ For a future release, review the intended source SHA and test evidence, update
 the changelog with the chosen SemVer and date, and associate the approved tag
 with that SHA. This is release guidance, not a claim that a release or tag exists.
 No release workflow is present under `.github/workflows/` at this baseline.
-This documentation pass creates local commits only.
 
 ## Ledger relocation
 
@@ -80,11 +81,8 @@ baseline; the verification matrix records local checks.
 
 ## Interface baseline
 
-No Cstack adapter or pinned cross-repository protocol is implemented in this
-checkout. `core/lifecycle.py` mentions an external bridge in a docstring, but
-only models decision references. There is no Cstack ICD to version here.
-Recheck with `rg -n -i 'cstack|endoforgeport' core tools tests` before documenting
-an interface contract in a later change.
+Cstack vendors a fixed slice of EndoForge at a pinned commit. The [Cstack ICD](../icd/icd-cstack.md) records the pin
+and the slice. The [capacity ICD](../interfaces/capacity-icd.md) versions its interface with `INTERFACE_VERSION`.
 
 ## Domain extraction
 
