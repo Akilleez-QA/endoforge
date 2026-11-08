@@ -160,7 +160,7 @@ test('a contained cohort registers under its own pid, sheds idle Workers on SIGU
   await until(() => entered === 2);
   const writes = runner.dump.writes;
   process.kill(pid, 'SIGUSR2');
-  await until(() => runner.dump.writes > writes, 2000);
+  await until(() => runner.dump.writes > writes && read(file).sheddable_bytes === 0, 2000);
   const after = runner.dump;
   assert.equal(after.holding, true);
   assert.ok(after.idle <= 1, JSON.stringify(after));

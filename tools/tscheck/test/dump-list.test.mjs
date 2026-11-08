@@ -62,7 +62,7 @@ test('a shed drops the idle Workers\' reused instances and reports less, and the
   assert.ok(before > 1048576, `reported ${before}`);
   const writes = route.pool.dump.writes;
   process.kill(route.pool.pid, 'SIGUSR2');
-  while (route.pool.dump.writes === writes && Date.now() < deadline + 2000) await new Promise(done => setTimeout(done, 10));
+  while ((route.pool.dump.writes === writes || read().sheddable_bytes !== 0) && Date.now() < deadline + 2000) await new Promise(done => setTimeout(done, 10));
   assert.equal(read().sheddable_bytes, 0);
   assert.ok(route.pool.dump.idle <= 1);
   const again = await Promise.all(CORPUS.slice(0, 8).map(item => route.check(item).then(verdict)));
