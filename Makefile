@@ -1,6 +1,7 @@
 PYTHON ?= python3
 export PYTHONDONTWRITEBYTECODE := 1
 export ENDOFORGE_TEST_OUTPUT := $(CURDIR)/.test-work
+export ENDOFORGE_USAGE_STATE := $(CURDIR)/.test-work/usage-governor.json
 
 .PHONY: test test-optimized check core-test ledger-test engine-test isolate-test tscheck-setup tscheck-test tscheck-requalify atomizer-test harness-test hardware-test runtime-test lib-test library-test portability-test factory-state-test seeded-fault-test escape-test compatibility-test
 
@@ -56,6 +57,7 @@ hardware-test:
 runtime-test:
 	node core/runtime/test/agent-pool.test.mjs
 	node --test core/runtime/test/timing-guard.test.mjs
+	node --test core/runtime/test/usage-governor.test.mjs
 
 lib-test:
 	node tools/lib/test/errors.test.mjs

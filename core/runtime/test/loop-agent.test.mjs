@@ -250,7 +250,7 @@ test('a hung turn times out and kills its process; idle lanes are released', asy
   assert.equal(idle.startups.length, 2);
 });
 
-test('instances keep one config directory each and route around a usage limit', async t => {
+test('instances keep one config directory each, route around a usage limit, and park when every instance is limited', async t => {
   const root = scratch(t), one = join(root, 'one'), two = join(root, 'two');
   mkdirSync(one); mkdirSync(two);
   assert.throws(() => transport(root, { instances: [{ configDir: join(root, 'absent') }] }), /must already exist/);
@@ -261,12 +261,8 @@ test('instances keep one config directory each and route around a usage limit', 
   routed.endSession('a');
   await routed.send({ session: 'b', messages: messages('two') });
   routed.endSession('b');
-  const third = routed.send({ session: 'c', messages: messages('three') });
-  const outcome = await Promise.race([third.then(() => 'sent'), new Promise(resolve => setTimeout(() => resolve('waiting'), 200))]);
-  assert.equal(outcome, 'waiting');
+  await assert.rejects(routed.send({ session: 'c', messages: messages('three') }), error => error.code === 'USAGE_PARKED' && error.exitCode === 75 && error.outcome === 'outcome_unknown');
   assert.equal(logOf(root).filter(line => line.start).length, 2);
-  await routed.close();
-  await assert.rejects(third, /transport closed/);
 });
 
 test('the spawn transport takes the full history with its tools off, once per turn', async t => {
