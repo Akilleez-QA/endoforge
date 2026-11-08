@@ -98,6 +98,7 @@ async function measure(name, options, candidates, verdictSet, seconds, { peer = 
   await route.ready();
   const pids = () => route.pool.pids ?? [route.pool.pid];
   await Promise.all(Array.from({ length: 16 }, (_, i) => route.check(candidates[i % candidates.length])));
+  const peerStartedAt = peer ? Math.round(performance.now()) : null;
   const peerEntry = peer ? startPeer(peer, name) : null;
   if (peerEntry) await sleep(3000);
   let next = 0, accepted = 0, attempts = 0;
@@ -115,7 +116,7 @@ async function measure(name, options, candidates, verdictSet, seconds, { peer = 
   const verdicts = {};
   for (const candidate of verdictSet) verdicts[candidate.name] = verdictOf(await route.check(candidate));
   const controller = route.pool.controller;
-  const row = { arm: name, seconds, demand: DEMAND, peer, attempts, accepted, perSecond: +(accepted / wall * 1000).toFixed(1), wallMs: Math.round(wall),
+  const row = { arm: name, seconds, demand: DEMAND, peer, peerStartedAt, timedStartAt: Math.round(started), attempts, accepted, perSecond: +(accepted / wall * 1000).toFixed(1), wallMs: Math.round(wall),
     cpuMsPerAccepted: +(cpu / accepted * 1000).toFixed(3), busyCpus: +(cpu / wall * 1000).toFixed(2), ownCgroupCpus: +(ownCpu / wall * 1000).toFixed(2), ownCgroupMsPerAccepted: +(ownCpu / accepted * 1000).toFixed(3),
     peerCpus: peerCpu === null ? null : +(peerCpu / wall * 1000).toFixed(2),
     slice: slice0 && slice1 ? { cpus: +((slice1.usage - slice0.usage) / 1e6 / wall * 1000).toFixed(2), throttledMs: +((slice1.throttled - slice0.throttled) / 1000).toFixed(1) } : null,
