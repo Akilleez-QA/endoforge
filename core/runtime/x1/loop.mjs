@@ -4,7 +4,8 @@ import { basename, dirname, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { ASC_PATH, WORKCELL } from '../../../tools/asc/pin.mjs';
 import { IsolatePool } from '../isolate-pool.mjs';
-import { applyReply } from './agent.mjs';
+import { applyReply, specificationFiles } from './agent.mjs';
+import { applyChanges } from './oracle.mjs';
 import { testProblems } from './gates.mjs';
 import { generate } from './generator.mjs';
 import { verifyFromMemory } from './loop-port.mjs';
@@ -13,7 +14,7 @@ import { receipt } from './ledger.mjs';
 
 const loopPools = new WeakSet();
 const hostPortPath = fileURLToPath(new URL('./loop-port.mjs', import.meta.url));
-export const implementation = Object.freeze(['loop-port.mjs', 'agent.mjs']);
+export const implementation = Object.freeze(['loop-port.mjs', 'agent.mjs', 'oracle.mjs']);
 export const agentLimits = Object.freeze({ maxTurns: 6, maxTokens: 64000 });
 
 const providers = new WeakMap();
@@ -81,6 +82,7 @@ async function answerKind(pool, provider, call, job, context) {
   if (call.kind === 'model') return modelTurn(context, provider, job.portOptions.jobKey, call.messages);
   if (call.kind === 'admit') {
     if (context.admission) throw Error('already admitted');
+    if (context.limits.oracle) { context.shadow['tests.json'] = applyChanges(context.shadow['tests.json'] ?? '', call.oracle?.changes ?? []); context.oracle = call.oracle?.report ?? null; }
     const oracle = ['CONTRACT.md', 'tests.json'];
     if (oracle.some(name => frozenText(call.files, name) !== context.shadow[name])) throw Error('frozen files differ from the model replies');
     let tests = null;
@@ -102,7 +104,7 @@ export async function attemptAgent({ need, directory, pool, observe, limits = ag
   const timings = Object.fromEntries(['generate', 'freeze', 'compile', 'gate', 'ledger', 'promote'].map(k => [k, null]));
   const begin = performance.now(), jobKey = `agent-${process.pid}-${++nextAgentJob}`, id = basename(directory);
   const reference = { ledger: join(directory, 'ledger.sqlite') };
-  const context = { need, observe, modelMs: 0, admission: null, reference, limits: { ...limits }, deadline, calls: 0, tokens: 0, shadow: {}, editable: ['CONTRACT.md', 'tests.json'] };
+  const context = { need, observe, modelMs: 0, admission: null, reference, limits: { ...limits }, deadline, calls: 0, tokens: 0, shadow: {}, editable: specificationFiles(limits) };
   const { provider, waits, rates } = providers.get(pool) ?? {};
   context.rates = rates;
   agentJobs.set(jobKey, context);
@@ -180,11 +182,11 @@ export async function attemptAgent({ need, directory, pool, observe, limits = ag
     timings.promote = 0;
     timings.total = performance.now() - begin;
     return { promoted: outcome.promoted, ...(outcome.inconclusive ? { inconclusive: true } : {}), candidate: outcome.candidate, receipt: outcome.receipt, decision: outcome.decision, problem: outcome.problem, status: outcome.status,
-      agent: kept.agent ?? null, rounds: kept.rounds ?? [], content: returned ?? null, testDouble: provider.testDouble, modelMs: context.modelMs, timings };
+      agent: kept.agent ?? null, rounds: kept.rounds ?? [], content: returned ?? null, testDouble: provider.testDouble, modelMs: context.modelMs, timings, ...(context.oracle ? { oracle: context.oracle } : {}) };
   } catch (error) {
     provider?.endSession(jobKey);
     timings.total = performance.now() - begin;
-    return { promoted: false, error: 'pipeline stage failed; inspect local artifacts', ...unknownOutcome(error), testDouble: provider?.testDouble ?? false, modelMs: context.modelMs, timings };
+    return { promoted: false, error: 'pipeline stage failed; inspect local artifacts', ...unknownOutcome(error), testDouble: provider?.testDouble ?? false, modelMs: context.modelMs, timings, ...(context.oracle ? { oracle: context.oracle } : {}) };
   } finally {
     agentJobs.delete(jobKey);
   }

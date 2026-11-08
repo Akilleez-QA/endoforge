@@ -1,0 +1,2663 @@
+{
+ "summary": {
+  "wrong": 12,
+  "caught": 12,
+  "byMechanism": {
+   "formula": 10,
+   "tolerance": 1,
+   "range": 1
+  },
+  "specs": 10,
+  "specsCaught": 10,
+  "correct": 8475,
+  "falseFlags": 16,
+  "unknown": 26,
+  "status": {
+   "verified": 3825,
+   "unverified": 4634,
+   "flagged": 16
+  },
+  "freezeMs": {
+   "needs": 575,
+   "p50": 0.3248470000000907,
+   "p95": 0.9198269999999411,
+   "max": 8.955598000000009
+  },
+  "missed": [],
+  "falseFlagRows": [
+   {
+    "key": "P-56/main/CC-026--sonnet-medium--0",
+    "need": "CC-026",
+    "index": 0,
+    "label": "correct",
+    "status": "flagged",
+    "sources": [
+     "range"
+    ]
+   },
+   {
+    "key": "P-56/main/CC-026--sonnet-medium--0",
+    "need": "CC-026",
+    "index": 1,
+    "label": "correct",
+    "status": "flagged",
+    "sources": [
+     "range"
+    ]
+   },
+   {
+    "key": "P-56/main/CC-001--sonnet-low--0",
+    "need": "CC-001",
+    "index": 0,
+    "label": "correct",
+    "status": "flagged",
+    "sources": [
+     "formula"
+    ]
+   },
+   {
+    "key": "P-56/main/CC-001--sonnet-low--0",
+    "need": "CC-001",
+    "index": 1,
+    "label": "correct",
+    "status": "flagged",
+    "sources": [
+     "formula"
+    ]
+   },
+   {
+    "key": "P-56/main/CC-001--sonnet-low--0",
+    "need": "CC-001",
+    "index": 6,
+    "label": "correct",
+    "status": "flagged",
+    "sources": [
+     "formula"
+    ]
+   },
+   {
+    "key": "P-56/main/CC-001--sonnet-low--0",
+    "need": "CC-001",
+    "index": 7,
+    "label": "correct",
+    "status": "flagged",
+    "sources": [
+     "formula"
+    ]
+   },
+   {
+    "key": "P-66/main/CC-026--opus-high--0",
+    "need": "CC-026",
+    "index": 0,
+    "label": "correct",
+    "status": "flagged",
+    "sources": [
+     "formula"
+    ]
+   },
+   {
+    "key": "P-66/main/CC-026--opus-high--0",
+    "need": "CC-026",
+    "index": 1,
+    "label": "correct",
+    "status": "flagged",
+    "sources": [
+     "formula"
+    ]
+   },
+   {
+    "key": "P-66/main/CC-026--opus-high--0",
+    "need": "CC-026",
+    "index": 2,
+    "label": "correct",
+    "status": "flagged",
+    "sources": [
+     "formula"
+    ]
+   },
+   {
+    "key": "P-66/main/CC-026--opus-high--0",
+    "need": "CC-026",
+    "index": 3,
+    "label": "correct",
+    "status": "flagged",
+    "sources": [
+     "formula"
+    ]
+   },
+   {
+    "key": "P-66/main/CC-026--opus-high--0",
+    "need": "CC-026",
+    "index": 4,
+    "label": "correct",
+    "status": "flagged",
+    "sources": [
+     "formula"
+    ]
+   },
+   {
+    "key": "P-66/main/CC-014--opus-high--0",
+    "need": "CC-014",
+    "index": 11,
+    "label": "correct",
+    "status": "flagged",
+    "sources": [
+     "formula"
+    ]
+   },
+   {
+    "key": "P-66/main/CC-014--opus-high--0",
+    "need": "CC-014",
+    "index": 13,
+    "label": "correct",
+    "status": "flagged",
+    "sources": [
+     "formula"
+    ]
+   },
+   {
+    "key": "P-66/main/CC-014--opus-high--0",
+    "need": "CC-014",
+    "index": 14,
+    "label": "correct",
+    "status": "flagged",
+    "sources": [
+     "formula"
+    ]
+   },
+   {
+    "key": "P-66/main/CC-014--opus-high--0",
+    "need": "CC-014",
+    "index": 15,
+    "label": "correct",
+    "status": "flagged",
+    "sources": [
+     "formula"
+    ]
+   },
+   {
+    "key": "P-66/main/C-012--sonnet-low--7",
+    "need": "C-012",
+    "index": 16,
+    "label": "correct",
+    "status": "flagged",
+    "sources": [
+     "range"
+    ]
+   }
+  ]
+ },
+ "wrong": [
+  {
+   "key": "P-56/pilot/H08--sonnet-medium--0",
+   "need": "H08",
+   "index": 1,
+   "label": "wrong",
+   "status": "flagged",
+   "sources": [
+    "formula"
+   ],
+   "mechanism": "formula",
+   "caught": true,
+   "literal": 0.818129086872342,
+   "truth": 0.8181230868723419
+  },
+  {
+   "key": "P-56/pilot/CC-036--sonnet-medium--0",
+   "need": "CC-036",
+   "index": 4,
+   "label": "wrong",
+   "status": "flagged",
+   "sources": [
+    "formula"
+   ],
+   "mechanism": "formula",
+   "caught": true,
+   "literal": 1341102.208959503,
+   "truth": 1341022.089595028
+  },
+  {
+   "key": "P-56/main/CC-036--sonnet-low--0",
+   "need": "CC-036",
+   "index": 0,
+   "label": "wrong",
+   "status": "flagged",
+   "sources": [
+    "formula"
+   ],
+   "mechanism": "formula",
+   "caught": true,
+   "literal": 8.314471,
+   "truth": 8.314336955489175
+  },
+  {
+   "key": "P-56/main/CC-025--opus-low--0",
+   "need": "CC-025",
+   "index": 0,
+   "label": "wrong",
+   "status": "verified",
+   "sources": [
+    "literal",
+    "formula"
+   ],
+   "mechanism": "tolerance",
+   "caught": true,
+   "literal": 8.31433695548919,
+   "truth": 8.314336950831608
+  },
+  {
+   "key": "P-56/main/CC-002--sonnet-low--0",
+   "need": "CC-002",
+   "index": 1,
+   "label": "wrong",
+   "status": "flagged",
+   "sources": [
+    "formula"
+   ],
+   "mechanism": "formula",
+   "caught": true,
+   "literal": 56.44,
+   "truth": 56.9437025722654
+  },
+  {
+   "key": "P-66/main/H02--sonnet-low--0",
+   "need": "H02",
+   "index": 4,
+   "label": "wrong",
+   "status": "flagged",
+   "sources": [
+    "formula"
+   ],
+   "mechanism": "formula",
+   "caught": true,
+   "literal": 4645.434102,
+   "truth": 4645.436783899239
+  },
+  {
+   "key": "P-66/main/H02--sonnet-low--2",
+   "need": "H02",
+   "index": 0,
+   "label": "wrong",
+   "status": "flagged",
+   "sources": [
+    "formula"
+   ],
+   "mechanism": "formula",
+   "caught": true,
+   "literal": 8.0273114633,
+   "truth": 8.027314762577884
+  },
+  {
+   "key": "P-66/main/H02--sonnet-low--2",
+   "need": "H02",
+   "index": 1,
+   "label": "wrong",
+   "status": "flagged",
+   "sources": [
+    "formula"
+   ],
+   "mechanism": "formula",
+   "caught": true,
+   "literal": 464.5449524,
+   "truth": 464.54367838992397
+  },
+  {
+   "key": "P-66/main/H02--sonnet-low--5",
+   "need": "H02",
+   "index": 0,
+   "label": "wrong",
+   "status": "flagged",
+   "sources": [
+    "formula"
+   ],
+   "mechanism": "formula",
+   "caught": true,
+   "literal": 8.027313421449,
+   "truth": 8.027314762577884
+  },
+  {
+   "key": "P-66/main/H02--sonnet-low--5",
+   "need": "H02",
+   "index": 3,
+   "label": "wrong",
+   "status": "flagged",
+   "sources": [
+    "formula"
+   ],
+   "mechanism": "formula",
+   "caught": true,
+   "literal": 2322.71704,
+   "truth": 4645.436783899239
+  },
+  {
+   "key": "P-66/main/H08--sonnet-low--3",
+   "need": "H08",
+   "index": 0,
+   "label": "wrong",
+   "status": "flagged",
+   "sources": [
+    "range"
+   ],
+   "mechanism": "range",
+   "caught": true,
+   "literal": 549.7787143782137,
+   "truth": "trap"
+  },
+  {
+   "key": "P-66/main/H08--sonnet-low--5",
+   "need": "H08",
+   "index": 2,
+   "label": "wrong",
+   "status": "flagged",
+   "sources": [
+    "formula"
+   ],
+   "mechanism": "formula",
+   "caught": true,
+   "literal": 19634954.0849362,
+   "truth": 19634.954084936206
+  }
+ ],
+ "timings": [
+  {
+   "key": "P-56/pilot/CC-011--haiku-high--0",
+   "ms": 4.580531000000001
+  },
+  {
+   "key": "P-56/pilot/CC-036--opus-high--0",
+   "ms": 2.5597589999999997
+  },
+  {
+   "key": "P-56/pilot/CC-025--sonnet-medium--0",
+   "ms": 0.54534799999999
+  },
+  {
+   "key": "P-56/pilot/H06--opus-medium--0",
+   "ms": 2.3396180000000015
+  },
+  {
+   "key": "P-56/pilot/H06--opus-high--0",
+   "ms": 0.852722
+  },
+  {
+   "key": "P-56/pilot/H01--opus-high--0",
+   "ms": 0.4352919999999898
+  },
+  {
+   "key": "P-56/pilot/H03--haiku-low--0",
+   "ms": 0.7300630000000012
+  },
+  {
+   "key": "P-56/pilot/C-015--sonnet-medium--0",
+   "ms": 0.49559499999999446
+  },
+  {
+   "key": "P-56/pilot/H03--haiku-high--0",
+   "ms": 0.632000000000005
+  },
+  {
+   "key": "P-56/pilot/C-015--opus-low--0",
+   "ms": 0.2691519999999912
+  },
+  {
+   "key": "P-56/pilot/H08--opus-medium--0",
+   "ms": 0.7253939999999943
+  },
+  {
+   "key": "P-56/pilot/H08--sonnet-medium--0",
+   "ms": 0.6586400000000054
+  },
+  {
+   "key": "P-56/pilot/C-015--opus-medium--0",
+   "ms": 0.8189489999999893
+  },
+  {
+   "key": "P-56/pilot/CC-036--opus-medium--0",
+   "ms": 0.24563900000001127
+  },
+  {
+   "key": "P-56/pilot/CC-025--haiku-high--0",
+   "ms": 0.27046400000000403
+  },
+  {
+   "key": "P-56/pilot/H03--sonnet-high--0",
+   "ms": 0.456823
+  },
+  {
+   "key": "P-56/pilot/H01--opus-medium--0",
+   "ms": 0.2704650000000015
+  },
+  {
+   "key": "P-56/pilot/CC-011--sonnet-low--0",
+   "ms": 0.33876200000000267
+  },
+  {
+   "key": "P-56/pilot/CC-014--haiku-high--0",
+   "ms": 1.565421999999998
+  },
+  {
+   "key": "P-56/pilot/CC-025--opus-medium--0",
+   "ms": 0.19310099999999863
+  },
+  {
+   "key": "P-56/pilot/H10--haiku-low--0",
+   "ms": 1.362954000000002
+  },
+  {
+   "key": "P-56/pilot/H06--sonnet-medium--0",
+   "ms": 0.555687000000006
+  },
+  {
+   "key": "P-56/pilot/H01--sonnet-high--0",
+   "ms": 0.20110500000001252
+  },
+  {
+   "key": "P-56/pilot/CC-011--haiku-low--0",
+   "ms": 0.30011000000000365
+  },
+  {
+   "key": "P-56/pilot/CC-014--opus-low--0",
+   "ms": 0.4252340000000032
+  },
+  {
+   "key": "P-56/pilot/H08--opus-low--0",
+   "ms": 0.4087430000000012
+  },
+  {
+   "key": "P-56/pilot/C-015--haiku-high--0",
+   "ms": 0.4109470000000073
+  },
+  {
+   "key": "P-56/pilot/CC-014--opus-high--0",
+   "ms": 0.7004479999999944
+  },
+  {
+   "key": "P-56/pilot/H06--opus-low--0",
+   "ms": 0.3846580000000017
+  },
+  {
+   "key": "P-56/pilot/H10--opus-low--0",
+   "ms": 0.35055500000001416
+  },
+  {
+   "key": "P-56/pilot/H10--opus-medium--0",
+   "ms": 0.7530260000000055
+  },
+  {
+   "key": "P-56/pilot/CC-011--sonnet-medium--0",
+   "ms": 0.40146000000001436
+  },
+  {
+   "key": "P-56/pilot/C-015--opus-high--0",
+   "ms": 0.8860139999999888
+  },
+  {
+   "key": "P-56/pilot/CC-036--sonnet-medium--0",
+   "ms": 0.18632799999997474
+  },
+  {
+   "key": "P-56/pilot/CC-036--haiku-low--0",
+   "ms": 0.12261900000001447
+  },
+  {
+   "key": "P-56/pilot/CC-011--opus-medium--0",
+   "ms": 0.25122900000002346
+  },
+  {
+   "key": "P-56/pilot/H06--sonnet-low--0",
+   "ms": 0.7510819999999967
+  },
+  {
+   "key": "P-56/pilot/CC-025--haiku-low--0",
+   "ms": 0.17856400000002282
+  },
+  {
+   "key": "P-56/pilot/H06--sonnet-high--0",
+   "ms": 0.8325539999999876
+  },
+  {
+   "key": "P-56/pilot/H03--opus-high--0",
+   "ms": 0.24005800000000477
+  },
+  {
+   "key": "P-56/pilot/CC-036--sonnet-high--0",
+   "ms": 0.2756739999999809
+  },
+  {
+   "key": "P-56/pilot/CC-036--haiku-high--0",
+   "ms": 0.42263900000000376
+  },
+  {
+   "key": "P-56/pilot/H03--sonnet-low--0",
+   "ms": 0.5743420000000015
+  },
+  {
+   "key": "P-56/pilot/CC-011--sonnet-high--0",
+   "ms": 0.36724499999999694
+  },
+  {
+   "key": "P-56/pilot/CC-025--opus-high--0",
+   "ms": 0.3326009999999826
+  },
+  {
+   "key": "P-56/pilot/H03--opus-low--0",
+   "ms": 0.16452800000001844
+  },
+  {
+   "key": "P-56/pilot/H10--sonnet-high--0",
+   "ms": 0.5296490000000063
+  },
+  {
+   "key": "P-56/pilot/CC-014--sonnet-medium--0",
+   "ms": 0.48517499999999814
+  },
+  {
+   "key": "P-56/pilot/H01--haiku-high--0",
+   "ms": 0.43784800000000246
+  },
+  {
+   "key": "P-56/pilot/H01--haiku-low--0",
+   "ms": 0.1306340000000148
+  },
+  {
+   "key": "P-56/pilot/H01--sonnet-medium--0",
+   "ms": 0.15963800000000106
+  },
+  {
+   "key": "P-56/pilot/CC-014--opus-medium--0",
+   "ms": 0.3012119999999925
+  },
+  {
+   "key": "P-56/pilot/H03--opus-medium--0",
+   "ms": 0.19563499999998157
+  },
+  {
+   "key": "P-56/pilot/H10--opus-high--0",
+   "ms": 0.34299100000001204
+  },
+  {
+   "key": "P-56/pilot/CC-025--sonnet-low--0",
+   "ms": 0.15963800000000106
+  },
+  {
+   "key": "P-56/pilot/CC-036--opus-low--0",
+   "ms": 0.15293600000001106
+  },
+  {
+   "key": "P-56/pilot/C-015--sonnet-low--0",
+   "ms": 0.21828699999997525
+  },
+  {
+   "key": "P-56/pilot/CC-011--opus-low--0",
+   "ms": 0.15615099999999416
+  },
+  {
+   "key": "P-56/pilot/H01--sonnet-low--0",
+   "ms": 0.27593500000000404
+  },
+  {
+   "key": "P-56/pilot/H08--sonnet-low--0",
+   "ms": 0.48208999999999946
+  },
+  {
+   "key": "P-56/pilot/CC-014--sonnet-high--0",
+   "ms": 0.04243899999997325
+  },
+  {
+   "key": "P-56/pilot/C-015--haiku-low--0",
+   "ms": 0.3077350000000081
+  },
+  {
+   "key": "P-56/pilot/CC-011--opus-high--0",
+   "ms": 0.43542199999998843
+  },
+  {
+   "key": "P-56/pilot/CC-014--sonnet-low--0",
+   "ms": 0.42511400000000776
+  },
+  {
+   "key": "P-56/pilot/CC-036--sonnet-low--0",
+   "ms": 0.17324299999998516
+  },
+  {
+   "key": "P-56/pilot/H06--haiku-low--0",
+   "ms": 0.39606000000000563
+  },
+  {
+   "key": "P-56/pilot/H10--sonnet-medium--0",
+   "ms": 0.35939100000001645
+  },
+  {
+   "key": "P-56/pilot/CC-014--haiku-low--0",
+   "ms": 0.323063000000019
+  },
+  {
+   "key": "P-56/pilot/C-015--sonnet-high--0",
+   "ms": 0.3599619999999959
+  },
+  {
+   "key": "P-56/pilot/H03--sonnet-medium--0",
+   "ms": 0.23246400000002154
+  },
+  {
+   "key": "P-56/pilot/CC-025--sonnet-high--0",
+   "ms": 0.16829500000000053
+  },
+  {
+   "key": "P-56/pilot/H08--haiku-low--0",
+   "ms": 0.4015990000000045
+  },
+  {
+   "key": "P-56/pilot/H08--sonnet-high--0",
+   "ms": 0.3840669999999875
+  },
+  {
+   "key": "P-56/pilot/H10--sonnet-low--0",
+   "ms": 0.24393599999999083
+  },
+  {
+   "key": "P-56/pilot/CC-025--opus-low--0",
+   "ms": 0.10923400000001493
+  },
+  {
+   "key": "P-56/pilot/H01--opus-low--0",
+   "ms": 0.12590500000001725
+  },
+  {
+   "key": "P-56/pilot/H08--opus-high--0",
+   "ms": 0.28057400000000143
+  },
+  {
+   "key": "P-56/main/H10--haiku-low--0",
+   "ms": 0.23092099999999505
+  },
+  {
+   "key": "P-56/main/H04--sonnet-medium--0",
+   "ms": 0.8523210000000176
+  },
+  {
+   "key": "P-56/main/H07--sonnet-low--0",
+   "ms": 0.17161099999998441
+  },
+  {
+   "key": "P-56/main/CC-009--opus-high--0",
+   "ms": 0.5690219999999897
+  },
+  {
+   "key": "P-56/main/CC-036--sonnet-low--0",
+   "ms": 0.13650499999999965
+  },
+  {
+   "key": "P-56/main/H09--haiku-high--0",
+   "ms": 0.27585499999997865
+  },
+  {
+   "key": "P-56/main/CC-026--sonnet-low--0",
+   "ms": 0.287526999999983
+  },
+  {
+   "key": "P-56/main/C-007--opus-low--0",
+   "ms": 0.25182000000000926
+  },
+  {
+   "key": "P-56/main/C-006--opus-high--0",
+   "ms": 0.6157790000000034
+  },
+  {
+   "key": "P-56/main/CC-036--sonnet-high--0",
+   "ms": 0.36462099999999964
+  },
+  {
+   "key": "P-56/main/CC-022--opus-low--0",
+   "ms": 0.5313220000000172
+  },
+  {
+   "key": "P-56/main/CC-026--opus-medium--0",
+   "ms": 0.47591800000000717
+  },
+  {
+   "key": "P-56/main/C-019--sonnet-medium--0",
+   "ms": 1.1399879999999882
+  },
+  {
+   "key": "P-56/main/C-010--opus-medium--0",
+   "ms": 0.5632610000000113
+  },
+  {
+   "key": "P-56/main/CC-026--opus-high--0",
+   "ms": 0.49549500000000535
+  },
+  {
+   "key": "P-56/main/C-005--sonnet-low--0",
+   "ms": 0.23274399999999673
+  },
+  {
+   "key": "P-56/main/C-010--sonnet-high--0",
+   "ms": 0.5644330000000082
+  },
+  {
+   "key": "P-56/main/H02--haiku-high--0",
+   "ms": 0.251529000000005
+  },
+  {
+   "key": "P-56/main/C-016--opus-low--0",
+   "ms": 0.2656159999999943
+  },
+  {
+   "key": "P-56/main/CC-007--sonnet-medium--0",
+   "ms": 0.18452500000000782
+  },
+  {
+   "key": "P-56/main/H05--haiku-high--0",
+   "ms": 0.9493819999999857
+  },
+  {
+   "key": "P-56/main/C-010--sonnet-low--0",
+   "ms": 0.4389900000000182
+  },
+  {
+   "key": "P-56/main/H06--sonnet-low--0",
+   "ms": 0.40889400000000364
+  },
+  {
+   "key": "P-56/main/C-006--opus-medium--0",
+   "ms": 0.33852199999998334
+  },
+  {
+   "key": "P-56/main/C-019--opus-low--0",
+   "ms": 0.6647509999999954
+  },
+  {
+   "key": "P-56/main/C-006--haiku-low--0",
+   "ms": 0.23472800000001826
+  },
+  {
+   "key": "P-56/main/H09--sonnet-low--0",
+   "ms": 0.22037199999999757
+  },
+  {
+   "key": "P-56/main/CC-014--haiku-low--0",
+   "ms": 0.18604700000000207
+  },
+  {
+   "key": "P-56/main/CC-026--sonnet-high--0",
+   "ms": 0.4667120000000011
+  },
+  {
+   "key": "P-56/main/CC-001--haiku-low--0",
+   "ms": 0.7737950000000069
+  },
+  {
+   "key": "P-56/main/CC-011--opus-low--0",
+   "ms": 0.16388599999999087
+  },
+  {
+   "key": "P-56/main/H08--opus-low--0",
+   "ms": 0.353069999999974
+  },
+  {
+   "key": "P-56/main/CC-009--opus-medium--0",
+   "ms": 0.7513919999999814
+  },
+  {
+   "key": "P-56/main/CC-002--sonnet-high--0",
+   "ms": 0.38017999999999574
+  },
+  {
+   "key": "P-56/main/C-015--haiku-low--0",
+   "ms": 0.1416940000000011
+  },
+  {
+   "key": "P-56/main/C-010--opus-low--0",
+   "ms": 0.2996299999999792
+  },
+  {
+   "key": "P-56/main/CC-013--opus-high--0",
+   "ms": 0.23340600000000222
+  },
+  {
+   "key": "P-56/main/CC-013--opus-medium--0",
+   "ms": 0.7013790000000313
+  },
+  {
+   "key": "P-56/main/H06--opus-low--0",
+   "ms": 0.34338100000002214
+  },
+  {
+   "key": "P-56/main/C-012--opus-medium--0",
+   "ms": 0.4163169999999923
+  },
+  {
+   "key": "P-56/main/C-010--sonnet-medium--0",
+   "ms": 1.1134380000000306
+  },
+  {
+   "key": "P-56/main/C-015--opus-low--0",
+   "ms": 0.16655099999996992
+  },
+  {
+   "key": "P-56/main/C-019--opus-medium--0",
+   "ms": 1.4351199999999835
+  },
+  {
+   "key": "P-56/main/C-006--sonnet-medium--0",
+   "ms": 0.5918949999999654
+  },
+  {
+   "key": "P-56/main/C-010--haiku-high--0",
+   "ms": 1.3208349999999882
+  },
+  {
+   "key": "P-56/main/C-015--sonnet-high--0",
+   "ms": 0.2812550000000442
+  },
+  {
+   "key": "P-56/main/H08--sonnet-medium--0",
+   "ms": 0.29123399999997446
+  },
+  {
+   "key": "P-56/main/H07--sonnet-high--0",
+   "ms": 0.2488440000000196
+  },
+  {
+   "key": "P-56/main/CC-025--sonnet-medium--0",
+   "ms": 0.3653319999999667
+  },
+  {
+   "key": "P-56/main/H05--sonnet-high--0",
+   "ms": 1.4644739999999956
+  },
+  {
+   "key": "P-56/main/CC-022--haiku-high--0",
+   "ms": 0.6778749999999718
+  },
+  {
+   "key": "P-56/main/H03--sonnet-high--0",
+   "ms": 0.7684240000000386
+  },
+  {
+   "key": "P-56/main/H02--opus-medium--0",
+   "ms": 0.32321300000000974
+  },
+  {
+   "key": "P-56/main/H02--sonnet-medium--0",
+   "ms": 0.6159599999999728
+  },
+  {
+   "key": "P-56/main/CC-009--sonnet-medium--0",
+   "ms": 0.473604000000023
+  },
+  {
+   "key": "P-56/main/C-015--opus-high--0",
+   "ms": 0.37555100000002994
+  },
+  {
+   "key": "P-56/main/H07--sonnet-medium--0",
+   "ms": 0.27642600000001494
+  },
+  {
+   "key": "P-56/main/CC-025--sonnet-high--0",
+   "ms": 0.2609069999999747
+  },
+  {
+   "key": "P-56/main/CC-013--sonnet-low--0",
+   "ms": 0.30459899999999607
+  },
+  {
+   "key": "P-56/main/CC-027--haiku-low--0",
+   "ms": 0.21528200000000197
+  },
+  {
+   "key": "P-56/main/H04--sonnet-low--0",
+   "ms": 0.40369299999997565
+  },
+  {
+   "key": "P-56/main/C-015--sonnet-medium--0",
+   "ms": 0.20108499999997775
+  },
+  {
+   "key": "P-56/main/CC-013--haiku-low--0",
+   "ms": 0.2413909999999646
+  },
+  {
+   "key": "P-56/main/C-015--haiku-high--0",
+   "ms": 0.13192599999996446
+  },
+  {
+   "key": "P-56/main/CC-011--sonnet-high--0",
+   "ms": 0.4255149999999617
+  },
+  {
+   "key": "P-56/main/C-007--sonnet-high--0",
+   "ms": 0.8074979999999528
+  },
+  {
+   "key": "P-56/main/CC-007--opus-low--0",
+   "ms": 0.7900750000000016
+  },
+  {
+   "key": "P-56/main/H02--sonnet-high--0",
+   "ms": 0.6657630000000268
+  },
+  {
+   "key": "P-56/main/C-019--haiku-low--0",
+   "ms": 0.25675900000004503
+  },
+  {
+   "key": "P-56/main/C-006--opus-low--0",
+   "ms": 0.4503310000000056
+  },
+  {
+   "key": "P-56/main/H01--opus-high--0",
+   "ms": 0.4828410000000076
+  },
+  {
+   "key": "P-56/main/CC-009--haiku-high--0",
+   "ms": 0.3610439999999926
+  },
+  {
+   "key": "P-56/main/CC-027--opus-high--0",
+   "ms": 0.7950840000000312
+  },
+  {
+   "key": "P-56/main/C-005--sonnet-high--0",
+   "ms": 0.28827799999999115
+  },
+  {
+   "key": "P-56/main/H08--haiku-high--0",
+   "ms": 0.7553100000000086
+  },
+  {
+   "key": "P-56/main/CC-011--sonnet-low--0",
+   "ms": 0.3232229999999845
+  },
+  {
+   "key": "P-56/main/H05--opus-medium--0",
+   "ms": 0.4596480000000156
+  },
+  {
+   "key": "P-56/main/CC-027--sonnet-low--0",
+   "ms": 0.4133019999999874
+  },
+  {
+   "key": "P-56/main/CC-027--opus-low--0",
+   "ms": 0.40695900000002894
+  },
+  {
+   "key": "P-56/main/CC-025--sonnet-low--0",
+   "ms": 0.19280000000003383
+  },
+  {
+   "key": "P-56/main/CC-007--opus-medium--0",
+   "ms": 0.26084699999995564
+  },
+  {
+   "key": "P-56/main/CC-002--opus-high--0",
+   "ms": 0.2750829999999951
+  },
+  {
+   "key": "P-56/main/H05--opus-low--0",
+   "ms": 0.3675959999999918
+  },
+  {
+   "key": "P-56/main/H07--haiku-low--0",
+   "ms": 0.2466110000000299
+  },
+  {
+   "key": "P-56/main/CC-007--haiku-high--0",
+   "ms": 0.26996400000001586
+  },
+  {
+   "key": "P-56/main/CC-001--opus-medium--0",
+   "ms": 0.7798760000000016
+  },
+  {
+   "key": "P-56/main/CC-001--haiku-high--0",
+   "ms": 0.2161230000000387
+  },
+  {
+   "key": "P-56/main/CC-036--opus-low--0",
+   "ms": 0.19070600000003424
+  },
+  {
+   "key": "P-56/main/CC-002--opus-medium--0",
+   "ms": 0.3723850000000084
+  },
+  {
+   "key": "P-56/main/CC-014--opus-high--0",
+   "ms": 1.1251100000000065
+  },
+  {
+   "key": "P-56/main/C-007--opus-medium--0",
+   "ms": 0.435182999999995
+  },
+  {
+   "key": "P-56/main/H01--sonnet-high--0",
+   "ms": 0.3722050000000081
+  },
+  {
+   "key": "P-56/main/CC-001--sonnet-medium--0",
+   "ms": 0.3080850000000055
+  },
+  {
+   "key": "P-56/main/C-012--opus-low--0",
+   "ms": 0.33968400000003385
+  },
+  {
+   "key": "P-56/main/H05--sonnet-low--0",
+   "ms": 0.5635020000000281
+  },
+  {
+   "key": "P-56/main/CC-036--sonnet-medium--0",
+   "ms": 8.955598000000009
+  },
+  {
+   "key": "P-56/main/CC-036--opus-medium--0",
+   "ms": 0.30774399999995694
+  },
+  {
+   "key": "P-56/main/H07--opus-medium--0",
+   "ms": 0.1793739999999957
+  },
+  {
+   "key": "P-56/main/CC-001--opus-high--0",
+   "ms": 0.5180070000000114
+  },
+  {
+   "key": "P-56/main/C-010--haiku-low--0",
+   "ms": 0.7413040000000137
+  },
+  {
+   "key": "P-56/main/CC-002--sonnet-medium--0",
+   "ms": 0.1866679999999974
+  },
+  {
+   "key": "P-56/main/C-005--haiku-high--0",
+   "ms": 0.40983499999998685
+  },
+  {
+   "key": "P-56/main/CC-022--sonnet-high--0",
+   "ms": 0.4681640000000016
+  },
+  {
+   "key": "P-56/main/CC-036--haiku-high--0",
+   "ms": 0.2175760000000082
+  },
+  {
+   "key": "P-56/main/H04--haiku-low--0",
+   "ms": 0.2441859999999565
+  },
+  {
+   "key": "P-56/main/H06--sonnet-high--0",
+   "ms": 1.9305840000000103
+  },
+  {
+   "key": "P-56/main/CC-036--opus-high--0",
+   "ms": 0.5041410000000042
+  },
+  {
+   "key": "P-56/main/C-012--sonnet-medium--0",
+   "ms": 0.8092809999999986
+  },
+  {
+   "key": "P-56/main/CC-002--opus-low--0",
+   "ms": 0.2405390000000125
+  },
+  {
+   "key": "P-56/main/H05--sonnet-medium--0",
+   "ms": 0.4662799999999834
+  },
+  {
+   "key": "P-56/main/C-010--opus-high--0",
+   "ms": 1.2801699999999983
+  },
+  {
+   "key": "P-56/main/C-005--opus-low--0",
+   "ms": 0.4317360000000008
+  },
+  {
+   "key": "P-56/main/H06--opus-high--0",
+   "ms": 0.7063089999999761
+  },
+  {
+   "key": "P-56/main/CC-013--sonnet-high--0",
+   "ms": 0.6386519999999791
+  },
+  {
+   "key": "P-56/main/H03--opus-low--0",
+   "ms": 0.5415609999999447
+  },
+  {
+   "key": "P-56/main/CC-027--haiku-high--0",
+   "ms": 0.8576919999999859
+  },
+  {
+   "key": "P-56/main/H10--sonnet-high--0",
+   "ms": 0.8844709999999623
+  },
+  {
+   "key": "P-56/main/CC-007--opus-high--0",
+   "ms": 0.35204699999997047
+  },
+  {
+   "key": "P-56/main/CC-009--haiku-low--0",
+   "ms": 0.18771099999997887
+  },
+  {
+   "key": "P-56/main/H09--opus-high--0",
+   "ms": 0.20421200000004092
+  },
+  {
+   "key": "P-56/main/CC-009--sonnet-high--0",
+   "ms": 0.3038169999999809
+  },
+  {
+   "key": "P-56/main/H03--opus-high--0",
+   "ms": 0.23275499999999738
+  },
+  {
+   "key": "P-56/main/CC-025--opus-medium--0",
+   "ms": 0.3785670000000323
+  },
+  {
+   "key": "P-56/main/C-016--sonnet-low--0",
+   "ms": 0.30260499999997137
+  },
+  {
+   "key": "P-56/main/CC-027--sonnet-medium--0",
+   "ms": 0.32385400000003983
+  },
+  {
+   "key": "P-56/main/CC-027--sonnet-high--0",
+   "ms": 0.6396540000000073
+  },
+  {
+   "key": "P-56/main/H09--opus-low--0",
+   "ms": 0.2510090000000105
+  },
+  {
+   "key": "P-56/main/C-012--haiku-high--0",
+   "ms": 0.896302999999989
+  },
+  {
+   "key": "P-56/main/C-007--haiku-high--0",
+   "ms": 0.3160700000000247
+  },
+  {
+   "key": "P-56/main/CC-022--opus-high--0",
+   "ms": 0.7803269999999998
+  },
+  {
+   "key": "P-56/main/CC-026--sonnet-medium--0",
+   "ms": 0.33959399999997686
+  },
+  {
+   "key": "P-56/main/CC-036--haiku-low--0",
+   "ms": 0.1319260000000213
+  },
+  {
+   "key": "P-56/main/C-007--sonnet-medium--0",
+   "ms": 0.6140669999999773
+  },
+  {
+   "key": "P-56/main/CC-011--opus-high--0",
+   "ms": 1.5617849999999862
+  },
+  {
+   "key": "P-56/main/C-016--sonnet-high--0",
+   "ms": 0.35446200000001227
+  },
+  {
+   "key": "P-56/main/CC-026--opus-low--0",
+   "ms": 0.46942599999999857
+  },
+  {
+   "key": "P-56/main/H09--sonnet-high--0",
+   "ms": 0.2847919999999817
+  },
+  {
+   "key": "P-56/main/C-005--opus-high--0",
+   "ms": 0.3527890000000298
+  },
+  {
+   "key": "P-56/main/CC-011--haiku-low--0",
+   "ms": 0.20708700000000135
+  },
+  {
+   "key": "P-56/main/CC-001--sonnet-high--0",
+   "ms": 0.3490810000000124
+  },
+  {
+   "key": "P-56/main/C-019--opus-high--0",
+   "ms": 1.0382979999999975
+  },
+  {
+   "key": "P-56/main/CC-011--haiku-high--0",
+   "ms": 0.4368859999999586
+  },
+  {
+   "key": "P-56/main/H04--opus-medium--0",
+   "ms": 0.8573910000000069
+  },
+  {
+   "key": "P-56/main/H10--sonnet-low--0",
+   "ms": 0.33634799999998677
+  },
+  {
+   "key": "P-56/main/CC-011--opus-medium--0",
+   "ms": 0.23023000000000593
+  },
+  {
+   "key": "P-56/main/CC-013--haiku-high--0",
+   "ms": 0.2185180000000173
+  },
+  {
+   "key": "P-56/main/H04--opus-low--0",
+   "ms": 0.2284569999999917
+  },
+  {
+   "key": "P-56/main/C-007--sonnet-low--0",
+   "ms": 0.23288499999995338
+  },
+  {
+   "key": "P-56/main/CC-001--sonnet-low--0",
+   "ms": 0.14553200000000288
+  },
+  {
+   "key": "P-56/main/H04--haiku-high--0",
+   "ms": 0.2917150000000106
+  },
+  {
+   "key": "P-56/main/CC-022--haiku-low--0",
+   "ms": 0.35582399999998415
+  },
+  {
+   "key": "P-56/main/H10--opus-low--0",
+   "ms": 0.21357900000003838
+  },
+  {
+   "key": "P-56/main/H06--haiku-high--0",
+   "ms": 0.3177329999999756
+  },
+  {
+   "key": "P-56/main/H10--opus-medium--0",
+   "ms": 0.35419200000001183
+  },
+  {
+   "key": "P-56/main/H08--opus-high--0",
+   "ms": 0.2924160000000029
+  },
+  {
+   "key": "P-56/main/CC-014--haiku-high--0",
+   "ms": 0.1950949999999807
+  },
+  {
+   "key": "P-56/main/C-019--sonnet-high--0",
+   "ms": 0.5004139999999779
+  },
+  {
+   "key": "P-56/main/CC-025--haiku-high--0",
+   "ms": 0.1524739999999838
+  },
+  {
+   "key": "P-56/main/CC-014--sonnet-medium--0",
+   "ms": 0.35863900000003923
+  },
+  {
+   "key": "P-56/main/C-005--opus-medium--0",
+   "ms": 0.47562799999997196
+  },
+  {
+   "key": "P-56/main/C-019--haiku-high--0",
+   "ms": 0.4796959999999899
+  },
+  {
+   "key": "P-56/main/H05--haiku-low--0",
+   "ms": 0.31841499999995904
+  },
+  {
+   "key": "P-56/main/H02--opus-low--0",
+   "ms": 0.3236840000000143
+  },
+  {
+   "key": "P-56/main/H01--opus-medium--0",
+   "ms": 0.21683400000000574
+  },
+  {
+   "key": "P-56/main/CC-014--opus-low--0",
+   "ms": 0.2575509999999781
+  },
+  {
+   "key": "P-56/main/H06--opus-medium--0",
+   "ms": 0.2668279999999754
+  },
+  {
+   "key": "P-56/main/H09--haiku-low--0",
+   "ms": 0.2036899999999946
+  },
+  {
+   "key": "P-56/main/H09--opus-medium--0",
+   "ms": 0.8450579999999945
+  },
+  {
+   "key": "P-56/main/C-016--sonnet-medium--0",
+   "ms": 0.45610099999998965
+  },
+  {
+   "key": "P-56/main/H08--opus-medium--0",
+   "ms": 0.24257299999999304
+  },
+  {
+   "key": "P-56/main/CC-007--sonnet-low--0",
+   "ms": 0.30672200000003613
+  },
+  {
+   "key": "P-56/main/CC-007--sonnet-high--0",
+   "ms": 0.6328310000000101
+  },
+  {
+   "key": "P-56/main/CC-014--opus-medium--0",
+   "ms": 0.49077599999998256
+  },
+  {
+   "key": "P-56/main/CC-009--opus-low--0",
+   "ms": 0.22819599999996854
+  },
+  {
+   "key": "P-56/main/CC-025--opus-high--0",
+   "ms": 0.158787000000018
+  },
+  {
+   "key": "P-56/main/H08--sonnet-low--0",
+   "ms": 0.35621500000002015
+  },
+  {
+   "key": "P-56/main/C-015--opus-medium--0",
+   "ms": 0.48262099999999464
+  },
+  {
+   "key": "P-56/main/CC-027--opus-medium--0",
+   "ms": 1.0768300000000295
+  },
+  {
+   "key": "P-56/main/H10--opus-high--0",
+   "ms": 0.4410829999999919
+  },
+  {
+   "key": "P-56/main/C-016--opus-medium--0",
+   "ms": 0.5237580000000435
+  },
+  {
+   "key": "P-56/main/CC-025--opus-low--0",
+   "ms": 0.1376670000000786
+  },
+  {
+   "key": "P-56/main/C-012--opus-high--0",
+   "ms": 0.4053069999999934
+  },
+  {
+   "key": "P-56/main/H02--sonnet-low--0",
+   "ms": 0.19242900000006102
+  },
+  {
+   "key": "P-56/main/C-006--sonnet-high--0",
+   "ms": 0.2206019999999853
+  },
+  {
+   "key": "P-56/main/H05--opus-high--0",
+   "ms": 0.2813749999999118
+  },
+  {
+   "key": "P-56/main/C-012--haiku-low--0",
+   "ms": 0.31704199999990124
+  },
+  {
+   "key": "P-56/main/C-007--haiku-low--0",
+   "ms": 0.1831720000000132
+  },
+  {
+   "key": "P-56/main/H03--haiku-high--0",
+   "ms": 0.20720700000003944
+  },
+  {
+   "key": "P-56/main/CC-014--sonnet-low--0",
+   "ms": 0.2913429999999835
+  },
+  {
+   "key": "P-56/main/H01--opus-low--0",
+   "ms": 0.12080600000001596
+  },
+  {
+   "key": "P-56/main/C-012--sonnet-low--0",
+   "ms": 0.5040410000000293
+  },
+  {
+   "key": "P-56/main/CC-002--haiku-low--0",
+   "ms": 0.44172500000001946
+  },
+  {
+   "key": "P-56/main/H07--opus-high--0",
+   "ms": 0.402821999999901
+  },
+  {
+   "key": "P-56/main/H03--sonnet-medium--0",
+   "ms": 0.4131520000000819
+  },
+  {
+   "key": "P-56/main/H03--opus-medium--0",
+   "ms": 0.23272500000007312
+  },
+  {
+   "key": "P-56/main/CC-009--sonnet-low--0",
+   "ms": 0.4507209999999304
+  },
+  {
+   "key": "P-56/main/H01--haiku-low--0",
+   "ms": 0.26982299999997394
+  },
+  {
+   "key": "P-56/main/C-005--sonnet-medium--0",
+   "ms": 0.29109300000004623
+  },
+  {
+   "key": "P-56/main/H07--opus-low--0",
+   "ms": 0.13319899999999052
+  },
+  {
+   "key": "P-56/main/CC-022--opus-medium--0",
+   "ms": 1.6485780000000432
+  },
+  {
+   "key": "P-56/main/CC-022--sonnet-medium--0",
+   "ms": 0.38792399999999816
+  },
+  {
+   "key": "P-56/main/CC-022--sonnet-low--0",
+   "ms": 0.48585700000001
+  },
+  {
+   "key": "P-56/main/CC-026--haiku-low--0",
+   "ms": 0.13226699999995617
+  },
+  {
+   "key": "P-56/main/H10--sonnet-medium--0",
+   "ms": 0.33164899999997033
+  },
+  {
+   "key": "P-56/main/CC-002--haiku-high--0",
+   "ms": 0.22250500000006923
+  },
+  {
+   "key": "P-56/main/CC-011--sonnet-medium--0",
+   "ms": 0.17619899999999689
+  },
+  {
+   "key": "P-56/main/H01--sonnet-low--0",
+   "ms": 0.1334789999999657
+  },
+  {
+   "key": "P-56/main/H02--opus-high--0",
+   "ms": 0.1811880000000201
+  },
+  {
+   "key": "P-56/main/C-016--haiku-high--0",
+   "ms": 0.35598400000003494
+  },
+  {
+   "key": "P-56/main/C-015--sonnet-low--0",
+   "ms": 0.2822670000000471
+  },
+  {
+   "key": "P-56/main/CC-007--haiku-low--0",
+   "ms": 0.35239800000010746
+  },
+  {
+   "key": "P-56/main/CC-014--sonnet-high--0",
+   "ms": 1.0454320000000052
+  },
+  {
+   "key": "P-56/main/H01--sonnet-medium--0",
+   "ms": 0.23661200000003646
+  },
+  {
+   "key": "P-56/main/H08--sonnet-high--0",
+   "ms": 0.350304000000051
+  },
+  {
+   "key": "P-56/main/CC-002--sonnet-low--0",
+   "ms": 0.21780699999999342
+  },
+  {
+   "key": "P-56/main/CC-013--opus-low--0",
+   "ms": 0.21002199999998084
+  },
+  {
+   "key": "P-56/main/C-012--sonnet-high--0",
+   "ms": 0.4318269999999984
+  },
+  {
+   "key": "P-56/main/H06--haiku-low--0",
+   "ms": 0.2491650000000618
+  },
+  {
+   "key": "P-56/main/H09--sonnet-medium--0",
+   "ms": 0.37041199999998753
+  },
+  {
+   "key": "P-56/main/H04--sonnet-high--0",
+   "ms": 0.6588900000000422
+  },
+  {
+   "key": "P-56/main/CC-013--sonnet-medium--0",
+   "ms": 0.23753399999998237
+  },
+  {
+   "key": "P-56/main/CC-025--haiku-low--0",
+   "ms": 0.20691699999997581
+  },
+  {
+   "key": "P-56/main/H06--sonnet-medium--0",
+   "ms": 0.6480099999999993
+  },
+  {
+   "key": "P-56/main/H03--sonnet-low--0",
+   "ms": 0.4118990000000622
+  },
+  {
+   "key": "P-56/main/C-016--opus-high--0",
+   "ms": 0.2850019999999631
+  },
+  {
+   "key": "P-56/main/C-006--sonnet-low--0",
+   "ms": 0.2895300000000134
+  },
+  {
+   "key": "P-56/main/H04--opus-high--0",
+   "ms": 0.36221599999998944
+  },
+  {
+   "key": "P-56/main/C-019--sonnet-low--0",
+   "ms": 1.2401250000000346
+  },
+  {
+   "key": "P-56/main/CC-001--opus-low--0",
+   "ms": 0.4730329999999867
+  },
+  {
+   "key": "P-56/main/C-007--opus-high--0",
+   "ms": 0.5655060000000276
+  },
+  {
+   "key": "P-66/main/CC-026--sonnet-low--0",
+   "ms": 0.41141800000002604
+  },
+  {
+   "key": "P-66/main/CC-026--sonnet-low--1",
+   "ms": 0.570775000000026
+  },
+  {
+   "key": "P-66/main/CC-026--sonnet-low--2",
+   "ms": 0.725304000000051
+  },
+  {
+   "key": "P-66/main/CC-026--sonnet-low--3",
+   "ms": 0.34066599999994196
+  },
+  {
+   "key": "P-66/main/CC-026--sonnet-low--4",
+   "ms": 0.3484099999999444
+  },
+  {
+   "key": "P-66/main/CC-026--sonnet-low--5",
+   "ms": 0.8923559999999497
+  },
+  {
+   "key": "P-66/main/CC-026--sonnet-low--6",
+   "ms": 0.3075539999999819
+  },
+  {
+   "key": "P-66/main/CC-026--sonnet-low--7",
+   "ms": 0.7766599999999926
+  },
+  {
+   "key": "P-66/main/CC-026--opus-high--0",
+   "ms": 0.4826909999999316
+  },
+  {
+   "key": "P-66/main/CC-026--sonnet-medium--0",
+   "ms": 0.8382840000000442
+  },
+  {
+   "key": "P-66/main/CC-001--sonnet-low--0",
+   "ms": 0.42739800000003925
+  },
+  {
+   "key": "P-66/main/CC-001--sonnet-low--1",
+   "ms": 4.73758399999997
+  },
+  {
+   "key": "P-66/main/CC-001--sonnet-low--2",
+   "ms": 0.2817659999999478
+  },
+  {
+   "key": "P-66/main/CC-001--sonnet-low--3",
+   "ms": 0.5340570000000753
+  },
+  {
+   "key": "P-66/main/CC-001--sonnet-low--4",
+   "ms": 0.1892129999999952
+  },
+  {
+   "key": "P-66/main/CC-001--sonnet-low--5",
+   "ms": 0.5721680000000333
+  },
+  {
+   "key": "P-66/main/CC-001--sonnet-low--6",
+   "ms": 0.3472980000000234
+  },
+  {
+   "key": "P-66/main/CC-001--sonnet-low--7",
+   "ms": 0.49964299999999184
+  },
+  {
+   "key": "P-66/main/CC-001--opus-high--0",
+   "ms": 1.252978999999982
+  },
+  {
+   "key": "P-66/main/CC-001--sonnet-medium--0",
+   "ms": 0.22007099999996171
+  },
+  {
+   "key": "P-66/main/C-005--sonnet-low--0",
+   "ms": 0.1882909999999356
+  },
+  {
+   "key": "P-66/main/C-005--sonnet-low--1",
+   "ms": 0.19212900000002264
+  },
+  {
+   "key": "P-66/main/C-005--sonnet-low--2",
+   "ms": 0.21179499999993823
+  },
+  {
+   "key": "P-66/main/C-005--sonnet-low--3",
+   "ms": 0.18845199999998385
+  },
+  {
+   "key": "P-66/main/C-005--sonnet-low--4",
+   "ms": 0.4599190000000135
+  },
+  {
+   "key": "P-66/main/C-005--sonnet-low--5",
+   "ms": 0.42696699999999055
+  },
+  {
+   "key": "P-66/main/C-005--sonnet-low--6",
+   "ms": 0.1641060000000607
+  },
+  {
+   "key": "P-66/main/C-005--sonnet-low--7",
+   "ms": 0.1677030000000741
+  },
+  {
+   "key": "P-66/main/C-005--opus-high--0",
+   "ms": 0.28274800000008327
+  },
+  {
+   "key": "P-66/main/C-005--sonnet-medium--0",
+   "ms": 0.22639199999991888
+  },
+  {
+   "key": "P-66/main/H05--sonnet-low--0",
+   "ms": 0.23713199999997414
+  },
+  {
+   "key": "P-66/main/H05--sonnet-low--1",
+   "ms": 0.2462189999999964
+  },
+  {
+   "key": "P-66/main/H05--sonnet-low--2",
+   "ms": 0.231632999999988
+  },
+  {
+   "key": "P-66/main/H05--sonnet-low--3",
+   "ms": 0.35112600000002203
+  },
+  {
+   "key": "P-66/main/H05--sonnet-low--4",
+   "ms": 0.23111100000005536
+  },
+  {
+   "key": "P-66/main/H05--sonnet-low--5",
+   "ms": 0.23589100000003782
+  },
+  {
+   "key": "P-66/main/H05--sonnet-low--6",
+   "ms": 0.22201400000005833
+  },
+  {
+   "key": "P-66/main/H05--sonnet-low--7",
+   "ms": 0.324025000000006
+  },
+  {
+   "key": "P-66/main/H05--opus-high--0",
+   "ms": 0.6005310000000463
+  },
+  {
+   "key": "P-66/main/H05--sonnet-medium--0",
+   "ms": 0.6558950000001005
+  },
+  {
+   "key": "P-66/main/CC-007--sonnet-low--0",
+   "ms": 0.27213799999992716
+  },
+  {
+   "key": "P-66/main/CC-007--sonnet-low--1",
+   "ms": 0.20244800000000396
+  },
+  {
+   "key": "P-66/main/CC-007--sonnet-low--2",
+   "ms": 0.24911500000007436
+  },
+  {
+   "key": "P-66/main/CC-007--sonnet-low--3",
+   "ms": 0.30695299999990766
+  },
+  {
+   "key": "P-66/main/CC-007--sonnet-low--4",
+   "ms": 0.5501069999999117
+  },
+  {
+   "key": "P-66/main/CC-007--sonnet-low--5",
+   "ms": 0.33645799999999326
+  },
+  {
+   "key": "P-66/main/CC-007--sonnet-low--6",
+   "ms": 0.2966239999999516
+  },
+  {
+   "key": "P-66/main/CC-007--sonnet-low--7",
+   "ms": 0.39480700000001434
+  },
+  {
+   "key": "P-66/main/CC-007--opus-high--0",
+   "ms": 0.4231599999999389
+  },
+  {
+   "key": "P-66/main/CC-007--sonnet-medium--0",
+   "ms": 0.5063949999999977
+  },
+  {
+   "key": "P-66/main/H01--sonnet-low--0",
+   "ms": 0.17595800000003692
+  },
+  {
+   "key": "P-66/main/H01--sonnet-low--1",
+   "ms": 0.17535799999996016
+  },
+  {
+   "key": "P-66/main/H01--sonnet-low--2",
+   "ms": 0.22918800000002193
+  },
+  {
+   "key": "P-66/main/H01--sonnet-low--3",
+   "ms": 0.3290040000000545
+  },
+  {
+   "key": "P-66/main/H01--sonnet-low--4",
+   "ms": 0.14389900000003308
+  },
+  {
+   "key": "P-66/main/H01--sonnet-low--5",
+   "ms": 0.15491899999994985
+  },
+  {
+   "key": "P-66/main/H01--sonnet-low--6",
+   "ms": 0.318854999999985
+  },
+  {
+   "key": "P-66/main/H01--sonnet-low--7",
+   "ms": 0.21635399999991023
+  },
+  {
+   "key": "P-66/main/H01--opus-high--0",
+   "ms": 0.16745300000002317
+  },
+  {
+   "key": "P-66/main/H01--sonnet-medium--0",
+   "ms": 0.14267600000005132
+  },
+  {
+   "key": "P-66/main/H02--sonnet-low--0",
+   "ms": 0.5396170000000211
+  },
+  {
+   "key": "P-66/main/H02--sonnet-low--1",
+   "ms": 0.42334100000005037
+  },
+  {
+   "key": "P-66/main/H02--sonnet-low--2",
+   "ms": 0.3993960000000243
+  },
+  {
+   "key": "P-66/main/H02--sonnet-low--3",
+   "ms": 0.14973999999995158
+  },
+  {
+   "key": "P-66/main/H02--sonnet-low--4",
+   "ms": 0.15943800000002284
+  },
+  {
+   "key": "P-66/main/H02--sonnet-low--5",
+   "ms": 0.140912999999955
+  },
+  {
+   "key": "P-66/main/H02--sonnet-low--6",
+   "ms": 0.14665400000001227
+  },
+  {
+   "key": "P-66/main/H02--sonnet-low--7",
+   "ms": 0.1630649999999605
+  },
+  {
+   "key": "P-66/main/H02--opus-high--0",
+   "ms": 0.17543799999998555
+  },
+  {
+   "key": "P-66/main/H02--sonnet-medium--0",
+   "ms": 0.18558599999994385
+  },
+  {
+   "key": "P-66/main/CC-014--sonnet-low--0",
+   "ms": 0.2949710000000323
+  },
+  {
+   "key": "P-66/main/CC-014--sonnet-low--1",
+   "ms": 0.36593299999992723
+  },
+  {
+   "key": "P-66/main/CC-014--sonnet-low--2",
+   "ms": 0.24127099999998336
+  },
+  {
+   "key": "P-66/main/CC-014--sonnet-low--3",
+   "ms": 0.22775500000000193
+  },
+  {
+   "key": "P-66/main/CC-014--sonnet-low--4",
+   "ms": 0.19399199999998018
+  },
+  {
+   "key": "P-66/main/CC-014--sonnet-low--5",
+   "ms": 0.31550900000002
+  },
+  {
+   "key": "P-66/main/CC-014--sonnet-low--6",
+   "ms": 0.2715170000000171
+  },
+  {
+   "key": "P-66/main/CC-014--sonnet-low--7",
+   "ms": 0.4863480000000209
+  },
+  {
+   "key": "P-66/main/CC-014--opus-high--0",
+   "ms": 0.6364280000000235
+  },
+  {
+   "key": "P-66/main/CC-014--sonnet-medium--0",
+   "ms": 0.5237079999999423
+  },
+  {
+   "key": "P-66/main/C-016--sonnet-low--0",
+   "ms": 0.14284599999996317
+  },
+  {
+   "key": "P-66/main/C-016--sonnet-low--1",
+   "ms": 0.13779699999997774
+  },
+  {
+   "key": "P-66/main/C-016--sonnet-low--2",
+   "ms": 0.22212400000000798
+  },
+  {
+   "key": "P-66/main/C-016--sonnet-low--3",
+   "ms": 0.22786499999995158
+  },
+  {
+   "key": "P-66/main/C-016--sonnet-low--4",
+   "ms": 0.18459500000005846
+  },
+  {
+   "key": "P-66/main/C-016--sonnet-low--5",
+   "ms": 0.2134879999999839
+  },
+  {
+   "key": "P-66/main/C-016--sonnet-low--6",
+   "ms": 0.14885800000001836
+  },
+  {
+   "key": "P-66/main/C-016--sonnet-low--7",
+   "ms": 0.21300700000006145
+  },
+  {
+   "key": "P-66/main/C-016--opus-high--0",
+   "ms": 0.4751569999999674
+  },
+  {
+   "key": "P-66/main/C-016--sonnet-medium--0",
+   "ms": 0.2174160000000711
+  },
+  {
+   "key": "P-66/main/C-012--sonnet-low--0",
+   "ms": 0.305932000000098
+  },
+  {
+   "key": "P-66/main/C-012--sonnet-low--1",
+   "ms": 0.3262889999999743
+  },
+  {
+   "key": "P-66/main/C-012--sonnet-low--2",
+   "ms": 0.4128200000000106
+  },
+  {
+   "key": "P-66/main/C-012--sonnet-low--3",
+   "ms": 0.7025509999999713
+  },
+  {
+   "key": "P-66/main/C-012--sonnet-low--4",
+   "ms": 0.2770669999999882
+  },
+  {
+   "key": "P-66/main/C-012--sonnet-low--5",
+   "ms": 0.38927699999999277
+  },
+  {
+   "key": "P-66/main/C-012--sonnet-low--6",
+   "ms": 0.4254640000000336
+  },
+  {
+   "key": "P-66/main/C-012--sonnet-low--7",
+   "ms": 0.635014999999953
+  },
+  {
+   "key": "P-66/main/C-012--opus-high--0",
+   "ms": 1.31422299999997
+  },
+  {
+   "key": "P-66/main/C-012--sonnet-medium--0",
+   "ms": 0.6612139999999727
+  },
+  {
+   "key": "P-66/main/H08--sonnet-low--0",
+   "ms": 0.77465600000005
+  },
+  {
+   "key": "P-66/main/H08--sonnet-low--1",
+   "ms": 0.3195269999999937
+  },
+  {
+   "key": "P-66/main/H08--sonnet-low--2",
+   "ms": 1.2194259999999986
+  },
+  {
+   "key": "P-66/main/H08--sonnet-low--3",
+   "ms": 0.7469550000000709
+  },
+  {
+   "key": "P-66/main/H08--sonnet-low--4",
+   "ms": 0.7819900000000644
+  },
+  {
+   "key": "P-66/main/H08--sonnet-low--5",
+   "ms": 0.48197000000004664
+  },
+  {
+   "key": "P-66/main/H08--sonnet-low--6",
+   "ms": 0.3469169999999622
+  },
+  {
+   "key": "P-66/main/H08--sonnet-low--7",
+   "ms": 0.2632010000000946
+  },
+  {
+   "key": "P-66/main/H08--opus-high--0",
+   "ms": 0.340424999999982
+  },
+  {
+   "key": "P-66/main/H08--sonnet-medium--0",
+   "ms": 0.2812250000000631
+  },
+  {
+   "key": "P-66/main/C-010--sonnet-low--0",
+   "ms": 0.520001000000093
+  },
+  {
+   "key": "P-66/main/C-010--sonnet-low--1",
+   "ms": 0.349332000000004
+  },
+  {
+   "key": "P-66/main/C-010--sonnet-low--2",
+   "ms": 0.3920620000000099
+  },
+  {
+   "key": "P-66/main/C-010--sonnet-low--3",
+   "ms": 0.30777499999999236
+  },
+  {
+   "key": "P-66/main/C-010--sonnet-low--4",
+   "ms": 0.41670799999997143
+  },
+  {
+   "key": "P-66/main/C-010--sonnet-low--5",
+   "ms": 0.29759599999999864
+  },
+  {
+   "key": "P-66/main/C-010--sonnet-low--6",
+   "ms": 0.41356199999995624
+  },
+  {
+   "key": "P-66/main/C-010--sonnet-low--7",
+   "ms": 0.40561800000000403
+  },
+  {
+   "key": "P-66/main/C-010--opus-high--0",
+   "ms": 0.685118999999986
+  },
+  {
+   "key": "P-66/main/C-010--sonnet-medium--0",
+   "ms": 0.37013100000001486
+  },
+  {
+   "key": "P-66/main/CC-027--sonnet-low--0",
+   "ms": 0.2611170000000129
+  },
+  {
+   "key": "P-66/main/CC-027--sonnet-low--1",
+   "ms": 0.38507800000002135
+  },
+  {
+   "key": "P-66/main/CC-027--sonnet-low--2",
+   "ms": 0.2620289999999841
+  },
+  {
+   "key": "P-66/main/CC-027--sonnet-low--3",
+   "ms": 0.3616949999999406
+  },
+  {
+   "key": "P-66/main/CC-027--sonnet-low--4",
+   "ms": 0.2739519999998947
+  },
+  {
+   "key": "P-66/main/CC-027--sonnet-low--5",
+   "ms": 0.14662300000009054
+  },
+  {
+   "key": "P-66/main/CC-027--sonnet-low--6",
+   "ms": 0.3242759999999407
+  },
+  {
+   "key": "P-66/main/CC-027--sonnet-low--7",
+   "ms": 0.3658430000000408
+  },
+  {
+   "key": "P-66/main/CC-027--opus-high--0",
+   "ms": 1.0559709999999995
+  },
+  {
+   "key": "P-66/main/CC-027--sonnet-medium--0",
+   "ms": 0.34174800000005234
+  },
+  {
+   "key": "P-66/main/C-006--sonnet-low--0",
+   "ms": 0.23002900000005866
+  },
+  {
+   "key": "P-66/main/C-006--sonnet-low--1",
+   "ms": 0.18761000000006334
+  },
+  {
+   "key": "P-66/main/C-006--sonnet-low--2",
+   "ms": 0.18638799999996536
+  },
+  {
+   "key": "P-66/main/C-006--sonnet-low--3",
+   "ms": 0.20435199999997167
+  },
+  {
+   "key": "P-66/main/C-006--sonnet-low--4",
+   "ms": 0.2297689999999193
+  },
+  {
+   "key": "P-66/main/C-006--sonnet-low--5",
+   "ms": 0.14679399999999987
+  },
+  {
+   "key": "P-66/main/C-006--sonnet-low--6",
+   "ms": 0.1653990000000931
+  },
+  {
+   "key": "P-66/main/C-006--sonnet-low--7",
+   "ms": 0.18293199999993703
+  },
+  {
+   "key": "P-66/main/C-006--opus-high--0",
+   "ms": 0.5989079999999376
+  },
+  {
+   "key": "P-66/main/C-006--sonnet-medium--0",
+   "ms": 0.41816000000005715
+  },
+  {
+   "key": "P-66/main/CC-009--sonnet-low--0",
+   "ms": 0.3818220000000565
+  },
+  {
+   "key": "P-66/main/CC-009--sonnet-low--1",
+   "ms": 0.22236499999996795
+  },
+  {
+   "key": "P-66/main/CC-009--sonnet-low--2",
+   "ms": 0.17837299999996503
+  },
+  {
+   "key": "P-66/main/CC-009--sonnet-low--3",
+   "ms": 0.20473300000003292
+  },
+  {
+   "key": "P-66/main/CC-009--sonnet-low--4",
+   "ms": 0.33833100000003924
+  },
+  {
+   "key": "P-66/main/CC-009--sonnet-low--5",
+   "ms": 0.2566989999999123
+  },
+  {
+   "key": "P-66/main/CC-009--sonnet-low--6",
+   "ms": 0.22059200000001056
+  },
+  {
+   "key": "P-66/main/CC-009--sonnet-low--7",
+   "ms": 0.22210500000005595
+  },
+  {
+   "key": "P-66/main/CC-009--opus-high--0",
+   "ms": 0.437546999999995
+  },
+  {
+   "key": "P-66/main/CC-009--sonnet-medium--0",
+   "ms": 0.1692359999999553
+  },
+  {
+   "key": "P-66/main/H04--sonnet-low--0",
+   "ms": 0.25422500000001946
+  },
+  {
+   "key": "P-66/main/H04--sonnet-low--1",
+   "ms": 0.3102489999999989
+  },
+  {
+   "key": "P-66/main/H04--sonnet-low--2",
+   "ms": 0.32072900000002846
+  },
+  {
+   "key": "P-66/main/H04--sonnet-low--3",
+   "ms": 0.2750229999999192
+  },
+  {
+   "key": "P-66/main/H04--sonnet-low--4",
+   "ms": 0.25450499999999465
+  },
+  {
+   "key": "P-66/main/H04--sonnet-low--5",
+   "ms": 0.24422600000002603
+  },
+  {
+   "key": "P-66/main/H04--sonnet-low--6",
+   "ms": 0.5433150000000069
+  },
+  {
+   "key": "P-66/main/H04--sonnet-low--7",
+   "ms": 0.3924920000000611
+  },
+  {
+   "key": "P-66/main/H04--opus-high--0",
+   "ms": 0.49602600000002894
+  },
+  {
+   "key": "P-66/main/H04--sonnet-medium--0",
+   "ms": 0.2615580000000364
+  },
+  {
+   "key": "P-66/main/CC-011--sonnet-low--0",
+   "ms": 0.16756199999997534
+  },
+  {
+   "key": "P-66/main/CC-011--sonnet-low--1",
+   "ms": 0.13362899999992806
+  },
+  {
+   "key": "P-66/main/CC-011--sonnet-low--2",
+   "ms": 0.16453699999999571
+  },
+  {
+   "key": "P-66/main/CC-011--sonnet-low--3",
+   "ms": 0.16106100000001788
+  },
+  {
+   "key": "P-66/main/CC-011--sonnet-low--4",
+   "ms": 0.148537000000033
+  },
+  {
+   "key": "P-66/main/CC-011--sonnet-low--5",
+   "ms": 1.071058999999991
+  },
+  {
+   "key": "P-66/main/CC-011--sonnet-low--6",
+   "ms": 0.138349000000062
+  },
+  {
+   "key": "P-66/main/CC-011--sonnet-low--7",
+   "ms": 0.13613399999997
+  },
+  {
+   "key": "P-66/main/CC-011--opus-high--0",
+   "ms": 0.5298799999999346
+  },
+  {
+   "key": "P-66/main/CC-011--sonnet-medium--0",
+   "ms": 0.21555299999999988
+  },
+  {
+   "key": "P-66/main/CC-013--sonnet-low--0",
+   "ms": 0.372045000000071
+  },
+  {
+   "key": "P-66/main/CC-013--sonnet-low--1",
+   "ms": 0.3011020000000144
+  },
+  {
+   "key": "P-66/main/CC-013--sonnet-low--2",
+   "ms": 0.36103400000001784
+  },
+  {
+   "key": "P-66/main/CC-013--sonnet-low--3",
+   "ms": 0.22192499999994197
+  },
+  {
+   "key": "P-66/main/CC-013--sonnet-low--4",
+   "ms": 0.37074199999995017
+  },
+  {
+   "key": "P-66/main/CC-013--sonnet-low--5",
+   "ms": 0.3292940000000044
+  },
+  {
+   "key": "P-66/main/CC-013--sonnet-low--6",
+   "ms": 0.3630870000000641
+  },
+  {
+   "key": "P-66/main/CC-013--sonnet-low--7",
+   "ms": 0.35674600000004375
+  },
+  {
+   "key": "P-66/main/CC-013--opus-high--0",
+   "ms": 0.44284700000002886
+  },
+  {
+   "key": "P-66/main/CC-013--sonnet-medium--0",
+   "ms": 0.28562299999998686
+  },
+  {
+   "key": "P-66/main/C-007--sonnet-low--0",
+   "ms": 0.5007949999999255
+  },
+  {
+   "key": "P-66/main/C-007--sonnet-low--1",
+   "ms": 0.16708200000005036
+  },
+  {
+   "key": "P-66/main/C-007--sonnet-low--2",
+   "ms": 0.4328580000000102
+  },
+  {
+   "key": "P-66/main/C-007--sonnet-low--3",
+   "ms": 0.36027200000000903
+  },
+  {
+   "key": "P-66/main/C-007--sonnet-low--4",
+   "ms": 0.42020399999989877
+  },
+  {
+   "key": "P-66/main/C-007--sonnet-low--5",
+   "ms": 0.2575299999999743
+  },
+  {
+   "key": "P-66/main/C-007--sonnet-low--6",
+   "ms": 0.1276990000000069
+  },
+  {
+   "key": "P-66/main/C-007--sonnet-low--7",
+   "ms": 0.5625900000000001
+  },
+  {
+   "key": "P-66/main/C-007--opus-high--0",
+   "ms": 0.47259199999996326
+  },
+  {
+   "key": "P-66/main/C-007--sonnet-medium--0",
+   "ms": 0.5507579999999734
+  },
+  {
+   "key": "P-66/main/H07--sonnet-low--0",
+   "ms": 0.3100490000000491
+  },
+  {
+   "key": "P-66/main/H07--sonnet-low--1",
+   "ms": 0.34715799999992214
+  },
+  {
+   "key": "P-66/main/H07--sonnet-low--2",
+   "ms": 0.34009500000001935
+  },
+  {
+   "key": "P-66/main/H07--sonnet-low--3",
+   "ms": 0.3711230000000114
+  },
+  {
+   "key": "P-66/main/H07--sonnet-low--4",
+   "ms": 0.42883100000005925
+  },
+  {
+   "key": "P-66/main/H07--sonnet-low--5",
+   "ms": 0.16724300000009862
+  },
+  {
+   "key": "P-66/main/H07--sonnet-low--6",
+   "ms": 0.20874900000001162
+  },
+  {
+   "key": "P-66/main/H07--sonnet-low--7",
+   "ms": 0.14826700000003257
+  },
+  {
+   "key": "P-66/main/H07--opus-high--0",
+   "ms": 0.15022099999998773
+  },
+  {
+   "key": "P-66/main/H07--sonnet-medium--0",
+   "ms": 0.20795899999995981
+  },
+  {
+   "key": "P-66/main/C-019--sonnet-low--0",
+   "ms": 0.3239849999999933
+  },
+  {
+   "key": "P-66/main/C-019--sonnet-low--1",
+   "ms": 0.3434910000000855
+  },
+  {
+   "key": "P-66/main/C-019--sonnet-low--2",
+   "ms": 0.3606039999999666
+  },
+  {
+   "key": "P-66/main/C-019--sonnet-low--3",
+   "ms": 0.3423090000000002
+  },
+  {
+   "key": "P-66/main/C-019--sonnet-low--4",
+   "ms": 0.2773979999999483
+  },
+  {
+   "key": "P-66/main/C-019--sonnet-low--5",
+   "ms": 0.22674400000005335
+  },
+  {
+   "key": "P-66/main/C-019--sonnet-low--6",
+   "ms": 0.1892129999999952
+  },
+  {
+   "key": "P-66/main/C-019--sonnet-low--7",
+   "ms": 0.3320200000000568
+  },
+  {
+   "key": "P-66/main/C-019--opus-high--0",
+   "ms": 0.4668420000000424
+  },
+  {
+   "key": "P-66/main/C-019--sonnet-medium--0",
+   "ms": 0.2065059999999903
+  },
+  {
+   "key": "P-66/main/C-015--sonnet-low--0",
+   "ms": 0.24874399999998786
+  },
+  {
+   "key": "P-66/main/C-015--sonnet-low--1",
+   "ms": 0.185196000000019
+  },
+  {
+   "key": "P-66/main/C-015--sonnet-low--2",
+   "ms": 0.22618199999999433
+  },
+  {
+   "key": "P-66/main/C-015--sonnet-low--3",
+   "ms": 0.16846399999997175
+  },
+  {
+   "key": "P-66/main/C-015--sonnet-low--4",
+   "ms": 0.20946100000003298
+  },
+  {
+   "key": "P-66/main/C-015--sonnet-low--5",
+   "ms": 0.19317000000000917
+  },
+  {
+   "key": "P-66/main/C-015--sonnet-low--6",
+   "ms": 0.23144199999990178
+  },
+  {
+   "key": "P-66/main/C-015--sonnet-low--7",
+   "ms": 0.17262200000004668
+  },
+  {
+   "key": "P-66/main/C-015--opus-high--0",
+   "ms": 0.37286599999993086
+  },
+  {
+   "key": "P-66/main/C-015--sonnet-medium--0",
+   "ms": 0.3165000000000191
+  },
+  {
+   "key": "P-66/main/H10--sonnet-low--0",
+   "ms": 0.46421699999996235
+  },
+  {
+   "key": "P-66/main/H10--sonnet-low--1",
+   "ms": 0.47279200000002675
+  },
+  {
+   "key": "P-66/main/H10--sonnet-low--2",
+   "ms": 0.6340440000000171
+  },
+  {
+   "key": "P-66/main/H10--sonnet-low--3",
+   "ms": 0.38808400000004895
+  },
+  {
+   "key": "P-66/main/H10--sonnet-low--4",
+   "ms": 0.509221000000025
+  },
+  {
+   "key": "P-66/main/H10--sonnet-low--5",
+   "ms": 0.5106630000000223
+  },
+  {
+   "key": "P-66/main/H10--sonnet-low--6",
+   "ms": 0.4042249999999967
+  },
+  {
+   "key": "P-66/main/H10--sonnet-low--7",
+   "ms": 0.9198269999999411
+  },
+  {
+   "key": "P-66/main/H10--opus-high--0",
+   "ms": 5.5226390000000265
+  },
+  {
+   "key": "P-66/main/H10--sonnet-medium--0",
+   "ms": 0.24662000000000717
+  },
+  {
+   "key": "P-66/main/H06--sonnet-low--0",
+   "ms": 0.39235199999995984
+  },
+  {
+   "key": "P-66/main/H06--sonnet-low--1",
+   "ms": 0.646137000000067
+  },
+  {
+   "key": "P-66/main/H06--sonnet-low--2",
+   "ms": 0.29482000000007247
+  },
+  {
+   "key": "P-66/main/H06--sonnet-low--3",
+   "ms": 0.2754740000000311
+  },
+  {
+   "key": "P-66/main/H06--sonnet-low--4",
+   "ms": 0.5592040000000225
+  },
+  {
+   "key": "P-66/main/H06--sonnet-low--5",
+   "ms": 0.3994560000001002
+  },
+  {
+   "key": "P-66/main/H06--sonnet-low--6",
+   "ms": 0.5052130000000261
+  },
+  {
+   "key": "P-66/main/H06--sonnet-low--7",
+   "ms": 0.2279359999999997
+  },
+  {
+   "key": "P-66/main/H06--opus-high--0",
+   "ms": 0.3248470000000907
+  },
+  {
+   "key": "P-66/main/H06--sonnet-medium--0",
+   "ms": 0.48499500000002627
+  },
+  {
+   "key": "P-66/main/CC-036--sonnet-low--0",
+   "ms": 0.14905899999996564
+  },
+  {
+   "key": "P-66/main/CC-036--sonnet-low--1",
+   "ms": 0.4088040000000319
+  },
+  {
+   "key": "P-66/main/CC-036--sonnet-low--2",
+   "ms": 0.1507210000000896
+  },
+  {
+   "key": "P-66/main/CC-036--sonnet-low--3",
+   "ms": 0.12871999999993022
+  },
+  {
+   "key": "P-66/main/CC-036--sonnet-low--4",
+   "ms": 0.20392099999992297
+  },
+  {
+   "key": "P-66/main/CC-036--sonnet-low--5",
+   "ms": 0.15825499999994008
+  },
+  {
+   "key": "P-66/main/CC-036--sonnet-low--6",
+   "ms": 0.15269499999999425
+  },
+  {
+   "key": "P-66/main/CC-036--sonnet-low--7",
+   "ms": 0.3770039999999426
+  },
+  {
+   "key": "P-66/main/CC-036--opus-high--0",
+   "ms": 0.7384580000000369
+  },
+  {
+   "key": "P-66/main/CC-036--sonnet-medium--0",
+   "ms": 0.3722740000000613
+  },
+  {
+   "key": "P-66/main/H09--sonnet-low--0",
+   "ms": 0.6864209999999957
+  },
+  {
+   "key": "P-66/main/H09--sonnet-low--1",
+   "ms": 0.19887100000005375
+  },
+  {
+   "key": "P-66/main/H09--sonnet-low--2",
+   "ms": 0.16747299999997267
+  },
+  {
+   "key": "P-66/main/H09--sonnet-low--3",
+   "ms": 0.16016899999999623
+  },
+  {
+   "key": "P-66/main/H09--sonnet-low--4",
+   "ms": 0.16979600000001938
+  },
+  {
+   "key": "P-66/main/H09--sonnet-low--5",
+   "ms": 0.15323699999999008
+  },
+  {
+   "key": "P-66/main/H09--sonnet-low--6",
+   "ms": 0.21186499999998887
+  },
+  {
+   "key": "P-66/main/H09--sonnet-low--7",
+   "ms": 0.26952299999993556
+  },
+  {
+   "key": "P-66/main/H09--opus-high--0",
+   "ms": 0.29488100000003215
+  },
+  {
+   "key": "P-66/main/H09--sonnet-medium--0",
+   "ms": 0.27748799999994844
+  },
+  {
+   "key": "P-66/main/H03--sonnet-low--0",
+   "ms": 0.2741720000000214
+  },
+  {
+   "key": "P-66/main/H03--sonnet-low--1",
+   "ms": 0.2709260000000313
+  },
+  {
+   "key": "P-66/main/H03--sonnet-low--2",
+   "ms": 0.2830189999999675
+  },
+  {
+   "key": "P-66/main/H03--sonnet-low--3",
+   "ms": 0.2653249999999616
+  },
+  {
+   "key": "P-66/main/H03--sonnet-low--4",
+   "ms": 0.24538800000004812
+  },
+  {
+   "key": "P-66/main/H03--sonnet-low--5",
+   "ms": 0.283409000000006
+  },
+  {
+   "key": "P-66/main/H03--sonnet-low--7",
+   "ms": 0.3093980000001011
+  },
+  {
+   "key": "P-66/main/H03--sonnet-medium--0",
+   "ms": 0.3864220000000387
+  }
+ ]
+}
