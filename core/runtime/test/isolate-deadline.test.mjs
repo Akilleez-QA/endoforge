@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { setTimeout as sleep } from 'node:timers/promises';
@@ -8,6 +9,7 @@ import test from 'node:test';
 import { IsolatePool } from '../isolate-pool.mjs';
 import { fixture, hostPort, python } from './fixtures/ledger-fixture.mjs';
 import { holdTimers, liveTimers } from './fixtures/hold-timers.mjs';
+import { timingOnly } from './fixtures/timing.mjs';
 
 const stubborn = fileURLToPath(new URL('./fixtures/stubborn-port.mjs', import.meta.url));
 
@@ -86,7 +88,7 @@ for (const [name, portOptions] of [['traps SIGTERM', { trapTerm: true }], ['leav
     const [stopped, took] = await run();
     assert.equal(stopped.status, 'outcome_unknown');
     assert.equal(stopped.reason, 'deadline');
-    assert.ok(took < budget, `the deadline finishes the job: ${took} ms of ${budget} ms`);
+    timingOnly(t, 'the deadline finishes the job within budget', () => assert.ok(took < budget, `the deadline finishes the job: ${took} ms of ${budget} ms`));
     assert.notEqual(stopped.receipts[0].record.data.outcome_state, 'passed');
     const [again] = await run();
     assert.equal(again.reason, 'deadline');
@@ -106,7 +108,8 @@ test('a process cell that exits with a grandchild holding stderr is not left pen
   assert.equal(lost.status, 'outcome_unknown');
   assert.equal(lost.reason, 'worker_exit');
   assert.equal(lost.exitCode, 17);
-  assert.ok(performance.now() - started < budget);
+  const took = performance.now() - started;
+  timingOnly(t, 'a lost cell with a stderr-holding grandchild settles within budget', () => assert.ok(took < budget, `${took} ms of ${budget} ms`));
 });
 
 test('an idle process cell that exited is never given the next job while a grandchild holds its stderr', { timeout: 60000 }, async t => {
@@ -183,7 +186,8 @@ test('close finishes with a cell that traps SIGTERM', { timeout: 60000 }, async 
   await pool.run(job(['pass'], { trapTerm: true }));
   const started = performance.now();
   await pool.close();
-  assert.ok(performance.now() - started < budget);
+  const took = performance.now() - started;
+  timingOnly(t, 'close of a SIGTERM-trapping cell within budget', () => assert.ok(took < budget, `${took} ms of ${budget} ms`));
   assert.equal(pool.stats.workers, 0);
 });
 
@@ -208,6 +212,42 @@ test('when the supervisor stalls past a deadline, the next job does not go to th
   assert.equal(results[1].status, 'completed', 'the next job ran');
   assert.notEqual(results[1].workcell, results[0].workcell);
 });
+
+const warmPort = fileURLToPath(new URL('./fixtures/warm-port.mjs', import.meta.url));
+for (const isolation of ['thread', 'process']) {
+  test(`${isolation}: the job budget starts when the cell is warm, also for a cell that replaces a stopped one`, { timeout: 60000 }, async t => {
+    const deadlines = holdTimers(t, heldDeadline);
+    const { job } = await fixture(t);
+    const gates = mkdtempSync(join(tmpdir(), 'ef-gate-')), gate = join(gates, 'gate');
+    const pool = new IsolatePool({ hostPort: warmPort, size: 1, isolation, jobTimeoutMs: heldDeadline, warm: { value: 'loaded', gate } });
+    t.after(async () => {
+      writeFileSync(gate, 'go');
+      await pool.close();
+      rmSync(gates, { recursive: true, force: true });
+    });
+    const first = pool.run(job(['pass'], { expectWarm: 'loaded' }));
+    await until(() => pool.stats.busy === 1);
+    await sleep(50);
+    assert.equal(deadlines.count, 0, 'no budget runs while the first cell warms');
+    writeFileSync(gate, 'go');
+    const warmed = await first;
+    assert.equal(warmed.status, 'completed');
+    assert.equal(deadlines.count, 0);
+    const spin = pool.run(job(['pass'], { spin: true }));
+    await until(() => deadlines.count === 1);
+    deadlines.fire();
+    const stopped = await spin;
+    assert.deepEqual([stopped.status, stopped.reason], ['outcome_unknown', 'deadline']);
+    const after = pool.run(job(['pass'], { expectWarm: 'loaded' }));
+    await until(() => pool.stats.busy === 1);
+    await sleep(50);
+    assert.equal(deadlines.count, 0, 'no budget runs while the replacement cell warms');
+    writeFileSync(gate, 'go');
+    const replaced = await after;
+    assert.equal(replaced.status, 'completed');
+    assert.notEqual(replaced.workcell, stopped.workcell);
+  });
+}
 
 function receiptCount(ledger) {
   return python(`
@@ -273,7 +313,8 @@ test('a process cell that traps SIGTERM and then returns a verdict stays inconcl
   assert.equal(stopped.receipts[0].record.data.delivery_state, 'outcome_unknown');
   assert.equal(stopped.receipts[0].record.data.observations[0].status, 'outcome_unknown');
   assert.equal(stopped.receipts[0].record.data.observations[0].reason, 'deadline');
-  assert.ok(performance.now() - started < 8000);
+  const took = performance.now() - started;
+  timingOnly(t, 'a late verdict after SIGTERM is stopped within 8000 ms', () => assert.ok(took < 8000, `${took} ms`));
   assert.equal(alive(stopped.workcell), false);
   assert.equal(pool.stats.busy, 0);
   assert.equal(pool.stats.workers, 1);
