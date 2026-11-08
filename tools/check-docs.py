@@ -1,14 +1,30 @@
 import hashlib
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 LINK = re.compile(r"\[[^\]]*\]\(([^)\s]+)\)")
 
 
-def main():
+def documents(root):
+    try:
+        listed = subprocess.run(
+            ["git", "-C", str(root), "ls-files", "-z", "--cached", "--others", "--exclude-standard", "--", "*.md"],
+            capture_output=True, check=True,
+        ).stdout.decode().split("\0")
+    except (OSError, subprocess.CalledProcessError):
+        listed = [str(path.relative_to(root)) for path in root.rglob("*.md")]
+        listed = [name for name in listed if ".scratch" not in Path(name).parts]
+    paths = {root / name for name in listed if name}
+    return sorted(path for path in paths if path.is_file() and "node_modules" not in path.relative_to(root).parts)
+
+
+def main(root=ROOT):
+    root = Path(root)
     failures = []
-    files = sorted(path for path in ROOT.rglob("*.md") if "node_modules" not in path.parts)
+    files = documents(root)
     for path in files:
         for number, line in enumerate(path.read_text().splitlines(), 1):
             for target in LINK.findall(line):
@@ -16,8 +32,8 @@ def main():
                     continue
                 target = target.split("#", 1)[0]
                 if target and not (path.parent / target).exists():
-                    failures.append(f"{path.relative_to(ROOT)}:{number}: broken link {target}")
-    manifest = ROOT / "sources/SHA256SUMS"
+                    failures.append(f"{path.relative_to(root)}:{number}: broken link {target}")
+    manifest = root / "sources/SHA256SUMS"
     if not manifest.exists():
         failures.append("sources/SHA256SUMS: missing")
     else:
@@ -33,4 +49,4 @@ def main():
 
 
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(main(*sys.argv[1:2]))

@@ -1,6 +1,9 @@
 PYTHON ?= python3
 export PYTHONDONTWRITEBYTECODE := 1
 export ENDOFORGE_TEST_OUTPUT := $(CURDIR)/.test-work
+TOOLS_DIR := $(CURDIR)/.tools
+KERNEL_PYTHON = $(if $(wildcard $(TOOLS_DIR)/venv/bin/python),$(TOOLS_DIR)/venv/bin/python $(wordlist 2,$(words $(PYTHON)),$(PYTHON)),$(PYTHON))
+KERNEL_ENV = $(if $(wildcard $(TOOLS_DIR)/bin/wasm-tools),PATH="$(TOOLS_DIR)/bin:$$PATH")
 
 pymods = $(subst /,.,$(patsubst %.py,%,$(1)))
 RUNTIME_TESTS := $(wildcard core/runtime/test/*.test.mjs)
@@ -25,12 +28,20 @@ check:
 	$(PYTHON) -I tools/experiments_index.py --check
 	$(PYTHON) -I tools/source_sums.py --check
 	$(PYTHON) -I tools/experiment_id.py check
+	$(PYTHON) -I tools/check-privacy.py
 
 index:
 	$(PYTHON) -I tools/experiments_index.py
 
 sums:
 	$(PYTHON) -I tools/source_sums.py
+
+.PHONY: check-privacy tools
+check-privacy:
+	$(PYTHON) -I tools/check-privacy.py
+
+tools:
+	$(firstword $(PYTHON)) -B -m tools.kernel.install_tools
 
 core-test:
 	$(PYTHON) -B -m unittest discover -s tests -v
@@ -107,7 +118,8 @@ escape-test:
 
 .PHONY: kernel-test
 kernel-test:
-	$(PYTHON) -B -m unittest $(call pymods,$(wildcard tools/kernel/test_*.py)) -v
+	@$(KERNEL_ENV) $(KERNEL_PYTHON) -B -m tools.kernel.install_tools --check
+	$(KERNEL_ENV) $(KERNEL_PYTHON) -B -m unittest $(call pymods,$(wildcard tools/kernel/test_*.py)) -v
 
 .PHONY: rust-lane-test
 rust-lane-test:
