@@ -1,0 +1,6346 @@
+{
+ "node": "26.13.0",
+ "repo": "/mnt/cold-steam/factory-scratch/wt/fanout-20261106/p68-tuner-occupancy",
+ "label": "round2",
+ "mode": "sweep",
+ "affinity": "8-15,24-31",
+ "platform": "linux",
+ "machine": "main-rig",
+ "own": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/heavy.slice/heavy-p68-bench-2849256-38c159cc.scope",
+ "probe": {
+  "os": "linux",
+  "cpus": [
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   24,
+   25,
+   26,
+   27,
+   28,
+   29,
+   30,
+   31
+  ],
+  "quota": 8,
+  "quotaCgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/heavy.slice/heavy-p68-bench-2849256-38c159cc.scope",
+  "levels": [
+   {
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/heavy.slice/heavy-p68-bench-2849256-38c159cc.scope",
+    "quota": 8,
+    "branch": null
+   },
+   {
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/heavy.slice",
+    "quota": 32,
+    "branch": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/heavy.slice/heavy-p68-bench-2849256-38c159cc.scope",
+    "weighted": true
+   }
+  ],
+  "ownCgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/heavy.slice/heavy-p68-bench-2849256-38c159cc.scope",
+  "allotment": 8,
+  "domains": [
+   {
+    "cpus": [
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     24,
+     25,
+     26,
+     27,
+     28,
+     29,
+     30,
+     31
+    ],
+    "cores": 8
+   }
+  ],
+  "cores": 8,
+  "smt": true,
+  "perfLevels": null,
+  "memory": {
+   "availableMb": 89146,
+   "headroomMb": 54433,
+   "limitMb": 56320,
+   "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/heavy.slice"
+  },
+  "taskset": "/usr/bin/taskset",
+  "notes": []
+ },
+ "plan": {
+  "mode": "fixed",
+  "tuned": false,
+  "cap": null,
+  "headroom": 1.25,
+  "ram": 0.75,
+  "allotment": 8,
+  "queues": 1,
+  "pinned": false,
+  "cohorts": [
+   {
+    "queue": 0,
+    "width": 8,
+    "max": 8,
+    "share": 8,
+    "cpus": null
+   }
+  ],
+  "width": 8,
+  "max": 8,
+  "notes": []
+ },
+ "tunedPlan": {
+  "mode": "tuned",
+  "tuned": true,
+  "cap": "occupancy",
+  "headroom": 1.25,
+  "ram": 0.75,
+  "allotment": 8,
+  "queues": 1,
+  "pinned": false,
+  "cohorts": [
+   {
+    "queue": 0,
+    "width": 8,
+    "max": 24,
+    "share": 8,
+    "cpus": null
+   }
+  ],
+  "width": 8,
+  "max": 24,
+  "notes": []
+ },
+ "demand": 64,
+ "calibration": {
+  "spinners": 16,
+  "cpus": 8.04
+ },
+ "rows": [
+  {
+   "arm": "tuned",
+   "seconds": 120,
+   "demand": 64,
+   "peer": 12,
+   "peerStartedAt": 6455,
+   "timedStartAt": 9464,
+   "attempts": 23382,
+   "accepted": 23382,
+   "perSecond": 194.3,
+   "wallMs": 120327,
+   "cpuMsPerAccepted": 19.067,
+   "busyCpus": 3.71,
+   "ownCgroupCpus": 3.71,
+   "ownCgroupMsPerAccepted": 19.067,
+   "sliceCondition": {
+    "start": {
+     "cpuMax": "max 100000",
+     "cpuWeight": "40"
+    },
+    "end": {
+     "cpuMax": "max 100000",
+     "cpuWeight": "40"
+    }
+   },
+   "peerCpus": 11.7,
+   "slice": {
+    "cpus": 22.19,
+    "throttledMs": 0
+   },
+   "capacity": {
+    "mode": "tuned",
+    "cap": "occupancy",
+    "allotment": 8,
+    "cohorts": [
+     {
+      "width": 8,
+      "max": 24,
+      "share": 8,
+      "pinned": false
+     }
+    ]
+   },
+   "widths": [
+    [
+     1000,
+     8
+    ],
+    [
+     2000,
+     10
+    ],
+    [
+     3000,
+     10
+    ],
+    [
+     4001,
+     6
+    ],
+    [
+     5000,
+     6
+    ],
+    [
+     6001,
+     4
+    ],
+    [
+     7002,
+     4
+    ],
+    [
+     8001,
+     7
+    ],
+    [
+     9002,
+     7
+    ],
+    [
+     10002,
+     5
+    ],
+    [
+     11002,
+     5
+    ],
+    [
+     12001,
+     5
+    ],
+    [
+     13002,
+     5
+    ],
+    [
+     14002,
+     5
+    ],
+    [
+     15001,
+     5
+    ],
+    [
+     16001,
+     5
+    ],
+    [
+     17001,
+     5
+    ],
+    [
+     18001,
+     5
+    ],
+    [
+     19002,
+     5
+    ],
+    [
+     20002,
+     5
+    ],
+    [
+     21002,
+     5
+    ],
+    [
+     22001,
+     5
+    ],
+    [
+     23001,
+     5
+    ],
+    [
+     24001,
+     5
+    ],
+    [
+     25001,
+     5
+    ],
+    [
+     26001,
+     5
+    ],
+    [
+     27001,
+     5
+    ],
+    [
+     28002,
+     5
+    ],
+    [
+     29001,
+     5
+    ],
+    [
+     30002,
+     5
+    ],
+    [
+     31001,
+     5
+    ],
+    [
+     32001,
+     5
+    ],
+    [
+     33002,
+     5
+    ],
+    [
+     34003,
+     5
+    ],
+    [
+     35003,
+     5
+    ],
+    [
+     36004,
+     5
+    ],
+    [
+     37004,
+     5
+    ],
+    [
+     38003,
+     5
+    ],
+    [
+     39004,
+     5
+    ],
+    [
+     40003,
+     5
+    ],
+    [
+     41004,
+     5
+    ],
+    [
+     42004,
+     5
+    ],
+    [
+     43004,
+     5
+    ],
+    [
+     44004,
+     5
+    ],
+    [
+     45004,
+     5
+    ],
+    [
+     46004,
+     5
+    ],
+    [
+     47004,
+     5
+    ],
+    [
+     48003,
+     5
+    ],
+    [
+     49004,
+     5
+    ],
+    [
+     50004,
+     5
+    ],
+    [
+     51004,
+     5
+    ],
+    [
+     52004,
+     5
+    ],
+    [
+     53003,
+     5
+    ],
+    [
+     54004,
+     5
+    ],
+    [
+     55004,
+     5
+    ],
+    [
+     56004,
+     5
+    ],
+    [
+     57003,
+     5
+    ],
+    [
+     58004,
+     5
+    ],
+    [
+     59003,
+     5
+    ],
+    [
+     60004,
+     5
+    ],
+    [
+     61003,
+     5
+    ],
+    [
+     62004,
+     5
+    ],
+    [
+     63004,
+     5
+    ],
+    [
+     64004,
+     5
+    ],
+    [
+     65003,
+     5
+    ],
+    [
+     66003,
+     5
+    ],
+    [
+     67004,
+     5
+    ],
+    [
+     68004,
+     5
+    ],
+    [
+     69003,
+     5
+    ],
+    [
+     70005,
+     5
+    ],
+    [
+     71006,
+     5
+    ],
+    [
+     72006,
+     5
+    ],
+    [
+     73006,
+     5
+    ],
+    [
+     74006,
+     5
+    ],
+    [
+     75007,
+     5
+    ],
+    [
+     76006,
+     5
+    ],
+    [
+     77006,
+     5
+    ],
+    [
+     78007,
+     5
+    ],
+    [
+     79007,
+     5
+    ],
+    [
+     80007,
+     5
+    ],
+    [
+     81007,
+     5
+    ],
+    [
+     82007,
+     5
+    ],
+    [
+     83007,
+     5
+    ],
+    [
+     84007,
+     5
+    ],
+    [
+     85008,
+     5
+    ],
+    [
+     86008,
+     5
+    ],
+    [
+     87009,
+     5
+    ],
+    [
+     88008,
+     5
+    ],
+    [
+     89008,
+     5
+    ],
+    [
+     90008,
+     5
+    ],
+    [
+     91009,
+     5
+    ],
+    [
+     92008,
+     5
+    ],
+    [
+     93009,
+     5
+    ],
+    [
+     94008,
+     5
+    ],
+    [
+     95009,
+     5
+    ],
+    [
+     96009,
+     5
+    ],
+    [
+     97010,
+     5
+    ],
+    [
+     98010,
+     5
+    ],
+    [
+     99009,
+     5
+    ],
+    [
+     100010,
+     5
+    ],
+    [
+     101010,
+     5
+    ],
+    [
+     102011,
+     5
+    ],
+    [
+     103011,
+     5
+    ],
+    [
+     104010,
+     5
+    ],
+    [
+     105011,
+     5
+    ],
+    [
+     106010,
+     5
+    ],
+    [
+     107011,
+     6
+    ],
+    [
+     108010,
+     6
+    ],
+    [
+     109010,
+     7
+    ],
+    [
+     110011,
+     7
+    ],
+    [
+     111011,
+     6
+    ],
+    [
+     112011,
+     6
+    ],
+    [
+     113011,
+     6
+    ],
+    [
+     114011,
+     6
+    ],
+    [
+     115011,
+     6
+    ],
+    [
+     116011,
+     6
+    ],
+    [
+     117011,
+     6
+    ],
+    [
+     118011,
+     6
+    ],
+    [
+     119011,
+     6
+    ],
+    [
+     120011,
+     6
+    ]
+   ],
+   "tunerLog": [
+    {
+     "at": 6194,
+     "rate": 7.2,
+     "cpuPer": 103.29,
+     "width": 8,
+     "share": 8,
+     "mode": "shared",
+     "peers": 1,
+     "legacyShare": 8,
+     "uRaw": 0.947,
+     "u": 0.947,
+     "cap": 11,
+     "memoryCells": 902,
+     "rssPerCellMb": 45.1,
+     "next": 8,
+     "bound": 10,
+     "phase": "explore",
+     "saturated": true
+    },
+    {
+     "at": 9538,
+     "rate": 206,
+     "cpuPer": 19.75,
+     "width": 8,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.51,
+     "u": 0.942,
+     "cap": 11,
+     "memoryCells": 797,
+     "rssPerCellMb": 51.7,
+     "next": 10,
+     "bound": 10,
+     "phase": "explore",
+     "saturated": true
+    },
+    {
+     "at": 10544,
+     "rate": 205.3,
+     "cpuPer": 20.54,
+     "width": 10,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.423,
+     "u": 0.937,
+     "cap": 11,
+     "memoryCells": 964,
+     "rssPerCellMb": 42.3,
+     "next": 10,
+     "bound": 10,
+     "phase": "explore",
+     "saturated": true
+    },
+    {
+     "at": 11560,
+     "rate": 198.4,
+     "cpuPer": 20.92,
+     "width": 10,
+     "share": 8,
+     "mode": "shared",
+     "peers": 2,
+     "legacyShare": 8,
+     "uRaw": 0.416,
+     "u": 0.933,
+     "cap": 11,
+     "memoryCells": 922,
+     "rssPerCellMb": 43.9,
+     "next": 6,
+     "bound": 10,
+     "phase": "explore",
+     "saturated": true
+    },
+    {
+     "at": 12575,
+     "rate": 229.3,
+     "cpuPer": 16.52,
+     "width": 6,
+     "share": 8,
+     "mode": "shared",
+     "peers": 2,
+     "legacyShare": 8,
+     "uRaw": 0.632,
+     "u": 0.928,
+     "cap": 11,
+     "memoryCells": 616,
+     "rssPerCellMb": 67.2,
+     "next": 6,
+     "bound": 10,
+     "phase": "explore",
+     "saturated": true
+    },
+    {
+     "at": 13600,
+     "rate": 225,
+     "cpuPer": 17.41,
+     "width": 6,
+     "share": 8,
+     "mode": "shared",
+     "peers": 2,
+     "legacyShare": 8,
+     "uRaw": 0.654,
+     "u": 0.923,
+     "cap": 11,
+     "memoryCells": 580,
+     "rssPerCellMb": 70.3,
+     "next": 4,
+     "bound": 10,
+     "phase": "explore",
+     "saturated": true
+    },
+    {
+     "at": 14607,
+     "rate": 195,
+     "cpuPer": 18.34,
+     "width": 4,
+     "share": 8,
+     "mode": "shared",
+     "peers": 2,
+     "legacyShare": 8,
+     "uRaw": 0.895,
+     "u": 0.919,
+     "cap": 11,
+     "memoryCells": 368,
+     "rssPerCellMb": 109.4,
+     "next": 4,
+     "bound": 10,
+     "phase": "explore",
+     "saturated": true
+    },
+    {
+     "at": 15608,
+     "rate": 219.2,
+     "cpuPer": 15.6,
+     "width": 4,
+     "share": 8,
+     "mode": "shared",
+     "peers": 2,
+     "legacyShare": 8,
+     "uRaw": 0.856,
+     "u": 0.914,
+     "cap": 11,
+     "memoryCells": 362,
+     "rssPerCellMb": 113.8,
+     "next": 7,
+     "bound": 10,
+     "phase": "explore",
+     "saturated": true
+    },
+    {
+     "at": 16613,
+     "rate": 236.8,
+     "cpuPer": 16.76,
+     "width": 7,
+     "share": 8,
+     "mode": "shared",
+     "peers": 2,
+     "legacyShare": 8,
+     "uRaw": 0.567,
+     "u": 0.91,
+     "cap": 11,
+     "memoryCells": 677,
+     "rssPerCellMb": 60.4,
+     "next": 7,
+     "bound": 10,
+     "phase": "explore",
+     "saturated": true
+    },
+    {
+     "at": 17616,
+     "rate": 206.3,
+     "cpuPer": 18.96,
+     "width": 7,
+     "share": 8,
+     "mode": "shared",
+     "peers": 2,
+     "legacyShare": 8,
+     "uRaw": 0.559,
+     "u": 0.905,
+     "cap": 12,
+     "memoryCells": 670,
+     "rssPerCellMb": 60.5,
+     "next": 5,
+     "bound": 10,
+     "phase": "explore",
+     "saturated": true
+    },
+    {
+     "at": 18620,
+     "rate": 224.8,
+     "cpuPer": 16.13,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 2,
+     "legacyShare": 8,
+     "uRaw": 0.725,
+     "u": 0.901,
+     "cap": 12,
+     "memoryCells": 450,
+     "rssPerCellMb": 91,
+     "next": 5,
+     "bound": 12,
+     "phase": "explore",
+     "saturated": true
+    },
+    {
+     "at": 19622,
+     "rate": 225.8,
+     "cpuPer": 16.07,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 2,
+     "legacyShare": 8,
+     "uRaw": 0.726,
+     "u": 0.896,
+     "cap": 12,
+     "memoryCells": 478,
+     "rssPerCellMb": 85.6,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 20624,
+     "rate": 204.9,
+     "cpuPer": 18.12,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.744,
+     "u": 0.892,
+     "cap": 12,
+     "memoryCells": 441,
+     "rssPerCellMb": 91.9,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 21626,
+     "rate": 205.9,
+     "cpuPer": 18.09,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.747,
+     "u": 0.887,
+     "cap": 12,
+     "memoryCells": 460,
+     "rssPerCellMb": 87.8,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 22628,
+     "rate": 233.9,
+     "cpuPer": 16.04,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.751,
+     "u": 0.883,
+     "cap": 12,
+     "memoryCells": 456,
+     "rssPerCellMb": 88.8,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 23630,
+     "rate": 249.9,
+     "cpuPer": 15.05,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 2,
+     "legacyShare": 8,
+     "uRaw": 0.753,
+     "u": 0.878,
+     "cap": 12,
+     "memoryCells": 451,
+     "rssPerCellMb": 91.4,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 24635,
+     "rate": 206,
+     "cpuPer": 18.35,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 2,
+     "legacyShare": 8,
+     "uRaw": 0.758,
+     "u": 0.874,
+     "cap": 12,
+     "memoryCells": 483,
+     "rssPerCellMb": 84.1,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 25651,
+     "rate": 184.5,
+     "cpuPer": 20.78,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.768,
+     "u": 0.87,
+     "cap": 12,
+     "memoryCells": 407,
+     "rssPerCellMb": 97.8,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 26660,
+     "rate": 150.7,
+     "cpuPer": 22.67,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.684,
+     "u": 0.865,
+     "cap": 12,
+     "memoryCells": 441,
+     "rssPerCellMb": 87.9,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 27672,
+     "rate": 187.2,
+     "cpuPer": 19.08,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 2,
+     "legacyShare": 8,
+     "uRaw": 0.715,
+     "u": 0.861,
+     "cap": 12,
+     "memoryCells": 432,
+     "rssPerCellMb": 92.1,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 28678,
+     "rate": 240.5,
+     "cpuPer": 15.62,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.753,
+     "u": 0.857,
+     "cap": 12,
+     "memoryCells": 421,
+     "rssPerCellMb": 97.1,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 29681,
+     "rate": 216.3,
+     "cpuPer": 17.47,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.757,
+     "u": 0.852,
+     "cap": 12,
+     "memoryCells": 422,
+     "rssPerCellMb": 96.2,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 30686,
+     "rate": 204.3,
+     "cpuPer": 18.56,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 2,
+     "legacyShare": 8,
+     "uRaw": 0.759,
+     "u": 0.848,
+     "cap": 12,
+     "memoryCells": 443,
+     "rssPerCellMb": 90.5,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 31691,
+     "rate": 230.6,
+     "cpuPer": 16.16,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 2,
+     "legacyShare": 8,
+     "uRaw": 0.747,
+     "u": 0.844,
+     "cap": 12,
+     "memoryCells": 443,
+     "rssPerCellMb": 90.8,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 32702,
+     "rate": 242.3,
+     "cpuPer": 15.24,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.74,
+     "u": 0.84,
+     "cap": 12,
+     "memoryCells": 477,
+     "rssPerCellMb": 86.7,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 33706,
+     "rate": 252.1,
+     "cpuPer": 14.91,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.753,
+     "u": 0.835,
+     "cap": 12,
+     "memoryCells": 443,
+     "rssPerCellMb": 93,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 34710,
+     "rate": 261.5,
+     "cpuPer": 14.34,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.752,
+     "u": 0.831,
+     "cap": 13,
+     "memoryCells": 460,
+     "rssPerCellMb": 89.8,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 35713,
+     "rate": 271.7,
+     "cpuPer": 13.68,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 2,
+     "legacyShare": 8,
+     "uRaw": 0.744,
+     "u": 0.827,
+     "cap": 13,
+     "memoryCells": 465,
+     "rssPerCellMb": 89.3,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 36719,
+     "rate": 272.9,
+     "cpuPer": 13.89,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 2,
+     "legacyShare": 8,
+     "uRaw": 0.759,
+     "u": 0.823,
+     "cap": 13,
+     "memoryCells": 428,
+     "rssPerCellMb": 96.4,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 37723,
+     "rate": 254.1,
+     "cpuPer": 14.86,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.757,
+     "u": 0.819,
+     "cap": 13,
+     "memoryCells": 459,
+     "rssPerCellMb": 89.8,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 38731,
+     "rate": 266.7,
+     "cpuPer": 13.82,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.738,
+     "u": 0.815,
+     "cap": 13,
+     "memoryCells": 446,
+     "rssPerCellMb": 93.3,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 39738,
+     "rate": 245.4,
+     "cpuPer": 14.8,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 2,
+     "legacyShare": 8,
+     "uRaw": 0.727,
+     "u": 0.811,
+     "cap": 13,
+     "memoryCells": 464,
+     "rssPerCellMb": 88.8,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 40743,
+     "rate": 230,
+     "cpuPer": 15.79,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.727,
+     "u": 0.807,
+     "cap": 13,
+     "memoryCells": 488,
+     "rssPerCellMb": 83.6,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 41752,
+     "rate": 224.2,
+     "cpuPer": 15.66,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.704,
+     "u": 0.803,
+     "cap": 13,
+     "memoryCells": 447,
+     "rssPerCellMb": 91.7,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 42757,
+     "rate": 263.7,
+     "cpuPer": 14.17,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.749,
+     "u": 0.799,
+     "cap": 13,
+     "memoryCells": 434,
+     "rssPerCellMb": 95.3,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 43761,
+     "rate": 268.2,
+     "cpuPer": 14.24,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.765,
+     "u": 0.795,
+     "cap": 13,
+     "memoryCells": 456,
+     "rssPerCellMb": 90.8,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 44765,
+     "rate": 248.5,
+     "cpuPer": 14.83,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.738,
+     "u": 0.791,
+     "cap": 13,
+     "memoryCells": 511,
+     "rssPerCellMb": 80.8,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 45772,
+     "rate": 256.3,
+     "cpuPer": 14.57,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.748,
+     "u": 0.787,
+     "cap": 13,
+     "memoryCells": 449,
+     "rssPerCellMb": 92,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 46780,
+     "rate": 272,
+     "cpuPer": 13.75,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.749,
+     "u": 0.783,
+     "cap": 13,
+     "memoryCells": 432,
+     "rssPerCellMb": 96.4,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 47788,
+     "rate": 224.3,
+     "cpuPer": 16.24,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.729,
+     "u": 0.779,
+     "cap": 13,
+     "memoryCells": 454,
+     "rssPerCellMb": 89.6,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 48795,
+     "rate": 188.6,
+     "cpuPer": 19.99,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.755,
+     "u": 0.775,
+     "cap": 13,
+     "memoryCells": 471,
+     "rssPerCellMb": 85.1,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 49799,
+     "rate": 163.9,
+     "cpuPer": 22.45,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.737,
+     "u": 0.771,
+     "cap": 13,
+     "memoryCells": 419,
+     "rssPerCellMb": 92.6,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 50803,
+     "rate": 148.2,
+     "cpuPer": 23.04,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.684,
+     "u": 0.767,
+     "cap": 14,
+     "memoryCells": 458,
+     "rssPerCellMb": 86.2,
+     "next": 5,
+     "bound": 12,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 51811,
+     "rate": 200.6,
+     "cpuPer": 18.01,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.723,
+     "u": 0.763,
+     "cap": 14,
+     "memoryCells": 435,
+     "rssPerCellMb": 92.3,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 52816,
+     "rate": 188.7,
+     "cpuPer": 20.34,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.768,
+     "u": 0.76,
+     "cap": 14,
+     "memoryCells": 446,
+     "rssPerCellMb": 89.4,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 53819,
+     "rate": 190.7,
+     "cpuPer": 19.93,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.761,
+     "u": 0.761,
+     "cap": 14,
+     "memoryCells": 413,
+     "rssPerCellMb": 93.7,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 54822,
+     "rate": 181.8,
+     "cpuPer": 21.17,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.771,
+     "u": 0.768,
+     "cap": 14,
+     "memoryCells": 447,
+     "rssPerCellMb": 88.8,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 55825,
+     "rate": 189.3,
+     "cpuPer": 19.51,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.739,
+     "u": 0.765,
+     "cap": 14,
+     "memoryCells": 433,
+     "rssPerCellMb": 93.1,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 56832,
+     "rate": 162.9,
+     "cpuPer": 22.12,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.721,
+     "u": 0.761,
+     "cap": 14,
+     "memoryCells": 450,
+     "rssPerCellMb": 87.8,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 57837,
+     "rate": 166.4,
+     "cpuPer": 22.11,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.737,
+     "u": 0.757,
+     "cap": 14,
+     "memoryCells": 439,
+     "rssPerCellMb": 87.9,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 58842,
+     "rate": 144.4,
+     "cpuPer": 24.19,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.7,
+     "u": 0.753,
+     "cap": 14,
+     "memoryCells": 455,
+     "rssPerCellMb": 85.6,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 59849,
+     "rate": 166.1,
+     "cpuPer": 21.77,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.725,
+     "u": 0.749,
+     "cap": 14,
+     "memoryCells": 416,
+     "rssPerCellMb": 93.8,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 60857,
+     "rate": 175.9,
+     "cpuPer": 19.47,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.686,
+     "u": 0.746,
+     "cap": 14,
+     "memoryCells": 426,
+     "rssPerCellMb": 93.6,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 61859,
+     "rate": 184.7,
+     "cpuPer": 20.78,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.768,
+     "u": 0.742,
+     "cap": 14,
+     "memoryCells": 455,
+     "rssPerCellMb": 87.3,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 62868,
+     "rate": 169.5,
+     "cpuPer": 22.65,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.769,
+     "u": 0.768,
+     "cap": 14,
+     "memoryCells": 447,
+     "rssPerCellMb": 87.2,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 63879,
+     "rate": 171.6,
+     "cpuPer": 21.62,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.744,
+     "u": 0.768,
+     "cap": 14,
+     "memoryCells": 421,
+     "rssPerCellMb": 93,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 64882,
+     "rate": 158.8,
+     "cpuPer": 22.35,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.711,
+     "u": 0.765,
+     "cap": 14,
+     "memoryCells": 421,
+     "rssPerCellMb": 92,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 65895,
+     "rate": 180.3,
+     "cpuPer": 20.5,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.74,
+     "u": 0.761,
+     "cap": 14,
+     "memoryCells": 464,
+     "rssPerCellMb": 85.5,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 66918,
+     "rate": 181.9,
+     "cpuPer": 20.02,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.73,
+     "u": 0.757,
+     "cap": 14,
+     "memoryCells": 417,
+     "rssPerCellMb": 94.4,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 67920,
+     "rate": 186.9,
+     "cpuPer": 19.98,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.748,
+     "u": 0.753,
+     "cap": 14,
+     "memoryCells": 455,
+     "rssPerCellMb": 87.2,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 68923,
+     "rate": 163.8,
+     "cpuPer": 21.59,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.708,
+     "u": 0.749,
+     "cap": 14,
+     "memoryCells": 463,
+     "rssPerCellMb": 86.2,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 69943,
+     "rate": 176.5,
+     "cpuPer": 21.22,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.75,
+     "u": 0.748,
+     "cap": 14,
+     "memoryCells": 428,
+     "rssPerCellMb": 92.2,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 70947,
+     "rate": 159.5,
+     "cpuPer": 22.26,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.711,
+     "u": 0.744,
+     "cap": 14,
+     "memoryCells": 427,
+     "rssPerCellMb": 91.8,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 71958,
+     "rate": 171.6,
+     "cpuPer": 21.83,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.75,
+     "u": 0.75,
+     "cap": 14,
+     "memoryCells": 438,
+     "rssPerCellMb": 90.5,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 72962,
+     "rate": 192.8,
+     "cpuPer": 19.6,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.757,
+     "u": 0.75,
+     "cap": 14,
+     "memoryCells": 454,
+     "rssPerCellMb": 87.7,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 73970,
+     "rate": 177.2,
+     "cpuPer": 21.4,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.759,
+     "u": 0.757,
+     "cap": 14,
+     "memoryCells": 453,
+     "rssPerCellMb": 87.4,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 74981,
+     "rate": 184.7,
+     "cpuPer": 21.07,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.779,
+     "u": 0.759,
+     "cap": 14,
+     "memoryCells": 434,
+     "rssPerCellMb": 90.3,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 75986,
+     "rate": 166.9,
+     "cpuPer": 23.16,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.775,
+     "u": 0.775,
+     "cap": 13,
+     "memoryCells": 426,
+     "rssPerCellMb": 90.5,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 76996,
+     "rate": 168.1,
+     "cpuPer": 22.53,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.759,
+     "u": 0.775,
+     "cap": 13,
+     "memoryCells": 419,
+     "rssPerCellMb": 90.4,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 78004,
+     "rate": 182.4,
+     "cpuPer": 20.41,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.746,
+     "u": 0.771,
+     "cap": 13,
+     "memoryCells": 417,
+     "rssPerCellMb": 94.7,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 79010,
+     "rate": 189.9,
+     "cpuPer": 19.95,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.758,
+     "u": 0.767,
+     "cap": 14,
+     "memoryCells": 435,
+     "rssPerCellMb": 91.9,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 80014,
+     "rate": 195.3,
+     "cpuPer": 18.69,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.731,
+     "u": 0.763,
+     "cap": 14,
+     "memoryCells": 446,
+     "rssPerCellMb": 89.9,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 81024,
+     "rate": 186,
+     "cpuPer": 20.68,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.77,
+     "u": 0.759,
+     "cap": 14,
+     "memoryCells": 421,
+     "rssPerCellMb": 95,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 82028,
+     "rate": 182.5,
+     "cpuPer": 20.63,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.754,
+     "u": 0.756,
+     "cap": 14,
+     "memoryCells": 444,
+     "rssPerCellMb": 88.9,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 83040,
+     "rate": 175.9,
+     "cpuPer": 21.98,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.774,
+     "u": 0.77,
+     "cap": 13,
+     "memoryCells": 423,
+     "rssPerCellMb": 92.1,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 84042,
+     "rate": 179.6,
+     "cpuPer": 20.68,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.744,
+     "u": 0.766,
+     "cap": 14,
+     "memoryCells": 480,
+     "rssPerCellMb": 81.6,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 85056,
+     "rate": 207.3,
+     "cpuPer": 18.42,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.764,
+     "u": 0.764,
+     "cap": 14,
+     "memoryCells": 449,
+     "rssPerCellMb": 90,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 86065,
+     "rate": 195,
+     "cpuPer": 19.08,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.745,
+     "u": 0.761,
+     "cap": 14,
+     "memoryCells": 438,
+     "rssPerCellMb": 91.6,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 87069,
+     "rate": 182.2,
+     "cpuPer": 20.63,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.753,
+     "u": 0.757,
+     "cap": 14,
+     "memoryCells": 457,
+     "rssPerCellMb": 86.7,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 88074,
+     "rate": 179.5,
+     "cpuPer": 20.69,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.744,
+     "u": 0.753,
+     "cap": 14,
+     "memoryCells": 436,
+     "rssPerCellMb": 91.5,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 89078,
+     "rate": 184.3,
+     "cpuPer": 20.03,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.739,
+     "u": 0.749,
+     "cap": 14,
+     "memoryCells": 423,
+     "rssPerCellMb": 94.8,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 90083,
+     "rate": 185.7,
+     "cpuPer": 20.11,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.748,
+     "u": 0.745,
+     "cap": 14,
+     "memoryCells": 437,
+     "rssPerCellMb": 92.2,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 91086,
+     "rate": 174.2,
+     "cpuPer": 21.58,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.753,
+     "u": 0.748,
+     "cap": 14,
+     "memoryCells": 494,
+     "rssPerCellMb": 80.2,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 92105,
+     "rate": 189.6,
+     "cpuPer": 20.61,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.783,
+     "u": 0.753,
+     "cap": 14,
+     "memoryCells": 436,
+     "rssPerCellMb": 90.2,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 93131,
+     "rate": 185.4,
+     "cpuPer": 20.29,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.754,
+     "u": 0.754,
+     "cap": 14,
+     "memoryCells": 466,
+     "rssPerCellMb": 84.5,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 94136,
+     "rate": 180.7,
+     "cpuPer": 20.69,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.748,
+     "u": 0.754,
+     "cap": 14,
+     "memoryCells": 452,
+     "rssPerCellMb": 87.1,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 95139,
+     "rate": 172.7,
+     "cpuPer": 21.23,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.735,
+     "u": 0.75,
+     "cap": 14,
+     "memoryCells": 447,
+     "rssPerCellMb": 88.2,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 96142,
+     "rate": 185.3,
+     "cpuPer": 19.91,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.739,
+     "u": 0.746,
+     "cap": 14,
+     "memoryCells": 460,
+     "rssPerCellMb": 86.9,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 97152,
+     "rate": 202.1,
+     "cpuPer": 18.61,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.753,
+     "u": 0.742,
+     "cap": 14,
+     "memoryCells": 460,
+     "rssPerCellMb": 88.1,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 98158,
+     "rate": 197.9,
+     "cpuPer": 19.04,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.754,
+     "u": 0.753,
+     "cap": 14,
+     "memoryCells": 427,
+     "rssPerCellMb": 94.5,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 99159,
+     "rate": 178.5,
+     "cpuPer": 20.91,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.747,
+     "u": 0.753,
+     "cap": 14,
+     "memoryCells": 436,
+     "rssPerCellMb": 91.3,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 100164,
+     "rate": 188.5,
+     "cpuPer": 20.08,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.758,
+     "u": 0.754,
+     "cap": 14,
+     "memoryCells": 456,
+     "rssPerCellMb": 88.4,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 101174,
+     "rate": 218.4,
+     "cpuPer": 17.42,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.762,
+     "u": 0.758,
+     "cap": 14,
+     "memoryCells": 439,
+     "rssPerCellMb": 93.4,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 102178,
+     "rate": 198.7,
+     "cpuPer": 18.98,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.755,
+     "u": 0.758,
+     "cap": 14,
+     "memoryCells": 465,
+     "rssPerCellMb": 86.8,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 103185,
+     "rate": 184.8,
+     "cpuPer": 20.08,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.743,
+     "u": 0.755,
+     "cap": 14,
+     "memoryCells": 482,
+     "rssPerCellMb": 82.7,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 104188,
+     "rate": 188.4,
+     "cpuPer": 20.43,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.771,
+     "u": 0.755,
+     "cap": 14,
+     "memoryCells": 453,
+     "rssPerCellMb": 88.7,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 105198,
+     "rate": 211.4,
+     "cpuPer": 17.42,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.738,
+     "u": 0.751,
+     "cap": 14,
+     "memoryCells": 441,
+     "rssPerCellMb": 92.2,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 106202,
+     "rate": 195.1,
+     "cpuPer": 19.7,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.77,
+     "u": 0.77,
+     "cap": 13,
+     "memoryCells": 460,
+     "rssPerCellMb": 87.4,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 107209,
+     "rate": 190,
+     "cpuPer": 19.81,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.753,
+     "u": 0.766,
+     "cap": 14,
+     "memoryCells": 450,
+     "rssPerCellMb": 88.9,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 108211,
+     "rate": 191.7,
+     "cpuPer": 19.87,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.763,
+     "u": 0.763,
+     "cap": 14,
+     "memoryCells": 424,
+     "rssPerCellMb": 94.6,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 109214,
+     "rate": 196.8,
+     "cpuPer": 19.09,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.752,
+     "u": 0.759,
+     "cap": 14,
+     "memoryCells": 442,
+     "rssPerCellMb": 91.2,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 110217,
+     "rate": 189.3,
+     "cpuPer": 19.88,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.754,
+     "u": 0.755,
+     "cap": 14,
+     "memoryCells": 451,
+     "rssPerCellMb": 88.5,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 111234,
+     "rate": 132.8,
+     "cpuPer": 21.57,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.574,
+     "u": 0.752,
+     "cap": 14,
+     "memoryCells": 446,
+     "rssPerCellMb": 89.6,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 112264,
+     "rate": 86.4,
+     "cpuPer": 25.82,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.447,
+     "u": 0.749,
+     "cap": 14,
+     "memoryCells": 456,
+     "rssPerCellMb": 88,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 113285,
+     "rate": 120.9,
+     "cpuPer": 21.6,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.523,
+     "u": 0.745,
+     "cap": 14,
+     "memoryCells": 475,
+     "rssPerCellMb": 85.6,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 114320,
+     "rate": 100.7,
+     "cpuPer": 25.12,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.507,
+     "u": 0.741,
+     "cap": 14,
+     "memoryCells": 447,
+     "rssPerCellMb": 89.2,
+     "next": 5,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 115334,
+     "rate": 145.8,
+     "cpuPer": 22.7,
+     "width": 5,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.663,
+     "u": 0.737,
+     "cap": 14,
+     "memoryCells": 432,
+     "rssPerCellMb": 91.4,
+     "next": 6,
+     "bound": 14,
+     "phase": "explore",
+     "saturated": true
+    },
+    {
+     "at": 116340,
+     "rate": 167.5,
+     "cpuPer": 21.26,
+     "width": 6,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.594,
+     "u": 0.734,
+     "cap": 14,
+     "memoryCells": 547,
+     "rssPerCellMb": 73,
+     "next": 6,
+     "bound": 14,
+     "phase": "explore",
+     "saturated": true
+    },
+    {
+     "at": 117345,
+     "rate": 197.3,
+     "cpuPer": 19.01,
+     "width": 6,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.627,
+     "u": 0.73,
+     "cap": 14,
+     "memoryCells": 509,
+     "rssPerCellMb": 80.2,
+     "next": 7,
+     "bound": 14,
+     "phase": "explore",
+     "saturated": true
+    },
+    {
+     "at": 118352,
+     "rate": 185.2,
+     "cpuPer": 21.21,
+     "width": 7,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.562,
+     "u": 0.726,
+     "cap": 14,
+     "memoryCells": 637,
+     "rssPerCellMb": 63.5,
+     "next": 7,
+     "bound": 14,
+     "phase": "explore",
+     "saturated": true
+    },
+    {
+     "at": 119368,
+     "rate": 179.8,
+     "cpuPer": 22.13,
+     "width": 7,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.569,
+     "u": 0.723,
+     "cap": 14,
+     "memoryCells": 570,
+     "rssPerCellMb": 69.7,
+     "next": 6,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 120370,
+     "rate": 178.2,
+     "cpuPer": 22.1,
+     "width": 6,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.657,
+     "u": 0.719,
+     "cap": 14,
+     "memoryCells": 568,
+     "rssPerCellMb": 69.7,
+     "next": 6,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 121376,
+     "rate": 184.2,
+     "cpuPer": 21.04,
+     "width": 6,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.647,
+     "u": 0.716,
+     "cap": 14,
+     "memoryCells": 533,
+     "rssPerCellMb": 75.5,
+     "next": 6,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 122394,
+     "rate": 194.4,
+     "cpuPer": 20.23,
+     "width": 6,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.656,
+     "u": 0.712,
+     "cap": 15,
+     "memoryCells": 554,
+     "rssPerCellMb": 73.3,
+     "next": 6,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 123399,
+     "rate": 191.9,
+     "cpuPer": 20.49,
+     "width": 6,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.656,
+     "u": 0.708,
+     "cap": 15,
+     "memoryCells": 547,
+     "rssPerCellMb": 73.7,
+     "next": 6,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 124412,
+     "rate": 172.1,
+     "cpuPer": 23.37,
+     "width": 6,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.671,
+     "u": 0.705,
+     "cap": 15,
+     "memoryCells": 545,
+     "rssPerCellMb": 73.4,
+     "next": 6,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 125426,
+     "rate": 174.3,
+     "cpuPer": 22.02,
+     "width": 6,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.64,
+     "u": 0.701,
+     "cap": 15,
+     "memoryCells": 481,
+     "rssPerCellMb": 81.5,
+     "next": 6,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 126437,
+     "rate": 167.9,
+     "cpuPer": 21.21,
+     "width": 6,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.595,
+     "u": 0.698,
+     "cap": 15,
+     "memoryCells": 589,
+     "rssPerCellMb": 68.6,
+     "next": 6,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 127444,
+     "rate": 176.7,
+     "cpuPer": 21.26,
+     "width": 6,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.627,
+     "u": 0.694,
+     "cap": 15,
+     "memoryCells": 541,
+     "rssPerCellMb": 75.1,
+     "next": 6,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 128453,
+     "rate": 182.1,
+     "cpuPer": 21.28,
+     "width": 6,
+     "share": 8,
+     "mode": "shared",
+     "peers": 3,
+     "legacyShare": 8,
+     "uRaw": 0.647,
+     "u": 0.691,
+     "cap": 15,
+     "memoryCells": 560,
+     "rssPerCellMb": 71.3,
+     "next": 6,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": true
+    },
+    {
+     "at": 129460,
+     "rate": 24.9,
+     "cpuPer": 48.91,
+     "width": 6,
+     "share": 8,
+     "mode": "shared",
+     "peers": 2,
+     "legacyShare": 8,
+     "uRaw": 0.926,
+     "u": 0.687,
+     "cap": 15,
+     "memoryCells": 559,
+     "rssPerCellMb": 71.1,
+     "next": 6,
+     "bound": 14,
+     "phase": "settled",
+     "saturated": false
+    }
+   ],
+   "tunerHistory": [
+    {
+     "at": 10542.899856,
+     "from": 8,
+     "to": 10,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 12573.613305,
+     "from": 10,
+     "to": 6,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 14599.901393,
+     "from": 6,
+     "to": 4,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 16611.421046,
+     "from": 4,
+     "to": 7,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 18619.212335,
+     "from": 7,
+     "to": 5,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 116336.043735,
+     "from": 5,
+     "to": 6,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 118348.314445,
+     "from": 6,
+     "to": 7,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 120369.155852,
+     "from": 7,
+     "to": 6,
+     "why": "settle",
+     "phase": "settled"
+    }
+   ],
+   "occupancy": {
+    "windows": 121,
+    "mean": 0.7176537508143935,
+    "sd": 0.08318983972735292,
+    "u": 0.6874638079005542
+   },
+   "verdictDigest": "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709",
+   "verdicts": {
+    "k00": {
+     "status": "completed",
+     "reason": null,
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 7
+    },
+    "k00:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k00:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 0
+    },
+    "k01": {
+     "status": "completed",
+     "reason": null,
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 7
+    },
+    "k01:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k01:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 0
+    },
+    "k02": {
+     "status": "completed",
+     "reason": null,
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 7
+    },
+    "k02:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k02:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 0
+    },
+    "k03": {
+     "status": "completed",
+     "reason": null,
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 7
+    },
+    "k03:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k03:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 0
+    },
+    "k04": {
+     "status": "completed",
+     "reason": null,
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 7
+    },
+    "k04:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k04:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 0
+    },
+    "k05": {
+     "status": "completed",
+     "reason": null,
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 7
+    },
+    "k05:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k05:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 0
+    },
+    "k06": {
+     "status": "completed",
+     "reason": null,
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 7
+    },
+    "k06:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k06:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 0
+    },
+    "k07": {
+     "status": "completed",
+     "reason": null,
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 7
+    },
+    "k07:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k07:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 0
+    },
+    "k08": {
+     "status": "completed",
+     "reason": null,
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 7
+    },
+    "k08:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k08:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 0
+    },
+    "k09": {
+     "status": "completed",
+     "reason": null,
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 7
+    },
+    "k09:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k09:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 0
+    },
+    "k10": {
+     "status": "completed",
+     "reason": null,
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 7
+    },
+    "k10:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k10:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 0
+    },
+    "k11": {
+     "status": "completed",
+     "reason": null,
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 7
+    },
+    "k11:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k11:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 0
+    },
+    "k12": {
+     "status": "completed",
+     "reason": null,
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 7
+    },
+    "k12:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k12:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 0
+    },
+    "k13": {
+     "status": "completed",
+     "reason": null,
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 7
+    },
+    "k13:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k13:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 0
+    },
+    "k14": {
+     "status": "completed",
+     "reason": null,
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 7
+    },
+    "k14:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k14:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 0
+    },
+    "k15": {
+     "status": "completed",
+     "reason": null,
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 7
+    },
+    "k15:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k15:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 0
+    },
+    "k16": {
+     "status": "completed",
+     "reason": null,
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 7
+    },
+    "k16:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k16:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 0
+    },
+    "k17": {
+     "status": "completed",
+     "reason": null,
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 7
+    },
+    "k17:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k17:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 0
+    },
+    "k18": {
+     "status": "completed",
+     "reason": null,
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 7
+    },
+    "k18:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k18:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 0
+    },
+    "k19": {
+     "status": "completed",
+     "reason": null,
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 7
+    },
+    "k19:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k19:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 0
+    },
+    "spin:deadline": {
+     "status": "refused",
+     "reason": "deadline",
+     "output": null,
+     "passed": null
+    }
+   },
+   "othersDuringRow": [
+    "heavy-akilleez-train-2763474-07b1b5a2.scope",
+    "heavy-job-2756713-d6c7579e.scope",
+    "heavy-akilleez-train-2661986-ae176a06.scope",
+    "run-p2854330-i861860249.scope",
+    "run-p2857162-i861764885.scope",
+    "heavy-job-2842282-0cdae1da.scope"
+   ],
+   "gate": {
+    "waitedMs": 0,
+    "state": {
+     "load": 16.43,
+     "psi": 12.66,
+     "others": [
+      "heavy-akilleez-train-2763474-07b1b5a2.scope",
+      "heavy-job-2756713-d6c7579e.scope"
+     ]
+    },
+    "ok": true
+   },
+   "end": {
+    "atStop": {
+     "load": 26.49,
+     "psi": 6.71,
+     "others": [
+      "heavy-job-2756713-d6c7579e.scope",
+      "heavy-job-2842282-0cdae1da.scope"
+     ]
+    },
+    "after": {
+     "load": 15.92,
+     "psi": 0.09,
+     "others": [
+      "heavy-job-2756713-d6c7579e.scope",
+      "heavy-job-2842282-0cdae1da.scope"
+     ]
+    },
+    "waitedMs": 45217
+   },
+   "loadStart": 16.43,
+   "psiStart": 12.66,
+   "loadEnd": 15.92,
+   "psiEnd": 0.09,
+   "loadAtStop": 26.49,
+   "psiAtStop": 6.71,
+   "quiet": false,
+   "loaded": true
+  },
+  {
+   "arm": "w24",
+   "seconds": 30,
+   "demand": 64,
+   "peer": 12,
+   "peerStartedAt": 180860,
+   "timedStartAt": 183875,
+   "attempts": 7731,
+   "accepted": 7731,
+   "perSecond": 255.7,
+   "wallMs": 30229,
+   "cpuMsPerAccepted": 17.912,
+   "busyCpus": 4.58,
+   "ownCgroupCpus": 4.58,
+   "ownCgroupMsPerAccepted": 17.912,
+   "sliceCondition": {
+    "start": {
+     "cpuMax": "max 100000",
+     "cpuWeight": "40"
+    },
+    "end": {
+     "cpuMax": "max 100000",
+     "cpuWeight": "40"
+    }
+   },
+   "peerCpus": 10.97,
+   "slice": {
+    "cpus": 20.87,
+    "throttledMs": 0
+   },
+   "capacity": {
+    "mode": "fixed",
+    "cap": null,
+    "allotment": 8,
+    "cohorts": [
+     {
+      "width": 24,
+      "max": 24,
+      "share": 8,
+      "pinned": false
+     }
+    ]
+   },
+   "widths": [
+    [
+     1001,
+     24
+    ],
+    [
+     2001,
+     24
+    ],
+    [
+     3001,
+     24
+    ],
+    [
+     4005,
+     24
+    ],
+    [
+     5004,
+     24
+    ],
+    [
+     6005,
+     24
+    ],
+    [
+     7006,
+     24
+    ],
+    [
+     8008,
+     24
+    ],
+    [
+     9011,
+     24
+    ],
+    [
+     10011,
+     24
+    ],
+    [
+     11016,
+     24
+    ],
+    [
+     12016,
+     24
+    ],
+    [
+     13016,
+     24
+    ],
+    [
+     14017,
+     24
+    ],
+    [
+     15016,
+     24
+    ],
+    [
+     16016,
+     24
+    ],
+    [
+     17019,
+     24
+    ],
+    [
+     18019,
+     24
+    ],
+    [
+     19018,
+     24
+    ],
+    [
+     20020,
+     24
+    ],
+    [
+     21021,
+     24
+    ],
+    [
+     22020,
+     24
+    ],
+    [
+     23029,
+     24
+    ],
+    [
+     24031,
+     24
+    ],
+    [
+     25031,
+     24
+    ],
+    [
+     26030,
+     24
+    ],
+    [
+     27030,
+     24
+    ],
+    [
+     28030,
+     24
+    ],
+    [
+     29031,
+     24
+    ],
+    [
+     30031,
+     24
+    ]
+   ],
+   "tunerLog": [],
+   "tunerHistory": null,
+   "occupancy": null,
+   "verdictDigest": "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709",
+   "verdicts": {
+    "k00": {
+     "status": "completed",
+     "reason": null,
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 7
+    },
+    "k00:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k00:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 0
+    },
+    "k01": {
+     "status": "completed",
+     "reason": null,
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 7
+    },
+    "k01:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k01:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 0
+    },
+    "k02": {
+     "status": "completed",
+     "reason": null,
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 7
+    },
+    "k02:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k02:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 0
+    },
+    "k03": {
+     "status": "completed",
+     "reason": null,
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 7
+    },
+    "k03:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k03:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 0
+    },
+    "k04": {
+     "status": "completed",
+     "reason": null,
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 7
+    },
+    "k04:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k04:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 0
+    },
+    "k05": {
+     "status": "completed",
+     "reason": null,
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 7
+    },
+    "k05:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k05:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 0
+    },
+    "k06": {
+     "status": "completed",
+     "reason": null,
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 7
+    },
+    "k06:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k06:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 0
+    },
+    "k07": {
+     "status": "completed",
+     "reason": null,
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 7
+    },
+    "k07:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k07:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 0
+    },
+    "k08": {
+     "status": "completed",
+     "reason": null,
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 7
+    },
+    "k08:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k08:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 0
+    },
+    "k09": {
+     "status": "completed",
+     "reason": null,
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 7
+    },
+    "k09:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k09:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 0
+    },
+    "k10": {
+     "status": "completed",
+     "reason": null,
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 7
+    },
+    "k10:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k10:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 0
+    },
+    "k11": {
+     "status": "completed",
+     "reason": null,
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 7
+    },
+    "k11:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k11:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 0
+    },
+    "k12": {
+     "status": "completed",
+     "reason": null,
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 7
+    },
+    "k12:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k12:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 0
+    },
+    "k13": {
+     "status": "completed",
+     "reason": null,
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 7
+    },
+    "k13:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k13:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 0
+    },
+    "k14": {
+     "status": "completed",
+     "reason": null,
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 7
+    },
+    "k14:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k14:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 0
+    },
+    "k15": {
+     "status": "completed",
+     "reason": null,
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 7
+    },
+    "k15:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k15:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 0
+    },
+    "k16": {
+     "status": "completed",
+     "reason": null,
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 7
+    },
+    "k16:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k16:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 0
+    },
+    "k17": {
+     "status": "completed",
+     "reason": null,
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 7
+    },
+    "k17:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k17:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 0
+    },
+    "k18": {
+     "status": "completed",
+     "reason": null,
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 7
+    },
+    "k18:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k18:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 0
+    },
+    "k19": {
+     "status": "completed",
+     "reason": null,
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 7
+    },
+    "k19:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k19:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 0
+    },
+    "spin:deadline": {
+     "status": "refused",
+     "reason": "deadline",
+     "output": null,
+     "passed": null
+    }
+   },
+   "othersDuringRow": [
+    "heavy-job-2756713-d6c7579e.scope",
+    "heavy-job-2842282-0cdae1da.scope"
+   ],
+   "gate": {
+    "waitedMs": 0,
+    "state": {
+     "load": 15.92,
+     "psi": 0.09,
+     "others": [
+      "heavy-job-2756713-d6c7579e.scope",
+      "heavy-job-2842282-0cdae1da.scope"
+     ]
+    },
+    "ok": true
+   },
+   "end": {
+    "atStop": {
+     "load": 27.36,
+     "psi": 14.86,
+     "others": [
+      "heavy-job-2756713-d6c7579e.scope",
+      "heavy-job-2842282-0cdae1da.scope"
+     ]
+    },
+    "after": {
+     "load": 15.67,
+     "psi": 0.1,
+     "others": [
+      "heavy-job-2756713-d6c7579e.scope",
+      "heavy-job-2842282-0cdae1da.scope"
+     ]
+    },
+    "waitedMs": 50225
+   },
+   "loadStart": 15.92,
+   "psiStart": 0.09,
+   "loadEnd": 15.67,
+   "psiEnd": 0.1,
+   "loadAtStop": 27.36,
+   "psiAtStop": 14.86,
+   "quiet": false,
+   "loaded": false
+  },
+  {
+   "arm": "w16",
+   "seconds": 30,
+   "demand": 64,
+   "peer": 12,
+   "peerStartedAt": 269361,
+   "timedStartAt": 272367,
+   "attempts": 7997,
+   "accepted": 7997,
+   "perSecond": 264.8,
+   "wallMs": 30203,
+   "cpuMsPerAccepted": 16.882,
+   "busyCpus": 4.47,
+   "ownCgroupCpus": 4.47,
+   "ownCgroupMsPerAccepted": 16.882,
+   "sliceCondition": {
+    "start": {
+     "cpuMax": "max 100000",
+     "cpuWeight": "40"
+    },
+    "end": {
+     "cpuMax": "max 100000",
+     "cpuWeight": "40"
+    }
+   },
+   "peerCpus": 11.35,
+   "slice": {
+    "cpus": 18.26,
+    "throttledMs": 0
+   },
+   "capacity": {
+    "mode": "fixed",
+    "cap": null,
+    "allotment": 8,
+    "cohorts": [
+     {
+      "width": 16,
+      "max": 16,
+      "share": 8,
+      "pinned": false
+     }
+    ]
+   },
+   "widths": [
+    [
+     1000,
+     16
+    ],
+    [
+     2000,
+     16
+    ],
+    [
+     3000,
+     16
+    ],
+    [
+     4000,
+     16
+    ],
+    [
+     5000,
+     16
+    ],
+    [
+     6000,
+     16
+    ],
+    [
+     7000,
+     16
+    ],
+    [
+     8000,
+     16
+    ],
+    [
+     9000,
+     16
+    ],
+    [
+     10001,
+     16
+    ],
+    [
+     11001,
+     16
+    ],
+    [
+     12001,
+     16
+    ],
+    [
+     13001,
+     16
+    ],
+    [
+     14002,
+     16
+    ],
+    [
+     15004,
+     16
+    ],
+    [
+     16005,
+     16
+    ],
+    [
+     17005,
+     16
+    ],
+    [
+     18009,
+     16
+    ],
+    [
+     19009,
+     16
+    ],
+    [
+     20010,
+     16
+    ],
+    [
+     21011,
+     16
+    ],
+    [
+     22011,
+     16
+    ],
+    [
+     23011,
+     16
+    ],
+    [
+     24011,
+     16
+    ],
+    [
+     25011,
+     16
+    ],
+    [
+     26011,
+     16
+    ],
+    [
+     27011,
+     16
+    ],
+    [
+     28011,
+     16
+    ],
+    [
+     29012,
+     16
+    ],
+    [
+     30011,
+     16
+    ]
+   ],
+   "tunerLog": [],
+   "tunerHistory": null,
+   "occupancy": null,
+   "verdictDigest": "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709",
+   "verdicts": {
+    "k00": {
+     "status": "completed",
+     "reason": null,
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 7
+    },
+    "k00:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k00:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 0
+    },
+    "k01": {
+     "status": "completed",
+     "reason": null,
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 7
+    },
+    "k01:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k01:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 0
+    },
+    "k02": {
+     "status": "completed",
+     "reason": null,
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 7
+    },
+    "k02:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k02:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 0
+    },
+    "k03": {
+     "status": "completed",
+     "reason": null,
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 7
+    },
+    "k03:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k03:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 0
+    },
+    "k04": {
+     "status": "completed",
+     "reason": null,
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 7
+    },
+    "k04:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k04:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 0
+    },
+    "k05": {
+     "status": "completed",
+     "reason": null,
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 7
+    },
+    "k05:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k05:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 0
+    },
+    "k06": {
+     "status": "completed",
+     "reason": null,
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 7
+    },
+    "k06:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k06:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 0
+    },
+    "k07": {
+     "status": "completed",
+     "reason": null,
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 7
+    },
+    "k07:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k07:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 0
+    },
+    "k08": {
+     "status": "completed",
+     "reason": null,
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 7
+    },
+    "k08:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k08:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 0
+    },
+    "k09": {
+     "status": "completed",
+     "reason": null,
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 7
+    },
+    "k09:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k09:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 0
+    },
+    "k10": {
+     "status": "completed",
+     "reason": null,
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 7
+    },
+    "k10:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k10:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 0
+    },
+    "k11": {
+     "status": "completed",
+     "reason": null,
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 7
+    },
+    "k11:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k11:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 0
+    },
+    "k12": {
+     "status": "completed",
+     "reason": null,
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 7
+    },
+    "k12:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k12:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 0
+    },
+    "k13": {
+     "status": "completed",
+     "reason": null,
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 7
+    },
+    "k13:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k13:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 0
+    },
+    "k14": {
+     "status": "completed",
+     "reason": null,
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 7
+    },
+    "k14:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k14:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 0
+    },
+    "k15": {
+     "status": "completed",
+     "reason": null,
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 7
+    },
+    "k15:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k15:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 0
+    },
+    "k16": {
+     "status": "completed",
+     "reason": null,
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 7
+    },
+    "k16:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k16:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 0
+    },
+    "k17": {
+     "status": "completed",
+     "reason": null,
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 7
+    },
+    "k17:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k17:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 0
+    },
+    "k18": {
+     "status": "completed",
+     "reason": null,
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 7
+    },
+    "k18:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k18:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 0
+    },
+    "k19": {
+     "status": "completed",
+     "reason": null,
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 7
+    },
+    "k19:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k19:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 0
+    },
+    "spin:deadline": {
+     "status": "refused",
+     "reason": "deadline",
+     "output": null,
+     "passed": null
+    }
+   },
+   "othersDuringRow": [
+    "heavy-job-2756713-d6c7579e.scope",
+    "heavy-job-2842282-0cdae1da.scope"
+   ],
+   "gate": {
+    "waitedMs": 0,
+    "state": {
+     "load": 15.67,
+     "psi": 0.1,
+     "others": [
+      "heavy-job-2756713-d6c7579e.scope",
+      "heavy-job-2842282-0cdae1da.scope"
+     ]
+    },
+    "ok": true
+   },
+   "end": {
+    "atStop": {
+     "load": 21.43,
+     "psi": 14.92,
+     "others": [
+      "heavy-job-2756713-d6c7579e.scope",
+      "heavy-job-2842282-0cdae1da.scope"
+     ]
+    },
+    "after": {
+     "load": 15.78,
+     "psi": 1.38,
+     "others": [
+      "heavy-job-2756713-d6c7579e.scope",
+      "heavy-job-2842282-0cdae1da.scope"
+     ]
+    },
+    "waitedMs": 30146
+   },
+   "loadStart": 15.67,
+   "psiStart": 0.1,
+   "loadEnd": 15.78,
+   "psiEnd": 1.38,
+   "loadAtStop": 21.43,
+   "psiAtStop": 14.92,
+   "quiet": false,
+   "loaded": false
+  },
+  {
+   "arm": "w12",
+   "seconds": 30,
+   "demand": 64,
+   "peer": 12,
+   "peerStartedAt": 337691,
+   "timedStartAt": 340697,
+   "attempts": 7297,
+   "accepted": 7297,
+   "perSecond": 241.6,
+   "wallMs": 30199,
+   "cpuMsPerAccepted": 17.702,
+   "busyCpus": 4.28,
+   "ownCgroupCpus": 4.28,
+   "ownCgroupMsPerAccepted": 17.701,
+   "sliceCondition": {
+    "start": {
+     "cpuMax": "max 100000",
+     "cpuWeight": "40"
+    },
+    "end": {
+     "cpuMax": "max 100000",
+     "cpuWeight": "40"
+    }
+   },
+   "peerCpus": 11.4,
+   "slice": {
+    "cpus": 22.69,
+    "throttledMs": 0
+   },
+   "capacity": {
+    "mode": "fixed",
+    "cap": null,
+    "allotment": 8,
+    "cohorts": [
+     {
+      "width": 12,
+      "max": 12,
+      "share": 8,
+      "pinned": false
+     }
+    ]
+   },
+   "widths": [
+    [
+     1000,
+     12
+    ],
+    [
+     2000,
+     12
+    ],
+    [
+     3000,
+     12
+    ],
+    [
+     4000,
+     12
+    ],
+    [
+     5002,
+     12
+    ],
+    [
+     6002,
+     12
+    ],
+    [
+     7002,
+     12
+    ],
+    [
+     8002,
+     12
+    ],
+    [
+     9004,
+     12
+    ],
+    [
+     10004,
+     12
+    ],
+    [
+     11004,
+     12
+    ],
+    [
+     12005,
+     12
+    ],
+    [
+     13004,
+     12
+    ],
+    [
+     14005,
+     12
+    ],
+    [
+     15005,
+     12
+    ],
+    [
+     16005,
+     12
+    ],
+    [
+     17009,
+     12
+    ],
+    [
+     18006,
+     12
+    ],
+    [
+     19006,
+     12
+    ],
+    [
+     20006,
+     12
+    ],
+    [
+     21006,
+     12
+    ],
+    [
+     22007,
+     12
+    ],
+    [
+     23007,
+     12
+    ],
+    [
+     24007,
+     12
+    ],
+    [
+     25007,
+     12
+    ],
+    [
+     26007,
+     12
+    ],
+    [
+     27011,
+     12
+    ],
+    [
+     28011,
+     12
+    ],
+    [
+     29012,
+     12
+    ],
+    [
+     30012,
+     12
+    ]
+   ],
+   "tunerLog": [],
+   "tunerHistory": null,
+   "occupancy": null,
+   "verdictDigest": "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709",
+   "verdicts": {
+    "k00": {
+     "status": "completed",
+     "reason": null,
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 7
+    },
+    "k00:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k00:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 0
+    },
+    "k01": {
+     "status": "completed",
+     "reason": null,
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 7
+    },
+    "k01:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k01:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 0
+    },
+    "k02": {
+     "status": "completed",
+     "reason": null,
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 7
+    },
+    "k02:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k02:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 0
+    },
+    "k03": {
+     "status": "completed",
+     "reason": null,
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 7
+    },
+    "k03:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k03:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 0
+    },
+    "k04": {
+     "status": "completed",
+     "reason": null,
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 7
+    },
+    "k04:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k04:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 0
+    },
+    "k05": {
+     "status": "completed",
+     "reason": null,
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 7
+    },
+    "k05:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k05:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 0
+    },
+    "k06": {
+     "status": "completed",
+     "reason": null,
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 7
+    },
+    "k06:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k06:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 0
+    },
+    "k07": {
+     "status": "completed",
+     "reason": null,
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 7
+    },
+    "k07:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k07:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 0
+    },
+    "k08": {
+     "status": "completed",
+     "reason": null,
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 7
+    },
+    "k08:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k08:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 0
+    },
+    "k09": {
+     "status": "completed",
+     "reason": null,
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 7
+    },
+    "k09:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k09:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 0
+    },
+    "k10": {
+     "status": "completed",
+     "reason": null,
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 7
+    },
+    "k10:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k10:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 0
+    },
+    "k11": {
+     "status": "completed",
+     "reason": null,
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 7
+    },
+    "k11:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k11:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 0
+    },
+    "k12": {
+     "status": "completed",
+     "reason": null,
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 7
+    },
+    "k12:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k12:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 0
+    },
+    "k13": {
+     "status": "completed",
+     "reason": null,
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 7
+    },
+    "k13:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k13:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 0
+    },
+    "k14": {
+     "status": "completed",
+     "reason": null,
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 7
+    },
+    "k14:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k14:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 0
+    },
+    "k15": {
+     "status": "completed",
+     "reason": null,
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 7
+    },
+    "k15:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k15:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 0
+    },
+    "k16": {
+     "status": "completed",
+     "reason": null,
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 7
+    },
+    "k16:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k16:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 0
+    },
+    "k17": {
+     "status": "completed",
+     "reason": null,
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 7
+    },
+    "k17:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k17:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 0
+    },
+    "k18": {
+     "status": "completed",
+     "reason": null,
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 7
+    },
+    "k18:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k18:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 0
+    },
+    "k19": {
+     "status": "completed",
+     "reason": null,
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 7
+    },
+    "k19:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k19:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 0
+    },
+    "spin:deadline": {
+     "status": "refused",
+     "reason": "deadline",
+     "output": null,
+     "passed": null
+    }
+   },
+   "othersDuringRow": [
+    "heavy-job-2756713-d6c7579e.scope",
+    "heavy-job-2842282-0cdae1da.scope"
+   ],
+   "gate": {
+    "waitedMs": 0,
+    "state": {
+     "load": 15.78,
+     "psi": 1.38,
+     "others": [
+      "heavy-job-2756713-d6c7579e.scope",
+      "heavy-job-2842282-0cdae1da.scope"
+     ]
+    },
+    "ok": true
+   },
+   "end": {
+    "atStop": {
+     "load": 24.26,
+     "psi": 11.81,
+     "others": [
+      "heavy-job-2756713-d6c7579e.scope",
+      "heavy-job-2842282-0cdae1da.scope"
+     ]
+    },
+    "after": {
+     "load": 15.52,
+     "psi": 0.32,
+     "others": [
+      "heavy-job-2756713-d6c7579e.scope",
+      "heavy-job-2842282-0cdae1da.scope"
+     ]
+    },
+    "waitedMs": 35170
+   },
+   "loadStart": 15.78,
+   "psiStart": 1.38,
+   "loadEnd": 15.52,
+   "psiEnd": 0.32,
+   "loadAtStop": 24.26,
+   "psiAtStop": 11.81,
+   "quiet": false,
+   "loaded": false
+  },
+  {
+   "arm": "w8",
+   "seconds": 30,
+   "demand": 64,
+   "peer": 12,
+   "peerStartedAt": 410885,
+   "timedStartAt": 413892,
+   "attempts": 8375,
+   "accepted": 8375,
+   "perSecond": 277.3,
+   "wallMs": 30205,
+   "cpuMsPerAccepted": 14.885,
+   "busyCpus": 4.13,
+   "ownCgroupCpus": 4.13,
+   "ownCgroupMsPerAccepted": 14.884,
+   "sliceCondition": {
+    "start": {
+     "cpuMax": "max 100000",
+     "cpuWeight": "40"
+    },
+    "end": {
+     "cpuMax": "max 100000",
+     "cpuWeight": "40"
+    }
+   },
+   "peerCpus": 11.63,
+   "slice": {
+    "cpus": 17.15,
+    "throttledMs": 0
+   },
+   "capacity": {
+    "mode": "fixed",
+    "cap": null,
+    "allotment": 8,
+    "cohorts": [
+     {
+      "width": 8,
+      "max": 8,
+      "share": 8,
+      "pinned": false
+     }
+    ]
+   },
+   "widths": [
+    [
+     999,
+     8
+    ],
+    [
+     1999,
+     8
+    ],
+    [
+     2999,
+     8
+    ],
+    [
+     3999,
+     8
+    ],
+    [
+     5000,
+     8
+    ],
+    [
+     6000,
+     8
+    ],
+    [
+     7000,
+     8
+    ],
+    [
+     8000,
+     8
+    ],
+    [
+     8999,
+     8
+    ],
+    [
+     9999,
+     8
+    ],
+    [
+     11000,
+     8
+    ],
+    [
+     12000,
+     8
+    ],
+    [
+     13000,
+     8
+    ],
+    [
+     14000,
+     8
+    ],
+    [
+     14999,
+     8
+    ],
+    [
+     16000,
+     8
+    ],
+    [
+     17000,
+     8
+    ],
+    [
+     18000,
+     8
+    ],
+    [
+     19000,
+     8
+    ],
+    [
+     20000,
+     8
+    ],
+    [
+     21001,
+     8
+    ],
+    [
+     22001,
+     8
+    ],
+    [
+     23002,
+     8
+    ],
+    [
+     24002,
+     8
+    ],
+    [
+     25002,
+     8
+    ],
+    [
+     26002,
+     8
+    ],
+    [
+     27002,
+     8
+    ],
+    [
+     28002,
+     8
+    ],
+    [
+     29002,
+     8
+    ],
+    [
+     30003,
+     8
+    ]
+   ],
+   "tunerLog": [],
+   "tunerHistory": null,
+   "occupancy": null,
+   "verdictDigest": "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709",
+   "verdicts": {
+    "k00": {
+     "status": "completed",
+     "reason": null,
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 7
+    },
+    "k00:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k00:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 0
+    },
+    "k01": {
+     "status": "completed",
+     "reason": null,
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 7
+    },
+    "k01:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k01:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 0
+    },
+    "k02": {
+     "status": "completed",
+     "reason": null,
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 7
+    },
+    "k02:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k02:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 0
+    },
+    "k03": {
+     "status": "completed",
+     "reason": null,
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 7
+    },
+    "k03:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k03:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 0
+    },
+    "k04": {
+     "status": "completed",
+     "reason": null,
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 7
+    },
+    "k04:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k04:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 0
+    },
+    "k05": {
+     "status": "completed",
+     "reason": null,
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 7
+    },
+    "k05:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k05:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 0
+    },
+    "k06": {
+     "status": "completed",
+     "reason": null,
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 7
+    },
+    "k06:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k06:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 0
+    },
+    "k07": {
+     "status": "completed",
+     "reason": null,
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 7
+    },
+    "k07:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k07:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 0
+    },
+    "k08": {
+     "status": "completed",
+     "reason": null,
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 7
+    },
+    "k08:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k08:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 0
+    },
+    "k09": {
+     "status": "completed",
+     "reason": null,
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 7
+    },
+    "k09:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k09:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 0
+    },
+    "k10": {
+     "status": "completed",
+     "reason": null,
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 7
+    },
+    "k10:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k10:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 0
+    },
+    "k11": {
+     "status": "completed",
+     "reason": null,
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 7
+    },
+    "k11:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k11:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 0
+    },
+    "k12": {
+     "status": "completed",
+     "reason": null,
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 7
+    },
+    "k12:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k12:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 0
+    },
+    "k13": {
+     "status": "completed",
+     "reason": null,
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 7
+    },
+    "k13:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k13:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 0
+    },
+    "k14": {
+     "status": "completed",
+     "reason": null,
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 7
+    },
+    "k14:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k14:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 0
+    },
+    "k15": {
+     "status": "completed",
+     "reason": null,
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 7
+    },
+    "k15:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k15:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 0
+    },
+    "k16": {
+     "status": "completed",
+     "reason": null,
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 7
+    },
+    "k16:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k16:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 0
+    },
+    "k17": {
+     "status": "completed",
+     "reason": null,
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 7
+    },
+    "k17:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k17:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 0
+    },
+    "k18": {
+     "status": "completed",
+     "reason": null,
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 7
+    },
+    "k18:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k18:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 0
+    },
+    "k19": {
+     "status": "completed",
+     "reason": null,
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 7
+    },
+    "k19:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k19:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 0
+    },
+    "spin:deadline": {
+     "status": "refused",
+     "reason": "deadline",
+     "output": null,
+     "passed": null
+    }
+   },
+   "othersDuringRow": [
+    "heavy-job-2756713-d6c7579e.scope",
+    "heavy-job-2842282-0cdae1da.scope"
+   ],
+   "gate": {
+    "waitedMs": 0,
+    "state": {
+     "load": 15.52,
+     "psi": 0.32,
+     "others": [
+      "heavy-job-2756713-d6c7579e.scope",
+      "heavy-job-2842282-0cdae1da.scope"
+     ]
+    },
+    "ok": true
+   },
+   "end": {
+    "atStop": {
+     "load": 17.77,
+     "psi": 11.17,
+     "others": [
+      "heavy-job-2756713-d6c7579e.scope",
+      "heavy-job-2842282-0cdae1da.scope"
+     ]
+    },
+    "after": {
+     "load": 15.75,
+     "psi": 4.11,
+     "others": [
+      "heavy-job-2756713-d6c7579e.scope",
+      "heavy-job-2842282-0cdae1da.scope"
+     ]
+    },
+    "waitedMs": 10044
+   },
+   "loadStart": 15.52,
+   "psiStart": 0.32,
+   "loadEnd": 15.75,
+   "psiEnd": 4.11,
+   "loadAtStop": 17.77,
+   "psiAtStop": 11.17,
+   "quiet": false,
+   "loaded": false
+  },
+  {
+   "arm": "w4",
+   "seconds": 30,
+   "demand": 64,
+   "peer": 12,
+   "peerStartedAt": 458930,
+   "timedStartAt": 461935,
+   "attempts": 7065,
+   "accepted": 7065,
+   "perSecond": 233,
+   "wallMs": 30326,
+   "cpuMsPerAccepted": 16.059,
+   "busyCpus": 3.74,
+   "ownCgroupCpus": 3.74,
+   "ownCgroupMsPerAccepted": 16.059,
+   "sliceCondition": {
+    "start": {
+     "cpuMax": "max 100000",
+     "cpuWeight": "40"
+    },
+    "end": {
+     "cpuMax": "max 100000",
+     "cpuWeight": "40"
+    }
+   },
+   "peerCpus": 11.91,
+   "slice": {
+    "cpus": 21.27,
+    "throttledMs": 0
+   },
+   "capacity": {
+    "mode": "fixed",
+    "cap": null,
+    "allotment": 8,
+    "cohorts": [
+     {
+      "width": 4,
+      "max": 4,
+      "share": 8,
+      "pinned": false
+     }
+    ]
+   },
+   "widths": [
+    [
+     1000,
+     4
+    ],
+    [
+     1999,
+     4
+    ],
+    [
+     2999,
+     4
+    ],
+    [
+     4000,
+     4
+    ],
+    [
+     5000,
+     4
+    ],
+    [
+     6000,
+     4
+    ],
+    [
+     7000,
+     4
+    ],
+    [
+     7999,
+     4
+    ],
+    [
+     9000,
+     4
+    ],
+    [
+     9999,
+     4
+    ],
+    [
+     11000,
+     4
+    ],
+    [
+     12001,
+     4
+    ],
+    [
+     13002,
+     4
+    ],
+    [
+     14002,
+     4
+    ],
+    [
+     15003,
+     4
+    ],
+    [
+     16003,
+     4
+    ],
+    [
+     17002,
+     4
+    ],
+    [
+     18003,
+     4
+    ],
+    [
+     19002,
+     4
+    ],
+    [
+     20002,
+     4
+    ],
+    [
+     21002,
+     4
+    ],
+    [
+     22002,
+     4
+    ],
+    [
+     23003,
+     4
+    ],
+    [
+     24003,
+     4
+    ],
+    [
+     25003,
+     4
+    ],
+    [
+     26002,
+     4
+    ],
+    [
+     27002,
+     4
+    ],
+    [
+     28003,
+     4
+    ],
+    [
+     29003,
+     4
+    ],
+    [
+     30002,
+     4
+    ]
+   ],
+   "tunerLog": [],
+   "tunerHistory": null,
+   "occupancy": null,
+   "verdictDigest": "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709",
+   "verdicts": {
+    "k00": {
+     "status": "completed",
+     "reason": null,
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 7
+    },
+    "k00:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k00:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 0
+    },
+    "k01": {
+     "status": "completed",
+     "reason": null,
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 7
+    },
+    "k01:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k01:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 0
+    },
+    "k02": {
+     "status": "completed",
+     "reason": null,
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 7
+    },
+    "k02:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k02:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 0
+    },
+    "k03": {
+     "status": "completed",
+     "reason": null,
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 7
+    },
+    "k03:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k03:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 0
+    },
+    "k04": {
+     "status": "completed",
+     "reason": null,
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 7
+    },
+    "k04:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k04:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 0
+    },
+    "k05": {
+     "status": "completed",
+     "reason": null,
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 7
+    },
+    "k05:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k05:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 0
+    },
+    "k06": {
+     "status": "completed",
+     "reason": null,
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 7
+    },
+    "k06:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k06:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 0
+    },
+    "k07": {
+     "status": "completed",
+     "reason": null,
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 7
+    },
+    "k07:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k07:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 0
+    },
+    "k08": {
+     "status": "completed",
+     "reason": null,
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 7
+    },
+    "k08:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k08:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 0
+    },
+    "k09": {
+     "status": "completed",
+     "reason": null,
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 7
+    },
+    "k09:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k09:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 0
+    },
+    "k10": {
+     "status": "completed",
+     "reason": null,
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 7
+    },
+    "k10:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k10:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 0
+    },
+    "k11": {
+     "status": "completed",
+     "reason": null,
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 7
+    },
+    "k11:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k11:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 0
+    },
+    "k12": {
+     "status": "completed",
+     "reason": null,
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 7
+    },
+    "k12:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k12:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 0
+    },
+    "k13": {
+     "status": "completed",
+     "reason": null,
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 7
+    },
+    "k13:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k13:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 0
+    },
+    "k14": {
+     "status": "completed",
+     "reason": null,
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 7
+    },
+    "k14:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k14:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 0
+    },
+    "k15": {
+     "status": "completed",
+     "reason": null,
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 7
+    },
+    "k15:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k15:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 0
+    },
+    "k16": {
+     "status": "completed",
+     "reason": null,
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 7
+    },
+    "k16:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k16:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 0
+    },
+    "k17": {
+     "status": "completed",
+     "reason": null,
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 7
+    },
+    "k17:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k17:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 0
+    },
+    "k18": {
+     "status": "completed",
+     "reason": null,
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 7
+    },
+    "k18:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k18:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 0
+    },
+    "k19": {
+     "status": "completed",
+     "reason": null,
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 7
+    },
+    "k19:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k19:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 0
+    },
+    "spin:deadline": {
+     "status": "refused",
+     "reason": "deadline",
+     "output": null,
+     "passed": null
+    }
+   },
+   "othersDuringRow": [
+    "heavy-job-2756713-d6c7579e.scope",
+    "heavy-job-2842282-0cdae1da.scope",
+    "heavy-job-2986109-3629efa8.scope"
+   ],
+   "gate": {
+    "waitedMs": 0,
+    "state": {
+     "load": 15.75,
+     "psi": 4.11,
+     "others": [
+      "heavy-job-2756713-d6c7579e.scope",
+      "heavy-job-2842282-0cdae1da.scope"
+     ]
+    },
+    "ok": true
+   },
+   "end": {
+    "atStop": {
+     "load": 18.11,
+     "psi": 3.14,
+     "others": [
+      "heavy-job-2842282-0cdae1da.scope",
+      "heavy-job-2986109-3629efa8.scope"
+     ]
+    },
+    "after": {
+     "load": 15.23,
+     "psi": 0.6,
+     "others": [
+      "heavy-job-2842282-0cdae1da.scope",
+      "heavy-job-2986109-3629efa8.scope"
+     ]
+    },
+    "waitedMs": 20092
+   },
+   "loadStart": 15.75,
+   "psiStart": 4.11,
+   "loadEnd": 15.23,
+   "psiEnd": 0.6,
+   "loadAtStop": 18.11,
+   "psiAtStop": 3.14,
+   "quiet": false,
+   "loaded": false
+  }
+ ]
+}
