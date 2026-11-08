@@ -8,8 +8,8 @@ import { createLoopPool } from '../x1/loop.mjs';
 import { runNeed } from '../x1/pipeline.mjs';
 import { scriptedProvider } from '../x1/transports.mjs';
 import { candidate } from './fixtures/x1/candidate.mjs';
-import { inputFor, modelFor, stageOf } from './fixtures/x1/scripted-model.mjs';
-import { good } from './fixtures/x1/seeds.mjs';
+import { idOf, implementation, inputFor, modelFor, reply, specification, stageOf } from './fixtures/x1/scripted-model.mjs';
+import { good, seeds } from './fixtures/x1/seeds.mjs';
 import { python } from './fixtures/ledger-fixture.mjs';
 
 const { files } = candidate();
@@ -122,4 +122,32 @@ test('a deadline passed during the wait ends the attempt inconclusive with no jo
   assert.notEqual(atWait, null);
   assert.equal(pool.busyMs, atWait);
   assert.deepEqual(await continuations(directory), [{ seq: 0, state: 'closed', stage: 'implementation' }]);
+});
+
+const storedRounds = directory => python(`
+import json, sys
+from core.ledger.ledger import Ledger
+receipt = next(r for r in Ledger(json.load(sys.stdin)['ledger']).records() if r['kind'] == 'receipt')
+print(json.dumps(receipt['data']['observations'][0]['evidence']['rounds']))
+`, { ledger: join(directory, 'ledger.sqlite') });
+
+test('release and hold report every turn\'s check rounds, so failed candidates from earlier turns are counted', { timeout: 60000 }, async t => {
+  const root = scratch(t), counts = {};
+  const bad = [seeds[1], seeds[2], seeds[7]].map(seed => inputFor(files['CONTRACT.md'], files['tests.json'], seed.kernel, seed.glue));
+  const script = ({ messages, turn }) => {
+    if (turn === 0) return reply(specification(inputFor(files['CONTRACT.md'], files['tests.json'], good.kernel, good.glue)));
+    if (turn <= bad.length) return reply(implementation(bad[turn - 1], idOf(messages)));
+    return reply(implementation(inputFor(files['CONTRACT.md'], files['tests.json'], good.kernel, good.glue), idOf(messages)));
+  };
+  for (const waits of ['hold', 'release']) {
+    const directory = join(root, waits);
+    const result = await runNeed({ need, directory, pool: loopPool(t, script, { waits }), env });
+    assert.equal(result.promoted, true, JSON.stringify(result));
+    assert.equal(result.agent.turns, 5);
+    const stored = await storedRounds(directory);
+    assert.deepEqual(stored, result.rounds);
+    counts[waits] = { rounds: result.rounds.map(round => round.round), failed: result.rounds.filter(round => round.failures).length };
+  }
+  assert.deepEqual(counts.release, counts.hold);
+  assert.deepEqual(counts.hold, { rounds: [0, 1, 2, 3], failed: 3 });
 });

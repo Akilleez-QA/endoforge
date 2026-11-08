@@ -2,7 +2,18 @@ PYTHON ?= python3
 export PYTHONDONTWRITEBYTECODE := 1
 export ENDOFORGE_TEST_OUTPUT := $(CURDIR)/.test-work
 
-.PHONY: test test-optimized check core-test ledger-test engine-test isolate-test tscheck-setup tscheck-test tscheck-requalify atomizer-test harness-test hardware-test runtime-test lib-test library-test portability-test factory-state-test seeded-fault-test escape-test compatibility-test
+pymods = $(subst /,.,$(patsubst %.py,%,$(1)))
+RUNTIME_TESTS := $(wildcard core/runtime/test/*.test.mjs)
+LOOP_TESTS := $(wildcard core/runtime/test/loop*.test.mjs)
+PIPELINE_TESTS := $(wildcard $(addprefix core/runtime/test/,x1*.test.mjs generator*.test.mjs promotion*.test.mjs synth*.test.mjs pipeline-contained*.test.mjs))
+PIPELINE_RETRY_TESTS := $(wildcard $(addprefix core/runtime/test/,pipeline-fallback*.test.mjs pipeline-retry*.test.mjs))
+AGENT_POOL_TESTS := core/runtime/test/agent-pool.test.mjs
+ISOLATE_TESTS := $(filter-out $(LOOP_TESTS) $(PIPELINE_TESTS) $(PIPELINE_RETRY_TESTS) $(AGENT_POOL_TESTS),$(RUNTIME_TESTS))
+ATOMIZER_INDIRECT := $(addprefix tools/atomizer/test/,lessons.test.mjs routing.test.mjs)
+ATOMIZER_TESTS := $(filter-out $(ATOMIZER_INDIRECT),$(wildcard tools/atomizer/test/*.test.mjs))
+LIB_NODE_TESTS := $(wildcard $(addsuffix /test/*.test.mjs,tools/lib tools/conductor tools/hillclimb tools/job))
+
+.PHONY: test test-optimized check index sums core-test ledger-test engine-test isolate-test tscheck-setup tscheck-test tscheck-requalify atomizer-test harness-test hardware-test runtime-test lib-test library-test portability-test factory-state-test seeded-fault-test escape-test compatibility-test
 
 test: pipeline-test loop-test check core-test ledger-test engine-test isolate-test tscheck-test atomizer-test harness-test hardware-test runtime-test lib-test library-test portability-test factory-state-test seeded-fault-test escape-test compatibility-test kernel-test
 
@@ -11,18 +22,27 @@ test-optimized:
 
 check:
 	$(PYTHON) -I tools/check-docs.py
+	$(PYTHON) -I tools/experiments_index.py --check
+	$(PYTHON) -I tools/source_sums.py --check
+	$(PYTHON) -I tools/experiment_id.py check
+
+index:
+	$(PYTHON) -I tools/experiments_index.py
+
+sums:
+	$(PYTHON) -I tools/source_sums.py
 
 core-test:
 	$(PYTHON) -B -m unittest discover -s tests -v
 
 ledger-test:
-	$(PYTHON) -B -m unittest core.ledger.test_ledger core.ledger.test_frozen core.ledger.test_provenance tools.test_ledger_writer tools.test_ledger_shed tools.test_dump_list -v
+	$(PYTHON) -B -m unittest $(call pymods,$(wildcard core/ledger/test_*.py tools/test_*.py)) -v
 
 engine-test:
 	node --test core/engine/*.test.mjs
 
 isolate-test:
-	node --test core/runtime/test/isolate-pool.test.mjs core/runtime/test/isolate-process.test.mjs core/runtime/test/isolate-deadline.test.mjs core/runtime/test/isolate-toolchain.test.mjs core/runtime/test/isolate-limits.test.mjs core/runtime/test/isolate-offheap.test.mjs core/runtime/test/isolate-trusted-cap.test.mjs core/runtime/test/isolate-shared-module.test.mjs core/runtime/test/isolate-host-call.test.mjs core/runtime/test/contained-js.test.mjs core/runtime/test/isolate-flags.test.mjs core/runtime/test/ledger-writer.test.mjs core/runtime/test/dump-list.test.mjs
+	node --test $(ISOLATE_TESTS)
 
 tscheck-setup:
 	npm ci --ignore-scripts --no-audit --no-fund --prefix tools/tscheck
@@ -34,71 +54,64 @@ tscheck-requalify:
 	node tools/tscheck/requalify.mjs --work "$(WORK)" --tsc "$(TSC)"
 
 atomizer-test:
-	node tools/atomizer/test/trace.test.mjs
 	node tools/atomizer/test/run.mjs
-	node tools/atomizer/test/agent-swarm.test.mjs
+	$(foreach t,$(ATOMIZER_TESTS),node $(t) &&) true
 
 harness-test:
-	$(PYTHON) -B -m unittest tools.step_harness.test_harness -v
+	$(PYTHON) -B -m unittest $(call pymods,$(wildcard tools/step_harness/test_*.py)) -v
 
 test: pipeline-retry-test receipt-test
 
 .PHONY: pipeline-retry-test receipt-test
 pipeline-retry-test:
-	node --test core/runtime/test/pipeline-fallback.test.mjs core/runtime/test/pipeline-retry.test.mjs
+	node --test $(PIPELINE_RETRY_TESTS)
 
 receipt-test:
 	PYTHONOPTIMIZE= $(firstword $(PYTHON)) -B experiments/P-19-need-to-candidate/verify.py
 
 hardware-test:
-	$(PYTHON) -B -m unittest tools.hardware_record.test_record -v
+	$(PYTHON) -B -m unittest $(call pymods,$(wildcard tools/hardware_record/test_*.py)) -v
 
 runtime-test:
-	node core/runtime/test/agent-pool.test.mjs
+	$(foreach t,$(AGENT_POOL_TESTS),node $(t) &&) true
 
 lib-test:
-	node tools/lib/test/errors.test.mjs
-	node tools/conductor/test/principles.test.mjs
-	node tools/conductor/test/stream.test.mjs
-	node tools/conductor/test/failopen.test.mjs
-	node tools/hillclimb/test/lessons.test.mjs
-	node tools/job/test/failopen.test.mjs
-	$(PYTHON) -B tools/job-locks/test_job_locks.py
+	$(foreach t,$(LIB_NODE_TESTS),node $(t) &&) true
+	$(foreach t,$(wildcard tools/job-locks/test_*.py),$(PYTHON) -B $(t) &&) true
 
 library-test:
 	node --test core/library/test/*.test.mjs
 
 portability-test:
-	$(PYTHON) -B tools/factory_portability/test_checkpoint.py
+	$(foreach t,$(wildcard tools/factory_portability/test_*.py),$(PYTHON) -B $(t) &&) true
 
 factory-state-test:
-	$(PYTHON) -B -m tools.factory_campaign.test_state
-	$(PYTHON) -B -m tools.factory_campaign.test_model_journal
+	$(foreach m,$(call pymods,$(wildcard tools/factory_campaign/test_*.py)),$(PYTHON) -B -m $(m) &&) true
 
 .PHONY: loop-setup loop-test
 loop-setup:
 	npm ci --ignore-scripts --no-audit --no-fund --prefix tools/asc
 
 loop-test: loop-setup
-	node --test core/runtime/test/loop.test.mjs core/runtime/test/loop-agent.test.mjs core/runtime/test/loop-review.test.mjs core/runtime/test/loop-count.test.mjs core/runtime/test/loop-crash.test.mjs core/runtime/test/loop-waits.test.mjs
+	node --test $(LOOP_TESTS)
 
 .PHONY: pipeline-test
 pipeline-test:
-	node --test core/runtime/test/x1.test.mjs core/runtime/test/x1-measured.test.mjs core/runtime/test/x1-contract.test.mjs core/runtime/test/x1-frozen.test.mjs core/runtime/test/generator*.test.mjs core/runtime/test/promotion.test.mjs core/runtime/test/synth.test.mjs core/runtime/test/synth-pipeline.test.mjs core/runtime/test/pipeline-contained.test.mjs
+	node --test $(PIPELINE_TESTS)
 
 seeded-fault-test:
-	$(PYTHON) -B -m unittest tools.seeded_faults.test_generator -v
+	$(PYTHON) -B -m unittest $(call pymods,$(wildcard tools/seeded_faults/test_*.py)) -v
 
 escape-test:
-	$(PYTHON) -B -m unittest tools.escape_harness.test_harness -v
+	$(PYTHON) -B -m unittest $(call pymods,$(wildcard tools/escape_harness/test_*.py)) -v
 
 .PHONY: kernel-test
 kernel-test:
-	$(PYTHON) -B -m unittest tools.kernel.test_contract tools.kernel.test_workcell tools.kernel.test_broker tools.kernel.test_limits -v
+	$(PYTHON) -B -m unittest $(call pymods,$(wildcard tools/kernel/test_*.py)) -v
 
 .PHONY: rust-lane-test
 rust-lane-test:
-	$(PYTHON) -B -m unittest tools.rust_lane.test_lane -v
+	$(PYTHON) -B -m unittest $(call pymods,$(wildcard tools/rust_lane/test_*.py)) -v
 
 compatibility-test:
 	node --test tools/compatibility/*.test.mjs

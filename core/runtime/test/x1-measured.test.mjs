@@ -7,6 +7,7 @@ import { configuration, createPort, hash } from '../x1/host.mjs';
 import { runGates } from '../x1/gates.mjs';
 import { candidate } from './fixtures/x1/candidate.mjs';
 import { add, callsHost, grows, recurse, spin, stateful, wasm } from './fixtures/x1/wasm.mjs';
+import { timingOnly } from './fixtures/timing.mjs';
 const withWasm = (bytes, change = {}) => { const c = candidate(); c.compiled.wasm = Buffer.from(bytes).toString('base64'); Object.assign(c.files, change); return c; };
 const twice = withWasm(wasm({ functions: [stateful], globals: [0] }));
 {
@@ -39,7 +40,7 @@ for (const [name, c, check] of [
   assert.equal(result.passed, false, JSON.stringify(result));
   assert.equal(result.firstFailure, check, JSON.stringify(result));
 });
-test('usage is read from outside the guest and differs between kernels', async () => {
+test('usage is read from outside the guest and differs between kernels', async t => {
   const usage = async c => {
     const identity = hash(JSON.stringify(c));
     const port = createPort({ candidates: { [identity]: c } });
@@ -50,7 +51,8 @@ test('usage is read from outside the guest and differs between kernels', async (
   assert.equal(plain.memoryBytes, 0);
   assert.equal(grown.memoryBytes, 4 * 65536);
   assert(grown.fuel > plain.fuel, JSON.stringify([plain, grown]));
-  assert(plain.wallMs >= 0 && plain.wallMs < 1000);
+  assert(plain.wallMs >= 0);
+  timingOnly(t, 'a plain kernel runs its cases within 1000 ms wall', () => assert(plain.wallMs < 1000, `${plain.wallMs} ms`));
 });
 test('memory stays visible when the kernel keeps it private', async () => {
   const c = withWasm(wasm({ functions: [grows], memory: 1, exportMemory: false })), identity = hash(JSON.stringify(c));
@@ -76,7 +78,7 @@ test('wall time alone never refuses: it reads as an unknown outcome', async () =
   const run = port.run(identity, configuration.gateInput.cases, { ...configuration.gateInput.limits, wallMs: 1e-9 });
   assert.equal(run.status, 'outcome_unknown');
 });
-test('G6 refuses a kernel that never returns, promptly and even when the test expects a trap', () => {
+test('G6 refuses a kernel that never returns, promptly and even when the test expects a trap', t => {
   for (const kernel of [spin, recurse]) {
     const c = withWasm(wasm({ functions: [kernel] }));
     c.files['tests.json'] = JSON.stringify([{ name: 'traps', fn: 'add', args: [1, 2], expectError: true }]);
@@ -84,7 +86,8 @@ test('G6 refuses a kernel that never returns, promptly and even when the test ex
     const begin = performance.now(), result = runGates(c);
     assert.equal(result.gates.G6_bounded.ok, false, JSON.stringify(result.gates));
     assert.equal(result.promotable, false);
-    assert(performance.now() - begin < 10000);
+    const took = performance.now() - begin;
+    timingOnly(t, 'G6 refuses a non-returning kernel within 10000 ms', () => assert(took < 10000, `${took} ms`));
   }
 });
 test('runGates reports garbage wasm and a trapping start as G2, not as an exception', () => {
