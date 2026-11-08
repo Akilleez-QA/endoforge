@@ -122,7 +122,7 @@ async function sweep() {
 }
 
 async function calibrate() {
-  const { calibrateWidth } = await import('../../tools/width/usl.mjs');
+  const { calibrateWidth } = await import('./usl.mjs');
   const name = flag('workload', 'route-default'), widths = flag('widths', '1,4,8,16,24,32').split(',').map(Number), scale = Number(flag('scale', 0.25)), label = flag('label', 'cal1');
   const started = performance.now();
   const w = name === 'runtime' ? await runtimeWorkload() : await routeWorkload(name);

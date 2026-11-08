@@ -1,5 +1,5 @@
 import { readFileSync, writeFileSync } from 'node:fs';
-import { fitUsl, pickWidth, usl } from '../../tools/width/usl.mjs';
+import { fitUsl, pickWidth, usl } from './usl.mjs';
 
 const here = new URL('./', import.meta.url);
 const read = path => JSON.parse(readFileSync(new URL(path, here), 'utf8'));
