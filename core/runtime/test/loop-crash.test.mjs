@@ -135,21 +135,34 @@ test('an implementation file changed after admission is refused at commit', { ti
   assert.equal(decision(directory), 'refuse');
 });
 
+const seeded = seed => () => {
+  seed = (seed + 0x6d2b79f5) | 0;
+  let x = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+  x = (x + Math.imul(x ^ (x >>> 7), 61 | x)) ^ x;
+  return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
+};
+const logLines = log => existsSync(log) ? readFileSync(log, 'utf8').split('\n').filter(Boolean).length : 0;
+
 test('bridge and supervisor kills at random times never yield a promotion without its evidence', { timeout: 240000 }, async t => {
-  const root = scratch(t);
+  const root = scratch(t), random = seeded(110);
   const promotedLines = [];
   for (let round = 0; round < 8; round++) {
     const directory = join(root, `round-${round}`), log = join(root, `round-${round}.jsonl`);
+    const after = 1 + Math.floor(random() * 3), delay = Math.floor(random() * 600), count = after + 6;
+    t.diagnostic(`round ${round}: kill the ${round % 2 ? 'supervisor' : 'bridge'} ${delay} ms after task ${after} of ${count}`);
     mkdirSync(directory);
-    const child = spawn(process.execPath, [driver, JSON.stringify({ root, directory, count: 40, log })], { stdio: 'ignore' });
+    const child = spawn(process.execPath, [driver, JSON.stringify({ root, directory, count, log })], { stdio: 'ignore' });
     await new Promise(resolve => {
-      const poll = setInterval(() => { if (existsSync(log)) { clearInterval(poll); resolve(); } }, 20);
+      const poll = setInterval(() => { if (logLines(log) >= after) { clearInterval(poll); resolve(); } }, 20);
       child.once('close', () => { clearInterval(poll); resolve(); });
     });
-    await new Promise(resolve => setTimeout(resolve, Math.random() * 1500));
-    const target = round % 2 ? child.pid : await new Promise(resolve => execFile('pgrep', ['-P', String(child.pid), 'python3'], (_, stdout) => resolve(Number(String(stdout).trim().split('\n')[0]))));
-    if (target) try { process.kill(target, 'SIGKILL'); } catch { }
+    await new Promise(resolve => setTimeout(resolve, delay));
+    assert.equal(child.exitCode, null, `round ${round} finished before its kill`);
+    const target = round % 2 ? child.pid : await new Promise(resolve => execFile('pgrep', ['-P', String(child.pid), '-f', 'tools.ledger_writer'], (_, stdout) => resolve(Number(String(stdout).trim().split('\n')[0]))));
+    assert(target, `round ${round} found no process to kill`);
+    process.kill(target, 'SIGKILL');
     await new Promise(resolve => { if (child.exitCode !== null || child.signalCode) resolve(); else child.once('close', resolve); });
+    if (round % 2) assert.equal(child.signalCode, 'SIGKILL');
     if (existsSync(log)) for (const line of readFileSync(log, 'utf8').split('\n').filter(Boolean)) promotedLines.push(JSON.parse(line));
     for (const name of readdirSync(directory)) {
       const seen = await state(join(directory, name));

@@ -1,0 +1,505 @@
+{
+ "node": "26.13.0",
+ "arms": [
+  {
+   "arm": "1x16",
+   "rounds": 2,
+   "perSecond": 421.6,
+   "all": [
+    421.6,
+    450.7
+   ],
+   "cpuMsPerAccepted": 32.568,
+   "ipc": 0.606,
+   "nearCachePerAttempt": 10625,
+   "dramPerAttempt": 208519,
+   "busyCpus": 12.02,
+   "sliceCpus": 17.1,
+   "throttledMs": 143872.9,
+   "loadedRows": 2,
+   "loads": [
+    [
+     13.12,
+     34.65
+    ],
+    [
+     14.77,
+     28.48
+    ]
+   ],
+   "verdictDigests": [
+    "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709"
+   ],
+   "finalWidth": 16
+  },
+  {
+   "arm": "2x8",
+   "rounds": 2,
+   "perSecond": 313.3,
+   "all": [
+    510.4,
+    313.3
+   ],
+   "cpuMsPerAccepted": 42.295,
+   "ipc": 0.404,
+   "nearCachePerAttempt": 9584,
+   "dramPerAttempt": 243448,
+   "busyCpus": 13.25,
+   "sliceCpus": 17.92,
+   "throttledMs": 370055.5,
+   "loadedRows": 2,
+   "loads": [
+    [
+     14.96,
+     22.22
+    ],
+    [
+     16.6,
+     24.66
+    ]
+   ],
+   "verdictDigests": [
+    "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709"
+   ],
+   "finalWidth": 16
+  },
+  {
+   "arm": "4x4",
+   "rounds": 2,
+   "perSecond": 360.3,
+   "all": [
+    360.3,
+    451.2
+   ],
+   "cpuMsPerAccepted": 41.958,
+   "ipc": 0.415,
+   "nearCachePerAttempt": 8784,
+   "dramPerAttempt": 242434,
+   "busyCpus": 15.12,
+   "sliceCpus": 17.73,
+   "throttledMs": 142501.7,
+   "loadedRows": 2,
+   "loads": [
+    [
+     15.58,
+     34.32
+    ],
+    [
+     14.96,
+     29.76
+    ]
+   ],
+   "verdictDigests": [
+    "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709"
+   ],
+   "finalWidth": 16
+  },
+  {
+   "arm": "4x4-pinned",
+   "rounds": 2,
+   "perSecond": 466.2,
+   "all": [
+    498.2,
+    466.2
+   ],
+   "cpuMsPerAccepted": 35.793,
+   "ipc": 0.48,
+   "nearCachePerAttempt": 331,
+   "dramPerAttempt": 232710,
+   "busyCpus": 16.69,
+   "sliceCpus": 17.86,
+   "throttledMs": 93193.6,
+   "loadedRows": 2,
+   "loads": [
+    [
+     15.97,
+     30.65
+    ],
+    [
+     13.51,
+     27.82
+    ]
+   ],
+   "verdictDigests": [
+    "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709"
+   ],
+   "finalWidth": 16
+  },
+  {
+   "arm": "2x8-pinned",
+   "rounds": 2,
+   "perSecond": 507.3,
+   "all": [
+    516.6,
+    507.3
+   ],
+   "cpuMsPerAccepted": 32.322,
+   "ipc": 0.53,
+   "nearCachePerAttempt": 313,
+   "dramPerAttempt": 221346,
+   "busyCpus": 16.4,
+   "sliceCpus": 17.63,
+   "throttledMs": 22352,
+   "loadedRows": 2,
+   "loads": [
+    [
+     15.88,
+     36.08
+    ],
+    [
+     14.77,
+     27.54
+    ]
+   ],
+   "verdictDigests": [
+    "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709"
+   ],
+   "finalWidth": 16
+  },
+  {
+   "arm": "planner",
+   "rounds": 2,
+   "perSecond": 199.4,
+   "all": [
+    199.4,
+    573.7
+   ],
+   "cpuMsPerAccepted": 40.024,
+   "ipc": 0.427,
+   "nearCachePerAttempt": 492,
+   "dramPerAttempt": 248253,
+   "busyCpus": 7.98,
+   "sliceCpus": 17.9,
+   "throttledMs": 465612.4,
+   "loadedRows": 2,
+   "loads": [
+    [
+     15.14,
+     31.01
+    ],
+    [
+     15.26,
+     21.71
+    ]
+   ],
+   "verdictDigests": [
+    "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709"
+   ],
+   "finalWidth": 12
+  }
+ ],
+ "bestFixed": "2x8-pinned",
+ "prediction": {
+  "gain4x4PinnedOver1x16": 0.106
+ },
+ "portability": [
+  {
+   "prefix": "sweep-cpus4-",
+   "rows": [
+    {
+     "arm": "w2",
+     "perSecond": 142,
+     "all": [
+      142,
+      221.8
+     ],
+     "cpuMsPerAccepted": 15.423,
+     "loadedRows": 0,
+     "rounds": 2
+    },
+    {
+     "arm": "w3",
+     "perSecond": 177.2,
+     "all": [
+      177.2,
+      230.4
+     ],
+     "cpuMsPerAccepted": 16.586,
+     "loadedRows": 0,
+     "rounds": 2
+    },
+    {
+     "arm": "w4",
+     "perSecond": 129.7,
+     "all": [
+      209.3,
+      129.7
+     ],
+     "cpuMsPerAccepted": 26.938,
+     "loadedRows": 0,
+     "rounds": 2
+    },
+    {
+     "arm": "w5",
+     "perSecond": 160.9,
+     "all": [
+      234.9,
+      160.9
+     ],
+     "cpuMsPerAccepted": 22.126,
+     "loadedRows": 0,
+     "rounds": 2
+    },
+    {
+     "arm": "w6",
+     "perSecond": 166.5,
+     "all": [
+      276.7,
+      166.5
+     ],
+     "cpuMsPerAccepted": 22.039,
+     "loadedRows": 1,
+     "rounds": 2
+    },
+    {
+     "arm": "w8",
+     "perSecond": 199.2,
+     "all": [
+      264.8,
+      199.2
+     ],
+     "cpuMsPerAccepted": 18.966,
+     "loadedRows": 2,
+     "rounds": 2
+    },
+    {
+     "arm": "planner",
+     "perSecond": 175,
+     "all": [
+      175,
+      275.9
+     ],
+     "cpuMsPerAccepted": 19.761,
+     "loadedRows": 1,
+     "rounds": 2
+    }
+   ],
+   "best": "w8",
+   "bestPerSecond": 199.2,
+   "planner": 175,
+   "plannerWidth": 4,
+   "ratio": 0.879,
+   "met": false,
+   "allRowsLoaded": false
+  },
+  {
+   "prefix": "sweep-cpus8-",
+   "rows": [
+    {
+     "arm": "w4",
+     "perSecond": 218.2,
+     "all": [
+      218.2,
+      310.1
+     ],
+     "cpuMsPerAccepted": 19.676,
+     "loadedRows": 1,
+     "rounds": 2
+    },
+    {
+     "arm": "w6",
+     "perSecond": 245.6,
+     "all": [
+      245.6,
+      360
+     ],
+     "cpuMsPerAccepted": 23.389,
+     "loadedRows": 1,
+     "rounds": 2
+    },
+    {
+     "arm": "w8",
+     "perSecond": 265.4,
+     "all": [
+      265.4,
+      382.4
+     ],
+     "cpuMsPerAccepted": 24.032,
+     "loadedRows": 1,
+     "rounds": 2
+    },
+    {
+     "arm": "w10",
+     "perSecond": 331.5,
+     "all": [
+      388.3,
+      331.5
+     ],
+     "cpuMsPerAccepted": 19.24,
+     "loadedRows": 2,
+     "rounds": 2
+    },
+    {
+     "arm": "w12",
+     "perSecond": 281.2,
+     "all": [
+      281.2,
+      373.5
+     ],
+     "cpuMsPerAccepted": 22.443,
+     "loadedRows": 2,
+     "rounds": 2
+    },
+    {
+     "arm": "w16",
+     "perSecond": 369.7,
+     "all": [
+      407.7,
+      369.7
+     ],
+     "cpuMsPerAccepted": 18.663,
+     "loadedRows": 2,
+     "rounds": 2
+    },
+    {
+     "arm": "planner",
+     "perSecond": 361,
+     "all": [
+      362.8,
+      361
+     ],
+     "cpuMsPerAccepted": 16.981,
+     "loadedRows": 0,
+     "rounds": 2
+    }
+   ],
+   "best": "w16",
+   "bestPerSecond": 369.7,
+   "planner": 361,
+   "plannerWidth": 7,
+   "ratio": 0.976,
+   "met": true,
+   "allRowsLoaded": false
+  },
+  {
+   "prefix": "sweep-all-",
+   "rows": [
+    {
+     "arm": "w12",
+     "perSecond": 357.7,
+     "all": [
+      357.7,
+      515.8
+     ],
+     "cpuMsPerAccepted": 32.88,
+     "loadedRows": 1,
+     "rounds": 2
+    },
+    {
+     "arm": "w16",
+     "perSecond": 530,
+     "all": [
+      530,
+      583.8
+     ],
+     "cpuMsPerAccepted": 27.104,
+     "loadedRows": 2,
+     "rounds": 2
+    },
+    {
+     "arm": "w20",
+     "perSecond": 334.7,
+     "all": [
+      334.7,
+      589
+     ],
+     "cpuMsPerAccepted": 38.479,
+     "loadedRows": 2,
+     "rounds": 2
+    },
+    {
+     "arm": "w24",
+     "perSecond": 380.2,
+     "all": [
+      380.2,
+      557.7
+     ],
+     "cpuMsPerAccepted": 34.562,
+     "loadedRows": 2,
+     "rounds": 2
+    },
+    {
+     "arm": "planner",
+     "perSecond": 477.5,
+     "all": [
+      477.5,
+      612.5
+     ],
+     "cpuMsPerAccepted": 30.588,
+     "loadedRows": 2,
+     "rounds": 2
+    }
+   ],
+   "best": "w16",
+   "bestPerSecond": 530,
+   "planner": 477.5,
+   "plannerWidth": 20,
+   "ratio": 0.901,
+   "met": true,
+   "allRowsLoaded": false
+  }
+ ],
+ "bars": {
+  "bar1": {
+   "planner": 199.4,
+   "bestFixed": "2x8-pinned 507.3",
+   "needAtLeast": 481.9,
+   "met": false
+  },
+  "bar2": {
+   "planner": 40.024,
+   "base": 32.568,
+   "met": false
+  },
+  "bar3": {
+   "rounds": [
+    {
+     "label": "round1",
+     "settleSeconds": 13.1,
+     "changesAfterSettle": 19,
+     "perMinuteAfterSettle": 10.66,
+     "peers": 3
+    },
+    {
+     "label": "round2",
+     "settleSeconds": 9,
+     "changesAfterSettle": 0,
+     "perMinuteAfterSettle": 0,
+     "peers": 1
+    }
+   ],
+   "met": false
+  },
+  "bar4": {
+   "sweeps": [
+    {
+     "prefix": "sweep-cpus4-",
+     "ratio": 0.879,
+     "met": false
+    },
+    {
+     "prefix": "sweep-cpus8-",
+     "ratio": 0.976,
+     "met": true
+    },
+    {
+     "prefix": "sweep-all-",
+     "ratio": 0.901,
+     "met": true
+    }
+   ],
+   "met": false
+  },
+  "bar5": {
+   "armDigests": [
+    "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709"
+   ],
+   "sweepDigests": [
+    "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709"
+   ],
+   "met": true
+  },
+  "decision": "fallback default: best fixed arm 2x8-pinned",
+  "allArmRowsLoaded": true
+ }
+}
