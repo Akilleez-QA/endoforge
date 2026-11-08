@@ -64,15 +64,17 @@ export function createTuner({ start, max, now = () => performance.now(), ...opti
     },
     setBound(value) {
       const target = Math.max(o.min, Math.min(max, Math.round(value)));
-      if (target === bound) { pendingBound = null; pendingCount = 0; return width; }
-      pendingCount = pendingBound === target ? pendingCount + 1 : 1;
-      pendingBound = target;
+      const band = Math.max(2, Math.round(bound * 0.2));
+      if (Math.abs(target - bound) < band) { pendingBound = null; pendingCount = 0; return width; }
+      const same = pendingBound !== null && Math.sign(pendingBound - bound) === Math.sign(target - bound);
+      pendingCount = same ? pendingCount + 1 : 1;
+      pendingBound = same ? (target < bound ? Math.max(pendingBound, target) : Math.min(pendingBound, target)) : target;
       if (pendingCount < o.boundsWindows) return width;
-      bound = target;
+      bound = pendingBound;
       pendingBound = null;
       pendingCount = 0;
       if (width > bound) { begin(bound); return move(bound, 'bound'); }
-      if (phase === 'settled' && target > width && settled && width === anchor) { begin(width); step = 1; skip = true; }
+      if (phase === 'settled' && target > width && now() - lastChange >= o.holdMs) { begin(width); step = 1; skip = true; lastChange = now(); }
       return width;
     },
     snapshot() { return { width, phase, bound, anchor, step, settled, table: table ? Object.fromEntries(table) : {}, changes: history.length }; },

@@ -20,8 +20,9 @@ Consumers in EndoForge: the contained route (`tools/tscheck/contained-route.mjs`
 | `probeMachine(host?)` | The same, uncached; `host` replaces the readers (`read`, `exists`, `parallelism`, `freeMb`, `os`) for tests. |
 | `plan({ queues = 1, allotment?, probe?, policy? })` | Cohorts for `queues` independent queues within `allotment` CPUs (default: the probe's). See the plan record. |
 | `defaultWidth(options?)` | `plan(options).width`, the starting total width. |
-| `POLICY` | The shipped default policy: `{ mode: 'tuned' | 'fixed', headroom, width?, perDomain? }`. |
-| `createTuner({ start, max, ...TUNER_DEFAULTS })` | A width tuner fed one window at a time: `observe({ completions, elapsedMs, cpuMs?, saturated? })` returns the width to use next; `setBound(n)` lowers or raises the ceiling (applied after it persists for `boundsWindows` calls); `width`, `phase` (`explore` or `settled`), `history` (every change with its reason). |
+| `POLICY` | The shipped default: `{ mode: 'fixed', width: 'cores', perDomain: 1 }`, one cohort per L3 domain as wide as that domain's cores within its share (P-67's best fixed arm). |
+| `TUNED_POLICY` | `{ mode: 'tuned', headroom: 1.25 }`: the same placement with the online tuner. Opt in with `plan({ policy: TUNED_POLICY })` or the route's `placement`. P-67 did not make it the default. |
+| `createTuner({ start, max, ...TUNER_DEFAULTS })` | A width tuner fed one window at a time: `observe({ completions, elapsedMs, cpuMs?, saturated? })` returns the width to use next; `setBound(n)` lowers or raises the ceiling (a change of at least max(2, 20%) that persists for `boundsWindows` calls; a rise re-tunes a settled width only after the hold); `width`, `phase` (`explore` or `settled`), `history` (every change with its reason). |
 | `createController({ plan, apply, cpuMs?, backlog?, meter?, windowMs?, minCompletions? })` | Wraps a tuner for a plan's cohorts: call `completed(decided)` once per finished attempt; it closes 1 s windows, samples the share meter, and calls `apply(widths)` with one width per cohort when the width changes. A plan with `tuned: false` never changes. |
 | `createShareMeter(probe?)` | `sample()` returns `{ share, othersCpus, peers, throttledMs, source }` since the previous sample, from the quota cgroup's `cpu.stat` and its siblings'. |
 
@@ -44,7 +45,7 @@ notes }`
 
 - With at least two allotted CPUs per L3 domain and `taskset` present, there is one cohort per domain (times
   `policy.perDomain`), each pinned to its domain's CPUs; otherwise one unpinned cohort per queue.
-- `width` per cohort starts at min(its share, its physical cores); `max` is min(its threads, ceil(headroom × share)).
+- Tuned: `width` per cohort starts at min(its share, its physical cores) and `max` is min(its threads, ceil(headroom × share)). Fixed with `width: 'cores'`: width = max = min(its physical cores, ceil(share)).
 - `queue` assigns cohorts to queues round-robin.
 
 ## Command interface (`core/runtime/capacity/cli.mjs`)

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { createController, createShareMeter, createTuner, parseCpuList, plan, probeMachine } from '../capacity/index.mjs';
+import { createController, createShareMeter, createTuner, parseCpuList, plan, probeMachine, TUNED_POLICY } from '../capacity/index.mjs';
 import { createCohortSet } from '../contained/cohort-set.mjs';
 import { createContainedRunner } from '../contained/runner.mjs';
 
@@ -70,18 +70,23 @@ test('without sysfs or cgroups the probe degrades to availableParallelism and sa
 });
 
 test('the plan splits a multi-domain allotment into pinned cohorts and keeps one cohort when small', () => {
-  const big = plan({ probe: probeMachine(host7950()) });
+  const shipped = plan({ probe: probeMachine(host7950()) });
+  assert.equal(shipped.tuned, false);
+  assert.equal(shipped.pinned, true);
+  assert.deepEqual(shipped.cohorts.map(cohort => [cohort.width, cohort.max]), [[8, 8], [8, 8]]);
+  assert.deepEqual(plan({ probe: probeMachine(host7950({ affinity: '0-3' })) }).cohorts.map(cohort => [cohort.width, cohort.cpus]), [[4, null]]);
+  const big = plan({ probe: probeMachine(host7950()), policy: TUNED_POLICY });
   assert.equal(big.pinned, true);
   assert.deepEqual(big.cohorts.map(cohort => [cohort.width, cohort.max]), [[8, 12], [8, 12]]);
   assert.deepEqual(big.cohorts[0].cpus, [...range(0, 7), ...range(16, 23)]);
   assert.equal(big.width, 16);
-  const four = plan({ probe: probeMachine(host7950({ affinity: '0-3' })) });
+  const four = plan({ probe: probeMachine(host7950({ affinity: '0-3' })), policy: TUNED_POLICY });
   assert.deepEqual(four.cohorts.map(cohort => [cohort.width, cohort.max, cohort.cpus]), [[4, 4, null]]);
-  const squeezed = plan({ probe: probeMachine(host7950()), allotment: 3 });
+  const squeezed = plan({ probe: probeMachine(host7950()), allotment: 3, policy: TUNED_POLICY });
   assert.equal(squeezed.pinned, false);
   assert.equal(squeezed.cohorts.length, 1);
   assert.ok(squeezed.notes.some(note => /too small/.test(note)));
-  const queues = plan({ probe: probeMachine(host7950()), queues: 4 });
+  const queues = plan({ probe: probeMachine(host7950()), queues: 4, policy: TUNED_POLICY });
   assert.equal(queues.cohorts.length, 4);
   assert.deepEqual(queues.cohorts.map(cohort => cohort.queue), [0, 1, 2, 3]);
   const fixed = plan({ probe: probeMachine(host7950()), policy: { mode: 'fixed', width: 4, headroom: 1.25 } });
@@ -148,14 +153,28 @@ test('once settled the tuner ignores noise, re-tunes on sustained drift, and cha
   assert.ok([...minutes.values()].every(count => count <= 1), JSON.stringify(late));
 });
 
+test('a rising bound does not re-tune a settled width inside the hold', () => {
+  const clock = { t: 0 };
+  const tuner = createTuner({ start: 8, max: 32, now: () => clock.t });
+  drive(tuner, curve, 40, { clock });
+  const changes = tuner.history.length;
+  for (let step = 0; step < 40; step++) { clock.t += 1000; tuner.setBound(step % 2 ? 30 : 31); tuner.observe({ completions: curve(tuner.width), elapsedMs: 1000 }); }
+  assert.equal(tuner.history.length, changes, 'a rising share inside the hold changes nothing');
+  for (let step = 0; step < 40; step++) { clock.t += 1000; tuner.setBound(step % 2 ? 12 : 13); tuner.observe({ completions: curve(tuner.width), elapsedMs: 1000 }); }
+  const after = tuner.history.slice(changes);
+  assert.ok(after.length >= 1 && after.length <= 6, JSON.stringify(after));
+  assert.ok(after.every(change => change.at <= after[0].at + 20000), 'noise inside the band stops causing changes');
+});
+
 test('a lower bound from contention clamps width after it persists', () => {
   const clock = { t: 0 };
   const tuner = createTuner({ start: 16, max: 32, now: () => clock.t });
   tuner.setBound(8);
   assert.equal(tuner.width, 16);
+  tuner.setBound(9);
+  assert.equal(tuner.width, 9);
   tuner.setBound(8);
-  assert.equal(tuner.width, 8);
-  assert.equal(tuner.bound, 8);
+  assert.equal(tuner.bound, 9, 'a change smaller than the band is ignored');
 });
 
 test('the share meter divides the quota with active peers in the shared slice', () => {
