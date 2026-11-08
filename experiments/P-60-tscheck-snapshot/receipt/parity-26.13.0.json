@@ -1,0 +1,2789 @@
+{
+ "node": "26.13.0",
+ "corpus": 80,
+ "adversarial": 52,
+ "trap": {
+  "status": "outcome_unknown",
+  "reason": "checker_error",
+  "passed": null,
+  "total": null,
+  "diagnostics": [],
+  "artifact": null
+ },
+ "libDiagnosed": 13,
+ "tally": {
+  "supervisor": {
+   "completed:null": 43,
+   "refused:typescript": 65,
+   "refused:tests": 24
+  },
+  "fused": {
+   "completed:null": 43,
+   "refused:typescript": 65,
+   "refused:tests": 24
+  },
+  "fused-reuse": {
+   "completed:null": 43,
+   "refused:typescript": 65,
+   "refused:tests": 24
+  },
+  "fused-reuse-base": {
+   "completed:null": 43,
+   "refused:typescript": 65,
+   "refused:tests": 24
+  },
+  "sibling-reuse-base": {
+   "completed:null": 43,
+   "refused:typescript": 65,
+   "refused:tests": 24
+  }
+ },
+ "sequences": [
+  {
+   "arm": "fused",
+   "seed": 1,
+   "checks": 133,
+   "diffs": 0,
+   "dispatched": 133,
+   "cohortStarts": 1
+  },
+  {
+   "arm": "fused",
+   "seed": 2,
+   "checks": 133,
+   "diffs": 0,
+   "dispatched": 133,
+   "cohortStarts": 1
+  },
+  {
+   "arm": "fused",
+   "seed": 3,
+   "checks": 133,
+   "diffs": 0,
+   "dispatched": 133,
+   "cohortStarts": 1
+  },
+  {
+   "arm": "fused-reuse",
+   "seed": 1,
+   "checks": 133,
+   "diffs": 0,
+   "dispatched": 133,
+   "cohortStarts": 1
+  },
+  {
+   "arm": "fused-reuse",
+   "seed": 2,
+   "checks": 133,
+   "diffs": 0,
+   "dispatched": 133,
+   "cohortStarts": 1
+  },
+  {
+   "arm": "fused-reuse",
+   "seed": 3,
+   "checks": 133,
+   "diffs": 0,
+   "dispatched": 133,
+   "cohortStarts": 1
+  },
+  {
+   "arm": "fused-reuse-base",
+   "seed": 1,
+   "checks": 133,
+   "diffs": 0,
+   "dispatched": 133,
+   "cohortStarts": 1
+  },
+  {
+   "arm": "fused-reuse-base",
+   "seed": 2,
+   "checks": 133,
+   "diffs": 0,
+   "dispatched": 133,
+   "cohortStarts": 1
+  },
+  {
+   "arm": "fused-reuse-base",
+   "seed": 3,
+   "checks": 133,
+   "diffs": 0,
+   "dispatched": 133,
+   "cohortStarts": 1
+  },
+  {
+   "arm": "sibling-reuse-base",
+   "seed": 1,
+   "checks": 133,
+   "diffs": 0,
+   "dispatched": 133,
+   "cohortStarts": 1
+  },
+  {
+   "arm": "sibling-reuse-base",
+   "seed": 2,
+   "checks": 133,
+   "diffs": 0,
+   "dispatched": 133,
+   "cohortStarts": 1
+  },
+  {
+   "arm": "sibling-reuse-base",
+   "seed": 3,
+   "checks": 133,
+   "diffs": 0,
+   "dispatched": 133,
+   "cohortStarts": 1
+  }
+ ],
+ "diffs": [],
+ "verdicts": [
+  {
+   "name": "k00:asis",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 7,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "6ef687cacfbd946dbc11ed91a357e3369a16a73edf4d2376e3beb64193a94b2b"
+    }
+   }
+  },
+  {
+   "name": "k00:type",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 14,
+      "column": 3,
+      "code": 2322
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k00:wrong",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "5e3df4d0ed29769f7cf989b8e92e1341ab5287e1899c481bab9d477afe6c280e"
+    }
+   }
+  },
+  {
+   "name": "k00:whole",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 21,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 22,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 50,
+      "column": 15,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 58,
+      "column": 23,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 62,
+      "column": 15,
+      "code": 2304
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k01:asis",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 7,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "ab2a5443f019eb6087cb3ffc9035369489fca9279d72506edaebe64d2f81d7d3"
+    }
+   }
+  },
+  {
+   "name": "k01:type",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 14,
+      "column": 3,
+      "code": 2322
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k01:wrong",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "371a250dd3cb1e27b8f05ae320ae9bc639a3fc59362bc46aee2856c8a1e4f57c"
+    }
+   }
+  },
+  {
+   "name": "k01:whole",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 22,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 23,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 51,
+      "column": 15,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 59,
+      "column": 23,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 63,
+      "column": 15,
+      "code": 2304
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k02:asis",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 7,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "6c6f6929e18e29bb2966b96e0c63c32d83cb7f385b2ab9db53842952190adf0a"
+    }
+   }
+  },
+  {
+   "name": "k02:type",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 14,
+      "column": 3,
+      "code": 2322
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k02:wrong",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "4c3b23104f08764179e7c26ec3fe6d4d90f2b2365857f2c9fdd08a85c0da8ff4"
+    }
+   }
+  },
+  {
+   "name": "k02:whole",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 23,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 24,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 52,
+      "column": 15,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 60,
+      "column": 23,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 64,
+      "column": 15,
+      "code": 2304
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k03:asis",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 7,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "00f5c764705646ae50fd55c0b8ba3a36ecb564dadf46c76664aa24a6a70ab381"
+    }
+   }
+  },
+  {
+   "name": "k03:type",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 14,
+      "column": 3,
+      "code": 2322
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k03:wrong",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "f97336a1b5e0e1ace642418e809c0be5877111c70efd810b35ad01a706297317"
+    }
+   }
+  },
+  {
+   "name": "k03:whole",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 24,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 25,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 53,
+      "column": 15,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 61,
+      "column": 23,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 65,
+      "column": 15,
+      "code": 2304
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k04:asis",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 7,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "f90f5a22220042e58435960393d7bf32baaf824f9da477819cbfd4e9f573176f"
+    }
+   }
+  },
+  {
+   "name": "k04:type",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 14,
+      "column": 3,
+      "code": 2322
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k04:wrong",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "5c6369ea8efdefdbdbcae21e868b3986d6570c9f71be28a34bdde9fe2855eee4"
+    }
+   }
+  },
+  {
+   "name": "k04:whole",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 25,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 26,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 54,
+      "column": 15,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 62,
+      "column": 23,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 66,
+      "column": 15,
+      "code": 2304
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k05:asis",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 7,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "15177519e7fe98b89057a16d3062faaec2ac710cc688702317e7bdcad81fcc5e"
+    }
+   }
+  },
+  {
+   "name": "k05:type",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 14,
+      "column": 3,
+      "code": 2322
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k05:wrong",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "88fd47449ef79701d6976dc25960551083defa2bf24f97ff51042956b04b61fa"
+    }
+   }
+  },
+  {
+   "name": "k05:whole",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 26,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 27,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 55,
+      "column": 15,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 63,
+      "column": 23,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 67,
+      "column": 15,
+      "code": 2304
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k06:asis",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 7,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "8ddede6e5b8847ab893200b40ba0823324118732ed0a4fd8f62164d1b31397d8"
+    }
+   }
+  },
+  {
+   "name": "k06:type",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 14,
+      "column": 3,
+      "code": 2322
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k06:wrong",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "c94154b2a1333c1b53272529e1a47eaba7bd586f756fb6dbd3781a5e6357315a"
+    }
+   }
+  },
+  {
+   "name": "k06:whole",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 27,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 28,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 56,
+      "column": 15,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 64,
+      "column": 23,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 68,
+      "column": 15,
+      "code": 2304
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k07:asis",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 7,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "e08b8685339d76982694e4d9a36741801f1402ac2b24f6c893c20f2f68a827d7"
+    }
+   }
+  },
+  {
+   "name": "k07:type",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 14,
+      "column": 3,
+      "code": 2322
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k07:wrong",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "e98b49802036d23a3fe5b1fe990901606d636ed536d307ec548a15bc42998287"
+    }
+   }
+  },
+  {
+   "name": "k07:whole",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 21,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 22,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 50,
+      "column": 15,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 58,
+      "column": 23,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 62,
+      "column": 15,
+      "code": 2304
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k08:asis",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 7,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "07f386ab8d1ae3d604656883af7ab7ac93cf497cb5b5699f12e603163f22d6ef"
+    }
+   }
+  },
+  {
+   "name": "k08:type",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 14,
+      "column": 3,
+      "code": 2322
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k08:wrong",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "be0d6d5604df8db99a10a73dc5554db5f0449a244152191024f48edde1557d46"
+    }
+   }
+  },
+  {
+   "name": "k08:whole",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 22,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 23,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 51,
+      "column": 15,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 59,
+      "column": 23,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 63,
+      "column": 15,
+      "code": 2304
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k09:asis",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 7,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "89b3c236e4683f9793ac14ffcc76503739112d4c7d40e6bf701bd7dc9eea1085"
+    }
+   }
+  },
+  {
+   "name": "k09:type",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 14,
+      "column": 3,
+      "code": 2322
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k09:wrong",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "ac28f23b6e3201af5c6ba7fe023662e04ccfadd897354428a0b1c490e2daf2df"
+    }
+   }
+  },
+  {
+   "name": "k09:whole",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 23,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 24,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 52,
+      "column": 15,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 60,
+      "column": 23,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 64,
+      "column": 15,
+      "code": 2304
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k10:asis",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 7,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "34341c327a1f2a0ec630b5fa87ac459ec8bbe2db234b0147b8c096e18f706291"
+    }
+   }
+  },
+  {
+   "name": "k10:type",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 14,
+      "column": 3,
+      "code": 2322
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k10:wrong",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "6b322f698163d1fe1e8ce87285c83c08aea224677a28ff3ff75de1f0970606fc"
+    }
+   }
+  },
+  {
+   "name": "k10:whole",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 24,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 25,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 53,
+      "column": 15,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 61,
+      "column": 23,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 65,
+      "column": 15,
+      "code": 2304
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k11:asis",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 7,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "dbba4eca66bb1f923e0ad4bc6a16c5bda549ca369ebb3038acde011dd1fc9fd9"
+    }
+   }
+  },
+  {
+   "name": "k11:type",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 14,
+      "column": 3,
+      "code": 2322
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k11:wrong",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "5e846c8749d7481a274791d98fc84084703fec4573ecbf2bd16c4ba4dd95c097"
+    }
+   }
+  },
+  {
+   "name": "k11:whole",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 25,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 26,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 54,
+      "column": 15,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 62,
+      "column": 23,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 66,
+      "column": 15,
+      "code": 2304
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k12:asis",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 7,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "cd332a4173a36e4b4e7d693dde61ba84aeac1ab7f2ba64010a7b36d769addd21"
+    }
+   }
+  },
+  {
+   "name": "k12:type",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 14,
+      "column": 3,
+      "code": 2322
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k12:wrong",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "113476188b3cd1c50c43801d44a9827b89b99539de37ff507724dce6512b5f77"
+    }
+   }
+  },
+  {
+   "name": "k12:whole",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 26,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 27,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 55,
+      "column": 15,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 63,
+      "column": 23,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 67,
+      "column": 15,
+      "code": 2304
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k13:asis",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 7,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "1c2d1e058ad253ce654160da9125a87e49dd386bf09a5427d934e970dbb78789"
+    }
+   }
+  },
+  {
+   "name": "k13:type",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 14,
+      "column": 3,
+      "code": 2322
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k13:wrong",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "c697bb11686a2f899207138f8fe715e4db6216cac8e81ec0154e1393139c7242"
+    }
+   }
+  },
+  {
+   "name": "k13:whole",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 27,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 28,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 56,
+      "column": 15,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 64,
+      "column": 23,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 68,
+      "column": 15,
+      "code": 2304
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k14:asis",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 7,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "2aaf6a46d72d0a0eb609b0afb8635ef3c52b6f5b3ea2f25995f2e635682fffed"
+    }
+   }
+  },
+  {
+   "name": "k14:type",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 14,
+      "column": 3,
+      "code": 2322
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k14:wrong",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "8a3ad1ce7ba51e8afe8ae4e3e85075770c95411b19bf501725171739909ddcf6"
+    }
+   }
+  },
+  {
+   "name": "k14:whole",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 21,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 22,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 50,
+      "column": 15,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 58,
+      "column": 23,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 62,
+      "column": 15,
+      "code": 2304
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k15:asis",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 7,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "9642f33dba348f64e2bd2f61f7976d2f677790c608348d434a418509a1551754"
+    }
+   }
+  },
+  {
+   "name": "k15:type",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 14,
+      "column": 3,
+      "code": 2322
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k15:wrong",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "9b36e3e73db33ec09fcfcec57ecaa57154baf064b463126343f03d96eafaeab1"
+    }
+   }
+  },
+  {
+   "name": "k15:whole",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 22,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 23,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 51,
+      "column": 15,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 59,
+      "column": 23,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 63,
+      "column": 15,
+      "code": 2304
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k16:asis",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 7,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "61c450c3ada6c5a418eeacd869b6bee362837e96af6b2b7e4c9a77a9bcbc6e4d"
+    }
+   }
+  },
+  {
+   "name": "k16:type",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 14,
+      "column": 3,
+      "code": 2322
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k16:wrong",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "cbede622b19aadc556c1cf2116b568f4ec4fb4cf27d89b7583090dab6aef7978"
+    }
+   }
+  },
+  {
+   "name": "k16:whole",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 23,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 24,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 52,
+      "column": 15,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 60,
+      "column": 23,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 64,
+      "column": 15,
+      "code": 2304
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k17:asis",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 7,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "b4363d6e2ee9901a38b68feb7c55fc7e0589c4b43952f208cfe5ba44ebc1a3b9"
+    }
+   }
+  },
+  {
+   "name": "k17:type",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 14,
+      "column": 3,
+      "code": 2322
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k17:wrong",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "217dca4aac04eaa2a83f2697141695e9c01360485afebb3d19b223dcf37c47b8"
+    }
+   }
+  },
+  {
+   "name": "k17:whole",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 24,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 25,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 53,
+      "column": 15,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 61,
+      "column": 23,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 65,
+      "column": 15,
+      "code": 2304
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k18:asis",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 7,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "214fe7b183a07a31298128432d02107cb309edc502e2b4a7c6856cb8b7cb7c6f"
+    }
+   }
+  },
+  {
+   "name": "k18:type",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 14,
+      "column": 3,
+      "code": 2322
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k18:wrong",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "8100257266dd5599fcbec141adec27fc083f5417a53095f60d4bf2d10b4ba692"
+    }
+   }
+  },
+  {
+   "name": "k18:whole",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 25,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 26,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 54,
+      "column": 15,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 62,
+      "column": 23,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 66,
+      "column": 15,
+      "code": 2304
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k19:asis",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 7,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "44258d013839e9db87e701d301dccf2208b026697d9fdc9180ed01dca7322aff"
+    }
+   }
+  },
+  {
+   "name": "k19:type",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 14,
+      "column": 3,
+      "code": 2322
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "k19:wrong",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 7,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "238a34e822b6118c2d70be081ac439f8da3a1e891268294996e52493b52f2da4"
+    }
+   }
+  },
+  {
+   "name": "k19:whole",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 26,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 27,
+      "column": 3,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 55,
+      "column": 15,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 63,
+      "column": 23,
+      "code": 2304
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 67,
+      "column": 15,
+      "code": 2304
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-0:script",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 13,
+      "code": 2403
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-0:module",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "151de42397808e3327a79b986d8f1268b6bc988906b8ce982ab5545b1968014d"
+    }
+   }
+  },
+  {
+   "name": "global-1:script",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 5,
+      "code": 2451
+     },
+     {
+      "file": "bundled:///libs/lib.es2015.symbol.d.ts",
+      "line": 44,
+      "column": 13,
+      "code": 2451
+     },
+     {
+      "file": "bundled:///libs/lib.es2015.symbol.wellknown.d.ts",
+      "line": 81,
+      "column": 11,
+      "code": 2451
+     },
+     {
+      "file": "bundled:///libs/lib.es2019.symbol.d.ts",
+      "line": 17,
+      "column": 11,
+      "code": 2451
+     },
+     {
+      "file": "bundled:///libs/lib.es5.d.ts",
+      "line": 98,
+      "column": 11,
+      "code": 2451
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-1:module",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "a2f4574ac1a9ebabd913ad6785e668eee73915236a532cc3ff7ce405dccf23ed"
+    }
+   }
+  },
+  {
+   "name": "global-2:script",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 22,
+      "code": 2717
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-2:module",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "151de42397808e3327a79b986d8f1268b6bc988906b8ce982ab5545b1968014d"
+    }
+   }
+  },
+  {
+   "name": "global-3:script",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 6,
+      "code": 2300
+     },
+     {
+      "file": "bundled:///libs/lib.es5.d.ts",
+      "line": 106,
+      "column": 14,
+      "code": 2300
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-3:module",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "151de42397808e3327a79b986d8f1268b6bc988906b8ce982ab5545b1968014d"
+    }
+   }
+  },
+  {
+   "name": "global-4:script",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 35,
+      "code": 2717
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-4:module",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "151de42397808e3327a79b986d8f1268b6bc988906b8ce982ab5545b1968014d"
+    }
+   }
+  },
+  {
+   "name": "global-5:script",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 15,
+      "code": 2300
+     },
+     {
+      "file": "bundled:///libs/lib.es2015.iterable.d.ts",
+      "line": 244,
+      "column": 11,
+      "code": 2300
+     },
+     {
+      "file": "bundled:///libs/lib.es2015.promise.d.ts",
+      "line": 79,
+      "column": 13,
+      "code": 2300
+     },
+     {
+      "file": "bundled:///libs/lib.es2015.symbol.wellknown.d.ts",
+      "line": 173,
+      "column": 11,
+      "code": 2300
+     },
+     {
+      "file": "bundled:///libs/lib.es2018.promise.d.ts",
+      "line": 20,
+      "column": 11,
+      "code": 2300
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-5:module",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "151de42397808e3327a79b986d8f1268b6bc988906b8ce982ab5545b1968014d"
+    }
+   }
+  },
+  {
+   "name": "global-6:script",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 20,
+      "code": 2717
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-6:module",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "151de42397808e3327a79b986d8f1268b6bc988906b8ce982ab5545b1968014d"
+    }
+   }
+  },
+  {
+   "name": "global-7:script",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "bundled:///libs/lib.es2015.generator.d.ts",
+      "line": 19,
+      "column": 11,
+      "code": 2430
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-7:module",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "151de42397808e3327a79b986d8f1268b6bc988906b8ce982ab5545b1968014d"
+    }
+   }
+  },
+  {
+   "name": "global-8:script",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 6,
+      "code": 2300
+     },
+     {
+      "file": "bundled:///libs/lib.es5.d.ts",
+      "line": 1583,
+      "column": 6,
+      "code": 2300
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-8:module",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "151de42397808e3327a79b986d8f1268b6bc988906b8ce982ab5545b1968014d"
+    }
+   }
+  },
+  {
+   "name": "global-9:script",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 20,
+      "code": 2300
+     },
+     {
+      "file": "bundled:///libs/lib.es5.d.ts",
+      "line": 568,
+      "column": 5,
+      "code": 2300
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-9:module",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "151de42397808e3327a79b986d8f1268b6bc988906b8ce982ab5545b1968014d"
+    }
+   }
+  },
+  {
+   "name": "global-10:script",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "3f669e5b7adaf3c41599a75f15944a8a892dfdd43db4bab2de1af2aaba3367b6"
+    }
+   }
+  },
+  {
+   "name": "global-10:module",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "151de42397808e3327a79b986d8f1268b6bc988906b8ce982ab5545b1968014d"
+    }
+   }
+  },
+  {
+   "name": "global-11:script",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 9,
+      "code": 2669
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-11:module",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 23,
+      "code": 2300
+     },
+     {
+      "file": "bundled:///libs/lib.es5.d.ts",
+      "line": 1583,
+      "column": 6,
+      "code": 2300
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-12:script",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 9,
+      "code": 2669
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-12:module",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "151de42397808e3327a79b986d8f1268b6bc988906b8ce982ab5545b1968014d"
+    }
+   }
+  },
+  {
+   "name": "global-13:script",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 9,
+      "code": 2669
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-13:module",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 57,
+      "code": 2717
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-14:script",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 40,
+      "code": 2717
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-14:module",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "151de42397808e3327a79b986d8f1268b6bc988906b8ce982ab5545b1968014d"
+    }
+   }
+  },
+  {
+   "name": "global-15:script",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 13,
+      "code": 2403
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-15:module",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "151de42397808e3327a79b986d8f1268b6bc988906b8ce982ab5545b1968014d"
+    }
+   }
+  },
+  {
+   "name": "global-16:script",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 22,
+      "code": 2300
+     },
+     {
+      "file": "bundled:///libs/lib.es5.d.ts",
+      "line": 279,
+      "column": 5,
+      "code": 2300
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-16:module",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "151de42397808e3327a79b986d8f1268b6bc988906b8ce982ab5545b1968014d"
+    }
+   }
+  },
+  {
+   "name": "global-17:script",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 22,
+      "code": 2374
+     },
+     {
+      "file": "bundled:///libs/lib.es5.d.ts",
+      "line": 1508,
+      "column": 5,
+      "code": 2374
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-17:module",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "151de42397808e3327a79b986d8f1268b6bc988906b8ce982ab5545b1968014d"
+    }
+   }
+  },
+  {
+   "name": "global-18:script",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 30,
+      "code": 2687
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 30,
+      "code": 2717
+     },
+     {
+      "file": "bundled:///libs/lib.es5.d.ts",
+      "line": 1193,
+      "column": 14,
+      "code": 2687
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-18:module",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "151de42397808e3327a79b986d8f1268b6bc988906b8ce982ab5545b1968014d"
+    }
+   }
+  },
+  {
+   "name": "global-19:script",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 28,
+      "code": 2300
+     },
+     {
+      "file": "bundled:///libs/lib.es5.d.ts",
+      "line": 1542,
+      "column": 5,
+      "code": 2300
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-19:module",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "151de42397808e3327a79b986d8f1268b6bc988906b8ce982ab5545b1968014d"
+    }
+   }
+  },
+  {
+   "name": "global-20:script",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 6,
+      "code": 2300
+     },
+     {
+      "file": "bundled:///libs/lib.es5.d.ts",
+      "line": 1611,
+      "column": 6,
+      "code": 2300
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-20:module",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "151de42397808e3327a79b986d8f1268b6bc988906b8ce982ab5545b1968014d"
+    }
+   }
+  },
+  {
+   "name": "global-21:script",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 20,
+      "code": 2300
+     },
+     {
+      "file": "bundled:///libs/lib.es2015.iterable.d.ts",
+      "line": 270,
+      "column": 5,
+      "code": 2300
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-21:module",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "151de42397808e3327a79b986d8f1268b6bc988906b8ce982ab5545b1968014d"
+    }
+   }
+  },
+  {
+   "name": "global-22:script",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "584e74c37b451066573676aabce05a5620b9c9db355d78513bd5686aa9a08bb9"
+    }
+   }
+  },
+  {
+   "name": "global-22:module",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "cb74d4b3831fd304c24c8b43804d4baaddda8b1b162cf9ba068e77588a1d6784"
+    }
+   }
+  },
+  {
+   "name": "global-23:script",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "a4f7b72dbf10cafb02616d4da80829fd73f37b7f1ff0e2edc20bea4868556222"
+    }
+   }
+  },
+  {
+   "name": "global-23:module",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "f5e6154d4e8cf20d1084755f74ff57358c8b580bc961abbbb61ebfaa159ad1ba"
+    }
+   }
+  },
+  {
+   "name": "global-24:script",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 23,
+      "code": 2688
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 2,
+      "column": 11,
+      "code": 2591
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "global-24:module",
+   "fused": {
+    "status": "refused",
+    "reason": "typescript",
+    "passed": null,
+    "total": null,
+    "diagnostics": [
+     {
+      "file": "/proj/kernel.ts",
+      "line": 1,
+      "column": 23,
+      "code": 2688
+     },
+     {
+      "file": "/proj/kernel.ts",
+      "line": 2,
+      "column": 11,
+      "code": 2591
+     }
+    ],
+    "artifact": null
+   }
+  },
+  {
+   "name": "baseline-equal",
+   "fused": {
+    "status": "refused",
+    "reason": "tests",
+    "passed": 0,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "d43aa81f5bc89faa359e0f97c814ba25155591ff078fbb9bfd40f8c7c9683230"
+    }
+   }
+  },
+  {
+   "name": "growth",
+   "fused": {
+    "status": "completed",
+    "reason": null,
+    "passed": 1,
+    "total": 1,
+    "diagnostics": [],
+    "artifact": {
+     "/proj/kernel.js": "151de42397808e3327a79b986d8f1268b6bc988906b8ce982ab5545b1968014d"
+    }
+   }
+  }
+ ]
+}

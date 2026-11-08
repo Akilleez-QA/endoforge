@@ -1,0 +1,1394 @@
+{
+ "arms": {
+  "ledger-new": {
+   "name": "ledger-new",
+   "bridgeModule": "<repo>/core/runtime/isolate-ledger.mjs",
+   "count": 4096,
+   "width": 1024,
+   "seed": 59,
+   "loadStart": 13.99,
+   "loadEnd": 15.68,
+   "label": "acceptance",
+   "wallMs": 43235.152467,
+   "accepted": 4096,
+   "acceptedPerSecond": 94.73772535268252,
+   "wrong": [],
+   "peakInFlight": 1024,
+   "nonModel": {
+    "n": 4096,
+    "p50": 2600.8274194257374,
+    "p95": 3738.2406057935823,
+    "max": 5583.480057245239
+   },
+   "latency": {
+    "admit": {
+     "n": 4096,
+     "p50": 788.0582009999998,
+     "p95": 1779.5443979999995,
+     "max": 2227.949974
+    },
+    "park": {
+     "n": 4681,
+     "p50": 855.0780770000001,
+     "p95": 1762.9975619999996,
+     "max": 2223.61304
+    },
+    "commit": {
+     "n": 4096,
+     "p50": 606.9381610000019,
+     "p95": 1499.9758379999985,
+     "max": 2043.7877770000005
+    }
+   },
+   "pythonProcesses": 1,
+   "spawnsPerCandidate": 0.000244140625,
+   "syncs": 894,
+   "syncsPerCandidate": 0.21826171875,
+   "cpuSeconds": 40.340896,
+   "cpuMsPerCandidate": 9.8488515625,
+   "peakRssMiB": 628.09375,
+   "writer": {
+    "batches": 1204,
+    "requests": 12873,
+    "max_batch": 128,
+    "flushes": 882,
+    "frames": 882,
+    "journal_syncs": 882,
+    "segment_syncs": 6,
+    "retire_syncs": 6,
+    "recovery_syncs": 0,
+    "journal_bytes": 779881153,
+    "segments_recovered": 0,
+    "frames_replayed": 0,
+    "ledgers_replayed": 0,
+    "torn_tails": 0,
+    "conflicts": 0,
+    "ledgers_missing": 0,
+    "user": 28.870391,
+    "system": 11.470272,
+    "max_rss_kib": 643168
+   },
+   "batches": 1204,
+   "requestsPerBatch": 10.69186046511628,
+   "journalSyncsPerBatch": 0.7325581395348837,
+   "journalBytesPerCandidate": 190400.67211914062
+  },
+  "ledger-old": {
+   "name": "ledger-old",
+   "bridgeModule": "<baseline>/core/runtime/isolate-ledger.mjs",
+   "count": 1024,
+   "width": 1024,
+   "seed": 59,
+   "loadStart": 15.68,
+   "loadEnd": 6.99,
+   "label": "acceptance",
+   "wallMs": 163779.329192,
+   "accepted": 1024,
+   "acceptedPerSecond": 6.252315265008537,
+   "wrong": [],
+   "peakInFlight": 1024,
+   "nonModel": {
+    "n": 1024,
+    "p50": 142867.65093466986,
+    "p95": 153203.20949311164,
+    "max": 155241.72433350133
+   },
+   "latency": {
+    "admit": {
+     "n": 1024,
+     "p50": 66084.94297399999,
+     "p95": 94794.629816,
+     "max": 98013.914577
+    },
+    "park": {
+     "n": 1170,
+     "p50": 45800.833138999995,
+     "p95": 67035.976434,
+     "max": 97993.64260699999
+    },
+    "commit": {
+     "n": 1024,
+     "p50": 24928.579423000003,
+     "p95": 28020.576742000005,
+     "max": 65701.33560299998
+    }
+   },
+   "pythonProcesses": 1,
+   "spawnsPerCandidate": 0.0009765625,
+   "syncs": 24898,
+   "syncsPerCandidate": 24.314453125,
+   "cpuSeconds": 51.36805699999999,
+   "cpuMsPerCandidate": 50.164118164062494,
+   "peakRssMiB": 511.546875,
+   "writer": null
+  },
+  "loop-serial-hold": {
+   "name": "serial-hold",
+   "waits": "hold",
+   "size": 1,
+   "count": 105,
+   "width": 1,
+   "delay": [
+    0,
+    0
+   ],
+   "loadStart": 7.23,
+   "loadEnd": 7.13,
+   "label": "acceptance",
+   "wallMs": 6336.383285000001,
+   "throughputPerMinute": 994.258035954654,
+   "promoted": 90,
+   "errors": 0,
+   "wrongVerdicts": [],
+   "nonModel": {
+    "n": 105,
+    "p50": 61.31665900000007,
+    "p95": 74.25354400000015,
+    "max": 81.32578399999966
+   },
+   "model": {
+    "n": 105,
+    "p50": 0.1979879999998957,
+    "p95": 0.38633799999934126,
+    "max": 0.4363310000007914
+   },
+   "stages": {
+    "freeze": {
+     "n": 105,
+     "p50": 8.474406999999701,
+     "p95": 12.125356000000465,
+     "max": 18.980521000001318
+    },
+    "compile": {
+     "n": 105,
+     "p50": 36.47696400000041,
+     "p95": 44.77253699999983,
+     "max": 56.89664100000027
+    },
+    "gate": {
+     "n": 105,
+     "p50": 3.309784000000036,
+     "p95": 4.6622799999986455,
+     "max": 5.749199999999746
+    },
+    "ledger": {
+     "n": 105,
+     "p50": 9.379338999999163,
+     "p95": 14.445279000000482,
+     "max": 22.840329000000565
+    }
+   },
+   "requestMs": {
+    "admit": {
+     "n": 105,
+     "p50": 8.469708000000537,
+     "p95": 12.119845999999598,
+     "max": 18.97555199999988
+    },
+    "commit": {
+     "n": 105,
+     "p50": 9.370022000000972,
+     "p95": 14.435860999999932,
+     "max": 22.83104099999946
+    }
+   },
+   "crossings": {
+    "bridgeRequestsPerCandidate": {
+     "admit": 1,
+     "commit": 1
+    },
+    "jobsPerCandidate": 1
+   },
+   "busyAtSend": {
+    "values": [
+     1
+    ],
+    "sends": 225,
+    "zero": 0,
+    "one": 225
+   },
+   "peakInFlight": 1,
+   "peakWaiting": 1,
+   "occupancy": 0.8283595115569147,
+   "usefulOccupancy": 0.8247921339247049,
+   "memory": {
+    "idleBytes": 1112821760,
+    "peakBytes": 1182502912,
+    "peakProcesses": 3,
+    "inFlightPerGiB": 0.9080246763908181
+   },
+   "bridge": {
+    "pythonProcesses": 1,
+    "syncs": 212,
+    "syncsPerCandidate": 2.019047619047619,
+    "cpuMsPerCandidate": 7.61647619047619,
+    "peakRssMiB": 149.21484375,
+    "writer": {
+     "batches": 210,
+     "requests": 210,
+     "max_batch": 1,
+     "flushes": 210,
+     "frames": 210,
+     "journal_syncs": 210,
+     "segment_syncs": 1,
+     "retire_syncs": 1,
+     "recovery_syncs": 0,
+     "journal_bytes": 15130878,
+     "segments_recovered": 0,
+     "frames_replayed": 0,
+     "ledgers_replayed": 0,
+     "torn_tails": 0,
+     "conflicts": 0,
+     "ledgers_missing": 0,
+     "user": 0.529198,
+     "system": 0.270437,
+     "max_rss_kib": 152796
+    }
+   }
+  },
+  "loop-serial-release": {
+   "name": "serial-release",
+   "waits": "release",
+   "size": 1,
+   "count": 105,
+   "width": 1,
+   "delay": [
+    0,
+    0
+   ],
+   "loadStart": 7.13,
+   "loadEnd": 6.71,
+   "label": "acceptance",
+   "wallMs": 7722.790937,
+   "throughputPerMinute": 815.7672597113319,
+   "promoted": 90,
+   "errors": 0,
+   "wrongVerdicts": [],
+   "nonModel": {
+    "n": 105,
+    "p50": 72.23733400000037,
+    "p95": 93.23769900000116,
+    "max": 97.90633200000048
+   },
+   "model": {
+    "n": 105,
+    "p50": 0.1931879999992816,
+    "p95": 0.38767100000040955,
+    "max": 0.6581939999996393
+   },
+   "stages": {
+    "freeze": {
+     "n": 105,
+     "p50": 8.99509500000022,
+     "p95": 13.169606999999814,
+     "max": 21.040961999999126
+    },
+    "compile": {
+     "n": 105,
+     "p50": 37.45231599999988,
+     "p95": 45.83885899999996,
+     "max": 49.225266000000374
+    },
+    "gate": {
+     "n": 105,
+     "p50": 3.9285930000000917,
+     "p95": 7.397265000000516,
+     "max": 8.412902999996732
+    },
+    "ledger": {
+     "n": 105,
+     "p50": 8.597716000000219,
+     "p95": 17.33253700000023,
+     "max": 26.751118999998653
+    }
+   },
+   "requestMs": {
+    "admit": {
+     "n": 105,
+     "p50": 8.99095699999998,
+     "p95": 13.163004,
+     "max": 21.03573300000062
+    },
+    "park": {
+     "n": 120,
+     "p50": 7.174770999999964,
+     "p95": 12.639311000000816,
+     "max": 19.31139600000097
+    },
+    "commit": {
+     "n": 105,
+     "p50": 8.589501000000382,
+     "p95": 17.323210000000472,
+     "max": 26.741870999998355
+    }
+   },
+   "crossings": {
+    "bridgeRequestsPerCandidate": {
+     "admit": 1,
+     "park": 1.1428571428571428,
+     "commit": 1
+    },
+    "jobsPerCandidate": 3.142857142857143
+   },
+   "busyAtSend": {
+    "values": [
+     0
+    ],
+    "sends": 225,
+    "zero": 225,
+    "one": 0
+   },
+   "peakInFlight": 1,
+   "peakWaiting": 1,
+   "occupancy": 0.74431417927687,
+   "usefulOccupancy": 0.74431417927687,
+   "memory": {
+    "idleBytes": 1434857472,
+    "peakBytes": 1434857472,
+    "peakProcesses": 3,
+    "inFlightPerGiB": 0.7483264679267043
+   },
+   "bridge": {
+    "pythonProcesses": 1,
+    "syncs": 332,
+    "syncsPerCandidate": 3.1619047619047618,
+    "cpuMsPerCandidate": 8.357676190476191,
+    "peakRssMiB": 150.44921875,
+    "writer": {
+     "batches": 330,
+     "requests": 330,
+     "max_batch": 1,
+     "flushes": 330,
+     "frames": 330,
+     "journal_syncs": 330,
+     "segment_syncs": 1,
+     "retire_syncs": 1,
+     "recovery_syncs": 0,
+     "journal_bytes": 20009245,
+     "segments_recovered": 0,
+     "frames_replayed": 0,
+     "ledgers_replayed": 0,
+     "torn_tails": 0,
+     "conflicts": 0,
+     "ledgers_missing": 0,
+     "user": 0.6060719999999999,
+     "system": 0.271376,
+     "max_rss_kib": 154060
+    }
+   }
+  },
+  "loop-swarm-hold": {
+   "name": "swarm-hold",
+   "waits": "hold",
+   "size": 4,
+   "count": 64,
+   "width": 64,
+   "delay": [
+    2000,
+    4000
+   ],
+   "loadStart": 6.42,
+   "loadEnd": 4.91,
+   "label": "acceptance",
+   "wallMs": 103823.41644900001,
+   "throughputPerMinute": 36.9858759356689,
+   "promoted": 55,
+   "errors": 0,
+   "wrongVerdicts": [],
+   "nonModel": {
+    "n": 64,
+    "p50": 47506.118171,
+    "p95": 94435.14564,
+    "max": 97145.392561
+   },
+   "model": {
+    "n": 64,
+    "p50": 6126.319616000008,
+    "p95": 8665.293676999994,
+    "max": 10634.391004999998
+   },
+   "stages": {
+    "freeze": {
+     "n": 64,
+     "p50": 8.91640699999698,
+     "p95": 10.917418999997608,
+     "max": 14.372782000005827
+    },
+    "compile": {
+     "n": 64,
+     "p50": 40.71231300001091,
+     "p95": 88.26022599999851,
+     "max": 109.45753699999477
+    },
+    "gate": {
+     "n": 64,
+     "p50": 4.045150999998441,
+     "p95": 8.069352999998955,
+     "max": 11.670318000018597
+    },
+    "ledger": {
+     "n": 64,
+     "p50": 9.157986999998684,
+     "p95": 11.69516499999736,
+     "max": 24.933128000004217
+    }
+   },
+   "requestMs": {
+    "admit": {
+     "n": 64,
+     "p50": 8.909775000007357,
+     "p95": 10.910786000000371,
+     "max": 14.36640100000659
+    },
+    "commit": {
+     "n": 64,
+     "p50": 9.148317999999563,
+     "p95": 11.686197000002721,
+     "max": 24.922276999997848
+    }
+   },
+   "crossings": {
+    "bridgeRequestsPerCandidate": {
+     "admit": 1,
+     "commit": 1
+    },
+    "jobsPerCandidate": 1
+   },
+   "busyAtSend": {
+    "values": [
+     4
+    ],
+    "sends": 137,
+    "zero": 0,
+    "one": 0
+   },
+   "peakInFlight": 5,
+   "peakWaiting": 4,
+   "occupancy": 0.9941662534670342,
+   "usefulOccupancy": 0.009548310168418981,
+   "memory": {
+    "idleBytes": 2590580736,
+    "peakBytes": 2600681472,
+    "peakProcesses": 6,
+    "inFlightPerGiB": 2.0643470481878374
+   },
+   "bridge": {
+    "pythonProcesses": 1,
+    "syncs": 130,
+    "syncsPerCandidate": 2.03125,
+    "cpuMsPerCandidate": 7.537453125,
+    "peakRssMiB": 150.25,
+    "writer": {
+     "batches": 128,
+     "requests": 128,
+     "max_batch": 1,
+     "flushes": 128,
+     "frames": 128,
+     "journal_syncs": 128,
+     "segment_syncs": 1,
+     "retire_syncs": 1,
+     "recovery_syncs": 0,
+     "journal_bytes": 9163920,
+     "segments_recovered": 0,
+     "frames_replayed": 0,
+     "ledgers_replayed": 0,
+     "torn_tails": 0,
+     "conflicts": 0,
+     "ledgers_missing": 0,
+     "user": 0.360125,
+     "system": 0.12215999999999999,
+     "max_rss_kib": 153856
+    }
+   }
+  },
+  "loop-swarm-release": {
+   "name": "swarm-release",
+   "waits": "release",
+   "size": 4,
+   "count": 64,
+   "width": 64,
+   "delay": [
+    2000,
+    4000
+   ],
+   "loadStart": 5,
+   "loadEnd": 7.54,
+   "label": "acceptance",
+   "wallMs": 10750.773883,
+   "throughputPerMinute": 357.1835889946603,
+   "promoted": 55,
+   "errors": 0,
+   "wrongVerdicts": [],
+   "nonModel": {
+    "n": 64,
+    "p50": 112.78007100000104,
+    "p95": 174.2235539999947,
+    "max": 218.23210500000096
+   },
+   "model": {
+    "n": 64,
+    "p50": 6108.067082,
+    "p95": 9679.573213999998,
+    "max": 10636.427469999999
+   },
+   "stages": {
+    "freeze": {
+     "n": 64,
+     "p50": 13.861249999999927,
+     "p95": 61.650619999998526,
+     "max": 70.3595120000009
+    },
+    "compile": {
+     "n": 64,
+     "p50": 45.623202000000674,
+     "p95": 63.162892000000284,
+     "max": 70.53427699999702
+    },
+    "gate": {
+     "n": 64,
+     "p50": 4.250802000000476,
+     "p95": 8.351777999998376,
+     "max": 21.524638000000778
+    },
+    "ledger": {
+     "n": 64,
+     "p50": 9.48434300000008,
+     "p95": 16.50890299999992,
+     "max": 26.226590000000215
+    }
+   },
+   "requestMs": {
+    "admit": {
+     "n": 64,
+     "p50": 13.849288999999771,
+     "p95": 61.642916000000696,
+     "max": 70.34441400000105
+    },
+    "park": {
+     "n": 73,
+     "p50": 11.326387999999497,
+     "p95": 45.50557300000037,
+     "max": 72.21366899999884
+    },
+    "commit": {
+     "n": 64,
+     "p50": 9.44600199999877,
+     "p95": 16.497051000000283,
+     "max": 26.215358999999808
+    }
+   },
+   "crossings": {
+    "bridgeRequestsPerCandidate": {
+     "admit": 1,
+     "park": 1.140625,
+     "commit": 1
+    },
+    "jobsPerCandidate": 3.140625
+   },
+   "busyAtSend": {
+    "values": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "sends": 137,
+    "zero": 37,
+    "one": 17
+   },
+   "peakInFlight": 64,
+   "peakWaiting": 64,
+   "occupancy": 0.11760559860711918,
+   "usefulOccupancy": 0.11760559860711918,
+   "memory": {
+    "idleBytes": 2287149056,
+    "peakBytes": 2317348864,
+    "peakProcesses": 6,
+    "inFlightPerGiB": 29.6543510576058
+   },
+   "bridge": {
+    "pythonProcesses": 1,
+    "syncs": 183,
+    "syncsPerCandidate": 2.859375,
+    "cpuMsPerCandidate": 11.332546874999998,
+    "peakRssMiB": 149.72265625,
+    "writer": {
+     "batches": 192,
+     "requests": 201,
+     "max_batch": 3,
+     "flushes": 181,
+     "frames": 181,
+     "journal_syncs": 181,
+     "segment_syncs": 1,
+     "retire_syncs": 1,
+     "recovery_syncs": 0,
+     "journal_bytes": 12098812,
+     "segments_recovered": 0,
+     "frames_replayed": 0,
+     "ledgers_replayed": 0,
+     "torn_tails": 0,
+     "conflicts": 0,
+     "ledgers_missing": 0,
+     "user": 0.524108,
+     "system": 0.20107699999999998,
+     "max_rss_kib": 153316
+    }
+   }
+  },
+  "loop-swarm-release-256": {
+   "name": "swarm-release-256",
+   "waits": "release",
+   "size": 4,
+   "count": 256,
+   "width": 256,
+   "delay": [
+    2000,
+    4000
+   ],
+   "loadStart": 7.54,
+   "loadEnd": 10.03,
+   "label": "acceptance",
+   "wallMs": 13794.335606999997,
+   "throughputPerMinute": 1113.500529319114,
+   "promoted": 220,
+   "errors": 0,
+   "wrongVerdicts": [],
+   "nonModel": {
+    "n": 256,
+    "p50": 1992.435438000004,
+    "p95": 2547.096182,
+    "max": 2585.3787669999992
+   },
+   "model": {
+    "n": 256,
+    "p50": 6000.933788999999,
+    "p95": 8991.962235,
+    "max": 11462.093356000001
+   },
+   "stages": {
+    "freeze": {
+     "n": 256,
+     "p50": 19.851928000000044,
+     "p95": 32.332281999999395,
+     "max": 39.79157900000064
+    },
+    "compile": {
+     "n": 256,
+     "p50": 70.64389800000026,
+     "p95": 121.85086199999932,
+     "max": 205.8320679999997
+    },
+    "gate": {
+     "n": 256,
+     "p50": 6.346249000000171,
+     "p95": 21.35929000000033,
+     "max": 30.892125000000306
+    },
+    "ledger": {
+     "n": 256,
+     "p50": 13.655287999999928,
+     "p95": 25.557575999999244,
+     "max": 41.18996900000093
+    }
+   },
+   "requestMs": {
+    "admit": {
+     "n": 256,
+     "p50": 19.850915999999415,
+     "p95": 32.3300679999993,
+     "max": 39.78818400000091
+    },
+    "park": {
+     "n": 292,
+     "p50": 16.858021000000008,
+     "p95": 31.21298999999999,
+     "max": 37.07135200000084
+    },
+    "commit": {
+     "n": 256,
+     "p50": 13.634417999999641,
+     "p95": 25.506792000000132,
+     "max": 41.160484
+    }
+   },
+   "crossings": {
+    "bridgeRequestsPerCandidate": {
+     "admit": 1,
+     "park": 1.140625,
+     "commit": 1
+    },
+    "jobsPerCandidate": 3.140625
+   },
+   "busyAtSend": {
+    "values": [
+     0,
+     1,
+     2,
+     3,
+     4
+    ],
+    "sends": 548,
+    "zero": 22,
+    "one": 16
+   },
+   "peakInFlight": 256,
+   "peakWaiting": 256,
+   "occupancy": 0.5152888168744411,
+   "usefulOccupancy": 0.5152888168744411,
+   "memory": {
+    "idleBytes": 2945830912,
+    "peakBytes": 2946879488,
+    "peakProcesses": 6,
+    "inFlightPerGiB": 93.27762063678934
+   },
+   "bridge": {
+    "pythonProcesses": 1,
+    "syncs": 468,
+    "syncsPerCandidate": 1.828125,
+    "cpuMsPerCandidate": 9.347789062499999,
+    "peakRssMiB": 150.30859375,
+    "writer": {
+     "batches": 583,
+     "requests": 804,
+     "max_batch": 7,
+     "flushes": 466,
+     "frames": 466,
+     "journal_syncs": 466,
+     "segment_syncs": 1,
+     "retire_syncs": 1,
+     "recovery_syncs": 0,
+     "journal_bytes": 48542331,
+     "segments_recovered": 0,
+     "frames_replayed": 0,
+     "ledgers_replayed": 0,
+     "torn_tails": 0,
+     "conflicts": 0,
+     "ledgers_missing": 0,
+     "user": 1.765021,
+     "system": 0.627894,
+     "max_rss_kib": 153916
+    }
+   }
+  }
+ },
+ "crash": [
+  {
+   "trial": 0,
+   "point": "after_apply",
+   "batch": 15,
+   "lost": false,
+   "candidatesStarted": 64,
+   "requests": 192,
+   "acked": 128,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 18,
+   "absent": 46,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 0,
+    "frames_replayed": 0,
+    "ledgers_replayed": 0,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 0,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 1,
+   "point": "half_frame",
+   "batch": 19,
+   "lost": false,
+   "candidatesStarted": 94,
+   "requests": 227,
+   "acked": 163,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 8,
+   "absent": 56,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 1,
+    "frames_replayed": 0,
+    "ledgers_replayed": 0,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 1,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 2,
+   "point": "after_sync",
+   "batch": 19,
+   "lost": false,
+   "candidatesStarted": 113,
+   "requests": 249,
+   "acked": 185,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 18,
+   "absent": 46,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 0,
+    "frames_replayed": 0,
+    "ledgers_replayed": 0,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 0,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 3,
+   "point": "half_acks",
+   "batch": 10,
+   "lost": false,
+   "candidatesStarted": 64,
+   "requests": 138,
+   "acked": 74,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 18,
+   "absent": 46,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 0,
+    "frames_replayed": 0,
+    "ledgers_replayed": 0,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 0,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 4,
+   "point": "after_apply",
+   "batch": 5,
+   "lost": true,
+   "candidatesStarted": 64,
+   "requests": 72,
+   "acked": 8,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 0,
+   "absent": 64,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 0,
+    "frames_replayed": 8,
+    "ledgers_replayed": 8,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 0,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 5,
+   "point": "half_frame",
+   "batch": 18,
+   "lost": true,
+   "candidatesStarted": 122,
+   "requests": 275,
+   "acked": 211,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 0,
+   "absent": 64,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 1,
+    "frames_replayed": 211,
+    "ledgers_replayed": 80,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 1,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 6,
+   "point": "after_sync",
+   "batch": 16,
+   "lost": true,
+   "candidatesStarted": 86,
+   "requests": 217,
+   "acked": 153,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 14,
+   "absent": 50,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 0,
+    "frames_replayed": 167,
+    "ledgers_replayed": 64,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 0,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 7,
+   "point": "half_acks",
+   "batch": 13,
+   "lost": true,
+   "candidatesStarted": 64,
+   "requests": 141,
+   "acked": 77,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 10,
+   "absent": 54,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 0,
+    "frames_replayed": 87,
+    "ledgers_replayed": 64,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 0,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 8,
+   "point": "after_apply",
+   "batch": 13,
+   "lost": false,
+   "candidatesStarted": 93,
+   "requests": 225,
+   "acked": 161,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 8,
+   "absent": 56,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 0,
+    "frames_replayed": 0,
+    "ledgers_replayed": 0,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 0,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 9,
+   "point": "half_frame",
+   "batch": 20,
+   "lost": false,
+   "candidatesStarted": 125,
+   "requests": 297,
+   "acked": 233,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 23,
+   "absent": 41,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 1,
+    "frames_replayed": 0,
+    "ledgers_replayed": 0,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 1,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 10,
+   "point": "after_sync",
+   "batch": 4,
+   "lost": false,
+   "candidatesStarted": 64,
+   "requests": 65,
+   "acked": 1,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 2,
+   "absent": 62,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 0,
+    "frames_replayed": 0,
+    "ledgers_replayed": 0,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 0,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 11,
+   "point": "half_acks",
+   "batch": 8,
+   "lost": false,
+   "candidatesStarted": 64,
+   "requests": 139,
+   "acked": 75,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 19,
+   "absent": 45,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 0,
+    "frames_replayed": 0,
+    "ledgers_replayed": 0,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 0,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 12,
+   "point": "after_apply",
+   "batch": 19,
+   "lost": true,
+   "candidatesStarted": 128,
+   "requests": 323,
+   "acked": 259,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 0,
+   "absent": 64,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 0,
+    "frames_replayed": 259,
+    "ledgers_replayed": 119,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 0,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 13,
+   "point": "half_frame",
+   "batch": 7,
+   "lost": true,
+   "candidatesStarted": 64,
+   "requests": 131,
+   "acked": 67,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 0,
+   "absent": 64,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 1,
+    "frames_replayed": 67,
+    "ledgers_replayed": 64,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 1,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 14,
+   "point": "after_sync",
+   "batch": 10,
+   "lost": true,
+   "candidatesStarted": 64,
+   "requests": 131,
+   "acked": 67,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 16,
+   "absent": 48,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 0,
+    "frames_replayed": 83,
+    "ledgers_replayed": 64,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 0,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 15,
+   "point": "half_acks",
+   "batch": 3,
+   "lost": true,
+   "candidatesStarted": 64,
+   "requests": 66,
+   "acked": 2,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 1,
+   "absent": 63,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 0,
+    "frames_replayed": 3,
+    "ledgers_replayed": 3,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 0,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 16,
+   "point": "after_apply",
+   "batch": 5,
+   "lost": false,
+   "candidatesStarted": 64,
+   "requests": 71,
+   "acked": 7,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 59,
+   "absent": 5,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 0,
+    "frames_replayed": 0,
+    "ledgers_replayed": 0,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 0,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 17,
+   "point": "half_frame",
+   "batch": 19,
+   "lost": false,
+   "candidatesStarted": 126,
+   "requests": 306,
+   "acked": 242,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 21,
+   "absent": 43,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 1,
+    "frames_replayed": 0,
+    "ledgers_replayed": 0,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 1,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 18,
+   "point": "after_sync",
+   "batch": 12,
+   "lost": false,
+   "candidatesStarted": 64,
+   "requests": 149,
+   "acked": 85,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 42,
+   "absent": 22,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 0,
+    "frames_replayed": 0,
+    "ledgers_replayed": 0,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 0,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 19,
+   "point": "half_acks",
+   "batch": 5,
+   "lost": false,
+   "candidatesStarted": 64,
+   "requests": 69,
+   "acked": 5,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 2,
+   "absent": 62,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 0,
+    "frames_replayed": 0,
+    "ledgers_replayed": 0,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 0,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 20,
+   "point": "after_apply",
+   "batch": 17,
+   "lost": true,
+   "candidatesStarted": 128,
+   "requests": 327,
+   "acked": 263,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 0,
+   "absent": 64,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 0,
+    "frames_replayed": 263,
+    "ledgers_replayed": 120,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 0,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 21,
+   "point": "half_frame",
+   "batch": 17,
+   "lost": true,
+   "candidatesStarted": 119,
+   "requests": 259,
+   "acked": 195,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 0,
+   "absent": 64,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 1,
+    "frames_replayed": 195,
+    "ledgers_replayed": 67,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 1,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 22,
+   "point": "after_sync",
+   "batch": 16,
+   "lost": true,
+   "candidatesStarted": 80,
+   "requests": 211,
+   "acked": 147,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 17,
+   "absent": 47,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 0,
+    "frames_replayed": 164,
+    "ledgers_replayed": 64,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 0,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  },
+  {
+   "trial": 23,
+   "point": "half_acks",
+   "batch": 15,
+   "lost": true,
+   "candidatesStarted": 75,
+   "requests": 205,
+   "acked": 141,
+   "unacked": 64,
+   "unknown": 64,
+   "present": 10,
+   "absent": 54,
+   "killed": true,
+   "recovery": {
+    "torn_tails": 0,
+    "frames_replayed": 151,
+    "ledgers_replayed": 64,
+    "conflicts": 0,
+    "segments_recovered": 1
+   },
+   "quarantined": 0,
+   "problems": [],
+   "problemCount": 0,
+   "pass": true
+  }
+ ],
+ "commit": "f9cb94e057bfd3f32bf3467c0e1cd5d5b85fe0a2",
+ "baseline": "e965901bc4c87896bfb8bad338054e04508e1712",
+ "precommit": "6990020f86f58318e8e78c8e96d4bcd8b69060a67d69ee7b4a8408dfe0a6fd54",
+ "testDouble": true,
+ "node": "v26.13.0",
+ "python": "Python 3.14.9",
+ "cpus": "AMD Ryzen 9 7950X 16-Core Processor",
+ "parallelism": 32,
+ "totalMemory": 134143877120,
+ "started": "2026-11-07T20:45:17.442Z",
+ "capture": {
+  "digest": "c6c58b513e466f6e3e3c1f05871ecb677c61675ee4a91c77862b3595468c7a16",
+  "kernels": 21,
+  "requestsPerCandidate": 3.142857142857143,
+  "modelCallsPerCandidate": 2.142857142857143
+ },
+ "finished": "2026-11-07T20:52:28.920Z"
+}
