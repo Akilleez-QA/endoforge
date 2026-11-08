@@ -7,10 +7,13 @@ export const EX_CONFIG = 78;
 export const SUBSCRIPTIONS = Object.freeze(['max', 'pro', 'team']);
 export const CACHE_MS = 30000;
 export const MANAGED_SETTINGS = '/etc/claude-code/managed-settings.json';
-const billingVariables = ['ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_FOUNDRY_API_KEY', 'AWS_BEARER_TOKEN_BEDROCK', 'CLAUDE_CODE_USE_BEDROCK', 'CLAUDE_CODE_USE_VERTEX', 'CLAUDE_CODE_USE_FOUNDRY'];
-const strippedVariables = [...billingVariables, 'ANTHROPIC_BASE_URL', 'ANTHROPIC_BEDROCK_BASE_URL', 'ANTHROPIC_VERTEX_BASE_URL', 'ANTHROPIC_VERTEX_PROJECT_ID', 'ANTHROPIC_FOUNDRY_BASE_URL', 'ANTHROPIC_CUSTOM_HEADERS',
+const billingVariables = ['ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_FOUNDRY_API_KEY', 'AWS_BEARER_TOKEN_BEDROCK', 'CLAUDE_CODE_USE_BEDROCK', 'CLAUDE_CODE_USE_VERTEX', 'CLAUDE_CODE_USE_FOUNDRY',
+  'ANTHROPIC_PROFILE', 'ANTHROPIC_FEDERATION_RULE_ID'];
+const off = new Set(['', '0', 'false', 'no', 'off']);
+const bareOn = value => typeof value === 'string' && !off.has(value.trim().toLowerCase());
+const strippedVariables = [...billingVariables, 'CLAUDE_CODE_SIMPLE', 'ANTHROPIC_BASE_URL', 'ANTHROPIC_BEDROCK_BASE_URL', 'ANTHROPIC_VERTEX_BASE_URL', 'ANTHROPIC_VERTEX_PROJECT_ID', 'ANTHROPIC_FOUNDRY_BASE_URL', 'ANTHROPIC_CUSTOM_HEADERS',
   'CLAUDE_CODE_OAUTH_TOKEN', 'CLAUDE_CODE_OAUTH_REFRESH_TOKEN', 'CLAUDE_CODE_SKIP_BEDROCK_AUTH', 'CLAUDE_CODE_SKIP_VERTEX_AUTH', 'CLAUDE_CODE_SKIP_FOUNDRY_AUTH', 'CLAUDE_CODE_API_KEY_HELPER_TTL_MS'];
-const strippedPattern = /^(ANTHROPIC_|CLAUDE_CODE_USE_|CLAUDE_CODE_OAUTH_|CLAUDE_CODE_SKIP_|CLAUDE_CODE_API_KEY|AWS_BEARER_TOKEN_BEDROCK$)/;
+const strippedPattern = /^(ANTHROPIC_|CLAUDE_CODE_USE_|CLAUDE_CODE_OAUTH_|CLAUDE_CODE_SKIP_|CLAUDE_CODE_API_KEY|CLAUDE_CODE_SIMPLE$|AWS_BEARER_TOKEN_BEDROCK$)/;
 const helperKeys = ['apiKeyHelper', 'awsAuthRefresh', 'awsCredentialExport', 'otelHeadersHelper'];
 const cache = new Map();
 
@@ -42,12 +45,45 @@ function settingsProblem(path) {
   const { value, error, absent } = readJson(path);
   if (absent) return null;
   if (error) return error;
+  return settingsValueProblem(path, value);
+}
+
+function settingsValueProblem(path, value) {
   const helper = helperKeys.find(key => value[key] !== undefined);
   if (helper) return `${path} sets ${helper}`;
   if (value.forceLoginMethod !== undefined && value.forceLoginMethod !== 'claudeai') return `${path} sets forceLoginMethod ${JSON.stringify(value.forceLoginMethod)}`;
   if (value.env !== undefined && (typeof value.env !== 'object' || value.env === null)) return `${path} has a malformed env block`;
-  const variable = Object.keys(value.env ?? {}).find(name => billingVariables.includes(name) || strippedPattern.test(name));
+  const variable = Object.keys(value.env ?? {}).find(name => name === 'CLAUDE_CODE_SIMPLE' ? bareOn(value.env[name]) : billingVariables.includes(name) || strippedPattern.test(name));
   if (variable) return `${path} sets ${variable} in env`;
+  return null;
+}
+
+function inlineSettingsProblem(text, cwd) {
+  if (!present(text)) return '--settings has no value';
+  if (text.trimStart().startsWith('{')) {
+    let value;
+    try { value = JSON.parse(text); } catch { return '--settings JSON is not valid JSON'; }
+    if (!value || typeof value !== 'object' || Array.isArray(value)) return '--settings JSON is not a JSON object';
+    return settingsValueProblem('--settings', value);
+  }
+  const path = resolve(cwd ?? process.cwd(), text);
+  const { value, error, absent } = readJson(path);
+  if (absent) return `--settings ${path} is unreadable (ENOENT)`;
+  if (error) return `--settings ${error}`;
+  return settingsValueProblem(`--settings ${path}`, value);
+}
+
+export function argumentProblem(args = [], cwd) {
+  const list = Array.isArray(args) ? args.map(String) : [];
+  for (let i = 0; i < list.length; i += 1) {
+    const arg = list[i], at = arg.indexOf('='), flag = arg.startsWith('--') && at > 0 ? arg.slice(0, at) : arg;
+    if (flag === '--bare') return '--bare never reads the claude.ai login (it authenticates only with ANTHROPIC_API_KEY or an apiKeyHelper), so it can bill only through an API key';
+    if (flag === '--settings') {
+      const problem = inlineSettingsProblem(flag === arg ? list[i + 1] : arg.slice(at + 1), cwd);
+      if (problem) return problem;
+      if (flag === arg) i += 1;
+    }
+  }
   return null;
 }
 
@@ -84,6 +120,7 @@ export function locate({ env = process.env, configDir, cwd } = {}) {
 function prove({ env, configDir, account, cwd, managedSettings }) {
   const variable = billingVariables.find(name => present(env[name]));
   if (variable) return { ok: false, reason: `${variable} is set in the launch environment` };
+  if (bareOn(env.CLAUDE_CODE_SIMPLE)) return { ok: false, reason: 'CLAUDE_CODE_SIMPLE is on in the launch environment, which is --bare: it never reads the claude.ai login, so it can bill only through an API key' };
   const settings = [join(configDir, 'settings.json'), join(configDir, 'settings.local.json'), managedSettings,
     ...(cwd ? [join(cwd, '.claude', 'settings.json'), join(cwd, '.claude', 'settings.local.json')] : [])].filter(Boolean);
   for (const path of settings) {
@@ -97,9 +134,11 @@ function prove({ env, configDir, account, cwd, managedSettings }) {
   return { ok: true, configDir, subscriptionType: credential.subscriptionType };
 }
 
-export function subscriptionProof({ env = process.env, configDir, cwd, managedSettings = MANAGED_SETTINGS, now = Date.now() } = {}) {
+export function subscriptionProof({ env = process.env, configDir, cwd, managedSettings = MANAGED_SETTINGS, now = Date.now(), args } = {}) {
   const where = locate({ env, configDir, cwd });
-  const key = JSON.stringify([where, managedSettings, billingVariables.map(name => present(env[name]))]);
+  const refused = argumentProblem(args, where.cwd);
+  if (refused) return Object.freeze({ ok: false, reason: refused });
+  const key = JSON.stringify([where, managedSettings, billingVariables.map(name => present(env[name])), bareOn(env.CLAUDE_CODE_SIMPLE)]);
   const hit = cache.get(key);
   if (hit && now - hit.at < CACHE_MS) return hit.result;
   const result = Object.freeze(prove({ env, ...where, managedSettings }));

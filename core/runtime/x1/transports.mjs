@@ -20,8 +20,8 @@ function claudeEnvironment(configDir, base = process.env, extra = {}) {
   env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = '1';
   return subscriptionEnvironment({ ...env, ...extra });
 }
-const launchEnvironment = (configDir, base = process.env, extra = {}, cwd) => {
-  requireSubscription({ env: { ...base, ...extra, CLAUDE_CONFIG_DIR: undefined }, configDir, cwd });
+const launchEnvironment = (configDir, base = process.env, extra = {}, cwd, args) => {
+  requireSubscription({ env: { ...base, ...extra, CLAUDE_CONFIG_DIR: undefined }, configDir, cwd, args });
   return claudeEnvironment(configDir, base, extra);
 };
 const sharedArguments = ({ model, system = transportSystem, effort }) => ['-p', '--json-schema', JSON.stringify(replySchema), '--tools', '', '--no-session-persistence', '--strict-mcp-config',
@@ -85,7 +85,7 @@ export class SpawnClaudeTransport {
     this.spawns += 1;
     return new Promise((resolve, reject) => {
       beforeBudget(remaining);
-      const env = launchEnvironment(this.configDir, this.base, this.environment, this.#directory.path);
+      const env = launchEnvironment(this.configDir, this.base, this.environment, this.#directory.path, this.arguments);
       const child = spawn(this.command, this.arguments, { cwd: this.#directory.path, env, stdio: ['pipe', 'pipe', 'ignore'], timeout: timeoutMs });
       let acceptable = false, refused = false, result = null;
       createInterface({ input: child.stdout }).on('line', line => {
@@ -122,7 +122,7 @@ class Lane {
   open(timeoutMs) {
     if (this.opened) return this.opened;
     const begin = performance.now(), { command, base, environment, arguments: args } = this.transport;
-    const env = launchEnvironment(this.instance.configDir, base, environment, this.transport.workingDirectory);
+    const env = launchEnvironment(this.instance.configDir, base, environment, this.transport.workingDirectory, args);
     const child = spawn(command, args, { cwd: this.transport.workingDirectory, env, stdio: ['pipe', 'pipe', 'ignore'] });
     this.child = child;
     this.dirty = false;

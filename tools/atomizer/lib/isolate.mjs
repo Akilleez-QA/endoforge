@@ -52,7 +52,7 @@ export function listFiles(dir) {
 export async function runIsolated(spec) {
   const claude = isClaudeCommand(spec.cmd?.[0]);
   const claudeAccount = spec.cmd?.[0] === 'claude' && !spec.env?.CLAUDE_CONFIG_DIR ? nextClaudeAccount() : null;
-  if (claude) requireSubscription({ env: { ...process.env, ...spec.env, HOME: spec.homeTemplate, CLAUDE_CONFIG_DIR: undefined }, configDir: claudeAccount ?? spec.env?.CLAUDE_CONFIG_DIR ?? undefined });
+  if (claude) requireSubscription({ env: { ...process.env, ...spec.env, HOME: spec.homeTemplate, CLAUDE_CONFIG_DIR: undefined }, configDir: claudeAccount ?? spec.env?.CLAUDE_CONFIG_DIR ?? undefined, args: spec.cmd.slice(1) });
   const homeStart = nowEpoch();
   const runHome = fs.mkdtempSync(path.join(os.tmpdir(), 'atom-home-'));
   fs.chmodSync(runHome, 0o700);

@@ -63,6 +63,54 @@ test('an API key helper or env override in settings is refused', t => {
   assert.match(subscriptionProof({ env: { HOME: home }, managedSettings: managed }).reason, /apiKeyHelper/);
 });
 
+test('--bare and bare-equivalent launches are refused whatever the environment', t => {
+  const root = scratch(t), home = subscribedHome(join(root, 'home'));
+  assert.equal(proof({ HOME: home }, { args: ['-p', '--model', 'opus'] }).ok, true);
+  for (const args of [['--bare'], ['-p', '--bare', '--model', 'opus'], ['--bare=true', '-p']]) {
+    const result = proof({ HOME: home }, { args });
+    assert.equal(result.ok, false, args.join(' '));
+    assert.match(result.reason, /--bare never reads the claude\.ai login/);
+  }
+  assert.equal(proof({ HOME: home }).ok, true);
+  assert.equal(proof({ HOME: home }, { args: ['--bare'] }).ok, false);
+  assert.throws(() => requireSubscription({ env: { HOME: home }, managedSettings, args: ['-p', '--bare'] }), error => error instanceof SubscriptionRefused && error.exitCode === EX_CONFIG && /--bare/.test(error.message));
+  for (const name of ['CLAUDE_CODE_SIMPLE', 'ANTHROPIC_PROFILE', 'ANTHROPIC_FEDERATION_RULE_ID']) {
+    const result = proof({ HOME: home, [name]: '1' });
+    assert.equal(result.ok, false, name);
+    assert.match(result.reason, new RegExp(name));
+  }
+  for (const value of ['0', 'false', 'off', '']) assert.equal(proof({ HOME: home, CLAUDE_CODE_SIMPLE: value }).ok, true, `CLAUDE_CODE_SIMPLE=${value}`);
+  assert.equal(proof({ HOME: home, CLAUDE_CODE_SIMPLE: 'true' }).ok, false);
+  assert.deepEqual(subscriptionEnvironment({ PATH: '/usr/bin', CLAUDE_CODE_SIMPLE: '1' }), { PATH: '/usr/bin' });
+  assert(unsetArguments({}).includes('CLAUDE_CODE_SIMPLE'));
+});
+
+test('--settings that could supply an API key is refused', t => {
+  const root = scratch(t), home = subscribedHome(join(root, 'home'));
+  const file = join(root, 'extra.json');
+  writeFileSync(file, JSON.stringify({ env: { ANTHROPIC_API_KEY: 'synthetic' } }));
+  const clean = join(root, 'clean.json');
+  writeFileSync(clean, JSON.stringify({ permissions: { allow: [] } }));
+  for (const [args, pattern] of [
+    [['--settings', JSON.stringify({ apiKeyHelper: '/bin/echo' })], /--settings sets apiKeyHelper/],
+    [[`--settings=${JSON.stringify({ env: { CLAUDE_CODE_SIMPLE: '1' } })}`], /CLAUDE_CODE_SIMPLE/],
+    [['--settings', JSON.stringify({ forceLoginMethod: 'console' })], /forceLoginMethod/],
+    [['--settings', JSON.stringify({ env: { ANTHROPIC_PROFILE: 'work' } })], /ANTHROPIC_PROFILE/],
+    [['--settings', file], /ANTHROPIC_API_KEY/],
+    [['--settings', join(root, 'missing.json')], /--settings .* is unreadable/],
+    [['--settings', '{'], /--settings .* not valid JSON/],
+    [['--settings'], /--settings has no value/],
+  ]) {
+    const result = proof({ HOME: home }, { args, cwd: root });
+    assert.equal(result.ok, false, args.join(' '));
+    assert.match(result.reason, pattern, args.join(' '));
+    assert.doesNotMatch(result.reason, /synthetic/);
+  }
+  assert.equal(proof({ HOME: home }, { args: ['--settings', '{}'] }).ok, true);
+  assert.equal(proof({ HOME: home }, { args: ['--settings', JSON.stringify({ env: { CLAUDE_CODE_SIMPLE: '0' } })] }).ok, true);
+  assert.equal(proof({ HOME: home }, { args: ['--settings', 'clean.json'], cwd: root }).ok, true);
+});
+
 test('missing, unreadable or ambiguous logins are refused', t => {
   const root = scratch(t);
   const cases = [
@@ -111,6 +159,14 @@ test('the spawn transport refuses before launch and passes no key to the child',
   assert.deepEqual(seen.filter(name => /^ANTHROPIC_|CLAUDE_CODE_OAUTH|CLAUDE_CODE_USE_/.test(name)), []);
   const unsubscribed = subscribedHome(join(root, 'free'), { subscriptionType: 'free' });
   await assert.rejects(new SpawnClaudeTransport({ model: 'stub', command: fakeClaude, cwd: root, base: { PATH: process.env.PATH, HOME: unsubscribed } }).send({ messages: [{ role: 'user', content: 'x' }] }), /refused/);
+});
+
+test('the spawn transport refuses a --bare launch before spawning', async t => {
+  const root = scratch(t), home = subscribedHome(join(root, 'home')), log = join(root, 'log');
+  const transport = new SpawnClaudeTransport({ model: 'stub', command: fakeClaude, cwd: root, base: { PATH: process.env.PATH, HOME: home }, environment: { FAKE_CLAUDE_LOG: log } });
+  transport.arguments.push('--bare');
+  await assert.rejects(transport.send({ messages: [{ role: 'user', content: 'x' }] }), /refused \(exit 78\).*--bare/);
+  assert.equal(existsSync(log), false);
 });
 
 test('the command-line check exits 78 when the login is not proven subscription', t => {

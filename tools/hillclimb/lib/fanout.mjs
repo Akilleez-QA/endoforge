@@ -75,9 +75,10 @@ export function workerCommand(c, lane, { worktree, prompt, images = [] }) {
   }
   const dirs = [...new Set(images.map((i) => path.dirname(i)))];
   const env = lane.configDir ? { CLAUDE_CONFIG_DIR: lane.configDir } : {};
-  requireSubscription({ env: { ...process.env, ...env }, cwd: worktree });
-  return { argv: [...unsetArguments(), f.claudeBin ?? 'claude', '-p', prompt, '--model', f.claudeModel ?? 'opus', '--permission-mode', 'acceptEdits',
-    '--allowedTools', f.claudeTools ?? 'Read Edit Write Glob Grep Bash(node:*) Bash(git diff:*) Bash(ls:*)', ...dirs.flatMap((d) => ['--add-dir', d])], env };
+  const args = ['-p', prompt, '--model', f.claudeModel ?? 'opus', '--permission-mode', 'acceptEdits',
+    '--allowedTools', f.claudeTools ?? 'Read Edit Write Glob Grep Bash(node:*) Bash(git diff:*) Bash(ls:*)', ...dirs.flatMap((d) => ['--add-dir', d])];
+  requireSubscription({ env: { ...process.env, ...env }, cwd: worktree, args });
+  return { argv: [...unsetArguments(), f.claudeBin ?? 'claude', ...args], env };
 }
 export const pieceStills = (p, stillsDir) => (p.stills ?? []).map((s) => path.join(stillsDir, s)).filter((s) => fs.existsSync(s));
 export function piecePrompt(c, piece, { stills = [], found = [], note = '', round = 1 } = {}) {

@@ -134,6 +134,8 @@ check('compose receipt lists 8 inputs and a hashed output', rec.inputs.length ==
     const refusal = async (spec) => { try { await runIsolated({ homeTemplate: home, toolchain: [{ host: stub, guest: stub, bin: stub }], cmd: ['claude'], cwd: '/', mounts: [], ...spec }); return null; } catch (e) { return e; } };
     const keyed = await refusal({ env: { ANTHROPIC_API_KEY: 'synthetic' } });
     check('subscription guard: an API key in the launch refuses with exit 78', keyed?.exitCode === 78 && /ANTHROPIC_API_KEY/.test(keyed.message), keyed?.message);
+    const bare = await refusal({ cmd: ['claude', '-p', '--bare'] });
+    check('subscription guard: a --bare launch refuses with exit 78', bare?.exitCode === 78 && /--bare/.test(bare.message), bare?.message);
     const api = path.join(root, 'api-login'); fs.mkdirSync(api);
     fs.writeFileSync(path.join(api, '.credentials.json'), JSON.stringify({ claudeAiOauth: { accessToken: 'synthetic', scopes: ['user:inference'], subscriptionType: null } }));
     const unproven = await refusal({ env: { CLAUDE_CONFIG_DIR: api } });
