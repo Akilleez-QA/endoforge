@@ -4,9 +4,10 @@ import { analyzeSpecification } from '../../core/runtime/x1/oracle.mjs';
 import { heldOut } from '../P-56-model-effort/heldout.mjs';
 import { hNeeds } from '../P-56-model-effort/needs.mjs';
 
+export const failureSummary = failures => failures && JSON.stringify({ gates: Object.keys(failures.gates ?? {}).sort(), tests: (failures.tests ?? []).map(test => [test.name, test.expect, test.got]) });
 export function rivalRounds(rounds) {
   for (let i = 1; i < rounds.length; i++) {
-    if (rounds[i].failures && rounds[i - 1].failures && JSON.stringify(rounds[i].failures) === JSON.stringify(rounds[i - 1].failures)) return { rounds: rounds.slice(0, i + 1), stopped: true };
+    if (rounds[i].failures && rounds[i - 1].failures && failureSummary(rounds[i].failures) === failureSummary(rounds[i - 1].failures)) return { rounds: rounds.slice(0, i + 1), stopped: true };
   }
   return { rounds, stopped: false };
 }
