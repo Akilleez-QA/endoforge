@@ -154,10 +154,21 @@ for (const isolation of ['thread', 'process']) {
   test(`${isolation}: a job deadline during a hung warm() is not a start failure`, { timeout: 60000 }, async t => {
     const warmPort = fileURLToPath(new URL('./fixtures/warm-port.mjs', import.meta.url));
     const { job } = await fixture(t);
-    const pool = new IsolatePool({ hostPort: warmPort, size: 1, isolation, warm: { hang: true }, jobTimeoutMs: 100 });
+    const pool = new IsolatePool({ hostPort: warmPort, size: 1, isolation, warm: { hang: true }, jobDeadlineMs: 100 });
     t.after(() => pool.close());
     for (let attempt = 0; attempt < 5; attempt++) assert.equal((await pool.run(job())).reason, 'deadline');
     assert.equal(pool.halted, false);
+  });
+
+  test(`${isolation}: jobTimeoutMs does not run during a hung warm(), which warmTimeoutMs ends as a start failure`, { timeout: 60000 }, async t => {
+    const warmPort = fileURLToPath(new URL('./fixtures/warm-port.mjs', import.meta.url));
+    const { job } = await fixture(t);
+    const pool = new IsolatePool({ hostPort: warmPort, size: 1, isolation, warm: { hang: true }, jobTimeoutMs: 100, warmTimeoutMs: 400 });
+    t.after(() => pool.close());
+    const lost = await pool.run(job());
+    assert.deepEqual([lost.status, lost.reason, lost.error], ['outcome_unknown', 'worker_exit', 'ERR_WORKCELL_WARM_TIMEOUT']);
+    while (!pool.halted) assert.notEqual((await pool.run(job())).reason, 'deadline');
+    assert.equal((await pool.run(job())).reason, 'workcell_start_failed');
   });
 }
 

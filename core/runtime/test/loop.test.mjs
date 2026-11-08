@@ -3,6 +3,7 @@ import { mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync, unlinkSync, w
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { setTimeout as sleep } from 'node:timers/promises';
 import { Worker } from 'node:worker_threads';
 import test from 'node:test';
 import { ASC_PATH } from '../../../tools/asc/pin.mjs';
@@ -16,8 +17,10 @@ import { candidate as additionCandidate } from './fixtures/x1/candidate.mjs';
 import { forgeries } from './fixtures/x1/forgeries.mjs';
 import { good, seeds } from './fixtures/x1/seeds.mjs';
 import { python } from './fixtures/ledger-fixture.mjs';
+import { holdTimers } from './fixtures/hold-timers.mjs';
 
 const here = path => fileURLToPath(new URL(path, import.meta.url));
+const heldBudgetMs = 3599999;
 const stagePort = here('./fixtures/x1/loop-stage-port.mjs');
 const repairModule = here('./fixtures/x1/loop-repair.mjs');
 const x1Directory = here('../x1/');
@@ -267,7 +270,8 @@ test('commit rejects a receipt that does not bind the frozen evaluator', async t
 });
 
 test('repair rounds run in one cell, are bounded and cannot edit the oracle', { timeout: 60000 }, async t => {
-  const root = scratch(t), pool = createLoopPool({ primes: 1, jobTimeoutMs: 8000 });
+  const budget = holdTimers(t, heldBudgetMs);
+  const root = scratch(t), pool = createLoopPool({ primes: 1, jobTimeoutMs: heldBudgetMs });
   t.after(() => pool.close());
   await pool.ready();
   const wrong = { 'kernel.ts': seeds[1].kernel };
@@ -287,8 +291,12 @@ test('repair rounds run in one cell, are bounded and cannot edit the oracle', { 
   assert.equal(edited.promoted, false);
   assert.equal(edited.status, 'inconclusive');
   const spin = await task(pool, join(root, 'spin'));
-  const lost = await evaluateAndCommit(pool, { ...spin, candidate: { ...spin.candidate, files: { ...spin.candidate.files, ...wrong } },
+  assert.equal(budget.count, 0);
+  const spinning = evaluateAndCommit(pool, { ...spin, candidate: { ...spin.candidate, files: { ...spin.candidate.files, ...wrong } },
     repair: { module: repairModule, maxRounds: 2, options: { mode: 'spin' } } });
+  while (!budget.count) await sleep(5);
+  budget.fire();
+  const lost = await spinning;
   assert.equal(lost.promoted, false);
   assert.equal(lost.status, 'inconclusive');
   const again = await task(pool, join(root, 'after-spin'));
