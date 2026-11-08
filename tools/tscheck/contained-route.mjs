@@ -1,4 +1,7 @@
 import { createHash } from 'node:crypto';
+import { plan as planCapacity } from '../../core/runtime/capacity/plan.mjs';
+import { machine } from '../../core/runtime/capacity/probe.mjs';
+import { createCohortSet } from '../../core/runtime/contained/cohort-set.mjs';
 import { createContainedPool, createContainedRunner, LANE } from '../../core/runtime/contained/runner.mjs';
 import { typecheck } from './checker.mjs';
 import { cohortPrepare } from './cohort-check.mjs';
@@ -39,12 +42,17 @@ const compare = runs => {
   return { ...first, comparedRuns: 2 };
 };
 
-export function createContainedRoute({ width = 1, deadlineMs = 1000, layout = 'shared-reuse', check = layout === 'process-per-cell' ? 'supervisor' : 'fused', checker = {}, ...limits } = {}) {
+export function createContainedRoute({ width, placement, deadlineMs = 1000, layout = 'shared-reuse', check = layout === 'process-per-cell' ? 'supervisor' : 'fused', checker = {}, ...limits } = {}) {
   if (!Object.hasOwn(LAYOUTS, layout)) throw new TypeError(`unknown layout ${layout}`);
   if (!CHECKS.includes(check)) throw new TypeError(`unknown check placement ${check}`);
   if (check !== 'supervisor' && layout === 'process-per-cell') throw new TypeError('a cohort check needs a shared cohort layout');
   const { incremental = true, reuse = true, ...preparer } = checker;
-  const pool = LAYOUTS[layout]({ width, deadlineMs, ...limits, ...(check === 'supervisor' ? {} : { prepare: cohortPrepare({ layout: check, ...preparer, reuse, ...(incremental ? { baseline: projectFor(BASELINE) } : {}) }) }) });
+  const options = cohort => ({ deadlineMs, ...limits, ...cohort, ...(check === 'supervisor' ? {} : { prepare: cohortPrepare({ layout: check, ...preparer, reuse, ...(incremental ? { baseline: projectFor(BASELINE) } : {}) }) }) });
+  const shared = layout !== 'process-per-cell';
+  const capacity = width === undefined || placement ? placement ?? planCapacity() : null;
+  const pool = capacity && shared
+    ? createCohortSet({ plan: capacity, make: cohort => LAYOUTS[layout](options({ width: cohort.width, maxWidth: cohort.max, ...(cohort.cpus ? { affinity: cohort.cpus, taskset: machine().taskset ?? '/usr/bin/taskset' } : {}) })) })
+    : LAYOUTS[layout](options({ width: width ?? capacity.width }));
   const receipt = fields => ({ lane: LANE, route: ROUTE, ...fields });
   const score = (tests, result, fields) => {
     if (result.status !== 'completed') return receipt({ status: result.status, reason: result.reason, detail: result.detail, ...fields });
@@ -64,6 +72,7 @@ export function createContainedRoute({ width = 1, deadlineMs = 1000, layout = 's
   return {
     pool,
     placement: check,
+    capacity,
     ready: () => pool.ready(),
     close: () => pool.close(),
     async check(candidate, { contract } = {}) {

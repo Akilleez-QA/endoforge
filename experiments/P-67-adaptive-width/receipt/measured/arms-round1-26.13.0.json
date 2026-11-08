@@ -1,0 +1,7080 @@
+{
+ "node": "26.13.0",
+ "repo": "/mnt/cold-steam/factory-scratch/wt/fanout-20261106/p67-adaptive-width",
+ "label": "round1",
+ "mode": "arms",
+ "affinity": "0-31",
+ "probe": {
+  "os": "linux",
+  "cpus": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15,
+   16,
+   17,
+   18,
+   19,
+   20,
+   21,
+   22,
+   23,
+   24,
+   25,
+   26,
+   27,
+   28,
+   29,
+   30,
+   31
+  ],
+  "quota": 17.92,
+  "quotaCgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/heavy.slice",
+  "ownCgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/heavy.slice/heavy-p67-1779916-32ea0b67.scope",
+  "allotment": 17.92,
+  "domains": [
+   {
+    "cpus": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     16,
+     17,
+     18,
+     19,
+     20,
+     21,
+     22,
+     23
+    ],
+    "cores": 8
+   },
+   {
+    "cpus": [
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     24,
+     25,
+     26,
+     27,
+     28,
+     29,
+     30,
+     31
+    ],
+    "cores": 8
+   }
+  ],
+  "cores": 16,
+  "smt": true,
+  "memory": {
+   "availableMb": 84898,
+   "headroomMb": 54106,
+   "limitMb": 56320
+  },
+  "taskset": "/usr/bin/taskset",
+  "notes": []
+ },
+ "plan": {
+  "mode": "tuned",
+  "tuned": true,
+  "headroom": 1.25,
+  "allotment": 17.92,
+  "queues": 1,
+  "pinned": true,
+  "cohorts": [
+   {
+    "queue": 0,
+    "width": 8,
+    "max": 12,
+    "share": 8.96,
+    "cpus": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     16,
+     17,
+     18,
+     19,
+     20,
+     21,
+     22,
+     23
+    ]
+   },
+   {
+    "queue": 0,
+    "width": 8,
+    "max": 12,
+    "share": 8.96,
+    "cpus": [
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     24,
+     25,
+     26,
+     27,
+     28,
+     29,
+     30,
+     31
+    ]
+   }
+  ],
+  "width": 16,
+  "max": 24,
+  "notes": []
+ },
+ "demand": 48,
+ "rows": [
+  {
+   "arm": "1x16",
+   "seconds": 120,
+   "demand": 48,
+   "attempts": 50623,
+   "accepted": 50623,
+   "perSecond": 421.6,
+   "wallMs": 120067,
+   "cpuMsPerAccepted": 28.504,
+   "busyCpus": 12.02,
+   "perf": {
+    "cycles": 6020256378227,
+    "instructions": 3648841112842,
+    "ls_any_fills_from_sys.dram_io_all": 10555855283,
+    "ls_any_fills_from_sys.near_cache": 537875028
+   },
+   "perAttempt": {
+    "cycles": 118923343,
+    "instructions": 72078721,
+    "ls_any_fills_from_sys.dram_io_all": 208519,
+    "ls_any_fills_from_sys.near_cache": 10625
+   },
+   "ipc": 0.606,
+   "slice": {
+    "cpus": 17.1,
+    "throttledMs": 143872.9
+   },
+   "capacity": null,
+   "widths": [
+    [
+     1000,
+     16
+    ],
+    [
+     2000,
+     16
+    ],
+    [
+     3000,
+     16
+    ],
+    [
+     4001,
+     16
+    ],
+    [
+     5001,
+     16
+    ],
+    [
+     6001,
+     16
+    ],
+    [
+     7001,
+     16
+    ],
+    [
+     8001,
+     16
+    ],
+    [
+     9001,
+     16
+    ],
+    [
+     10001,
+     16
+    ],
+    [
+     11000,
+     16
+    ],
+    [
+     12001,
+     16
+    ],
+    [
+     13001,
+     16
+    ],
+    [
+     14001,
+     16
+    ],
+    [
+     15001,
+     16
+    ],
+    [
+     16001,
+     16
+    ],
+    [
+     17001,
+     16
+    ],
+    [
+     18001,
+     16
+    ],
+    [
+     19001,
+     16
+    ],
+    [
+     20001,
+     16
+    ],
+    [
+     21002,
+     16
+    ],
+    [
+     22002,
+     16
+    ],
+    [
+     23002,
+     16
+    ],
+    [
+     24002,
+     16
+    ],
+    [
+     25002,
+     16
+    ],
+    [
+     26002,
+     16
+    ],
+    [
+     27002,
+     16
+    ],
+    [
+     28002,
+     16
+    ],
+    [
+     29002,
+     16
+    ],
+    [
+     30002,
+     16
+    ],
+    [
+     31002,
+     16
+    ],
+    [
+     32002,
+     16
+    ],
+    [
+     33003,
+     16
+    ],
+    [
+     34003,
+     16
+    ],
+    [
+     35003,
+     16
+    ],
+    [
+     36003,
+     16
+    ],
+    [
+     37003,
+     16
+    ],
+    [
+     38004,
+     16
+    ],
+    [
+     39004,
+     16
+    ],
+    [
+     40004,
+     16
+    ],
+    [
+     41006,
+     16
+    ],
+    [
+     42006,
+     16
+    ],
+    [
+     43006,
+     16
+    ],
+    [
+     44007,
+     16
+    ],
+    [
+     45007,
+     16
+    ],
+    [
+     46007,
+     16
+    ],
+    [
+     47007,
+     16
+    ],
+    [
+     48007,
+     16
+    ],
+    [
+     49009,
+     16
+    ],
+    [
+     50009,
+     16
+    ],
+    [
+     51009,
+     16
+    ],
+    [
+     52009,
+     16
+    ],
+    [
+     53010,
+     16
+    ],
+    [
+     54010,
+     16
+    ],
+    [
+     55010,
+     16
+    ],
+    [
+     56010,
+     16
+    ],
+    [
+     57010,
+     16
+    ],
+    [
+     58010,
+     16
+    ],
+    [
+     59010,
+     16
+    ],
+    [
+     60010,
+     16
+    ],
+    [
+     61010,
+     16
+    ],
+    [
+     62012,
+     16
+    ],
+    [
+     63012,
+     16
+    ],
+    [
+     64011,
+     16
+    ],
+    [
+     65012,
+     16
+    ],
+    [
+     66013,
+     16
+    ],
+    [
+     67013,
+     16
+    ],
+    [
+     68014,
+     16
+    ],
+    [
+     69014,
+     16
+    ],
+    [
+     70014,
+     16
+    ],
+    [
+     71014,
+     16
+    ],
+    [
+     72014,
+     16
+    ],
+    [
+     73015,
+     16
+    ],
+    [
+     74015,
+     16
+    ],
+    [
+     75015,
+     16
+    ],
+    [
+     76015,
+     16
+    ],
+    [
+     77016,
+     16
+    ],
+    [
+     78017,
+     16
+    ],
+    [
+     79018,
+     16
+    ],
+    [
+     80020,
+     16
+    ],
+    [
+     81020,
+     16
+    ],
+    [
+     82020,
+     16
+    ],
+    [
+     83020,
+     16
+    ],
+    [
+     84020,
+     16
+    ],
+    [
+     85020,
+     16
+    ],
+    [
+     86020,
+     16
+    ],
+    [
+     87020,
+     16
+    ],
+    [
+     88021,
+     16
+    ],
+    [
+     89021,
+     16
+    ],
+    [
+     90021,
+     16
+    ],
+    [
+     91021,
+     16
+    ],
+    [
+     92021,
+     16
+    ],
+    [
+     93021,
+     16
+    ],
+    [
+     94021,
+     16
+    ],
+    [
+     95021,
+     16
+    ],
+    [
+     96022,
+     16
+    ],
+    [
+     97022,
+     16
+    ],
+    [
+     98022,
+     16
+    ],
+    [
+     99022,
+     16
+    ],
+    [
+     100031,
+     16
+    ],
+    [
+     101031,
+     16
+    ],
+    [
+     102032,
+     16
+    ],
+    [
+     103032,
+     16
+    ],
+    [
+     104032,
+     16
+    ],
+    [
+     105032,
+     16
+    ],
+    [
+     106032,
+     16
+    ],
+    [
+     107032,
+     16
+    ],
+    [
+     108032,
+     16
+    ],
+    [
+     109032,
+     16
+    ],
+    [
+     110032,
+     16
+    ],
+    [
+     111032,
+     16
+    ],
+    [
+     112033,
+     16
+    ],
+    [
+     113033,
+     16
+    ],
+    [
+     114033,
+     16
+    ],
+    [
+     115033,
+     16
+    ],
+    [
+     116034,
+     16
+    ],
+    [
+     117034,
+     16
+    ],
+    [
+     118034,
+     16
+    ],
+    [
+     119034,
+     16
+    ],
+    [
+     120034,
+     16
+    ]
+   ],
+   "tunerLog": null,
+   "tunerHistory": null,
+   "verdictDigest": "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709",
+   "verdicts": {
+    "k00": {
+     "status": "completed",
+     "reason": null,
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 7
+    },
+    "k00:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k00:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 0
+    },
+    "k01": {
+     "status": "completed",
+     "reason": null,
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 7
+    },
+    "k01:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k01:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 0
+    },
+    "k02": {
+     "status": "completed",
+     "reason": null,
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 7
+    },
+    "k02:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k02:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 0
+    },
+    "k03": {
+     "status": "completed",
+     "reason": null,
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 7
+    },
+    "k03:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k03:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 0
+    },
+    "k04": {
+     "status": "completed",
+     "reason": null,
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 7
+    },
+    "k04:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k04:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 0
+    },
+    "k05": {
+     "status": "completed",
+     "reason": null,
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 7
+    },
+    "k05:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k05:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 0
+    },
+    "k06": {
+     "status": "completed",
+     "reason": null,
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 7
+    },
+    "k06:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k06:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 0
+    },
+    "k07": {
+     "status": "completed",
+     "reason": null,
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 7
+    },
+    "k07:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k07:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 0
+    },
+    "k08": {
+     "status": "completed",
+     "reason": null,
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 7
+    },
+    "k08:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k08:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 0
+    },
+    "k09": {
+     "status": "completed",
+     "reason": null,
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 7
+    },
+    "k09:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k09:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 0
+    },
+    "k10": {
+     "status": "completed",
+     "reason": null,
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 7
+    },
+    "k10:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k10:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 0
+    },
+    "k11": {
+     "status": "completed",
+     "reason": null,
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 7
+    },
+    "k11:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k11:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 0
+    },
+    "k12": {
+     "status": "completed",
+     "reason": null,
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 7
+    },
+    "k12:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k12:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 0
+    },
+    "k13": {
+     "status": "completed",
+     "reason": null,
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 7
+    },
+    "k13:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k13:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 0
+    },
+    "k14": {
+     "status": "completed",
+     "reason": null,
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 7
+    },
+    "k14:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k14:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 0
+    },
+    "k15": {
+     "status": "completed",
+     "reason": null,
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 7
+    },
+    "k15:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k15:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 0
+    },
+    "k16": {
+     "status": "completed",
+     "reason": null,
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 7
+    },
+    "k16:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k16:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 0
+    },
+    "k17": {
+     "status": "completed",
+     "reason": null,
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 7
+    },
+    "k17:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k17:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 0
+    },
+    "k18": {
+     "status": "completed",
+     "reason": null,
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 7
+    },
+    "k18:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k18:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 0
+    },
+    "k19": {
+     "status": "completed",
+     "reason": null,
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 7
+    },
+    "k19:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k19:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 0
+    },
+    "spin:deadline": {
+     "status": "refused",
+     "reason": "deadline",
+     "output": null,
+     "passed": null
+    }
+   },
+   "loadStart": 13.12,
+   "loadEnd": 34.65,
+   "loaded": true
+  },
+  {
+   "arm": "2x8",
+   "seconds": 120,
+   "demand": 48,
+   "attempts": 61311,
+   "accepted": 61311,
+   "perSecond": 510.4,
+   "wallMs": 120124,
+   "cpuMsPerAccepted": 28.663,
+   "busyCpus": 14.63,
+   "perf": {
+    "cycles": 7288531949247,
+    "instructions": 4440368881083,
+    "ls_any_fills_from_sys.dram_io_all": 12440694614,
+    "ls_any_fills_from_sys.near_cache": 640921154
+   },
+   "perAttempt": {
+    "cycles": 118878047,
+    "instructions": 72423690,
+    "ls_any_fills_from_sys.dram_io_all": 202911,
+    "ls_any_fills_from_sys.near_cache": 10454
+   },
+   "ipc": 0.609,
+   "slice": {
+    "cpus": 17.88,
+    "throttledMs": 232548
+   },
+   "capacity": {
+    "mode": "fixed",
+    "cohorts": [
+     {
+      "width": 8,
+      "max": 8,
+      "pinned": false
+     },
+     {
+      "width": 8,
+      "max": 8,
+      "pinned": false
+     }
+    ]
+   },
+   "widths": [
+    [
+     1000,
+     16
+    ],
+    [
+     2000,
+     16
+    ],
+    [
+     3000,
+     16
+    ],
+    [
+     4000,
+     16
+    ],
+    [
+     5000,
+     16
+    ],
+    [
+     6000,
+     16
+    ],
+    [
+     7000,
+     16
+    ],
+    [
+     8000,
+     16
+    ],
+    [
+     8999,
+     16
+    ],
+    [
+     10000,
+     16
+    ],
+    [
+     11000,
+     16
+    ],
+    [
+     12000,
+     16
+    ],
+    [
+     13000,
+     16
+    ],
+    [
+     14000,
+     16
+    ],
+    [
+     15000,
+     16
+    ],
+    [
+     16000,
+     16
+    ],
+    [
+     17001,
+     16
+    ],
+    [
+     18001,
+     16
+    ],
+    [
+     19001,
+     16
+    ],
+    [
+     20001,
+     16
+    ],
+    [
+     21001,
+     16
+    ],
+    [
+     22002,
+     16
+    ],
+    [
+     23002,
+     16
+    ],
+    [
+     24002,
+     16
+    ],
+    [
+     25003,
+     16
+    ],
+    [
+     26004,
+     16
+    ],
+    [
+     27004,
+     16
+    ],
+    [
+     28004,
+     16
+    ],
+    [
+     29004,
+     16
+    ],
+    [
+     30004,
+     16
+    ],
+    [
+     31005,
+     16
+    ],
+    [
+     32005,
+     16
+    ],
+    [
+     33004,
+     16
+    ],
+    [
+     34005,
+     16
+    ],
+    [
+     35005,
+     16
+    ],
+    [
+     36005,
+     16
+    ],
+    [
+     37005,
+     16
+    ],
+    [
+     38005,
+     16
+    ],
+    [
+     39005,
+     16
+    ],
+    [
+     40006,
+     16
+    ],
+    [
+     41006,
+     16
+    ],
+    [
+     42007,
+     16
+    ],
+    [
+     43007,
+     16
+    ],
+    [
+     44007,
+     16
+    ],
+    [
+     45007,
+     16
+    ],
+    [
+     46007,
+     16
+    ],
+    [
+     47008,
+     16
+    ],
+    [
+     48008,
+     16
+    ],
+    [
+     49008,
+     16
+    ],
+    [
+     50008,
+     16
+    ],
+    [
+     51008,
+     16
+    ],
+    [
+     52008,
+     16
+    ],
+    [
+     53009,
+     16
+    ],
+    [
+     54009,
+     16
+    ],
+    [
+     55009,
+     16
+    ],
+    [
+     56009,
+     16
+    ],
+    [
+     57010,
+     16
+    ],
+    [
+     58010,
+     16
+    ],
+    [
+     59010,
+     16
+    ],
+    [
+     60013,
+     16
+    ],
+    [
+     61014,
+     16
+    ],
+    [
+     62014,
+     16
+    ],
+    [
+     63014,
+     16
+    ],
+    [
+     64014,
+     16
+    ],
+    [
+     65015,
+     16
+    ],
+    [
+     66014,
+     16
+    ],
+    [
+     67016,
+     16
+    ],
+    [
+     68017,
+     16
+    ],
+    [
+     69034,
+     16
+    ],
+    [
+     70034,
+     16
+    ],
+    [
+     71034,
+     16
+    ],
+    [
+     72034,
+     16
+    ],
+    [
+     73034,
+     16
+    ],
+    [
+     74034,
+     16
+    ],
+    [
+     75035,
+     16
+    ],
+    [
+     76035,
+     16
+    ],
+    [
+     77035,
+     16
+    ],
+    [
+     78036,
+     16
+    ],
+    [
+     79036,
+     16
+    ],
+    [
+     80036,
+     16
+    ],
+    [
+     81036,
+     16
+    ],
+    [
+     82036,
+     16
+    ],
+    [
+     83037,
+     16
+    ],
+    [
+     84037,
+     16
+    ],
+    [
+     85037,
+     16
+    ],
+    [
+     86038,
+     16
+    ],
+    [
+     87038,
+     16
+    ],
+    [
+     88038,
+     16
+    ],
+    [
+     89038,
+     16
+    ],
+    [
+     90038,
+     16
+    ],
+    [
+     91038,
+     16
+    ],
+    [
+     92039,
+     16
+    ],
+    [
+     93039,
+     16
+    ],
+    [
+     94039,
+     16
+    ],
+    [
+     95039,
+     16
+    ],
+    [
+     96039,
+     16
+    ],
+    [
+     97039,
+     16
+    ],
+    [
+     98039,
+     16
+    ],
+    [
+     99039,
+     16
+    ],
+    [
+     100039,
+     16
+    ],
+    [
+     101039,
+     16
+    ],
+    [
+     102039,
+     16
+    ],
+    [
+     103039,
+     16
+    ],
+    [
+     104039,
+     16
+    ],
+    [
+     105039,
+     16
+    ],
+    [
+     106042,
+     16
+    ],
+    [
+     107045,
+     16
+    ],
+    [
+     108045,
+     16
+    ],
+    [
+     109045,
+     16
+    ],
+    [
+     110044,
+     16
+    ],
+    [
+     111044,
+     16
+    ],
+    [
+     112045,
+     16
+    ],
+    [
+     113045,
+     16
+    ],
+    [
+     114045,
+     16
+    ],
+    [
+     115045,
+     16
+    ],
+    [
+     116045,
+     16
+    ],
+    [
+     117045,
+     16
+    ],
+    [
+     118045,
+     16
+    ],
+    [
+     119045,
+     16
+    ],
+    [
+     120045,
+     16
+    ]
+   ],
+   "tunerLog": [],
+   "tunerHistory": null,
+   "verdictDigest": "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709",
+   "verdicts": {
+    "k00": {
+     "status": "completed",
+     "reason": null,
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 7
+    },
+    "k00:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k00:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 0
+    },
+    "k01": {
+     "status": "completed",
+     "reason": null,
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 7
+    },
+    "k01:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k01:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 0
+    },
+    "k02": {
+     "status": "completed",
+     "reason": null,
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 7
+    },
+    "k02:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k02:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 0
+    },
+    "k03": {
+     "status": "completed",
+     "reason": null,
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 7
+    },
+    "k03:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k03:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 0
+    },
+    "k04": {
+     "status": "completed",
+     "reason": null,
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 7
+    },
+    "k04:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k04:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 0
+    },
+    "k05": {
+     "status": "completed",
+     "reason": null,
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 7
+    },
+    "k05:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k05:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 0
+    },
+    "k06": {
+     "status": "completed",
+     "reason": null,
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 7
+    },
+    "k06:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k06:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 0
+    },
+    "k07": {
+     "status": "completed",
+     "reason": null,
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 7
+    },
+    "k07:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k07:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 0
+    },
+    "k08": {
+     "status": "completed",
+     "reason": null,
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 7
+    },
+    "k08:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k08:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 0
+    },
+    "k09": {
+     "status": "completed",
+     "reason": null,
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 7
+    },
+    "k09:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k09:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 0
+    },
+    "k10": {
+     "status": "completed",
+     "reason": null,
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 7
+    },
+    "k10:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k10:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 0
+    },
+    "k11": {
+     "status": "completed",
+     "reason": null,
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 7
+    },
+    "k11:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k11:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 0
+    },
+    "k12": {
+     "status": "completed",
+     "reason": null,
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 7
+    },
+    "k12:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k12:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 0
+    },
+    "k13": {
+     "status": "completed",
+     "reason": null,
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 7
+    },
+    "k13:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k13:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 0
+    },
+    "k14": {
+     "status": "completed",
+     "reason": null,
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 7
+    },
+    "k14:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k14:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 0
+    },
+    "k15": {
+     "status": "completed",
+     "reason": null,
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 7
+    },
+    "k15:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k15:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 0
+    },
+    "k16": {
+     "status": "completed",
+     "reason": null,
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 7
+    },
+    "k16:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k16:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 0
+    },
+    "k17": {
+     "status": "completed",
+     "reason": null,
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 7
+    },
+    "k17:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k17:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 0
+    },
+    "k18": {
+     "status": "completed",
+     "reason": null,
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 7
+    },
+    "k18:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k18:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 0
+    },
+    "k19": {
+     "status": "completed",
+     "reason": null,
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 7
+    },
+    "k19:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k19:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 0
+    },
+    "spin:deadline": {
+     "status": "refused",
+     "reason": "deadline",
+     "output": null,
+     "passed": null
+    }
+   },
+   "loadStart": 14.96,
+   "loadEnd": 22.22,
+   "loaded": true
+  },
+  {
+   "arm": "4x4",
+   "seconds": 120,
+   "demand": 48,
+   "attempts": 43278,
+   "accepted": 43278,
+   "perSecond": 360.3,
+   "wallMs": 120122,
+   "cpuMsPerAccepted": 41.958,
+   "busyCpus": 15.12,
+   "perf": {
+    "cycles": 7603072364444,
+    "instructions": 3156013125337,
+    "ls_any_fills_from_sys.dram_io_all": 10492054429,
+    "ls_any_fills_from_sys.near_cache": 380138076
+   },
+   "perAttempt": {
+    "cycles": 175679846,
+    "instructions": 72924191,
+    "ls_any_fills_from_sys.dram_io_all": 242434,
+    "ls_any_fills_from_sys.near_cache": 8784
+   },
+   "ipc": 0.415,
+   "slice": {
+    "cpus": 17.73,
+    "throttledMs": 142501.7
+   },
+   "capacity": {
+    "mode": "fixed",
+    "cohorts": [
+     {
+      "width": 4,
+      "max": 4,
+      "pinned": false
+     },
+     {
+      "width": 4,
+      "max": 4,
+      "pinned": false
+     },
+     {
+      "width": 4,
+      "max": 4,
+      "pinned": false
+     },
+     {
+      "width": 4,
+      "max": 4,
+      "pinned": false
+     }
+    ]
+   },
+   "widths": [
+    [
+     1000,
+     16
+    ],
+    [
+     2000,
+     16
+    ],
+    [
+     3000,
+     16
+    ],
+    [
+     4000,
+     16
+    ],
+    [
+     5001,
+     16
+    ],
+    [
+     6002,
+     16
+    ],
+    [
+     7002,
+     16
+    ],
+    [
+     8002,
+     16
+    ],
+    [
+     9002,
+     16
+    ],
+    [
+     10002,
+     16
+    ],
+    [
+     11002,
+     16
+    ],
+    [
+     12002,
+     16
+    ],
+    [
+     13006,
+     16
+    ],
+    [
+     14007,
+     16
+    ],
+    [
+     15008,
+     16
+    ],
+    [
+     16008,
+     16
+    ],
+    [
+     17008,
+     16
+    ],
+    [
+     18008,
+     16
+    ],
+    [
+     19008,
+     16
+    ],
+    [
+     20008,
+     16
+    ],
+    [
+     21008,
+     16
+    ],
+    [
+     22008,
+     16
+    ],
+    [
+     23007,
+     16
+    ],
+    [
+     24008,
+     16
+    ],
+    [
+     25008,
+     16
+    ],
+    [
+     26008,
+     16
+    ],
+    [
+     27008,
+     16
+    ],
+    [
+     28008,
+     16
+    ],
+    [
+     29008,
+     16
+    ],
+    [
+     30009,
+     16
+    ],
+    [
+     31010,
+     16
+    ],
+    [
+     32010,
+     16
+    ],
+    [
+     33010,
+     16
+    ],
+    [
+     34011,
+     16
+    ],
+    [
+     35013,
+     16
+    ],
+    [
+     36013,
+     16
+    ],
+    [
+     37013,
+     16
+    ],
+    [
+     38012,
+     16
+    ],
+    [
+     39013,
+     16
+    ],
+    [
+     40014,
+     16
+    ],
+    [
+     41014,
+     16
+    ],
+    [
+     42017,
+     16
+    ],
+    [
+     43017,
+     16
+    ],
+    [
+     44018,
+     16
+    ],
+    [
+     45018,
+     16
+    ],
+    [
+     46019,
+     16
+    ],
+    [
+     47019,
+     16
+    ],
+    [
+     48019,
+     16
+    ],
+    [
+     49020,
+     16
+    ],
+    [
+     50020,
+     16
+    ],
+    [
+     51020,
+     16
+    ],
+    [
+     52021,
+     16
+    ],
+    [
+     53021,
+     16
+    ],
+    [
+     54020,
+     16
+    ],
+    [
+     55027,
+     16
+    ],
+    [
+     56027,
+     16
+    ],
+    [
+     57026,
+     16
+    ],
+    [
+     58026,
+     16
+    ],
+    [
+     59027,
+     16
+    ],
+    [
+     60027,
+     16
+    ],
+    [
+     61027,
+     16
+    ],
+    [
+     62027,
+     16
+    ],
+    [
+     63028,
+     16
+    ],
+    [
+     64028,
+     16
+    ],
+    [
+     65028,
+     16
+    ],
+    [
+     66029,
+     16
+    ],
+    [
+     67030,
+     16
+    ],
+    [
+     68031,
+     16
+    ],
+    [
+     69032,
+     16
+    ],
+    [
+     70034,
+     16
+    ],
+    [
+     71034,
+     16
+    ],
+    [
+     72034,
+     16
+    ],
+    [
+     73034,
+     16
+    ],
+    [
+     74034,
+     16
+    ],
+    [
+     75036,
+     16
+    ],
+    [
+     76036,
+     16
+    ],
+    [
+     77036,
+     16
+    ],
+    [
+     78035,
+     16
+    ],
+    [
+     79037,
+     16
+    ],
+    [
+     80037,
+     16
+    ],
+    [
+     81039,
+     16
+    ],
+    [
+     82039,
+     16
+    ],
+    [
+     83039,
+     16
+    ],
+    [
+     84039,
+     16
+    ],
+    [
+     85039,
+     16
+    ],
+    [
+     86039,
+     16
+    ],
+    [
+     87040,
+     16
+    ],
+    [
+     88040,
+     16
+    ],
+    [
+     89040,
+     16
+    ],
+    [
+     90041,
+     16
+    ],
+    [
+     91041,
+     16
+    ],
+    [
+     92041,
+     16
+    ],
+    [
+     93040,
+     16
+    ],
+    [
+     94041,
+     16
+    ],
+    [
+     95041,
+     16
+    ],
+    [
+     96041,
+     16
+    ],
+    [
+     97042,
+     16
+    ],
+    [
+     98042,
+     16
+    ],
+    [
+     99044,
+     16
+    ],
+    [
+     100044,
+     16
+    ],
+    [
+     101043,
+     16
+    ],
+    [
+     102045,
+     16
+    ],
+    [
+     103045,
+     16
+    ],
+    [
+     104045,
+     16
+    ],
+    [
+     105044,
+     16
+    ],
+    [
+     106045,
+     16
+    ],
+    [
+     107044,
+     16
+    ],
+    [
+     108045,
+     16
+    ],
+    [
+     109045,
+     16
+    ],
+    [
+     110044,
+     16
+    ],
+    [
+     111046,
+     16
+    ],
+    [
+     112046,
+     16
+    ],
+    [
+     113046,
+     16
+    ],
+    [
+     114046,
+     16
+    ],
+    [
+     115046,
+     16
+    ],
+    [
+     116048,
+     16
+    ],
+    [
+     117048,
+     16
+    ],
+    [
+     118048,
+     16
+    ],
+    [
+     119048,
+     16
+    ],
+    [
+     120049,
+     16
+    ]
+   ],
+   "tunerLog": [],
+   "tunerHistory": null,
+   "verdictDigest": "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709",
+   "verdicts": {
+    "k00": {
+     "status": "completed",
+     "reason": null,
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 7
+    },
+    "k00:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k00:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 0
+    },
+    "k01": {
+     "status": "completed",
+     "reason": null,
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 7
+    },
+    "k01:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k01:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 0
+    },
+    "k02": {
+     "status": "completed",
+     "reason": null,
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 7
+    },
+    "k02:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k02:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 0
+    },
+    "k03": {
+     "status": "completed",
+     "reason": null,
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 7
+    },
+    "k03:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k03:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 0
+    },
+    "k04": {
+     "status": "completed",
+     "reason": null,
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 7
+    },
+    "k04:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k04:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 0
+    },
+    "k05": {
+     "status": "completed",
+     "reason": null,
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 7
+    },
+    "k05:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k05:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 0
+    },
+    "k06": {
+     "status": "completed",
+     "reason": null,
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 7
+    },
+    "k06:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k06:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 0
+    },
+    "k07": {
+     "status": "completed",
+     "reason": null,
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 7
+    },
+    "k07:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k07:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 0
+    },
+    "k08": {
+     "status": "completed",
+     "reason": null,
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 7
+    },
+    "k08:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k08:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 0
+    },
+    "k09": {
+     "status": "completed",
+     "reason": null,
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 7
+    },
+    "k09:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k09:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 0
+    },
+    "k10": {
+     "status": "completed",
+     "reason": null,
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 7
+    },
+    "k10:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k10:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 0
+    },
+    "k11": {
+     "status": "completed",
+     "reason": null,
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 7
+    },
+    "k11:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k11:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 0
+    },
+    "k12": {
+     "status": "completed",
+     "reason": null,
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 7
+    },
+    "k12:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k12:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 0
+    },
+    "k13": {
+     "status": "completed",
+     "reason": null,
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 7
+    },
+    "k13:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k13:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 0
+    },
+    "k14": {
+     "status": "completed",
+     "reason": null,
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 7
+    },
+    "k14:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k14:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 0
+    },
+    "k15": {
+     "status": "completed",
+     "reason": null,
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 7
+    },
+    "k15:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k15:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 0
+    },
+    "k16": {
+     "status": "completed",
+     "reason": null,
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 7
+    },
+    "k16:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k16:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 0
+    },
+    "k17": {
+     "status": "completed",
+     "reason": null,
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 7
+    },
+    "k17:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k17:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 0
+    },
+    "k18": {
+     "status": "completed",
+     "reason": null,
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 7
+    },
+    "k18:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k18:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 0
+    },
+    "k19": {
+     "status": "completed",
+     "reason": null,
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 7
+    },
+    "k19:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k19:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 0
+    },
+    "spin:deadline": {
+     "status": "refused",
+     "reason": "deadline",
+     "output": null,
+     "passed": null
+    }
+   },
+   "loadStart": 15.58,
+   "loadEnd": 34.32,
+   "loaded": true
+  },
+  {
+   "arm": "4x4-pinned",
+   "seconds": 120,
+   "demand": 48,
+   "attempts": 59826,
+   "accepted": 59826,
+   "perSecond": 498.2,
+   "wallMs": 120086,
+   "cpuMsPerAccepted": 29.041,
+   "busyCpus": 14.47,
+   "perf": {
+    "cycles": 7465625851297,
+    "instructions": 4332394920089,
+    "ls_any_fills_from_sys.dram_io_all": 12824031531,
+    "ls_any_fills_from_sys.near_cache": 20642336
+   },
+   "perAttempt": {
+    "cycles": 124788986,
+    "instructions": 72416590,
+    "ls_any_fills_from_sys.dram_io_all": 214355,
+    "ls_any_fills_from_sys.near_cache": 345
+   },
+   "ipc": 0.58,
+   "slice": {
+    "cpus": 17.91,
+    "throttledMs": 359569.3
+   },
+   "capacity": {
+    "mode": "fixed",
+    "cohorts": [
+     {
+      "width": 4,
+      "max": 4,
+      "pinned": true
+     },
+     {
+      "width": 4,
+      "max": 4,
+      "pinned": true
+     },
+     {
+      "width": 4,
+      "max": 4,
+      "pinned": true
+     },
+     {
+      "width": 4,
+      "max": 4,
+      "pinned": true
+     }
+    ]
+   },
+   "widths": [
+    [
+     1000,
+     16
+    ],
+    [
+     2000,
+     16
+    ],
+    [
+     3000,
+     16
+    ],
+    [
+     4000,
+     16
+    ],
+    [
+     5000,
+     16
+    ],
+    [
+     6000,
+     16
+    ],
+    [
+     7000,
+     16
+    ],
+    [
+     8000,
+     16
+    ],
+    [
+     9000,
+     16
+    ],
+    [
+     10001,
+     16
+    ],
+    [
+     11002,
+     16
+    ],
+    [
+     12002,
+     16
+    ],
+    [
+     13002,
+     16
+    ],
+    [
+     14002,
+     16
+    ],
+    [
+     15002,
+     16
+    ],
+    [
+     16002,
+     16
+    ],
+    [
+     17002,
+     16
+    ],
+    [
+     18002,
+     16
+    ],
+    [
+     19002,
+     16
+    ],
+    [
+     20002,
+     16
+    ],
+    [
+     21002,
+     16
+    ],
+    [
+     22003,
+     16
+    ],
+    [
+     23003,
+     16
+    ],
+    [
+     24003,
+     16
+    ],
+    [
+     25003,
+     16
+    ],
+    [
+     26003,
+     16
+    ],
+    [
+     27003,
+     16
+    ],
+    [
+     28003,
+     16
+    ],
+    [
+     29004,
+     16
+    ],
+    [
+     30003,
+     16
+    ],
+    [
+     31003,
+     16
+    ],
+    [
+     32004,
+     16
+    ],
+    [
+     33004,
+     16
+    ],
+    [
+     34004,
+     16
+    ],
+    [
+     35005,
+     16
+    ],
+    [
+     36005,
+     16
+    ],
+    [
+     37005,
+     16
+    ],
+    [
+     38005,
+     16
+    ],
+    [
+     39005,
+     16
+    ],
+    [
+     40005,
+     16
+    ],
+    [
+     41006,
+     16
+    ],
+    [
+     42006,
+     16
+    ],
+    [
+     43006,
+     16
+    ],
+    [
+     44006,
+     16
+    ],
+    [
+     45006,
+     16
+    ],
+    [
+     46006,
+     16
+    ],
+    [
+     47006,
+     16
+    ],
+    [
+     48006,
+     16
+    ],
+    [
+     49006,
+     16
+    ],
+    [
+     50006,
+     16
+    ],
+    [
+     51006,
+     16
+    ],
+    [
+     52006,
+     16
+    ],
+    [
+     53005,
+     16
+    ],
+    [
+     54007,
+     16
+    ],
+    [
+     55008,
+     16
+    ],
+    [
+     56008,
+     16
+    ],
+    [
+     57008,
+     16
+    ],
+    [
+     58008,
+     16
+    ],
+    [
+     59008,
+     16
+    ],
+    [
+     60008,
+     16
+    ],
+    [
+     61008,
+     16
+    ],
+    [
+     62008,
+     16
+    ],
+    [
+     63008,
+     16
+    ],
+    [
+     64012,
+     16
+    ],
+    [
+     65013,
+     16
+    ],
+    [
+     66014,
+     16
+    ],
+    [
+     67020,
+     16
+    ],
+    [
+     68019,
+     16
+    ],
+    [
+     69020,
+     16
+    ],
+    [
+     70020,
+     16
+    ],
+    [
+     71020,
+     16
+    ],
+    [
+     72020,
+     16
+    ],
+    [
+     73020,
+     16
+    ],
+    [
+     74020,
+     16
+    ],
+    [
+     75022,
+     16
+    ],
+    [
+     76022,
+     16
+    ],
+    [
+     77023,
+     16
+    ],
+    [
+     78023,
+     16
+    ],
+    [
+     79023,
+     16
+    ],
+    [
+     80024,
+     16
+    ],
+    [
+     81024,
+     16
+    ],
+    [
+     82024,
+     16
+    ],
+    [
+     83024,
+     16
+    ],
+    [
+     84024,
+     16
+    ],
+    [
+     85024,
+     16
+    ],
+    [
+     86023,
+     16
+    ],
+    [
+     87024,
+     16
+    ],
+    [
+     88024,
+     16
+    ],
+    [
+     89025,
+     16
+    ],
+    [
+     90025,
+     16
+    ],
+    [
+     91026,
+     16
+    ],
+    [
+     92026,
+     16
+    ],
+    [
+     93026,
+     16
+    ],
+    [
+     94026,
+     16
+    ],
+    [
+     95026,
+     16
+    ],
+    [
+     96027,
+     16
+    ],
+    [
+     97027,
+     16
+    ],
+    [
+     98028,
+     16
+    ],
+    [
+     99028,
+     16
+    ],
+    [
+     100029,
+     16
+    ],
+    [
+     101029,
+     16
+    ],
+    [
+     102030,
+     16
+    ],
+    [
+     103031,
+     16
+    ],
+    [
+     104031,
+     16
+    ],
+    [
+     105031,
+     16
+    ],
+    [
+     106031,
+     16
+    ],
+    [
+     107031,
+     16
+    ],
+    [
+     108031,
+     16
+    ],
+    [
+     109031,
+     16
+    ],
+    [
+     110031,
+     16
+    ],
+    [
+     111032,
+     16
+    ],
+    [
+     112032,
+     16
+    ],
+    [
+     113032,
+     16
+    ],
+    [
+     114032,
+     16
+    ],
+    [
+     115033,
+     16
+    ],
+    [
+     116033,
+     16
+    ],
+    [
+     117033,
+     16
+    ],
+    [
+     118033,
+     16
+    ],
+    [
+     119033,
+     16
+    ],
+    [
+     120033,
+     16
+    ]
+   ],
+   "tunerLog": [],
+   "tunerHistory": null,
+   "verdictDigest": "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709",
+   "verdicts": {
+    "k00": {
+     "status": "completed",
+     "reason": null,
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 7
+    },
+    "k00:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k00:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 0
+    },
+    "k01": {
+     "status": "completed",
+     "reason": null,
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 7
+    },
+    "k01:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k01:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 0
+    },
+    "k02": {
+     "status": "completed",
+     "reason": null,
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 7
+    },
+    "k02:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k02:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 0
+    },
+    "k03": {
+     "status": "completed",
+     "reason": null,
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 7
+    },
+    "k03:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k03:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 0
+    },
+    "k04": {
+     "status": "completed",
+     "reason": null,
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 7
+    },
+    "k04:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k04:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 0
+    },
+    "k05": {
+     "status": "completed",
+     "reason": null,
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 7
+    },
+    "k05:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k05:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 0
+    },
+    "k06": {
+     "status": "completed",
+     "reason": null,
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 7
+    },
+    "k06:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k06:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 0
+    },
+    "k07": {
+     "status": "completed",
+     "reason": null,
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 7
+    },
+    "k07:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k07:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 0
+    },
+    "k08": {
+     "status": "completed",
+     "reason": null,
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 7
+    },
+    "k08:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k08:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 0
+    },
+    "k09": {
+     "status": "completed",
+     "reason": null,
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 7
+    },
+    "k09:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k09:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 0
+    },
+    "k10": {
+     "status": "completed",
+     "reason": null,
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 7
+    },
+    "k10:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k10:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 0
+    },
+    "k11": {
+     "status": "completed",
+     "reason": null,
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 7
+    },
+    "k11:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k11:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 0
+    },
+    "k12": {
+     "status": "completed",
+     "reason": null,
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 7
+    },
+    "k12:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k12:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 0
+    },
+    "k13": {
+     "status": "completed",
+     "reason": null,
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 7
+    },
+    "k13:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k13:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 0
+    },
+    "k14": {
+     "status": "completed",
+     "reason": null,
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 7
+    },
+    "k14:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k14:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 0
+    },
+    "k15": {
+     "status": "completed",
+     "reason": null,
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 7
+    },
+    "k15:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k15:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 0
+    },
+    "k16": {
+     "status": "completed",
+     "reason": null,
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 7
+    },
+    "k16:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k16:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 0
+    },
+    "k17": {
+     "status": "completed",
+     "reason": null,
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 7
+    },
+    "k17:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k17:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 0
+    },
+    "k18": {
+     "status": "completed",
+     "reason": null,
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 7
+    },
+    "k18:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k18:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 0
+    },
+    "k19": {
+     "status": "completed",
+     "reason": null,
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 7
+    },
+    "k19:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k19:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 0
+    },
+    "spin:deadline": {
+     "status": "refused",
+     "reason": "deadline",
+     "output": null,
+     "passed": null
+    }
+   },
+   "loadStart": 15.97,
+   "loadEnd": 30.65,
+   "loaded": true
+  },
+  {
+   "arm": "2x8-pinned",
+   "seconds": 120,
+   "demand": 48,
+   "attempts": 62043,
+   "accepted": 62043,
+   "perSecond": 516.6,
+   "wallMs": 120107,
+   "cpuMsPerAccepted": 25.433,
+   "busyCpus": 13.14,
+   "perf": {
+    "cycles": 6791612190666,
+    "instructions": 4476464224283,
+    "ls_any_fills_from_sys.dram_io_all": 12416766527,
+    "ls_any_fills_from_sys.near_cache": 19453091
+   },
+   "perAttempt": {
+    "cycles": 109466212,
+    "instructions": 72150996,
+    "ls_any_fills_from_sys.dram_io_all": 200132,
+    "ls_any_fills_from_sys.near_cache": 314
+   },
+   "ipc": 0.659,
+   "slice": {
+    "cpus": 17.69,
+    "throttledMs": 372900.1
+   },
+   "capacity": {
+    "mode": "fixed",
+    "cohorts": [
+     {
+      "width": 8,
+      "max": 8,
+      "pinned": true
+     },
+     {
+      "width": 8,
+      "max": 8,
+      "pinned": true
+     }
+    ]
+   },
+   "widths": [
+    [
+     1000,
+     16
+    ],
+    [
+     2001,
+     16
+    ],
+    [
+     3002,
+     16
+    ],
+    [
+     4002,
+     16
+    ],
+    [
+     5003,
+     16
+    ],
+    [
+     6002,
+     16
+    ],
+    [
+     7003,
+     16
+    ],
+    [
+     8002,
+     16
+    ],
+    [
+     9002,
+     16
+    ],
+    [
+     10003,
+     16
+    ],
+    [
+     11003,
+     16
+    ],
+    [
+     12004,
+     16
+    ],
+    [
+     13005,
+     16
+    ],
+    [
+     14005,
+     16
+    ],
+    [
+     15005,
+     16
+    ],
+    [
+     16006,
+     16
+    ],
+    [
+     17006,
+     16
+    ],
+    [
+     18006,
+     16
+    ],
+    [
+     19006,
+     16
+    ],
+    [
+     20007,
+     16
+    ],
+    [
+     21007,
+     16
+    ],
+    [
+     22007,
+     16
+    ],
+    [
+     23007,
+     16
+    ],
+    [
+     24008,
+     16
+    ],
+    [
+     25009,
+     16
+    ],
+    [
+     26009,
+     16
+    ],
+    [
+     27009,
+     16
+    ],
+    [
+     28012,
+     16
+    ],
+    [
+     29043,
+     16
+    ],
+    [
+     30043,
+     16
+    ],
+    [
+     31043,
+     16
+    ],
+    [
+     32044,
+     16
+    ],
+    [
+     33044,
+     16
+    ],
+    [
+     34045,
+     16
+    ],
+    [
+     35044,
+     16
+    ],
+    [
+     36046,
+     16
+    ],
+    [
+     37047,
+     16
+    ],
+    [
+     38047,
+     16
+    ],
+    [
+     39048,
+     16
+    ],
+    [
+     40049,
+     16
+    ],
+    [
+     41050,
+     16
+    ],
+    [
+     42050,
+     16
+    ],
+    [
+     43050,
+     16
+    ],
+    [
+     44050,
+     16
+    ],
+    [
+     45049,
+     16
+    ],
+    [
+     46050,
+     16
+    ],
+    [
+     47049,
+     16
+    ],
+    [
+     48050,
+     16
+    ],
+    [
+     49049,
+     16
+    ],
+    [
+     50050,
+     16
+    ],
+    [
+     51050,
+     16
+    ],
+    [
+     52050,
+     16
+    ],
+    [
+     53050,
+     16
+    ],
+    [
+     54050,
+     16
+    ],
+    [
+     55050,
+     16
+    ],
+    [
+     56051,
+     16
+    ],
+    [
+     57051,
+     16
+    ],
+    [
+     58052,
+     16
+    ],
+    [
+     59051,
+     16
+    ],
+    [
+     60053,
+     16
+    ],
+    [
+     61053,
+     16
+    ],
+    [
+     62053,
+     16
+    ],
+    [
+     63053,
+     16
+    ],
+    [
+     64053,
+     16
+    ],
+    [
+     65057,
+     16
+    ],
+    [
+     66058,
+     16
+    ],
+    [
+     67058,
+     16
+    ],
+    [
+     68058,
+     16
+    ],
+    [
+     69059,
+     16
+    ],
+    [
+     70058,
+     16
+    ],
+    [
+     71059,
+     16
+    ],
+    [
+     72059,
+     16
+    ],
+    [
+     73058,
+     16
+    ],
+    [
+     74059,
+     16
+    ],
+    [
+     75058,
+     16
+    ],
+    [
+     76058,
+     16
+    ],
+    [
+     77058,
+     16
+    ],
+    [
+     78059,
+     16
+    ],
+    [
+     79059,
+     16
+    ],
+    [
+     80059,
+     16
+    ],
+    [
+     81060,
+     16
+    ],
+    [
+     82059,
+     16
+    ],
+    [
+     83059,
+     16
+    ],
+    [
+     84060,
+     16
+    ],
+    [
+     85060,
+     16
+    ],
+    [
+     86059,
+     16
+    ],
+    [
+     87060,
+     16
+    ],
+    [
+     88059,
+     16
+    ],
+    [
+     89059,
+     16
+    ],
+    [
+     90059,
+     16
+    ],
+    [
+     91060,
+     16
+    ],
+    [
+     92060,
+     16
+    ],
+    [
+     93061,
+     16
+    ],
+    [
+     94062,
+     16
+    ],
+    [
+     95063,
+     16
+    ],
+    [
+     96063,
+     16
+    ],
+    [
+     97063,
+     16
+    ],
+    [
+     98064,
+     16
+    ],
+    [
+     99065,
+     16
+    ],
+    [
+     100064,
+     16
+    ],
+    [
+     101064,
+     16
+    ],
+    [
+     102064,
+     16
+    ],
+    [
+     103064,
+     16
+    ],
+    [
+     104065,
+     16
+    ],
+    [
+     105066,
+     16
+    ],
+    [
+     106068,
+     16
+    ],
+    [
+     107069,
+     16
+    ],
+    [
+     108069,
+     16
+    ],
+    [
+     109070,
+     16
+    ],
+    [
+     110069,
+     16
+    ],
+    [
+     111070,
+     16
+    ],
+    [
+     112072,
+     16
+    ],
+    [
+     113072,
+     16
+    ],
+    [
+     114075,
+     16
+    ],
+    [
+     115075,
+     16
+    ],
+    [
+     116075,
+     16
+    ],
+    [
+     117075,
+     16
+    ],
+    [
+     118076,
+     16
+    ],
+    [
+     119075,
+     16
+    ],
+    [
+     120075,
+     16
+    ]
+   ],
+   "tunerLog": [],
+   "tunerHistory": null,
+   "verdictDigest": "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709",
+   "verdicts": {
+    "k00": {
+     "status": "completed",
+     "reason": null,
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 7
+    },
+    "k00:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k00:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 0
+    },
+    "k01": {
+     "status": "completed",
+     "reason": null,
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 7
+    },
+    "k01:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k01:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 0
+    },
+    "k02": {
+     "status": "completed",
+     "reason": null,
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 7
+    },
+    "k02:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k02:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 0
+    },
+    "k03": {
+     "status": "completed",
+     "reason": null,
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 7
+    },
+    "k03:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k03:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 0
+    },
+    "k04": {
+     "status": "completed",
+     "reason": null,
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 7
+    },
+    "k04:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k04:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 0
+    },
+    "k05": {
+     "status": "completed",
+     "reason": null,
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 7
+    },
+    "k05:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k05:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 0
+    },
+    "k06": {
+     "status": "completed",
+     "reason": null,
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 7
+    },
+    "k06:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k06:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 0
+    },
+    "k07": {
+     "status": "completed",
+     "reason": null,
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 7
+    },
+    "k07:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k07:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 0
+    },
+    "k08": {
+     "status": "completed",
+     "reason": null,
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 7
+    },
+    "k08:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k08:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 0
+    },
+    "k09": {
+     "status": "completed",
+     "reason": null,
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 7
+    },
+    "k09:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k09:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 0
+    },
+    "k10": {
+     "status": "completed",
+     "reason": null,
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 7
+    },
+    "k10:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k10:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 0
+    },
+    "k11": {
+     "status": "completed",
+     "reason": null,
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 7
+    },
+    "k11:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k11:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 0
+    },
+    "k12": {
+     "status": "completed",
+     "reason": null,
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 7
+    },
+    "k12:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k12:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 0
+    },
+    "k13": {
+     "status": "completed",
+     "reason": null,
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 7
+    },
+    "k13:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k13:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 0
+    },
+    "k14": {
+     "status": "completed",
+     "reason": null,
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 7
+    },
+    "k14:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k14:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 0
+    },
+    "k15": {
+     "status": "completed",
+     "reason": null,
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 7
+    },
+    "k15:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k15:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 0
+    },
+    "k16": {
+     "status": "completed",
+     "reason": null,
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 7
+    },
+    "k16:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k16:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 0
+    },
+    "k17": {
+     "status": "completed",
+     "reason": null,
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 7
+    },
+    "k17:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k17:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 0
+    },
+    "k18": {
+     "status": "completed",
+     "reason": null,
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 7
+    },
+    "k18:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k18:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 0
+    },
+    "k19": {
+     "status": "completed",
+     "reason": null,
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 7
+    },
+    "k19:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k19:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 0
+    },
+    "spin:deadline": {
+     "status": "refused",
+     "reason": "deadline",
+     "output": null,
+     "passed": null
+    }
+   },
+   "loadStart": 15.88,
+   "loadEnd": 36.08,
+   "loaded": true
+  },
+  {
+   "arm": "planner",
+   "seconds": 120,
+   "demand": 48,
+   "attempts": 23956,
+   "accepted": 23956,
+   "perSecond": 199.4,
+   "wallMs": 120120,
+   "cpuMsPerAccepted": 40.024,
+   "busyCpus": 7.98,
+   "perf": {
+    "cycles": 4098025372586,
+    "instructions": 1751100812951,
+    "ls_any_fills_from_sys.dram_io_all": 5947155677,
+    "ls_any_fills_from_sys.near_cache": 11788532
+   },
+   "perAttempt": {
+    "cycles": 171064676,
+    "instructions": 73096544,
+    "ls_any_fills_from_sys.dram_io_all": 248253,
+    "ls_any_fills_from_sys.near_cache": 492
+   },
+   "ipc": 0.427,
+   "slice": {
+    "cpus": 17.9,
+    "throttledMs": 465612.4
+   },
+   "capacity": {
+    "mode": "tuned",
+    "cohorts": [
+     {
+      "width": 8,
+      "max": 12,
+      "pinned": true
+     },
+     {
+      "width": 8,
+      "max": 12,
+      "pinned": true
+     }
+    ]
+   },
+   "widths": [
+    [
+     1000,
+     16
+    ],
+    [
+     2000,
+     20
+    ],
+    [
+     3000,
+     14
+    ],
+    [
+     4000,
+     14
+    ],
+    [
+     5001,
+     10
+    ],
+    [
+     6004,
+     10
+    ],
+    [
+     7004,
+     12
+    ],
+    [
+     8004,
+     10
+    ],
+    [
+     9005,
+     10
+    ],
+    [
+     10005,
+     6
+    ],
+    [
+     11005,
+     6
+    ],
+    [
+     12008,
+     8
+    ],
+    [
+     13008,
+     8
+    ],
+    [
+     14008,
+     10
+    ],
+    [
+     15008,
+     10
+    ],
+    [
+     16009,
+     10
+    ],
+    [
+     17009,
+     10
+    ],
+    [
+     18034,
+     10
+    ],
+    [
+     19035,
+     10
+    ],
+    [
+     20035,
+     10
+    ],
+    [
+     21037,
+     10
+    ],
+    [
+     22037,
+     10
+    ],
+    [
+     23037,
+     10
+    ],
+    [
+     24037,
+     10
+    ],
+    [
+     25037,
+     10
+    ],
+    [
+     26037,
+     10
+    ],
+    [
+     27038,
+     10
+    ],
+    [
+     28038,
+     10
+    ],
+    [
+     29038,
+     10
+    ],
+    [
+     30038,
+     10
+    ],
+    [
+     31038,
+     10
+    ],
+    [
+     32038,
+     10
+    ],
+    [
+     33038,
+     10
+    ],
+    [
+     34039,
+     10
+    ],
+    [
+     35039,
+     10
+    ],
+    [
+     36040,
+     10
+    ],
+    [
+     37041,
+     10
+    ],
+    [
+     38041,
+     10
+    ],
+    [
+     39057,
+     10
+    ],
+    [
+     40057,
+     10
+    ],
+    [
+     41059,
+     10
+    ],
+    [
+     42058,
+     10
+    ],
+    [
+     43058,
+     10
+    ],
+    [
+     44058,
+     10
+    ],
+    [
+     45058,
+     10
+    ],
+    [
+     46059,
+     10
+    ],
+    [
+     47059,
+     10
+    ],
+    [
+     48059,
+     10
+    ],
+    [
+     49059,
+     10
+    ],
+    [
+     50060,
+     10
+    ],
+    [
+     51060,
+     10
+    ],
+    [
+     52060,
+     10
+    ],
+    [
+     53059,
+     10
+    ],
+    [
+     54060,
+     10
+    ],
+    [
+     55061,
+     10
+    ],
+    [
+     56061,
+     10
+    ],
+    [
+     57063,
+     10
+    ],
+    [
+     58063,
+     10
+    ],
+    [
+     59063,
+     10
+    ],
+    [
+     60063,
+     10
+    ],
+    [
+     61063,
+     10
+    ],
+    [
+     62063,
+     10
+    ],
+    [
+     63064,
+     6
+    ],
+    [
+     64065,
+     6
+    ],
+    [
+     65067,
+     8
+    ],
+    [
+     66067,
+     8
+    ],
+    [
+     67070,
+     10
+    ],
+    [
+     68070,
+     10
+    ],
+    [
+     69070,
+     10
+    ],
+    [
+     70072,
+     10
+    ],
+    [
+     71072,
+     10
+    ],
+    [
+     72075,
+     10
+    ],
+    [
+     73075,
+     10
+    ],
+    [
+     74075,
+     10
+    ],
+    [
+     75077,
+     10
+    ],
+    [
+     76077,
+     10
+    ],
+    [
+     77077,
+     10
+    ],
+    [
+     78077,
+     10
+    ],
+    [
+     79077,
+     6
+    ],
+    [
+     80077,
+     6
+    ],
+    [
+     81077,
+     12
+    ],
+    [
+     82077,
+     12
+    ],
+    [
+     83077,
+     8
+    ],
+    [
+     84077,
+     8
+    ],
+    [
+     85080,
+     10
+    ],
+    [
+     86080,
+     10
+    ],
+    [
+     87080,
+     10
+    ],
+    [
+     88080,
+     10
+    ],
+    [
+     89080,
+     10
+    ],
+    [
+     90080,
+     10
+    ],
+    [
+     91080,
+     10
+    ],
+    [
+     92080,
+     10
+    ],
+    [
+     93081,
+     10
+    ],
+    [
+     94080,
+     10
+    ],
+    [
+     95080,
+     12
+    ],
+    [
+     96081,
+     12
+    ],
+    [
+     97082,
+     12
+    ],
+    [
+     98082,
+     12
+    ],
+    [
+     99083,
+     12
+    ],
+    [
+     100083,
+     12
+    ],
+    [
+     101084,
+     14
+    ],
+    [
+     102084,
+     14
+    ],
+    [
+     103084,
+     10
+    ],
+    [
+     104084,
+     10
+    ],
+    [
+     105084,
+     12
+    ],
+    [
+     106084,
+     12
+    ],
+    [
+     107086,
+     12
+    ],
+    [
+     108086,
+     12
+    ],
+    [
+     109086,
+     12
+    ],
+    [
+     110086,
+     12
+    ],
+    [
+     111087,
+     12
+    ],
+    [
+     112087,
+     12
+    ],
+    [
+     113087,
+     14
+    ],
+    [
+     114088,
+     14
+    ],
+    [
+     115088,
+     10
+    ],
+    [
+     116089,
+     10
+    ],
+    [
+     117089,
+     12
+    ],
+    [
+     118093,
+     12
+    ],
+    [
+     119094,
+     12
+    ],
+    [
+     120094,
+     12
+    ]
+   ],
+   "tunerLog": [
+    {
+     "at": 1459153,
+     "rate": 163.5,
+     "cpuPer": 56.24,
+     "width": 8,
+     "next": 8,
+     "phase": "explore",
+     "saturated": true,
+     "share": 8.34,
+     "peers": 3
+    },
+    {
+     "at": 1460160,
+     "rate": 199,
+     "cpuPer": 48,
+     "width": 8,
+     "next": 10,
+     "phase": "explore",
+     "saturated": true,
+     "share": 9.74,
+     "peers": 3
+    },
+    {
+     "at": 1461169,
+     "rate": 197.9,
+     "cpuPer": 52.12,
+     "width": 10,
+     "next": 7,
+     "phase": "explore",
+     "saturated": true,
+     "share": 10.03,
+     "peers": 3
+    },
+    {
+     "at": 1462219,
+     "rate": 190,
+     "cpuPer": 48.84,
+     "width": 7,
+     "next": 7,
+     "phase": "explore",
+     "saturated": true,
+     "share": 9.46,
+     "peers": 3
+    },
+    {
+     "at": 1463220,
+     "rate": 206,
+     "cpuPer": 47.15,
+     "width": 7,
+     "next": 5,
+     "phase": "explore",
+     "saturated": true,
+     "share": 9.7,
+     "peers": 3
+    },
+    {
+     "at": 1464224,
+     "rate": 178.6,
+     "cpuPer": 46.29,
+     "width": 5,
+     "next": 5,
+     "phase": "explore",
+     "saturated": true,
+     "share": 8.25,
+     "peers": 3
+    },
+    {
+     "at": 1465228,
+     "rate": 163.9,
+     "cpuPer": 41.23,
+     "width": 5,
+     "next": 6,
+     "phase": "explore",
+     "saturated": true,
+     "share": 6.71,
+     "peers": 3
+    },
+    {
+     "at": 1466237,
+     "rate": 200.3,
+     "cpuPer": 36.06,
+     "width": 6,
+     "next": 5,
+     "phase": "explore",
+     "saturated": true,
+     "share": 7.12,
+     "peers": 3
+    },
+    {
+     "at": 1467243,
+     "rate": 193.9,
+     "cpuPer": 33.79,
+     "width": 5,
+     "next": 5,
+     "phase": "explore",
+     "saturated": true,
+     "share": 6.58,
+     "peers": 3
+    },
+    {
+     "at": 1468251,
+     "rate": 217.3,
+     "cpuPer": 36.75,
+     "width": 5,
+     "next": 3,
+     "phase": "explore",
+     "saturated": true,
+     "share": 8.04,
+     "peers": 3
+    },
+    {
+     "at": 1469256,
+     "rate": 150.4,
+     "cpuPer": 40.21,
+     "width": 3,
+     "next": 3,
+     "phase": "explore",
+     "saturated": true,
+     "share": 6.49,
+     "peers": 3
+    },
+    {
+     "at": 1470262,
+     "rate": 123.2,
+     "cpuPer": 44.55,
+     "width": 3,
+     "next": 4,
+     "phase": "explore",
+     "saturated": true,
+     "share": 5.74,
+     "peers": 3
+    },
+    {
+     "at": 1471279,
+     "rate": 150.8,
+     "cpuPer": 47.92,
+     "width": 4,
+     "next": 4,
+     "phase": "explore",
+     "saturated": true,
+     "share": 6.98,
+     "peers": 3
+    },
+    {
+     "at": 1472283,
+     "rate": 137.8,
+     "cpuPer": 52.01,
+     "width": 4,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.15,
+     "peers": 3
+    },
+    {
+     "at": 1473295,
+     "rate": 170,
+     "cpuPer": 47.88,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 8.2,
+     "peers": 3
+    },
+    {
+     "at": 1474298,
+     "rate": 154.3,
+     "cpuPer": 49.44,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.79,
+     "peers": 3
+    },
+    {
+     "at": 1475326,
+     "rate": 173.3,
+     "cpuPer": 43.93,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.57,
+     "peers": 3
+    },
+    {
+     "at": 1476334,
+     "rate": 165.5,
+     "cpuPer": 44.01,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.2,
+     "peers": 3
+    },
+    {
+     "at": 1477348,
+     "rate": 164.8,
+     "cpuPer": 39.16,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 6.41,
+     "peers": 3
+    },
+    {
+     "at": 1478351,
+     "rate": 168.6,
+     "cpuPer": 37.98,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 6.5,
+     "peers": 3
+    },
+    {
+     "at": 1479356,
+     "rate": 165.6,
+     "cpuPer": 39.6,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 6.49,
+     "peers": 3
+    },
+    {
+     "at": 1480362,
+     "rate": 157.6,
+     "cpuPer": 40.48,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 6.38,
+     "peers": 3
+    },
+    {
+     "at": 1481367,
+     "rate": 182.2,
+     "cpuPer": 38.09,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 6.87,
+     "peers": 3
+    },
+    {
+     "at": 1482378,
+     "rate": 169.5,
+     "cpuPer": 42.15,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.12,
+     "peers": 3
+    },
+    {
+     "at": 1483383,
+     "rate": 183,
+     "cpuPer": 43.98,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 8.03,
+     "peers": 3
+    },
+    {
+     "at": 1484391,
+     "rate": 174.6,
+     "cpuPer": 45.64,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.98,
+     "peers": 3
+    },
+    {
+     "at": 1485417,
+     "rate": 171.7,
+     "cpuPer": 42.94,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.53,
+     "peers": 3
+    },
+    {
+     "at": 1486421,
+     "rate": 166.8,
+     "cpuPer": 44.02,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.31,
+     "peers": 3
+    },
+    {
+     "at": 1487426,
+     "rate": 171.8,
+     "cpuPer": 41.35,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.05,
+     "peers": 3
+    },
+    {
+     "at": 1488429,
+     "rate": 165,
+     "cpuPer": 36.18,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 5.94,
+     "peers": 3
+    },
+    {
+     "at": 1489430,
+     "rate": 187.4,
+     "cpuPer": 37.54,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.07,
+     "peers": 3
+    },
+    {
+     "at": 1490436,
+     "rate": 192.7,
+     "cpuPer": 37.54,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.3,
+     "peers": 3
+    },
+    {
+     "at": 1491440,
+     "rate": 191.9,
+     "cpuPer": 36.76,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 6.93,
+     "peers": 3
+    },
+    {
+     "at": 1492448,
+     "rate": 190,
+     "cpuPer": 38.93,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.39,
+     "peers": 3
+    },
+    {
+     "at": 1493452,
+     "rate": 187.2,
+     "cpuPer": 41.47,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.8,
+     "peers": 3
+    },
+    {
+     "at": 1494464,
+     "rate": 169,
+     "cpuPer": 44.7,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.53,
+     "peers": 3
+    },
+    {
+     "at": 1495472,
+     "rate": 187.9,
+     "cpuPer": 40.11,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.41,
+     "peers": 3
+    },
+    {
+     "at": 1496474,
+     "rate": 153.1,
+     "cpuPer": 44.27,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 6.77,
+     "peers": 3
+    },
+    {
+     "at": 1497495,
+     "rate": 155.9,
+     "cpuPer": 45.01,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.13,
+     "peers": 3
+    },
+    {
+     "at": 1498499,
+     "rate": 162.9,
+     "cpuPer": 42.08,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7,
+     "peers": 3
+    },
+    {
+     "at": 1499525,
+     "rate": 190.6,
+     "cpuPer": 36.48,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 6.89,
+     "peers": 3
+    },
+    {
+     "at": 1500533,
+     "rate": 181.5,
+     "cpuPer": 40.45,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.44,
+     "peers": 3
+    },
+    {
+     "at": 1501544,
+     "rate": 187,
+     "cpuPer": 36.36,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 6.66,
+     "peers": 3
+    },
+    {
+     "at": 1502562,
+     "rate": 160.3,
+     "cpuPer": 39.76,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 6.24,
+     "peers": 3
+    },
+    {
+     "at": 1503570,
+     "rate": 204.8,
+     "cpuPer": 38.12,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.75,
+     "peers": 3
+    },
+    {
+     "at": 1504578,
+     "rate": 173.1,
+     "cpuPer": 43.56,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.83,
+     "peers": 3
+    },
+    {
+     "at": 1505591,
+     "rate": 143.3,
+     "cpuPer": 46.38,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 6.82,
+     "peers": 3
+    },
+    {
+     "at": 1506618,
+     "rate": 176.7,
+     "cpuPer": 43.31,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.57,
+     "peers": 3
+    },
+    {
+     "at": 1507633,
+     "rate": 196.8,
+     "cpuPer": 41.66,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 8.18,
+     "peers": 3
+    },
+    {
+     "at": 1508636,
+     "rate": 204.2,
+     "cpuPer": 37.71,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.62,
+     "peers": 3
+    },
+    {
+     "at": 1509642,
+     "rate": 194.6,
+     "cpuPer": 39.11,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.67,
+     "peers": 3
+    },
+    {
+     "at": 1510652,
+     "rate": 198.9,
+     "cpuPer": 40.94,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 8.08,
+     "peers": 3
+    },
+    {
+     "at": 1511665,
+     "rate": 196.7,
+     "cpuPer": 38.31,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.48,
+     "peers": 3
+    },
+    {
+     "at": 1512669,
+     "rate": 194.9,
+     "cpuPer": 35.37,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 6.89,
+     "peers": 3
+    },
+    {
+     "at": 1513676,
+     "rate": 170.2,
+     "cpuPer": 38.66,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 6.83,
+     "peers": 3
+    },
+    {
+     "at": 1514703,
+     "rate": 188.9,
+     "cpuPer": 39.63,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.48,
+     "peers": 3
+    },
+    {
+     "at": 1515705,
+     "rate": 206.8,
+     "cpuPer": 41.3,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 8.59,
+     "peers": 3
+    },
+    {
+     "at": 1516718,
+     "rate": 199.6,
+     "cpuPer": 42.15,
+     "width": 5,
+     "next": 5,
+     "phase": "explore",
+     "saturated": true,
+     "share": 8.37,
+     "peers": 3
+    },
+    {
+     "at": 1517722,
+     "rate": 187.2,
+     "cpuPer": 42.79,
+     "width": 5,
+     "next": 5,
+     "phase": "explore",
+     "saturated": true,
+     "share": 7.99,
+     "peers": 3
+    },
+    {
+     "at": 1518734,
+     "rate": 167.9,
+     "cpuPer": 43.52,
+     "width": 5,
+     "next": 5,
+     "phase": "explore",
+     "saturated": true,
+     "share": 7.19,
+     "peers": 3
+    },
+    {
+     "at": 1519750,
+     "rate": 176.1,
+     "cpuPer": 41.41,
+     "width": 5,
+     "next": 5,
+     "phase": "explore",
+     "saturated": true,
+     "share": 7.55,
+     "peers": 3
+    },
+    {
+     "at": 1520764,
+     "rate": 150.7,
+     "cpuPer": 46.78,
+     "width": 5,
+     "next": 3,
+     "phase": "explore",
+     "saturated": true,
+     "share": 7.05,
+     "peers": 3
+    },
+    {
+     "at": 1521778,
+     "rate": 118,
+     "cpuPer": 43.41,
+     "width": 3,
+     "next": 3,
+     "phase": "explore",
+     "saturated": true,
+     "share": 4.95,
+     "peers": 3
+    },
+    {
+     "at": 1522797,
+     "rate": 132.8,
+     "cpuPer": 40.01,
+     "width": 3,
+     "next": 4,
+     "phase": "explore",
+     "saturated": true,
+     "share": 5.46,
+     "peers": 3
+    },
+    {
+     "at": 1523817,
+     "rate": 187.7,
+     "cpuPer": 36.96,
+     "width": 4,
+     "next": 4,
+     "phase": "explore",
+     "saturated": true,
+     "share": 6.92,
+     "peers": 3
+    },
+    {
+     "at": 1524821,
+     "rate": 145.7,
+     "cpuPer": 46.71,
+     "width": 4,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 6.82,
+     "peers": 3
+    },
+    {
+     "at": 1525833,
+     "rate": 148.5,
+     "cpuPer": 49.07,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.24,
+     "peers": 3
+    },
+    {
+     "at": 1526845,
+     "rate": 156.5,
+     "cpuPer": 44.82,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.18,
+     "peers": 3
+    },
+    {
+     "at": 1527852,
+     "rate": 156.2,
+     "cpuPer": 44.15,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 6.78,
+     "peers": 3
+    },
+    {
+     "at": 1528860,
+     "rate": 163.7,
+     "cpuPer": 43.03,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 6.85,
+     "peers": 3
+    },
+    {
+     "at": 1529864,
+     "rate": 172.5,
+     "cpuPer": 42.81,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.52,
+     "peers": 3
+    },
+    {
+     "at": 1530870,
+     "rate": 164.4,
+     "cpuPer": 47.33,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 7.76,
+     "peers": 3
+    },
+    {
+     "at": 1531876,
+     "rate": 190.6,
+     "cpuPer": 42.54,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 8.11,
+     "peers": 3
+    },
+    {
+     "at": 1532890,
+     "rate": 188,
+     "cpuPer": 41.57,
+     "width": 5,
+     "next": 5,
+     "phase": "explore",
+     "saturated": true,
+     "share": 8.04,
+     "peers": 3
+    },
+    {
+     "at": 1533919,
+     "rate": 193.2,
+     "cpuPer": 39.49,
+     "width": 5,
+     "next": 5,
+     "phase": "explore",
+     "saturated": true,
+     "share": 7.56,
+     "peers": 3
+    },
+    {
+     "at": 1534929,
+     "rate": 221.6,
+     "cpuPer": 34.46,
+     "width": 5,
+     "next": 5,
+     "phase": "explore",
+     "saturated": true,
+     "share": 7.67,
+     "peers": 3
+    },
+    {
+     "at": 1535938,
+     "rate": 227.6,
+     "cpuPer": 35.54,
+     "width": 5,
+     "next": 5,
+     "phase": "explore",
+     "saturated": true,
+     "share": 8.08,
+     "peers": 3
+    },
+    {
+     "at": 1536941,
+     "rate": 257.8,
+     "cpuPer": 34.24,
+     "width": 5,
+     "next": 3,
+     "phase": "explore",
+     "saturated": true,
+     "share": 8.8,
+     "peers": 3
+    },
+    {
+     "at": 1537946,
+     "rate": 168.8,
+     "cpuPer": 39.34,
+     "width": 3,
+     "next": 3,
+     "phase": "explore",
+     "saturated": true,
+     "share": 7.62,
+     "peers": 3
+    },
+    {
+     "at": 1538949,
+     "rate": 168.1,
+     "cpuPer": 36.33,
+     "width": 3,
+     "next": 6,
+     "phase": "explore",
+     "saturated": true,
+     "share": 6.06,
+     "peers": 3
+    },
+    {
+     "at": 1539957,
+     "rate": 203.1,
+     "cpuPer": 39.28,
+     "width": 6,
+     "next": 6,
+     "phase": "explore",
+     "saturated": true,
+     "share": 7.81,
+     "peers": 3
+    },
+    {
+     "at": 1540962,
+     "rate": 221.2,
+     "cpuPer": 36.67,
+     "width": 6,
+     "next": 4,
+     "phase": "explore",
+     "saturated": true,
+     "share": 8.22,
+     "peers": 3
+    },
+    {
+     "at": 1541968,
+     "rate": 204,
+     "cpuPer": 37.05,
+     "width": 4,
+     "next": 4,
+     "phase": "explore",
+     "saturated": true,
+     "share": 8.22,
+     "peers": 3
+    },
+    {
+     "at": 1542969,
+     "rate": 242.3,
+     "cpuPer": 36.86,
+     "width": 4,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 8.86,
+     "peers": 3
+    },
+    {
+     "at": 1543973,
+     "rate": 248.2,
+     "cpuPer": 33.26,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 8.05,
+     "peers": 3
+    },
+    {
+     "at": 1544978,
+     "rate": 276.8,
+     "cpuPer": 30.4,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 8.3,
+     "peers": 3
+    },
+    {
+     "at": 1545992,
+     "rate": 235.3,
+     "cpuPer": 36.72,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 9.08,
+     "peers": 3
+    },
+    {
+     "at": 1547001,
+     "rate": 247.2,
+     "cpuPer": 36.09,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 8.92,
+     "peers": 3
+    },
+    {
+     "at": 1548018,
+     "rate": 258.3,
+     "cpuPer": 34.48,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 8.88,
+     "peers": 3
+    },
+    {
+     "at": 1549026,
+     "rate": 241.9,
+     "cpuPer": 36.29,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 8.77,
+     "peers": 3
+    },
+    {
+     "at": 1550028,
+     "rate": 248.6,
+     "cpuPer": 39.72,
+     "width": 5,
+     "next": 5,
+     "phase": "settled",
+     "saturated": true,
+     "share": 9.91,
+     "peers": 3
+    },
+    {
+     "at": 1551040,
+     "rate": 240.9,
+     "cpuPer": 41.53,
+     "width": 5,
+     "next": 5,
+     "phase": "explore",
+     "saturated": true,
+     "share": 9.98,
+     "peers": 3
+    },
+    {
+     "at": 1552041,
+     "rate": 218.1,
+     "cpuPer": 44.31,
+     "width": 5,
+     "next": 5,
+     "phase": "explore",
+     "saturated": true,
+     "share": 9.62,
+     "peers": 3
+    },
+    {
+     "at": 1553052,
+     "rate": 209.6,
+     "cpuPer": 40.17,
+     "width": 5,
+     "next": 6,
+     "phase": "explore",
+     "saturated": true,
+     "share": 8.27,
+     "peers": 3
+    },
+    {
+     "at": 1554056,
+     "rate": 246.5,
+     "cpuPer": 35.76,
+     "width": 6,
+     "next": 6,
+     "phase": "explore",
+     "saturated": true,
+     "share": 8.83,
+     "peers": 3
+    },
+    {
+     "at": 1555059,
+     "rate": 247.3,
+     "cpuPer": 36.66,
+     "width": 6,
+     "next": 6,
+     "phase": "settled",
+     "saturated": true,
+     "share": 8.96,
+     "peers": 3
+    },
+    {
+     "at": 1556064,
+     "rate": 248.8,
+     "cpuPer": 39.35,
+     "width": 6,
+     "next": 6,
+     "phase": "settled",
+     "saturated": true,
+     "share": 9.88,
+     "peers": 3
+    },
+    {
+     "at": 1557075,
+     "rate": 275,
+     "cpuPer": 37.57,
+     "width": 6,
+     "next": 6,
+     "phase": "explore",
+     "saturated": true,
+     "share": 10.42,
+     "peers": 3
+    },
+    {
+     "at": 1558080,
+     "rate": 248.9,
+     "cpuPer": 36.77,
+     "width": 6,
+     "next": 6,
+     "phase": "explore",
+     "saturated": true,
+     "share": 8.97,
+     "peers": 3
+    },
+    {
+     "at": 1559082,
+     "rate": 270.9,
+     "cpuPer": 37.31,
+     "width": 6,
+     "next": 7,
+     "phase": "explore",
+     "saturated": true,
+     "share": 10.19,
+     "peers": 3
+    },
+    {
+     "at": 1560085,
+     "rate": 247.9,
+     "cpuPer": 40.78,
+     "width": 7,
+     "next": 7,
+     "phase": "explore",
+     "saturated": true,
+     "share": 10.02,
+     "peers": 3
+    },
+    {
+     "at": 1561092,
+     "rate": 260.9,
+     "cpuPer": 41.52,
+     "width": 7,
+     "next": 5,
+     "phase": "explore",
+     "saturated": true,
+     "share": 10.97,
+     "peers": 3
+    },
+    {
+     "at": 1562117,
+     "rate": 240,
+     "cpuPer": 39.99,
+     "width": 5,
+     "next": 5,
+     "phase": "explore",
+     "saturated": true,
+     "share": 9.71,
+     "peers": 3
+    },
+    {
+     "at": 1563123,
+     "rate": 223.4,
+     "cpuPer": 39.52,
+     "width": 5,
+     "next": 6,
+     "phase": "settled",
+     "saturated": true,
+     "share": 8.82,
+     "peers": 3
+    },
+    {
+     "at": 1564129,
+     "rate": 247,
+     "cpuPer": 33.94,
+     "width": 6,
+     "next": 6,
+     "phase": "settled",
+     "saturated": true,
+     "share": 8.27,
+     "peers": 3
+    },
+    {
+     "at": 1565132,
+     "rate": 263.8,
+     "cpuPer": 32.66,
+     "width": 6,
+     "next": 6,
+     "phase": "settled",
+     "saturated": true,
+     "share": 8.59,
+     "peers": 3
+    },
+    {
+     "at": 1566134,
+     "rate": 260.9,
+     "cpuPer": 34.87,
+     "width": 6,
+     "next": 6,
+     "phase": "settled",
+     "saturated": true,
+     "share": 9.16,
+     "peers": 3
+    },
+    {
+     "at": 1567138,
+     "rate": 277.7,
+     "cpuPer": 34.46,
+     "width": 6,
+     "next": 6,
+     "phase": "settled",
+     "saturated": true,
+     "share": 9.54,
+     "peers": 3
+    },
+    {
+     "at": 1568142,
+     "rate": 287.7,
+     "cpuPer": 34.19,
+     "width": 6,
+     "next": 6,
+     "phase": "settled",
+     "saturated": true,
+     "share": 9.88,
+     "peers": 3
+    },
+    {
+     "at": 1569155,
+     "rate": 275.3,
+     "cpuPer": 37.56,
+     "width": 6,
+     "next": 6,
+     "phase": "explore",
+     "saturated": true,
+     "share": 10.16,
+     "peers": 3
+    },
+    {
+     "at": 1570163,
+     "rate": 238.6,
+     "cpuPer": 41.09,
+     "width": 6,
+     "next": 6,
+     "phase": "explore",
+     "saturated": true,
+     "share": 10.11,
+     "peers": 3
+    },
+    {
+     "at": 1571178,
+     "rate": 255.6,
+     "cpuPer": 40.87,
+     "width": 6,
+     "next": 7,
+     "phase": "explore",
+     "saturated": true,
+     "share": 10.18,
+     "peers": 3
+    },
+    {
+     "at": 1572185,
+     "rate": 267.8,
+     "cpuPer": 41.71,
+     "width": 7,
+     "next": 7,
+     "phase": "explore",
+     "saturated": true,
+     "share": 11.11,
+     "peers": 3
+    },
+    {
+     "at": 1573192,
+     "rate": 219.2,
+     "cpuPer": 43.08,
+     "width": 7,
+     "next": 5,
+     "phase": "explore",
+     "saturated": true,
+     "share": 9.47,
+     "peers": 3
+    },
+    {
+     "at": 1574217,
+     "rate": 217.6,
+     "cpuPer": 35.7,
+     "width": 5,
+     "next": 5,
+     "phase": "explore",
+     "saturated": true,
+     "share": 7.93,
+     "peers": 3
+    },
+    {
+     "at": 1575220,
+     "rate": 236.9,
+     "cpuPer": 35.77,
+     "width": 5,
+     "next": 6,
+     "phase": "settled",
+     "saturated": true,
+     "share": 8.44,
+     "peers": 3
+    },
+    {
+     "at": 1576228,
+     "rate": 228.8,
+     "cpuPer": 39.73,
+     "width": 6,
+     "next": 6,
+     "phase": "settled",
+     "saturated": true,
+     "share": 9.1,
+     "peers": 3
+    },
+    {
+     "at": 1577231,
+     "rate": 238.7,
+     "cpuPer": 38.19,
+     "width": 6,
+     "next": 6,
+     "phase": "settled",
+     "saturated": true,
+     "share": 9.02,
+     "peers": 3
+    },
+    {
+     "at": 1578234,
+     "rate": 274.6,
+     "cpuPer": 35.03,
+     "width": 6,
+     "next": 6,
+     "phase": "settled",
+     "saturated": true,
+     "share": 9.62,
+     "peers": 3
+    },
+    {
+     "at": 1579242,
+     "rate": 113.5,
+     "cpuPer": 30.42,
+     "width": 6,
+     "next": 6,
+     "phase": "settled",
+     "saturated": true,
+     "share": 9.06,
+     "peers": 3
+    },
+    {
+     "at": 1580257,
+     "rate": 5.8,
+     "cpuPer": 178.41,
+     "width": 6,
+     "next": 6,
+     "phase": "settled",
+     "saturated": false,
+     "share": 7.05,
+     "peers": 3
+    }
+   ],
+   "tunerHistory": [
+    {
+     "at": 1461166.079185,
+     "from": 8,
+     "to": 10,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 1462218.587183,
+     "from": 10,
+     "to": 7,
+     "why": "bound",
+     "phase": "explore"
+    },
+    {
+     "at": 1464221.158319,
+     "from": 7,
+     "to": 5,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 1466234.786122,
+     "from": 5,
+     "to": 6,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 1467243.016649,
+     "from": 6,
+     "to": 5,
+     "why": "bound",
+     "phase": "explore"
+    },
+    {
+     "at": 1469254.349843,
+     "from": 5,
+     "to": 3,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 1471276.489801,
+     "from": 3,
+     "to": 4,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 1473287.29779,
+     "from": 4,
+     "to": 5,
+     "why": "settle",
+     "phase": "settled"
+    },
+    {
+     "at": 1519746.684563,
+     "from": 5,
+     "to": 6,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 1519749.900308,
+     "from": 6,
+     "to": 5,
+     "why": "bound",
+     "phase": "explore"
+    },
+    {
+     "at": 1521767.343833,
+     "from": 5,
+     "to": 3,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 1523815.782501,
+     "from": 3,
+     "to": 4,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 1525830.059366,
+     "from": 4,
+     "to": 5,
+     "why": "settle",
+     "phase": "settled"
+    },
+    {
+     "at": 1535936.023702,
+     "from": 5,
+     "to": 6,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 1535937.515553,
+     "from": 6,
+     "to": 5,
+     "why": "bound",
+     "phase": "explore"
+    },
+    {
+     "at": 1537941.673165,
+     "from": 5,
+     "to": 3,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 1539954.433411,
+     "from": 3,
+     "to": 6,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 1541966.113328,
+     "from": 6,
+     "to": 4,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 1543972.324152,
+     "from": 4,
+     "to": 5,
+     "why": "settle",
+     "phase": "settled"
+    },
+    {
+     "at": 1554054.048677,
+     "from": 5,
+     "to": 6,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 1560082.987028,
+     "from": 6,
+     "to": 7,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 1562115.983705,
+     "from": 7,
+     "to": 5,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 1564125.966349,
+     "from": 5,
+     "to": 6,
+     "why": "settle",
+     "phase": "settled"
+    },
+    {
+     "at": 1572183.643846,
+     "from": 6,
+     "to": 7,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 1574196.396618,
+     "from": 7,
+     "to": 5,
+     "why": "probe",
+     "phase": "explore"
+    },
+    {
+     "at": 1576225.183004,
+     "from": 5,
+     "to": 6,
+     "why": "settle",
+     "phase": "settled"
+    }
+   ],
+   "verdictDigest": "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709",
+   "verdicts": {
+    "k00": {
+     "status": "completed",
+     "reason": null,
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 7
+    },
+    "k00:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k00:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "ef02c6aa6d5fd5e70361332c2abfffc4db20314e0f7bd84b0f42e3b6845af44d",
+     "passed": 0
+    },
+    "k01": {
+     "status": "completed",
+     "reason": null,
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 7
+    },
+    "k01:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k01:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "83eb722d3a7ddd33285914e98cd4039ed46c01389699e990623b5adf029792e9",
+     "passed": 0
+    },
+    "k02": {
+     "status": "completed",
+     "reason": null,
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 7
+    },
+    "k02:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k02:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "f538e2185d424c378d0eccdc8c3b30237de085a3128618bead699490b3a6bb3c",
+     "passed": 0
+    },
+    "k03": {
+     "status": "completed",
+     "reason": null,
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 7
+    },
+    "k03:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k03:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "6d40598ae3d5a0a789f74ce586ee2f0c46de5f203090273ae3b9cc34a2afd71a",
+     "passed": 0
+    },
+    "k04": {
+     "status": "completed",
+     "reason": null,
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 7
+    },
+    "k04:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k04:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1c728a14a787057c1bb249dae18a3da731eb8f8e283d3f8c7780ed77f9258ce6",
+     "passed": 0
+    },
+    "k05": {
+     "status": "completed",
+     "reason": null,
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 7
+    },
+    "k05:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k05:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "bf99e2b5d3b61bf40123eea9a5c8f38ce3d586158c1abad1b1d9345acce6f0f1",
+     "passed": 0
+    },
+    "k06": {
+     "status": "completed",
+     "reason": null,
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 7
+    },
+    "k06:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k06:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "471ab16da4112034135c7d24b1f1f5cab40c64efa6eb3f84ce9e20cb1cb37ec2",
+     "passed": 0
+    },
+    "k07": {
+     "status": "completed",
+     "reason": null,
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 7
+    },
+    "k07:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k07:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "972a823da9aa9df39bd4005de2433625bce47d41d4632391d42ac17a59aac14f",
+     "passed": 0
+    },
+    "k08": {
+     "status": "completed",
+     "reason": null,
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 7
+    },
+    "k08:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k08:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "46d2b67cbd6b2e34dcb7a3209063d5f8d3e1c986d66d8698a7b794c15f273377",
+     "passed": 0
+    },
+    "k09": {
+     "status": "completed",
+     "reason": null,
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 7
+    },
+    "k09:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k09:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "58cc3ec20c2102a18686f20e80855f2e489a75037c4140adde92e90649ef8d6f",
+     "passed": 0
+    },
+    "k10": {
+     "status": "completed",
+     "reason": null,
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 7
+    },
+    "k10:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k10:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "43a1e7487b659cfae841a2a9fb7a553cbfd744f9b06b2f20ea918bde50cb0e22",
+     "passed": 0
+    },
+    "k11": {
+     "status": "completed",
+     "reason": null,
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 7
+    },
+    "k11:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k11:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "718ec816980d15030941b3cb4312bae139832a7ef117c0f679ae6b7525a3eada",
+     "passed": 0
+    },
+    "k12": {
+     "status": "completed",
+     "reason": null,
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 7
+    },
+    "k12:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k12:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "c4ffbfc036a57d5d9d7cf14965f5c1c2c4a98196e97d4540301c2491248b678e",
+     "passed": 0
+    },
+    "k13": {
+     "status": "completed",
+     "reason": null,
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 7
+    },
+    "k13:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k13:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "08138239cb3654a221a06f237243ebbce080d80d2876c3ecb44024bb4bb2e909",
+     "passed": 0
+    },
+    "k14": {
+     "status": "completed",
+     "reason": null,
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 7
+    },
+    "k14:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k14:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "fdb132eafc2724f3296eba4919103a80dff3d1f9a647a923886356eda2eff31a",
+     "passed": 0
+    },
+    "k15": {
+     "status": "completed",
+     "reason": null,
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 7
+    },
+    "k15:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k15:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "1733fb5fbeded528e381f02817b0e88f5f5380fabedbbf45eb19015297823ead",
+     "passed": 0
+    },
+    "k16": {
+     "status": "completed",
+     "reason": null,
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 7
+    },
+    "k16:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k16:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "2959a34cc1b65ce40241d83ca270be1a366afd1ffc863a4181a92a9b977ddee4",
+     "passed": 0
+    },
+    "k17": {
+     "status": "completed",
+     "reason": null,
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 7
+    },
+    "k17:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k17:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "48b2566d4c356223079efc5e0f565be415a544620778d12a21a09ce417b05efb",
+     "passed": 0
+    },
+    "k18": {
+     "status": "completed",
+     "reason": null,
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 7
+    },
+    "k18:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k18:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "e7cd030b58d54cf75be2092de60edd4b7297b84cadf67d3bac0bb0d6b79ad277",
+     "passed": 0
+    },
+    "k19": {
+     "status": "completed",
+     "reason": null,
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 7
+    },
+    "k19:type": {
+     "status": "refused",
+     "reason": "typescript",
+     "output": null,
+     "passed": null
+    },
+    "k19:wrong": {
+     "status": "refused",
+     "reason": "tests",
+     "output": "9fe87c72dcc8c29fb82fd4adebc2f1e28b065b330533d3819207a79b1019c870",
+     "passed": 0
+    },
+    "spin:deadline": {
+     "status": "refused",
+     "reason": "deadline",
+     "output": null,
+     "passed": null
+    }
+   },
+   "loadStart": 15.14,
+   "loadEnd": 31.01,
+   "loaded": true
+  }
+ ]
+}
