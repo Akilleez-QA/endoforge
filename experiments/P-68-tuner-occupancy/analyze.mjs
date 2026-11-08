@@ -19,12 +19,13 @@ const worse = (sets, arm) => {
     verdictDigests: [...new Set(rows.map(row => row.verdictDigest))], finalWidths: rows.map(row => row.widths.at(-1)?.[1] ?? null), finalCohortWidths: rows.map(row => row.tunerLog?.at(-1)?.next ?? null) };
 };
 const stability = row => {
-  const log = row.tunerLog;
+  const timedEnd = row.timedStartAt === undefined ? Infinity : row.timedStartAt + row.wallMs;
+  const log = row.tunerLog?.filter(entry => entry.at + 1000 <= timedEnd);
   if (!log?.length) return null;
-  const start = log[0].at, end = log.at(-1).at + 1000;
+  const start = log[0].at, end = Math.min(timedEnd, log.at(-1).at + 1000);
   const settled = log.find(entry => entry.phase === 'settled');
   const settleAt = settled ? settled.at : null;
-  const after = settleAt === null ? [] : row.tunerHistory.filter(change => change.at > settleAt);
+  const after = settleAt === null ? [] : row.tunerHistory.filter(change => change.at > settleAt && change.at <= end);
   const minutes = settleAt === null ? null : Math.max(1 / 60, (end - settleAt) / 60000);
   const bounds = log.filter((entry, index) => index && entry.bound !== log[index - 1].bound && (settleAt === null || entry.at > settleAt)).length;
   const raws = log.map(entry => entry.uRaw).filter(value => typeof value === 'number');
