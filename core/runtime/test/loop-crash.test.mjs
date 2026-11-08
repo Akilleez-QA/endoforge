@@ -122,7 +122,7 @@ for (const point of ['after_commit', 'after_decision']) {
 
 test('an implementation file changed after admission is refused at commit', { timeout: 60000 }, async t => {
   const root = scratch(t), copy = join(root, 'copy');
-  for (const part of ['core', 'tools/factory_quality', 'tools/x1_loop.py', 'tools/ledger_writer.py', 'experiments/assemblyscript-toolchain.mjs']) cpSync(join(repository, part), join(copy, part), { recursive: true });
+  for (const part of ['core', 'tools/factory_quality', 'tools/x1_loop.py', 'tools/ledger_writer.py', 'tools/dump_list.py', 'experiments/assemblyscript-toolchain.mjs']) cpSync(join(repository, part), join(copy, part), { recursive: true });
   mkdirSync(join(copy, 'tools/asc'), { recursive: true });
   cpSync(join(repository, 'tools/asc/pin.mjs'), join(copy, 'tools/asc/pin.mjs'));
   symlinkSync(join(repository, 'tools/asc/node_modules'), join(copy, 'tools/asc/node_modules'));

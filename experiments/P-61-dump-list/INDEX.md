@@ -1,0 +1,3 @@
+| Probe | Question | Result |
+|---|---|---|
+| [P-61](PRECOMMIT.md) | Big memory holders on the machine's dump list: the contained cohort, the isolate pool and the ledger writer register what they can give back and shed it on SIGUSR2: at width 16 with 4 attempts in flight the cohort freed 246–261 MiB of 320–380 reported (75% in the one unloaded trial, 70% gone in 31 ms) and recovered within 0.5 s of load returning; 0 verdict differences and 0 `outcome_unknown` under repeated sheds; the ledger writer freed 202 MiB in 45–62 ms; the pool's estimate overstated its first shed in 2 of 5 pools; all four bars met, bar 1 on one unloaded trial and bar 4 within noise | [RESULT.md](RESULT.md) |

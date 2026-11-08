@@ -253,6 +253,20 @@ const result = await cohort.run({ modules: { '/proj/a.js': source }, entry: '/pr
 
 This isn't an OS sandbox and it isn't a Spectre boundary. The permission model doesn't cover signals, and on Node 22 it doesn't cover the network. Passing the attack suite doesn't mean no escape exists; it doesn't test V8 memory-safety bugs. Requires Node 22.8 or later.
 
+## Memory on the dump list
+
+EndoForge spends RAM for speed, and gives it back when the machine's memory guard asks. `dump-list.mjs` (and its Python twin `tools/dump_list.py`) registers a holder in `${XDG_STATE_HOME:-~/.local/state}/memguard/dump-list.d/<pid>-<name>.json` as `{"schema":"memguard-dump/1","pid","name","priority","sheddable_bytes","signal":"SIGUSR2","updated"}`, written to a temporary file, fsynced and renamed. Lower priority is asked first: 0–99 for caches and spare warm instances, 100–199 for working-set accelerators. The SIGUSR2 handler is installed before the file is first written, because SIGUSR2's default action ends the process; after a shed the holder rewrites the file with its new estimate, and otherwise refreshes it at most every two seconds. The file is removed on close and on a normal exit; after a crash or a kill, a stale file names a dead pid.
+
+Registration is off unless the directory exists or `ENDOFORGE_DUMP_LIST=1` (`0` forces it off), so CI and other machines are unaffected. `dumpList: false | true | { directory, floor, holdMs, … }` overrides it per runner or pool.
+
+| Holder | Priority | Gives back | Never touches |
+|---|---|---|---|
+| Contained cohort, `endoforge-cohort` | 40 | idle reused Workers beyond `floor` (1); the remaining idle Workers drop their reused tsrs instance and image and collect garbage; spares aren't replenished for `holdMs` (30 s) | attempts in flight; a Worker still shedding gets no new attempt |
+| `IsolatePool`, `endoforge-isolate-pool` | 20 | idle ready cells beyond `floor` (1), not respawned for `holdMs` unless a job needs one | busy cells |
+| Ledger writer, `endoforge-ledger-writer` | 110 | its cached SQLite handles, then `malloc_trim` | queued journal batches that haven't been acknowledged; a signal inside a batch waits for its end |
+
+The cohort's file is written by the supervisor under the cohort process's pid, and the signal goes to the cohort itself, so the RSS that drops is the pid the file names. Estimates are measured, not assumed: the cohort weighs each Worker by its heap and reused instance when it becomes ready and scales that by the ratio its own RSS showed at boot and after each shed; thread pool cells use heap statistics scaled the same way; process cells use their private RSS; the ledger writer uses SQLite's `sqlite3_memory_used()`. A Worker in the middle of an attempt counts as nothing, since its reused instance is the working set. [P-61](../../experiments/P-61-dump-list/RESULT.md) measured the cohort giving back 251 MiB of 336 reported, 70% of it within 31 ms, in its unloaded trial, with no verdict change under repeated sheds.
+
 ## X1 host port
 
 [x1/host.mjs](x1/host.mjs) runs the eight X1 gates as the real evaluator's

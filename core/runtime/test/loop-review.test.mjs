@@ -397,7 +397,7 @@ test('14: the counter sees writes on an open file and memfd, not only opens', { 
 
 test('15: a generic pool does not need the X1 ledger policy', { timeout: 60000 }, async t => {
   const root = scratch(t), copy = join(root, 'copy');
-  for (const part of ['core', 'tools/factory_quality', 'tools/ledger_writer.py', 'experiments/assemblyscript-toolchain.mjs']) cpSync(join(repository, part), join(copy, part), { recursive: true });
+  for (const part of ['core', 'tools/factory_quality', 'tools/ledger_writer.py', 'tools/dump_list.py', 'experiments/assemblyscript-toolchain.mjs']) cpSync(join(repository, part), join(copy, part), { recursive: true });
   mkdirSync(join(copy, 'tools/asc'), { recursive: true });
   cpSync(join(repository, 'tools/asc/pin.mjs'), join(copy, 'tools/asc/pin.mjs'));
   symlinkSync(join(repository, 'tools/asc/node_modules'), join(copy, 'tools/asc/node_modules'));
