@@ -3,6 +3,7 @@ import test from 'node:test';
 import { hash } from '../x1/host.mjs';
 import { runGates } from '../x1/gates.mjs';
 import { glueFindings, glueProblems, kernelParameters, nonFiniteExpectation, statesComputation, unitDisagreements } from '../x1/contract.mjs';
+import { unitFindings } from '../x1/dimensions.mjs';
 import { candidate } from './fixtures/x1/candidate.mjs';
 import { wasm } from './fixtures/x1/wasm.mjs';
 const passThrough = { name: 'scale', params: ['f64'], results: ['f64'], body: [0x20, 0] };
@@ -68,7 +69,7 @@ for (const [name, glue, contract, match] of [
   ['a changed precision', glueFor([arg('massLb', 'lb'), arg('tempF', '°F')], { kind: 'number', unit: '1', precision: 4 }), '`f(massLb, tempF)`\nShow 2 decimal places.', /contract states 2/],
   ['swapped code labels', glueFor([arg('massLb', 'lb'), arg('tempF', '°F')], { kind: 'code', unit: 'code', precision: 0, codes: { 0: 'too cold', 1: 'within range' } }), '`f(massLb, tempF)`\nCodes: 0 = within range, 1 = too cold.', /fit the contract better swapped/],
 ]) test(`G7 finds ${name}`, () => assert.match(glueProblems(glue, { source, contract }).join(), match));
-test('a unit that disagrees with a name is recorded, and never refuses', () => {
+test('a unit that disagrees with a name is recorded by the glue gate and refused by the unit gate', () => {
   const glue = glueFor([arg('massLb', '°F'), arg('tempF', 'lb')]);
   assert.match(unitDisagreements(glue).join(), /disagrees with the name/);
   assert.deepEqual(glueProblems(glue, { source, contract: '' }), []);
@@ -77,8 +78,10 @@ test('a unit that disagrees with a name is recorded, and never refuses', () => {
   c.compiled.source = hash(c.files['kernel.ts']);
   c.files['glue.json'] = JSON.stringify({ ...JSON.parse(c.files['glue.json']), exports: [{ name: 'scale', label: 'Scale a value', args: [{ name: 'valueF', kind: 'number', unit: 'lb' }], result: { kind: 'number', unit: '1', precision: 2 } }] });
   const result = runGates(c);
-  assert.equal(result.promotable, true, JSON.stringify(result.gates));
+  assert.equal(result.gates.G7_glue.ok, true, JSON.stringify(result.gates));
   assert.equal(result.gates.G7_glue.advisory.length, 1);
+  assert.match(result.gates.G9_units.why, /^N: scale.valueF unit lb/);
+  assert.equal(result.promotable, false);
 });
 test('an exclusion written under the last export still covers the others', () => {
   const contract = 'Results are finite.\n\n`first(x: f64): f64`\nDouble it.\n\n`second(x: f64): f64`\nTriple it.\nNonfinite inputs are outside the caller contract.';
@@ -111,4 +114,38 @@ test('runGates refuses mislabelled glue at G7', () => {
   const c = kernel(toZero, 'Results are finite numbers.');
   c.files['glue.json'] = JSON.stringify({ ...JSON.parse(c.files['glue.json']), exports: [{ name: 'scale', label: 'Scale a value', args: [{ name: 'y', kind: 'number', unit: '1' }], result: { kind: 'number', unit: '1', precision: 2 } }] });
   assert.match(runGates(c).gates.G7_glue.why, /differ from kernel parameters/);
+});
+const unitGlue = (exports) => ({ exports: exports.map(([name, args, result]) => ({ name, label: name, args: args.map(([n, kind, unit]) => ({ name: n, kind, unit })), result })) });
+const unitCases = [
+  ['a code result in a physical unit', 'export function over(psig: f64): i32 { return psig > 140.0 ? 1 : 0; }', [['over', [['psig', 'number', 'psig']], { kind: 'code', unit: 'psig', codes: { 0: 'no', 1: 'yes' } }]], /^K: /],
+  ['a computed code shown in a physical unit', 'export function band(x: f64, lo: f64): f64 { return x < lo ? 1 : 0; }', [['band', [['x', 'number', '°F'], ['lo', 'number', '°F']], { kind: 'number', unit: '°F difference', precision: 0 }]], /^D: band returns a computed code/],
+  ['a ratio of flows shown as a flow', 'export function ratio(feedKgS: f64, evapKgS: f64): f64 { return feedKgS / evapKgS; }', [['ratio', [['feedKgS', 'number', 'kg/s'], ['evapKgS', 'number', 'kg/s']], { kind: 'number', unit: 'kg/s', precision: 2 }]], /^D: ratio returns dimensionless/],
+  ['a product whose result unit balances nothing', 'export function drop(dT: f64, slope: f64): f64 { return dT * slope; }', [['drop', [['dT', 'number', '°F difference'], ['slope', 'number', 'psi/°F']], { kind: 'number', unit: '°F difference', precision: 1 }]], /^D: drop returns M L\^-1 T\^-2/],
+  ['a sum of a pressure and a temperature', 'export function add(p: f64, t: f64): f64 { return p + t; }', [['add', [['p', 'number', 'psig'], ['t', 'number', '°F']], { kind: 'number', unit: 'psig', precision: 1 }]], /^D: add: \+ joins/],
+  ['a parameter unit its name contradicts', 'export function dew(temperatureF: f64, rhPct: f64): f64 { return temperatureF; }', [['dew', [['temperatureF', 'number', '%'], ['rhPct', 'number', '°F']], { kind: 'number', unit: '°F', precision: 1 }]], /^N: dew.temperatureF/],
+  ['labels that fit their names better swapped', 'export function decide(action: i32, roleRights: i32): i32 { return action & roleRights; }', [['decide', [['action', 'code', 'role rights mask'], ['roleRights', 'code', 'approval action']], { kind: 'code', unit: 'decision', codes: { 0: 'no', 1: 'yes' } }]], /^L: /],
+  ['a computed code showing an argument unit', 'export function floor(action: i32, right: i32): i32 { return right > 0 ? 1 : 0; }', [['floor', [['action', 'code', 'approval action'], ['right', 'code', 'flag']], { kind: 'code', unit: 'approval action', codes: { 0: 'no', 1: 'yes' } }]], /^R: /],
+  ['a span of epoch timestamps shown as a timestamp', 'export function age(nowMs: f64, thenMs: f64): f64 { return nowMs + thenMs; }', [['age', [['nowMs', 'integer', 'ms since Unix epoch'], ['thenMs', 'integer', 'ms']], { kind: 'number', unit: 'ms', precision: 0 }]], /^D: age returns a time point/],
+];
+for (const [name, source, exports, pattern] of unitCases) test(`the unit gate refuses ${name}`, () => {
+  const { problems } = unitFindings(unitGlue(exports), { source });
+  assert.ok(problems.some(p => pattern.test(p)), JSON.stringify(problems));
+});
+test('the unit gate refuses a code labelled never returned that the tests return', () => {
+  const glue = unitGlue([['verdict', [], { kind: 'code', unit: 'verdict', codes: { 0: 'Reserved; never returned', 1: 'False' } }]]);
+  assert.match(unitFindings(glue, { source: 'export function verdict(): i32 { return 0; }', outputs: [{ fn: 'verdict', out: 0, err: null }] }).problems[0], /^C: /);
+  assert.deepEqual(unitFindings(glue, { source: 'export function verdict(): i32 { return 1; }', outputs: [{ fn: 'verdict', out: 1, err: null }] }).problems, []);
+});
+for (const [name, source, exports] of [
+  ['a coefficient that may carry a unit', 'export function drop(dropF: f64): f64 { return dropF * 3.47; }', [['drop', [['dropF', 'number', '°F']], { kind: 'number', unit: 'psi', precision: 1 }]]],
+  ['a temperature difference shown in bare degrees', 'export function sub(satF: f64, lineF: f64): f64 { return satF - lineF; }', [['sub', [['satF', 'number', '°F'], ['lineF', 'number', '°F']], { kind: 'number', unit: '°F', precision: 1 }]]],
+  ['a dimensionless code', 'export function ok(x: i32): i32 { return x > 0 ? 1 : 0; }', [['ok', [['x', 'code', 'dimensionless']], { kind: 'code', unit: 'dimensionless', codes: { 0: 'no', 1: 'yes' } }]]],
+  ['a generic code passed through', 'export function pick(typeCode: i32, liquidIn: f64): i32 { return typeCode == 1 ? 1 : 0; }', [['pick', [['typeCode', 'code', 'code'], ['liquidIn', 'number', 'in']], { kind: 'code', unit: 'code', codes: { 0: 'a', 1: 'b' } }]]],
+  ['an epoch day from an epoch timestamp', 'const DAY_MS: f64 = 86400000;\nexport function day(anchorMs: f64): f64 { return Math.floor(anchorMs / DAY_MS); }', [['day', [['anchorMs', 'integer', 'ms since Unix epoch']], { kind: 'number', unit: 'UTC day index', precision: 0 }]]],
+  ['a unit the gate cannot parse', 'export function f(a: f64): f64 { return a; }', [['f', [['a', 'number', 'degrees in selected scale']], { kind: 'number', unit: 'selected unit', precision: 1 }]]],
+]) test(`the unit gate accepts ${name}`, () => assert.deepEqual(unitFindings(unitGlue(exports), { source }).problems, []));
+test('runGates reports the unit gate', () => {
+  const result = runGates(kernel(passThrough, 'Multiply by one.'));
+  assert.equal(result.gates.G9_units.ok, true);
+  assert.equal(result.gates.G9_units.checks.scale, 'dimensionless');
 });

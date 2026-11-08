@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { DEFAULT_CEILING, EX_TEMPFAIL, UsageGovernor, UsageParked, governorFor, isParked, readRateLimit, watchdogEnvironment } from '../usage-governor.mjs';
 import { SpawnClaudeTransport, WarmClaudeTransport } from '../x1/transports.mjs';
+import { subscribedConfig, subscribedHome } from './fixtures/subscription.mjs';
 import { recorded, windowEvent } from './fixtures/usage-events.mjs';
 
 const fakeClaude = fileURLToPath(new URL('./fixtures/x1/fake-claude-usage.mjs', import.meta.url));
@@ -152,7 +153,8 @@ test('the retry watchdog is opt-in, bounded below the transport timeout, and pas
 test('the spawn transport records each stream, parks before spawning, and tags replies with usage', async t => {
   const root = scratch(t), statePath = join(root, 'state.json'), g = new UsageGovernor({ statePath, scope: 'spawn' });
   const resetsAt = Math.floor(Date.now() / 1000) + 3600;
-  const per = new SpawnClaudeTransport({ model: 'stub', command: fakeClaude, cwd: root, governor: g, watchdog: { maxWaitMs: 60000 },
+  const base = { PATH: process.env.PATH, HOME: subscribedHome(root) };
+  const per = new SpawnClaudeTransport({ model: 'stub', command: fakeClaude, cwd: root, base, governor: g, watchdog: { maxWaitMs: 60000 },
     environment: { FAKE_CLAUDE_LOG: join(root, 'log'), FAKE_CLAUDE_RATE: JSON.stringify({ status: 'allowed', resetsAt, rateLimitType: 'seven_day', unifiedWindows: { seven_day: { utilization: 0.4, resetsAt, status: 'allowed' } } }) } });
   const reply = await per.send({ session: 'a', messages: messages('one') });
   assert.equal(reply.rateLimit.windows.seven_day.utilization, 0.4);
@@ -160,7 +162,7 @@ test('the spawn transport records each stream, parks before spawning, and tags r
   assert.equal(g.metric().calls, 1);
   const env = logOf(root)[0].env;
   assert(env.includes('CLAUDE_CODE_RETRY_WATCHDOG') && env.includes('CLAUDE_CODE_RETRY_WATCHDOG_MAX_WAIT_MS'));
-  const stopped = new SpawnClaudeTransport({ model: 'stub', command: fakeClaude, cwd: root, governor: g,
+  const stopped = new SpawnClaudeTransport({ model: 'stub', command: fakeClaude, cwd: root, base, governor: g,
     environment: { FAKE_CLAUDE_LOG: join(root, 'log'), FAKE_CLAUDE_RATE: JSON.stringify({ status: 'allowed_warning', resetsAt, rateLimitType: 'seven_day', unifiedWindows: { seven_day: { utilization: 0.8, resetsAt, status: 'allowed_warning' } } }) } });
   await stopped.send({ session: 'b', messages: messages('two') });
   await assert.rejects(stopped.send({ session: 'c', messages: messages('three') }), error => isParked(error) && error.resumeAt === resetsAt * 1000);
@@ -182,10 +184,10 @@ test('without a config directory the governor follows the login the child uses, 
 
 test('the warm transport routes around a parked instance and refuses at once when every instance is parked', async t => {
   const root = scratch(t), one = join(root, 'one'), two = join(root, 'two'), statePath = join(root, 'state.json');
-  mkdirSync(one); mkdirSync(two);
+  subscribedConfig(one); subscribedConfig(two);
   const resetsAt = Math.floor(Date.now() / 1000) + 3600;
   governorFor(one, { statePath }).observe(windowEvent({ utilization: 0.9, resetsAt }));
-  const warm = new WarmClaudeTransport({ model: 'stub', command: fakeClaude, cwd: root, usageState: statePath, queueTimeoutMs: 2000,
+  const warm = new WarmClaudeTransport({ model: 'stub', command: fakeClaude, cwd: root, base: { PATH: process.env.PATH, HOME: root }, usageState: statePath, queueTimeoutMs: 2000,
     instances: [{ name: 'one', configDir: one }, { name: 'two', configDir: two }], environment: { FAKE_CLAUDE_LOG: join(root, 'log') } });
   t.after(() => warm.close());
   const routed = await warm.send({ session: 'a', messages: messages('one') });

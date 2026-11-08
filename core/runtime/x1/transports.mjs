@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { createInterface } from 'node:readline';
 import { replySchema, transportSystem } from './agent.mjs';
+import { requireSubscription, subscriptionEnvironment } from '../subscription-guard.mjs';
 import { UsageParked, governorFor, readRateLimit, watchdogEnvironment } from '../usage-governor.mjs';
 
 const allowedTools = new Set(['StructuredOutput']);
@@ -18,8 +19,12 @@ function claudeEnvironment(configDir, base = process.env, extra = {}) {
   const env = Object.fromEntries(passedEnvironment.filter(name => base[name] !== undefined).map(name => [name, base[name]]));
   if (configDir) env.CLAUDE_CONFIG_DIR = configDir;
   env.CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC = '1';
-  return { ...env, ...extra };
+  return subscriptionEnvironment({ ...env, ...extra });
 }
+const launchEnvironment = (configDir, base = process.env, extra = {}, cwd, args) => {
+  requireSubscription({ env: { ...base, ...extra, CLAUDE_CONFIG_DIR: undefined }, configDir, cwd, args });
+  return claudeEnvironment(configDir, base, extra);
+};
 const sharedArguments = ({ model, system = transportSystem, effort }) => ['-p', '--json-schema', JSON.stringify(replySchema), '--tools', '', '--no-session-persistence', '--strict-mcp-config',
   '--setting-sources', '', '--permission-mode', 'dontAsk', '--safe-mode', '--model', model, ...(effort ? ['--effort', effort] : []), '--system-prompt', system];
 export const warmArguments = options => [...sharedArguments(options), '--input-format', 'stream-json', '--output-format', 'stream-json', '--verbose'];
@@ -84,8 +89,9 @@ export class SpawnClaudeTransport {
     this.spawns += 1;
     return new Promise((resolve, reject) => {
       beforeBudget(remaining);
+      const env = launchEnvironment(this.configDir, this.base, this.environment, this.#directory.path, this.arguments);
       const ticket = this.governor?.admit();
-      const child = spawn(this.command, this.arguments, { cwd: this.#directory.path, env: claudeEnvironment(this.configDir, this.base, this.environment), stdio: ['pipe', 'pipe', 'ignore'], timeout: timeoutMs });
+      const child = spawn(this.command, this.arguments, { cwd: this.#directory.path, env, stdio: ['pipe', 'pipe', 'ignore'], timeout: timeoutMs });
       let acceptable = false, refused = false, result = null, rateLimit = null;
       createInterface({ input: child.stdout }).on('line', line => {
         let event;
@@ -123,7 +129,8 @@ class Lane {
   open(timeoutMs) {
     if (this.opened) return this.opened;
     const begin = performance.now(), { command, base, environment, arguments: args } = this.transport;
-    const child = spawn(command, args, { cwd: this.transport.workingDirectory, env: claudeEnvironment(this.instance.configDir, base, environment), stdio: ['pipe', 'pipe', 'ignore'] });
+    const env = launchEnvironment(this.instance.configDir, base, environment, this.transport.workingDirectory, args);
+    const child = spawn(command, args, { cwd: this.transport.workingDirectory, env, stdio: ['pipe', 'pipe', 'ignore'] });
     this.child = child;
     this.dirty = false;
     this.sent = 0;

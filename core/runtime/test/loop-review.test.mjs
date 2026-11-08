@@ -17,6 +17,7 @@ import { forgeries } from './fixtures/x1/forgeries.mjs';
 import { idOf, implementation, inputFor, modelFor, reply, specification, stageOf } from './fixtures/x1/scripted-model.mjs';
 import { good, seeds, weak } from './fixtures/x1/seeds.mjs';
 import { python } from './fixtures/ledger-fixture.mjs';
+import { subscribedHome } from './fixtures/subscription.mjs';
 
 const here = path => fileURLToPath(new URL(path, import.meta.url));
 const repository = here('../../../');
@@ -186,7 +187,7 @@ test('4: a deadline reached between turns stops the attempt', { timeout: 60000 }
   assert.equal(result.promoted, false);
 });
 
-const warmTransport = (root, extra = {}) => new WarmClaudeTransport({ model: 'stub', command: fakeClaude, cwd: root, timeoutMs: 1000, base: { PATH: process.env.PATH, HOME: root }, ...extra,
+const warmTransport = (root, extra = {}) => new WarmClaudeTransport({ model: 'stub', command: fakeClaude, cwd: root, timeoutMs: 1000, base: { PATH: process.env.PATH, HOME: subscribedHome(root) }, ...extra,
   environment: { FAKE_CLAUDE_LOG: join(root, 'log'), ...extra.environment } });
 const logOf = root => readFileSync(join(root, 'log'), 'utf8').trim().split('\n').map(line => JSON.parse(line));
 const say = (...texts) => texts.flatMap((text, index) => (index ? [{ role: 'assistant', content: 'ok' }, { role: 'user', content: text }] : [{ role: 'user', content: text }]));
@@ -320,9 +321,9 @@ test('9: a process cell in a tight loop dies with a killed supervisor', { timeou
 
 test('10: the spawn transport refuses an API key source', { timeout: 30000 }, async t => {
   const root = scratch(t);
-  const per = new SpawnClaudeTransport({ model: 'stub', command: fakeClaude, cwd: root, base: { PATH: process.env.PATH }, environment: { FAKE_CLAUDE_MODE: 'apikey' } });
+  const per = new SpawnClaudeTransport({ model: 'stub', command: fakeClaude, cwd: root, base: { PATH: process.env.PATH, HOME: subscribedHome(root) }, environment: { FAKE_CLAUDE_MODE: 'apikey' } });
   await assert.rejects(per.send({ messages: say('one') }), /subscription/);
-  const none = new SpawnClaudeTransport({ model: 'stub', command: fakeClaude, cwd: root, base: { PATH: process.env.PATH }, environment: { FAKE_CLAUDE_MODE: 'noinit' } });
+  const none = new SpawnClaudeTransport({ model: 'stub', command: fakeClaude, cwd: root, base: { PATH: process.env.PATH, HOME: subscribedHome(root) }, environment: { FAKE_CLAUDE_MODE: 'noinit' } });
   await assert.rejects(none.send({ messages: say('one') }), /subscription/);
 });
 
@@ -340,7 +341,7 @@ test('10: warm fails closed with no init, refuses key variables, and sends no pr
   t.after(() => keyed.close());
   await assert.rejects(keyed.send({ session: 'a', messages: say('secret-prompt') }), /subscription/);
   assert(!readFileSync(join(root, 'keyed'), 'utf8').includes('secret-prompt'));
-  const started = new WarmClaudeTransport({ model: 'stub', command: fakeClaude, base: { PATH: process.env.PATH }, environment: { FAKE_CLAUDE_LOG: join(root, 'cwd') } });
+  const started = new WarmClaudeTransport({ model: 'stub', command: fakeClaude, base: { PATH: process.env.PATH, HOME: subscribedHome(root) }, environment: { FAKE_CLAUDE_LOG: join(root, 'cwd') } });
   t.after(() => started.close());
   await started.start();
   const { cwd } = JSON.parse(readFileSync(join(root, 'cwd'), 'utf8').split('\n')[0]);

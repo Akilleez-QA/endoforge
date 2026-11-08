@@ -14,6 +14,7 @@ import { candidate } from './fixtures/x1/candidate.mjs';
 import { idOf, implementation, inputFor, modelFor, reply, specification, stageOf } from './fixtures/x1/scripted-model.mjs';
 import { good, seeds } from './fixtures/x1/seeds.mjs';
 import { python } from './fixtures/ledger-fixture.mjs';
+import { subscribedConfig, subscribedHome } from './fixtures/subscription.mjs';
 
 const here = path => fileURLToPath(new URL(path, import.meta.url));
 const fakeClaude = here('./fixtures/x1/fake-claude.mjs');
@@ -184,7 +185,7 @@ with sqlite3.connect(sys.argv[1]) as db:
 
 test('a swapped provider leaves the loop unchanged', { timeout: 30000 }, async t => {
   const root = scratch(t), log = join(root, 'claude.log');
-  const provider = new WarmClaudeTransport({ model: 'stub', command: fakeClaude, cwd: root, base: { ...process.env, FAKE_CLAUDE_LOG: log } });
+  const provider = new WarmClaudeTransport({ model: 'stub', command: fakeClaude, cwd: root, base: { PATH: process.env.PATH, HOME: subscribedHome(join(root, 'home')), FAKE_CLAUDE_LOG: log } });
   const pool = createLoopPool({ primes: 1, provider });
   t.after(async () => { await pool.close(); await provider.close(); });
   const result = await runNeed({ need, directory: join(root, 'addition'), pool, env, limits: { maxTurns: 1, maxTokens: 64000 } });
@@ -192,7 +193,7 @@ test('a swapped provider leaves the loop unchanged', { timeout: 30000 }, async t
   assert.equal(result.modelMs > 0, true);
 });
 
-const transport = (root, extra = {}) => new WarmClaudeTransport({ model: 'stub', command: fakeClaude, cwd: root, base: { PATH: process.env.PATH, HOME: process.env.HOME, ANTHROPIC_API_KEY: 'synthetic' }, environment: { FAKE_CLAUDE_LOG: join(root, 'log') }, ...extra });
+const transport = (root, extra = {}) => new WarmClaudeTransport({ model: 'stub', command: fakeClaude, cwd: root, base: { PATH: process.env.PATH, HOME: subscribedHome(join(root, 'home')) }, environment: { FAKE_CLAUDE_LOG: join(root, 'log') }, ...extra });
 const logOf = root => readFileSync(join(root, 'log'), 'utf8').trim().split('\n').map(line => JSON.parse(line));
 const messages = (...texts) => texts.flatMap((text, index) => (index ? [{ role: 'assistant', content: 'ok' }, { role: 'user', content: text }] : [{ role: 'user', content: text }]));
 
@@ -215,6 +216,10 @@ test('the warm transport spawns once, sends only new turns and clears between se
   assert.equal(cwd, root);
   assert(!seen.includes('ANTHROPIC_API_KEY'));
   assert(seen.includes('CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC'));
+  const keyed = transport(root, { base: { PATH: process.env.PATH, HOME: join(root, 'home'), ANTHROPIC_API_KEY: 'synthetic' } });
+  t.after(() => keyed.close());
+  await assert.rejects(keyed.send({ session: 'k', messages: messages('four') }), /refused \(exit 78\)/);
+  assert.equal(logOf(root).filter(line => line.start).length, 1);
 });
 
 for (const mode of ['tools', 'apikey']) {
@@ -252,7 +257,7 @@ test('a hung turn times out and kills its process; idle lanes are released', asy
 
 test('instances keep one config directory each, route around a usage limit, and park when every instance is limited', async t => {
   const root = scratch(t), one = join(root, 'one'), two = join(root, 'two');
-  mkdirSync(one); mkdirSync(two);
+  subscribedConfig(one); subscribedConfig(two);
   assert.throws(() => transport(root, { instances: [{ configDir: join(root, 'absent') }] }), /must already exist/);
   const routed = transport(root, { instances: [{ name: 'one', configDir: one }, { name: 'two', configDir: two }],
     environment: { FAKE_CLAUDE_LOG: join(root, 'log'), FAKE_CLAUDE_MODE: 'limit' } });
@@ -266,7 +271,7 @@ test('instances keep one config directory each, route around a usage limit, and 
 });
 
 test('the spawn transport takes the full history with its tools off, once per turn', async t => {
-  const root = scratch(t), per = new SpawnClaudeTransport({ model: 'stub', command: fakeClaude, cwd: root, environment: { FAKE_CLAUDE_LOG: join(root, 'log') } });
+  const root = scratch(t), per = new SpawnClaudeTransport({ model: 'stub', command: fakeClaude, cwd: root, base: { PATH: process.env.PATH, HOME: subscribedHome(join(root, 'home')) }, environment: { FAKE_CLAUDE_LOG: join(root, 'log') } });
   await per.send({ session: 'a', messages: messages('one', 'two') });
   await per.send({ session: 'a', messages: messages('one', 'two', 'three') });
   assert.equal(per.spawns, 2);
