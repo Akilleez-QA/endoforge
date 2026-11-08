@@ -1,0 +1,524 @@
+{
+ "h": {
+  "runs": 30,
+  "loadedRuns": 18,
+  "promoted": 29,
+  "turnTail": {
+   "before": {
+    "n": 70,
+    "p50": 55.1,
+    "p95": 365.2,
+    "min": 28.5,
+    "max": 644.4
+   },
+   "after": {
+    "n": 70,
+    "p50": 20.3,
+    "p95": 40.5,
+    "min": 4.3,
+    "max": 149.8
+   },
+   "exitLag": {
+    "n": 70,
+    "p50": 39.8,
+    "p95": 59.5,
+    "min": 26.6,
+    "max": 143.8
+   },
+   "resultLag": {
+    "n": 70,
+    "p50": 17.5,
+    "p95": 27,
+    "min": 0.09670000000000001,
+    "max": 126.1
+   },
+   "baseCheck": {
+    "n": 39,
+    "p50": 199,
+    "p95": 343.3,
+    "min": 0.7926,
+    "max": 601.3
+   },
+   "kernelLead": {
+    "n": 33,
+    "p50": 2787.5,
+    "p95": 3558.7,
+    "min": 4.2,
+    "max": 3731.7
+   }
+  },
+  "candidateTail": {
+   "before": {
+    "n": 30,
+    "p50": 474,
+    "p95": 691.3,
+    "min": 272.7,
+    "max": 1358.2
+   },
+   "after": {
+    "n": 30,
+    "p50": 184.6,
+    "p95": 384.6,
+    "min": 47.2,
+    "max": 987.3
+   },
+   "fixed": {
+    "n": 30,
+    "p50": 125.7,
+    "p95": 202.8,
+    "min": 0,
+    "max": 777.4
+   },
+   "loopTail": {
+    "n": 30,
+    "p50": 474,
+    "p95": 684.1,
+    "min": 272.7,
+    "max": 1358.2
+   },
+   "dropP50": 0.6105
+  },
+  "latency": {
+   "before": {
+    "n": 30,
+    "p50": 26855.3,
+    "p95": 33893.1,
+    "min": 17569.1,
+    "max": 53333.2
+   },
+   "after": {
+    "n": 30,
+    "p50": 26551.4,
+    "p95": 33592.6,
+    "min": 17432.4,
+    "max": 52962.4
+   },
+   "dropP50": 0.011300000000000001,
+   "tailShareP50": 0.016300000000000002
+  },
+  "verdicts": {
+   "runDiffs": [],
+   "turnDiffs": [],
+   "keyProblems": [],
+   "missingTurns": [],
+   "checkedTurns": 69
+  },
+  "refusals": {
+   "turns": 70,
+   "failing": 9,
+   "refused": 4,
+   "early": 4,
+   "share": 0.44439999999999996,
+   "savedMs": {
+    "n": 4,
+    "p50": 3006.1,
+    "p95": 3465.4,
+    "min": 2608.1,
+    "max": 3465.4
+   },
+   "savedMsTotal": 12103.2,
+   "tokensAfter": {
+    "n": 4,
+    "p50": 780.7,
+    "p95": 1522.9,
+    "min": 759.5,
+    "max": 1522.9
+   },
+   "tokensAfterTotal": 4524.7,
+   "savedShareOfTurn": {
+    "n": 4,
+    "p50": 0.21180000000000002,
+    "p95": 0.4078,
+    "min": 0.2033,
+    "max": 0.4078
+   },
+   "notRefusedGates": [
+    {
+     "label": "H08-r2",
+     "stage": "implementation",
+     "calls": "edit:glue.json,done",
+     "late": false
+    },
+    {
+     "label": "H08-r2",
+     "stage": "implementation",
+     "calls": "done",
+     "late": false
+    },
+    {
+     "label": "H08-r2",
+     "stage": "implementation",
+     "calls": "done",
+     "late": false
+    },
+    {
+     "label": "H08-r2",
+     "stage": "implementation",
+     "calls": "done",
+     "late": false
+    },
+    {
+     "label": "H08-r2",
+     "stage": "implementation",
+     "calls": "done",
+     "late": false
+    }
+   ],
+   "falseRefusals": []
+  }
+ },
+ "seeded": {
+  "mutants": 140,
+  "loaded": 0,
+  "equivalent": 13,
+  "verdictDiffs": 0,
+  "all": {
+   "turns": 140,
+   "failing": 127,
+   "refused": 127,
+   "early": 127,
+   "share": 1,
+   "savedMs": {
+    "n": 127,
+    "p50": 2794.3,
+    "p95": 3487.7,
+    "min": 1491,
+    "max": 3652.5
+   },
+   "savedMsTotal": 341150.5,
+   "tokensAfter": {
+    "n": 127,
+    "p50": 759.9,
+    "p95": 1513.7,
+    "min": 381.6,
+    "max": 1527.3
+   },
+   "tokensAfterTotal": 108963.2,
+   "savedShareOfTurn": {
+    "n": 127,
+    "p50": 0.3419,
+    "p95": 0.4624,
+    "min": 0.1691,
+    "max": 0.4908
+   },
+   "notRefusedGates": 0,
+   "falseRefusals": []
+  },
+  "byOperator": {
+   "operator": {
+    "turns": 28,
+    "failing": 28,
+    "refused": 28,
+    "early": 28,
+    "share": 1,
+    "savedMs": {
+     "n": 28,
+     "p50": 2763.5,
+     "p95": 3490.9,
+     "min": 1514.5,
+     "max": 3652.5
+    },
+    "savedMsTotal": 75340.3,
+    "tokensAfter": {
+     "n": 28,
+     "p50": 759.5,
+     "p95": 1512.9,
+     "min": 382,
+     "max": 1522.9
+    },
+    "tokensAfterTotal": 24137.2,
+    "savedShareOfTurn": {
+     "n": 28,
+     "p50": 0.337,
+     "p95": 0.45480000000000004,
+     "min": 0.1817,
+     "max": 0.48910000000000003
+    },
+    "falseRefusals": []
+   },
+   "constant": {
+    "turns": 28,
+    "failing": 15,
+    "refused": 15,
+    "early": 15,
+    "share": 1,
+    "savedMs": {
+     "n": 15,
+     "p50": 2806.9,
+     "p95": 3274.7,
+     "min": 1512.3,
+     "max": 3274.7
+    },
+    "savedMsTotal": 40061.8,
+    "tokensAfter": {
+     "n": 15,
+     "p50": 735.4,
+     "p95": 1522.9,
+     "min": 384.2,
+     "max": 1522.9
+    },
+    "tokensAfterTotal": 12301.1,
+    "savedShareOfTurn": {
+     "n": 15,
+     "p50": 0.3487,
+     "p95": 0.4885,
+     "min": 0.1691,
+     "max": 0.4885
+    },
+    "falseRefusals": []
+   },
+   "compare": {
+    "turns": 28,
+    "failing": 28,
+    "refused": 28,
+    "early": 28,
+    "share": 1,
+    "savedMs": {
+     "n": 28,
+     "p50": 2789.1,
+     "p95": 3445.7,
+     "min": 1491,
+     "max": 3633.5
+    },
+    "savedMsTotal": 75013.4,
+    "tokensAfter": {
+     "n": 28,
+     "p50": 759.9,
+     "p95": 1513.7,
+     "min": 381.6,
+     "max": 1523.6
+    },
+    "tokensAfterTotal": 24150.6,
+    "savedShareOfTurn": {
+     "n": 28,
+     "p50": 0.3367,
+     "p95": 0.4624,
+     "min": 0.1696,
+     "max": 0.4884
+    },
+    "falseRefusals": []
+   },
+   "trap": {
+    "turns": 28,
+    "failing": 28,
+    "refused": 28,
+    "early": 28,
+    "share": 1,
+    "savedMs": {
+     "n": 28,
+     "p50": 2702.6,
+     "p95": 3436.4,
+     "min": 1536.8,
+     "max": 3595.2
+    },
+    "savedMsTotal": 74712.9,
+    "tokensAfter": {
+     "n": 28,
+     "p50": 761.7,
+     "p95": 1517.8,
+     "min": 384.6,
+     "max": 1527.3
+    },
+    "tokensAfterTotal": 24222.9,
+    "savedShareOfTurn": {
+     "n": 28,
+     "p50": 0.3315,
+     "p95": 0.4613,
+     "min": 0.1785,
+     "max": 0.49060000000000004
+    },
+    "falseRefusals": []
+   },
+   "syntax": {
+    "turns": 28,
+    "failing": 28,
+    "refused": 28,
+    "early": 28,
+    "share": 1,
+    "savedMs": {
+     "n": 28,
+     "p50": 2803.6,
+     "p95": 3503.5,
+     "min": 1564.9,
+     "max": 3610.4
+    },
+    "savedMsTotal": 76022,
+    "tokensAfter": {
+     "n": 28,
+     "p50": 759.9,
+     "p95": 1513.7,
+     "min": 382.4,
+     "max": 1523.6
+    },
+    "tokensAfterTotal": 24151.4,
+    "savedShareOfTurn": {
+     "n": 28,
+     "p50": 0.34,
+     "p95": 0.4624,
+     "min": 0.18280000000000002,
+     "max": 0.4908
+    },
+    "falseRefusals": []
+   }
+  }
+ },
+ "p57": {
+  "candidates": 105,
+  "loaded": 48,
+  "wrongVerdicts": [],
+  "errors": 0,
+  "turnDiffs": 0,
+  "turnTail": {
+   "before": {
+    "n": 225,
+    "p50": 59.5,
+    "p95": 287.5,
+    "min": 28,
+    "max": 420.4
+   },
+   "after": {
+    "n": 225,
+    "p50": 18.4,
+    "p95": 27.1,
+    "min": 0.09670000000000001,
+    "max": 126.1
+   }
+  },
+  "candidateTail": {
+   "before": {
+    "n": 105,
+    "p50": 304.3,
+    "p95": 481.2,
+    "min": 211.1,
+    "max": 537.4
+   },
+   "after": {
+    "n": 105,
+    "p50": 90.9,
+    "p95": 232.3,
+    "min": 19,
+    "max": 301
+   },
+   "loopTail": {
+    "n": 105,
+    "p50": 304.3,
+    "p95": 481.2,
+    "min": 200.2,
+    "max": 537.4
+   },
+   "dropP50": 0.7014
+  },
+  "latency": {
+   "before": {
+    "n": 105,
+    "p50": 55039.9,
+    "p95": 112205,
+    "min": 9680,
+    "max": 129471.5
+   },
+   "after": {
+    "n": 105,
+    "p50": 54792.8,
+    "p95": 112019.6,
+    "min": 9572.1,
+    "max": 129260.9
+   },
+   "dropP50": 0.0045,
+   "tailShareP50": 0.0052
+  }
+ },
+ "speculation": {
+  "usefulModelMs": 752817.1,
+  "failTriggered": {
+   "hedged": 4,
+   "wastedModelMs": 72791.9,
+   "wastePerUseful": 0.09670000000000001,
+   "runs": [
+    {
+     "name": "H05-r0",
+     "hedged": true,
+     "launch": 18663.4,
+     "current": 29714.2,
+     "hedgeEnd": 41842.2,
+     "winner": "current",
+     "wasteMs": 11050.8,
+     "hedgePromoted": true,
+     "hedgeWall": 23178.8,
+     "hedgeModel": 22843.9,
+     "hedgeCalls": 2
+    },
+    {
+     "name": "H05-r1",
+     "hedged": true,
+     "launch": 21952.9,
+     "current": 29291.4,
+     "hedgeEnd": 43545.1,
+     "winner": "current",
+     "wasteMs": 7338.6,
+     "hedgePromoted": true,
+     "hedgeWall": 21592.3,
+     "hedgeModel": 21342.9,
+     "hedgeCalls": 2
+    },
+    {
+     "name": "H05-r2",
+     "hedged": true,
+     "launch": 22499.5,
+     "current": 33867.8,
+     "hedgeEnd": 46563.2,
+     "winner": "current",
+     "wasteMs": 11368.3,
+     "hedgePromoted": true,
+     "hedgeWall": 24063.6,
+     "hedgeModel": 23650.4,
+     "hedgeCalls": 2
+    },
+    {
+     "name": "H08-r2",
+     "hedged": true,
+     "launch": 28019.6,
+     "current": null,
+     "hedgeEnd": null,
+     "winner": null,
+     "wasteMs": 43034.3,
+     "hedgePromoted": false,
+     "hedgeWall": 43778.5,
+     "hedgeModel": 43034.3,
+     "hedgeCalls": 6
+    }
+   ],
+   "failingRunLatency": [
+    {
+     "name": "H05-r0",
+     "before": 29714.2,
+     "after": 29714.2
+    },
+    {
+     "name": "H05-r1",
+     "before": 29291.4,
+     "after": 29291.4
+    },
+    {
+     "name": "H05-r2",
+     "before": 33867.8,
+     "after": 33867.8
+    },
+    {
+     "name": "H08-r2",
+     "before": null,
+     "after": null
+    }
+   ]
+  },
+  "alwaysHedge": {
+   "wastedModelMs": 187243.1,
+   "wastePerUseful": 0.24869999999999998,
+   "note": "lower bound: cost of a parallel attempt cancelled when the current implementation turn passes, from first output to exit"
+  }
+ },
+ "calls": {
+  "diagnostic": 9,
+  "record": 70,
+  "hedge": 12
+ }
+}

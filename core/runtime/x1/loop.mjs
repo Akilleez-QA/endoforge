@@ -26,15 +26,24 @@ const readable = path => `--allow-fs-read=${realpathSync(path)}/*`;
 export function cellPermissions(hostPort, ascPath) {
   return [permissionFlag, readable(repository), readable(dirname(dirname(dirname(ascPath)))), readable(dirname(hostPort)), '--allow-worker'];
 }
-export function createLoopPool({ size = 1, isolation = 'process', jobTimeoutMs = 60000, jobDeadlineMs = 900000, ascPath = ASC_PATH, hostPort = hostPortPath, primes, provider, cellEnv = {}, waits = 'release', ...rest } = {}) {
+export function createLoopPool({ size = 1, isolation = 'process', jobTimeoutMs = 60000, jobDeadlineMs = 900000, ascPath = ASC_PATH, hostPort = hostPortPath, primes, provider, cellEnv = {}, waits = 'release', rates = null, ...rest } = {}) {
   if (!['release', 'hold'].includes(waits)) throw TypeError('waits must be release or hold');
   const pool = new IsolatePool({ hostPort, size, isolation, jobTimeoutMs, jobDeadlineMs, ...WORKCELL,
     warm: { path: ascPath, ...(primes === undefined ? {} : { primes }) },
     ledgerBridge: { extension: 'tools.x1_loop', restart: true },
-    cellEnv, cellFlags: isolation === 'process' ? cellPermissions(hostPort, ascPath) : [], ...rest,
+    cellEnv, cellFlags: isolation === 'process' ? cellPermissions(hostPort, ascPath) : [], rates, ...rest,
     ...(provider ? { hostCall: (call, job) => answerCall(pool, provider, call, job) } : {}) });
   loopPools.add(pool);
-  if (provider) providers.set(pool, { provider, waits });
+  if (rates) {
+    const request = pool.ledger.request.bind(pool.ledger);
+    pool.ledger.request = (...args) => {
+      const slot = rates.arrive('ledger');
+      const pending = request(...args);
+      pending.then(() => rates.done(slot), () => rates.done(slot));
+      return pending;
+    };
+  }
+  if (provider) providers.set(pool, { provider, waits, rates });
   return pool;
 }
 
@@ -45,7 +54,7 @@ async function modelTurn(context, provider, session, messages) {
   if (context.calls >= 2 * limits.maxTurns) throw Error('model call limit reached');
   if (remaining <= 0) throw Error('model token budget reached');
   context.calls += 1;
-  const begin = performance.now();
+  const begin = performance.now(), slot = context.rates?.arrive(context.admission ? 'model:impl' : 'model:spec');
   context.observe?.('model');
   try {
     const timeoutMs = Number.isFinite(deadline) ? Math.max(1, deadline - Date.now()) : undefined;
@@ -56,12 +65,20 @@ async function modelTurn(context, provider, session, messages) {
     return { text: reply.text, usage: reply.usage };
   } finally {
     context.modelMs += performance.now() - begin;
+    context.rates?.done(slot);
     context.observe?.('model-returned');
   }
 }
 async function answerCall(pool, provider, call, job) {
   const context = agentJobs.get(job.portOptions?.jobKey);
   if (!context) throw Error('no agent job');
+  if (context.rates) {
+    const begin = performance.now();
+    try { return await answerKind(pool, provider, call, job, context); } finally { context.rates.block('cell', performance.now() - begin); }
+  }
+  return answerKind(pool, provider, call, job, context);
+}
+async function answerKind(pool, provider, call, job, context) {
   if (call.kind === 'model') return modelTurn(context, provider, job.portOptions.jobKey, call.messages);
   if (call.kind === 'admit') {
     if (context.admission) throw Error('already admitted');
@@ -88,7 +105,8 @@ export async function attemptAgent({ need, directory, pool, observe, limits = ag
   const begin = performance.now(), jobKey = `agent-${process.pid}-${++nextAgentJob}`, id = basename(directory);
   const reference = { ledger: join(directory, 'ledger.sqlite') };
   const context = { need, observe, modelMs: 0, admission: null, reference, limits: { ...limits }, deadline, calls: 0, tokens: 0, shadow: {}, editable: specificationFiles(limits) };
-  const { provider, waits } = providers.get(pool) ?? {};
+  const { provider, waits, rates } = providers.get(pool) ?? {};
+  context.rates = rates;
   agentJobs.set(jobKey, context);
   try {
     if (!provider) throw Error('createLoopPool with a provider required');
@@ -138,6 +156,7 @@ export async function attemptAgent({ need, directory, pool, observe, limits = ag
       } else result = await job({});
       timings.compile += result.evidence?.timings?.compile ?? 0;
       timings.gate += result.evidence?.timings?.gates ?? 0;
+      if (rates && result.evidence?.timings) { rates.span('cell.compile', result.evidence.timings.compile); rates.span('cell.gates', result.evidence.timings.gates); }
       if (result.status !== 'waiting') break;
       const { shadow, calls, tokens, editable } = context;
       waiting = { cell: result.evidence.waiting, host: { shadow, calls, tokens, editable } };

@@ -2,6 +2,7 @@ import crypto from 'node:crypto';
 import path from 'node:path';
 import { readFileSync } from 'node:fs';
 import { glueFindings, nonFiniteExpectation, probeProblem, unitDisagreements } from './contract.mjs';
+import { unitFindings } from './dimensions.mjs';
 import { callKernel, freshKernel, kernelFuel, probeCalls } from './measure.mjs';
 import { loadKernel } from './meter.mjs';
 const glueSchema = JSON.parse(readFileSync(new URL('./glue.schema.json', import.meta.url)));
@@ -167,6 +168,15 @@ result.gates.G5_deterministic = { ok: same };
   const advisory = [...codeAdvisory];
   try { advisory.push(...unitDisagreements(JSON.parse(fs.readFileSync(f('glue.json'), 'utf8')))); } catch {}
   result.gates.G7_glue = problems.length ? { ok: false, why: problems.slice(0, 20).join('; ') } : { ok: true, ...(advisory.length ? { advisory: advisory.slice(0, 20) } : {}) };
+}
+{
+  let glue = null;
+  try { glue = JSON.parse(fs.readFileSync(f('glue.json'), 'utf8')); } catch {}
+  if (glue?.exports) {
+    const outputs = tests.map((t, i) => ({ fn: t.fn, out: run1[i].out, err: run1[i].err }));
+    const { problems, checks } = unitFindings(glue, { source: fs.existsSync(f('kernel.ts')) ? fs.readFileSync(f('kernel.ts'), 'utf8') : '', outputs });
+    result.gates.G9_units = problems.length ? { ok: false, why: problems.slice(0, 10).join('; '), checks } : { ok: true, checks };
+  }
 }
 {
   const expected = nonFiniteExpectation(fs.readFileSync(f('CONTRACT.md'), 'utf8'), Object.keys(loaded.shape.functions));
