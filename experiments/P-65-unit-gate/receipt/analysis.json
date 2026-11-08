@@ -1,0 +1,402 @@
+{
+ "pristine": {
+  "U2": "177 / 177",
+  "U2refused": [],
+  "U1": "0 / 0",
+  "U1refused": []
+ },
+ "sampledP21": {
+  "U2": {
+   "escaped": "105 / 7883 (1.33%)",
+   "clopperPearson": [
+    0.010906852423469147,
+    0.016101768766714916
+   ],
+   "bootstrap": {
+    "clusters": 20,
+    "lower": 0.007590132827324478,
+    "upper": 0.019705662259915192
+   },
+   "byClass": {
+    "boundary_errors": "36 / 1027",
+    "dropped_rows": "0 / 271",
+    "off_by_one": "12 / 955",
+    "reversed_inputs": "0 / 403",
+    "sign_errors": "0 / 946",
+    "stale_binding": "17 / 997",
+    "swapped_units": "0 / 884",
+    "wrong_constants": "13 / 951",
+    "wrong_join": "15 / 800",
+    "wrong_rounding": "12 / 649"
+   },
+   "byOp": {
+    "add_ceil": "0 / 84",
+    "add_floor": "1 / 94",
+    "add_round": "0 / 89",
+    "and_to_or": "2 / 86",
+    "bound_to_other_literal": "2 / 454",
+    "div_to_mul_constant": "0 / 41",
+    "drop_branch": "0 / 32",
+    "drop_guard": "1 / 155",
+    "drop_guard_disjunct": "34 / 460",
+    "drop_negative_literal": "0 / 50",
+    "drop_not": "0 / 27",
+    "drop_term": "0 / 163",
+    "flip_comparison": "0 / 488",
+    "flip_equality": "0 / 80",
+    "floor_to_ceil": "0 / 5",
+    "floor_to_round": "0 / 6",
+    "input_times_unit_factor": "0 / 399",
+    "literal_minus_one": "4 / 336",
+    "literal_plus_one": "8 / 522",
+    "min_max_swap": "0 / 2",
+    "minus_to_plus": "0 / 78",
+    "mul_to_div_constant": "0 / 34",
+    "negate_result": "0 / 168",
+    "or_to_and": "13 / 500",
+    "plus_to_minus": "0 / 55",
+    "plus_to_times": "0 / 58",
+    "relax_or_tighten_comparison": "1 / 412",
+    "result_minus_32": "0 / 12",
+    "result_minus_one": "0 / 53",
+    "result_over_unit_factor": "0 / 189",
+    "result_plus_32": "0 / 13",
+    "result_plus_one": "0 / 44",
+    "result_times_unit_factor": "0 / 196",
+    "revision_minus_0_2pct": "6 / 256",
+    "revision_plus_0_2pct": "9 / 268",
+    "round_one_place": "0 / 86",
+    "round_to_three_figures": "0 / 19",
+    "round_two_places": "2 / 90",
+    "single_precision": "2 / 93",
+    "strip_rounding": "7 / 10",
+    "swap_adjacent_params": "0 / 173",
+    "swap_call_args": "0 / 30",
+    "swap_div_operands": "0 / 107",
+    "swap_minus_operands": "0 / 93",
+    "ternary_keep_else": "0 / 38",
+    "ternary_keep_then": "0 / 38",
+    "ternary_swap_arms": "0 / 37",
+    "times_0_1": "1 / 259",
+    "times_10": "3 / 261",
+    "times_1_01": "4 / 200",
+    "times_1_1": "5 / 231",
+    "times_to_plus": "0 / 117",
+    "truncate_to_int": "0 / 92"
+   }
+  },
+  "S2a": "105 / 7883 (1.33%)"
+ },
+ "glueP21": {
+  "U2": {
+   "escaped": "91 / 799 (11.39%)",
+   "clopperPearson": [
+    0.0926961912939156,
+    0.1379842162359886
+   ],
+   "bootstrap": {
+    "clusters": 20,
+    "lower": 0.06708268330733229,
+    "upper": 0.170182841068917
+   },
+   "byClass": {
+    "dropped_rows": "0 / 108",
+    "reversed_inputs": "0 / 180",
+    "swapped_units": "76 / 268",
+    "wrong_join": "14 / 54",
+    "wrong_rounding": "1 / 189"
+   },
+   "byOp": {
+    "glue_arg_units_swapped": "22 / 103",
+    "glue_args_reordered": "0 / 180",
+    "glue_code_labels_swapped": "14 / 54",
+    "glue_code_row_dropped": "0 / 108",
+    "glue_precision_changed": "1 / 189",
+    "glue_result_unit_swapped": "54 / 165"
+   }
+  },
+  "S2a": "184 / 799 (23.03%)"
+ },
+ "byEscapeClass": {
+  "affine_point_vs_difference": {
+   "S2a": 12,
+   "U2": 12,
+   "dev": [
+    2,
+    0
+   ],
+   "heldOut": [
+    10,
+    0
+   ]
+  },
+  "label_vs_physical": {
+   "S2a": 50,
+   "U2": 13,
+   "dev": [
+    13,
+    11
+   ],
+   "heldOut": [
+    37,
+    26
+   ]
+  },
+  "same_dim:dT": {
+   "S2a": 5,
+   "U2": 2,
+   "dev": [
+    1,
+    1
+   ],
+   "heldOut": [
+    4,
+    2
+   ]
+  },
+  "code_labels:other": {
+   "S2a": 14,
+   "U2": 14,
+   "dev": [
+    6,
+    0
+   ],
+   "heldOut": [
+    8,
+    0
+   ]
+  },
+  "label_only": {
+   "S2a": 36,
+   "U2": 27,
+   "dev": [
+    10,
+    2
+   ],
+   "heldOut": [
+    26,
+    7
+   ]
+  },
+  "same_dim:tpoint": {
+   "S2a": 4,
+   "U2": 4,
+   "dev": [
+    2,
+    0
+   ],
+   "heldOut": [
+    2,
+    0
+   ]
+  },
+  "time_point_vs_duration": {
+   "S2a": 20,
+   "U2": 4,
+   "dev": [
+    6,
+    4
+   ],
+   "heldOut": [
+    14,
+    12
+   ]
+  },
+  "dim_mismatch:1|mdot": {
+   "S2a": 5,
+   "U2": 0,
+   "dev": [
+    2,
+    2
+   ],
+   "heldOut": [
+    3,
+    3
+   ]
+  },
+  "code_labels:reserved": {
+   "S2a": 13,
+   "U2": 0,
+   "dev": [
+    4,
+    4
+   ],
+   "heldOut": [
+    9,
+    9
+   ]
+  },
+  "generic_physical": {
+   "S2a": 9,
+   "U2": 9,
+   "dev": [
+    3,
+    0
+   ],
+   "heldOut": [
+    6,
+    0
+   ]
+  },
+  "dim_mismatch:T|RH%": {
+   "S2a": 3,
+   "U2": 0,
+   "dev": [
+    1,
+    1
+   ],
+   "heldOut": [
+    2,
+    2
+   ]
+  },
+  "dim_mismatch:%|1": {
+   "S2a": 2,
+   "U2": 2,
+   "dev": [
+    1,
+    0
+   ],
+   "heldOut": [
+    1,
+    0
+   ]
+  },
+  "dim_mismatch:mdot|1": {
+   "S2a": 3,
+   "U2": 1,
+   "dev": [
+    0,
+    0
+   ],
+   "heldOut": [
+    3,
+    2
+   ]
+  },
+  "dim_mismatch:mass|count": {
+   "S2a": 2,
+   "U2": 1,
+   "dev": [
+    0,
+    0
+   ],
+   "heldOut": [
+    2,
+    1
+   ]
+  },
+  "dim_mismatch:P|dT": {
+   "S2a": 1,
+   "U2": 0,
+   "dev": [
+    0,
+    0
+   ],
+   "heldOut": [
+    1,
+    1
+   ]
+  },
+  "precision": {
+   "S2a": 1,
+   "U2": 1,
+   "dev": [
+    0,
+    0
+   ],
+   "heldOut": [
+    1,
+    0
+   ]
+  },
+  "dim_mismatch:P|%": {
+   "S2a": 1,
+   "U2": 0,
+   "dev": [
+    0,
+    0
+   ],
+   "heldOut": [
+    1,
+    1
+   ]
+  },
+  "dim_mismatch:T|%": {
+   "S2a": 2,
+   "U2": 0,
+   "dev": [
+    0,
+    0
+   ],
+   "heldOut": [
+    2,
+    2
+   ]
+  },
+  "same_dim:1": {
+   "S2a": 1,
+   "U2": 1,
+   "dev": [
+    0,
+    0
+   ],
+   "heldOut": [
+    1,
+    0
+   ]
+  }
+ },
+ "crossCheck": {
+  "disagreements": 0,
+  "examples": []
+ },
+ "independence": {
+  "evaluator": {
+   "g9Refusals": 316,
+   "missedByOther": 143,
+   "fraction": 0.453
+  },
+  "existingGates": {
+   "g9Refusals": 316,
+   "missedByOther": 174,
+   "fraction": 0.551
+  },
+  "both": {
+   "g9Refusals": 316,
+   "missedByOther": 93,
+   "fraction": 0.294
+  },
+  "bySurface": {
+   "kernel": {
+    "g9Refusals": 94,
+    "missedByOther": 2,
+    "fraction": 0.021
+   },
+   "glue": {
+    "g9Refusals": 222,
+    "missedByOther": 141,
+    "fraction": 0.635
+   }
+  },
+  "evaluatorRefusalsAlsoG9": "173 / 7334",
+  "rules": {
+   "D": 168,
+   "C": 29,
+   "N": 126,
+   "K": 35,
+   "L": 41,
+   "R": 7
+  }
+ },
+ "gateStageMs": {
+  "U2": {
+   "p50": 125.82073100004345,
+   "p95": 286.6282230000943
+  },
+  "S2a": {
+   "p50": 182.39042100007646,
+   "p95": 486.15591800026596
+  }
+ }
+}

@@ -16,5 +16,6 @@ case $1 in
   offline)
     node "$tree/experiments/P-65-unit-gate/gates-offline.mjs" "$P65_CORPUS" "$P65_PREP" "$P65_OUT/gates-offline.jsonl" control,kernel,glue
     node "$tree/experiments/P-56-evaluator-synthesis/offline.mjs" "$P65_CORPUS" "$P65_PREP" "$P65_RECORDED" 2 "$P65_OUT/offline-S2.jsonl" > "$P65_OUT/offline-S2.summary.json" ;;
-  analyze) node "$tree/experiments/P-65-unit-gate/analyze.mjs" "$tree" "$P65_OUT" "$P65_S2A" ;;
+  analyze) node "$here/analyze.mjs" "$tree" "$P65_OUT" "$P65_S2A" ;;
+  classify) python3 -I "$here/classify.py" "$P65_S2A/glue.jsonl" "$P65_PREP/mutants.jsonl" "$P65_CORPUS" "$P65_OUT/classification.json" ;;
 esac
