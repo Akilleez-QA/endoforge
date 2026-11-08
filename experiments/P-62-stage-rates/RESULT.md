@@ -58,6 +58,8 @@ ledger              1     7.6      7.7   0.21  0.21  0/0.1/-0.0             0.3 
 bottleneck: model (population) 15.6 candidates in model on average; no stage at 0.8 net utilisation with a queue
 ```
 
+These runs measured main at 42ad98c plus this branch, before #109 (P-60) and #110 (P-59) merged at 18:36 during this lane. Main now has the group-commit ledger, and this table is main as it was.
+
 At 16 in flight the loop is bound by its population: 2.42 candidates/s ≈ 16 / 6.6 s. More width is the lever, and the ledger is next. It runs at 0.21–0.24 here, and `main-fast` shows it saturating at about 10.7 candidates/s (33.8 requests/s). By Little's Law, it would saturate at roughly 16 × 10.7 / 2.42 ≈ 70 in flight with these model times. With P-59 merged, that ceiling should move up, and the view should then name the cells, as P-59 reported. That isn't measured here.
 
 ## Predictions
