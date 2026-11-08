@@ -74,7 +74,7 @@ For whoever sets width next: in this harness the useful width is about the numbe
 ## Not shown or unverified
 
 - One unloaded round. Round 2's only row was loaded, and the affinity arm and the calibration runs (bars 2 and 3) weren't measured, under the stop condition.
-- Measured from a checkout of PR #109's head (`16b7b9c`), which wasn't merged when this ran. `route-default` is that PR's route default, and `route-fresh` and `runtime` are unchanged from main.
+- Measured from a checkout of PR #109's head (`16b7b9c`) before it merged. `tools/tscheck`, `core/runtime/contained` and the P-54 harness are byte-identical between that commit and the main this branch merged (f6711a7), so `route-default` is main's route default.
 - Other lanes' heavy jobs shared `heavy.slice`'s quota during every row (2.6–8.1 CPUs of it in the width-1 rows). The CPU left over for this harness varied between rows.
 - `perf` counted the cohort process only, in user mode. The supervisor, the kernel and the rest of the machine aren't counted. Uncore L3 and DRAM-controller counters need `perf_event_paranoid` ≤ 0, which wasn't changed.
 - Runtime rows last 0.2–1 s, too short for steady-state counters. Its width-12 row is an outlier.
