@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { availableParallelism } from 'node:os';
+import { defaultWidth } from '../capacity/plan.mjs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
@@ -121,7 +121,7 @@ test('validation, frozen drift and host errors fail closed; defaults are lazy', 
   try { assert.throws(() => new IsolatePool({ hostPort }), /overrides/); }
   finally { process.execArgv.pop(); }
   const defaults = new IsolatePool({ hostPort });
-  assert.equal(defaults.stats.size, availableParallelism());
+  assert.equal(defaults.stats.size, defaultWidth());
   assert.equal(defaults.stats.workers, 0);
   await defaults.close();
   const { reference, job } = await fixture(t);
