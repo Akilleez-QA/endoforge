@@ -1,9 +1,9 @@
 import { performance } from 'node:perf_hooks';
-import { availableParallelism } from 'node:os';
 import { resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { Worker } from 'node:worker_threads';
 import { execFileSync, fork, spawn } from 'node:child_process';
+import { defaultWidth } from './capacity/plan.mjs';
 import { attachCgroup, prepareCgroup, releaseCgroup } from './isolate-cgroup.mjs';
 import { LedgerBridge } from './isolate-ledger.mjs';
 import { trustedWasmPolicy } from './isolate-wasm.mjs';
@@ -59,7 +59,7 @@ export class IsolatePool {
   #retireAfterJobs;
   #busyMs = 0;
 
-  constructor({ hostPort, size = availableParallelism(), resourceLimits = {}, wasmMemoryMaxMb = 64,
+  constructor({ hostPort, size = defaultWidth(), resourceLimits = {}, wasmMemoryMaxMb = 64,
     isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, warm, warmTimeoutMs = 60000, jobTimeoutMs, jobDeadlineMs, hostCall, hostCalls, frozenThroughLedger = false, cellEnv, cellFlags = [], ledgerBridge, retireAfterJobs = 256 } = {}) {
     if (!positive(retireAfterJobs)) throw new TypeError('retireAfterJobs must be a positive integer');
     this.#retireAfterJobs = retireAfterJobs;
@@ -238,6 +238,7 @@ export class IsolatePool {
         cell.ready = true;
         this.#startFailures = 0;
         clearTimeout(cell.warmTimer);
+        if (cell.job && !cell.job.settled) this.#arm(cell, cell.job);
         return cell.markStarted(!result.warmError);
       }
       const job = cell.job;
@@ -308,7 +309,7 @@ export class IsolatePool {
         cell ||= this.#spawn();
         cell.job = job;
         job.dispatched = performance.now();
-        this.#arm(cell, job);
+        if (cell.ready) this.#arm(cell, job);
         if (this.#jobDeadlineMs) job.total = setTimeout(() => this.#stop(cell), this.#jobDeadlineMs);
         const { reference, candidates, portOptions } = job.data;
         job.hostCalls = 0;

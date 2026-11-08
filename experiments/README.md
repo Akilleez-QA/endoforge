@@ -3,16 +3,17 @@
 Recorded probes with their precommit, harness, and receipts. Each probe keeps a
 precommit hashed before measurement and a result that states what it does not show.
 
+<!-- experiments-index:begin -->
 | Probe | Question | Result |
 |---|---|---|
 | [P-15](P-15-workcell-concurrency/RESULT.md) | Workcell concurrency in V8 isolates on one host | [RESULT.md](P-15-workcell-concurrency/RESULT.md) |
 | [P-16](P-16-workerd-isolates/RESULT.md) | Standalone workerd throughput and memory breach isolation | [RESULT.md](P-16-workerd-isolates/RESULT.md) |
 | [P-17](P-17-workcell-gap/RESULT.md) | Workcell throughput between 10 and 50 isolates | [RESULT.md](P-17-workcell-gap/RESULT.md) |
 | [P-18](P-18-pool-breach/RESULT.md) | Thread/process pool memory breach containment at N=8 | [RESULT.md](P-18-pool-breach/RESULT.md) |
-| [P-21](P-21-x1-twenty-rerun/RESULT.md) | The twenty loop-0 requests re-run with Codex workers against Oct 17 and Oct 18 | [RESULT.md](P-21-x1-twenty-rerun/RESULT.md) |
 | [P-19](P-19-need-to-candidate/RESULT.md) | Need intake to candidate selection: real stage latency and missing synthesis/promotion links | [RESULT.md](P-19-need-to-candidate/RESULT.md) |
 | [P-20](P-20-pool-speed-rerun/RESULT.md) | Old compile/precompiled probes through the real thread/process isolate pool | [RESULT.md](P-20-pool-speed-rerun/RESULT.md) |
 | [P-20 addendum](P-20-pool-speed-rerun/RESULT.md#addendum-2026-11-01-earliest-baselines-inside-isolatepool) | P-01/P-02/P-05 and 10-29 ramp re-measured through IsolatePool; P-05 blocked by WASM guard | [receipt](P-20-pool-speed-rerun/receipt/addendum-2026-11-01/summary.json) |
+| [P-21](P-21-x1-twenty-rerun/RESULT.md) | The twenty loop-0 requests re-run with Codex workers against Oct 17 and Oct 18 | [RESULT.md](P-21-x1-twenty-rerun/RESULT.md) |
 | [P-22](P-22-real-need-to-candidate/README.md) | Real generation, pool gates and local qualification: 41/60 promoted; generation is ~99% of latency | [RESULT.md](P-22-real-need-to-candidate/RESULT.md) |
 | [P-23](P-23-generator-rerun/PRECOMMIT.md) | Contract-up-front generator, resumed sessions and auto effort: 0 precision refusals, about 2x faster, but only 26/60 promoted (G4 regression) | [RESULT.md](P-23-generator-rerun/RESULT.md) |
 | [P-24](P-24-g4-ablation/PRECOMMIT.md) | Session x effort ablation on the P-21 cohort: neither factor raises G4; 43/45 G4 refusals use `assert(`, 0/34 promotions do | [RESULT.md](P-24-g4-ablation/RESULT.md) |
@@ -42,8 +43,21 @@ precommit hashed before measurement and a result that states what it does not sh
 | [P-59](P-59-ledger-writer/PRECOMMIT.md) | A group-commit ledger writer, one journal `fdatasync` per batch: the ledger alone carries 94.7 accepted candidates/s (15.2× P-57's bridge) at 0.22 disk syncs per candidate against 24.3; `swarm-release-256` non-model p50 18.4 s to 2.0 s; 24 of 24 SIGKILL trials keep every acknowledged event once | [RESULT.md](P-59-ledger-writer/RESULT.md) |
 | [P-60](P-60-tscheck-snapshot/PRECOMMIT.md) | A cheaper type check in the cohort: a host-side post-lib snapshot isn't reachable, so a reused tsrs instance restored from its image plus a host-owned incremental baseline: 649–702 accepted per second at width 16 against 443–510 fresh, 23.6 ms CPU per accepted against 32.0 on the supervisor, 0 verdict or emit differences in 132 plus 15 sequences; missed 700 per second and the memory bar (65.7 against 49.1 MiB per active), made the cohort default by the precommitted rule | [RESULT.md](P-60-tscheck-snapshot/RESULT.md) |
 | [P-64](P-64-streaming-check/PRECOMMIT.md) | Acting on the reply while it streams (91 `claude -p` calls, recorded-stream replay): the reply only streams with `CLAUDE_CODE_ENABLE_FINE_GRAINED_TOOL_STREAMING=1`; the post-token tail was 1.6% of latency, and a pre-check cut it 61–70% but end-to-end only 0.45–1.1%, missing 15%; early refusal stopped 4 of 9 failing turns and 127 of 127 seeded mutants about 3 s early with no false refusal; a fail-triggered hedge cost 0.097 per useful second and gained nothing | [RESULT.md](P-64-streaming-check/RESULT.md) |
+| [P-67](P-67-adaptive-width/PRECOMMIT.md) | A capacity planner (`core/runtime/capacity/`, Mjölnir) that picks width, placement and split from the machine: the online tuner missed bars 1–4 on a loaded shared slice (199 against 422 accepted/s for width 16 in its worse round, because it yields to peers by design, plus a fixed bound-churn defect); 0 verdict changes; pinning cut cross-CCX fills 31–34× with no IPC gain. Ships with the best fixed arm as default, one pinned cohort per L3 domain at core width: 507 against 422 accepted/s | [RESULT.md](P-67-adaptive-width/RESULT.md) |
+<!-- experiments-index:end -->
 
-Parallel lanes reused P-55 and P-56, so the full directory name, such as `P-55-constraints`, `P-56-model-effort` or `P-56-evaluator-synthesis`, is the experiment ID.
+The table is generated: don't edit it here. Each probe's row lives in its own `INDEX.md` (the table header plus one or more rows, with links relative to the probe's directory), and `make index` rebuilds this list in number order. `make check` fails if the committed list is stale.
+
+Parallel lanes reused P-55 and P-56 before the allocator existed, so the full directory name, such as `P-55-constraints`, `P-56-model-effort` or `P-56-evaluator-synthesis`, is the experiment ID. [ALLOCATED](ALLOCATED) records both as `legacy-duplicate`.
+
+## Adding a probe
+
+1. **Reserve the number** with `python3 tools/experiment_id.py reserve <slug>`. It claims `refs/tags/experiment-id/P-NN` on `origin`, a create-only push that fails if another lane already took that number, and on failure it tries the next number. Then it appends `P-NN  <slug>` to [ALLOCATED](ALLOCATED) and commits that file alone. Never choose a number by hand. `make check` fails on a probe directory that isn't in `ALLOCATED`, and on any number listed twice that isn't a recorded legacy duplicate.
+2. **Create `experiments/P-NN-<slug>/INDEX.md`** with the table header and your row, then run `make index`.
+3. **List new source digests** with `make sums`. Use `python3 tools/source_sums.py --add <path>` to add a path to `sources/SHA256SUMS`, or `--remove <path>` to drop one.
+4. **New test files** need no Makefile edit when they sit in an existing test directory. The test targets discover them by glob.
+
+When a merge conflicts in `experiments/README.md` or `sources/SHA256SUMS`, take either side and run `make index sums`. `ALLOCATED` merges as a union through `.gitattributes`. Merge with `git -c rerere.enabled=false merge origin/main`.
 
 Rebuild P-15 dependencies with `setup.sh` in its directory; `node_modules` is not committed.
 
