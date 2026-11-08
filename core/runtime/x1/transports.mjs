@@ -1,11 +1,12 @@
 import { spawn } from 'node:child_process';
 import { mkdtempSync, rmSync, statSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { createInterface } from 'node:readline';
 import { replySchema, transportSystem } from './agent.mjs';
 import { requireSubscription, subscriptionEnvironment } from '../subscription-guard.mjs';
+import { UsageParked, governorFor, readRateLimit, watchdogEnvironment } from '../usage-governor.mjs';
 
 const allowedTools = new Set(['StructuredOutput']);
 const passedEnvironment = ['PATH', 'HOME', 'LANG', 'LC_ALL', 'TERM', 'USER', 'XDG_RUNTIME_DIR', 'XDG_CONFIG_HOME', 'XDG_CACHE_HOME', 'XDG_DATA_HOME'];
@@ -29,6 +30,8 @@ const sharedArguments = ({ model, system = transportSystem, effort }) => ['-p', 
 export const warmArguments = options => [...sharedArguments(options), '--input-format', 'stream-json', '--output-format', 'stream-json', '--verbose'];
 export const spawnArguments = options => [...sharedArguments(options), '--disable-slash-commands', '--output-format', 'stream-json', '--verbose'];
 export const usageOf = result => ['input_tokens', 'output_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens'].reduce((total, key) => total + (Number.isSafeInteger(result.usage?.[key]) ? result.usage[key] : 0), 0);
+const loginOf = (configDir, base = process.env) => configDir ?? join(base.HOME || homedir(), '.claude');
+const governed = (governor, configDir, usageState, base) => (governor === undefined ? governorFor(loginOf(configDir, base), { statePath: usageState }) : governor);
 const replyOf = (result, wallMs) => ({ text: result.structured_output ? JSON.stringify(result.structured_output) : result.result, usage: usageOf(result), wallMs, apiMs: result.duration_api_ms ?? null, usageDetail: result.usage ?? null,
   costUsd: Number.isFinite(result.total_cost_usd) ? result.total_cost_usd : null });
 const requireDirectory = configDir => {
@@ -71,11 +74,12 @@ export class SpawnClaudeTransport {
   name = 'claude-spawn';
   testDouble = false;
   #directory;
-  constructor({ configDir, model, system, effort, cwd, command = 'claude', timeoutMs = 300000, base, environment } = {}) {
+  constructor({ configDir, model, system, effort, cwd, command = 'claude', timeoutMs = 300000, base, environment, governor, usageState, watchdog } = {}) {
     requireDirectory(configDir);
     refuseCredentials(environment);
     this.#directory = new WorkingDirectory(cwd);
-    Object.assign(this, { configDir, command, timeoutMs, base, environment });
+    const watched = watchdogEnvironment(watchdog, { base: base ?? process.env, timeoutMs });
+    Object.assign(this, { configDir, command, timeoutMs, base, environment: { ...environment, ...watched }, governor: governed(governor, configDir, usageState, base) });
     this.arguments = spawnArguments({ model, system, effort });
     this.spawns = 0;
   }
@@ -86,8 +90,9 @@ export class SpawnClaudeTransport {
     return new Promise((resolve, reject) => {
       beforeBudget(remaining);
       const env = launchEnvironment(this.configDir, this.base, this.environment, this.#directory.path, this.arguments);
+      const ticket = this.governor?.admit();
       const child = spawn(this.command, this.arguments, { cwd: this.#directory.path, env, stdio: ['pipe', 'pipe', 'ignore'], timeout: timeoutMs });
-      let acceptable = false, refused = false, result = null;
+      let acceptable = false, refused = false, result = null, rateLimit = null;
       createInterface({ input: child.stdout }).on('line', line => {
         let event;
         try { event = JSON.parse(line); } catch { return; }
@@ -95,16 +100,18 @@ export class SpawnClaudeTransport {
           acceptable = initIsAcceptable(event);
           refused ||= !acceptable;
         }
+        if (event.type === 'rate_limit_event') rateLimit = this.governor?.observe(event) ?? readRateLimit(event);
         if (event.type === 'result') result = event;
       });
       child.on('error', reject);
       child.stdin.on('error', () => {});
       child.stdin.end(flatten(messages));
       child.on('close', code => {
+        ticket?.release({ completed: Boolean(result) });
         try {
           if (!acceptable || refused) throw Error(notSubscription);
           if (code || !result || result.is_error) throw Error('transport refused the turn');
-          const reply = replyOf(result, performance.now() - begin);
+          const reply = { ...replyOf(result, performance.now() - begin), rateLimit };
           withinBudget(remaining, reply.usage);
           resolve(reply);
         } catch (error) { reject(error); }
@@ -143,8 +150,9 @@ class Lane {
         this.inits.push({ model: event.model ?? null, apiKeySource: event.apiKeySource ?? null });
         return undefined;
       }
-      if (event.type === 'rate_limit_event' && event.rate_limit_info?.status === 'rejected') {
-        this.instance.limitedUntil = (event.rate_limit_info.resetsAt ?? 0) * 1000;
+      if (event.type === 'rate_limit_event') {
+        this.rateLimit = this.instance.governor?.observe(event) ?? readRateLimit(event);
+        if (event.rate_limit_info?.status === 'rejected') this.instance.limitedUntil = (event.rate_limit_info.resetsAt ?? 0) * 1000;
         return undefined;
       }
       if (event.type !== 'result' || !this.pending) return undefined;
@@ -153,7 +161,7 @@ class Lane {
       this.pending = null;
       clearTimeout(timer);
       if (event.is_error) reject(Error('transport refused the turn'));
-      else resolve(replyOf(event, performance.now() - sent));
+      else resolve({ ...replyOf(event, performance.now() - sent), rateLimit: this.rateLimit });
       return undefined;
     });
     this.opened = this.write('/clear', timeoutMs).then(() => {
@@ -177,6 +185,7 @@ class Lane {
     if (!this.child) return Promise.reject(Error('transport closed'));
     if (this.pending) return Promise.reject(Error('transport turn already pending'));
     this.initSeen = false;
+    this.rateLimit = null;
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => this.shut('transport timed out'), timeoutMs);
       this.pending = { resolve, reject, begin: performance.now(), timer };
@@ -194,14 +203,15 @@ export class WarmClaudeTransport {
   #closed = false;
   #directory;
   #recheck;
-  constructor({ instances = [{ name: 'default' }], model, system, effort, cwd, command = 'claude', timeoutMs = 300000, queueTimeoutMs = timeoutMs, idleMs = 300000, base, environment } = {}) {
+  constructor({ instances = [{ name: 'default' }], model, system, effort, cwd, command = 'claude', timeoutMs = 300000, queueTimeoutMs = timeoutMs, idleMs = 300000, base, environment, governor, usageState, watchdog } = {}) {
     refuseCredentials(environment);
     this.#directory = new WorkingDirectory(cwd);
-    Object.assign(this, { command, timeoutMs, queueTimeoutMs, idleMs, base, environment });
+    const watched = watchdogEnvironment(watchdog, { base: base ?? process.env, timeoutMs });
+    Object.assign(this, { command, timeoutMs, queueTimeoutMs, idleMs, base, environment: { ...environment, ...watched } });
     this.arguments = warmArguments({ model, system, effort });
     for (const instance of instances) {
       requireDirectory(instance.configDir);
-      const shared = { ...instance, limitedUntil: 0 };
+      const shared = { ...instance, limitedUntil: 0, governor: governed(governor === null ? null : undefined, instance.configDir, usageState, base) };
       for (let i = 0; i < (instance.lanes ?? 1); i++) this.#lanes.push(new Lane(this, shared));
     }
   }
@@ -231,10 +241,20 @@ export class WarmClaudeTransport {
     this.#recheck = setTimeout(() => this.#assign(), Math.max(1, Math.min(...free.map(lane => lane.instance.limitedUntil)) - Date.now()));
     this.#recheck.unref?.();
   }
+  #parked() {
+    const stops = [...new Set(this.#lanes.map(lane => lane.instance))].map(instance => {
+      const stop = instance.governor?.check() ?? null;
+      if (stop) instance.limitedUntil = Math.max(instance.limitedUntil, stop.resumeAt);
+      return stop;
+    });
+    return stops.every(Boolean) ? stops.reduce((first, stop) => (stop.resumeAt < first.resumeAt ? stop : first)) : null;
+  }
   #acquire(session) {
     const lane = this.#sessions.get(session);
     if (lane) return Promise.resolve(lane);
     if (this.#closed) return Promise.reject(Error('transport closed'));
+    const parked = this.#parked();
+    if (parked && parked.resumeAt - Date.now() > this.queueTimeoutMs) return Promise.reject(new UsageParked(parked));
     return new Promise((resolve, reject) => {
       const waiter = { session, resolve, reject };
       waiter.timer = setTimeout(() => {
@@ -251,7 +271,17 @@ export class WarmClaudeTransport {
     const wasOpen = Boolean(lane.child);
     await lane.open(timeoutMs);
     if (lane.dirty) { await lane.write('/clear', timeoutMs); lane.dirty = false; lane.sent = 0; }
-    const reply = await lane.write(flatten(messages.slice(wasOpen ? lane.sent : 0)), timeoutMs);
+    let ticket;
+    try { ticket = lane.instance.governor?.admit(); } catch (error) {
+      if (error instanceof UsageParked) lane.instance.limitedUntil = Math.max(lane.instance.limitedUntil, error.resumeAt);
+      throw error;
+    }
+    let reply;
+    try { reply = await lane.write(flatten(messages.slice(wasOpen ? lane.sent : 0)), timeoutMs); } catch (error) {
+      ticket?.release({ completed: false });
+      throw error;
+    }
+    ticket?.release();
     lane.sent = messages.length + 1;
     withinBudget(remaining, reply.usage);
     return reply;

@@ -1,6 +1,7 @@
 PYTHON ?= python3
 export PYTHONDONTWRITEBYTECODE := 1
 export ENDOFORGE_TEST_OUTPUT := $(CURDIR)/.test-work
+export ENDOFORGE_USAGE_STATE := $(CURDIR)/.test-work/usage-governor.json
 TOOLS_DIR := $(CURDIR)/.tools
 KERNEL_PYTHON = $(if $(wildcard $(TOOLS_DIR)/venv/bin/python),$(TOOLS_DIR)/venv/bin/python $(wordlist 2,$(words $(PYTHON)),$(PYTHON)),$(PYTHON))
 KERNEL_ENV = $(if $(wildcard $(TOOLS_DIR)/bin/wasm-tools),PATH="$(TOOLS_DIR)/bin:$$PATH")

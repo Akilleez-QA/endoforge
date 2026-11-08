@@ -192,13 +192,18 @@ const warmTransport = (root, extra = {}) => new WarmClaudeTransport({ model: 'st
 const logOf = root => readFileSync(join(root, 'log'), 'utf8').trim().split('\n').map(line => JSON.parse(line));
 const say = (...texts) => texts.flatMap((text, index) => (index ? [{ role: 'assistant', content: 'ok' }, { role: 'user', content: text }] : [{ role: 'user', content: text }]));
 
-test('5: the queue for a lane is bounded', { timeout: 30000 }, async t => {
+test('5: the queue for a lane is bounded, and a limit past the queue timeout parks at once', { timeout: 30000 }, async t => {
   const root = scratch(t), warm = warmTransport(root, { queueTimeoutMs: 200, environment: { FAKE_CLAUDE_MODE: 'limit' } });
   t.after(() => warm.close());
   await warm.send({ session: 'a', messages: say('one') });
   const begin = Date.now();
-  await assert.rejects(warm.send({ session: 'b', messages: say('two') }), /queue/);
+  await assert.rejects(warm.send({ session: 'b', messages: say('two') }), error => error.code === 'USAGE_PARKED');
   assert(Date.now() - begin < 1000);
+  const busy = warmTransport(root, { queueTimeoutMs: 200, governor: null, environment: { FAKE_CLAUDE_MS: '600' } });
+  t.after(() => busy.close());
+  const held = busy.send({ session: 'a', messages: say('one') }).catch(() => {});
+  await assert.rejects(busy.send({ session: 'b', messages: say('two') }), /queue/);
+  await held;
 });
 
 test('5: a rate-limited lane is rechecked after it resets', { timeout: 30000 }, async t => {
