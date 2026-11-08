@@ -1,13 +1,39 @@
-import { readFileSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
 import { createController } from '../capacity/controller.mjs';
 
 const TICKS = 100;
+const PROC = existsSync('/proc/self/stat');
+export const parseCpuTime = text => {
+  const [clock, days = null] = text.trim().split('-').reverse();
+  const parts = clock.split(':').map(Number);
+  if (!parts.length || parts.some(part => !Number.isFinite(part))) return null;
+  return (parts.reduce((total, part) => total * 60 + part, 0) + Number(days ?? 0) * 86400) * 1000;
+};
+const ps = (pids, field) => {
+  try { return execFileSync('/bin/ps', ['-o', `${field}=`, '-p', pids.join(',')], { encoding: 'utf8', timeout: 2000, stdio: ['ignore', 'pipe', 'ignore'] }).trim().split('\n').filter(Boolean); } catch { return null; }
+};
 const cpuOf = pids => {
+  if (!PROC) {
+    const lines = pids.length ? ps(pids, 'time') : [];
+    if (!lines || lines.length !== pids.length) return null;
+    const times = lines.map(parseCpuTime);
+    return times.some(time => time === null) ? null : times.reduce((a, b) => a + b, 0);
+  }
   let ticks = 0;
   for (const pid of pids) {
     try { const fields = readFileSync(`/proc/${pid}/stat`, 'utf8').split(') ')[1].split(' '); ticks += Number(fields[11]) + Number(fields[12]); } catch { return null; }
   }
   return ticks / TICKS * 1000;
+};
+const rssOf = pids => {
+  if (!PROC) {
+    const lines = pids.length ? ps(pids, 'rss') : [];
+    return !lines || lines.length !== pids.length ? null : lines.reduce((total, line) => total + Number(line) / 1024, 0);
+  }
+  let pages = 0;
+  for (const pid of pids) { try { pages += Number(readFileSync(`/proc/${pid}/statm`, 'utf8').split(' ')[1]); } catch { return null; } }
+  return pages * 4096 / 1048576;
 };
 
 export function createCohortSet({ plan, make, controller: controllerOptions = {} }) {
@@ -21,11 +47,7 @@ export function createCohortSet({ plan, make, controller: controllerOptions = {}
     const self = process.cpuUsage(self0);
     return cohorts + (self.user + self.system) / 1000;
   };
-  const rssMb = () => {
-    let pages = 0;
-    for (const pid of runners.map(runner => runner.pid).filter(Boolean)) { try { pages += Number(readFileSync(`/proc/${pid}/statm`, 'utf8').split(' ')[1]); } catch { return null; } }
-    return pages * 4096 / 1048576;
-  };
+  const rssMb = () => rssOf(runners.map(runner => runner.pid).filter(Boolean));
   const controller = createController({ plan, cpuMs, rssMb, backlog: () => queue.length, apply: widths => { widths.forEach((width, index) => runners[index].setWidth(width)); pump(); }, ...controllerOptions });
   const free = runner => runner.width - runner.load;
   const pump = () => {

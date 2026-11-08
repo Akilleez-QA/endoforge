@@ -1,3 +1,4 @@
+import { execFileSync } from 'node:child_process';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import { availableParallelism, freemem, platform } from 'node:os';
 
@@ -22,10 +23,27 @@ const defaultHost = () => ({
   parallelism: availableParallelism(),
   freeMb: Math.floor(freemem() / 1048576),
   os: platform(),
+  run: (command, args) => execFileSync(command, args, { encoding: 'utf8', timeout: 2000, stdio: ['ignore', 'pipe', 'ignore'] }),
 });
 
+export function darwinAvailableMb(run) {
+  let text;
+  try { text = run('/usr/bin/vm_stat', []); } catch { return null; }
+  const page = Number(text.match(/page size of (\d+) bytes/)?.[1]);
+  const pages = name => Number(text.match(new RegExp(`^Pages ${name}:\\s+(\\d+)`, 'm'))?.[1] ?? NaN);
+  const total = ['free', 'inactive', 'speculative', 'purgeable'].map(pages);
+  if (!Number.isFinite(page) || total.some(value => !Number.isFinite(value))) return null;
+  return Math.floor(total.reduce((a, b) => a + b, 0) * page / 1048576);
+}
+
+function darwinPerfLevels(run) {
+  const read = name => { try { const value = Number(run('/usr/sbin/sysctl', ['-n', name]).trim()); return Number.isSafeInteger(value) ? value : null; } catch { return null; } };
+  const performance = read('hw.perflevel0.physicalcpu'), efficiency = read('hw.perflevel1.physicalcpu');
+  return performance === null ? null : { performance, efficiency: efficiency ?? 0 };
+}
+
 export function probeMachine(host = {}) {
-  const { read, exists, parallelism, freeMb, os } = { ...defaultHost(), ...host };
+  const { read, exists, parallelism, freeMb, os, run } = { ...defaultHost(), ...host };
   const notes = [];
   const text = path => { try { return read(path); } catch { return null; } };
   const status = text('/proc/self/status')?.match(/^Cpus_allowed_list:\s*(\S+)/m);
@@ -74,8 +92,11 @@ export function probeMachine(host = {}) {
   if (!topologyRead) notes.push('no sysfs L3 or SMT topology: treating every allowed CPU as one core in one cache domain');
   const domainList = topologyRead ? [...domains.values()].map(({ cpus, cores }) => ({ cpus, cores: cores.size })) : [{ cpus, cores: cpus.length }];
   const meminfo = text('/proc/meminfo')?.match(/^MemAvailable:\s+(\d+)\s+kB/m);
-  const availableMb = meminfo ? Math.floor(Number(meminfo[1]) / 1024) : freeMb;
-  if (!meminfo) notes.push('no /proc/meminfo: memory headroom from os.freemem');
+  const darwinMb = !meminfo && os === 'darwin' ? darwinAvailableMb(run) : null;
+  const availableMb = meminfo ? Math.floor(Number(meminfo[1]) / 1024) : darwinMb ?? freeMb;
+  if (!meminfo) notes.push(darwinMb !== null ? 'no /proc/meminfo: memory headroom from vm_stat (free, inactive, speculative and purgeable pages)' : 'no /proc/meminfo: memory headroom from os.freemem');
+  const perfLevels = os === 'darwin' ? darwinPerfLevels(run) : null;
+  if (perfLevels && perfLevels.efficiency) notes.push(`mixed cores: ${perfLevels.performance} performance and ${perfLevels.efficiency} efficiency; all are counted as cores in one domain`);
   let headroomMb = availableMb;
   if (memoryLimit !== null) {
     const current = Number((text(`${memoryCgroup}/memory.current`) || '').trim());
@@ -86,7 +107,7 @@ export function probeMachine(host = {}) {
   return {
     os, cpus, quota, quotaCgroup, levels, ownCgroup: quotaCgroup && chain.length ? chain.findLast(dir => dir.startsWith(`${quotaCgroup}/`) && dir.slice(quotaCgroup.length + 1).indexOf('/') < 0) ?? quotaCgroup : null,
     allotment: +allotment.toFixed(2), domains: domainList, cores: topologyRead ? cores.size : cpus.length, smt: topologyRead && [...cores.values()].some(count => count > 1),
-    memory: { availableMb, headroomMb, limitMb: memoryLimit === null ? null : Math.floor(memoryLimit / 1048576), cgroup: memoryCgroup }, taskset, notes,
+    perfLevels, memory: { availableMb, headroomMb, limitMb: memoryLimit === null ? null : Math.floor(memoryLimit / 1048576), cgroup: memoryCgroup }, taskset, notes,
   };
 }
 
@@ -150,12 +171,14 @@ export function createShareMeter(probe = machine(), host = {}) {
 }
 
 export function createMemoryMeter(probe = machine(), host = {}) {
-  const { read } = { ...defaultHost(), ...host };
+  const { read, run, os } = { ...defaultHost(), ...host };
   const text = path => { try { return read(path); } catch { return null; } };
+  let cached = null;
   return {
     headroomMb() {
       const meminfo = text('/proc/meminfo')?.match(/^MemAvailable:\s+(\d+)\s+kB/m);
-      let headroom = meminfo ? Math.floor(Number(meminfo[1]) / 1024) : probe.memory.headroomMb;
+      if (!meminfo && os === 'darwin' && (!cached || performance.now() - cached.at > 5000)) cached = { at: performance.now(), mb: darwinAvailableMb(run) };
+      let headroom = meminfo ? Math.floor(Number(meminfo[1]) / 1024) : cached?.mb ?? probe.memory.headroomMb;
       const dir = probe.memory.cgroup;
       if (dir) {
         const ceilings = ['memory.high', 'memory.max'].map(name => Number((text(`${dir}/${name}`) || 'max').trim())).filter(Number.isFinite);

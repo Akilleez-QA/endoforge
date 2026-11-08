@@ -93,3 +93,27 @@ A verdict difference: stop and fix before further rows. A block that can't be ma
 The "unexpected kernel property" above is wrong. `heavy-run` sizes `heavy.slice` from `nproc`, which follows the caller's affinity, and rewrites the slice when that number changes. Every `taskset -c … heavy-run …` call in the exploratory runs (and the first two 4-CPU sweep rows of round 1) resized `heavy.slice` to 56% of the restricted CPU count (224% for 4 or 8 CPUs, so the "0.56 × k" pattern), for every job in the slice, until the next unrestricted `heavy-run` call wrote 1792% back. P-67's `taskset -c 0-3` and `0-7` sweeps ran the same way, so their 4- and 8-CPU allotments were probably the slice's 2.24 and 4.48 CPUs too. The slice was restored with an unrestricted `heavy-run --write-slice` at 02:07 EST (`cpu.max` 1792000 100000). The two affected rows (round 1, 4 CPUs, `w2` and `w4`, calibration 2.25 CPUs) are kept in `receipt/invalid/` and don't count.
 
 Changed procedure: the affinity is applied inside `heavy-run`, never before it: `systemd-run --user --scope -p CPUQuota=Q -- env HEAVY_SLOTS=4 heavy-run --name p68-bench -- taskset -c CPUS node bench.mjs …`. `heavy-run` still copies the outer scope's quota onto the job scope. Each restricted block's calibration must read the quota (±5%), or the block doesn't count. The allotment table is unchanged. Arms, fairness and full-allotment sweep rows already measured ran with the slice at 17.92 (each file's probe records it) and stand.
+
+## Amendment 2 (2026-11-08, before any ds9 or MacBook Air measurement and before the remaining main-rig restricted rows)
+
+**Correction to amendment 1.** Applying `taskset` inside `heavy-run` wasn't enough: coreutils 9.12 `nproc` also honours the scope's `cpu.max`, so `heavy-run` started inside a `CPUQuota=400%` scope still saw 4 threads and rewrote `heavy.slice` to 224% (02:06–02:08 EST; the earlier window was 02:00–02:04, not "02:07" as amendment 1 says). The second set of 4-CPU rows is set aside in `receipt/invalid/` too. Restricted runs now pass the real thread count to `heavy-run` and drop it for the job: `systemd-run --user --scope -p CPUQuota=Q -- env OMP_NUM_THREADS=$(nproc --all) HEAVY_SLOTS=4 heavy-run --name p68-bench -- env -u OMP_NUM_THREADS taskset -c CPUS node bench.mjs …` (checked: job scope `cpu.max` 400000, slice unchanged at 1792000). The driver aborts if the slice's `cpu.max` isn't 1792000 100000 before any block.
+
+**Code changed for the degrade path, before measuring there** (the Linux path behaves as before; the remaining main-rig rows run this commit):
+- `probe.mjs`: on macOS, memory headroom from `vm_stat` (free + inactive + speculative + purgeable pages) instead of `os.freemem()`, which read 388 MB on the 16 GB Air with ~5.2 GB reclaimable and would have held the memory cap near 12 cells; `perfLevels` from `sysctl hw.perflevel0/1.physicalcpu`, with a note when cores are mixed. Tests added.
+- `cohort-set.mjs`: without `/proc`, cohort CPU and RSS come from `ps -o time=,rss=`. Before this, `cpuMs()` returned null on macOS, so the tuner had no CPU-per-attempt guard and never measured `u` (its bound stayed at 1.25 × share).
+- `bench.mjs`: load from `os.loadavg()`, PSI and cgroup optional, `--loadMax`, `--arms`, `--machine`; CPU from `ps` without `/proc`.
+
+**Extension of bar 3 (portability) to two more machines.** The main-rig decision rule doesn't change. Same bar: on each machine, `tuned` accepted/s (worse of two rounds) ≥ 0.90 × the best fixed width of the sweep (each width's worse round). Also reported: the probe, the plan, and each arm's accepted/s and CPU per accepted.
+
+| | ds9 | MacBook Air |
+|---|---|---|
+| Hardware | Xeon E5-2699 v4, 22 cores / 44 threads, one 55 MiB L3, 188 GB, cgroup v2 | Apple M2, 4 performance + 4 efficiency cores, 16 GB, macOS, no cgroup or sysfs |
+| Node | 26.13.0 | 22.23.3 (26 isn't installed) |
+| Allotment | `HEAVY_SLOTS=4 heavy-run` (its `heavy.slice`, 24.64 CPUs) | the whole machine (8) |
+| Expected plan | one cohort (one L3 domain): fixed width 22, tuned start 22, max 74 | one unpinned cohort: fixed width 8, tuned start 8, max 24 |
+| Arms (120 s) | `fixed` (current default), `tuned` | `fixed`, `tuned` |
+| Sweep (30 s), then `tuned` 120 s | 8, 16, 22, 32, 48, 74 | 2, 4, 6, 8, 12, 16, 24 |
+| Gate | PSI `cpu some avg10` ≤ 5, no other job in its `heavy.slice` (its containers keep load near 11, so load isn't gated, `--loadMax=1000`); load recorded per row | 1-minute load ≤ 4, waiting up to 20 min (no PSI on macOS); load recorded per row |
+| Rounds | round 1 forward, round 2 reverse | same; `pmset -g batt` and `pmset -g therm` before and after each round. It runs on battery and is fanless, so its figures are labelled battery/thermal-affected |
+
+ds9: EndoForge cloned to `~/endoforge-p68` at this commit; `tools/tscheck` dependencies via the repo's `npm ci`, and the AssemblyScript compiler copied from main-rig into the clone; nothing else on ds9 changes and no container or service is touched. MacBook Air: `--depth 1` clone; `tools/tscheck/node_modules` and the compiler copied from main-rig into the clone (no installs); receipts copied back to main-rig; the clone deleted at the end. On both, a row that isn't quiet is rerun once; if it still isn't, it's reported as loaded and doesn't count.

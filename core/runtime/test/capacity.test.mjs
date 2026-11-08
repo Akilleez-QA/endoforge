@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { createController, createOccupancy, createShareMeter, createTuner, fairShare, occupancyCap, P67_TUNED_POLICY, parseCpuList, plan, probeMachine, TUNED_POLICY } from '../capacity/index.mjs';
+import { createController, createMemoryMeter, createOccupancy, createShareMeter, createTuner, fairShare, occupancyCap, P67_TUNED_POLICY, parseCpuList, plan, probeMachine, TUNED_POLICY } from '../capacity/index.mjs';
 import { createCohortSet } from '../contained/cohort-set.mjs';
 import { createContainedRunner } from '../contained/runner.mjs';
 
@@ -67,6 +67,24 @@ test('without sysfs or cgroups the probe degrades to availableParallelism and sa
   assert.equal(found.taskset, null);
   assert.equal(found.memory.availableMb, 512);
   assert.ok(found.notes.length >= 3);
+});
+
+test('on macOS the probe reads vm_stat for headroom and sysctl for performance and efficiency cores', () => {
+  const VM = 'Mach Virtual Memory Statistics: (page size of 16384 bytes)\nPages free:                                5471.\nPages active:                            324342.\nPages inactive:                          303624.\nPages speculative:                        20103.\nPages purgeable:                           8070.\n';
+  const sysctl = { 'hw.perflevel0.physicalcpu': '4\n', 'hw.perflevel1.physicalcpu': '4\n' };
+  const run = (command, args) => { if (command.endsWith('vm_stat')) return VM; if (command.endsWith('sysctl') && sysctl[args[1]]) return sysctl[args[1]]; throw new Error('absent'); };
+  const mac = { read: () => { throw new Error('absent'); }, exists: () => false, parallelism: 8, freeMb: 388, os: 'darwin', run };
+  const found = probeMachine(mac);
+  assert.equal(found.allotment, 8);
+  assert.equal(found.memory.availableMb, Math.floor((5471 + 303624 + 20103 + 8070) * 16384 / 1048576));
+  assert.ok(found.memory.availableMb > 5000, 'inactive and purgeable pages count, unlike os.freemem');
+  assert.deepEqual(found.perfLevels, { performance: 4, efficiency: 4 });
+  assert.ok(found.notes.some(note => /mixed cores/.test(note)));
+  assert.equal(createMemoryMeter(found, mac).headroomMb(), found.memory.availableMb);
+  assert.deepEqual(plan({ probe: found }).cohorts.map(cohort => [cohort.width, cohort.cpus]), [[8, null]]);
+  const broken = probeMachine({ ...mac, run: () => { throw new Error('no tools'); } });
+  assert.equal(broken.memory.availableMb, 388);
+  assert.equal(broken.perfLevels, null);
 });
 
 test('the plan splits a multi-domain allotment into pinned cohorts and keeps one cohort when small', () => {

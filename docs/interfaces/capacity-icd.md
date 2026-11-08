@@ -6,7 +6,7 @@
 domains) and how a job is split into cohorts, from the machine it runs on and what else shares its CPU allotment. It is
 a system of the Cstack family: EndoForge is its canonical home and Cstack vendors it through
 `tools/pin_endoforge.py`. It has no dependencies beyond Node's standard library, writes nothing to disk, and reads only
-`/proc` and `/sys`. Interface version: `INTERFACE_VERSION = 1` (`index.mjs`); a field removal or meaning change bumps
+`/proc` and `/sys` (on macOS it runs `sysctl -n hw.perflevel0/1.physicalcpu` and `vm_stat` instead). Interface version: `INTERFACE_VERSION = 1` (`index.mjs`); a field removal or meaning change bumps
 it.
 
 Consumers in EndoForge: the contained route (`tools/tscheck/contained-route.mjs`) and `IsolatePool`
@@ -33,13 +33,17 @@ Consumers in EndoForge: the contained route (`tools/tscheck/contained-route.mjs`
 ### Probe record
 
 `{ os, cpus: [allowed CPU ids], quota: CPUs | null, quotaCgroup, levels: [{ cgroup, quota, branch }], ownCgroup,
-allotment, domains: [{ cpus, cores }], cores, smt, memory: { availableMb, headroomMb, limitMb, cgroup }, taskset: path | null,
+allotment, domains: [{ cpus, cores }], cores, smt, perfLevels, memory: { availableMb, headroomMb, limitMb, cgroup }, taskset: path | null,
 notes: [strings] }`
 
 - `allotment` = min(allowed CPUs, tightest `cpu.max` on the process's cgroup chain). Allowed CPUs are the affinity
   mask intersected with `cpuset.cpus.effective`.
 - `domains` group allowed CPUs by shared L3 (`cache/index*/level == 3`, `shared_cpu_list`); `cores` counts distinct
   `thread_siblings_list` groups.
+- `perfLevels` is `{ performance, efficiency }` physical cores on macOS (from `sysctl`), else `null`. Mixed cores are all
+  counted as cores of one domain and the probe says so in `notes`.
+- Without `/proc/meminfo`, macOS headroom is free + inactive + speculative + purgeable pages from `vm_stat`
+  (`os.freemem()` there omits reclaimable pages and reads a few hundred MB on a busy 16 GB machine).
 - Anything unreadable degrades to one domain of `availableParallelism()` CPUs with no quota, and adds a line to
   `notes`. A caller must treat `notes` as "this figure is a guess".
 
