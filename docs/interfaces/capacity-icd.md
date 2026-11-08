@@ -9,8 +9,11 @@ a system of the Cstack family: EndoForge is its canonical home and Cstack vendor
 `/proc` and `/sys` (on macOS it runs `sysctl -n hw.perflevel0/1.physicalcpu` and `vm_stat` instead). Interface version: `INTERFACE_VERSION = 1` (`index.mjs`); a field removal or meaning change bumps
 it.
 
-Consumers in EndoForge: the contained route (`tools/tscheck/contained-route.mjs`) and `IsolatePool`
-(`core/runtime/isolate-pool.mjs`) use it whenever the caller gives no width. An explicit width always wins.
+Consumers in EndoForge: the contained route (`tools/tscheck/contained-route.mjs`) uses it whenever the caller gives
+no width; an explicit width always wins. `IsolatePool` (`core/runtime/isolate-pool.mjs`) no longer does: P-68's
+precommitted rule returned its default size to `availableParallelism()`: on worse rounds the old 32 gave 4.7 jobs/s
+against 2.3 for the plan's 16. The rounds disagreed (16 led 7.6 to 4.7 in round 1; 32 led 9.5 to 2.3 in round 2), so the
+evidence is weak in both directions.
 
 ## Library interface (`core/runtime/capacity/index.mjs`)
 
