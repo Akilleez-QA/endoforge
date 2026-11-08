@@ -1,3 +1,4 @@
+import { availableParallelism } from 'node:os';
 import { performance } from 'node:perf_hooks';
 import { resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -5,7 +6,6 @@ import { Worker } from 'node:worker_threads';
 import { execFileSync, fork, spawn } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { dumpListEnabled, registerHolder } from './dump-list.mjs';
-import { defaultWidth } from './capacity/plan.mjs';
 import { attachCgroup, prepareCgroup, releaseCgroup } from './isolate-cgroup.mjs';
 import { LedgerBridge } from './isolate-ledger.mjs';
 import { trustedWasmPolicy } from './isolate-wasm.mjs';
@@ -72,7 +72,7 @@ export class IsolatePool {
   #holdTimer = null;
   #rates;
 
-  constructor({ hostPort, size = defaultWidth(), resourceLimits = {}, wasmMemoryMaxMb = 64,
+  constructor({ hostPort, size = availableParallelism(), resourceLimits = {}, wasmMemoryMaxMb = 64,
     isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, warm, warmTimeoutMs = 60000, jobTimeoutMs, jobDeadlineMs, hostCall, hostCalls, frozenThroughLedger = false, cellEnv, cellFlags = [], ledgerBridge, retireAfterJobs = 256, dumpList, rates = null } = {}) {
     if (!positive(retireAfterJobs)) throw new TypeError('retireAfterJobs must be a positive integer');
     this.#retireAfterJobs = retireAfterJobs;
