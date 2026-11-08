@@ -1,0 +1,2242 @@
+{
+ "node": "26.13.0",
+ "arms": [
+  {
+   "arm": "2x8-pinned",
+   "rounds": 1,
+   "perSecond": 646.6,
+   "all": [
+    646.6
+   ],
+   "cpuMsPerAccepted": 26.676,
+   "allCpu": [
+    26.676
+   ],
+   "ownCgroupMsPerAccepted": 26.676,
+   "busyCpus": [
+    17.25
+   ],
+   "sliceCpus": [
+    17.25
+   ],
+   "throttledMs": [
+    1094.4
+   ],
+   "quiet": [
+    true
+   ],
+   "loads": [
+    [
+     4.7,
+     19.57,
+     14.83
+    ]
+   ],
+   "psi": [
+    [
+     4.1,
+     1.02,
+     0.13
+    ]
+   ],
+   "verdictDigests": [
+    "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709"
+   ],
+   "finalWidths": [
+    16
+   ],
+   "finalCohortWidths": [
+    null
+   ]
+  },
+  {
+   "arm": "1x16",
+   "rounds": 1,
+   "perSecond": 614.7,
+   "all": [
+    614.7
+   ],
+   "cpuMsPerAccepted": 24.221,
+   "allCpu": [
+    24.221
+   ],
+   "ownCgroupMsPerAccepted": 24.221,
+   "busyCpus": [
+    14.89
+   ],
+   "sliceCpus": [
+    14.89
+   ],
+   "throttledMs": [
+    31.9
+   ],
+   "quiet": [
+    true
+   ],
+   "loads": [
+    [
+     14.83,
+     18.73,
+     15.85
+    ]
+   ],
+   "psi": [
+    [
+     0.13,
+     2.02,
+     0.6
+    ]
+   ],
+   "verdictDigests": [
+    "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709"
+   ],
+   "finalWidths": [
+    16
+   ],
+   "finalCohortWidths": [
+    null
+   ]
+  },
+  {
+   "arm": "tuned",
+   "rounds": 1,
+   "perSecond": 565.6,
+   "all": [
+    565.6
+   ],
+   "cpuMsPerAccepted": 16.658,
+   "allCpu": [
+    16.658
+   ],
+   "ownCgroupMsPerAccepted": 16.658,
+   "busyCpus": [
+    9.42
+   ],
+   "sliceCpus": [
+    9.42
+   ],
+   "throttledMs": [
+    6840.2
+   ],
+   "quiet": [
+    true
+   ],
+   "loads": [
+    [
+     15.85,
+     11.36,
+     11.36
+    ]
+   ],
+   "psi": [
+    [
+     0.6,
+     0,
+     0
+    ]
+   ],
+   "verdictDigests": [
+    "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709"
+   ],
+   "finalWidths": [
+    8
+   ],
+   "finalCohortWidths": [
+    4
+   ]
+  },
+  {
+   "arm": "tuned-p67",
+   "rounds": 1,
+   "perSecond": 629.4,
+   "all": [
+    629.4
+   ],
+   "cpuMsPerAccepted": 28.454,
+   "allCpu": [
+    28.454
+   ],
+   "ownCgroupMsPerAccepted": 28.454,
+   "busyCpus": [
+    17.91
+   ],
+   "sliceCpus": [
+    17.91
+   ],
+   "throttledMs": [
+    144194
+   ],
+   "quiet": [
+    true
+   ],
+   "loads": [
+    [
+     11.36,
+     23.69,
+     15.61
+    ]
+   ],
+   "psi": [
+    [
+     0,
+     4.47,
+     0.33
+    ]
+   ],
+   "verdictDigests": [
+    "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709"
+   ],
+   "finalWidths": [
+    18
+   ],
+   "finalCohortWidths": [
+    9
+   ]
+  }
+ ],
+ "stability": {
+  "tuned": [
+   {
+    "arm": "tuned",
+    "settleSeconds": 13.1,
+    "changesAfterSettle": 1,
+    "perMinuteAfterSettle": 0.55,
+    "boundChangesAfterSettle": 0,
+    "boundPerMinute": 0,
+    "totalChanges": 7,
+    "u": {
+     "mean": 1.14,
+     "sd": 0.035,
+     "cv": 0.03,
+     "final": 1.14
+    },
+    "finalCap": 10,
+    "finalWidth": 4,
+    "quiet": true
+   }
+  ],
+  "tunedP67": [
+   {
+    "arm": "tuned-p67",
+    "settleSeconds": 9,
+    "changesAfterSettle": 0,
+    "perMinuteAfterSettle": 0,
+    "boundChangesAfterSettle": 0,
+    "boundPerMinute": 0,
+    "totalChanges": 4,
+    "u": null,
+    "finalCap": null,
+    "finalWidth": 9,
+    "quiet": true
+   }
+  ]
+ },
+ "portability": [
+  {
+   "block": "cpus4",
+   "calibration": [
+    {
+     "spinners": 8,
+     "cpus": 4.01
+    }
+   ],
+   "allotment": 4,
+   "cpus": "8-15",
+   "plan": [
+    4
+   ],
+   "tunedPlan": [
+    [
+     4,
+     12
+    ]
+   ],
+   "rows": [
+    {
+     "arm": "w2",
+     "perSecond": 236.7,
+     "all": [
+      236.7
+     ],
+     "cpuMsPerAccepted": 9.509,
+     "busyCpus": [
+      2.25
+     ],
+     "quiet": [
+      true
+     ],
+     "loads": [
+      [
+       2.26,
+       2.84,
+       2.84
+      ]
+     ],
+     "psi": [
+      [
+       3.98,
+       0.1,
+       0.1
+      ]
+     ],
+     "finalWidths": [
+      2
+     ]
+    },
+    {
+     "arm": "w4",
+     "perSecond": 385.1,
+     "all": [
+      385.1
+     ],
+     "cpuMsPerAccepted": 10.374,
+     "busyCpus": [
+      4
+     ],
+     "quiet": [
+      true
+     ],
+     "loads": [
+      [
+       2.84,
+       4.22,
+       4.22
+      ]
+     ],
+     "psi": [
+      [
+       0.1,
+       2.85,
+       2.85
+      ]
+     ],
+     "finalWidths": [
+      4
+     ]
+    },
+    {
+     "arm": "w6",
+     "perSecond": 332,
+     "all": [
+      332
+     ],
+     "cpuMsPerAccepted": 12.047,
+     "busyCpus": [
+      4
+     ],
+     "quiet": [
+      true
+     ],
+     "loads": [
+      [
+       4.22,
+       6.49,
+       5.64
+      ]
+     ],
+     "psi": [
+      [
+       2.85,
+       13.58,
+       4.99
+      ]
+     ],
+     "finalWidths": [
+      6
+     ]
+    },
+    {
+     "arm": "w8",
+     "perSecond": 344.5,
+     "all": [
+      344.5
+     ],
+     "cpuMsPerAccepted": 11.615,
+     "busyCpus": [
+      4
+     ],
+     "quiet": [
+      true
+     ],
+     "loads": [
+      [
+       5.64,
+       6.91,
+       5.6
+      ]
+     ],
+     "psi": [
+      [
+       4.99,
+       24.54,
+       4.96
+      ]
+     ],
+     "finalWidths": [
+      8
+     ]
+    },
+    {
+     "arm": "w12",
+     "perSecond": 321.4,
+     "all": [
+      321.4
+     ],
+     "cpuMsPerAccepted": 12.441,
+     "busyCpus": [
+      4
+     ],
+     "quiet": [
+      true
+     ],
+     "loads": [
+      [
+       5.6,
+       4.06,
+       3.25
+      ]
+     ],
+     "psi": [
+      [
+       4.96,
+       37.08,
+       2.75
+      ]
+     ],
+     "finalWidths": [
+      12
+     ]
+    },
+    {
+     "arm": "tuned",
+     "perSecond": 383.9,
+     "all": [
+      383.9
+     ],
+     "cpuMsPerAccepted": 10.388,
+     "busyCpus": [
+      3.99
+     ],
+     "quiet": [
+      true
+     ],
+     "loads": [
+      [
+       3.25,
+       4.62,
+       4.62
+      ]
+     ],
+     "psi": [
+      [
+       2.75,
+       3.13,
+       3.13
+      ]
+     ],
+     "finalWidths": [
+      4
+     ]
+    }
+   ],
+   "best": "w4",
+   "bestPerSecond": 385.1,
+   "tuned": 383.9,
+   "tunedWidths": [
+    4
+   ],
+   "ratio": 0.997,
+   "met": true,
+   "allCounted": true,
+   "stability": [
+    {
+     "arm": "tuned",
+     "settleSeconds": 5,
+     "changesAfterSettle": 1,
+     "perMinuteAfterSettle": 0.52,
+     "boundChangesAfterSettle": 0,
+     "boundPerMinute": 0,
+     "totalChanges": 3,
+     "u": {
+      "mean": 1,
+      "sd": 0.03,
+      "cv": 0.03,
+      "final": 1.001
+     },
+     "finalCap": 5,
+     "finalWidth": 4,
+     "quiet": true
+    }
+   ]
+  },
+  {
+   "block": "cpus8",
+   "calibration": [
+    {
+     "spinners": 16,
+     "cpus": 8.02
+    }
+   ],
+   "allotment": 8,
+   "cpus": "8-15,24-31",
+   "plan": [
+    8
+   ],
+   "tunedPlan": [
+    [
+     8,
+     24
+    ]
+   ],
+   "rows": [
+    {
+     "arm": "w4",
+     "perSecond": 418,
+     "all": [
+      418
+     ],
+     "cpuMsPerAccepted": 10.478,
+     "busyCpus": [
+      4.38
+     ],
+     "quiet": [
+      true
+     ],
+     "loads": [
+      [
+       3.62,
+       4.11,
+       4.11
+      ]
+     ],
+     "psi": [
+      [
+       4.35,
+       0.14,
+       0.14
+      ]
+     ],
+     "finalWidths": [
+      4
+     ]
+    },
+    {
+     "arm": "w8",
+     "perSecond": 586.5,
+     "all": [
+      586.5
+     ],
+     "cpuMsPerAccepted": 13.64,
+     "busyCpus": [
+      8
+     ],
+     "quiet": [
+      true
+     ],
+     "loads": [
+      [
+       4.11,
+       6.63,
+       6.63
+      ]
+     ],
+     "psi": [
+      [
+       0.14,
+       1.14,
+       1.14
+      ]
+     ],
+     "finalWidths": [
+      8
+     ]
+    },
+    {
+     "arm": "w12",
+     "perSecond": 455.3,
+     "all": [
+      455.3
+     ],
+     "cpuMsPerAccepted": 17.573,
+     "busyCpus": [
+      8
+     ],
+     "quiet": [
+      true
+     ],
+     "loads": [
+      [
+       6.63,
+       10.92,
+       8.72
+      ]
+     ],
+     "psi": [
+      [
+       1.14,
+       14.14,
+       2.85
+      ]
+     ],
+     "finalWidths": [
+      12
+     ]
+    },
+    {
+     "arm": "w16",
+     "perSecond": 418.5,
+     "all": [
+      418.5
+     ],
+     "cpuMsPerAccepted": 19.126,
+     "busyCpus": [
+      8
+     ],
+     "quiet": [
+      true
+     ],
+     "loads": [
+      [
+       8.72,
+       13.67,
+       10.07
+      ]
+     ],
+     "psi": [
+      [
+       2.85,
+       24.93,
+       2.76
+      ]
+     ],
+     "finalWidths": [
+      16
+     ]
+    },
+    {
+     "arm": "w24",
+     "perSecond": 402,
+     "all": [
+      402
+     ],
+     "cpuMsPerAccepted": 19.904,
+     "busyCpus": [
+      8
+     ],
+     "quiet": [
+      true
+     ],
+     "loads": [
+      [
+       10.07,
+       15.37,
+       11.15
+      ]
+     ],
+     "psi": [
+      [
+       2.76,
+       32.6,
+       4.41
+      ]
+     ],
+     "finalWidths": [
+      24
+     ]
+    },
+    {
+     "arm": "tuned",
+     "perSecond": 545.8,
+     "all": [
+      545.8
+     ],
+     "cpuMsPerAccepted": 13.734,
+     "busyCpus": [
+      7.5
+     ],
+     "quiet": [
+      true
+     ],
+     "loads": [
+      [
+       11.15,
+       10.61,
+       10.61
+      ]
+     ],
+     "psi": [
+      [
+       4.41,
+       0,
+       0
+      ]
+     ],
+     "finalWidths": [
+      7
+     ]
+    }
+   ],
+   "best": "w8",
+   "bestPerSecond": 586.5,
+   "tuned": 545.8,
+   "tunedWidths": [
+    7
+   ],
+   "ratio": 0.931,
+   "met": true,
+   "allCounted": true,
+   "stability": [
+    {
+     "arm": "tuned",
+     "settleSeconds": 9,
+     "changesAfterSettle": 0,
+     "perMinuteAfterSettle": 0,
+     "boundChangesAfterSettle": 0,
+     "boundPerMinute": 0,
+     "totalChanges": 4,
+     "u": {
+      "mean": 1.062,
+      "sd": 0.042,
+      "cv": 0.039,
+      "final": 1.077
+     },
+     "finalCap": 10,
+     "finalWidth": 7,
+     "quiet": true
+    }
+   ]
+  },
+  {
+   "block": "cpus16",
+   "calibration": [
+    {
+     "spinners": 28,
+     "cpus": 16.05
+    }
+   ],
+   "allotment": 16,
+   "cpus": "4-31",
+   "plan": [
+    8,
+    8
+   ],
+   "tunedPlan": [
+    [
+     8,
+     24
+    ],
+    [
+     8,
+     24
+    ]
+   ],
+   "rows": [
+    {
+     "arm": "w8",
+     "perSecond": 612.9,
+     "all": [
+      612.9
+     ],
+     "cpuMsPerAccepted": 14.386,
+     "busyCpus": [
+      8.82
+     ],
+     "quiet": [
+      true
+     ],
+     "loads": [
+      [
+       9.35,
+       10.6,
+       10.6
+      ]
+     ],
+     "psi": [
+      [
+       4.53,
+       1.56,
+       1.56
+      ]
+     ],
+     "finalWidths": [
+      8
+     ]
+    },
+    {
+     "arm": "w16",
+     "perSecond": 728.2,
+     "all": [
+      728.2
+     ],
+     "cpuMsPerAccepted": 21.945,
+     "busyCpus": [
+      15.98
+     ],
+     "quiet": [
+      true
+     ],
+     "loads": [
+      [
+       10.6,
+       13.99,
+       13.99
+      ]
+     ],
+     "psi": [
+      [
+       1.56,
+       4.67,
+       4.67
+      ]
+     ],
+     "finalWidths": [
+      16
+     ]
+    },
+    {
+     "arm": "w24",
+     "perSecond": 602.1,
+     "all": [
+      602.1
+     ],
+     "cpuMsPerAccepted": 26.593,
+     "busyCpus": [
+      16.01
+     ],
+     "quiet": [
+      true
+     ],
+     "loads": [
+      [
+       13.99,
+       10.84,
+       9.09
+      ]
+     ],
+     "psi": [
+      [
+       4.67,
+       17.3,
+       4.96
+      ]
+     ],
+     "finalWidths": [
+      24
+     ]
+    }
+   ],
+   "best": "w16",
+   "bestPerSecond": 728.2,
+   "tuned": null,
+   "tunedWidths": null,
+   "ratio": null,
+   "met": null,
+   "allCounted": true,
+   "stability": []
+  },
+  {
+   "block": "full",
+   "calibration": [
+    {
+     "spinners": 32,
+     "cpus": 17.97
+    }
+   ],
+   "allotment": 17.92,
+   "cpus": "0-31",
+   "plan": [
+    8,
+    8
+   ],
+   "tunedPlan": [
+    [
+     8,
+     27
+    ],
+    [
+     8,
+     27
+    ]
+   ],
+   "rows": [
+    {
+     "arm": "w12",
+     "perSecond": 616.7,
+     "all": [
+      616.7
+     ],
+     "cpuMsPerAccepted": 21.738,
+     "busyCpus": [
+      13.41
+     ],
+     "quiet": [
+      true
+     ],
+     "loads": [
+      [
+       6.6,
+       10.83,
+       10.83
+      ]
+     ],
+     "psi": [
+      [
+       4.63,
+       0.28,
+       0.28
+      ]
+     ],
+     "finalWidths": [
+      12
+     ]
+    },
+    {
+     "arm": "w16",
+     "perSecond": 710.6,
+     "all": [
+      710.6
+     ],
+     "cpuMsPerAccepted": 24.389,
+     "busyCpus": [
+      17.33
+     ],
+     "quiet": [
+      true
+     ],
+     "loads": [
+      [
+       10.83,
+       14.83,
+       14.83
+      ]
+     ],
+     "psi": [
+      [
+       0.28,
+       1.09,
+       1.09
+      ]
+     ],
+     "finalWidths": [
+      16
+     ]
+    },
+    {
+     "arm": "w24",
+     "perSecond": 625.3,
+     "all": [
+      625.3
+     ],
+     "cpuMsPerAccepted": 28.68,
+     "busyCpus": [
+      17.93
+     ],
+     "quiet": [
+      true
+     ],
+     "loads": [
+      [
+       14.83,
+       20.29,
+       15.13
+      ]
+     ],
+     "psi": [
+      [
+       1.09,
+       13.8,
+       2
+      ]
+     ],
+     "finalWidths": [
+      24
+     ]
+    },
+    {
+     "arm": "w36",
+     "perSecond": 514.8,
+     "all": [
+      514.8
+     ],
+     "cpuMsPerAccepted": 34.827,
+     "busyCpus": [
+      17.93
+     ],
+     "quiet": [
+      true
+     ],
+     "loads": [
+      [
+       15.13,
+       25.55,
+       15.86
+      ]
+     ],
+     "psi": [
+      [
+       2,
+       25.17,
+       1.25
+      ]
+     ],
+     "finalWidths": [
+      36
+     ]
+    },
+    {
+     "arm": "w54",
+     "perSecond": 525.4,
+     "all": [
+      525.4
+     ],
+     "cpuMsPerAccepted": 33.311,
+     "busyCpus": [
+      17.5
+     ],
+     "quiet": [
+      true
+     ],
+     "loads": [
+      [
+       15.86,
+       32.57,
+       14.99
+      ]
+     ],
+     "psi": [
+      [
+       1.25,
+       25.12,
+       0.16
+      ]
+     ],
+     "finalWidths": [
+      54
+     ]
+    },
+    {
+     "arm": "tuned",
+     "perSecond": 731,
+     "all": [
+      731
+     ],
+     "cpuMsPerAccepted": 23.311,
+     "busyCpus": [
+      17.04
+     ],
+     "quiet": [
+      true
+     ],
+     "loads": [
+      [
+       14.99,
+       24.87,
+       15.68
+      ]
+     ],
+     "psi": [
+      [
+       0.16,
+       5.45,
+       0.27
+      ]
+     ],
+     "finalWidths": [
+      16
+     ]
+    }
+   ],
+   "best": "w16",
+   "bestPerSecond": 710.6,
+   "tuned": 731,
+   "tunedWidths": [
+    16
+   ],
+   "ratio": 1.029,
+   "met": true,
+   "allCounted": true,
+   "stability": [
+    {
+     "arm": "tuned",
+     "settleSeconds": 9,
+     "changesAfterSettle": 1,
+     "perMinuteAfterSettle": 0.54,
+     "boundChangesAfterSettle": 0,
+     "boundPerMinute": 0,
+     "totalChanges": 5,
+     "u": {
+      "mean": 1.068,
+      "sd": 0.04,
+      "cv": 0.037,
+      "final": 1.073
+     },
+     "finalCap": 11,
+     "finalWidth": 8,
+     "quiet": true
+    }
+   ]
+  }
+ ],
+ "machines": {
+  "ds9": {
+   "probe": {
+    "os": "linux",
+    "cpus": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7,
+     8,
+     9,
+     10,
+     11,
+     12,
+     13,
+     14,
+     15,
+     16,
+     17,
+     18,
+     19,
+     20,
+     21,
+     22,
+     23,
+     24,
+     25,
+     26,
+     27,
+     28,
+     29,
+     30,
+     31,
+     32,
+     33,
+     34,
+     35,
+     36,
+     37,
+     38,
+     39,
+     40,
+     41,
+     42,
+     43
+    ],
+    "quota": 24.64,
+    "quotaCgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/heavy.slice",
+    "levels": [
+     {
+      "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/heavy.slice",
+      "quota": 24.64,
+      "branch": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/heavy.slice/heavy-p68-ds9-3678866.scope"
+     }
+    ],
+    "ownCgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/heavy.slice/heavy-p68-ds9-3678866.scope",
+    "allotment": 24.64,
+    "domains": [
+     {
+      "cpus": [
+       0,
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7,
+       8,
+       9,
+       10,
+       11,
+       12,
+       13,
+       14,
+       15,
+       16,
+       17,
+       18,
+       19,
+       20,
+       21,
+       22,
+       23,
+       24,
+       25,
+       26,
+       27,
+       28,
+       29,
+       30,
+       31,
+       32,
+       33,
+       34,
+       35,
+       36,
+       37,
+       38,
+       39,
+       40,
+       41,
+       42,
+       43
+      ],
+      "cores": 22
+     }
+    ],
+    "cores": 22,
+    "smt": true,
+    "perfLevels": null,
+    "memory": {
+     "availableMb": 67809,
+     "headroomMb": 67809,
+     "limitMb": 86016,
+     "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/heavy.slice"
+    },
+    "taskset": "/usr/bin/taskset",
+    "notes": []
+   },
+   "plan": {
+    "mode": "fixed",
+    "tuned": false,
+    "cap": null,
+    "headroom": 1.25,
+    "ram": 0.75,
+    "allotment": 24.64,
+    "queues": 1,
+    "pinned": false,
+    "cohorts": [
+     {
+      "queue": 0,
+      "width": 22,
+      "max": 22,
+      "share": 24.64,
+      "cpus": null
+     }
+    ],
+    "width": 22,
+    "max": 22,
+    "notes": []
+   },
+   "tunedPlan": {
+    "mode": "tuned",
+    "tuned": true,
+    "cap": "occupancy",
+    "headroom": 1.25,
+    "ram": 0.75,
+    "allotment": 24.64,
+    "queues": 1,
+    "pinned": false,
+    "cohorts": [
+     {
+      "queue": 0,
+      "width": 22,
+      "max": 74,
+      "share": 24.64,
+      "cpus": null
+     }
+    ],
+    "width": 22,
+    "max": 74,
+    "notes": []
+   },
+   "arms": [
+    {
+     "arm": "fixed",
+     "perSecond": 687.1,
+     "all": [
+      697.1,
+      687.1
+     ],
+     "cpuMsPerAccepted": 31.25,
+     "quiet": [
+      true,
+      true
+     ],
+     "loads": [
+      [
+       9.15,
+       27.67,
+       27.67
+      ],
+      [
+       32.52,
+       31.35,
+       31.35
+      ]
+     ],
+     "finalWidths": [
+      22,
+      22
+     ]
+    },
+    {
+     "arm": "tuned",
+     "perSecond": 653.6,
+     "all": [
+      698.8,
+      653.6
+     ],
+     "cpuMsPerAccepted": 34.506,
+     "quiet": [
+      true,
+      true
+     ],
+     "loads": [
+      [
+       27.67,
+       34.14,
+       34.14
+      ],
+      [
+       26.38,
+       32.52,
+       32.52
+      ]
+     ],
+     "finalWidths": [
+      27,
+      23
+     ]
+    }
+   ],
+   "sweep": [
+    {
+     "arm": "w8",
+     "perSecond": 392.6,
+     "all": [
+      400.6,
+      392.6
+     ],
+     "cpuMsPerAccepted": 23.45,
+     "quiet": [
+      true,
+      true
+     ],
+     "loads": [
+      [
+       25.46,
+       19.92,
+       19.92
+      ],
+      [
+       29.24,
+       23.28,
+       23.28
+      ]
+     ],
+     "finalWidths": [
+      8,
+      8
+     ]
+    },
+    {
+     "arm": "w16",
+     "perSecond": 627.5,
+     "all": [
+      628.9,
+      627.5
+     ],
+     "cpuMsPerAccepted": 26.547,
+     "quiet": [
+      true,
+      true
+     ],
+     "loads": [
+      [
+       19.92,
+       22.25,
+       22.25
+      ],
+      [
+       34.81,
+       29.24,
+       29.24
+      ]
+     ],
+     "finalWidths": [
+      16,
+      16
+     ]
+    },
+    {
+     "arm": "w22",
+     "perSecond": 681.4,
+     "all": [
+      681.4,
+      685.8
+     ],
+     "cpuMsPerAccepted": 31.428,
+     "quiet": [
+      true,
+      true
+     ],
+     "loads": [
+      [
+       22.25,
+       25,
+       25
+      ],
+      [
+       36.62,
+       34.81,
+       34.81
+      ]
+     ],
+     "finalWidths": [
+      22,
+      22
+     ]
+    },
+    {
+     "arm": "w32",
+     "perSecond": 638.3,
+     "all": [
+      638.3,
+      647.1
+     ],
+     "cpuMsPerAccepted": 38.541,
+     "quiet": [
+      true,
+      true
+     ],
+     "loads": [
+      [
+       25,
+       23.14,
+       21.85
+      ],
+      [
+       38.93,
+       39.37,
+       36.62
+      ]
+     ],
+     "finalWidths": [
+      32,
+      32
+     ]
+    },
+    {
+     "arm": "w48",
+     "perSecond": 585.3,
+     "all": [
+      585.3,
+      593.7
+     ],
+     "cpuMsPerAccepted": 41.998,
+     "quiet": [
+      true,
+      true
+     ],
+     "loads": [
+      [
+       21.85,
+       26.98,
+       23.9
+      ],
+      [
+       40.73,
+       45.01,
+       38.93
+      ]
+     ],
+     "finalWidths": [
+      48,
+      48
+     ]
+    },
+    {
+     "arm": "w74",
+     "perSecond": 513,
+     "all": [
+      513,
+      513.4
+     ],
+     "cpuMsPerAccepted": 48.006,
+     "quiet": [
+      true,
+      true
+     ],
+     "loads": [
+      [
+       23.9,
+       44.56,
+       36.12
+      ],
+      [
+       31.95,
+       49.92,
+       40.73
+      ]
+     ],
+     "finalWidths": [
+      74,
+      74
+     ]
+    },
+    {
+     "arm": "tuned",
+     "perSecond": 633.1,
+     "all": [
+      633.1,
+      676.4
+     ],
+     "cpuMsPerAccepted": 33.321,
+     "quiet": [
+      true,
+      true
+     ],
+     "loads": [
+      [
+       36.12,
+       32.2,
+       32.2
+      ],
+      [
+       25.2,
+       31.95,
+       31.95
+      ]
+     ],
+     "finalWidths": [
+      22,
+      24
+     ]
+    }
+   ],
+   "best": "w22",
+   "bestPerSecond": 681.4,
+   "tuned": 633.1,
+   "ratio": 0.929,
+   "met": true,
+   "stability": [
+    {
+     "arm": "tuned",
+     "settleSeconds": 17.1,
+     "changesAfterSettle": 1,
+     "perMinuteAfterSettle": 0.58,
+     "boundChangesAfterSettle": 0,
+     "boundPerMinute": 0,
+     "totalChanges": 9,
+     "u": {
+      "mean": 0.954,
+      "sd": 0.028,
+      "cv": 0.029,
+      "final": 0.976
+     },
+     "finalCap": 32,
+     "finalWidth": 22,
+     "quiet": true
+    },
+    {
+     "arm": "tuned",
+     "settleSeconds": 15.1,
+     "changesAfterSettle": 0,
+     "perMinuteAfterSettle": 0,
+     "boundChangesAfterSettle": 0,
+     "boundPerMinute": 0,
+     "totalChanges": 7,
+     "u": {
+      "mean": 0.942,
+      "sd": 0.024,
+      "cv": 0.026,
+      "final": 0.947
+     },
+     "finalCap": 33,
+     "finalWidth": 24,
+     "quiet": true
+    },
+    {
+     "arm": "tuned",
+     "settleSeconds": 13.1,
+     "changesAfterSettle": 1,
+     "perMinuteAfterSettle": 0.56,
+     "boundChangesAfterSettle": 0,
+     "boundPerMinute": 0,
+     "totalChanges": 7,
+     "u": {
+      "mean": 0.905,
+      "sd": 0.03,
+      "cv": 0.033,
+      "final": 0.907
+     },
+     "finalCap": 34,
+     "finalWidth": 27,
+     "quiet": true
+    },
+    {
+     "arm": "tuned",
+     "settleSeconds": 15.1,
+     "changesAfterSettle": 0,
+     "perMinuteAfterSettle": 0,
+     "boundChangesAfterSettle": 0,
+     "boundPerMinute": 0,
+     "totalChanges": 7,
+     "u": {
+      "mean": 0.95,
+      "sd": 0.027,
+      "cv": 0.028,
+      "final": 0.963
+     },
+     "finalCap": 32,
+     "finalWidth": 23,
+     "quiet": true
+    }
+   ]
+  },
+  "macbook-air": {
+   "probe": {
+    "os": "darwin",
+    "cpus": [
+     0,
+     1,
+     2,
+     3,
+     4,
+     5,
+     6,
+     7
+    ],
+    "quota": null,
+    "quotaCgroup": null,
+    "levels": [],
+    "ownCgroup": null,
+    "allotment": 8,
+    "domains": [
+     {
+      "cpus": [
+       0,
+       1,
+       2,
+       3,
+       4,
+       5,
+       6,
+       7
+      ],
+      "cores": 8
+     }
+    ],
+    "cores": 8,
+    "smt": false,
+    "perfLevels": {
+     "performance": 4,
+     "efficiency": 4
+    },
+    "memory": {
+     "availableMb": 4831,
+     "headroomMb": 4831,
+     "limitMb": null,
+     "cgroup": null
+    },
+    "taskset": null,
+    "notes": [
+     "no /proc/self/status affinity: using availableParallelism",
+     "no cgroup v2 membership: no CPU quota or memory ceiling read",
+     "no sysfs L3 or SMT topology: treating every allowed CPU as one core in one cache domain",
+     "no /proc/meminfo: memory headroom from vm_stat (free, inactive, speculative and purgeable pages)",
+     "mixed cores: 4 performance and 4 efficiency; all are counted as cores in one domain"
+    ]
+   },
+   "plan": {
+    "mode": "fixed",
+    "tuned": false,
+    "cap": null,
+    "headroom": 1.25,
+    "ram": 0.75,
+    "allotment": 8,
+    "queues": 1,
+    "pinned": false,
+    "cohorts": [
+     {
+      "queue": 0,
+      "width": 8,
+      "max": 8,
+      "share": 8,
+      "cpus": null
+     }
+    ],
+    "width": 8,
+    "max": 8,
+    "notes": [
+     "no /proc/self/status affinity: using availableParallelism",
+     "no cgroup v2 membership: no CPU quota or memory ceiling read",
+     "no sysfs L3 or SMT topology: treating every allowed CPU as one core in one cache domain",
+     "no /proc/meminfo: memory headroom from vm_stat (free, inactive, speculative and purgeable pages)",
+     "mixed cores: 4 performance and 4 efficiency; all are counted as cores in one domain"
+    ]
+   },
+   "tunedPlan": {
+    "mode": "tuned",
+    "tuned": true,
+    "cap": "occupancy",
+    "headroom": 1.25,
+    "ram": 0.75,
+    "allotment": 8,
+    "queues": 1,
+    "pinned": false,
+    "cohorts": [
+     {
+      "queue": 0,
+      "width": 8,
+      "max": 24,
+      "share": 8,
+      "cpus": null
+     }
+    ],
+    "width": 8,
+    "max": 24,
+    "notes": [
+     "no /proc/self/status affinity: using availableParallelism",
+     "no cgroup v2 membership: no CPU quota or memory ceiling read",
+     "no sysfs L3 or SMT topology: treating every allowed CPU as one core in one cache domain",
+     "no /proc/meminfo: memory headroom from vm_stat (free, inactive, speculative and purgeable pages)",
+     "mixed cores: 4 performance and 4 efficiency; all are counted as cores in one domain"
+    ]
+   },
+   "arms": [
+    {
+     "arm": "fixed",
+     "perSecond": 44.3,
+     "all": [
+      87.1,
+      44.3
+     ],
+     "cpuMsPerAccepted": 98.396,
+     "quiet": [
+      false,
+      true
+     ],
+     "loads": [
+      [
+       3.94,
+       8.21,
+       15.24
+      ],
+      [
+       3.99,
+       14.2,
+       3.87
+      ]
+     ],
+     "finalWidths": [
+      8,
+      8
+     ]
+    },
+    {
+     "arm": "tuned",
+     "perSecond": 52.5,
+     "all": [
+      85,
+      52.5
+     ],
+     "cpuMsPerAccepted": 98.356,
+     "quiet": [
+      true,
+      true
+     ],
+     "loads": [
+      [
+       3.98,
+       10.42,
+       3.91
+      ],
+      [
+       3.9,
+       10.17,
+       3.99
+      ]
+     ],
+     "finalWidths": [
+      6,
+      5
+     ]
+    }
+   ],
+   "sweep": [
+    {
+     "arm": "w2",
+     "perSecond": 43.3,
+     "all": [
+      74.5,
+      43.3
+     ],
+     "cpuMsPerAccepted": 90.934,
+     "quiet": [
+      true,
+      false
+     ],
+     "loads": [
+      [
+       3.84,
+       5.54,
+       3.81
+      ],
+      [
+       3.95,
+       5.61,
+       6.19
+      ]
+     ],
+     "finalWidths": [
+      2,
+      2
+     ]
+    },
+    {
+     "arm": "w4",
+     "perSecond": 43.7,
+     "all": [
+      103.4,
+      43.7
+     ],
+     "cpuMsPerAccepted": 109.25,
+     "quiet": [
+      true,
+      true
+     ],
+     "loads": [
+      [
+       3.81,
+       5.24,
+       3.92
+      ],
+      [
+       4,
+       9.52,
+       3.95
+      ]
+     ],
+     "finalWidths": [
+      4,
+      4
+     ]
+    },
+    {
+     "arm": "w6",
+     "perSecond": 52.4,
+     "all": [
+      88.5,
+      52.4
+     ],
+     "cpuMsPerAccepted": 96.221,
+     "quiet": [
+      true,
+      true
+     ],
+     "loads": [
+      [
+       3.92,
+       6.31,
+       3.93
+      ],
+      [
+       3.98,
+       7.17,
+       4
+      ]
+     ],
+     "finalWidths": [
+      6,
+      6
+     ]
+    },
+    {
+     "arm": "w8",
+     "perSecond": 57.9,
+     "all": [
+      57.9,
+      62.1
+     ],
+     "cpuMsPerAccepted": 92.792,
+     "quiet": [
+      false,
+      true
+     ],
+     "loads": [
+      [
+       3.93,
+       8.63,
+       5.26
+      ],
+      [
+       3.9,
+       8.04,
+       3.98
+      ]
+     ],
+     "finalWidths": [
+      8,
+      8
+     ]
+    },
+    {
+     "arm": "w12",
+     "perSecond": 40.2,
+     "all": [
+      56.1,
+      40.2
+     ],
+     "cpuMsPerAccepted": 99.542,
+     "quiet": [
+      false,
+      false
+     ],
+     "loads": [
+      [
+       3.81,
+       6.75,
+       10.14
+      ],
+      [
+       3.94,
+       10.09,
+       5.39
+      ]
+     ],
+     "finalWidths": [
+      12,
+      12
+     ]
+    },
+    {
+     "arm": "w16",
+     "perSecond": 55.9,
+     "all": [
+      55.9,
+      89.4
+     ],
+     "cpuMsPerAccepted": 98.74,
+     "quiet": [
+      true,
+      false
+     ],
+     "loads": [
+      [
+       3.34,
+       6.9,
+       3.85
+      ],
+      [
+       3.89,
+       5.7,
+       8.45
+      ]
+     ],
+     "finalWidths": [
+      16,
+      16
+     ]
+    },
+    {
+     "arm": "w24",
+     "perSecond": 75.6,
+     "all": [
+      75.6,
+      89.4
+     ],
+     "cpuMsPerAccepted": 73.785,
+     "quiet": [
+      true,
+      true
+     ],
+     "loads": [
+      [
+       3.85,
+       7.13,
+       3.84
+      ],
+      [
+       3.79,
+       5.96,
+       3.89
+      ]
+     ],
+     "finalWidths": [
+      24,
+      24
+     ]
+    },
+    {
+     "arm": "tuned",
+     "perSecond": 54.9,
+     "all": [
+      54.9,
+      62.9
+     ],
+     "cpuMsPerAccepted": 98.789,
+     "quiet": [
+      true,
+      true
+     ],
+     "loads": [
+      [
+       3.84,
+       11.57,
+       3.89
+      ],
+      [
+       3.87,
+       19.83,
+       3.79
+      ]
+     ],
+     "finalWidths": [
+      6,
+      6
+     ]
+    }
+   ],
+   "best": "w24",
+   "bestPerSecond": 75.6,
+   "tuned": 54.9,
+   "ratio": 0.726,
+   "met": false,
+   "stability": [
+    {
+     "arm": "tuned",
+     "settleSeconds": 9.2,
+     "changesAfterSettle": 6,
+     "perMinuteAfterSettle": 3.21,
+     "boundChangesAfterSettle": 1,
+     "boundPerMinute": 0.54,
+     "totalChanges": 10,
+     "u": {
+      "mean": 0.768,
+      "sd": 0.114,
+      "cv": 0.148,
+      "final": 0.969
+     },
+     "finalCap": 11,
+     "finalWidth": 6,
+     "quiet": true
+    },
+    {
+     "arm": "tuned",
+     "settleSeconds": 11.2,
+     "changesAfterSettle": 4,
+     "perMinuteAfterSettle": 2.17,
+     "boundChangesAfterSettle": 2,
+     "boundPerMinute": 1.08,
+     "totalChanges": 9,
+     "u": {
+      "mean": 0.888,
+      "sd": 0.205,
+      "cv": 0.23,
+      "final": 0.871
+     },
+     "finalCap": 12,
+     "finalWidth": 6,
+     "quiet": true
+    },
+    {
+     "arm": "tuned",
+     "settleSeconds": 13.2,
+     "changesAfterSettle": 5,
+     "perMinuteAfterSettle": 2.8,
+     "boundChangesAfterSettle": 1,
+     "boundPerMinute": 0.56,
+     "totalChanges": 11,
+     "u": {
+      "mean": 1.317,
+      "sd": 0.254,
+      "cv": 0.193,
+      "final": 1.267
+     },
+     "finalCap": 8,
+     "finalWidth": 6,
+     "quiet": true
+    },
+    {
+     "arm": "tuned",
+     "settleSeconds": 11.2,
+     "changesAfterSettle": 5,
+     "perMinuteAfterSettle": 2.72,
+     "boundChangesAfterSettle": 3,
+     "boundPerMinute": 1.63,
+     "totalChanges": 10,
+     "u": {
+      "mean": 0.932,
+      "sd": 0.157,
+      "cv": 0.168,
+      "final": 1.072
+     },
+     "finalCap": 10,
+     "finalWidth": 5,
+     "quiet": true
+    }
+   ]
+  }
+ },
+ "fair": [
+  {
+   "label": "round1",
+   "allotment": 17.92,
+   "alone": {
+    "windows": 90,
+    "windowsWithoutPeers": 90,
+    "loneWholeFraction": 1,
+    "finalCap": 11,
+    "capNeeded": 9,
+    "ownCpus": 17.36,
+    "perSecond": 655.1,
+    "quiet": true,
+    "othersDuringRow": [],
+    "measured": true,
+    "met": true
+   },
+   "peer": {
+    "windows": 82,
+    "sharedInBandFraction": 1,
+    "medianShare": 8.96,
+    "ownCpus": 9.01,
+    "peerCpus": 8.91,
+    "perSecond": 436.8,
+    "finalWidth": 5,
+    "cpuWithinShare": true,
+    "met": true,
+    "loads": [
+     15.27,
+     6.48,
+     5.88
+    ],
+    "psi": [
+     0.17,
+     11.91,
+     4.38
+    ]
+   }
+  }
+ ],
+ "pool": {
+  "rows": [],
+  "decision": null
+ },
+ "rival": {
+  "rows": 4,
+  "maxCv": 0.039,
+  "maxBoundPerMinute": 0,
+  "holds": false
+ },
+ "bars": {
+  "bar1": {
+   "tuned": 565.6,
+   "base": 646.6,
+   "needAtLeast": 614.3,
+   "tunedCpu": 16.658,
+   "baseCpu": 26.676,
+   "cpuAtMost": 28.01,
+   "met": false,
+   "rowsCounted": true
+  },
+  "bar2": {
+   "rounds": [
+    {
+     "arm": "tuned",
+     "settleSeconds": 13.1,
+     "changesAfterSettle": 1,
+     "perMinuteAfterSettle": 0.55,
+     "boundChangesAfterSettle": 0,
+     "boundPerMinute": 0,
+     "totalChanges": 7,
+     "u": {
+      "mean": 1.14,
+      "sd": 0.035,
+      "cv": 0.03,
+      "final": 1.14
+     },
+     "finalCap": 10,
+     "finalWidth": 4,
+     "quiet": true
+    }
+   ],
+   "met": false
+  },
+  "bar3": {
+   "sweeps": [
+    {
+     "block": "cpus4",
+     "ratio": 0.997,
+     "best": "w4",
+     "met": true
+    },
+    {
+     "block": "cpus8",
+     "ratio": 0.931,
+     "best": "w8",
+     "met": true
+    },
+    {
+     "block": "cpus16",
+     "ratio": null,
+     "best": "w16",
+     "met": null
+    },
+    {
+     "block": "full",
+     "ratio": 1.029,
+     "best": "w16",
+     "met": true
+    }
+   ],
+   "met": false
+  },
+  "bar4": {
+   "digests": [
+    "e75311bfc3773bae527e7b0ce3c39e1aa04c05819b6d9838023bbafd85682709"
+   ],
+   "met": true
+  },
+  "bar5": {
+   "rounds": [
+    {
+     "label": "round1",
+     "allotment": 17.92,
+     "alone": {
+      "windows": 90,
+      "windowsWithoutPeers": 90,
+      "loneWholeFraction": 1,
+      "finalCap": 11,
+      "capNeeded": 9,
+      "ownCpus": 17.36,
+      "perSecond": 655.1,
+      "quiet": true,
+      "othersDuringRow": [],
+      "measured": true,
+      "met": true
+     },
+     "peer": {
+      "windows": 82,
+      "sharedInBandFraction": 1,
+      "medianShare": 8.96,
+      "ownCpus": 9.01,
+      "peerCpus": 8.91,
+      "perSecond": 436.8,
+      "finalWidth": 5,
+      "cpuWithinShare": true,
+      "met": true,
+      "loads": [
+       15.27,
+       6.48,
+       5.88
+      ],
+      "psi": [
+       0.17,
+       11.91,
+       4.38
+      ]
+     }
+    }
+   ],
+   "met": false
+  },
+  "decision": "default stays fixed"
+ }
+}
