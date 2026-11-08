@@ -156,3 +156,17 @@ test('a value test just past a stated bound the parser could not attribute is no
   const lines = ['`materialCost(pounds: f64, pricePerPound: f64): f64` returns pounds * pricePerPound.', '- Valid pounds: finite, 0 through 1000 inclusive.', '- Valid unit price: finite, 0 through 10000 inclusive (the price per pound).', '- Either input outside its bounds traps.'];
   assert.deepEqual(run(lines, [{ fn: 'materialCost', args: [0, -1], expect: 0 }, { fn: 'materialCost', args: [15, 2], expect: 30 }, { fn: 'materialCost', args: [1000, 10000], expect: 10000000 }]), ['abstained', 'verified', 'verified']);
 });
+
+test('signatures wrapped over lines and typed zero-argument exports are read', () => {
+  const wrapped = ['Export only `inventoryLb(volumeFt3: f64, liquidFraction: f64,', 'liquidDensity: f64, vaporDensity: f64): f64`.', 'It returns volumeFt3 * (liquidFraction * liquidDensity + (1 - liquidFraction) * vaporDensity).'];
+  assert.deepEqual(run(wrapped, [{ fn: 'inventoryLb', args: [16, 0.25, 40, 0.1], expect: 161.2, tol: 1e-9 }, { fn: 'inventoryLb', args: [16, 0.25, 40, 0.1], expect: 160, tol: 1e-9 }]), ['verified', 'flagged']);
+  const nullary = ['- `universalClaimIsTrue(): bool` returns false.', '- `scaled(a: f64): f64` returns a * 2.'];
+  assert.deepEqual(run(nullary, [{ fn: 'universalClaimIsTrue', args: [], expect: false }, { fn: 'universalClaimIsTrue', args: [], expect: true }, { fn: 'scaled', args: [2], expect: 4 }]), ['verified', 'flagged', 'verified']);
+});
+
+test('ranges wrapped over lines, next to a return clause, or under "fn: name; when: either input" are read', () => {
+  const rule = (name, lo, hi, loOpen = false) => ({ name, lo, loOpen, hi, hiOpen: false });
+  assert.deepEqual(rangeRules(['`maxCharge(limitG, volume): f64`', '- limitG must be finite in [0, 1000000]; volume finite in', '  (0, 1000000].'].join('\n'), ['limitG', 'volume'], [], 'maxCharge'), [rule('limitG', 0, 1000000), rule('volume', 0, 1000000, true)]);
+  assert.deepEqual(rangeRules(['- `subcoolingF(saturationF, liquidLineF): f64`', '  Each input must be in [-200, 300]. Return saturationF - liquidLineF.'].join('\n'), ['saturationF', 'liquidLineF'], [], 'subcoolingF'), [rule('saturationF', -200, 300), rule('liquidLineF', -200, 300)]);
+  assert.deepEqual(rangeRules(['`a(x: f64): f64` returns x.', '`subcoolingF(saturationF: f64, liquidLineF: f64): f64` returns saturationF - liquidLineF.', '- fn: subcoolingF; when: either input is nonfinite or outside [-200, 300];'].join('\n'), ['saturationF', 'liquidLineF'], [], 'subcoolingF'), [rule('saturationF', -200, 300), rule('liquidLineF', -200, 300)]);
+});

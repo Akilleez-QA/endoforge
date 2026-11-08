@@ -132,7 +132,7 @@ export function evaluateTree(tree, env) {
 
 export function contractSignatures(contract) {
   const found = new Map();
-  for (const match of contract.matchAll(/\b([A-Za-z_]\w*)\s*\(([^()\n]*)\)\s*(?::\s*([A-Za-z_]\w*)|->\s*([A-Za-z_]\w*))?/g)) {
+  for (const match of contract.matchAll(/\b([A-Za-z_]\w*)\s*\(([^()]{0,400})\)\s*(?::\s*([A-Za-z_]\w*)|->\s*([A-Za-z_]\w*))?/g)) {
     const [, fn, parameters, typed, arrow] = match;
     const names = parameters.split(',').map(part => part.trim()).filter(Boolean);
     if (!names.length || !names.every(part => /^[A-Za-z_]\w*\s*(?::\s*[A-Za-z_]\w*)?$/.test(part))) continue;
@@ -140,6 +140,7 @@ export function contractSignatures(contract) {
     if (Object.hasOwn(functions, fn) || found.has(fn)) continue;
     found.set(fn, names.map(part => part.split(':')[0].trim()));
   }
+  for (const match of contract.matchAll(/(?:`|\bfunction\s+)([A-Za-z_]\w*)\(\)\s*(?::\s*[A-Za-z_]\w*|->\s*[A-Za-z_]\w*)/g)) if (!Object.hasOwn(functions, match[1]) && !found.has(match[1])) found.set(match[1], []);
   return found;
 }
 
@@ -159,7 +160,7 @@ function guardIn(clause) {
   if ((m = /^([^:=\n]*?(?:<=?|>=?|≤|≥|!=|≠)[^:=\n]*):(?!=)\s*(.*)$/s.exec(text))) return { guard: { cond: m[1] }, value: m[2], bare: true };
   if ((m = /^(.*?\S)\s*,?\s+(exactly\s+|only\s+)?(if|when|whenever|unless|for)\s+(.+)$/is.exec(text)) && !/(?:^|[^<>=!])=(?!=)/.test(m[4])) {
     if (validCase.test(m[4])) return { guard: null, value: m[1] };
-    if (/for/i.test(m[3]) && !caseShape.test(m[4]) && !/\b(?:or|otherwise)\b[^.]*\bfor\b/i.test(m[4]) && !/[-+*/×^]\s*[\w.()]+\s*$/.test(m[1])) return null;
+    if (/for/i.test(m[3]) && !caseShape.test(m[4]) && !/\b(?:or|otherwise)\b[^.]*\bfor\b/i.test(m[4]) && !(/[-+*/×^]\s*[\w.()]+\s*$/.test(m[1]) && /^(?!(?:the|a|an|this|that|each|all|any|every|display|example|valid|finite|both|its|their)\b)\S+(?:\s+\S+){0,2}\s*[.,;]?\s*(?:,.*)?$/i.test(m[4]))) return null;
     return { guard: { cond: m[4], negate: /unless/i.test(m[3]) }, value: m[1], exact: /exactly/i.test(m[2] ?? '') };
   }
   return null;
@@ -220,18 +221,20 @@ function statements(rawLines, parameters = [], exported = []) {
     segments.forEach((segment, i) => { if (segment.guard?.otherwise && !segments.slice(0, i).some(earlier => earlier.guard && !earlier.guard.otherwise)) segment.guard = { cond: null }; });
     for (const segment of segments) if (!segment.guard && pieces.some(piece => new RegExp(`${piece.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+for\\s+(?!valid\\b|finite\\b|all\\b|any\\b|each\\b|every\\b|example\\b|display\\b|the\\b|this\\b|that\\b|a\\b|an\\b)[A-Za-z]`, 'i').test(segment.clause))) segment.guard = { cond: null };
     const segmentOf = piece => segments.find(segment => segment.clause.includes(piece.trim()));
+    const trapping = segment => segment?.guard && /\b(?:traps?|trapping|throws?|aborts?|errors?|rejects?|invalid)\b/i.test(segment.clause);
     const parts = [], start = out.length;
     for (const segment of segments) {
       const list = codeList(segment.clause);
       if (list) { segment.listed = true; for (const item of list) out.push({ line, kind: 'result', text: item.value, guard: { cond: item.cond } }); continue; }
       if (segment.guard?.subjectOnly && segment.value && trapValue.test(segment.value)) continue;
       if (segment.guard && trapValue.test(segment.value)) continue;
+      if (trapping(segment)) continue;
       parts.push({ text: segment.value, quoted: false, guard: segment.guard, bare: segment.bare });
       const flip = { true: 'false', false: 'true', 1: '0', 0: '1' };
       const exactValue = segment.exact && segment.guard?.cond ? /(?:^|\s)(?:returns?\s+)?(true|false|[01])\s*$/i.exec(segment.value.replace(/^.*?\breturns?\b/i, 'returns')) : null;
       if (exactValue) out.push({ line, kind: 'result', text: flip[exactValue[1].toLowerCase()], guard: { cond: segment.guard.cond, negate: !segment.guard.negate } });
     }
-    for (const piece of pieces) { const segment = segmentOf(piece); parts.push({ text: piece, quoted: true, guard: segment?.guard ?? null }); }
+    for (const piece of pieces) { const segment = segmentOf(piece); if (!trapping(segment)) parts.push({ text: piece, quoted: true, guard: segment?.guard ?? null }); }
     const split = parts.flatMap(part => part.text.split(/;\s*|,\s*(?:with|where)\s+|,\s+(?=[A-Za-z_]\w*\s*=[^=])/).map((text, i, all) => ({ ...part, text, bare: part.bare && all.length === 1 })));
     for (const { text: piece, quoted, guard, bare } of split) {
       const fallback = text => guard ?? (conditional.test(text) ? { cond: null } : null);
@@ -349,7 +352,7 @@ export function formulaReference(contract, fn, parameters) {
     }
     const values = [];
     const consider = s => {
-      if (!(s.guard || s.constant || [...s.parsed.names].some(name => tainted.has(name)))) return;
+      if (!(s.guard || s.constant || (!parameters.length && s.own && [...s.parsed.names].every(name => Object.hasOwn(constants, name))) || [...s.parsed.names].some(name => tainted.has(name)))) return;
       try { const value = evaluateTree(s.parsed.tree, env); if (Number.isFinite(value)) values.push(value); } catch { }
     };
     direct.forEach(consider);
@@ -372,7 +375,7 @@ const trapClause = /\b(?:traps?|trapping|aborts?|rejects?|throws?|errors?|invali
 const domainLine = /\b(?:valid|domain|range|bounds?|must|traps?|aborts?|allowed|accepts?|inputs?|limits?|outside|inclusive|exclusive|between|through)\b/i;
 const notDomain = /\b(?:returns?|gives|yields|labels?|means|classif\w*|category|categories|codes?)\b|["“]|\d\s*=\s*[A-Za-z]/i;
 const unitDependent = /\bequivalent\w*|\bsupplied unit\b|\beither unit\b|\bdepend\w*\b|\bper unit\b|\bunit\s+(?:code\s+)?[-+]?\d/i;
-const collective = /^\W*(?:both|each|all|every|any)\b(?:\s+\w+){0,2}?\s+(?:inputs?|arguments?|parameters?|values?|args?)\b/i;
+const collective = /^\W*(?:(?:when|if|unless):?\s+)?(?:both|each|all|every|any|either)\b(?:\s+\w+){0,2}?\s+(?:inputs?|arguments?|parameters?|values?|args?)\b/i;
 const intervals = [
   [new RegExp(`([\\[(])\\s*${numberText}\\s*,\\s*${numberText}\\s*([\\])])`, 'g'), m => [num(m[2]), m[1] === '(', num(m[3]), m[4] === ')']],
   [new RegExp(`(?<![\\d.])${numberText}\\s*(?:\\.\\.|–|—)\\s*${numberText}`, 'g'), m => [num(m[1]), false, num(m[2]), false]],
@@ -382,7 +385,7 @@ const intervals = [
 const valueSet = /\b(?:must\s+be|is|are|accepts?|accepted\s+values\s+are|only)\s+(?:exactly\s+|either\s+|one\s+of\s+)?(-?\d+)((?:\s*,\s*-?\d+)*)\s*,?\s+or\s+(-?\d+)\b(?!\s*(?:\.\d|[A-Za-z%°]))/gi;
 function ownLines(contract, names, fn) {
   const lines = contract.split('\n'), declares = name => new RegExp(`\`${name}\\s*\\(|\\bfunction\\s+${name}\\s*\\(|^\\s*(?:[-*+]\\s+|\\d+[.)]\\s*)?${name}\\s*\\(`);
-  const mention = line => names.filter(name => declares(name).test(line) || new RegExp(`\`${name}\`|^\\s*(?:[-*+]\\s+)?${name}\\s*:`).test(line));
+  const mention = line => names.filter(name => declares(name).test(line) || new RegExp(`\`${name}\`|^\\s*(?:[-*+]\\s+)?${name}\\s*:|\\bfn:?\\s*${name}\\b`).test(line));
   let current = null, strict = null, bulletBlock = false;
   return lines.map(line => {
     const named = mention(line);
@@ -425,16 +428,23 @@ export function rangeRules(contract, parameters, skipped = [], fn = null, loose 
     }
     return [];
   };
-  const entries = ownLines(contract, signatures, fn);
+  const entries = ownLines(contract, signatures, fn).reduce((out, entry) => {
+    const last = out.at(-1);
+    if (last && !/[.;:!?]\s*$|^\s*$/.test(last.line) && /^\s{2,}\S/.test(entry.line) && !/^\s*(?:[-*+]|\d+[.)])\s/.test(entry.line) && last.strict === entry.strict) last.line += ' ' + entry.line.trim();
+    else out.push({ ...entry });
+    return out;
+  }, []);
   if (fn && entries.some(entry => entry.strict === fn && /\b(?:never|does\s+not|doesn't|cannot|no)\s+traps?\b|\bwithout\s+trapping\b/i.test(entry.line))) return rules;
   let section = false;
   for (const { line: raw, strict } of entries) {
-    const line = raw.replace(/\*\*/g, '').replace(/(?:message|with|text)?\s*:?\s*(?:"[^"\n]*"|“[^”\n]*”)/gi, ' ').replace(/`/g, '');
+    const line = raw.replace(/\*\*/g, '').replace(/(?:message|with|text)?\s*:?\s*(?:"[^"\n]*"|“[^”\n]*”)/gi, ' ').replace(/`/g, '')
+      .replace(new RegExp(`\\b(?:${signatures.join('|') || '\\0'})\\s*\\([^()]*\\)\\s*(?::\\s*[A-Za-z_]\\w*|->\\s*[A-Za-z_]\\w*)?\\s*:?`, 'g'), ' ');
     if (/^\s*#/.test(line)) { section = domainLine.test(line) && !notDomain.test(line); continue; }
     if (!section && !domainLine.test(line) && !/^\s*[-*]\s+[A-Za-z_]\w*\s*:/.test(line)) continue;
-    if (notDomain.test(line) || unitDependent.test(line)) continue;
+    if (unitDependent.test(line)) continue;
     const owned = Boolean(fn) && (strict === fn || signatures.length <= 1);
     for (const sentence of clauses(line)) {
+      if (notDomain.test(sentence)) continue;
       const clause = sentence.replace(bullet, '').replace(/\s*\((?=[^()]*[A-Za-z]{2})[^()\d\[\]]*\)/g, '');
       clauseGuard = trapClause.test(clause) ? null : guardOf(clause);
       if (clauseGuard && !clauseGuard.subject) clauseGuard = null;
