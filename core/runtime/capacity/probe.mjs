@@ -72,6 +72,11 @@ export function probeMachine(host = {}) {
   if (cpuset) cpus = cpus.filter(cpu => cpuset.includes(cpu));
   if (!cpus.length) { cpus = Array.from({ length: parallelism }, (_, index) => index); notes.push('affinity and cpuset do not intersect: using availableParallelism'); }
   const allotment = Math.max(1, Math.min(cpus.length, quota ?? Infinity, affinity ? Infinity : parallelism));
+  const slice = chain.findIndex((dir, index) => index > 0 && dir.endsWith('.slice'));
+  if (slice > 0 && !levels.some(level => level.cgroup === chain[slice] || chain[slice].startsWith(`${level.cgroup}/`))) {
+    levels.push({ cgroup: chain[slice], quota: cpus.length, branch: chain[slice - 1], weighted: true });
+    levels.sort((a, b) => chain.indexOf(a.cgroup) - chain.indexOf(b.cgroup));
+  }
   const domains = new Map(), cores = new Map();
   let topologyRead = true;
   for (const cpu of cpus) {

@@ -21,6 +21,7 @@ const own = (() => { try { return '/sys/fs/cgroup' + readFileSync('/proc/self/cg
 const slice = P.levels.find(level => basename(level.cgroup) === 'heavy.slice')?.cgroup ?? null;
 const usage = dir => { try { return Number(readFileSync(`${dir}/cpu.stat`, 'utf8').match(/^usage_usec (\d+)/m)[1]); } catch { return null; } };
 const throttledUs = dir => { try { return Number(readFileSync(`${dir}/cpu.stat`, 'utf8').match(/^throttled_usec (\d+)/m)?.[1] ?? 0); } catch { return null; } };
+const sliceState = () => { if (!slice) return null; const get = name => { try { return readFileSync(join(slice, name), 'utf8').trim(); } catch { return null; } }; return { cpuMax: get('cpu.max'), cpuWeight: get('cpu.weight') }; };
 const mine = dir => own !== null && (own === dir || own.startsWith(`${dir}/`));
 const others = () => { if (!slice) return []; try { return readdirSync(slice).map(name => join(slice, name)).filter(dir => existsSync(join(dir, 'cgroup.procs')) && !mine(dir) && !basename(dir).startsWith('p68-peer')); } catch { return []; } };
 const quiet = () => ({ load: load(), psi: psi(), others: others().map(dir => basename(dir)) });
@@ -98,6 +99,7 @@ const ARMS = {
 
 async function measure(name, options, candidates, verdictSet, seconds, { peer = 0 } = {}) {
   const before = await gate();
+  const sliceAtStart = sliceState();
   const route = createContainedRoute({ ...ROUTE, ...options });
   await route.ready();
   const pids = () => route.pool.pids ?? [route.pool.pid];
@@ -117,11 +119,13 @@ async function measure(name, options, candidates, verdictSet, seconds, { peer = 
   const self = process.cpuUsage(self0), cpu = cpuOf(pids()) - cpu0 + (self.user + self.system) / 1e6, ownCpu = (usage(own) - own0) / 1e6, peerCpu = peerEntry ? (usage(peerEntry.dir) - peer0) / 1e6 : null;
   const slice1 = slice ? { usage: usage(slice), throttled: throttledUs(slice) } : null;
   if (peerEntry) stopPeer(peerEntry);
+  const sliceAtEnd = sliceState();
   const verdicts = {};
   for (const candidate of verdictSet) verdicts[candidate.name] = verdictOf(await route.check(candidate));
   const controller = route.pool.controller;
   const row = { arm: name, seconds, demand: DEMAND, peer, peerStartedAt, timedStartAt: Math.round(started), attempts, accepted, perSecond: +(accepted / wall * 1000).toFixed(1), wallMs: Math.round(wall),
     cpuMsPerAccepted: +(cpu / accepted * 1000).toFixed(3), busyCpus: +(cpu / wall * 1000).toFixed(2), ownCgroupCpus: own0 === null ? null : +(ownCpu / wall * 1000).toFixed(2), ownCgroupMsPerAccepted: own0 === null ? null : +(ownCpu / accepted * 1000).toFixed(3),
+    sliceCondition: { start: sliceAtStart, end: sliceAtEnd },
     peerCpus: peerCpu === null ? null : +(peerCpu / wall * 1000).toFixed(2),
     slice: slice0 && slice1 ? { cpus: +((slice1.usage - slice0.usage) / 1e6 / wall * 1000).toFixed(2), throttledMs: +((slice1.throttled - slice0.throttled) / 1000).toFixed(1) } : null,
     capacity: route.capacity ? { mode: route.capacity.mode, cap: route.capacity.cap ?? null, allotment: route.capacity.allotment, cohorts: route.capacity.cohorts.map(cohort => ({ width: cohort.width, max: cohort.max, share: cohort.share, pinned: Boolean(cohort.cpus) })) } : null,

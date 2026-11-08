@@ -301,6 +301,37 @@ test('a peer that is starved for CPU counts as wanting an equal split, not just 
   } finally { performance.now = original; }
 });
 
+test('a slice with a weight and no cap is still where peers are found', () => {
+  const scope = `${SLICE}/job.scope`, peer = `${SLICE}/peer.scope`;
+  const env = host7950({ quota: 'max 100000' });
+  const found = probeMachine(env);
+  assert.equal(found.allotment, 32);
+  assert.deepEqual(found.levels.map(level => [level.cgroup, level.quota, level.branch, level.weighted]), [[SLICE, 32, scope, true]]);
+  const usage = { [SLICE]: 0, [scope]: 0, [peer]: 0 }, stall = { [peer]: 0 };
+  const read = path => {
+    const dir = path.replace(/\/cpu\.(stat|pressure)$/, '');
+    if (path.endsWith('/cpu.stat') && dir in usage) return `usage_usec ${usage[dir]}\nthrottled_usec 0\n`;
+    if (path.endsWith('/cpu.pressure') && dir in stall) return `some avg10=0.00 avg60=0.00 avg300=0.00 total=${stall[dir]}\n`;
+    return env.read(path);
+  };
+  let fakeNow = 0;
+  const original = performance.now;
+  performance.now = () => fakeNow;
+  try {
+    const meter = createShareMeter(found, { read, list: dir => dir === SLICE ? ['job.scope', 'peer.scope'] : [], isDir: path => path.endsWith('.scope') });
+    fakeNow = 1000;
+    usage[scope] = 20e6;
+    assert.equal(meter.sample().mode, 'lone');
+    fakeNow = 2000;
+    usage[scope] += 12e6; usage[peer] += 20e6; stall[peer] += 0.5e6;
+    const shared = meter.sample();
+    assert.equal(shared.mode, 'shared');
+    assert.equal(shared.share, 16);
+  } finally { performance.now = original; }
+  const nested = probeMachine(host7950({ quota: 'max 100000', affinity: '8-15', files: { [`${scope}/cpu.max`]: '400000 100000' } }));
+  assert.deepEqual(nested.levels.map(level => [level.quota, level.weighted ?? false]), [[4, false], [8, true]]);
+});
+
 test('occupancy is the CPU a cell spends per wall second, robust to one-window spikes and contention dips', () => {
   const meter = createOccupancy();
   for (const raw of [0.5, 0.5, 0.5]) meter.observe(raw * 1000, 1000);
