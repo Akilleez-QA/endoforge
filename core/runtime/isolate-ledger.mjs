@@ -70,81 +70,11 @@ export function ledgerRequest(action, job, result) {
 }
 
 export const persistentBridge = `
-import importlib, json, os, select, sqlite3, sys
+import importlib, json, sys
 from core.ledger.ledger import Ledger, validate
-extension = importlib.import_module(sys.argv[1]) if len(sys.argv) > 1 else None
-LOOP = extension.LOOP if extension else {}
-write_decision = extension.write_decision if extension else (lambda result: None)
+from tools.ledger_writer import serve
 ${operation}
-paths = {}
-sys.stdout.write(json.dumps(dict(id=0, result='ready')) + '\\n')
-sys.stdout.flush()
-buffer = b''
-while True:
-    chunk = os.read(0, 65536)
-    if not chunk:
-        break
-    buffer += chunk
-    while select.select([0], [], [], 0)[0]:
-        chunk = os.read(0, 65536)
-        if not chunk:
-            break
-        buffer += chunk
-    lines = buffer.split(b'\\n')
-    buffer = lines.pop()
-    groups = {}
-    for line in lines:
-        request = json.loads(line)
-        groups.setdefault(request['job']['reference']['ledger'], []).append(request)
-    for path, requests in groups.items():
-        responses = []
-        try:
-            if path not in paths:
-                if any(r['action'] == 'admit' for r in requests):
-                    os.makedirs(os.path.dirname(path), exist_ok=True)
-                    wal = sqlite3.connect(path)
-                    wal.execute('PRAGMA journal_mode=WAL')
-                else:
-                    wal = None
-                ledger = Ledger(path)
-                paths[path] = (ledger, ledger._connect(), [])
-                if wal:
-                    wal.close()
-            ledger, db, cache = paths[path]
-            db.execute('BEGIN IMMEDIATE')
-            try:
-                prior, previous = ledger._read(db, cache)
-                def append(record):
-                    global previous
-                    previous = ledger._append(db, record, prior, previous)
-                    return previous
-                for request in requests:
-                    db.execute('SAVEPOINT request')
-                    saved_prior, saved_previous = dict(prior), previous
-                    try:
-                        action = LOOP.get(request['action'])
-                        result = action(request, prior, append, process, db) if action else process(request, prior, append)
-                        responses.append(dict(id=request['id'], result=result))
-                    except Exception as error:
-                        db.execute('ROLLBACK TO request')
-                        prior, previous = saved_prior, saved_previous
-                        responses.append(dict(id=request['id'], error=str(error)))
-                    db.execute('RELEASE request')
-                db.commit()
-            except Exception:
-                db.rollback()
-                cache.clear()
-                raise
-        except Exception as error:
-            responses = [dict(id=r['id'], error=str(error)) for r in requests]
-        for response in responses:
-            try:
-                write_decision(response.get('result'))
-            except Exception as error:
-                response = dict(id=response['id'], error=str(error))
-            print(json.dumps(response), flush=True)
-    while len(paths) > 64:
-        paths.pop(next(iter(paths)))[1].close()
+serve(process, importlib.import_module(sys.argv[1]) if len(sys.argv) > 1 else None)
 `;
 
 export class LedgerBridge {
@@ -159,10 +89,12 @@ export class LedgerBridge {
   #restarts = 0;
   #ready = false;
   #closing = false;
+  #journal;
 
-  constructor({ extension, restart = false } = {}) {
+  constructor({ extension, restart = false, journal } = {}) {
     this.#extension = extension;
     this.#restart = restart;
+    this.#journal = journal;
   }
 
   get failed() {
@@ -189,6 +121,7 @@ export class LedgerBridge {
     if (!this.#child) {
       const child = this.#child = spawn('python3', ['-B', '-c', persistentBridge, ...(this.#extension ? [this.#extension] : [])], {
         cwd: fileURLToPath(new URL('../../', import.meta.url)), stdio: ['pipe', 'pipe', 'pipe'],
+        ...(this.#journal ? { env: { ...process.env, ENDOFORGE_LEDGER_JOURNAL: this.#journal } } : {}),
       });
       const fail = error => {
         if (this.#child !== child) return;
@@ -198,7 +131,8 @@ export class LedgerBridge {
           this.#child = this.#started = null;
           this.#ready = false;
         } else this.#failure ||= failure;
-        for (const pending of this.#pending.values()) pending.reject(this.#failure ?? failure);
+        const unknown = Object.assign(new Error(`${failure.message}; outcome unknown`), { outcome: 'outcome_unknown' });
+        for (const pending of this.#pending.values()) pending.reject(unknown);
         this.#pending.clear();
       };
       this.#exit = new Promise(resolve => child.once('close', (code, signal) => {
@@ -234,7 +168,9 @@ export class LedgerBridge {
       pending.reject = error => { failed(error); resolve(); };
     })));
     this.#failure ||= new Error('isolate ledger bridge closed');
-    this.#child.kill();
+    const child = this.#child, stop = setTimeout(() => child.kill('SIGKILL'), 15000);
+    child.stdin.end();
     await this.#exit;
+    clearTimeout(stop);
   }
 }

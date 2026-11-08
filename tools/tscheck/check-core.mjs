@@ -60,13 +60,30 @@ function checkedSources(root, files, program) {
   return checked.length;
 }
 
-export function runCheck({ core, module, compiler }, project, { emit = false, buildInfo } = {}) {
+const sameText = (left, right) => Buffer.from(left).equals(Buffer.from(right));
+const baselineFor = (baseline, project) => {
+  if (!baseline) return undefined;
+  if (baseline.root !== project.root || baseline.tsconfig !== JSON.stringify(project.tsconfig ?? null)) return undefined;
+  const keys = Object.keys(project.files);
+  if (keys.length !== Object.keys(baseline.files).length || !keys.every(key => Object.hasOwn(baseline.files, key))) return undefined;
+  return keys.every(key => sameText(baseline.files[key], project.files[key])) ? undefined : baseline.buildInfo;
+};
+
+export function createBaseline(compiler, project) {
+  const report = runCheck(compiler, project, { buildInfo: null });
+  if (report.diagnostics.length || typeof report.buildInfo !== 'string') throw new Error('a baseline project must check clean');
+  return Object.freeze({ root: project.root, tsconfig: JSON.stringify(project.tsconfig ?? null), files: Object.freeze({ ...project.files }), buildInfo: report.buildInfo });
+}
+
+export function runCheck({ core, module, compiler }, project, { emit = false, buildInfo, baseline } = {}) {
   if (emit && buildInfo !== undefined) throw new Error('emit needs a full check');
+  if (baseline !== undefined && buildInfo !== undefined) throw new Error('a baseline and build info are exclusive');
   const incremental = buildInfo !== undefined;
   refuseInputs(project.root, project.files);
   const infoPath = `${project.root}/${INFO_NAME}`;
+  const seed = incremental ? buildInfo : baselineFor(baseline, project);
   const files = { ...project.files, ...(project.tsconfig ? { [`${project.root}/tsconfig.json`]: JSON.stringify(project.tsconfig) } : {}),
-    ...(typeof buildInfo === 'string' ? { [infoPath]: buildInfo } : {}) };
+    ...(typeof seed === 'string' ? { [infoPath]: seed } : {}) };
   const host = core.memoryFileSystem(files);
   let stderr = '';
   const started = now();
