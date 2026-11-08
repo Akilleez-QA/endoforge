@@ -1,0 +1,15 @@
+{
+  "model": { "model": "sonnet", "effort": "low" },
+  "arms": {
+    "base": { "oracle": false },
+    "oracle": { "oracle": true }
+  },
+  "derived": { "rival": { "from": "base", "rule": "stop after two identical failures" } },
+  "reps": 7,
+  "wave": 4,
+  "budget": { "modelCalls": 300 },
+  "stages": {
+    "smoke": { "needs": ["H01"], "reps": 1 },
+    "main": { "needs": ["H02", "CC-036", "H08", "CC-002", "H01", "CC-025", "H03", "CC-013"] }
+  }
+}
