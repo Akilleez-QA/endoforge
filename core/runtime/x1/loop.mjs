@@ -14,7 +14,7 @@ import { receipt } from './ledger.mjs';
 
 const loopPools = new WeakSet();
 const hostPortPath = fileURLToPath(new URL('./loop-port.mjs', import.meta.url));
-export const implementation = Object.freeze(['loop-port.mjs', 'agent.mjs']);
+export const implementation = Object.freeze(['loop-port.mjs', 'agent.mjs', 'oracle.mjs']);
 export const agentLimits = Object.freeze({ maxTurns: 6, maxTokens: 64000 });
 
 const providers = new WeakMap();

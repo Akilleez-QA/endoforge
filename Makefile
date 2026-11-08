@@ -80,7 +80,7 @@ loop-setup:
 	npm ci --ignore-scripts --no-audit --no-fund --prefix tools/asc
 
 loop-test: loop-setup
-	node --test core/runtime/test/loop.test.mjs core/runtime/test/loop-agent.test.mjs core/runtime/test/loop-review.test.mjs core/runtime/test/loop-count.test.mjs core/runtime/test/loop-crash.test.mjs core/runtime/test/loop-waits.test.mjs
+	node --test core/runtime/test/loop.test.mjs core/runtime/test/loop-agent.test.mjs core/runtime/test/loop-review.test.mjs core/runtime/test/loop-count.test.mjs core/runtime/test/loop-crash.test.mjs core/runtime/test/loop-waits.test.mjs core/runtime/test/oracle.test.mjs
 
 .PHONY: pipeline-test
 pipeline-test:

@@ -51,7 +51,7 @@ async function task(pool, directory) {
   mkdirSync(oracle);
   const { files } = additionCandidate();
   for (const name of ['CONTRACT.md', 'tests.json', 'frozen.sha256']) writeFileSync(join(oracle, name), files[name]);
-  for (const name of [...implementationFiles, 'loop-port.mjs', 'agent.mjs']) writeFileSync(join(oracle, name), readFileSync(join(x1Directory, name)));
+  for (const name of [...implementationFiles, 'loop-port.mjs', 'agent.mjs', 'oracle.mjs']) writeFileSync(join(oracle, name), readFileSync(join(x1Directory, name)));
   const reference = { ledger: join(directory, 'ledger.sqlite'), root: oracle };
   const admission = await admit(pool, reference, { need: 'integer add(a,b)', configuration });
   reference.identity = admission.identity;
