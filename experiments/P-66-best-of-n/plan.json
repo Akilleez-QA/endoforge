@@ -1,0 +1,14 @@
+{
+  "arms": {
+    "sonnet-low": { "model": "sonnet", "effort": "low" },
+    "opus-high": { "model": "opus", "effort": "high" },
+    "sonnet-medium": { "model": "sonnet", "effort": "medium" }
+  },
+  "perNeed": { "sonnet-low": 8, "opus-high": 1, "sonnet-medium": 1 },
+  "budget": { "modelCalls": 600 },
+  "stages": {
+    "smoke": { "needs": ["H01", "H05"] },
+    "main": { "needs": ["C-015", "CC-036", "CC-011", "CC-014", "CC-025", "CC-027", "C-007", "C-019", "CC-002", "C-016", "CC-001", "CC-007", "C-012", "C-005", "CC-026", "CC-022", "C-010", "C-006", "CC-013", "CC-009",
+      "H01", "H02", "H03", "H04", "H05", "H06", "H07", "H08", "H09", "H10"] }
+  }
+}
