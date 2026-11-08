@@ -3,5 +3,10 @@
     "path": "experiments/P-55-constraints/PRECOMMIT.md",
     "sha256": "01574d413c61f768dd7a0729f777cf47ecbdabbf9a43b3625f6f5658e1800624",
     "reason": "Merged before this lint existed. It names a Claude scratch workspace id prefix and the ~/.claude/projects directory; editing it would break its precommit hash."
+  },
+  {
+    "path": "experiments/P-66-best-of-n/PRECOMMIT.md",
+    "sha256": "bbf306def7261a1c59007973344a71ef815df44507f82b4c064ecb83afb6a3e5",
+    "reason": "Hashed before the privacy lint landed (receipt/precommit.sha256). It names the local CLAUDE_CONFIG_DIR home path; editing it would break its precommit hash."
   }
 ]

@@ -10,7 +10,10 @@ make test ENDOFORGE_TEST_OUTPUT="$(mktemp -d)"
 make test-optimized ENDOFORGE_TEST_OUTPUT="$(mktemp -d)"
 ```
 
-`make check` checks local Markdown links and `sources/SHA256SUMS`. It does not
+`make check` checks local Markdown links and `sources/SHA256SUMS`. It also
+checks that the experiments index matches its `INDEX.md` fragments and that
+every experiment number is allocated once. `make index` and `make sums`
+regenerate the index and digests. It does not
 check external URLs. `make test` includes that check and the Python and JavaScript
 suites selected in [Makefile](../../../Makefile). `make test-optimized` repeats
 those targets with Python optimization enabled. Synthetic inputs and stubs do

@@ -1,0 +1,525 @@
+{
+ "node": "26.13.0",
+ "repo": "checkout of 16b7b9c (PR #109 head)",
+ "label": "round1",
+ "workload": {
+  "kind": "route",
+  "arm": "route-fresh",
+  "config": {
+   "check": "fused",
+   "checker": {
+    "reuse": false,
+    "incremental": false
+   }
+  },
+  "needs": 20,
+  "deadlineMs": 2000
+ },
+ "affinity": "all",
+ "rows": [
+  {
+   "workload": "route-fresh",
+   "label": "round1",
+   "cpus": "all",
+   "width": 1,
+   "attempts": 400,
+   "accepted": 400,
+   "perSecond": 40.8,
+   "p50": 23.52,
+   "p95": 33.37,
+   "wallMs": 9801,
+   "cpuMsPerAccepted": 32.787,
+   "busyCpus": 1.34,
+   "perf": {
+    "cycles": 57918146940,
+    "instructions": 80442690446,
+    "ls_any_fills_from_sys.dram_io_all": 72754113,
+    "ls_any_fills_from_sys.near_cache": 3833990
+   },
+   "perfPerAttempt": {
+    "cycles": 144795367,
+    "instructions": 201106726,
+    "ls_any_fills_from_sys.dram_io_all": 181885,
+    "ls_any_fills_from_sys.near_cache": 9585
+   },
+   "ipc": 1.389,
+   "cgroup": {
+    "heavy.slice": {
+     "max": "1792000 100000",
+     "cpus": 92.54,
+     "nr_throttled": 1,
+     "throttled_ms": 2.2
+    },
+    "user@1000.service": {
+     "max": "max 100000",
+     "cpus": 103.35,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    },
+    "user-1000.slice": {
+     "max": "max 100000",
+     "cpus": 103.48,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    },
+    "user.slice": {
+     "max": "max 100000",
+     "cpus": 103.48,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    }
+   },
+   "loadStart": 14.64,
+   "loadEnd": 14.69,
+   "loaded": false
+  },
+  {
+   "workload": "route-fresh",
+   "label": "round1",
+   "cpus": "all",
+   "width": 4,
+   "attempts": 400,
+   "accepted": 400,
+   "perSecond": 140.2,
+   "p50": 27.62,
+   "p95": 36.4,
+   "wallMs": 2853,
+   "cpuMsPerAccepted": 37.231,
+   "busyCpus": 5.22,
+   "perf": {
+    "cycles": 66035823496,
+    "instructions": 78591066408,
+    "ls_any_fills_from_sys.dram_io_all": 72492563,
+    "ls_any_fills_from_sys.near_cache": 17659833
+   },
+   "perfPerAttempt": {
+    "cycles": 165089559,
+    "instructions": 196477666,
+    "ls_any_fills_from_sys.dram_io_all": 181231,
+    "ls_any_fills_from_sys.near_cache": 44150
+   },
+   "ipc": 1.19,
+   "cgroup": {
+    "heavy.slice": {
+     "max": "1792000 100000",
+     "cpus": 32.88,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    },
+    "user@1000.service": {
+     "max": "max 100000",
+     "cpus": 37.24,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    },
+    "user-1000.slice": {
+     "max": "max 100000",
+     "cpus": 37.24,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    },
+    "user.slice": {
+     "max": "max 100000",
+     "cpus": 37.24,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    }
+   },
+   "loadStart": 14.69,
+   "loadEnd": 14.69,
+   "loaded": false
+  },
+  {
+   "workload": "route-fresh",
+   "label": "round1",
+   "cpus": "all",
+   "width": 8,
+   "attempts": 400,
+   "accepted": 400,
+   "perSecond": 239.2,
+   "p50": 32.53,
+   "p95": 45.12,
+   "wallMs": 1672,
+   "cpuMsPerAccepted": 40.219,
+   "busyCpus": 9.62,
+   "perf": {
+    "cycles": 71296770561,
+    "instructions": 77870756002,
+    "ls_any_fills_from_sys.dram_io_all": 79475214,
+    "ls_any_fills_from_sys.near_cache": 17268201
+   },
+   "perfPerAttempt": {
+    "cycles": 178241926,
+    "instructions": 194676890,
+    "ls_any_fills_from_sys.dram_io_all": 198688,
+    "ls_any_fills_from_sys.near_cache": 43171
+   },
+   "ipc": 1.092,
+   "cgroup": {
+    "heavy.slice": {
+     "max": "1792000 100000",
+     "cpus": 26.87,
+     "nr_throttled": 2,
+     "throttled_ms": 249.8
+    },
+    "user@1000.service": {
+     "max": "max 100000",
+     "cpus": 28.7,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    },
+    "user-1000.slice": {
+     "max": "max 100000",
+     "cpus": 28.7,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    },
+    "user.slice": {
+     "max": "max 100000",
+     "cpus": 28.7,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    }
+   },
+   "loadStart": 14.69,
+   "loadEnd": 15.27,
+   "loaded": false
+  },
+  {
+   "workload": "route-fresh",
+   "label": "round1",
+   "cpus": "all",
+   "width": 12,
+   "attempts": 480,
+   "accepted": 480,
+   "perSecond": 344.8,
+   "p50": 34.52,
+   "p95": 42.67,
+   "wallMs": 1392,
+   "cpuMsPerAccepted": 39.599,
+   "busyCpus": 13.65,
+   "perf": {
+    "cycles": 83877192635,
+    "instructions": 91900528374,
+    "ls_any_fills_from_sys.dram_io_all": 90085960,
+    "ls_any_fills_from_sys.near_cache": 23869617
+   },
+   "perfPerAttempt": {
+    "cycles": 174744151,
+    "instructions": 191459434,
+    "ls_any_fills_from_sys.dram_io_all": 187679,
+    "ls_any_fills_from_sys.near_cache": 49728
+   },
+   "ipc": 1.096,
+   "cgroup": {
+    "heavy.slice": {
+     "max": "1792000 100000",
+     "cpus": 24.5,
+     "nr_throttled": 8,
+     "throttled_ms": 197.6
+    },
+    "user@1000.service": {
+     "max": "max 100000",
+     "cpus": 26.72,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    },
+    "user-1000.slice": {
+     "max": "max 100000",
+     "cpus": 26.72,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    },
+    "user.slice": {
+     "max": "max 100000",
+     "cpus": 26.72,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    }
+   },
+   "loadStart": 15.27,
+   "loadEnd": 15.27,
+   "loaded": false
+  },
+  {
+   "workload": "route-fresh",
+   "label": "round1",
+   "cpus": "all",
+   "width": 16,
+   "attempts": 640,
+   "accepted": 640,
+   "perSecond": 306.1,
+   "p50": 48.17,
+   "p95": 74.63,
+   "wallMs": 2091,
+   "cpuMsPerAccepted": 41.907,
+   "busyCpus": 12.83,
+   "perf": {
+    "cycles": 118400568055,
+    "instructions": 121925858965,
+    "ls_any_fills_from_sys.dram_io_all": 133520104,
+    "ls_any_fills_from_sys.near_cache": 27035934
+   },
+   "perfPerAttempt": {
+    "cycles": 185000888,
+    "instructions": 190509155,
+    "ls_any_fills_from_sys.dram_io_all": 208625,
+    "ls_any_fills_from_sys.near_cache": 42244
+   },
+   "ipc": 1.03,
+   "cgroup": {
+    "heavy.slice": {
+     "max": "1792000 100000",
+     "cpus": 37.62,
+     "nr_throttled": 21,
+     "throttled_ms": 10395.4
+    },
+    "user@1000.service": {
+     "max": "max 100000",
+     "cpus": 40.73,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    },
+    "user-1000.slice": {
+     "max": "max 100000",
+     "cpus": 40.73,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    },
+    "user.slice": {
+     "max": "max 100000",
+     "cpus": 40.73,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    }
+   },
+   "loadStart": 15.27,
+   "loadEnd": 16.21,
+   "loaded": true
+  },
+  {
+   "workload": "route-fresh",
+   "label": "round1",
+   "cpus": "all",
+   "width": 18,
+   "attempts": 720,
+   "accepted": 720,
+   "perSecond": 377.1,
+   "p50": 46.04,
+   "p95": 62.11,
+   "wallMs": 1909,
+   "cpuMsPerAccepted": 42.471,
+   "busyCpus": 16.02,
+   "perf": {
+    "cycles": 134979370433,
+    "instructions": 135732923067,
+    "ls_any_fills_from_sys.dram_io_all": 146528173,
+    "ls_any_fills_from_sys.near_cache": 32599552
+   },
+   "perfPerAttempt": {
+    "cycles": 187471348,
+    "instructions": 188517949,
+    "ls_any_fills_from_sys.dram_io_all": 203511,
+    "ls_any_fills_from_sys.near_cache": 45277
+   },
+   "ipc": 1.006,
+   "cgroup": {
+    "heavy.slice": {
+     "max": "1792000 100000",
+     "cpus": 34.39,
+     "nr_throttled": 18,
+     "throttled_ms": 6059.6
+    },
+    "user@1000.service": {
+     "max": "max 100000",
+     "cpus": 37.3,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    },
+    "user-1000.slice": {
+     "max": "max 100000",
+     "cpus": 37.3,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    },
+    "user.slice": {
+     "max": "max 100000",
+     "cpus": 37.3,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    }
+   },
+   "loadStart": 13.36,
+   "loadEnd": 13.36,
+   "loaded": false
+  },
+  {
+   "workload": "route-fresh",
+   "label": "round1",
+   "cpus": "all",
+   "width": 20,
+   "attempts": 800,
+   "accepted": 800,
+   "perSecond": 366.6,
+   "p50": 53.85,
+   "p95": 75.36,
+   "wallMs": 2182,
+   "cpuMsPerAccepted": 42.139,
+   "busyCpus": 15.45,
+   "perf": {
+    "cycles": 148513856041,
+    "instructions": 150658393351,
+    "ls_any_fills_from_sys.dram_io_all": 161112656,
+    "ls_any_fills_from_sys.near_cache": 34914164
+   },
+   "perfPerAttempt": {
+    "cycles": 185642320,
+    "instructions": 188322992,
+    "ls_any_fills_from_sys.dram_io_all": 201391,
+    "ls_any_fills_from_sys.near_cache": 43643
+   },
+   "ipc": 1.014,
+   "cgroup": {
+    "heavy.slice": {
+     "max": "1792000 100000",
+     "cpus": 39.28,
+     "nr_throttled": 21,
+     "throttled_ms": 10458.3
+    },
+    "user@1000.service": {
+     "max": "max 100000",
+     "cpus": 41.89,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    },
+    "user-1000.slice": {
+     "max": "max 100000",
+     "cpus": 41.89,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    },
+    "user.slice": {
+     "max": "max 100000",
+     "cpus": 41.89,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    }
+   },
+   "loadStart": 13.36,
+   "loadEnd": 13.36,
+   "loaded": false
+  },
+  {
+   "workload": "route-fresh",
+   "label": "round1",
+   "cpus": "all",
+   "width": 24,
+   "attempts": 960,
+   "accepted": 960,
+   "perSecond": 378,
+   "p50": 67.06,
+   "p95": 84.51,
+   "wallMs": 2539,
+   "cpuMsPerAccepted": 43.169,
+   "busyCpus": 16.32,
+   "perf": {
+    "cycles": 183078356690,
+    "instructions": 181044796672,
+    "ls_any_fills_from_sys.dram_io_all": 203191345,
+    "ls_any_fills_from_sys.near_cache": 38775957
+   },
+   "perfPerAttempt": {
+    "cycles": 190706622,
+    "instructions": 188588330,
+    "ls_any_fills_from_sys.dram_io_all": 211658,
+    "ls_any_fills_from_sys.near_cache": 40392
+   },
+   "ipc": 0.989,
+   "cgroup": {
+    "heavy.slice": {
+     "max": "1792000 100000",
+     "cpus": 45.91,
+     "nr_throttled": 25,
+     "throttled_ms": 13716
+    },
+    "user@1000.service": {
+     "max": "max 100000",
+     "cpus": 49.49,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    },
+    "user-1000.slice": {
+     "max": "max 100000",
+     "cpus": 49.48,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    },
+    "user.slice": {
+     "max": "max 100000",
+     "cpus": 49.48,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    }
+   },
+   "loadStart": 12.77,
+   "loadEnd": 12.77,
+   "loaded": false
+  },
+  {
+   "workload": "route-fresh",
+   "label": "round1",
+   "cpus": "all",
+   "width": 32,
+   "attempts": 1280,
+   "accepted": 1280,
+   "perSecond": 372.5,
+   "p50": 87.12,
+   "p95": 110.83,
+   "wallMs": 3436,
+   "cpuMsPerAccepted": 43.514,
+   "busyCpus": 16.21,
+   "perf": {
+    "cycles": 245284098008,
+    "instructions": 238861488241,
+    "ls_any_fills_from_sys.dram_io_all": 278284913,
+    "ls_any_fills_from_sys.near_cache": 53377440
+   },
+   "perfPerAttempt": {
+    "cycles": 191628202,
+    "instructions": 186610538,
+    "ls_any_fills_from_sys.dram_io_all": 217410,
+    "ls_any_fills_from_sys.near_cache": 41701
+   },
+   "ipc": 0.974,
+   "cgroup": {
+    "heavy.slice": {
+     "max": "1792000 100000",
+     "cpus": 61.86,
+     "nr_throttled": 34,
+     "throttled_ms": 20540.5
+    },
+    "user@1000.service": {
+     "max": "max 100000",
+     "cpus": 67.03,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    },
+    "user-1000.slice": {
+     "max": "max 100000",
+     "cpus": 67.03,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    },
+    "user.slice": {
+     "max": "max 100000",
+     "cpus": 67.03,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    }
+   },
+   "loadStart": 12.77,
+   "loadEnd": 12.55,
+   "loaded": false
+  }
+ ]
+}
