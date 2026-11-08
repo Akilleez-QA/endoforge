@@ -137,6 +137,8 @@ export function createPort(options, { stage = () => {}, host } = {}) {
     const state = resumed ?? { stage: null, turn: 0, messages: [], overlay: {}, receipt: { turns: 0, tokens: 0, tool_calls: 0, exit_reason: null }, compiler };
     const { messages, overlay } = state;
     agentReceipt = state.receipt;
+    rounds.push(...(state.rounds ?? []));
+    state.rounds = rounds;
     const admitted = () => verifyFromMemory(options.admission)({ identity: options.admission.identity }).then(({ bundle }) => {
       for (const name of implementationFiles) if (implementation[name] !== bundle.files[name]) throw Error('host implementation drift');
       for (const name of oracleFiles) {

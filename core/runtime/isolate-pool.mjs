@@ -238,6 +238,7 @@ export class IsolatePool {
         cell.ready = true;
         this.#startFailures = 0;
         clearTimeout(cell.warmTimer);
+        if (cell.job && !cell.job.settled) this.#arm(cell, cell.job);
         return cell.markStarted(!result.warmError);
       }
       const job = cell.job;
@@ -308,7 +309,7 @@ export class IsolatePool {
         cell ||= this.#spawn();
         cell.job = job;
         job.dispatched = performance.now();
-        this.#arm(cell, job);
+        if (cell.ready) this.#arm(cell, job);
         if (this.#jobDeadlineMs) job.total = setTimeout(() => this.#stop(cell), this.#jobDeadlineMs);
         const { reference, candidates, portOptions } = job.data;
         job.hostCalls = 0;
