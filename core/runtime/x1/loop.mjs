@@ -162,15 +162,16 @@ export async function attemptAgent({ need, directory, pool, observe, limits = ag
     timings.total = performance.now() - begin;
     return { promoted: outcome.promoted, ...(outcome.inconclusive ? { inconclusive: true } : {}), candidate: outcome.candidate, receipt: outcome.receipt, decision: outcome.decision, problem: outcome.problem, status: outcome.status,
       agent: kept.agent ?? null, rounds: kept.rounds ?? [], content: returned ?? null, testDouble: provider.testDouble, modelMs: context.modelMs, timings };
-  } catch {
+  } catch (error) {
     provider?.endSession(jobKey);
     timings.total = performance.now() - begin;
-    return { promoted: false, error: 'pipeline stage failed; inspect local artifacts', testDouble: provider?.testDouble ?? false, modelMs: context.modelMs, timings };
+    return { promoted: false, error: 'pipeline stage failed; inspect local artifacts', ...unknownOutcome(error), testDouble: provider?.testDouble ?? false, modelMs: context.modelMs, timings };
   } finally {
     agentJobs.delete(jobKey);
   }
 }
 
+const unknownOutcome = error => error?.outcome === 'outcome_unknown' ? { status: 'outcome_unknown' } : {};
 export function admit(pool, reference, input = {}) {
   return pool.ledger.request('admit', { reference }, input);
 }
@@ -239,6 +240,6 @@ export async function attemptInIsolate({ need, directory, pool, env = process.en
   } catch (error) {
     scalarFilter ??= error?.scalarFilter;
     timings.total = performance.now() - begin;
-    return { promoted: false, error: 'pipeline stage failed; inspect local artifacts', testDouble: env.ENDOFORGE_CODEX_TEST_DOUBLE === '1', timings, ...(scalarFilter ? { scalarFilter } : {}) };
+    return { promoted: false, error: 'pipeline stage failed; inspect local artifacts', ...unknownOutcome(error), testDouble: env.ENDOFORGE_CODEX_TEST_DOUBLE === '1', timings, ...(scalarFilter ? { scalarFilter } : {}) };
   }
 }

@@ -1,0 +1,36 @@
+Sat Nov  7 15:02:43 2026    <scratch>/bridge-2624017.prof
+
+         2180581 function calls (1997706 primitive calls) in 29.705 seconds
+
+   Ordered by: internal time
+   List reduced from 684 to 25 due to restriction <25>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+      804   10.537    0.013   10.537    0.013 {method 'commit' of 'sqlite3.Connection' objects}
+      898    7.788    0.009    7.788    0.009 {built-in method posix.read}
+     1280    4.610    0.004    4.610    0.004 {method 'close' of 'sqlite3.Connection' objects}
+      544    4.133    0.008    4.133    0.008 {method 'executescript' of 'sqlite3.Connection' objects}
+     8049    0.487    0.000    0.487    0.000 encoder.py:207(iterencode)
+     9088    0.423    0.000    0.423    0.000 {method 'execute' of 'sqlite3.Connection' objects}
+     7477    0.375    0.000    0.375    0.000 decoder.py:351(raw_decode)
+136704/4032    0.220    0.000    0.359    0.000 ledger.py:14(conforms)
+     8417    0.143    0.000    0.143    0.000 {built-in method _hashlib.openssl_sha256}
+     1344    0.108    0.000    0.137    0.000 {built-in method _sqlite3.connect}
+     1348    0.053    0.000    1.044    0.001 ledger.py:135(_read)
+   460599    0.049    0.000    0.049    0.000 {method 'get' of 'dict' objects}
+     1088    0.045    0.000    0.606    0.001 frozen.py:33(validate_frozen)
+   423853    0.040    0.000    0.040    0.000 {built-in method builtins.isinstance}
+     8924    0.034    0.000    0.034    0.000 {built-in method fromhex}
+    10644    0.033    0.000    0.033    0.000 {method 'hex' of 'bytes' objects}
+     4032    0.033    0.000    1.012    0.000 ledger.py:59(validate)
+114240/76608    0.032    0.000    0.207    0.000 ledger.py:37(<genexpr>)
+     9076    0.024    0.000    0.024    0.000 {method 'encode' of 'str' objects}
+      804    0.023    0.000    0.023    0.000 {built-in method builtins.print}
+    29778    0.023    0.000    0.039    0.000 x1_loop.py:181(value_meets)
+    28677    0.019    0.000    0.030    0.000 __init__.py:135(__init__)
+    18691    0.018    0.000    0.051    0.000 __init__.py:341(drive)
+     9986    0.017    0.000    0.061    0.000 __init__.py:251(__str__)
+     8049    0.016    0.000    0.525    0.000 __init__.py:185(dumps)
+
+
+
