@@ -13,7 +13,8 @@ export const sh = (cwd, ...a) => { const r = spawnSync(a[0], a.slice(1), { cwd, 
 
 export function scratch(tmp, workerScript) {
   const home = path.join(tmp, 'home');
-  for (const p of ['.codex/auth.json', '.claude-accts/a1/.credentials.json']) { fs.mkdirSync(path.dirname(path.join(home, p)), { recursive: true }); fs.writeFileSync(path.join(home, p), ''); }
+  const login = JSON.stringify({ claudeAiOauth: { accessToken: 'synthetic', scopes: ['user:inference'], subscriptionType: 'max' } });
+  for (const [p, body] of [['.codex/auth.json', ''], ['.claude-accts/a1/.credentials.json', login]]) { fs.mkdirSync(path.dirname(path.join(home, p)), { recursive: true }); fs.writeFileSync(path.join(home, p), body); }
   Object.assign(process.env, { HOME: home, ENDOFORGE_NOTIFY: 'none', ENDOFORGE_JOBS: path.join(tmp, 'none'), ENDOFORGE_VOLATILE: '/nonexistent-volatile', WORKER_STATE_DIR: path.join(tmp, 'workers') });
   for (const k of Object.keys(process.env)) if (k.startsWith('CODEX_POOL_')) delete process.env[k];
 
