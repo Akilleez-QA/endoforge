@@ -157,6 +157,14 @@ if (plan === 'pilot') {
       save();
     }
   }
+} else if (plan === 'rerun') {
+  for (const label of selected) {
+    const [, name, kind, stage] = /^(.+)-(base|plus20)-(.+)$/.exec(label), config = configs[name];
+    assert.ok(kind === 'base' || stage === 'model', 'only base and model-scale arms rerun without a reference');
+    await waitForLoad();
+    result.rows.push(await arm(`${label}-rerun`, kind === 'base' ? config : { ...config, modelScale: 1.2 }));
+    save();
+  }
 } else if (plan === 'micro') {
   const rates = createStageRates({ stages: loopStages({ cells: 4, lane: 1 }), tickMs: 0 }), names = Object.keys(loopStages({ cells: 4, lane: 1 })).filter(name => !name.includes('.'));
   const timed = (n, body) => { const begin = process.hrtime.bigint(); for (let i = 0; i < n; i++) body(i); return Number(process.hrtime.bigint() - begin) / n; };
