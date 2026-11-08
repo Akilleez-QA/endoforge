@@ -1,0 +1,3723 @@
+{
+ "plan": "rerun",
+ "commit": "b4b929d4b986d8263e15b50e080aae67018e0531",
+ "node": "v26.13.0",
+ "cpus": "AMD Ryzen 9 7950X 16-Core Processor",
+ "parallelism": 32,
+ "corpus": {
+  "digest": "35b10f688e9f383c0c1cfa2c14b5351c2215931bd6d4b214e210e976df772ea6",
+  "kernels": 21
+ },
+ "started": "2026-11-08T00:18:55.089Z",
+ "rows": [
+  {
+   "label": "model-base-0-rerun",
+   "config": {
+    "cells": 4,
+    "width": 16,
+    "model": [
+     2000,
+     4000
+    ],
+    "ledger": "disk",
+    "ledgerDelayMs": 0,
+    "cellDelayMs": 0,
+    "lane": 0,
+    "laneCheck": "fused",
+    "lanePad": 0,
+    "laneDelayMs": 0,
+    "modelScale": 1,
+    "rates": true,
+    "seconds": 130,
+    "warmup": 15
+   },
+   "loadStart": 13.26,
+   "loadEnd": 4.23,
+   "loaded": false,
+   "windowSeconds": 114.99985034800001,
+   "completed": 279,
+   "throughput": 2.426090113645545,
+   "promotedPerSecond": 2.086959237544555,
+   "cpuMsPerCandidate": 156.98924731182797,
+   "wrongVerdicts": 0,
+   "errors": 0,
+   "lanes": null,
+   "verdict": {
+    "bottleneck": "model",
+    "kind": "population",
+    "reason": "15.6 candidates in model on average; no stage at 0.8 net utilisation with a queue",
+    "members": [
+     "model:spec",
+     "model:impl"
+    ]
+   },
+   "grossArgmax": [
+    "ledger 0.21",
+    "cell 0.08"
+   ],
+   "view": {
+    "at": 133.20499293700001,
+    "windowSeconds": 114.99984832400003,
+    "supervisorEventLoop": 0.00884583436779706,
+    "stages": {
+     "model:spec": {
+      "servers": "unbounded",
+      "group": "model",
+      "arrivalsPerSecond": 2.4260901563447868,
+      "completionsPerSecond": 2.4260901563447868,
+      "utilisation": null,
+      "netUtilisation": null,
+      "queue": {
+       "now": 0,
+       "mean": 0,
+       "growthPerSecond": 0
+      },
+      "inSystem": {
+       "now": 6,
+       "mean": 7.2827954871242335
+      },
+      "sojournMs": 3013.831302448028,
+      "waitMs": 0,
+      "serviceMs": {
+       "mean": 3013.831302448028,
+       "p50": 3031.158534999995,
+       "p95": 3880.074105000007,
+       "p99": 3970.1939899999998
+      },
+      "little": {
+       "L": 7.2827954871242335,
+       "lambdaW": 7.311826455752948,
+       "error": 0.003986239717981999
+      }
+     },
+     "model:impl": {
+      "servers": "unbounded",
+      "group": "model",
+      "arrivalsPerSecond": 2.7913080293429267,
+      "completionsPerSecond": 2.782612365700114,
+      "utilisation": null,
+      "netUtilisation": null,
+      "queue": {
+       "now": 0,
+       "mean": 0,
+       "growthPerSecond": 0.008695663642812856
+      },
+      "inSystem": {
+       "now": 10,
+       "mean": 8.30421848712733
+      },
+      "sojournMs": 2976.351647509377,
+      "waitMs": 0,
+      "serviceMs": {
+       "mean": 2976.351647509377,
+       "p50": 2911.621081000005,
+       "p95": 3923.6683919999923,
+       "p99": 3972.7868850000013
+      },
+      "little": {
+       "L": 8.30421848712733,
+       "lambdaW": 8.282032899031499,
+       "error": 0.002671604574255945
+      }
+     },
+     "cell": {
+      "servers": 4,
+      "arrivalsPerSecond": 7.634792678389688,
+      "completionsPerSecond": 7.643488342032501,
+      "utilisation": 0.07584637567456401,
+      "netUtilisation": 0.03270630523053521,
+      "queue": {
+       "now": 0,
+       "mean": 0.0001257681919663708,
+       "growthPerSecond": -0.008695663642812856
+      },
+      "inSystem": {
+       "now": 0,
+       "mean": 0.30351127089022245
+      },
+      "sojournMs": 39.77237495676913,
+      "waitMs": 0.016469918088870095,
+      "serviceMs": {
+       "mean": 39.755905038680254,
+       "p50": 46.93600499999957,
+       "p95": 77.63054699999338,
+       "p99": 130.47527900000568
+      },
+      "little": {
+       "L": 0.30351127089022245,
+       "lambdaW": 0.3039996843170102,
+       "error": 0.0016092101797576812
+      }
+     },
+     "cell.compile": {
+      "servers": 4,
+      "within": "cell",
+      "arrivalsPerSecond": 7.643488342032501,
+      "completionsPerSecond": 7.643488342032501,
+      "utilisation": 0.026456675933415785,
+      "netUtilisation": 0.026456675933415785,
+      "queue": {
+       "now": 0,
+       "mean": 0,
+       "growthPerSecond": 0
+      },
+      "inSystem": {
+       "now": 0,
+       "mean": 0.10582670373366314
+      },
+      "sojournMs": 13.845341158134412,
+      "waitMs": 0,
+      "serviceMs": {
+       "mean": 13.845341158134412,
+       "p50": 0,
+       "p95": 45.548406999980216,
+       "p99": 72.00325900000462
+      },
+      "little": null
+     },
+     "cell.gates": {
+      "servers": 4,
+      "within": "cell",
+      "arrivalsPerSecond": 7.643488342032501,
+      "completionsPerSecond": 7.643488342032501,
+      "utilisation": 0.002738852160157809,
+      "netUtilisation": 0.002738852160157809,
+      "queue": {
+       "now": 0,
+       "mean": 0,
+       "growthPerSecond": 0
+      },
+      "inSystem": {
+       "now": 0,
+       "mean": 0.010955408640631235
+      },
+      "sojournMs": 1.4332995813424703,
+      "waitMs": 0,
+      "serviceMs": {
+       "mean": 1.4332995813424703,
+       "p50": 0,
+       "p95": 7.036196999997628,
+       "p99": 11.890247000017553
+      },
+      "little": null
+     },
+     "ledger": {
+      "servers": 1,
+      "arrivalsPerSecond": 7.643488342032501,
+      "completionsPerSecond": 7.652184005675314,
+      "utilisation": 0.2127273864838195,
+      "netUtilisation": 0.2127273864838195,
+      "queue": {
+       "now": 0,
+       "mean": 0.06719611137423827,
+       "growthPerSecond": -0.008695663642812856
+      },
+      "inSystem": {
+       "now": 0,
+       "mean": 0.27992349785805776
+      },
+      "sojournMs": 36.643962545454755,
+      "waitMs": 8.781298427272743,
+      "serviceMs": {
+       "mean": 27.862664118182018,
+       "p50": 13.19741900000372,
+       "p95": 67.44665600000008,
+       "p99": 72.6491529999912
+      },
+      "little": {
+       "L": 0.27992349785805776,
+       "lambdaW": 0.2804063440948941,
+       "error": 0.001724922132407778
+      }
+     }
+    },
+    "verdict": {
+     "bottleneck": "model",
+     "kind": "population",
+     "reason": "15.6 candidates in model on average; no stage at 0.8 net utilisation with a queue",
+     "members": [
+      "model:spec",
+      "model:impl"
+     ]
+    },
+    "dropped": 0
+   },
+   "live": [
+    {
+     "at": 1.0013204640000004,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 2.001784456,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 3.0020977620000004,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 4.002628056000001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 5.002558239000001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 6.003883624000001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 7.003997345000001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 8.003788052,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 9.004790815,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 10.005737496000002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 11.006833069,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 12.007284711,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 13.007755457,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 14.008842894999997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 15.014110292000002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 16.013872215,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 17.015394842,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 18.015615687999997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 19.016306175999997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 20.015952865,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 21.016494769,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 22.017325673,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 23.017402190000002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 24.01657124,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 25.016793182999997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 26.017807741000002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 27.017742475,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 28.018265527999997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 29.018676593999995,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 30.018996863,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 31.018745410000005,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 32.019462053999995,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 33.019814658,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 34.020288193,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 35.020711114,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 36.02069145,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 37.021139103,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 38.021233105,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 39.021305475,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 40.02077915300001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 41.021722731000004,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 42.022369993,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 43.02209144099999,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 44.022370963,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 45.022298346,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 46.021499242,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 47.021761075,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 48.021716223000006,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 49.022186313999995,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 50.022265325,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 51.022382133,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 52.02212463,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 53.022931853,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 54.02364534,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 55.023760215,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 56.023809066,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 57.024928091,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 58.025127051999995,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 59.02577706,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 60.026357307000005,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 61.02689589399999,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 62.02788283300001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 63.027887513,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 64.028696098,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 65.02913306699999,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 66.03047965500001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 67.03000394000001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 68.030242645,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 69.030075761,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 70.030665705,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 71.03149277200001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 72.03072474300001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 73.03162527700002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 74.03175543200001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 75.032694982,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 76.032984263,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 77.03261230400001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 78.033187392,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 79.03249166,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 80.03258755000002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 81.033313595,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 82.03436398200002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 83.03405925400001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 84.03419639400002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 85.03382231,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 86.034098136,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 87.034579527,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 88.03545962700001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 89.034582701,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 90.03475929800001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 91.035850563,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 92.03650466,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 93.03668871800001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 94.037126898,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 95.03683815800001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 96.03776897500002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 97.038664092,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 98.03873910600001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 99.03979016000001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 100.040632496,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 101.040726471,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 102.04180113400001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 103.042512704,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 104.04255534,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 105.043235112,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 106.042788337,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 107.04336112200001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 108.043473875,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 109.04365187300002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 110.04380830700002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 111.04382634,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 112.04471535000002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 113.045682068,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 114.04632205900002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 115.046768559,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 116.047744898,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 117.04872299400002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 118.049089009,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 119.04953755000001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 120.050392422,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 121.05007804800002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 122.050042581,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 123.05148411500001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 124.051645869,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 125.051703856,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 126.05273244300001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 127.05329198999999,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 128.05378018,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 129.05405787700002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 130.0546962,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 131.054583516,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 132.05471773,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 133.054958373,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 134.055747459,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 135.05585669700002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 136.05693003300001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 137.057548405,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    }
+   ],
+   "firstLive": {
+    "at": 1.0013204640000004,
+    "bottleneck": "model",
+    "kind": "population",
+    "published": true
+   },
+   "liveAt5": {
+    "at": 5.002558239000001,
+    "bottleneck": "model",
+    "kind": "population",
+    "published": true
+   },
+   "dropped": 0,
+   "published": 140.63519082999997
+  },
+  {
+   "label": "model-base-1-rerun",
+   "config": {
+    "cells": 4,
+    "width": 16,
+    "model": [
+     2000,
+     4000
+    ],
+    "ledger": "disk",
+    "ledgerDelayMs": 0,
+    "cellDelayMs": 0,
+    "lane": 0,
+    "laneCheck": "fused",
+    "lanePad": 0,
+    "laneDelayMs": 0,
+    "modelScale": 1,
+    "rates": true,
+    "seconds": 130,
+    "warmup": 15
+   },
+   "loadStart": 4.23,
+   "loadEnd": 9.06,
+   "loaded": false,
+   "windowSeconds": 114.99940941299998,
+   "completed": 278,
+   "throughput": 2.4174037190192195,
+   "promotedPerSecond": 2.0782715426100484,
+   "cpuMsPerCandidate": 221.29496402877697,
+   "wrongVerdicts": 0,
+   "errors": 0,
+   "lanes": null,
+   "verdict": {
+    "bottleneck": "model",
+    "kind": "population",
+    "reason": "15.5 candidates in model on average; no stage at 0.8 net utilisation with a queue",
+    "members": [
+     "model:spec",
+     "model:impl"
+    ]
+   },
+   "grossArgmax": [
+    "ledger 0.24",
+    "cell 0.09"
+   ],
+   "view": {
+    "at": 133.481278453,
+    "windowSeconds": 114.99941453199999,
+    "supervisorEventLoop": 0.013232515816252458,
+    "stages": {
+     "model:spec": {
+      "servers": "unbounded",
+      "group": "model",
+      "arrivalsPerSecond": 2.417403611412675,
+      "completionsPerSecond": 2.4000122185248136,
+      "utilisation": null,
+      "netUtilisation": null,
+      "queue": {
+       "now": 0,
+       "mean": 0,
+       "growthPerSecond": 0.01739139288786097
+      },
+      "inSystem": {
+       "now": 8,
+       "mean": 7.268815053127047
+      },
+      "sojournMs": 2994.0559245434742,
+      "waitMs": 0,
+      "serviceMs": {
+       "mean": 2994.0559245434742,
+       "p50": 3024.7350829999777,
+       "p95": 3857.3944020000054,
+       "p99": 3983.960602999985
+      },
+      "little": {
+       "L": 7.268815053127047,
+       "lambdaW": 7.185770801850945,
+       "error": 0.011424730257839716
+      }
+     },
+     "model:impl": {
+      "servers": "unbounded",
+      "group": "model",
+      "arrivalsPerSecond": 2.747840076282033,
+      "completionsPerSecond": 2.765231469169894,
+      "utilisation": null,
+      "netUtilisation": null,
+      "queue": {
+       "now": 0,
+       "mean": 0,
+       "growthPerSecond": -0.01739139288786097
+      },
+      "inSystem": {
+       "now": 7,
+       "mean": 8.229739803193935
+      },
+      "sojournMs": 2980.584971886792,
+      "waitMs": 0,
+      "serviceMs": {
+       "mean": 2980.584971886792,
+       "p50": 2911.6571190000104,
+       "p95": 3905.128826,
+       "p99": 3970.4253970000136
+      },
+      "little": {
+       "L": 8.229739803193935,
+       "lambdaW": 8.242007360796222,
+       "error": 0.0014906373586108376
+      }
+     },
+     "cell": {
+      "servers": 4,
+      "arrivalsPerSecond": 7.582647299107383,
+      "completionsPerSecond": 7.573951602663452,
+      "utilisation": 0.09057875824968971,
+      "netUtilisation": 0.04313845725596645,
+      "queue": {
+       "now": 0,
+       "mean": 0.0003528133353162994,
+       "growthPerSecond": 0.008695696443930485
+      },
+      "inSystem": {
+       "now": 1,
+       "mean": 0.3626678463340751
+      },
+      "sojournMs": 47.86949886567166,
+      "waitMs": 0.04655151205564674,
+      "serviceMs": {
+       "mean": 47.82294735361601,
+       "p50": 51.95124600001145,
+       "p95": 112.74724900000729,
+       "p99": 164.20554500000435
+      },
+      "little": {
+       "L": 0.3626678463340751,
+       "lambdaW": 0.36256126765235014,
+       "error": 0.00029387408561938535
+      }
+     },
+     "cell.compile": {
+      "servers": 4,
+      "within": "cell",
+      "arrivalsPerSecond": 7.573951602663452,
+      "completionsPerSecond": 7.573951602663452,
+      "utilisation": 0.0343838626208806,
+      "netUtilisation": 0.0343838626208806,
+      "queue": {
+       "now": 0,
+       "mean": 0,
+       "growthPerSecond": 0
+      },
+      "inSystem": {
+       "now": 0,
+       "mean": 0.1375354504835224
+      },
+      "sojournMs": 18.159008361653218,
+      "waitMs": 0,
+      "serviceMs": {
+       "mean": 18.159008361653218,
+       "p50": 0,
+       "p95": 72.33677700000408,
+       "p99": 99.60647700000845
+      },
+      "little": null
+     },
+     "cell.gates": {
+      "servers": 4,
+      "within": "cell",
+      "arrivalsPerSecond": 7.573951602663452,
+      "completionsPerSecond": 7.573951602663452,
+      "utilisation": 0.0037487079630306288,
+      "netUtilisation": 0.0037487079630306288,
+      "queue": {
+       "now": 0,
+       "mean": 0,
+       "growthPerSecond": 0
+      },
+      "inSystem": {
+       "now": 0,
+       "mean": 0.014994831852122515
+      },
+      "sojournMs": 1.9797897634900967,
+      "waitMs": 0,
+      "serviceMs": {
+       "mean": 1.9797897634900967,
+       "p50": 0,
+       "p95": 11.244754000013927,
+       "p99": 17.85678800001915
+      },
+      "little": null
+     },
+     "ledger": {
+      "servers": 1,
+      "arrivalsPerSecond": 7.556560209775591,
+      "completionsPerSecond": 7.556560209775591,
+      "utilisation": 0.23625751232359457,
+      "netUtilisation": 0.23625751232359457,
+      "queue": {
+       "now": 0,
+       "mean": 0.08999138152238331,
+       "growthPerSecond": 0
+      },
+      "inSystem": {
+       "now": 1,
+       "mean": 0.3262488938459779
+      },
+      "sojournMs": 43.16724417491379,
+      "waitMs": 11.90904049252005,
+      "serviceMs": {
+       "mean": 31.25820368239374,
+       "p50": 14.72126700001536,
+       "p95": 77.57704900001409,
+       "p99": 99.74325699999463
+      },
+      "little": {
+       "L": 0.3262488938459779,
+       "lambdaW": 0.3261958796978207,
+       "error": 0.00016249602422314748
+      }
+     }
+    },
+    "verdict": {
+     "bottleneck": "model",
+     "kind": "population",
+     "reason": "15.5 candidates in model on average; no stage at 0.8 net utilisation with a queue",
+     "members": [
+      "model:spec",
+      "model:impl"
+     ]
+    },
+    "dropped": 0
+   },
+   "live": [
+    {
+     "at": 1.0023175930000143,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 2.0053513590000223,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 3.005401205000002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 4.0054688380000005,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 5.006178656000004,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 6.008277923000016,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 7.009220876000007,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 8.010510630000004,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 9.010871237000014,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 10.010507163000002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 11.012294631000026,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 12.01301201200002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 13.014248612000024,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 14.015014067000012,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 15.014470707000001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 16.014714767000026,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 17.01629586100002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 18.01742282200002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 19.017964479000018,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 20.01764702600002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 21.01779344900002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 22.017709049000025,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 23.018256916000013,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 24.01884153200002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 25.018401995000023,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 26.02056339800003,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 27.021191110000014,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 28.021281295000023,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 29.02267627300002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 30.022484563000006,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 31.022705424000016,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 32.02367027600002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 33.02527700200002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 34.02550628300003,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 35.02831611800001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 36.02916039500001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 37.029894761,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 38.029329387000004,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 39.02948212600002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 40.030324406,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 41.03370310700001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 42.033796321000004,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 43.03429371000003,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 44.03536320400002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 45.035598203,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 46.03543078200001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 47.036788881000014,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 48.03827134000001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 49.038817737,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 50.03892326400001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 51.038873144000014,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 52.03883015900001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 53.039275544000006,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 54.04133899000002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 55.04173901300001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 56.04333134300003,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 57.045290619000006,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 58.04629444600001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 59.047612373000014,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 60.048247944,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 61.04891199800002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 62.048173760000005,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 63.048824521,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 64.04837884300001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 65.04854422100001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 66.04954678100002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 67.05057586000001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 68.050828901,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 69.05096655900002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 70.05078588100002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 71.05078803000002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 72.05125867200003,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 73.05176956900003,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 74.05359235100003,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 75.05481924700001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 76.055883933,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 77.05632333900003,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 78.05814767400001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 79.05841511200002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 80.05868714900001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 81.05852549700002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 82.05930858400001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 83.05972627900002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 84.06072915000003,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 85.061500065,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 86.06273743800001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 87.06268017600003,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 88.06237958500002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 89.062662669,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 90.06297221200002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 91.06334019100002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 92.06346089400002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 93.06344349300002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 94.06527888300002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 95.06555990000003,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 96.06523250500003,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 97.06538313,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 98.065746656,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 99.065428576,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 100.06524967100003,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 101.065486451,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 102.06518692200002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 103.06589357600001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 104.06715086300002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 105.066231169,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 106.06754874500001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 107.06917009,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 108.07029401700001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 109.07029587500001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 110.07188945600001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 111.07124463,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 112.07238531300001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 113.07372189600001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 114.07457843200001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 115.07461490700001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 116.07515350500002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 117.075377542,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 118.07644605300003,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 119.07684312599999,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 120.07881528900002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 121.07877129600003,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 122.080443252,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 123.08143391200001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 124.08224981800004,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 125.08241641600002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 126.08315068799999,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 127.08282242000001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 128.08316812200002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 129.08334972000003,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 130.084158902,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 131.084637043,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 132.08437858300002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 133.08529734200005,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 134.08577326200003,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 135.08768423400002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 136.08966433199998,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 137.09159226100005,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    }
+   ],
+   "firstLive": {
+    "at": 1.0023175930000143,
+    "bottleneck": "model",
+    "kind": "population",
+    "published": true
+   },
+   "liveAt5": {
+    "at": 5.006178656000004,
+    "bottleneck": "model",
+    "kind": "population",
+    "published": true
+   },
+   "dropped": 0,
+   "published": 141.47107914800003
+  },
+  {
+   "label": "model-plus20-model-rerun",
+   "config": {
+    "cells": 4,
+    "width": 16,
+    "model": [
+     2000,
+     4000
+    ],
+    "ledger": "disk",
+    "ledgerDelayMs": 0,
+    "cellDelayMs": 0,
+    "lane": 0,
+    "laneCheck": "fused",
+    "lanePad": 0,
+    "laneDelayMs": 0,
+    "modelScale": 1.2,
+    "rates": true,
+    "seconds": 130,
+    "warmup": 15
+   },
+   "loadStart": 9.06,
+   "loadEnd": 4.93,
+   "loaded": false,
+   "windowSeconds": 114.99840925900004,
+   "completed": 232,
+   "throughput": 2.0174192103604525,
+   "promotedPerSecond": 1.7391544916900452,
+   "cpuMsPerCandidate": 174.82758620689654,
+   "wrongVerdicts": 0,
+   "errors": 0,
+   "lanes": null,
+   "verdict": {
+    "bottleneck": "model",
+    "kind": "population",
+    "reason": "15.7 candidates in model on average; no stage at 0.8 net utilisation with a queue",
+    "members": [
+     "model:spec",
+     "model:impl"
+    ]
+   },
+   "grossArgmax": [
+    "ledger 0.18",
+    "cell 0.06"
+   ],
+   "view": {
+    "at": 135.4950706,
+    "windowSeconds": 114.998412105,
+    "supervisorEventLoop": 0.008213004991625486,
+    "stages": {
+     "model:spec": {
+      "servers": "unbounded",
+      "group": "model",
+      "arrivalsPerSecond": 2.017419160433024,
+      "completionsPerSecond": 2.060898021649253,
+      "utilisation": null,
+      "netUtilisation": null,
+      "queue": {
+       "now": 0,
+       "mean": 0,
+       "growthPerSecond": -0.043478861216228966
+      },
+      "inSystem": {
+       "now": 5,
+       "mean": 7.329125341352033
+      },
+      "sojournMs": 3569.9123369789054,
+      "waitMs": 0,
+      "serviceMs": {
+       "mean": 3569.9123369789054,
+       "p50": 3612.87043499999,
+       "p95": 4667.367559000035,
+       "p99": 4756.019923000014
+      },
+      "little": {
+       "L": 7.329125341352033,
+       "lambdaW": 7.357225272741088,
+       "error": 0.0038340088455727185
+      }
+     },
+     "model:impl": {
+      "servers": "unbounded",
+      "group": "model",
+      "arrivalsPerSecond": 2.35655427791961,
+      "completionsPerSecond": 2.313075416703381,
+      "utilisation": null,
+      "netUtilisation": null,
+      "queue": {
+       "now": 0,
+       "mean": 0,
+       "growthPerSecond": 0.043478861216228966
+      },
+      "inSystem": {
+       "now": 11,
+       "mean": 8.325242305622877
+      },
+      "sojournMs": 3589.071747654136,
+      "waitMs": 0,
+      "serviceMs": {
+       "mean": 3589.071747654136,
+       "p50": 3537.360161999997,
+       "p95": 4655.538255999971,
+       "p99": 4767.117408999999
+      },
+      "little": {
+       "L": 8.325242305622877,
+       "lambdaW": 8.301793628283423,
+       "error": 0.0028165759600314254
+      }
+     },
+     "cell": {
+      "servers": 4,
+      "arrivalsPerSecond": 6.391392598785658,
+      "completionsPerSecond": 6.391392598785658,
+      "utilisation": 0.06482675791812922,
+      "netUtilisation": 0.028924726160245953,
+      "queue": {
+       "now": 0,
+       "mean": 0.0001265689389420452,
+       "growthPerSecond": 0
+      },
+      "inSystem": {
+       "now": 0,
+       "mean": 0.2594336006114589
+      },
+      "sojournMs": 40.591091315646985,
+      "waitMs": 0.01980302993217673,
+      "serviceMs": {
+       "mean": 40.57128828571481,
+       "p50": 48.83522800001083,
+       "p95": 79.6684130000067,
+       "p99": 133.50121400004718
+      },
+      "little": {
+       "L": 0.2594336006114589,
+       "lambdaW": 0.2594336006114589,
+       "error": 0
+      }
+     },
+     "cell.compile": {
+      "servers": 4,
+      "within": "cell",
+      "arrivalsPerSecond": 6.391392598785658,
+      "completionsPerSecond": 6.391392598785658,
+      "utilisation": 0.023284597817360593,
+      "netUtilisation": 0.023284597817360593,
+      "queue": {
+       "now": 0,
+       "mean": 0,
+       "growthPerSecond": 0
+      },
+      "inSystem": {
+       "now": 0,
+       "mean": 0.09313839126944237
+      },
+      "sojournMs": 14.572472247619139,
+      "waitMs": 0,
+      "serviceMs": {
+       "mean": 14.572472247619139,
+       "p50": 0,
+       "p95": 49.173563000003924,
+       "p99": 91.98849400001927
+      },
+      "little": null
+     },
+     "cell.gates": {
+      "servers": 4,
+      "within": "cell",
+      "arrivalsPerSecond": 6.391392598785658,
+      "completionsPerSecond": 6.391392598785658,
+      "utilisation": 0.002359233606219494,
+      "netUtilisation": 0.002359233606219494,
+      "queue": {
+       "now": 0,
+       "mean": 0,
+       "growthPerSecond": 0
+      },
+      "inSystem": {
+       "now": 0,
+       "mean": 0.009436934424877976
+      },
+      "sojournMs": 1.4765067673469097,
+      "waitMs": 0,
+      "serviceMs": {
+       "mean": 1.4765067673469097,
+       "p50": 0,
+       "p95": 7.1260479999982635,
+       "p99": 9.878805000000284
+      },
+      "little": null
+     },
+     "ledger": {
+      "servers": 1,
+      "arrivalsPerSecond": 6.434871460001887,
+      "completionsPerSecond": 6.434871460001887,
+      "utilisation": 0.18252818079639704,
+      "netUtilisation": 0.18252818079639704,
+      "queue": {
+       "now": 0,
+       "mean": 0.045745079333764566,
+       "growthPerSecond": 0
+      },
+      "inSystem": {
+       "now": 0,
+       "mean": 0.2282732601301616
+      },
+      "sojournMs": 35.47440870405431,
+      "waitMs": 7.108934439189427,
+      "serviceMs": {
+       "mean": 28.365474264864886,
+       "p50": 13.215813000046182,
+       "p95": 69.20836800005054,
+       "p99": 74.98500099999364
+      },
+      "little": {
+       "L": 0.2282732601301616,
+       "lambdaW": 0.2282732601301616,
+       "error": 0
+      }
+     }
+    },
+    "verdict": {
+     "bottleneck": "model",
+     "kind": "population",
+     "reason": "15.7 candidates in model on average; no stage at 0.8 net utilisation with a queue",
+     "members": [
+      "model:spec",
+      "model:impl"
+     ]
+    },
+    "dropped": 0
+   },
+   "live": [
+    {
+     "at": 1.0027265239999978,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 2.0037756839999927,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 3.00470600299997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 4.005392499999958,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 5.006164801999985,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 6.005832957000006,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 7.0076768489999814,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 8.008619047000014,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 9.009753064999996,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 10.010146004999989,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 11.01056865599996,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 12.011364432999981,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 13.011775867999997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 14.012402075999999,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 15.020667392999982,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 16.02141625099996,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 17.02160315099999,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 18.02265891900001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 19.02264637500001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 20.023304463999985,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 21.023083528999997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 22.024918391000014,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 23.024782627000008,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 24.025780849999983,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 25.027935190999997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 26.02870618899999,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 27.029455552999977,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 28.031038040000013,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 29.032657982999982,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 30.032825344000013,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 31.03472259099997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 32.035976488999964,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 33.03631966400001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 34.03718950599997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 35.036544932999995,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 36.03681773700001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 37.039300292,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 38.039639953000005,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 39.039869215999964,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 40.04007130499999,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 41.040622103000004,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 42.04210045799997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 43.042664502999976,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 44.04317163900001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 45.044170278,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 46.04634299699997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 47.04654712299997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 48.04660127799999,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 49.048604332999965,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 50.04966924299998,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 51.049851272,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 52.051942738000015,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 53.053082142999976,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 54.05309795299999,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 55.05360224899999,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 56.056964301,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 57.05735909699998,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 58.057973864,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 59.05743527999998,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 60.057563471,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 61.05837726199999,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 62.05855550700001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 63.05952453499997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 64.06159604199999,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 65.06191758700001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 66.06275384700001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 67.063750979,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 68.06460297899996,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 69.06556258199998,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 70.06647720799997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 71.066528758,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 72.06802830299998,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 73.06853118499997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 74.06979306200002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 75.070536028,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 76.07370645499998,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 77.07552779999997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 78.0766065,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 79.07676452699997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 80.07746743399998,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 81.07859511,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 82.07959655700002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 83.08000570799999,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 84.08087069299998,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 85.08107575700001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 86.08121489299997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 87.08254163499997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 88.08452014400001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 89.08556922399998,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 90.08656169399997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 91.08757444499997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 92.08854681699997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 93.08976308399998,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 94.09054033499997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 95.091533971,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 96.09201851199998,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 97.09283548999997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 98.09356593400001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 99.09448200299998,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 100.09480290999997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 101.095718689,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 102.09655580699997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 103.09707628499996,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 104.09760165600001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 105.09832121999999,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 106.099241048,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 107.09860070099995,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 108.09848948599998,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 109.09958358699997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 110.10018917199999,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 111.10053759699996,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 112.10156243300001,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 113.10160221599997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 114.10200842999998,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 115.102470691,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 116.103744503,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 117.10469284799997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 118.10563144899997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 119.10636807199998,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 120.10732982400002,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 121.10770937599999,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 122.10859695899998,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 123.108845837,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 124.10958887099999,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 125.11066669599997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 126.11257254299998,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 127.114527804,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 128.115548946,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 129.115932034,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 130.11617868399998,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 131.11808965799997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 132.11784341599997,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 133.11855254999998,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 134.119571971,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 135.12004183,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 136.121568203,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 137.123563484,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    },
+    {
+     "at": 138.124621459,
+     "bottleneck": "model",
+     "kind": "population",
+     "published": true
+    }
+   ],
+   "firstLive": {
+    "at": 1.0027265239999978,
+    "bottleneck": "model",
+    "kind": "population",
+    "published": true
+   },
+   "liveAt5": {
+    "at": 5.006164801999985,
+    "bottleneck": "model",
+    "kind": "population",
+    "published": true
+   },
+   "dropped": 0,
+   "published": 143.69242365199997
+  },
+  {
+   "label": "ledger-plus20-model-rerun",
+   "config": {
+    "cells": 4,
+    "width": 16,
+    "model": [
+     20,
+     40
+    ],
+    "ledger": "disk",
+    "ledgerDelayMs": 25,
+    "cellDelayMs": 0,
+    "lane": 0,
+    "laneCheck": "fused",
+    "lanePad": 0,
+    "laneDelayMs": 0,
+    "modelScale": 1.2,
+    "rates": true,
+    "seconds": 40,
+    "warmup": 10
+   },
+   "loadStart": 4.93,
+   "loadEnd": 5.26,
+   "loaded": false,
+   "windowSeconds": 29.998921334000013,
+   "completed": 187,
+   "throughput": 6.233557464216521,
+   "promotedPerSecond": 5.366859634967165,
+   "cpuMsPerCandidate": 114.8663101604278,
+   "wrongVerdicts": 0,
+   "errors": 0,
+   "lanes": null,
+   "verdict": {
+    "bottleneck": "ledger",
+    "kind": "saturated",
+    "reason": "net utilisation 1.00 of 1 server(s), mean queue 8.8",
+    "inside": []
+   },
+   "grossArgmax": [
+    "ledger 1.00",
+    "cell 1.00"
+   ],
+   "view": {
+    "at": 43.38010312700004,
+    "windowSeconds": 29.998923919000024,
+    "supervisorEventLoop": 0.02108800856051045,
+    "stages": {
+     "model:spec": {
+      "servers": "unbounded",
+      "group": "model",
+      "arrivalsPerSecond": 6.133553340007051,
+      "completionsPerSecond": 6.133553340007051,
+      "utilisation": null,
+      "netUtilisation": null,
+      "queue": {
+       "now": 0,
+       "mean": 0,
+       "growthPerSecond": 0
+      },
+      "inSystem": {
+       "now": 0,
+       "mean": 0.21548182973010357
+      },
+      "sojournMs": 35.131646826088556,
+      "waitMs": 0,
+      "serviceMs": {
+       "mean": 35.131646826088556,
+       "p50": 35.16122800001176,
+       "p95": 46.245335999992676,
+       "p99": 47.78046199999517
+      },
+      "little": {
+       "L": 0.21548182973010357,
+       "lambdaW": 0.21548182973010357,
+       "error": 0
+      }
+     },
+     "model:impl": {
+      "servers": "unbounded",
+      "group": "model",
+      "arrivalsPerSecond": 7.100254681638597,
+      "completionsPerSecond": 7.100254681638597,
+      "utilisation": null,
+      "netUtilisation": null,
+      "queue": {
+       "now": 0,
+       "mean": 0,
+       "growthPerSecond": 0
+      },
+      "inSystem": {
+       "now": 0,
+       "mean": 0.2534186555666843
+      },
+      "sojournMs": 35.69148811267715,
+      "waitMs": 0,
+      "serviceMs": {
+       "mean": 35.69148811267715,
+       "p50": 34.883353999990504,
+       "p95": 46.264225999999326,
+       "p99": 47.335384999983944
+      },
+      "little": {
+       "L": 0.2534186555666843,
+       "lambdaW": 0.25341865556668425,
+       "error": 2.1904918999402823e-16
+      }
+     },
+     "cell": {
+      "servers": 4,
+      "arrivalsPerSecond": 19.467364948718032,
+      "completionsPerSecond": 19.367361361652698,
+      "utilisation": 0.9993617125800343,
+      "netUtilisation": 0.08839542929639993,
+      "queue": {
+       "now": 7,
+       "mean": 5.419951923676194,
+       "growthPerSecond": 0.10000358706533234
+      },
+      "inSystem": {
+       "now": 11,
+       "mean": 9.41739877399633
+      },
+      "sojournMs": 485.0257150086052,
+      "waitMs": 279.68531975731423,
+      "serviceMs": {
+       "mean": 205.34039525129091,
+       "p50": 48.03110600000946,
+       "p95": 667.1426249999786,
+       "p99": 725.8422600000049
+      },
+      "little": {
+       "L": 9.41739877399633,
+       "lambdaW": 9.393668292265632,
+       "error": 0.0025198552488001204
+      }
+     },
+     "cell.compile": {
+      "servers": 4,
+      "within": "cell",
+      "arrivalsPerSecond": 19.367361361652698,
+      "completionsPerSecond": 19.367361361652698,
+      "utilisation": 0.0648707895908045,
+      "netUtilisation": 0.0648707895908045,
+      "queue": {
+       "now": 0,
+       "mean": 0,
+       "growthPerSecond": 0
+      },
+      "inSystem": {
+       "now": 0,
+       "mean": 0.259483158363218
+      },
+      "sojournMs": 13.397961318416543,
+      "waitMs": 0,
+      "serviceMs": {
+       "mean": 13.397961318416543,
+       "p50": 0,
+       "p95": 45.46993500000099,
+       "p99": 55.155752000000575
+      },
+      "little": null
+     },
+     "cell.gates": {
+      "servers": 4,
+      "within": "cell",
+      "arrivalsPerSecond": 19.367361361652698,
+      "completionsPerSecond": 19.367361361652698,
+      "utilisation": 0.006888804013703718,
+      "netUtilisation": 0.006888804013703718,
+      "queue": {
+       "now": 0,
+       "mean": 0,
+       "growthPerSecond": 0
+      },
+      "inSystem": {
+       "now": 0,
+       "mean": 0.027555216054814872
+      },
+      "sojournMs": 1.4227656282271932,
+      "waitMs": 0,
+      "serviceMs": {
+       "mean": 1.4227656282271932,
+       "p50": 0,
+       "p95": 7.235373000003165,
+       "p99": 10.62312799999927
+      },
+      "little": null
+     },
+     "ledger": {
+      "servers": 1,
+      "arrivalsPerSecond": 19.400695890674477,
+      "completionsPerSecond": 19.500699477739808,
+      "utilisation": 1,
+      "netUtilisation": 1,
+      "queue": {
+       "now": 8,
+       "mean": 8.772746811405387,
+       "growthPerSecond": -0.10000358706533234
+      },
+      "inSystem": {
+       "now": 9,
+       "mean": 9.772746811405387
+      },
+      "sojournMs": 500.6522668222222,
+      "waitMs": 449.37619167692304,
+      "serviceMs": {
+       "mean": 51.276075145299146,
+       "p50": 34.370916999992914,
+       "p95": 90.8497019999777,
+       "p99": 92.46811399998842
+      },
+      "little": {
+       "L": 9.772746811405387,
+       "lambdaW": 9.763069398149359,
+       "error": 0.0009902449580228884
+      }
+     }
+    },
+    "verdict": {
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "reason": "net utilisation 1.00 of 1 server(s), mean queue 8.8",
+     "inside": []
+    },
+    "dropped": 0
+   },
+   "live": [
+    {
+     "at": 1.0008335319999606,
+     "bottleneck": "cell",
+     "kind": "unsaturated",
+     "published": true
+    },
+    {
+     "at": 2.0015388499999536,
+     "bottleneck": "cell",
+     "kind": "unsaturated",
+     "published": true
+    },
+    {
+     "at": 3.0010516809999825,
+     "bottleneck": "cell",
+     "kind": "unsaturated",
+     "published": true
+    },
+    {
+     "at": 4.001797620999976,
+     "bottleneck": "cell",
+     "kind": "unsaturated",
+     "published": true
+    },
+    {
+     "at": 5.002017483000003,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 6.001827812999952,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 7.002539057999965,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 8.00226945599995,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 9.002289741999993,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 10.013718063999956,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 11.013677613999986,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 12.01393897399999,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 13.013710282999964,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 14.013916437999985,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 15.015354317999968,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 16.015700626999955,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 17.016259630999993,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 18.015713838999975,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 19.016116550999985,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 20.016268151999974,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 21.01584778999997,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 22.01609902999998,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 23.01668962899997,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 24.017584993999975,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 25.017163841000002,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 26.01750325399998,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 27.01676641499996,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 28.017062542999977,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 29.01702329599997,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 30.016980424999957,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 31.017583427999984,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 32.018390408999984,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 33.01794018399995,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 34.01761344799999,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 35.018539396999984,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 36.01778610899998,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 37.01770102699997,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 38.01822656399995,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 39.018157204999994,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 40.01800358299998,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    },
+    {
+     "at": 41.01785338999994,
+     "bottleneck": "ledger",
+     "kind": "saturated",
+     "published": true
+    }
+   ],
+   "firstLive": {
+    "at": 1.0008335319999606,
+    "bottleneck": "cell",
+    "kind": "unsaturated",
+    "published": true
+   },
+   "liveAt5": {
+    "at": 5.002017483000003,
+    "bottleneck": "ledger",
+    "kind": "saturated",
+    "published": true
+   },
+   "dropped": 0,
+   "published": 44.94470665800001
+  }
+ ],
+ "finished": "2026-11-08T00:26:46.217Z"
+}
