@@ -169,6 +169,17 @@ test('the spawn transport records each stream, parks before spawning, and tags r
   await per.close(); await stopped.close();
 });
 
+test('without a config directory the governor follows the login the child uses, $HOME/.claude', t => {
+  const root = scratch(t), statePath = join(root, 'state.json');
+  const one = new SpawnClaudeTransport({ model: 'stub', command: fakeClaude, base: { HOME: join(root, 'a') }, usageState: statePath });
+  const same = new SpawnClaudeTransport({ model: 'stub', command: fakeClaude, base: { HOME: join(root, 'a') }, usageState: statePath });
+  const other = new SpawnClaudeTransport({ model: 'stub', command: fakeClaude, base: { HOME: join(root, 'b') }, usageState: statePath });
+  assert.equal(one.governor.scope, join(root, 'a', '.claude'));
+  assert.equal(one.governor, same.governor);
+  assert.notEqual(one.governor, other.governor);
+  assert.equal(new SpawnClaudeTransport({ model: 'stub', command: fakeClaude, governor: null }).governor, null);
+});
+
 test('the warm transport routes around a parked instance and refuses at once when every instance is parked', async t => {
   const root = scratch(t), one = join(root, 'one'), two = join(root, 'two'), statePath = join(root, 'state.json');
   mkdirSync(one); mkdirSync(two);

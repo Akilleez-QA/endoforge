@@ -1,6 +1,6 @@
 import { spawn } from 'node:child_process';
 import { mkdtempSync, rmSync, statSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { createInterface } from 'node:readline';
@@ -25,7 +25,8 @@ const sharedArguments = ({ model, system = transportSystem, effort }) => ['-p', 
 export const warmArguments = options => [...sharedArguments(options), '--input-format', 'stream-json', '--output-format', 'stream-json', '--verbose'];
 export const spawnArguments = options => [...sharedArguments(options), '--disable-slash-commands', '--output-format', 'stream-json', '--verbose'];
 export const usageOf = result => ['input_tokens', 'output_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens'].reduce((total, key) => total + (Number.isSafeInteger(result.usage?.[key]) ? result.usage[key] : 0), 0);
-const governed = (governor, configDir, usageState, base) => (governor === undefined ? governorFor(configDir, { statePath: usageState, env: base ?? process.env }) : governor);
+const loginOf = (configDir, base = process.env) => configDir ?? join(base.HOME || homedir(), '.claude');
+const governed = (governor, configDir, usageState, base) => (governor === undefined ? governorFor(loginOf(configDir, base), { statePath: usageState }) : governor);
 const replyOf = (result, wallMs) => ({ text: result.structured_output ? JSON.stringify(result.structured_output) : result.result, usage: usageOf(result), wallMs, apiMs: result.duration_api_ms ?? null, usageDetail: result.usage ?? null,
   costUsd: Number.isFinite(result.total_cost_usd) ? result.total_cost_usd : null });
 const requireDirectory = configDir => {
@@ -203,7 +204,7 @@ export class WarmClaudeTransport {
     this.arguments = warmArguments({ model, system, effort });
     for (const instance of instances) {
       requireDirectory(instance.configDir);
-      const shared = { ...instance, limitedUntil: 0, governor: governor === null ? null : governorFor(instance.configDir, { statePath: usageState, env: base ?? process.env }) };
+      const shared = { ...instance, limitedUntil: 0, governor: governed(governor === null ? null : undefined, instance.configDir, usageState, base) };
       for (let i = 0; i < (instance.lanes ?? 1); i++) this.#lanes.push(new Lane(this, shared));
     }
   }
@@ -246,7 +247,7 @@ export class WarmClaudeTransport {
     if (lane) return Promise.resolve(lane);
     if (this.#closed) return Promise.reject(Error('transport closed'));
     const parked = this.#parked();
-    if (parked) return Promise.reject(new UsageParked(parked));
+    if (parked && parked.resumeAt - Date.now() > this.queueTimeoutMs) return Promise.reject(new UsageParked(parked));
     return new Promise((resolve, reject) => {
       const waiter = { session, resolve, reject };
       waiter.timer = setTimeout(() => {
