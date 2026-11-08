@@ -1,5 +1,6 @@
 'use strict';
 const vm = require('node:vm');
+const v8 = require('node:v8');
 const { isMainThread, parentPort, workerData, receiveMessageOnPort } = require('node:worker_threads');
 const PARAMETERS = ['exports', 'require', 'module'];
 const START = new vm.Script('globalThis.__ef_start()', { filename: 'guest:start' });
@@ -43,6 +44,14 @@ if (isMainThread) {
   const flag = workerData.flag && new Int32Array(workerData.flag);
   const replies = workerData.replies;
   const post = parentPort.postMessage.bind(parentPort);
+  const queryObjects = v8.queryObjects, heapStatistics = v8.getHeapStatistics, ObjectFunction = Function;
+  const held = () => { const heap = heapStatistics(); return { heap: heap.total_physical_size + heap.malloced_memory, slot: prepare && prepare.held ? prepare.held() : 0 }; };
+  const done = workerData.dump ? reply => post({ ...reply, held: held() }) : post;
+  const shed = () => {
+    const freed = prepare && prepare.shed ? prepare.shed() : 0;
+    queryObjects(ObjectFunction, { format: 'count' });
+    post({ type: 'shed', freed, held: held() });
+  };
   const wait = Atomics.wait, store = Atomics.store, receive = receiveMessageOnPort;
   const hostCall = (name, text) => {
     try {
@@ -75,24 +84,25 @@ if (isMainThread) {
     return now() - started;
   };
   parentPort.on('message', job => {
+    if (job.type === 'shed') return shed();
     if (role === 'checker') {
       const { out, failure, checkMs } = check(job.prepare);
-      return post({ type: 'result', checkMs, ...(failure ? { failure } : out) });
+      return done({ type: 'result', checkMs, ...(failure ? { failure } : out) });
     }
     if (!job.prepare && !job.repeat) {
       let text;
       try { text = runGuest(job, hostCall, bootstrap); } catch (error) { text = refusal('host_error', error && error.message); }
-      return post({ type: 'result', text });
+      return done({ type: 'result', text });
     }
     let modules = job.modules;
     if (job.prepare) {
       const { out, failure, checkMs } = check(job.prepare);
-      if (failure) return post({ type: 'result', failure, checkMs });
+      if (failure) return done({ type: 'result', failure, checkMs });
       post({ type: 'checked', prepared: out.info, ok: out.ok, checkMs, ...(out.ok ? { modules: out.modules } : {}) });
-      if (!out.ok) return post({ type: 'result' });
+      if (!out.ok) return done({ type: 'result' });
       modules = { ...out.modules, ...job.modules };
     }
-    post({ type: 'result', runMs: runAll(job, modules) });
+    done({ type: 'result', runMs: runAll(job, modules) });
   });
   // The preparer's sources arrive as text, already checked against their pins by the supervisor, and are imported
   // in order before the realm is hardened. Each gets the two globals tsrs's WASI shim reads bound at import time.
@@ -106,6 +116,6 @@ if (isMainThread) {
   };
   (workerData.prepare ? load(workerData.prepare) : Promise.resolve()).then(() => {
     if (workerData.harden && role !== 'checker') harden();
-    post({ type: 'ready' });
+    done({ type: 'ready' });
   }, error => { post({ type: 'boot_failed', detail: message(error) }); });
 }

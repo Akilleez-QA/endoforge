@@ -112,3 +112,24 @@ test('a baseline is ignored for a different project shape and refused with build
   assert.throws(() => runCheck(fresh, projectFor(BASELINE), { baseline, buildInfo: null }), /exclusive/);
   assert.throws(() => createBaseline(fresh, projectFor('export const n: number = "x";\n')), /check clean/);
 });
+
+test('a shed drops the idle instance and image, the next check starts fresh with the same result, and a shed during a run drops nothing', { timeout: 120000 }, () => {
+  const expected = CORPUS.map(kernel => check(fresh, kernel));
+  let during = null;
+  const { reuse, compiler } = reusing({ growthMb: 256 }, { beforeRun: () => { if (during === 'probe') during = reuse.shed(); } });
+  assert.equal(reuse.held(), 0);
+  assert.deepEqual(check(compiler, CORPUS[0]), expected[0]);
+  const held = reuse.held();
+  assert.ok(held > 8 * 1048576, `held ${held}`);
+  assert.equal(reuse.shed(), held);
+  assert.equal(reuse.held(), 0);
+  assert.equal(reuse.shed(), 0);
+  for (const [index, kernel] of CORPUS.entries()) assert.deepEqual(check(compiler, kernel), expected[index]);
+  assert.equal(reuse.stats.instances, 2);
+  assert.equal(reuse.stats.shed, 1);
+  during = 'probe';
+  assert.deepEqual(check(compiler, CORPUS[1]), expected[1]);
+  assert.equal(during, 0);
+  assert.equal(reuse.stats.instances, 2);
+  assert.ok(reuse.held() > 0);
+});

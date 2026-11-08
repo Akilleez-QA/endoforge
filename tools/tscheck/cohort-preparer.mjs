@@ -10,7 +10,7 @@ export function createPreparer({ modules, wasm, config }) {
   const core = reuse ? { ...modules.core, runTsc: reuse.runTsc } : modules.core;
   const compiler = { core, module, compiler: config.compiler };
   const baseline = config.baseline ? createBaseline(compiler, config.baseline) : undefined;
-  return payload => {
+  const prepare = payload => {
     const report = runCheck(compiler, payload.project, { emit: true, ...(baseline ? { baseline } : {}) });
     const info = { compiler: report.compiler, exitCode: report.exitCode, wallMs: report.wallMs, memoryBytes: report.memoryBytes,
       diagnostics: report.diagnostics.slice(0, DIAGNOSTICS_KEPT), diagnosticCount: report.diagnostics.length,
@@ -18,4 +18,7 @@ export function createPreparer({ modules, wasm, config }) {
     if (!report.artifact) return { ok: false, info };
     return { ok: true, info, modules: Object.fromEntries(Object.entries(report.artifact.files).filter(([path]) => path.endsWith('.js'))) };
   };
+  prepare.held = () => reuse ? reuse.held() : 0;
+  prepare.shed = () => reuse ? reuse.shed() : 0;
+  return prepare;
 }
