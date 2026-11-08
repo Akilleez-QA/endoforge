@@ -74,7 +74,8 @@ export function probeMachine(host = {}) {
   const allotment = Math.max(1, Math.min(cpus.length, quota ?? Infinity, affinity ? Infinity : parallelism));
   const slice = chain.findIndex((dir, index) => index > 0 && dir.endsWith('.slice'));
   if (slice > 0 && !levels.some(level => level.cgroup === chain[slice] || chain[slice].startsWith(`${level.cgroup}/`))) {
-    levels.push({ cgroup: chain[slice], quota: cpus.length, branch: chain[slice - 1], weighted: true });
+    const span = parseCpuList(text(`${chain[slice]}/cpuset.cpus.effective`)) ?? parseCpuList(text('/sys/devices/system/cpu/online')) ?? cpus;
+    levels.push({ cgroup: chain[slice], quota: Math.max(cpus.length, span.length), branch: chain[slice - 1], weighted: true });
     levels.sort((a, b) => chain.indexOf(a.cgroup) - chain.indexOf(b.cgroup));
   }
   const domains = new Map(), cores = new Map();

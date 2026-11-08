@@ -329,7 +329,9 @@ test('a slice with a weight and no cap is still where peers are found', () => {
     assert.equal(shared.share, 16);
   } finally { performance.now = original; }
   const nested = probeMachine(host7950({ quota: 'max 100000', affinity: '8-15', files: { [`${scope}/cpu.max`]: '400000 100000' } }));
-  assert.deepEqual(nested.levels.map(level => [level.quota, level.weighted ?? false]), [[4, false], [8, true]]);
+  assert.deepEqual(nested.levels.map(level => [level.quota, level.weighted ?? false]), [[4, false], [8, true]], 'without an online CPU list the span falls back to the allowed CPUs');
+  const spanned = probeMachine(host7950({ quota: 'max 100000', affinity: '8-15', files: { [`${scope}/cpu.max`]: '400000 100000', '/sys/devices/system/cpu/online': '0-31\n' } }));
+  assert.deepEqual(spanned.levels.map(level => [level.quota, level.weighted ?? false]), [[4, false], [32, true]], 'peers in the slice share the CPUs the slice spans, not this job\'s affinity');
 });
 
 test('occupancy is the CPU a cell spends per wall second, robust to one-window spikes and contention dips', () => {
