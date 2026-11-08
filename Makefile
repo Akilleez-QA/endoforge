@@ -56,6 +56,7 @@ hardware-test:
 runtime-test:
 	node core/runtime/test/agent-pool.test.mjs
 	node --test core/runtime/test/subscription-guard.test.mjs
+	node --test core/runtime/test/timing-guard.test.mjs
 
 lib-test:
 	node tools/lib/test/errors.test.mjs
