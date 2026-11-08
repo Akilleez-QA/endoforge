@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
-import { createController, createShareMeter, createTuner, parseCpuList, plan, probeMachine, TUNED_POLICY } from '../capacity/index.mjs';
+import { createController, createOccupancy, createShareMeter, createTuner, fairShare, occupancyCap, P67_TUNED_POLICY, parseCpuList, plan, probeMachine, TUNED_POLICY } from '../capacity/index.mjs';
 import { createCohortSet } from '../contained/cohort-set.mjs';
 import { createContainedRunner } from '../contained/runner.mjs';
 
@@ -77,11 +77,16 @@ test('the plan splits a multi-domain allotment into pinned cohorts and keeps one
   assert.deepEqual(plan({ probe: probeMachine(host7950({ affinity: '0-3' })) }).cohorts.map(cohort => [cohort.width, cohort.cpus]), [[4, null]]);
   const big = plan({ probe: probeMachine(host7950()), policy: TUNED_POLICY });
   assert.equal(big.pinned, true);
-  assert.deepEqual(big.cohorts.map(cohort => [cohort.width, cohort.max]), [[8, 12], [8, 12]]);
+  assert.equal(big.cap, 'occupancy');
+  assert.deepEqual(big.cohorts.map(cohort => [cohort.width, cohort.max]), [[8, 27], [8, 27]]);
+  const p67 = plan({ probe: probeMachine(host7950()), policy: P67_TUNED_POLICY });
+  assert.equal(p67.cap, 'share');
+  assert.deepEqual(p67.cohorts.map(cohort => [cohort.width, cohort.max]), [[8, 12], [8, 12]]);
   assert.deepEqual(big.cohorts[0].cpus, [...range(0, 7), ...range(16, 23)]);
   assert.equal(big.width, 16);
   const four = plan({ probe: probeMachine(host7950({ affinity: '0-3' })), policy: TUNED_POLICY });
-  assert.deepEqual(four.cohorts.map(cohort => [cohort.width, cohort.max, cohort.cpus]), [[4, 4, null]]);
+  assert.deepEqual(four.cohorts.map(cohort => [cohort.width, cohort.max, cohort.cpus]), [[4, 12, null]]);
+  assert.deepEqual(plan({ probe: probeMachine(host7950({ affinity: '0-3' })), policy: P67_TUNED_POLICY }).cohorts.map(cohort => [cohort.width, cohort.max]), [[4, 4]]);
   const squeezed = plan({ probe: probeMachine(host7950()), allotment: 3, policy: TUNED_POLICY });
   assert.equal(squeezed.pinned, false);
   assert.equal(squeezed.cohorts.length, 1);
@@ -199,6 +204,139 @@ test('the share meter divides the quota with active peers in the shared slice', 
     assert.equal(alone.peers, 0);
     assert.equal(alone.share, 17.92);
   } finally { performance.now = original; }
+});
+
+test('a fair share is max-min: idle peers leave their CPU, greedy peers get an equal split', () => {
+  assert.equal(fairShare(17.92, []), 17.92);
+  assert.equal(fairShare(17.92, [12]), 8.96);
+  assert.equal(+fairShare(17.92, [3]).toFixed(2), 14.92);
+  assert.equal(+fairShare(18, [2, 10, 10]).toFixed(2), 5.33);
+  assert.equal(fairShare(18, [2, 3]), 13);
+});
+
+test('the share meter takes the whole allotment alone and a fair share beside a peer at every quota level', () => {
+  const scope = `${SLICE}/job.scope`;
+  const env = host7950({ affinity: '8-15,24-31', files: { [`${scope}/cpu.max`]: '800000 100000' } });
+  const found = probeMachine(env);
+  assert.equal(found.allotment, 8);
+  assert.deepEqual(found.levels.map(level => [level.quota, level.branch]), [[8, null], [17.92, scope]]);
+  const usage = { [SLICE]: 0, [scope]: 0, [`${SLICE}/peer.scope`]: 0 };
+  const read = path => { const dir = path.replace(/\/cpu\.stat$/, ''); if (path.endsWith('/cpu.stat') && dir in usage) return `usage_usec ${usage[dir]}\nthrottled_usec 0\n`; return env.read(path); };
+  let fakeNow = 0;
+  const original = performance.now;
+  performance.now = () => fakeNow;
+  try {
+    const meter = createShareMeter(found, { read, list: dir => dir === SLICE ? ['job.scope', 'peer.scope'] : [], isDir: path => path.endsWith('.scope') });
+    fakeNow = 1000;
+    usage[scope] = 8e6; usage[SLICE] = 8e6;
+    const lone = meter.sample();
+    assert.equal(lone.mode, 'lone');
+    assert.equal(lone.share, 8);
+    fakeNow = 2000;
+    usage[scope] += 5.92e6; usage[`${SLICE}/peer.scope`] += 12e6; usage[SLICE] += 17.92e6;
+    const shared = meter.sample();
+    assert.equal(shared.mode, 'shared');
+    assert.equal(shared.peers, 1);
+    assert.equal(shared.share, 8, 'the job quota still binds below the slice fair share of 8.96');
+    const wide = probeMachine(host7950());
+    const usage2 = { [SLICE]: 0, [scope]: 0, [`${SLICE}/peer.scope`]: 0 };
+    const read2 = path => { const dir = path.replace(/\/cpu\.stat$/, ''); if (path.endsWith('/cpu.stat') && dir in usage2) return `usage_usec ${usage2[dir]}\nthrottled_usec 0\n`; return env.read(path); };
+    fakeNow = 3000;
+    const meter2 = createShareMeter(wide, { read: read2, list: dir => dir === SLICE ? ['job.scope', 'peer.scope'] : [], isDir: path => path.endsWith('.scope') });
+    fakeNow = 4000;
+    usage2[scope] = 14.92e6; usage2[`${SLICE}/peer.scope`] = 3e6; usage2[SLICE] = 17.92e6;
+    const light = meter2.sample();
+    assert.equal(light.mode, 'shared');
+    assert.equal(light.share, 14.92, 'a light peer keeps only what it uses');
+    fakeNow = 5000;
+    usage2[scope] += 5e6; usage2[`${SLICE}/peer.scope`] += 12.92e6; usage2[SLICE] += 17.92e6;
+    const greedy = meter2.sample();
+    assert.equal(greedy.share, 8.96, 'a greedy peer above the equal split does not ratchet this job below it');
+    assert.equal(greedy.legacyShare, 8.96);
+  } finally { performance.now = original; }
+});
+
+test('a peer that is starved for CPU counts as wanting an equal split, not just what it got', () => {
+  const scope = `${SLICE}/job.scope`, peer = `${SLICE}/peer.scope`;
+  const env = host7950();
+  const found = probeMachine(env);
+  const usage = { [SLICE]: 0, [scope]: 0, [peer]: 0 }, stall = { [peer]: 0 };
+  const read = path => {
+    const dir = path.replace(/\/cpu\.(stat|pressure)$/, '');
+    if (path.endsWith('/cpu.stat') && dir in usage) return `usage_usec ${usage[dir]}\nthrottled_usec 0\n`;
+    if (path.endsWith('/cpu.pressure') && dir in stall) return `some avg10=0.00 avg60=0.00 avg300=0.00 total=${stall[dir]}\nfull avg10=0.00 avg60=0.00 avg300=0.00 total=0\n`;
+    return env.read(path);
+  };
+  let fakeNow = 0;
+  const original = performance.now;
+  performance.now = () => fakeNow;
+  try {
+    const meter = createShareMeter(found, { read, list: dir => dir === SLICE ? ['job.scope', 'peer.scope'] : [], isDir: path => path.endsWith('.scope') });
+    fakeNow = 1000;
+    usage[scope] = 14.92e6; usage[peer] = 3e6; usage[SLICE] = 17.92e6; stall[peer] = 0.05e6;
+    assert.equal(meter.sample().share, 14.92, 'a peer that is not stalled wants only what it used');
+    fakeNow = 2000;
+    usage[scope] += 14.92e6; usage[peer] += 3e6; usage[SLICE] += 17.92e6; stall[peer] += 0.6e6;
+    const starved = meter.sample();
+    assert.equal(starved.share, 8.96);
+    assert.equal(starved.levels[0].starved, 1);
+  } finally { performance.now = original; }
+});
+
+test('occupancy is the CPU a cell spends per wall second, robust to one-window spikes and contention dips', () => {
+  const meter = createOccupancy();
+  for (const raw of [0.5, 0.5, 0.5]) meter.observe(raw * 1000, 1000);
+  assert.equal(meter.u, 0.5);
+  meter.observe(3000, 1000);
+  assert.equal(meter.u, 0.5, 'a single spike is not the median');
+  for (let index = 0; index < 5; index++) meter.observe(250, 1000);
+  assert.ok(meter.u > 0.48 && meter.u <= 0.5, 'contention lowers the raw ratio, not the estimate');
+  for (let index = 0; index < 400; index++) meter.observe(250, 1000);
+  assert.ok(Math.abs(meter.u - 0.25) < 0.01, 'a lasting change is followed');
+  assert.equal(meter.stats().windows, 409);
+  assert.equal(occupancyCap({ share: 8.96, u: 0.5, max: 27 }), 23);
+  assert.equal(occupancyCap({ share: 8.96, u: 1.2, max: 27 }), 10);
+  assert.equal(occupancyCap({ share: 8.96, u: 0.1, max: 27 }), 27);
+  assert.equal(occupancyCap({ share: 8.96, u: 0.5, max: 27, memoryCells: 6 }), 6);
+});
+
+function simulate({ policyPlan, cells = 0.5, allotment = 4, seconds = 240, share = () => ({ share: allotment, legacyShare: allotment, mode: 'lone', peers: 0 }) }) {
+  let clock = 0, width = policyPlan.cohorts[0].width, cpu = 0;
+  const controller = createController({ plan: policyPlan, apply: widths => { width = widths[0]; }, cpuMs: () => cpu, rssMb: () => 100 * width, backlog: () => 5,
+    meter: { sample: share }, memory: { headroomMb: () => 64000 }, now: () => clock, windowMs: 1000, minCompletions: 1 });
+  const trace = [];
+  let inflight = 0;
+  const fill = () => { while (inflight < width) { controller.started(); inflight += 1; } };
+  fill();
+  for (let second = 0; second < seconds; second++) {
+    const busy = Math.min(width * cells, allotment), rate = Math.round(busy / cells * 20);
+    for (let index = 0; index < rate; index++) {
+      clock += 1000 / rate;
+      cpu += busy * 1000 / rate;
+      inflight -= 1;
+      controller.completed(true);
+      fill();
+    }
+    trace.push(width);
+  }
+  return { controller, trace };
+}
+
+test('the occupancy cap lets width pass the CPU count when cells wait, where the share cap could not', () => {
+  const tunedPlan = { tuned: true, cap: 'occupancy', headroom: 1.25, allotment: 4, width: 4, cohorts: [{ width: 4, max: 12 }] };
+  const occupancy = simulate({ policyPlan: tunedPlan });
+  assert.ok(occupancy.controller.width >= 8 && occupancy.controller.width <= 10, `occupancy settled at ${occupancy.controller.width}`);
+  assert.ok(Math.abs(occupancy.controller.occupancy.u - 0.5) < 0.05, `u ${occupancy.controller.occupancy.u}`);
+  const shareCap = simulate({ policyPlan: { ...tunedPlan, cap: 'share', cohorts: [{ width: 4, max: 5 }] } });
+  assert.ok(shareCap.controller.width <= 5, 'the share cap stops at 1.25 x share');
+  const busy = simulate({ policyPlan: tunedPlan, cells: 1 });
+  assert.ok(busy.controller.width >= 4 && busy.controller.width <= 5, `CPU-bound cells settle near the allotment, got ${busy.controller.width}`);
+  const settle = occupancy.controller.tuner.history.find(change => change.why === 'settle');
+  assert.ok(settle && settle.at <= 30000, 'settles within 30 s');
+  assert.ok(occupancy.controller.tuner.history.filter(change => change.at > settle.at).length <= 1);
+  const last = occupancy.controller.log.at(-1);
+  assert.equal(last.mode, 'lone');
+  assert.ok(last.cap >= 10 && last.u > 0.45);
 });
 
 test('the controller feeds windows to the tuner and pushes width changes to cohorts', () => {

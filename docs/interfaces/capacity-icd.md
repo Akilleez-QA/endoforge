@@ -21,15 +21,20 @@ Consumers in EndoForge: the contained route (`tools/tscheck/contained-route.mjs`
 | `plan({ queues = 1, allotment?, probe?, policy? })` | Cohorts for `queues` independent queues within `allotment` CPUs (default: the probe's). See the plan record. |
 | `defaultWidth(options?)` | `plan(options).width`, the starting total width. |
 | `POLICY` | The shipped default: `{ mode: 'fixed', width: 'cores', perDomain: 1 }`, one cohort per L3 domain as wide as that domain's cores within its share (P-67's best fixed arm). |
-| `TUNED_POLICY` | `{ mode: 'tuned', headroom: 1.25 }`: the same placement with the online tuner. Opt in with `plan({ policy: TUNED_POLICY })` or the route's `placement`. P-67 did not make it the default. |
+| `TUNED_POLICY` | `{ mode: 'tuned', cap: 'occupancy', headroom: 1.25, oversubscribe: 3, ram: 0.75 }`: the same placement with the online tuner, capped by measured occupancy (P-68). Opt in with `plan({ policy: TUNED_POLICY })` or the route's `placement`. |
+| `P67_TUNED_POLICY` | `{ mode: 'tuned', cap: 'share', headroom: 1.25 }`: the tuner as P-67 shipped it, capped at min(threads, ceil(1.25 × share)) and bounded by the P-67 share rule. Kept for comparison. |
 | `createTuner({ start, max, ...TUNER_DEFAULTS })` | A width tuner fed one window at a time: `observe({ completions, elapsedMs, cpuMs?, saturated? })` returns the width to use next; `setBound(n)` lowers or raises the ceiling (a change of at least max(2, 20%) that persists for `boundsWindows` calls; a rise re-tunes a settled width only after the hold); `width`, `phase` (`explore` or `settled`), `history` (every change with its reason). |
-| `createController({ plan, apply, cpuMs?, backlog?, meter?, windowMs?, minCompletions? })` | Wraps a tuner for a plan's cohorts: call `completed(decided)` once per finished attempt; it closes 1 s windows, samples the share meter, and calls `apply(widths)` with one width per cohort when the width changes. A plan with `tuned: false` never changes. |
-| `createShareMeter(probe?)` | `sample()` returns `{ share, othersCpus, peers, throttledMs, source }` since the previous sample, from the quota cgroup's `cpu.stat` and its siblings'. |
+| `createController({ plan, apply, cpuMs?, rssMb?, backlog?, meter?, memory?, windowMs?, minCompletions? })` | Wraps a tuner for a plan's cohorts: call `started()` when an attempt is dispatched and `completed(decided)` when it finishes; it closes 1 s windows, samples the share meter, sets the tuner's bound, and calls `apply(widths)` with one width per cohort when the width changes. `occupancy` reports `{ windows, mean, sd, u }`. A plan with `tuned: false` never changes. |
+| `createOccupancy()` / `occupancyCap({ share, u, headroom, max, memoryCells })` | Occupancy `u` is CPU time per in-flight cell second (`cpuMs` over the integral of in-flight attempts). The estimate is the running maximum of a 3-window median, decaying 0.5% a window, because contention only lowers the raw ratio. Cap per cohort = min(max, ceil(headroom × share per cohort ÷ u), memory cells). |
+| `createShareMeter(probe?)` | `sample()` returns `{ share, mode, peers, othersCpus, throttledMs, level, legacyShare, levels, source }` since the previous sample. See the share rule below. |
+| `createMemoryMeter(probe?)` | `headroomMb()`: MemAvailable, lowered to the memory cgroup's ceiling minus its current use. |
+| `fairShare(quota, peers)` | The max-min fair claim of one more job beside peers using `peers` CPUs (a peer at `Infinity` wants all it can get). |
 
 ### Probe record
 
-`{ os, cpus: [allowed CPU ids], quota: CPUs | null, quotaCgroup, ownCgroup, allotment, domains: [{ cpus, cores }],
-cores, smt, memory: { availableMb, headroomMb, limitMb }, taskset: path | null, notes: [strings] }`
+`{ os, cpus: [allowed CPU ids], quota: CPUs | null, quotaCgroup, levels: [{ cgroup, quota, branch }], ownCgroup,
+allotment, domains: [{ cpus, cores }], cores, smt, memory: { availableMb, headroomMb, limitMb, cgroup }, taskset: path | null,
+notes: [strings] }`
 
 - `allotment` = min(allowed CPUs, tightest `cpu.max` on the process's cgroup chain). Allowed CPUs are the affinity
   mask intersected with `cpuset.cpus.effective`.
@@ -47,6 +52,16 @@ notes }`
   `policy.perDomain`), each pinned to its domain's CPUs; otherwise one unpinned cohort per queue.
 - Tuned: `width` per cohort starts at min(its share, its physical cores) and `max` is min(its threads, ceil(headroom × share)). Fixed with `width: 'cores'`: width = max = min(its physical cores, ceil(share)).
 - `queue` assigns cohorts to queues round-robin.
+- Tuned with `cap: 'occupancy'`: `max` per cohort is ceil(oversubscribe × share), the most cells the runner may ever be given; the controller's occupancy cap keeps the live bound below it.
+
+### Share rule
+
+For every cgroup on the job's chain with a finite `cpu.max` (`probe.levels`), the meter reads the job's branch, its
+siblings (peers) and their `cpu.pressure`. A peer is active above 0.5 CPU, and starved when some of its tasks waited
+for CPU more than 10% of the window. With no active peer at any level the job is `lone` and its share is the whole
+allotment. Otherwise it is `shared` and each level's claim is `fairShare(quota, peers)`, where a starved peer counts as
+wanting an equal split and any other peer as wanting what it used; the share is the smallest claim, clamped to
+[1, allotment]. `legacyShare` is P-67's rule (max(quota − others, quota ÷ (1 + peers)) at the tightest level).
 
 ## Command interface (`core/runtime/capacity/cli.mjs`)
 
@@ -65,4 +80,5 @@ CLI inside the same cgroup and affinity it will give that job (for example under
 
 ## Evidence
 
-The tuner's thresholds and the default policy come from P-63 and P-67 (`experiments/P-67-adaptive-width/`).
+The tuner's thresholds and the default policy come from P-63 and P-67 (`experiments/P-67-adaptive-width/`); the
+occupancy cap and the share rule from P-68 (`experiments/P-68-tuner-occupancy/`).
