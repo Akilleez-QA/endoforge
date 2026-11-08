@@ -9,6 +9,9 @@ const functions = { sqrt: Math.sqrt, cbrt: Math.cbrt, ln: Math.log, log: Math.lo
   sin: Math.sin, cos: Math.cos, tan: Math.tan, asin: Math.asin, acos: Math.acos, atan: Math.atan, atan2: Math.atan2, floor: Math.floor, ceil: Math.ceil, hypot: Math.hypot };
 const constants = { pi: Math.PI, PI: Math.PI };
 const conditional = /\b(?:if|when|unless|otherwise|else|where\s+\w+\s*[<>]|for\s+\w+\s*[<>])\b/i;
+const guard = /\b(?:if|when|whenever|unless|for)\s+([A-Za-z_]\w*)\s*(?:==?(?!=)|!=|≠|<=?|>=?|≤|≥|\bis\b|\bequals?\b|(?=[-+]?\d))|\b(?:otherwise|else)\b|^[^:=\n]*?(?:<=?|>=?|≤|≥|!=|≠)[^:=\n]*:(?!=)/i;
+const clauses = text => text.split(/;\s*|\.\s+(?=[A-Za-z(])/);
+export const guardOf = text => { const match = guard.exec(text); return match ? { subject: match[1] ?? null } : null; };
 
 export function tokenize(text) {
   const source = String(text).replace(/Math\./g, '').replace(/[−–]/g, '-').replace(/[×·⋅]/g, '*').replace(/÷/g, '/').replace(/π/g, 'pi').replace(/√/g, 'sqrt').replace(/²/g, '^2').replace(/³/g, '^3').replace(/\*\*/g, '^');
@@ -128,16 +131,18 @@ function statements(lines) {
     const text = raw.replace(/\*\*/g, '');
     const pieces = [...text.matchAll(/`([^`]+)`/g)].map(match => match[1]);
     const body = text.replace(/`/g, '').replace(bullet, '').replace(/^\s*[A-Z][\w ,()'/-]{0,40}:\s+(?=[A-Za-z_]\w*\s*(?:\([^)]*\))?\s*(?::\s*\w+)?\s*=[^=])/, '');
-    const parts = [...pieces.map(text => ({ text, quoted: true })), { text: body, quoted: false }]
-      .flatMap(part => part.text.split(/;\s*|,\s*(?:with|where)\s+|,\s+(?=[A-Za-z_]\w*\s*=[^=])/).map(text => ({ text, quoted: part.quoted })));
-    for (const { text: piece, quoted } of parts) {
+    const guarded = clauses(body).filter(clause => guardOf(clause));
+    const inGuard = text => guarded.some(clause => clause.includes(text.trim()));
+    const parts = [...pieces.map(text => ({ text, quoted: true, guarded: inGuard(text) })), ...clauses(body).map(text => ({ text, quoted: false, guarded: Boolean(guardOf(text)) }))]
+      .flatMap(part => part.text.split(/;\s*|,\s*(?:with|where)\s+|,\s+(?=[A-Za-z_]\w*\s*=[^=])/).map(text => ({ text, quoted: part.quoted, guarded: part.guarded })));
+    for (const { text: piece, quoted, guarded: under } of parts) {
       const assignment = /^\s*([A-Za-z_]\w*)\s*(?:\(([^()]*)\))?\s*(?::\s*[A-Za-z_]\w*)?\s*=(?![=<>])\s*(.+)$/.exec(piece);
-      if (assignment) { out.push({ line, kind: 'assign', name: assignment[1], text: assignment[3], conditional: conditional.test(assignment[3]) }); continue; }
+      if (assignment) { out.push({ line, kind: 'assign', name: assignment[1], text: assignment[3], conditional: under || conditional.test(assignment[3]) || (assignment[2] !== undefined && Object.hasOwn(functions, assignment[1])) }); continue; }
       const returned = /(?:^|\s)returns?\s*:?\s*(.+)$/i.exec(piece);
-      if (returned) { out.push({ line, kind: 'result', text: returned[1].replace(/`/g, ''), conditional: conditional.test(piece) }); continue; }
+      if (returned) { out.push({ line, kind: 'result', text: returned[1].replace(/`/g, ''), conditional: under || conditional.test(piece) }); continue; }
       const continued = /^\s*=(?![=<>])\s*(.+)$/.exec(piece);
-      if (continued) { out.push({ line, kind: 'result', text: continued[1], conditional: conditional.test(continued[1]) }); continue; }
-      if (quoted || /^\s{4,}\S|^\t/.test(raw)) out.push({ line, kind: 'expression', text: piece, conditional: conditional.test(piece) });
+      if (continued) { out.push({ line, kind: 'result', text: continued[1], conditional: under || conditional.test(continued[1]) }); continue; }
+      if (quoted || /^\s{4,}\S|^\t/.test(raw)) out.push({ line, kind: 'expression', text: piece, conditional: under || conditional.test(piece) });
     }
   });
   return out;
@@ -149,12 +154,14 @@ export function formulaReference(contract, fn, parameters) {
   const scope = [...shared.map(text => ({ text, own: false })), ...(blocks[fn] ?? []).map(text => ({ text, own: true }))];
   const own = statements(scope.filter(entry => entry.own).map(entry => entry.text)).map(s => ({ ...s, own: true }));
   const common = statements(scope.filter(entry => !entry.own).map(entry => entry.text)).map(s => ({ ...s, own: false }));
-  const all = [...common, ...own].filter(s => !s.conditional).map(s => ({ ...s, parsed: parseExpression(s.text) })).filter(s => s.parsed);
+  const parsedAll = [...common, ...own].map(s => ({ ...s, parsed: parseExpression(s.text) })).filter(s => s.parsed);
+  const skipped = parsedAll.filter(s => s.conditional), all = parsedAll.filter(s => !s.conditional);
   const params = new Set(parameters);
-  const assigns = all.filter(s => s.kind === 'assign' && !params.has(s.name) && s.name !== fn);
+  const computed = new Set(all.filter(s => s.kind === 'assign' && s.parsed.names.size).map(s => s.name));
+  const assigns = all.filter(s => s.kind === 'assign' && !params.has(s.name) && s.name !== fn && (s.parsed.names.size || !computed.has(s.name)));
   const operative = s => !s.parsed.tree.name && s.parsed.tree.number === undefined;
   const direct = all.filter(s => (s.kind === 'assign' && s.name === fn) || (s.kind === 'result' && (operative(s) || !params.has(s.parsed.tree.name))) || (s.kind === 'expression' && s.parsed.complete && operative(s) && [...s.parsed.names].some(name => params.has(name))));
-  const used = new Set(all.flatMap(s => [...s.parsed.names]));
+  const used = new Set(parsedAll.flatMap(s => [...s.parsed.names]));
   const formulaText = scope.map(entry => entry.text).filter(text => /[^<>=!]=[^=]/.test(text)).join('\n');
   const single = signatureCount <= 1, mentioned = parameters.filter(name => new RegExp(`\\b${name}\\b`).test(formulaText));
   const dependsOn = (variable, parameter, seen = new Set()) => {
@@ -163,14 +170,27 @@ export function formulaReference(contract, fn, parameters) {
     seen.add(variable);
     return assigns.filter(s => s.name === variable).some(s => [...s.parsed.names].some(name => dependsOn(name, parameter, seen)));
   };
+  const targets = [...new Set(assigns.map(s => s.name))];
+  const conditionalNames = new Set(skipped.filter(s => s.kind === 'assign').map(s => s.name));
+  const abstention = conflicted => conflicted.size ? `conflicting definitions of ${[...conflicted].join(', ')}`
+    : skipped.length ? 'conditional or piecewise rule' : null;
   return args => {
     if (args.length !== parameters.length || !args.every(Number.isFinite)) return null;
-    const env = Object.fromEntries(parameters.map((name, i) => [name, args[i]])), tainted = new Set(parameters);
-    for (let pass = 0; pass < 2; pass++) for (const s of assigns) {
-      try {
-        const value = evaluateTree(s.parsed.tree, env);
-        if (Number.isFinite(value)) { env[s.name] = value; if ([...s.parsed.names].some(name => tainted.has(name))) tainted.add(s.name); }
-      } catch { }
+    const env = Object.fromEntries(parameters.map((name, i) => [name, args[i]])), tainted = new Set(parameters), conflicted = new Set();
+    for (let pass = 0; pass < 2; pass++) for (const name of targets) {
+      if (conflicted.has(name)) continue;
+      const readings = [];
+      let fromParameter = false;
+      for (const s of assigns.filter(a => a.name === name)) {
+        try {
+          const value = evaluateTree(s.parsed.tree, { ...env, [name]: undefined });
+          if (Number.isFinite(value)) { readings.push(value); if ([...s.parsed.names].some(n => tainted.has(n))) fromParameter = true; }
+        } catch { }
+      }
+      if (!readings.length) continue;
+      if (readings.some(value => !close(value, readings[0])) || conditionalNames.has(name)) { conflicted.add(name); delete env[name]; tainted.delete(name); continue; }
+      env[name] = readings[0];
+      if (fromParameter) tainted.add(name);
     }
     const values = [];
     const consider = s => {
@@ -183,29 +203,42 @@ export function formulaReference(contract, fn, parameters) {
       const names = [...new Set(sinks.map(s => s.name))];
       if (names.length === 1) values.push(env[names[0]]);
     }
-    return values.length ? values : null;
+    if (values.length && values.some(value => !close(value, values[0])) && conflicted.size) return { abstain: abstention(conflicted) };
+    if (values.length) return values;
+    const reason = abstention(conflicted);
+    return reason ? { abstain: reason } : null;
   };
 }
 
 const comparison = '(<=|≤|<)';
 const numberText = '(-?(?:\\d{1,3}(?:[, ]\\d{3})+(?!\\d)|\\d+)(?:\\.\\d+)?(?:[eE][+-]?\\d+)?)(?!\\d|\\.\\d|[eE][-+\\d]|\\s\\d)';
 const num = text => Number(text.replace(/[, ]/g, ''));
+const trapClause = /\b(?:traps?|trapping|aborts?|rejects?|throws?|errors?|invalid)\b/i;
 const domainLine = /\b(?:valid|domain|range|bounds?|must|traps?|aborts?|allowed|accepts?|inputs?|limits?)\b/i;
 const notDomain = /\b(?:returns?|gives|yields|labels?|means|classif\w*|category|categories|codes?)\b|["“]|\d\s*=\s*[A-Za-z]/i;
-export function rangeRules(contract, parameters) {
+export function rangeRules(contract, parameters, skipped = []) {
   const rules = [];
-  const add = (name, lo, loOpen, hi, hiOpen) => { if (parameters.includes(name)) rules.push({ name, lo, loOpen, hi, hiOpen }); };
+  let clauseGuard = null;
+  const add = (name, lo, loOpen, hi, hiOpen) => {
+    if (!parameters.includes(name)) return;
+    if (clauseGuard && clauseGuard.subject !== name) { skipped.push({ name, lo, loOpen, hi, hiOpen, guard: clauseGuard.subject }); return; }
+    rules.push({ name, lo, loOpen, hi, hiOpen });
+  };
   let section = false;
   for (const raw of contract.split('\n')) {
     const line = raw.replace(/`/g, '').replace(/\*\*/g, '');
     if (/^\s*#/.test(line)) { section = domainLine.test(line) && !notDomain.test(line); continue; }
     if (!section && !domainLine.test(line) && !/^\s*[-*]\s+[A-Za-z_]\w*\s*:/.test(line)) continue;
     if (notDomain.test(line)) continue;
-    for (const m of line.matchAll(new RegExp(`${numberText}\\s*${comparison}\\s*([A-Za-z_]\\w*)\\s*${comparison}\\s*${numberText}`, 'g'))) {
-      if (m[3] === 'x' || m[3] === 'value') { const owner = /^\s*[-*]?\s*([A-Za-z_]\w*)\s*:/.exec(line); if (owner) add(owner[1], num(m[1]), m[2] === '<', num(m[5]), m[4] === '<'); continue; }
-      add(m[3], num(m[1]), m[2] === '<', num(m[5]), m[4] === '<');
+    for (const clause of clauses(line)) {
+      clauseGuard = trapClause.test(clause) ? null : guardOf(clause);
+      if (clauseGuard && !clauseGuard.subject) clauseGuard = null;
+      for (const m of clause.matchAll(new RegExp(`${numberText}\\s*${comparison}\\s*([A-Za-z_]\\w*)\\s*${comparison}\\s*${numberText}`, 'g'))) {
+        if (m[3] === 'x' || m[3] === 'value') { const owner = /^\s*[-*]?\s*([A-Za-z_]\w*)\s*:/.exec(line); if (owner) add(owner[1], num(m[1]), m[2] === '<', num(m[5]), m[4] === '<'); continue; }
+        add(m[3], num(m[1]), m[2] === '<', num(m[5]), m[4] === '<');
+      }
+      for (const m of clause.matchAll(new RegExp(`\\b([A-Za-z_]\\w*)\\b[^\\[(\\n.;=<>]{0,30}?\\b(?:in|within)\\s*([\\[(])\\s*${numberText}\\s*,\\s*${numberText}\\s*([\\])])`, 'g'))) add(m[1], num(m[3]), m[2] === '(', num(m[4]), m[5] === ')');
     }
-    for (const m of line.matchAll(new RegExp(`\\b([A-Za-z_]\\w*)\\b[^\\[(\\n.;]{0,30}?\\b(?:in|within)\\s*([\\[(])\\s*${numberText}\\s*,\\s*${numberText}\\s*([\\])])`, 'g'))) add(m[1], num(m[3]), m[2] === '(', num(m[4]), m[5] === ')');
   }
   return rules;
 }
@@ -247,24 +280,25 @@ export function analyzeSpecification(files, { reference = true } = {}) {
   const contract = files['CONTRACT.md'] ?? '', signatures = contractSignatures(contract);
   const fnNames = [...new Set(tests.map(t => t?.fn).filter(fn => typeof fn === 'string' && /^[A-Za-z_]\w*$/.test(fn)))];
   const references = reference ? referenceFunctions(files[referenceFile], fnNames) : null;
-  const formulas = {}, ranges = {};
+  const formulas = {}, ranges = {}, skippedRanges = {};
   for (const fn of fnNames) {
     const parameters = signatures.get(fn);
     if (!parameters) continue;
     formulas[fn] = formulaReference(contract, fn, parameters);
-    ranges[fn] = rangeRules(contract, parameters);
+    ranges[fn] = rangeRules(contract, parameters, skippedRanges[fn] = []);
   }
   const decisions = tests.map((test, index) => {
     if (!test || typeof test !== 'object' || !Array.isArray(test.args) || typeof test.fn !== 'string') return { index, status: 'unverified', why: 'malformed' };
     const literal = test.expectError === true ? { trap: true } : { value: test.expect }, tol = Number.isFinite(test.tol) ? test.tol : 0;
     if (!test.expectError && typeof test.expect === 'string') return { index, status: 'unverified', why: 'string result' };
-    const opinions = [];
+    const opinions = [], abstentions = [];
     const numeric = test.args.every(Number.isFinite), parameters = signatures.get(test.fn);
     if (numeric && parameters) {
       if (ranges[test.fn]?.length && outsideRange(ranges[test.fn], parameters, test.args)) opinions.push({ source: 'range', outcome: { trap: true } });
       else if (!test.expectError && typeof test.expect === 'number') {
         const values = formulas[test.fn]?.(test.args);
-        if (values) {
+        if (values?.abstain) abstentions.push(values.abstain);
+        else if (values) {
           const distinct = values.filter((v, i) => values.findIndex(w => close(v, w)) === i);
           opinions.push({ source: 'formula', outcome: { value: distinct[0] }, readings: distinct });
         }
@@ -276,7 +310,8 @@ export function analyzeSpecification(files, { reference = true } = {}) {
       if (got.trap || typeof got.value === 'number' || typeof got.value === 'boolean') opinions.push({ source: 'reference', outcome: got.trap ? { trap: true } : { value: got.value } });
     }
     const agrees = (opinion, outcome, tolerance = 0) => opinion.readings ? opinion.readings.some(value => sameOutcome({ value }, outcome, tolerance)) : sameOutcome(opinion.outcome, outcome, tolerance);
-    if (!opinions.length) return { index, status: 'unverified', why: 'no formula or reference' };
+    if (numeric && parameters && test.expectError && !opinions.length && skippedRanges[test.fn]?.length && outsideRange(skippedRanges[test.fn], parameters, test.args)) abstentions.push('conditional range');
+    if (!opinions.length) return abstentions.length ? { index, status: 'abstained', why: abstentions.join('; ') } : { index, status: 'unverified', why: 'no formula or reference' };
     const formula = opinions.find(o => o.source !== 'reference'), ref = opinions.find(o => o.source === 'reference');
     if (formula && ref) {
       if (agrees(formula, ref.outcome)) {
@@ -341,7 +376,7 @@ export function freezeSpecification(files, options) {
   const { tests, changes } = freezeTests(analysis.tests, analysis.decisions);
   const count = status => analysis.decisions.filter(d => d.status === status).length;
   return { text: changes.length ? JSON.stringify(tests, null, 1) : files['tests.json'], changes,
-    report: { verified: count('verified'), corrected: count('corrected'), flagged: count('flagged'), unverified: count('unverified'),
+    report: { verified: count('verified'), corrected: count('corrected'), flagged: count('flagged'), unverified: count('unverified'), abstained: count('abstained'),
       spec_errors: analysis.decisions.filter(d => d.status === 'corrected' || d.status === 'flagged').map(d => ({ index: d.index, status: d.status, sources: d.sources, literal: d.literal, computed: d.computed })),
       ms: performance.now() - begin } };
 }

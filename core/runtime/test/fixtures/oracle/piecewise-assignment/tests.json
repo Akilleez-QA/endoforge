@@ -1,0 +1,20 @@
+[
+  {"name":"request temperature assumed Fahrenheit","fn":"dischargeTemperatureF","args":[220,0],"expect":220,"tol":0},
+  {"name":"Celsius freezing point","fn":"dischargeTemperatureF","args":[0,1],"expect":32,"tol":0},
+  {"name":"Celsius boiling point","fn":"dischargeTemperatureF","args":[100,1],"expect":212,"tol":0},
+  {"name":"scales coincide","fn":"dischargeTemperatureF","args":[-40,1],"expect":-40,"tol":0},
+  {"name":"lower inclusive bound","fn":"dischargeTemperatureF","args":[-100,0],"expect":-100,"tol":0},
+  {"name":"upper inclusive bound","fn":"dischargeTemperatureF","args":[500,0],"expect":500,"tol":0},
+  {"name":"Celsius upper inclusive bound","fn":"dischargeTemperatureF","args":[260,1],"expect":500,"tol":0},
+  {"name":"below lower bound","fn":"dischargeTemperatureF","args":[-101,0],"expectError":true},
+  {"name":"above upper bound","fn":"dischargeTemperatureF","args":[501,0],"expectError":true},
+  {"name":"converted temperature below bound","fn":"dischargeTemperatureF","args":[-100,1],"expectError":true},
+  {"name":"unsupported scale","fn":"dischargeTemperatureF","args":[220,2],"expectError":true},
+  {"name":"request pressure cannot be determined","fn":"pressureStatus","args":[220,0],"expect":1},
+  {"name":"Celsius interpretation also insufficient","fn":"pressureStatus","args":[220,1],"expect":1},
+  {"name":"status at lower inclusive bound","fn":"pressureStatus","args":[-100,0],"expect":1},
+  {"name":"status at upper inclusive bound","fn":"pressureStatus","args":[260,1],"expect":1},
+  {"name":"status below temperature range","fn":"pressureStatus","args":[-101,0],"expectError":true},
+  {"name":"status above temperature range","fn":"pressureStatus","args":[501,0],"expectError":true},
+  {"name":"status rejects unsupported scale","fn":"pressureStatus","args":[220,-1],"expectError":true}
+]
