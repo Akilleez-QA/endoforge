@@ -6,13 +6,14 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawn } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { isClaudeCommand, requireSubscription, subscriptionEnvironment } from '../../../core/runtime/subscription-guard.mjs';
 const HOME = os.homedir();
 export const expand = (p) => (p.startsWith('~/') ? path.join(HOME, p.slice(2)) : p);
 const SYSTEM_RO = ['/usr', '/lib', '/lib64', '/bin', '/sbin', '/etc/ssl', '/etc/ca-certificates', '/etc/resolv.conf', '/etc/hosts', '/etc/passwd', '/etc/group', '/etc/localtime', '/etc/nsswitch.conf', '/etc/fonts', '/etc/ld.so.cache', '/etc/ld.so.conf', '/etc/ld.so.conf.d'];
 const CREDENTIAL_FILES = ['.claude/.credentials.json', '.claude.json'];
 /**
  * Claude subscription logins for native workers: ENDOFORGE_CLAUDE_ACCOUNTS (default ~/.claude-accts) holds one
- * CLAUDE_CONFIG_DIR per login, a folder with .credentials.json (presence checked, never read). Each `claude` launch
+ * CLAUDE_CONFIG_DIR per login, a folder with .credentials.json (the subscription guard reads its metadata, never its tokens). Each `claude` launch
  * mounts the next one read-write at its own path and sets CLAUDE_CONFIG_DIR, so token refreshes land in the pool
  * folder; a credential copied into a throwaway home can rotate the original's refresh token away. With no pool
  * folder, the home template copies ~/.claude's files as before.
@@ -49,6 +50,9 @@ export function listFiles(dir) {
  * Returns { exit, signal, wallMs, stdout, stderr, timedOut, bwrapArgs, poolPid?, claudeAccount? }.
  */
 export async function runIsolated(spec) {
+  const claude = isClaudeCommand(spec.cmd?.[0]);
+  const claudeAccount = spec.cmd?.[0] === 'claude' && !spec.env?.CLAUDE_CONFIG_DIR ? nextClaudeAccount() : null;
+  if (claude) requireSubscription({ env: { ...process.env, ...spec.env, HOME: spec.homeTemplate, CLAUDE_CONFIG_DIR: undefined }, configDir: claudeAccount ?? spec.env?.CLAUDE_CONFIG_DIR ?? undefined, args: spec.cmd.slice(1) });
   const homeStart = nowEpoch();
   const runHome = fs.mkdtempSync(path.join(os.tmpdir(), 'atom-home-'));
   fs.chmodSync(runHome, 0o700);
@@ -61,13 +65,12 @@ export async function runIsolated(spec) {
   const inSystem = (p) => SYSTEM_RO.some((r) => p === r || p.startsWith(r + '/'));
   for (const t of spec.toolchain ?? []) if (fs.existsSync(t.host) && !inSystem(t.guest ?? t.host)) args.push('--ro-bind', t.host, t.guest ?? t.host);
   for (const m of spec.mounts ?? []) args.push(m.mode === 'rw' ? '--bind' : '--ro-bind', m.host, m.guest);
-  const claudeAccount = spec.cmd?.[0] === 'claude' && !spec.env?.CLAUDE_CONFIG_DIR ? nextClaudeAccount() : null;
   if (claudeAccount) args.push('--bind', claudeAccount, claudeAccount);
   args.push('--tmpfs', '/tmp', '--proc', '/proc', '--dev', '/dev', '--unshare-pid', '--unshare-uts', '--unshare-ipc', '--unshare-cgroup-try', '--die-with-parent', '--new-session', '--clearenv',
     '--setenv', 'HOME', HOME, '--setenv', 'USER', os.userInfo().username, '--setenv', 'TERM', 'dumb', '--setenv', 'LANG', 'C.UTF-8',
     '--setenv', 'PATH', [...(spec.toolchain ?? []).map((t) => t.bin).filter(Boolean), '/usr/bin', '/bin'].join(':'));
   if (claudeAccount) args.push('--setenv', 'CLAUDE_CONFIG_DIR', claudeAccount);
-  for (const [k, v] of Object.entries(spec.env ?? {})) args.push('--setenv', k, String(v));
+  for (const [k, v] of Object.entries(claude ? subscriptionEnvironment(spec.env ?? {}) : spec.env ?? {})) args.push('--setenv', k, String(v));
   args.push('--chdir', spec.cwd ?? '/work');
   // Keep the launch spec outside the writable guest home across pool failovers.
   const specDir = spec.pool ? fs.mkdtempSync(path.join(os.tmpdir(), 'atom-isolate-')) : null;
