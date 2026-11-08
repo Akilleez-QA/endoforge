@@ -1,0 +1,3 @@
+| Probe | Question | Result |
+|---|---|---|
+| [P-68](PRECOMMIT.md) | An occupancy-capped tuner (cap = 1.25 × share ÷ measured CPU per in-flight cell) and a max-min share rule, measured on main-rig under a quiet capped slice (A, one round) and a weighted uncapped slice with a synthetic peer (B, deciding), plus ds9 and a MacBook Air: bars 1 and 4 met, 2, 3 and 5 missed, so the default stays fixed. Quiet occupancy was stable (u 1.14, CV 0.03); the run found that `heavy-run` resized `heavy.slice` under affinity or a quota, and fixed macOS probe and CPU-reader gaps. `IsolatePool` returns to `availableParallelism()` | [RESULT.md](RESULT.md) |
