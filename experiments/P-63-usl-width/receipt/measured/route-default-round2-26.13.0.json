@@ -1,0 +1,79 @@
+{
+ "node": "26.13.0",
+ "repo": "checkout of 16b7b9c (PR #109 head)",
+ "label": "round2",
+ "workload": {
+  "kind": "route",
+  "arm": "route-default",
+  "config": {
+   "check": "fused",
+   "checker": {
+    "reuse": {
+     "growthMb": 16
+    },
+    "incremental": true
+   }
+  },
+  "needs": 20,
+  "deadlineMs": 2000
+ },
+ "affinity": "all",
+ "rows": [
+  {
+   "workload": "route-default",
+   "label": "round2",
+   "cpus": "all",
+   "width": 1,
+   "attempts": 400,
+   "accepted": 400,
+   "perSecond": 30.4,
+   "p50": 26.2,
+   "p95": 62.22,
+   "wallMs": 13142,
+   "cpuMsPerAccepted": 28.769,
+   "busyCpus": 0.88,
+   "perf": {
+    "cycles": 49054710976,
+    "instructions": 33922794261,
+    "ls_any_fills_from_sys.dram_io_all": 82135458,
+    "ls_any_fills_from_sys.near_cache": 2590159
+   },
+   "perfPerAttempt": {
+    "cycles": 122636777,
+    "instructions": 84806986,
+    "ls_any_fills_from_sys.dram_io_all": 205339,
+    "ls_any_fills_from_sys.near_cache": 6475
+   },
+   "ipc": 0.692,
+   "cgroup": {
+    "heavy.slice": {
+     "max": "1792000 100000",
+     "cpus": 236.73,
+     "nr_throttled": 132,
+     "throttled_ms": 81657
+    },
+    "user@1000.service": {
+     "max": "max 100000",
+     "cpus": 268.37,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    },
+    "user-1000.slice": {
+     "max": "max 100000",
+     "cpus": 268.36,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    },
+    "user.slice": {
+     "max": "max 100000",
+     "cpus": 268.37,
+     "nr_throttled": 0,
+     "throttled_ms": 0
+    }
+   },
+   "loadStart": 22.17,
+   "loadEnd": 26.43,
+   "loaded": true
+  }
+ ]
+}
