@@ -87,3 +87,9 @@ Bar 1: the tuner's exploration costs more than the fixed shape gives back, or se
 ## Stop condition
 
 A verdict difference: stop and fix before further rows. A block that can't be made quiet under method A in two attempts goes to method B; if method B can't run (the peer scope fails), the block is recorded as unmeasured.
+
+## Amendment 1 (2026-11-08, before any restricted-allotment acceptance row counts)
+
+The "unexpected kernel property" above is wrong. `heavy-run` sizes `heavy.slice` from `nproc`, which follows the caller's affinity, and rewrites the slice when that number changes. Every `taskset -c … heavy-run …` call in the exploratory runs (and the first two 4-CPU sweep rows of round 1) resized `heavy.slice` to 56% of the restricted CPU count (224% for 4 or 8 CPUs, so the "0.56 × k" pattern), for every job in the slice, until the next unrestricted `heavy-run` call wrote 1792% back. P-67's `taskset -c 0-3` and `0-7` sweeps ran the same way, so their 4- and 8-CPU allotments were probably the slice's 2.24 and 4.48 CPUs too. The slice was restored with an unrestricted `heavy-run --write-slice` at 02:07 EST (`cpu.max` 1792000 100000). The two affected rows (round 1, 4 CPUs, `w2` and `w4`, calibration 2.25 CPUs) are kept in `receipt/invalid/` and don't count.
+
+Changed procedure: the affinity is applied inside `heavy-run`, never before it: `systemd-run --user --scope -p CPUQuota=Q -- env HEAVY_SLOTS=4 heavy-run --name p68-bench -- taskset -c CPUS node bench.mjs …`. `heavy-run` still copies the outer scope's quota onto the job scope. Each restricted block's calibration must read the quota (±5%), or the block doesn't count. The allotment table is unchanged. Arms, fairness and full-allotment sweep rows already measured ran with the slice at 17.92 (each file's probe records it) and stand.
