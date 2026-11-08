@@ -9,7 +9,7 @@ const functions = { sqrt: Math.sqrt, cbrt: Math.cbrt, ln: Math.log, log: Math.lo
   sin: Math.sin, cos: Math.cos, tan: Math.tan, asin: Math.asin, acos: Math.acos, atan: Math.atan, atan2: Math.atan2, floor: Math.floor, ceil: Math.ceil, hypot: Math.hypot };
 const arity = { sqrt: [1, 1], cbrt: [1, 1], ln: [1, 1], log: [1, 1], log10: [1, 1], log2: [1, 1], exp: [1, 1], abs: [1, 1], sin: [1, 1], cos: [1, 1], tan: [1, 1], asin: [1, 1], acos: [1, 1], atan: [1, 1],
   floor: [1, 1], ceil: [1, 1], pow: [2, 2], atan2: [2, 2], min: [2, Infinity], max: [2, Infinity], hypot: [1, Infinity] };
-const constants = { pi: Math.PI, PI: Math.PI };
+const constants = { pi: Math.PI, PI: Math.PI, true: 1, false: 0 };
 const conditional = /\b(?:if|when|unless|otherwise|else|where\s+\w+\s*[<>]|for\s+\w+\s*[<>])\b/i;
 const bareGuard = /^\s*(?:[A-Z][\w ]{0,20}:\s+)?([A-Za-z_]\w*)\s+([-+]?\d+(?:\.\d+)?)\s+(?:uses?|returns?|means|is|gives|yields)\b\s*:?\s*/i;
 const guard = /\b(?:if|when|whenever|unless|for)\s+([A-Za-z_]\w*)\s*(?:==?(?!=)|!=|≠|<=?|>=?|≤|≥|\bis\b|\bequals?\b|(?=[-+]?\d))|\b(?:otherwise|else)\b|^[^:=\n]*?(?:<=?|>=?|≤|≥|!=|≠)[^:=\n]*:(?!=)/i;
@@ -20,14 +20,15 @@ export function tokenize(text) {
   const source = String(text).replace(/Math\./g, '').replace(/[−–]/g, '-').replace(/[×·⋅]/g, '*').replace(/÷/g, '/').replace(/π/g, 'pi').replace(/√/g, 'sqrt').replace(/²/g, '^2').replace(/³/g, '^3').replace(/\*\*/g, '^')
     .replace(/(?<![\d.,])(\d{1,3})((?:,\d{3}){2,})(?![\d,])/g, (_, head, groups) => head + groups.replace(/,/g, ''));
   const tokens = [];
-  const pattern = /\s*(?:(\d+(?:\.\d*)?(?:[eE][+-]?\d+)?|\.\d+(?:[eE][+-]?\d+)?)|([A-Za-z_][A-Za-z0-9_]*)|([-+*/^%(),])|(\S))/y;
+  const pattern = /\s*(?:(\d+(?:\.\d*)?(?:[eE][+-]?\d+)?|\.\d+(?:[eE][+-]?\d+)?)|([A-Za-z_][A-Za-z0-9_]*)|(<=|>=|==|!=|<|>|≤|≥|≠)|([-+*/^%(),])|(\S))/y;
   let match;
   while ((match = pattern.exec(source))) {
     const index = match.index + match[0].length - match[0].trimStart().length;
     if (match[1] !== undefined) tokens.push({ kind: 'number', value: Number(match[1]), index });
     else if (match[2] !== undefined) tokens.push({ kind: 'name', value: match[2], index });
-    else if (match[3] !== undefined) tokens.push({ kind: 'op', value: match[3], index });
-    else { tokens.push({ kind: 'stop', value: match[4], index }); break; }
+    else if (match[3] !== undefined) tokens.push({ kind: 'cmp', value: match[3], index });
+    else if (match[4] !== undefined) tokens.push({ kind: 'op', value: match[4], index });
+    else { tokens.push({ kind: 'stop', value: match[5], index }); break; }
   }
   tokens.source = source;
   return tokens;
@@ -81,14 +82,22 @@ export function parseExpression(text) {
     while (isOp('+') || isOp('-')) { const op = tokens[at++].value; left = { op, left, right: multiplicative() }; }
     return left;
   };
+  const relational = () => {
+    const left = additive();
+    if (peek()?.kind !== 'cmp') return left;
+    const cmp = tokens[at++].value;
+    return { cmp, left, right: additive() };
+  };
   try {
-    const tree = additive(), next = peek();
+    const tree = relational(), next = peek();
+    if (next?.kind === 'cmp') return null;
     if (next?.kind === 'op' && next.value !== ',' && next.value !== '(') return null;
     if (next?.kind === 'number') return null;
     const rest = next ? tokens.source.slice(next.index).split(/\.(?:\s|$)/)[0] : '';
-    const prose = next?.kind === 'op' && next.value === ',' && /^,\s*(?:in|as|shown|displayed|rounded|expressed|measured|with|where|using)\b/i.test(rest) ? rest.slice(1).split(',')[0] : rest;
+    const prose = next?.kind === 'op' && next.value === ',' ? (/^,\s*(?:shown|displayed|rounded|show|display)\b[^,]*\bdecimal/i.test(rest) ? rest.replace(/^,[^,]*\bdecimal\s+places?/i, '').split(',')[0]
+      : /^,\s*(?:in|as|expressed|measured|with|where|using)\b/i.test(rest) ? rest.slice(1).split(',')[0] : rest) : rest;
     if (/\d|=/.test(prose)) return null;
-    return { tree, complete: !next, names: namesOf(tree) };
+    return { tree, complete: !next, names: namesOf(tree), comparison: Boolean(tree.cmp) };
   } catch { return null; }
 }
 
@@ -106,6 +115,10 @@ export function evaluateTree(tree, env) {
     throw Error(`unbound ${tree.name}`);
   }
   if (tree.call) return functions[tree.call](...tree.args.map(arg => evaluateTree(arg, env)));
+  if (tree.cmp) {
+    const a = evaluateTree(tree.left, env), b = evaluateTree(tree.right, env);
+    return Number({ '<': a < b, '<=': a <= b, '≤': a <= b, '>': a > b, '>=': a >= b, '≥': a >= b, '==': a === b, '!=': a !== b, '≠': a !== b }[tree.cmp]);
+  }
   const left = evaluateTree(tree.left, env);
   if (tree.op === 'neg') return -left;
   const right = evaluateTree(tree.right, env);
@@ -144,10 +157,10 @@ function guardIn(clause) {
     return { guard: { cond: m[2], negate: /unless/i.test(m[1]) }, value: m[3], bare: true };
   }
   if ((m = /^([^:=\n]*?(?:<=?|>=?|≤|≥|!=|≠)[^:=\n]*):(?!=)\s*(.*)$/s.exec(text))) return { guard: { cond: m[1] }, value: m[2], bare: true };
-  if ((m = /^(.*?\S)\s*,?\s+(?:exactly\s+|only\s+)?(if|when|whenever|unless|for)\s+(.+)$/is.exec(text)) && !/(?:^|[^<>=!])=(?!=)/.test(m[3])) {
-    if (validCase.test(m[3])) return { guard: null, value: m[1] };
-    if (/for/i.test(m[2]) && !caseShape.test(m[3]) && !/\b(?:or|otherwise)\b[^.]*\bfor\b/i.test(m[3])) return null;
-    return { guard: { cond: m[3], negate: /unless/i.test(m[2]) }, value: m[1] };
+  if ((m = /^(.*?\S)\s*,?\s+(exactly\s+|only\s+)?(if|when|whenever|unless|for)\s+(.+)$/is.exec(text)) && !/(?:^|[^<>=!])=(?!=)/.test(m[4])) {
+    if (validCase.test(m[4])) return { guard: null, value: m[1] };
+    if (/for/i.test(m[3]) && !caseShape.test(m[4]) && !/\b(?:or|otherwise)\b[^.]*\bfor\b/i.test(m[4]) && !/[-+*/×^]\s*[\w.()]+\s*$/.test(m[1])) return null;
+    return { guard: { cond: m[4], negate: /unless/i.test(m[3]) }, value: m[1], exact: /exactly/i.test(m[2] ?? '') };
   }
   return null;
 }
@@ -159,16 +172,44 @@ function codeList(clause) {
   if (items.length < 2 || items.some(item => !item)) return null;
   return items.map(item => ({ value: item[1], cond: item[2] }));
 }
-function statements(lines) {
+const operand = '(-?\\d+(?:\\.\\d+)?|[A-Za-z_]\\w*)';
+function wordOperators(text, parameters) {
+  const known = word => /^-?\d/.test(word) || parameters.includes(word);
+  let out = text.replace(new RegExp(`\\bthe\\s+(?:exact\\s+)?(?:mathematical\\s+)?(sum|product|difference|quotient)\\s+of\\s+${operand}\\s+and\\s+${operand}\\b`, 'gi'),
+    (all, kind, a, b) => known(a) && known(b) ? `(${a} ${{ sum: '+', product: '*', difference: '-', quotient: '/' }[kind.toLowerCase()]} ${b})` : all);
+  for (let pass = 0; pass < 4; pass++) out = out.replace(new RegExp(`${operand}\\s+(plus|minus|times|divided\\s+by|multiplied\\s+by)\\s+${operand}\\b`, 'i'),
+    (all, a, word, b) => known(a) && known(b) ? `${a} ${{ plus: '+', minus: '-', times: '*' }[word.toLowerCase()] ?? (/divided/i.test(word) ? '/' : '*')} ${b}` : all);
+  return out;
+}
+const identityTail = /^([A-Za-z_]\w*)\s+(?:unchanged|as[- ]is|itself|in\s+both\s+states|in\s+all\s+(?:valid\s+)?cases|for\s+every\s+(?:valid\s+|accepted\s+)?input|always)\b/i;
+const suppliedValue = /^the\s+(?:supplied|input|given|validated|verified|same)(?:\s+(?:verified|validated|input|supplied))?(?:\s+(?:value|code|id|identifier|number|input|flag|ordinal|slot))?(?:\s+(?:unchanged|as\s+a\s+code|as\s+is))?\s*(?:[:.,;]|$)/i;
+const universal = [/\breturns?\s+(?:code\s+)?(-?\d+(?:\.\d+)?)\b(?=[^.;]*\b(?:for\s+(?:every|all|any)\s+(?:valid\s+|accepted\s+)?inputs?|in\s+all\s+(?:valid\s+)?cases|always)\b)/i,
+  /\balways\s+(?:returns?\s+)?(?:code\s+)?(-?\d+(?:\.\d+)?)\b/i, /\bevery\s+(?:valid|accepted)\s+input\s+returns\s+(?:code\s+)?(-?\d+(?:\.\d+)?)\b/i, /\bthen\s+returns?\s+(?:code\s+)?(-?\d+(?:\.\d+)?)\b(?!\s*(?:if|when|for)\b)/i];
+function joinWrapped(lines, exported = []) {
+  const declared = new RegExp(`(?:^|[\\s\`])(?:${exported.map(name => name.replace(/\W/g, '')).join('|') || '\\0'})\\s*\\([^()]*\\)[^()]*:\\s*$`);
   const out = [];
-  lines.forEach((raw, line) => {
-    const text = raw.replace(/\*\*/g, '');
+  for (const raw of lines) {
+    const last = out.at(-1), open = last ? (last.text.match(/\(/g) ?? []).length - (last.text.match(/\)/g) ?? []).length : 0;
+    if (last && /^\s+\S/.test(raw) && !/^\s*(?:[-*+]|\d+[.)])\s/.test(raw) && (open > 0 || /[-+*/×(=]\s*$/.test(last.text) || declared.test(last.text))) last.text += ' ' + raw.trim();
+    else out.push({ text: raw });
+  }
+  return out.map(entry => entry.text);
+}
+function statements(rawLines, parameters = [], exported = []) {
+  const out = [];
+  joinWrapped(rawLines, exported).forEach((raw, line) => {
+    const text = wordOperators(raw.replace(/\*\*/g, ''), parameters);
     const pieces = [...text.matchAll(/`([^`]+)`/g)].map(match => match[1]);
-    const body = text.replace(/`/g, '').replace(bullet, '').replace(/^\s*[A-Z][\w ,()'/-]{0,40}:\s+(?=[A-Za-z_]\w*\s*(?:\([^)]*\))?\s*(?::\s*\w+)?\s*=[^=])/, '');
+    const signed = new RegExp(`^(?:export\\s+)?(?:function\\s+)?(?:${exported.map(name => name.replace(/\W/g, '')).join('|') || '\\0'})\\s*\\([^()]*\\)\\s*(?:(?::\\s*[A-Za-z_]\\w*|->\\s*[A-Za-z_]\\w*)\\s*(?::|—|–)|(?::|—|–)(?!\\s*(?:f32|f64|i32|i64|u32|u64|bool|boolean|number|void|string|int|float|double|code)\\b))\\s+(?!returns?\\b)(?=\\S)`);
+    const body = text.replace(/`/g, '').replace(bullet, '').replace(/^\s*[A-Z][\w ,()'/-]{0,40}:\s+(?=[A-Za-z_]\w*\s*(?:\([^)]*\))?\s*(?::\s*\w+)?\s*=[^=])/, '')
+      .replace(signed, 'returns ').replace(/^\s*(?:formula|computation|calculation)\s*:\s+/i, 'returns ');
+    for (const pattern of universal) { const m = pattern.exec(body); if (m && !guardOf(body)) { out.push({ line, kind: 'result', text: m[1], guard: null, constant: true }); break; } }
+    for (const name of exported) { const m = new RegExp(`\\b${name}\\s*\\([^()]*\\)\\s*=(?![=<>])\\s*([^;]+?)(?:[,;]\\s+(?:using|with|where|for)\\b.*)?\\.?$`).exec(body); if (m && !/^\s*${name}/.test(body)) out.push({ line, kind: 'assign', name, text: m[1], guard: null }); }
     const segments = clauses(body).flatMap(clause => clause.split(/,\s*(?=(?:otherwise|else)\b)/i)).map(clause => {
       const found = guardIn(clause);
       if (!found) return { clause, value: clause, guard: guardOf(clause) || conditional.test(clause) ? { cond: null } : null };
       let { guard, value } = found;
+      if (guard?.otherwise && value && guardIn(value)?.guard) return { clause, ...found, value: guardIn(value).value, guard: { cond: null } };
       const inner = guard && !guard.otherwise && value ? guardIn(value) : null;
       if (inner?.guard) {
         guard = inner.guard.otherwise || guard.negate || inner.guard.negate || guard.cond == null || inner.guard.cond == null ? { cond: null } : { cond: `${guard.cond} and ${inner.guard.cond}` };
@@ -176,6 +217,7 @@ function statements(lines) {
       }
       return { clause, ...found, value, guard: guard && found.subjectOnly && !inner ? { ...guard, subjectOnly: true } : guard };
     });
+    segments.forEach((segment, i) => { if (segment.guard?.otherwise && !segments.slice(0, i).some(earlier => earlier.guard && !earlier.guard.otherwise)) segment.guard = { cond: null }; });
     for (const segment of segments) if (!segment.guard && pieces.some(piece => new RegExp(`${piece.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s+for\\s+(?!valid\\b|finite\\b|all\\b|any\\b|each\\b|every\\b|example\\b|display\\b|the\\b|this\\b|that\\b|a\\b|an\\b)[A-Za-z]`, 'i').test(segment.clause))) segment.guard = { cond: null };
     const segmentOf = piece => segments.find(segment => segment.clause.includes(piece.trim()));
     const parts = [], start = out.length;
@@ -185,6 +227,9 @@ function statements(lines) {
       if (segment.guard?.subjectOnly && segment.value && trapValue.test(segment.value)) continue;
       if (segment.guard && trapValue.test(segment.value)) continue;
       parts.push({ text: segment.value, quoted: false, guard: segment.guard, bare: segment.bare });
+      const flip = { true: 'false', false: 'true', 1: '0', 0: '1' };
+      const exactValue = segment.exact && segment.guard?.cond ? /(?:^|\s)(?:returns?\s+)?(true|false|[01])\s*$/i.exec(segment.value.replace(/^.*?\breturns?\b/i, 'returns')) : null;
+      if (exactValue) out.push({ line, kind: 'result', text: flip[exactValue[1].toLowerCase()], guard: { cond: segment.guard.cond, negate: !segment.guard.negate } });
     }
     for (const piece of pieces) { const segment = segmentOf(piece); parts.push({ text: piece, quoted: true, guard: segment?.guard ?? null }); }
     const split = parts.flatMap(part => part.text.split(/;\s*|,\s*(?:with|where)\s+|,\s+(?=[A-Za-z_]\w*\s*=[^=])/).map((text, i, all) => ({ ...part, text, bare: part.bare && all.length === 1 })));
@@ -192,8 +237,14 @@ function statements(lines) {
       const fallback = text => guard ?? (conditional.test(text) ? { cond: null } : null);
       const assignment = /^\s*([A-Za-z_]\w*)\s*(?:\(([^()]*)\))?\s*(?::\s*[A-Za-z_]\w*)?\s*=(?![=<>])\s*(.+)$/.exec(piece);
       if (assignment) { out.push({ line, kind: 'assign', name: assignment[1], text: assignment[3], guard: assignment[2] !== undefined && Object.hasOwn(functions, assignment[1]) ? { cond: null } : fallback(assignment[3]) }); continue; }
-      const returned = /(?:^|\s)returns?\s*:?\s*(.+)$/i.exec(piece);
-      if (returned) { out.push({ line, kind: 'result', text: returned[1].replace(/`/g, ''), guard: fallback(piece) }); continue; }
+      const returned = /(?:^|\s)(?:returns?|computes?|(?:the\s+)?result\s+is|equals|using)\s*:?\s*(.+)$/i.exec(piece);
+      if (returned) {
+        const value = returned[1].replace(/`/g, '').trim(), same = identityTail.exec(value);
+        if (same && parameters.includes(same[1])) out.push({ line, kind: 'result', text: same[1], guard: fallback(piece), identity: true });
+        else if (parameters.length === 1 && suppliedValue.test(value)) out.push({ line, kind: 'result', text: parameters[0], guard: fallback(piece), identity: true });
+        else out.push({ line, kind: 'result', text: value, guard: fallback(piece) });
+        continue;
+      }
       const continued = /^\s*=(?![=<>])\s*(.+)$/.exec(piece);
       if (continued) { out.push({ line, kind: 'result', text: continued[1], guard: fallback(continued[1]) }); continue; }
       const plain = piece.replace(/[.,;:]\s*$/, '').trim();
@@ -237,14 +288,15 @@ export function guardTest(guard, parameters) {
 }
 
 export function formulaReference(contract, fn, parameters) {
-  const exported = [...contractSignatures(contract).keys(), fn].filter((name, i, all) => all.indexOf(name) === i), signatureCount = exported.length;
+  const nullary = [...contract.matchAll(/`([A-Za-z_]\w*)\(\)\s*(?::\s*[A-Za-z_]\w*|->\s*[A-Za-z_]\w*)?`/g)].map(m => m[1]).filter(name => !Object.hasOwn(functions, name));
+  const exported = [...contractSignatures(contract).keys(), fn, ...nullary].filter((name, i, all) => all.indexOf(name) === i), signatureCount = exported.length;
   const { blocks, shared } = exportBlocks(contract, exported);
   const scope = [...shared.map(text => ({ text, own: false })), ...(blocks[fn] ?? []).map(text => ({ text, own: true }))];
-  const own = statements(scope.filter(entry => entry.own).map(entry => entry.text)).map(s => ({ ...s, own: true, group: `own:${s.line}` }));
-  const common = statements(scope.filter(entry => !entry.own).map(entry => entry.text)).map(s => ({ ...s, own: false, group: `shared:${s.line}` }));
+  const own = statements(scope.filter(entry => entry.own).map(entry => entry.text), parameters, exported).map(s => ({ ...s, own: true, group: `own:${s.line}` }));
+  const common = statements(scope.filter(entry => !entry.own).map(entry => entry.text), parameters, exported).map(s => ({ ...s, own: false, group: `shared:${s.line}` }));
   const params = new Set(parameters);
-  const parsedAll = [...common, ...own].map(s => ({ ...s, parsed: parseExpression(s.text) })).filter(s => s.parsed)
-    .filter(s => !s.guard?.subjectOnly || guardTest(s.guard, parameters))
+  const parsedAll = [...common, ...own].map(s => ({ ...s, parsed: parseExpression(s.text) })).filter(s => s.parsed && !(s.parsed.comparison && s.kind === 'expression'))
+    .filter(s => !s.guard?.subjectOnly || guardTest(s.guard, parameters)).filter(s => s.own || !(s.constant || s.identity))
     .map(s => ({ ...s, test: guardTest(s.guard, parameters) }));
   const assignedNames = new Set(parsedAll.filter(s => s.kind === 'assign').map(s => s.name));
   const evaluable = s => [...s.parsed.names].every(name => params.has(name) || assignedNames.has(name) || Object.hasOwn(constants, name));
@@ -268,7 +320,7 @@ export function formulaReference(contract, fn, parameters) {
     const branch = all.some(s => s.guard);
     const computed = new Set(all.filter(s => s.kind === 'assign' && s.parsed.names.size).map(s => s.name));
     const assigns = all.filter(s => s.kind === 'assign' && !params.has(s.name) && s.name !== fn && (s.parsed.names.size || !computed.has(s.name) || s.guard));
-    const direct = all.filter(s => (s.kind === 'assign' && s.name === fn) || (s.kind === 'result' && (s.guard || operative(s) || !params.has(s.parsed.tree.name))) || (s.kind === 'expression' && s.parsed.complete && operative(s) && [...s.parsed.names].some(name => params.has(name))));
+    const direct = all.filter(s => (s.kind === 'assign' && s.name === fn) || (s.kind === 'result' && (s.guard || s.identity || s.constant || operative(s) || !params.has(s.parsed.tree.name))) || (s.kind === 'expression' && s.parsed.complete && operative(s) && [...s.parsed.names].some(name => params.has(name))));
     const dependsOn = (variable, parameter, seen = new Set()) => {
       if (variable === parameter) return true;
       if (seen.has(variable)) return false;
@@ -297,7 +349,7 @@ export function formulaReference(contract, fn, parameters) {
     }
     const values = [];
     const consider = s => {
-      if (!(s.guard || [...s.parsed.names].some(name => tainted.has(name)))) return;
+      if (!(s.guard || s.constant || [...s.parsed.names].some(name => tainted.has(name)))) return;
       try { const value = evaluateTree(s.parsed.tree, env); if (Number.isFinite(value)) values.push(value); } catch { }
     };
     direct.forEach(consider);
@@ -469,7 +521,7 @@ export function analyzeSpecification(files, { reference = true } = {}) {
     const numeric = test.args.every(Number.isFinite), parameters = signatures.get(test.fn);
     if (numeric && parameters) {
       if (ranges[test.fn]?.length && outsideRange(ranges[test.fn], parameters, test.args)) opinions.push({ source: 'range', outcome: { trap: true } });
-      else if (!test.expectError && typeof test.expect === 'number') {
+      else if (!test.expectError && (typeof test.expect === 'number' || typeof test.expect === 'boolean')) {
         const values = formulas[test.fn]?.(test.args);
         if (values?.abstain) abstentions.push(values.abstain);
         else if (values) {
