@@ -4,11 +4,11 @@ import { dirname, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { compile as compileKernel, loadCompiler, x1Flags } from '../../../experiments/assemblyscript-toolchain.mjs';
 import { ASC_FILES, ASC_PATH, ASC_VERSION } from '../../../tools/asc/pin.mjs';
-import { agentStage, specificationProblems, stagePrompts, takeReply } from './agent.mjs';
+import { agentStage, frozenSpecification, specificationFiles, specificationProblems, stagePrompts, takeReply } from './agent.mjs';
 import { runGates } from './gates.mjs';
 import { createPort as x1Port, hash, implementationFiles as hostFiles } from './host.mjs';
 
-export const implementationFiles = Object.freeze([...hostFiles, 'loop-port.mjs', 'agent.mjs']);
+export const implementationFiles = Object.freeze([...hostFiles, 'loop-port.mjs', 'agent.mjs', 'oracle.mjs']);
 const oracleFiles = ['CONTRACT.md', 'tests.json', 'frozen.sha256'];
 const maximumKernelPages = 1024;
 const implementation = Object.fromEntries(implementationFiles.map(name => [name, readFileSync(new URL(name, import.meta.url)).toString('hex')]));
@@ -117,12 +117,13 @@ export function createPort(options, { stage = () => {}, host } = {}) {
       const { bundle } = await verifyFromMemory(options.admission)({ identity: options.admission.identity });
       for (const name of oracleFiles) overlay[name] = Buffer.from(bundle.files[name], 'hex').toString();
     } else {
-      agentReceipt.exit_reason = await agentStage({ ask, messages, overlay, editable: ['CONTRACT.md', 'tests.json'], prompt: stagePrompts.specification({ need, id }),
-        check: async () => specificationProblems(overlay), receipt: agentReceipt, limits });
+      agentReceipt.exit_reason = await agentStage({ ask, messages, overlay, editable: specificationFiles(limits), prompt: stagePrompts.specification({ need, id, oracle: limits.oracle }),
+        check: async () => specificationProblems(overlay, limits), receipt: agentReceipt, limits });
       if (agentReceipt.exit_reason !== 'stop') throw Error(`specification stopped: ${agentReceipt.exit_reason}`);
+      const oracle = limits.oracle ? frozenSpecification(overlay) : null;
       overlay['frozen.sha256'] = JSON.stringify({ contract: hash(overlay['CONTRACT.md']), tests: hash(overlay['tests.json']) });
       const frozen = Object.fromEntries(oracleFiles.map(name => [name, Buffer.from(overlay[name]).toString('hex')]));
-      options.admission = await host({ kind: 'admit', files: { ...frozen, ...implementation } });
+      options.admission = await host({ kind: 'admit', files: { ...frozen, ...implementation }, ...(oracle ? { oracle } : {}) });
     }
     stage('admitted');
     const files = () => ({ 'CONTRACT.md': overlay['CONTRACT.md'], 'tests.json': overlay['tests.json'], 'frozen.sha256': overlay['frozen.sha256'], 'kernel.ts': overlay['kernel.ts'] ?? '', 'glue.json': overlay['glue.json'] ?? '' });
@@ -147,7 +148,7 @@ export function createPort(options, { stage = () => {}, host } = {}) {
     });
     const files = () => ({ 'CONTRACT.md': overlay['CONTRACT.md'], 'tests.json': overlay['tests.json'], 'frozen.sha256': overlay['frozen.sha256'], 'kernel.ts': overlay['kernel.ts'] ?? '', 'glue.json': overlay['glue.json'] ?? '' });
     const stages = {
-      specification: { editable: ['CONTRACT.md', 'tests.json'], check: async () => specificationProblems(overlay), prompt: () => stagePrompts.specification({ need: options.need, id }) },
+      specification: { editable: specificationFiles(limits), check: async () => specificationProblems(overlay, limits), prompt: () => stagePrompts.specification({ need: options.need, id, oracle: limits.oracle }) },
       implementation: { editable: ['kernel.ts', 'glue.json'], prompt: () => stagePrompts.implementation({ id, overlay: messages.length ? null : overlay }),
         check: async () => (overlay['kernel.ts'] === undefined ? { problems: ['kernel.ts is missing'] } : checkRound(await compileRound(files()))) },
     };
@@ -163,9 +164,10 @@ export function createPort(options, { stage = () => {}, host } = {}) {
         state.receipt.exit_reason = exit;
         if (name === 'specification') {
           if (exit !== 'stop') throw Error(`specification stopped: ${exit}`);
+          const oracle = limits.oracle ? frozenSpecification(overlay) : null;
           overlay['frozen.sha256'] = JSON.stringify({ contract: hash(overlay['CONTRACT.md']), tests: hash(overlay['tests.json']) });
           const frozen = Object.fromEntries(oracleFiles.map(file => [file, Buffer.from(overlay[file]).toString('hex')]));
-          options.admission = await host({ kind: 'admit', files: { ...frozen, ...implementation } });
+          options.admission = await host({ kind: 'admit', files: { ...frozen, ...implementation }, ...(oracle ? { oracle } : {}) });
           stage('admitted');
           begin('implementation');
         } else {
