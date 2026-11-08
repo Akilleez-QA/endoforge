@@ -383,18 +383,19 @@ const valueSet = /\b(?:must\s+be|is|are|accepts?|accepted\s+values\s+are|only)\s
 function ownLines(contract, names, fn) {
   const lines = contract.split('\n'), declares = name => new RegExp(`\`${name}\\s*\\(|\\bfunction\\s+${name}\\s*\\(|^\\s*(?:[-*+]\\s+|\\d+[.)]\\s*)?${name}\\s*\\(`);
   const mention = line => names.filter(name => declares(name).test(line) || new RegExp(`\`${name}\`|^\\s*(?:[-*+]\\s+)?${name}\\s*:`).test(line));
-  let current = null, strict = null;
+  let current = null, strict = null, bulletBlock = false;
   return lines.map(line => {
     const named = mention(line);
     if (named.length === 1) current = named[0];
     else if (named.length > 1 || /^#/.test(line)) current = null;
     const signature = names.filter(name => declares(name).test(line));
     if (signature.length === 1) strict = signature[0];
-    else if (named.length || !/^\s{2,}\S/.test(line)) strict = null;
+    else if (named.length || !/^\s{2,}\S|^\s*[-*+]\s/.test(line) || (/^[-*+]\s/.test(line) && !bulletBlock)) strict = null;
+    bulletBlock = signature.length === 1 ? !/^\s*[-*+]\s/.test(line) : bulletBlock && strict !== null;
     return { line, owner: current, strict: named.length === 1 ? named[0] : strict };
   }).filter(entry => !fn || entry.owner === null || entry.owner === fn);
 }
-export function rangeRules(contract, parameters, skipped = [], fn = null) {
+export function rangeRules(contract, parameters, skipped = [], fn = null, loose = []) {
   const rules = [];
   let clauseGuard = null;
   const signatures = fn ? [...new Set([...contractSignatures(contract).keys(), fn])] : [];
@@ -428,7 +429,7 @@ export function rangeRules(contract, parameters, skipped = [], fn = null) {
   if (fn && entries.some(entry => entry.strict === fn && /\b(?:never|does\s+not|doesn't|cannot|no)\s+traps?\b|\bwithout\s+trapping\b/i.test(entry.line))) return rules;
   let section = false;
   for (const { line: raw, strict } of entries) {
-    const line = raw.replace(/`/g, '').replace(/\*\*/g, '');
+    const line = raw.replace(/\*\*/g, '').replace(/(?:message|with|text)?\s*:?\s*(?:"[^"\n]*"|“[^”\n]*”)/gi, ' ').replace(/`/g, '');
     if (/^\s*#/.test(line)) { section = domainLine.test(line) && !notDomain.test(line); continue; }
     if (!section && !domainLine.test(line) && !/^\s*[-*]\s+[A-Za-z_]\w*\s*:/.test(line)) continue;
     if (notDomain.test(line) || unitDependent.test(line)) continue;
@@ -461,11 +462,28 @@ export function rangeRules(contract, parameters, skipped = [], fn = null) {
       for (const { span, bounds, values } of found) {
         const before = clause.slice(from, span[0]), first = from === 0;
         from = span[1];
-        for (const name of subjectsBefore(before, owned, first)) values ? addSet(name, values) : add(name, ...bounds);
+        const subjects = subjectsBefore(before, owned, first);
+        for (const name of subjects) values ? addSet(name, values) : add(name, ...bounds);
+        const hints = [...before.matchAll(/[A-Za-z]{4,}/g)].map(w => w[0].toLowerCase()).filter(w => !/^(?:must|finite|valid|values?|inputs?|range|inclusive|exclusive|within|between|from|through|outside|bounds?|each|both|every|with|that|this|trap|traps|when|either)$/.test(w));
+        const hinted = parameters.filter(name => hints.some(w => name.toLowerCase().includes(w.replace(/s$/, ''))));
+        if (!subjects.length && bounds && !clauseGuard && hinted.length) loose.push({ names: hinted, lo: bounds[0], loOpen: bounds[1], hi: bounds[2], hiOpen: bounds[3] });
       }
     }
   }
   return rules;
+}
+const extraTrap = /resulting|results?\s+(?:must|outside|exceeds?|above|below|is\s+(?:above|below|outside))|outputs?\s+(?:must|outside|exceeds?|above|below|range|bound)|quotient|\bexceed|overflow|divi\w+ by zero|\b[a-z]\w*\s*(?:<=?|>=?|≤|≥)\s*[a-z]\w*\b|at (?:least|most)\s+[a-z]|not\s+(?:exceed|greater|less)|midnight|\b(?:equal|equals|match|matches|matching|differ|differs)\s+(?:the\s+)?[a-z]\w*[A-Z_]\w*/;
+const integral = /\binteger|whole number|fraction(?:al)?\b|non-?integ/i;
+const conditionalTrap = /\b(?:if|when|unless|whenever)\b[^.;]*\b(?:throw|traps?|abort|error|reject|must)|\b(?:throw|traps?|aborts?|rejects?)\b[^.;]*\b(?:if|when|unless|whenever)\b/i;
+const rangeTrap = /outside|range|bounds?|\[|\.\.|non-?finite|invalid|nan\b|infinit|violat|out of|not in|exceeds?|below|above|negative/i;
+export function domainComplete(contract, fn, parameters, rules, args) {
+  if (!parameters.every(name => rules.some(rule => rule.name === name))) return false;
+  const names = [...new Set([...contractSignatures(contract).keys(), fn])], { blocks, shared } = exportBlocks(contract, names);
+  const text = [...shared, ...(blocks[fn] ?? [])].join('\n');
+  if (extraTrap.test(text) || (integral.test(text) && !args.every(Number.isInteger))) return false;
+  const constrained = [...text.matchAll(/\b([A-Za-z_]\w*)\s*(?:must\s+be\s*|is\s*)?(?:<=?|>=?|≤|≥|≠|!=)\s*-?\d|\b([A-Za-z_]\w*)\s+must\s+(?:be\s+)?(?:positive|negative|non-?zero|non-?negative|greater|less|strictly|above|below|differ)/g)].map(m => m[1] ?? m[2]);
+  if (constrained.some(name => !parameters.includes(name) && !/^(?:x|value|it|result|code|codes|and|or)$/i.test(name))) return false;
+  return !text.split(/[.;\n]/).some(clause => conditionalTrap.test(clause) && !rangeTrap.test(clause));
 }
 export function outsideRange(rules, parameters, args) {
   return rules.some(rule => {
@@ -506,12 +524,12 @@ export function analyzeSpecification(files, { reference = true } = {}) {
   const contract = files['CONTRACT.md'] ?? '', signatures = contractSignatures(contract);
   const fnNames = [...new Set(tests.map(t => t?.fn).filter(fn => typeof fn === 'string' && /^[A-Za-z_]\w*$/.test(fn)))];
   const references = reference ? referenceFunctions(files[referenceFile], fnNames) : null;
-  const formulas = {}, ranges = {}, skippedRanges = {};
+  const formulas = {}, ranges = {}, skippedRanges = {}, looseRanges = {};
   for (const fn of fnNames) {
     const parameters = signatures.get(fn);
     if (!parameters) continue;
     formulas[fn] = formulaReference(contract, fn, parameters);
-    ranges[fn] = rangeRules(contract, parameters, skippedRanges[fn] = [], fn);
+    ranges[fn] = rangeRules(contract, parameters, skippedRanges[fn] = [], fn, looseRanges[fn] = []);
   }
   const decisions = tests.map((test, index) => {
     if (!test || typeof test !== 'object' || !Array.isArray(test.args) || typeof test.fn !== 'string') return { index, status: 'unverified', why: 'malformed' };
@@ -521,6 +539,10 @@ export function analyzeSpecification(files, { reference = true } = {}) {
     const numeric = test.args.every(Number.isFinite), parameters = signatures.get(test.fn);
     if (numeric && parameters) {
       if (ranges[test.fn]?.length && outsideRange(ranges[test.fn], parameters, test.args)) opinions.push({ source: 'range', outcome: { trap: true } });
+      else if (test.expectError && domainComplete(contract, test.fn, parameters, ranges[test.fn] ?? [], test.args)) {
+        const values = formulas[test.fn]?.(test.args);
+        if (Array.isArray(values) && values.length) opinions.push({ source: 'domain', outcome: { value: values[0] }, readings: values });
+      }
       else if (!test.expectError && (typeof test.expect === 'number' || typeof test.expect === 'boolean')) {
         const values = formulas[test.fn]?.(test.args);
         if (values?.abstain) abstentions.push(values.abstain);
@@ -549,6 +571,12 @@ export function analyzeSpecification(files, { reference = true } = {}) {
       return { index, status: 'flagged', sources: [formula.source, 'reference'], literal, computed: ref.outcome, alternative: formula.outcome };
     }
     const only = formula ?? ref;
+    const pastLooseBound = only.source === 'formula' && !literal.trap && (looseRanges[test.fn] ?? []).some(bound => test.args.some((x, i) => {
+      if (!bound.names.includes(parameters?.[i])) return false;
+      const span = Math.max(Math.abs(bound.hi - bound.lo), 1e-12), near = Math.max(1, 0.01 * span);
+      return (x < bound.lo || (bound.loOpen && x === bound.lo)) && bound.lo - x <= near || (x > bound.hi || (bound.hiOpen && x === bound.hi)) && x - bound.hi <= near;
+    }));
+    if (agrees(only, literal, tol) && pastLooseBound) return { index, status: 'abstained', why: 'value just past a stated bound the parser could not attribute' };
     if (agrees(only, literal, tol)) return { index, status: 'verified', sources: ['literal', only.source] };
     if (only.readings && only.readings.length > 1) return { index, status: 'flagged', sources: [only.source], literal, computed: only.outcome, ambiguous: true };
     return { index, status: 'flagged', sources: [only.source], literal, computed: only.outcome };

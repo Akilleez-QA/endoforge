@@ -124,3 +124,35 @@ test('an "Otherwise" that opens a line refers to an earlier line, so its branch 
   const lines = ['### displayCode(requested: i32, confirmed: i32, built: i32): i32', '- Approved (2) only when requested, confirmed and built are all 1.', '- Otherwise, if requested is 1, result is 1. If requested is 0, result is 0.'];
   assert.notEqual(run(lines, [{ fn: 'displayCode', args: [1, 1, 1], expect: 2 }])[0], 'flagged');
 });
+
+test('a trap claimed inside a complete stated domain is flagged when the formula has a value there', () => {
+  const lines = ['`chargeG(volume: f64, density: f64): f64` returns volume * density.', 'volume must be in [0, 1000]; density must be in [1, 1000]. Otherwise trap with `invalid input`.'];
+  assert.deepEqual(run(lines, [{ fn: 'chargeG', args: [1000, 1], expectError: true }, { fn: 'chargeG', args: [1000.5, 1], expectError: true }, { fn: 'chargeG', args: [1000, 1], expect: 1000 }]), ['flagged', 'verified', 'verified']);
+});
+
+test('a trap inside the ranges is not flagged when the contract states any other trap condition', () => {
+  const tests = [{ fn: 'f', args: [5, 3], expectError: true }];
+  const base = ['`f(low: f64, high: f64): f64` returns high - low.', 'low must be in [0, 100]; high must be in [0, 100].'];
+  for (const extra of ['Require low <= high; otherwise trap.', 'If low is 5 and high is 3, throw Error("order").', 'The result must not exceed 50.', 'Inputs must be integers.', 'Trap on overflow.'])
+    assert.notEqual(run([...base, extra], extra === 'Inputs must be integers.' ? [{ fn: 'f', args: [5.5, 3], expectError: true }] : tests)[0], 'flagged', extra);
+  assert.notEqual(run(base.slice(0, 1).concat('low must be in [0, 100].'), tests)[0], 'flagged');
+});
+
+test('a constraint on an intermediate quantity ("TD must be > 0") keeps the domain incomplete', () => {
+  const lines = ['`target(room: f64, evap: f64): f64`', '- TD = room - evap', '- target = min(12, max(4, 0.4 * TD))', '- room must be finite and in [-40, 50].', '- evap must be finite and in [-50, 20].', '- TD must be > 0 (evaporator colder than the room).', '- Any violation traps.'];
+  assert.notEqual(run(lines, [{ fn: 'target', args: [5, 5], expectError: true }])[0], 'flagged');
+});
+
+test('a bullet list directly under a signature belongs to that export, and quoted trap messages do not hide a range', () => {
+  const rule = (name, lo, hi) => ({ name, lo, loOpen: false, hi, hiOpen: false });
+  const contract = ['`other(volume: f64): f64` returns volume.', '', '`remaining(cap: f64, current: f64): f64`', '- Both inputs must be finite and in 0..1000000 inclusive.', '- Returns cap - current.'].join('\n');
+  assert.deepEqual(rangeRules(contract, ['cap', 'current'], [], 'remaining'), [rule('cap', 0, 1000000), rule('current', 0, 1000000)]);
+  assert.deepEqual(rangeRules(contract, ['volume'], [], 'other'), []);
+  const quoted = '- `over(pressure: f64): bool`: trap when pressure is nonfinite or outside [0,1000]; message “Pressure must be within 0..1000 psig”.';
+  assert.deepEqual(rangeRules(quoted, ['pressure'], [], 'over'), [rule('pressure', 0, 1000)]);
+});
+
+test('a value test just past a stated bound the parser could not attribute is not marked verified', () => {
+  const lines = ['`materialCost(pounds: f64, pricePerPound: f64): f64` returns pounds * pricePerPound.', '- Valid pounds: finite, 0 through 1000 inclusive.', '- Valid unit price: finite, 0 through 10000 inclusive (the price per pound).', '- Either input outside its bounds traps.'];
+  assert.deepEqual(run(lines, [{ fn: 'materialCost', args: [0, -1], expect: 0 }, { fn: 'materialCost', args: [15, 2], expect: 30 }, { fn: 'materialCost', args: [1000, 10000], expect: 10000000 }]), ['abstained', 'verified', 'verified']);
+});
