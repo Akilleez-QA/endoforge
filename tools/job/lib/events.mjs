@@ -1,18 +1,3 @@
-// event to the user").
-//   STAGED     the card is ready; the user confirms it with one go
-//   FIRED      atoms launched: who runs what, the compiled-prompt hash, predictions, gates, ETA, how to stop
-//   SMOKE      the one-atom-per-engine smoke result
-//   SCORED     a round's score deltas
-//   GATE       a gate passed or failed
-//   NEEDS-YOU  a decision blocks the critical path (authority only: card go, taste locks, spend, outward actions)
-//   NEEDS-COORDINATOR  judgment the Conductor cannot make (an atom still failing after its iterations, a contract that
-//              cannot express a criterion, a check at odds with its calibration, a new failure); goes to the model
-//   DONE       the job finished
-// Channels: the durable log (events.jsonl + EVENTS.md beside the manifest, or job.events.dir), a desktop
-// notification (notify-send; ENDOFORGE_NOTIFY=none turns it off), hooks that get every event (job.events.hooks,
-// ENDOFORGE_EVENT_HOOKS) and push hooks that get only FIRED, GATE, NEEDS-YOU and DONE (job.events.push,
-// ENDOFORGE_PUSH_HOOKS): phones never buzz for routine progress. NEEDS-COORDINATOR goes only to coordinator hooks
-// (job.events.coordinator, ENDOFORGE_COORDINATOR_HOOKS), which wake the model. Each hook gets the event as JSON on stdin.
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -44,7 +29,6 @@ function appendLine(file, line) {
 }
 const hooksFrom = (list, env) => [...(list ?? []).map((h) => (Array.isArray(h) ? h : [h])), ...(env ? env.split(':').filter(Boolean).map((h) => [h]) : [])];
 
-/** Append the event to the durable log first, then deliver it. A failed delivery is logged, never fatal. */
 export function emit(job, file, { kind, summary, detail = '', data = {} }, { env = process.env } = {}) {
   if (!EVENT_KINDS.includes(kind)) throw new Error(`unknown event kind ${kind} (${EVENT_KINDS.join(', ')})`);
   const dir = eventsDir(job, file); fs.mkdirSync(dir, { recursive: true });
@@ -68,8 +52,6 @@ export function emit(job, file, { kind, summary, detail = '', data = {} }, { env
   return ev;
 }
 
-/** May this job fire? Only after a STAGED event for the current card, and the user's own go on that card after it was
- *  staged (I1, I11). Returns { ok } or { ok: false, why }. */
 export function canFire(job, file) {
   const sha = cardHash(job), staged = readEvents(job, file).filter((e) => e.kind === 'STAGED').at(-1);
   if (!staged) return { ok: false, why: 'the card was never staged (job.mjs stage): the user has not seen it' };
@@ -80,7 +62,6 @@ export function canFire(job, file) {
   return { ok: true };
 }
 
-/** The FIRED event: who runs what, the prompt-set hash, predictions, gates, ETA and how to stop. */
 export function firedEvent(job, lanes, promptManifest) {
   const by = {}; for (const l of lanes) (by[l.engine] ??= []).push(l);
   const logins = [...new Set(lanes.map((l) => `${l.engine}:${l.account}`))];
@@ -93,7 +74,6 @@ export function firedEvent(job, lanes, promptManifest) {
     data: { atoms: lanes, logins, promptManifest, predictions: job.predictions ?? [], gates, eta: job.eta ?? null, stop, cardSha256: cardHash(job) } };
 }
 
-/** The live timeline for `endoforge job status`. */
 export function renderStatus(job, events) {
   const real = events.filter((e) => EVENT_KINDS.includes(e.kind));
   const L = [`${job.title ?? job.id} (${job.kind}): ${real.length} events`];

@@ -1,7 +1,3 @@
-// JOB manifest (`endoforge/job/1`) validator: POODO executed as code. Task-agnostic. Every rule belongs to one
-// POODO gate (lib/invariants.mjs GATES) and cites the invariant it enforces; kind plugins (lib/kinds.mjs) add only
-// kind-specific checks. validate(job, { gate }) runs every rule up to and including that gate; `decide` is the gate
-// before any spend, `orchestrate` the gate before the wide launch.
 import fs from 'node:fs';
 import path from 'node:path';
 import { INVARIANTS, GATES, gateIndex } from './invariants.mjs';
@@ -13,10 +9,8 @@ export const SCHEMA = 'endoforge/job/1';
 export const VOLATILE = ['/tmp', '/var/tmp', '/dev/shm', '/run/user'];
 const norm = (p) => String(p).replace(/\/+$/, '');
 export const overlaps = (a, b) => { const x = norm(a), y = norm(b); return x === y || x.startsWith(y + '/') || y.startsWith(x + '/'); };
-/** A check that measures a proxy (its kind's proxyCheckKinds, or marked proxy: true) must be labelled and calibrated. */
 export const isProxyCheck = (job, check) => check?.proxy === true || proxyKinds(job).includes(check?.kind);
 
-/** Every durable path the manifest names, with where it came from. */
 export function manifestPaths(job) {
   const out = [], add = (where, p) => { if (p) out.push({ where, path: p }); };
   for (const s of job.sources ?? []) add(`source ${s.id}`, s.path);
@@ -31,7 +25,6 @@ export function manifestPaths(job) {
 
 const readProof = (p, offline) => { try { return !offline && p && fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf8')) : null; } catch { return null; } };
 
-/** The rules, in POODO order. Each returns a list of [invariant, message] for what is broken. */
 const RULES = {
   pontificate(job, x) {
     const out = [], E = (i, m) => out.push([i, m]);
@@ -55,7 +48,7 @@ const RULES = {
     for (const t of job.truth ?? []) if (!t.what || !t.path || !t.tolerance) E('I4', `truth ${t.id ?? '?'} needs what, path and tolerance`);
     if (x.kind?.requiresTruth && !(job.truth ?? []).length) E('I4', `a ${job.kind} job must name its truth package (survey, measurements, standards) with tolerances before building`);
     for (const { where, path: p } of manifestPaths(job)) {
-      if (where.startsWith('split')) continue;                         // proofs are made in Orient
+      if (where.startsWith('split')) continue;
       if (!path.isAbsolute(p)) E('I7', `${where}: ${p} must be an absolute path`);
       else if (x.volatile.some((v) => p === v || p.startsWith(v + '/'))) E('I7', `${where}: ${p} is on volatile disk; move it to durable disk now`);
       else if (!x.offline && !fs.existsSync(p)) E('I7', `${where}: ${p} does not exist`);
@@ -95,8 +88,6 @@ const RULES = {
       const good = p?.ok === true && (p.kind === 'tests' ? x.kind?.splitByTests : typeof p.noiseFloor === 'number' && p.noiseMeasured !== false);
       if (!good) E('I6', `split of ${s.from} is not proven a no-op (${x.kind?.splitByTests ? 'tests before and after' : 'a pixel diff within a measured noise floor'})`);
     }
-    // I15 contract capability: the atomization must be able to express every acceptance criterion. Each criterion
-    // names the atoms that satisfy it and what it requires; each of those atoms declares what its contract can do.
     for (const c of job.criteria ?? []) {
       if (c.check?.kind === 'human') continue;
       if (!Array.isArray(c.satisfiedBy) || !c.satisfiedBy.length) { E('I15', `criterion ${c.id} must name the atoms that satisfy it (satisfiedBy)`); continue; }
@@ -109,8 +100,6 @@ const RULES = {
         if (missing.length) E('I15', `criterion ${c.id} needs ${missing.join(', ')}, which atom ${id}'s contract cannot express; widen the contract before the fan-out`);
       }
     }
-    // P-C: interfaces are read from source, never written from memory. Each declared interface must resolve, and an
-    // atom whose files import a contract or interface file must be given that file's interface in its prompt.
     for (const itf of job.interfaces ?? []) if (!x.offline && interfaceText(job, itf) == null) E('I2', `interface ${itf.id}: ${itf.file} has no excerpt from ${itf.start}`);
     if (!x.offline) for (const a of atoms) for (const k of job.contracts ?? []) {
       const given = (job.interfaces ?? []).some((itf) => itf.file === k.path && ((a.interfaces ?? []).includes(itf.id) || (a.reads ?? []).includes(k.path) || imports(job, a, k.path)));
@@ -174,13 +163,9 @@ const RULES = {
   },
 };
 
-/** Which gates hold rules citing each invariant: it "holds" only once all of them have been checked. */
 export const CITED = { I1: ['pontificate', 'decide'], I2: ['observe', 'orient'], I3: ['decide'], I4: ['observe'], I5: ['orient'], I6: ['orient'],
   I7: ['observe'], I8: ['orchestrate'], I9: ['decide'], I10: ['decide', 'loop'], I11: ['decide'], I12: ['decide', 'loop'], I13: ['orient'], I14: ['pontificate', 'decide', 'loop'], I15: ['orient'] };
 
-/** Validate up to `gate`. Options: offline (skip disk), volatile roots, confirmation {ok, why} (job card hash check),
- *  health {ok, why} (machine health at Orchestrate). */
-// ENDOFORGE_VOLATILE (colon-separated) replaces the volatile roots, for tests whose scratch dirs live under /tmp.
 export function validate(job, { gate = 'orchestrate', offline = false, volatile = process.env.ENDOFORGE_VOLATILE ? process.env.ENDOFORGE_VOLATILE.split(':') : VOLATILE, confirmation = undefined, health = null } = {}) {
   job = job ?? {};
   const upto = gateIndex(gate);
@@ -192,12 +177,11 @@ export function validate(job, { gate = 'orchestrate', offline = false, volatile 
   const errors = [], warnings = [], gates = {};
   for (const [i, g] of GATES.entries()) {
     if (i > upto) { gates[g.id] = 'not checked'; continue; }
-    const found = [...RULES[g.id](job, x), ...(x.kind?.checks?.[g.id]?.(job, x) ?? []).map(([inv, m]) => [inv, `${job.kind}: ${m}`])];   // kind rules are data (tools/job/kinds)
+    const found = [...RULES[g.id](job, x), ...(x.kind?.checks?.[g.id]?.(job, x) ?? []).map(([inv, m]) => [inv, `${job.kind}: ${m}`])];
     for (const [inv, msg] of found) errors.push({ gate: g.id, inv, msg });
     gates[g.id] = found.length ? 'refused' : 'passed';
   }
   if (upto >= gateIndex('orchestrate') && (job.resources ?? {}).ownerBound !== true) warnings.push({ gate: 'orchestrate', inv: 'I8', msg: 'atoms are not bound to their owner (playbook gap G4); a stopped driver leaves them running' });
-  // P-A: a fact lives once. A value copied from its source into an owned file is a warning (derive it instead).
   if (upto >= gateIndex('orient') && !offline) for (const d of duplicatedFacts(job)) warnings.push({ gate: 'orient', inv: 'I5', msg: `fact ${d.fact} is copied into ${d.file} (atom ${d.atom}: ${d.values.join(', ')}${d.count > 5 ? ', …' : ''}); derive it from its source` });
   for (const g of job.gates ?? []) if (g.criticalPath) warnings.push({ gate: 'decide', inv: 'I11', msg: `gate ${g.id} sits on the critical path; run it beside the loop if it can` });
   const checked = new Set(GATES.slice(0, upto + 1).map((g) => g.id));

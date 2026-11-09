@@ -1,20 +1,13 @@
-// The job card: what the coordinator shows the user before any spend, and what the user confirms once (Pontificate's
-// exit, checked at Decide; I1). Compact markdown: the verbatim goal, the decompressed brief, what governs what (with
-// reference thumbnails), the atoms and their inputs, the checks, the gates, which invariants hold, and the open
-// lessons from earlier jobs of the same kind. The confirmation names the card's hash, so any later change to what
-// was confirmed voids it (FMEA "intent distorted", detection).
 import crypto from 'node:crypto';
 import { INVARIANTS, GATES } from './invariants.mjs';
 
 const CONFIRMED_FIELDS = ['title', 'kind', 'goal', 'brief', 'sources', 'references', 'truth', 'criteria', 'atoms', 'contracts', 'seams', 'gates', 'criticalPath', 'rival', 'deadline'];
 const canon = (v) => (Array.isArray(v) ? v.map(canon) : v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, canon(v[k])])) : v);
-/** sha256 of what the user confirms (not proofs, receipts or approvals, which arrive later). */
 export function cardHash(job) {
   const gates = (job.gates ?? []).map(({ approval, ...g }) => g);
   const body = Object.fromEntries(CONFIRMED_FIELDS.map((k) => [k, k === 'gates' ? gates : job[k] ?? null]));
   return crypto.createHash('sha256').update(JSON.stringify(canon(body))).digest('hex');
 }
-/** The confirmation check the validator uses: present, direct, and for this exact card. */
 export function confirmationOf(job) {
   const c = job.proofs?.confirmed ?? job.confirmed;
   if (!c) return null;

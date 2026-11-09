@@ -1,13 +1,3 @@
-// Job kinds are DATA, outside the core: tools/job/kinds/<kind>.json (and any directory in ENDOFORGE_JOB_KINDS). This
-// engine only interprets a fixed set of universal rule shapes; it knows nothing about any domain.
-//   proxyCheckKinds                 check kinds that measure a proxy: they must be labelled and calibrated (I3)
-//   splitByTests                    a split is proven by tests passing before and after (I6)
-//   requireCheckKinds               [{ kind, inv, why }]: at least one criterion with a check of this kind
-//   requireAnyCheckKind             [{ kinds, inv, why }]: at least one criterion with a check of one of these kinds
-//   measureReferencesGoverning      { aspects, checkKind, inv, why }: each reference governing one of these aspects
-//                                   needs a check of checkKind against it
-//   requireCheckField               [{ kind, field, inv, why }]: some check of this kind must set this field
-//   requiresTruth                   { inv, pattern?, why }: a truth package, with an entry matching pattern if given
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -43,5 +33,4 @@ function withChecks(k) {
   return { ...k, requiresTruth: Boolean(k.requiresTruth), checks: { decide, observe } };
 }
 
-/** Check kinds that measure a proxy for this job (its kind's list, plus any check marked proxy: true). */
 export const proxyKinds = (job) => KINDS[job?.kind]?.proxyCheckKinds ?? KINDS.generic?.proxyCheckKinds ?? [];
