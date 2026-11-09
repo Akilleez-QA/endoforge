@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 import signal
 import socket
+import sqlite3
 import ssl
 import stat
 import subprocess
@@ -588,6 +589,9 @@ class Egress(Workspace):
         self.assertFalse(any(e['decision'] == 'allowed' for e in proxy.events))
 
     def test_run_bounded_outcomes(self):
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore', ResourceWarning)
+            gc.collect()
         with warnings.catch_warnings(record=True) as caught:
             warnings.simplefilter('always', ResourceWarning)
             self.assertEqual(egress.run_bounded(['sh', '-c', 'echo ok'])['outcome'], 'passed')
@@ -747,7 +751,7 @@ class ChatUpstream(http.server.BaseHTTPRequestHandler):
 
 def sandbox_reason():
     import shutil
-    for tool in ['bwrap', 'systemd-run', 'systemctl', 'unshare', 'ip', 'node', 'codex']:
+    for tool in ['bwrap', 'systemd-run', 'systemctl', 'unshare', 'ip']:
         if not shutil.which(tool):
             return tool + ' is not on PATH; egress.worker_command needs it to start a sandboxed worker'
     probe = subprocess.run(['systemctl', '--user', 'show-environment'], capture_output=True, text=True, timeout=10)
@@ -820,7 +824,7 @@ class SandboxedWorker(Workspace):
             'print(json.dumps({"relay":reply.split("\\r\\n")[0],"direct":reach(("127.0.0.1",%d)),'
             '"external":reach(("1.1.1.1",443))}))\n' % self.upstream.server_address[1])
         argv = egress.role_worker_command('eval_writer', home, out, self.dir / 'proxy.sock', ['python', '/in/request'],
-                                          {'request': probe})
+                                          {'request': probe}, tools=())
         unit = argv[argv.index('--unit') + 1] + '.scope'
         self.addCleanup(subprocess.run, ['systemctl', '--user', 'stop', unit], capture_output=True, timeout=15)
         result = egress.run_bounded(argv, timeout=60)
@@ -881,6 +885,222 @@ class Wasm(Workspace):
         with mock.patch.object(wasm, 'WT', Path(os.environ['ENDOFORGE_WASMTIME'])):
             result = wasm.run(module)
         self.assertEqual((result['outcome'], result['stdout'].strip()), ('passed', '42'))
+
+
+class LocalTurnTools(Workspace):
+    def bare(self, missing=('node', 'codex')):
+        import shutil
+        real = shutil.which
+        return mock.patch('shutil.which', lambda name, *a, **k: None if name in missing else real(name, *a, **k))
+
+    def command(self, **over):
+        request = self.dir / 'request.py'
+        request.write_text('print(1)')
+        return egress.role_worker_command('eval_writer', self.dir / 'home', self.dir / 'out', self.dir / 'p.sock',
+                                          ['python', '/in/request'], {'request': request}, **over)
+
+    def test_local_turn_needs_neither_node_nor_codex(self):
+        with self.bare():
+            argv = self.command(tools=())
+        self.assertEqual(argv[argv.index('PATH') + 1], '/usr/bin:/bin')
+
+    def test_local_turn_mounts_no_codex_credential(self):
+        auth = self.dir / 'home/.codex/auth.json'
+        auth.parent.mkdir(parents=True)
+        auth.write_text('{}')
+        with self.bare():
+            argv = self.command(tools=())
+        self.assertNotIn(str(auth), argv)
+
+    def test_codex_turn_names_the_missing_tool(self):
+        with self.bare(missing=('codex',)), self.assertRaisesRegex(ValueError, 'codex is not on PATH'):
+            self.command()
+
+    def test_call_protected_asks_for_no_agent_tools(self):
+        class Stop(Exception):
+            pass
+        with mock.patch.object(egress, 'role_worker_command', side_effect=Stop) as built, self.assertRaises(Stop):
+            local_provider.call_protected(self.dir / 'calls', 'stage', 'p', 8080)
+        self.assertEqual(built.call_args.kwargs['tools'], ())
+
+
+class ResourceWarningIsolation(unittest.TestCase):
+    def test_run_bounded_ignores_garbage_left_by_other_modules(self):
+        gc.collect()
+        gc.disable()
+        self.addCleanup(gc.enable)
+        leaked = [sqlite3.connect(':memory:')]
+        leaked.append(leaked)
+        del leaked
+        result = unittest.TestResult()
+        Egress('test_run_bounded_outcomes').run(result)
+        self.assertEqual(result.failures + result.errors, [])
+
+
+def docker_reason():
+    import shutil
+    if not shutil.which('docker'):
+        return None, 'docker is not on PATH; the real-daemon runner cases need it'
+    probe = subprocess.run(['docker', 'info', '--format', '{{.ServerVersion}}'], capture_output=True, text=True,
+                           timeout=20)
+    if probe.returncode:
+        return None, 'no Docker daemon is reachable without sudo: ' + probe.stderr.strip()[:160]
+    configured = os.environ.get('ENDOFORGE_WORKER_IMAGE', '')
+    local = subprocess.run(['docker', 'images', '--no-trunc', '--format', '{{.ID}}'], capture_output=True, text=True,
+                           timeout=20).stdout.split()
+    for image in ([configured] if configured else []) + local[:8]:
+        shell = subprocess.run(['docker', 'run', '--rm', '--pull=never', '--network=none', '--entrypoint', '/bin/sh',
+                                image, '-c', 'cat /dev/null'], capture_output=True, text=True, timeout=30)
+        if shell.returncode == 0:
+            return image, None
+    return None, 'no local image with /bin/sh; set ENDOFORGE_WORKER_IMAGE (the test never pulls)'
+
+
+class RealDocker(Workspace):
+    @classmethod
+    def setUpClass(cls):
+        cls.image, reason = docker_reason()
+        if reason:
+            raise unittest.SkipTest(reason)
+
+    def setUp(self):
+        super().setUp()
+        for target in [mock.patch.object(runner, 'DOCKER', ['docker']), mock.patch.object(recovery, 'DOCKER', ['docker']),
+                       mock.patch.object(runner, 'IMAGE', self.image)]:
+            target.start()
+            self.addCleanup(target.stop)
+        self.root = self.dir / 'root'
+        self.input = self.dir / 'input.txt'
+        self.input.write_bytes(b'hello\n')
+        self.digest = sha(b'hello\n')
+
+    def attempt(self, name, script):
+        return runner.run_attempt(self.root, name, name, self.input, self.digest, self.digest, script, 20)
+
+    def remaining(self, result):
+        return subprocess.run(['docker', 'ps', '-aq', '--filter', 'name=^/' + result['containerName'] + '$'],
+                              capture_output=True, text=True, timeout=20).stdout.strip()
+
+    def test_real_daemon_publishes_the_contained_output(self):
+        result = self.attempt('real', 'cat /input.txt')
+        self.assertEqual(result['outcome'], 'passed', result)
+        self.assertEqual((self.root / 'published/real.txt').read_bytes(), b'hello\n')
+        self.assertTrue(result['cleanupVerified'])
+        self.assertEqual(self.remaining(result), '')
+
+    def test_real_daemon_contains_the_worker(self):
+        script = ('touch /escaped 2>/dev/null && exit 7; '
+                  'cat /sys/class/net/*/operstate 2>/dev/null | grep -q up && exit 8; cat /input.txt')
+        result = self.attempt('contained', script)
+        self.assertEqual(result['outcome'], 'passed', result)
+        self.assertEqual(self.remaining(result), '')
+
+    def test_real_daemon_failure_publishes_nothing(self):
+        result = self.attempt('fails', 'exit 3')
+        self.assertEqual((result['outcome'], result['terminalState']['ExitCode']), ('worker_failed', 3))
+        self.assertFalse((self.root / 'published/fails.txt').exists())
+        self.assertEqual(self.remaining(result), '')
+
+
+def pinned_reason():
+    import shutil
+    if not (wasm.BUNDLE / 'venv/bin/python').is_file():
+        return 'the pinned Wasmtime wheel is not installed; run make tools'
+    if not shutil.which('systemd-run'):
+        return 'systemd-run is not on PATH; wasm.run starts inside a scope'
+    probe = subprocess.run(['systemctl', '--user', 'show-environment'], capture_output=True, text=True, timeout=10)
+    if probe.returncode:
+        return 'no systemd user manager for systemd-run --user --scope: ' + probe.stderr.strip()[:160]
+    return None
+
+
+class PinnedWasmtime(Workspace):
+    def stand_in_scope(self):
+        scope = self.dir / 'bin/systemd-run'
+        scope.parent.mkdir()
+        scope.write_text('#!/bin/sh\nwhile [ "$1" != "${1#-}" ]; do case "$1" in -p|--unit) shift 2;; *) shift;; esac;'
+                         ' done\nexec "$@"\n')
+        scope.chmod(0o755)
+        return {'PATH': str(scope.parent) + os.pathsep + os.environ['PATH']}
+
+    def test_default_runs_the_pinned_wheel_without_a_path_binary(self):
+        python = self.dir / 'tools/venv/bin/python'
+        python.parent.mkdir(parents=True)
+        python.write_text('#!' + sys.executable + ' -I\nimport sys,json\nprint(json.dumps(sys.argv[1:]))\n')
+        python.chmod(0o755)
+        with mock.patch.dict(os.environ, self.stand_in_scope()), mock.patch.object(wasm, 'WT', None), \
+                mock.patch.object(wasm, 'BUNDLE', self.dir / 'tools'):
+            result = wasm.run(self.dir / 'm.wat', export='add', args=[2, 3], wall=20)
+        self.assertEqual(result['outcome'], 'passed', result)
+        self.assertEqual(result['runtime'], 'wasmtime-py/49.0.0')
+        argv = json.loads(result['stdout'])
+        self.assertEqual(argv[:2], ['-I', '-B'])
+        request = json.loads(argv[3])
+        self.assertEqual(Path(argv[2]).name, 'wasm_host.py')
+        self.assertEqual((request['version'], request['export'], request['args'], request['fuel']),
+                         ('49.0.0', 'add', ['2', '3'], 100000))
+        self.assertIn('RuntimeMaxSec=21s', result['argv'])
+
+    def test_missing_bundle_names_make_tools(self):
+        with mock.patch.object(wasm, 'WT', None), mock.patch.object(wasm, 'BUNDLE', self.dir / 'absent'), \
+                self.assertRaisesRegex(ValueError, 'make tools'):
+            wasm.run(self.dir / 'm.wat')
+
+    def test_unparseable_epoch_is_refused(self):
+        with mock.patch.object(wasm, 'WT', None), self.assertRaises(ValueError):
+            wasm.run(self.dir / 'm.wat', epoch='soon')
+
+
+class RealPinnedWasmtime(Workspace):
+    @classmethod
+    def setUpClass(cls):
+        reason = pinned_reason()
+        if reason:
+            raise unittest.SkipTest(reason)
+
+    def module(self, text):
+        path = self.dir / 'm.wat'
+        path.write_text(text)
+        return path
+
+    def run_module(self, text, **over):
+        over.setdefault('wall', 30)
+        with mock.patch.object(wasm, 'WT', None):
+            return wasm.run(self.module(text), **over)
+
+    def test_export_result_is_printed(self):
+        result = self.run_module('(module (func (export "run") (result i32) i32.const 42))')
+        self.assertEqual((result['outcome'], result['stdout'].strip()), ('passed', '42'), result)
+
+    def test_arguments_follow_the_export_signature(self):
+        result = self.run_module('(module (func (export "add") (param i32 i32) (result i32) '
+                                 'local.get 0 local.get 1 i32.add))', export='add', args=[2, 3])
+        self.assertEqual((result['outcome'], result['stdout'].strip()), ('passed', '5'), result)
+
+    def test_fuel_ends_a_runaway_loop(self):
+        result = self.run_module('(module (func (export "run") (loop (br 0))))')
+        self.assertEqual(result['outcome'], 'worker_failed', result)
+        self.assertIn('fuel', result['stderr'])
+
+    def test_epoch_ends_a_loop_with_ample_fuel(self):
+        result = self.run_module('(module (func (export "run") (loop (br 0))))', fuel=10 ** 15, epoch='50ms')
+        self.assertEqual(result['outcome'], 'worker_failed', result)
+        self.assertIn('interrupt', result['stderr'])
+
+    def test_memory_ceiling_holds(self):
+        result = self.run_module('(module (memory 1) (func (export "run") (result i32) i32.const 64 memory.grow))',
+                                 memory=65536)
+        self.assertEqual((result['outcome'], result['stdout'].strip()), ('passed', '-1'), result)
+
+    def test_imports_are_refused(self):
+        result = self.run_module('(module (import "env" "f" (func)) (func (export "run")))')
+        self.assertEqual(result['outcome'], 'worker_failed', result)
+
+    def test_wrong_wheel_version_is_refused(self):
+        with mock.patch.object(wasm, 'WASMTIME_VERSION', '0.0.0'):
+            result = self.run_module('(module (func (export "run")))')
+        self.assertEqual(result['outcome'], 'worker_failed', result)
+        self.assertIn('0.0.0', result['stderr'])
 
 
 if __name__ == '__main__':

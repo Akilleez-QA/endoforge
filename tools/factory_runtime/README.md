@@ -80,13 +80,16 @@ With no image configured it refuses after taking only the controller fence.
   one loopback port; `call_protected(...)` runs one no-retry local turn, optionally owned by a `ModelJournal` from
   [factory_campaign](../factory_campaign/README.md).
 - `wasm.py`: `run(module, export='run', ...)` runs a pinned Wasmtime with fuel, memory and epoch limits inside a
-  `systemd-run` scope.
+  `systemd-run` scope. By default it uses the hash-pinned Wasmtime 49.0.0 wheel that `make tools` installs into
+  `.tools/venv`, and refuses, naming `make tools`, when that is absent.
+- `wasm_host.py`: runs inside that scope under the `.tools` Python, checks the wheel's version and installed files
+  against its own record, and runs one export of an import-free core module.
 
 ## Environment
 
 - `ENDOFORGE_WORKER_IMAGE`: container image as `sha256:<64 hex>`. Default empty, which refuses every run.
-- `ENDOFORGE_WASMTIME`: Wasmtime binary for `wasm.py`. Default `wasmtime`.
-- `ENDOFORGE_WASMTIME_SHA256`: required SHA-256 of that binary; `wasm.run` refuses without it.
+- `ENDOFORGE_WASMTIME`: a Wasmtime CLI binary to use instead of the pinned wheel. Default empty, which uses the wheel.
+- `ENDOFORGE_WASMTIME_SHA256`: required SHA-256 of that CLI binary; `wasm.run` refuses a CLI without it.
 
 ## Tests
 
@@ -97,15 +100,18 @@ worker command assembly and role authority, the local provider gateway policy, a
 starts real workers: `call_protected` runs one turn through `systemd-run --user --scope`, `unshare`, `bwrap` and the
 `bridge.py` relay to a stub chat provider and checks the reply, metadata, proxy event and scope and temporary
 cleanup; a second worker shows its only route out is the relay. Those cases skip, with the reason, where `bwrap`,
-a systemd user manager, unprivileged namespaces, `node` or `codex` are missing. The Docker CLI is
-replaced by [fixtures/fake_docker.py](fixtures/fake_docker.py), which runs each container script as a local process.
+a systemd user manager or unprivileged namespaces are missing; a local-provider turn needs neither `node` nor `codex`.
+Most runner cases replace the Docker CLI with [fixtures/fake_docker.py](fixtures/fake_docker.py), which runs each
+container script as a local process. `RealDocker` runs the runner against a real daemon, reached without `sudo`, using
+`ENDOFORGE_WORKER_IMAGE` or an image already on the host (it never pulls), and skips with the reason otherwise.
+`RealPinnedWasmtime` runs the pinned wheel for real and shows the fuel, epoch and memory limits hold; it skips with the
+reason where `make tools` has not run or there is no systemd user manager.
 
 ## Limits
 
-- No real Docker daemon or Wasmtime binary is used by the tests. `wasm.run` runs through a stand-in `systemd-run` and
-  Wasmtime; the real-binary case runs only when `ENDOFORGE_WASMTIME` and `ENDOFORGE_WASMTIME_SHA256` are set.
+- The Python binding has no trap-on-grow-failure setting, so under the pinned wheel a `memory.grow` past the ceiling
+  returns -1, as the WebAssembly specification defines, instead of trapping. The ceiling itself holds.
 - The sandbox mounts no `/etc/hosts`, so `bridge.py` listens on `127.0.0.1:18080` and the worker's proxy variables
   name that address, not `localhost`.
-- `worker_command` needs `node` and `codex` on `PATH` even for a local-provider turn.
 
 Engineering record: component C-29, requirement REQ-FACTORY-003 (the sandboxed worker closed GAP-EF-002).
