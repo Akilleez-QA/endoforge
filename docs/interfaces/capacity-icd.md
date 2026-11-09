@@ -23,7 +23,7 @@ evidence is weak in both directions.
 | `probeMachine(host?)` | The same, uncached; `host` replaces the readers (`read`, `exists`, `parallelism`, `freeMb`, `os`) for tests. |
 | `plan({ queues = 1, allotment?, probe?, policy? })` | Cohorts for `queues` independent queues within `allotment` CPUs (default: the probe's). See the plan record. |
 | `defaultWidth(options?)` | `plan(options).width`, the starting total width. |
-| `POLICY` | The shipped default: `{ mode: 'fixed', width: 'cores', perDomain: 1 }`, one cohort per L3 domain as wide as that domain's cores within its share (P-67's best fixed arm). |
+| `POLICY` | The shipped default: `{ mode: 'fixed', width: 'cores', perDomain: 1, headroom: 1.25 }`, one cohort per L3 domain as wide as that domain's cores within its share (P-67's best fixed arm). |
 | `TUNED_POLICY` | `{ mode: 'tuned', cap: 'occupancy', headroom: 1.25, oversubscribe: 3, ram: 0.75 }`: the same placement with the online tuner, capped by measured occupancy (P-68). Opt in with `plan({ policy: TUNED_POLICY })` or the route's `placement`. |
 | `P67_TUNED_POLICY` | `{ mode: 'tuned', cap: 'share', headroom: 1.25 }`: the tuner as P-67 shipped it, capped at min(threads, ceil(1.25 × share)) and bounded by the P-67 share rule. Kept for comparison. |
 | `createTuner({ start, max, ...TUNER_DEFAULTS })` | A width tuner fed one window at a time: `observe({ completions, elapsedMs, cpuMs?, saturated? })` returns the width to use next; `setBound(n)` lowers or raises the ceiling (a change of at least max(2, 20%) that persists for `boundsWindows` calls; a rise re-tunes a settled width only after the hold); `width`, `phase` (`explore` or `settled`), `history` (every change with its reason). |

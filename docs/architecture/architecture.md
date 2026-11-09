@@ -6,7 +6,8 @@ EndoForge groups the Python lifecycle model, evidence ledger, and evaluator and
 gates and local agent execution pools in the engine core.
 The [lifecycle model](../../core/lifecycle.py) represents proposals and decision
 references without issuing external decisions or activating artifacts in a host.
-The runtime launches configured agent clients; workflow orchestration stays in `tools/`.
+The runtime runs candidate evaluation in V8 workcells and drives the X1 candidate loop; workflow orchestration stays
+in `tools/`. [The candidate loop](candidate-loop.md) explains one attempt from need to decision.
 See the [requirements](../requirements/requirements.md) for the tested boundaries.
 
 ## Components
@@ -20,8 +21,19 @@ See the [requirements](../requirements/requirements.md) for the tested boundarie
 | `core/engine/evaluator.mjs` | Coordinate candidate evaluation with frozen checks and host callbacks | [Evaluator tests](../../core/engine/evaluator.test.mjs) |
 | `core/engine/gates.mjs` | Apply schema, interface, bounds, determinism, and forbidden-effects gates in order | [Gate tests](../../core/engine/gates.test.mjs) |
 | `core/engine/frozen.py` | Verify frozen evaluator references through the core ledger | [Evaluator tests](../../core/engine/evaluator.test.mjs) |
-| `core/runtime/` | Launch local agent clients and replay stub outputs, separate from lifecycle state | [Runtime guidance](../../core/runtime/README.md) |
+| `core/constraints/` | Constraint records kept separately from transcript compaction | [Constraint tests](../../tests/test_constraint_record.py); [interface](../interfaces/constraint-record.md) |
+| `core/library/` | Reuse a promoted kernel for a need it satisfies, behind a canonical contract key and a discrimination gate | [Library tests](../../core/library/test/library.test.mjs) |
+| `core/runtime/isolate-*.mjs` | `IsolatePool`: thread or process workcells, heap and WebAssembly memory limits, cgroups, deadlines, persistent ledger bridge | [Runtime guidance](../../core/runtime/README.md); `make isolate-test` |
+| `core/runtime/x1/` | The X1 candidate loop: generator, compiler, gates G1–G9, agent loop, formula oracle, evaluator synthesis, transports | [Candidate loop](candidate-loop.md); `make loop-test`, `make pipeline-test` |
+| `core/runtime/contained/` | Run emitted JavaScript in a supervised V8 cohort (compatibility lane) | [Contained JavaScript](../../core/runtime/README.md#contained-javascript) |
+| `core/runtime/capacity/` | Width, placement and split from the machine probe (Mjölnir) | [Capacity ICD](../interfaces/capacity-icd.md); `capacity.test.mjs` |
+| `core/runtime/subscription-guard.mjs`, `usage-governor.mjs` | Refuse non-subscription `claude -p` launches; park calls near the weekly usage ceiling | `subscription-guard.test.mjs`, `usage-governor.test.mjs` |
+| `core/runtime/dump-list.mjs`, `tools/dump_list.py` | Register sheddable memory for a machine memory guard | `dump-list.test.mjs`, `tools/test_dump_list.py` |
+| `core/runtime/agent-pool.mjs`, `stub-pool.mjs` | Launch local Codex clients across accounts, or replay stub outputs | [Agent pool contract](../../core/runtime/README.md#agent-pool-contract) |
+| `tools/ledger_writer.py` | Group-commit ledger writer with a crash journal | [Writer journal](../interfaces/ledger-icd.md#ledger-writer-journal) |
 | `tools/tscheck/` | Pinned tsrs TypeScript checker for pool workcells, exposed as an evaluator invariant | [Checker tests](../../tools/tscheck/test/tscheck.test.mjs) |
+
+[tools/README.md](../../tools/README.md) lists the workflow tools.
 
 The [ledger ICD](../interfaces/ledger-icd.md) defines Python, CLI, and storage
 interfaces. Importing `core` keeps its lifecycle exports and does not load the ledger.
@@ -59,7 +71,7 @@ records are present, and this document does not create new integration behavior.
 
 ## Not included
 
-- An implemented Cstack bridge or pinned Cstack protocol.
+- A callable Cstack bridge. Cstack vendors a fixed slice at a pinned commit; see the [Cstack ICD](../icd/icd-cstack.md).
 - Decision issuance or host activation inside the core.
 - Qualification of live model services by the synthetic repository tests.
 
