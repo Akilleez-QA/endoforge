@@ -33,13 +33,13 @@ integer code with named meanings, and each carries a unit. There are no arrays o
 ## How it works
 
 ```mermaid
-flowchart LR
-  need["Need<br/>integer add(a,b)"] --> spec["Model writes<br/>CONTRACT.md<br/>tests.json"]
-  spec --> freeze["Freeze<br/>hashes into<br/>the ledger"]
-  freeze --> impl["Model writes<br/>kernel.ts<br/>glue.json"]
-  impl --> gates["Compile, then<br/>gates G1–G9<br/>in a V8 isolate"]
-  gates -- "fail: retry" --> impl
-  gates -- "pass, or<br/>out of turns" --> decision["Ledger records<br/>promote, refuse<br/>or inconclusive"]
+flowchart TD
+  need["Need<br/>integer add(a,b)"] --> spec["Model writes<br/>contract + tests"]
+  spec --> freeze["Freeze<br/>hashes into ledger"]
+  freeze --> impl["Model writes<br/>kernel + glue"]
+  impl --> gates["Compile, run<br/>gates G1–G9"]
+  gates -- "fail" --> impl
+  gates -- "pass or<br/>out of turns" --> decision["Ledger records<br/>promote, refuse<br/>or inconclusive"]
 ```
 
 1. A model turns the need into `CONTRACT.md` (what the function computes) and `tests.json` (inputs and expected

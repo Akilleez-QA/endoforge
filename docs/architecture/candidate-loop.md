@@ -8,13 +8,13 @@ follow the [getting-started tutorial](../guides/tutorials/getting-started.md). S
 ## The shape of one attempt
 
 ```mermaid
-flowchart LR
-  spec["1 Specification<br/>CONTRACT.md<br/>tests.json"] --> freeze["2 Freeze<br/>ledger<br/>record"]
-  freeze --> impl["3 Implementation<br/>kernel.ts<br/>glue.json"]
-  impl --> compile["4 Compile<br/>pinned<br/>asc"]
-  compile --> gates["5 Gates<br/>G1–G9 in<br/>a workcell"]
-  gates -- "failures:<br/>repair turn" --> impl
-  gates -- "pass, or<br/>turn limit" --> commit["6 Commit<br/>candidate<br/>and receipt"]
+flowchart TD
+  spec["1 Specification<br/>CONTRACT.md, tests.json"] --> freeze["2 Freeze<br/>ledger record"]
+  freeze --> impl["3 Implementation<br/>kernel.ts, glue.json"]
+  impl --> compile["4 Compile<br/>pinned asc"]
+  compile --> gates["5 Gates<br/>G1–G9 in a workcell"]
+  gates -- "fail" --> impl
+  gates -- "pass or<br/>turn limit" --> commit["6 Commit<br/>candidate, receipt"]
   commit --> decision["7 Decision<br/>promote, refuse<br/>or inconclusive"]
 ```
 
