@@ -11,6 +11,12 @@ from core.ledger.ledger import encode
 REPOSITORY = Path(__file__).resolve().parents[1]
 ROUND_CHECKS = ["schema", "interface", "bounds", "determinism", "forbidden_effects", "residual"]
 GATES = {"G1_frozen", "G2_compiles", "G3_exports", "G4_tests", "G5_deterministic", "G6_bounded", "G7_glue", "G8_nonfinite", "G9_units"}
+GATE_LABEL = "X1 G1-G9"
+POLICY = "X1-G1-G9/v2"
+LABEL_MIGRATION = ("New records use the task acceptance and frozen residual label 'X1 G1-G9' and the decision policy 'X1-G1-G9/v2'. "
+                   "Records written earlier keep 'X1 G1-G7' and 'X1-G1-G8/v1' unchanged: the labels are part of their hashes and "
+                   "identities, drift checks recompute from the label stored in the record, and no verdict reads a label, so "
+                   "existing ledgers verify and need no rewrite. Both generations of decision required all nine gates.")
 ORACLE_FILES = ("CONTRACT.md", "tests.json", "frozen.sha256")
 IMPLEMENTATION_FILES = ("host.mjs", "gates.mjs", "glue.schema.json", "measure.mjs", "meter.mjs", "contract.mjs", "loop-port.mjs", "agent.mjs")
 
@@ -21,7 +27,7 @@ FREEZE_FACTS = dict(confirmed_by="none: frozen by the host with no reviewer",
 
 
 def decide(records, tip, stored_hash, request):
-    decision = dict(version=1, issuer="endoforge.local.x1", policy="X1-G1-G8/v1", scope="qualification",
+    decision = dict(version=1, issuer="endoforge.local.x1", policy=POLICY, scope="qualification",
                     candidate=request["candidate"], frozen_evaluator=request["reference"]["identity"],
                     receipt=request["receipt"])
     try:
@@ -59,7 +65,7 @@ def decide(records, tip, stored_hash, request):
             x1 = json.loads(residual["reason"])
             if (x1["promotable"] is not True or set(x1["gates"]) != GATES
                     or not all(g["ok"] is True for g in x1["gates"].values())):
-                raise ValueError("all seven gates must pass")
+                raise ValueError("all nine gates must pass")
         decision.update(decision="promote", chain_tip=tip, evaluator_digest=report["evaluator_digest"])
     except (ValueError, KeyError, TypeError):
         return refusal(decision)
@@ -120,10 +126,10 @@ def admit(request, prior, append, _process, db):
             raise ValueError("running evaluator tree digest differs from frozen record")
     elif "identity" not in reference:
         need = payload["need"]
-        append(dict(version=0, kind="task", id="task", data=dict(intent=need, acceptance="X1 G1-G7")))
+        append(dict(version=0, kind="task", id="task", data=dict(intent=need, acceptance=GATE_LABEL)))
         append(dict(version=0, kind="admitted_input", id="input", data=dict(task="task", content=need, origin="caller")))
         record = frozen_record(reference.get("root"), files=payload.get("files"), task="task", admitted_input="input",
-                               **FREEZE_FACTS, configuration=payload["configuration"], residual="X1 G1-G7", invariant_version="1")
+                               **FREEZE_FACTS, configuration=payload["configuration"], residual=GATE_LABEL, invariant_version="1")
         append(record)
     else:
         record = prior.get(reference["identity"])
