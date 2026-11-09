@@ -9,6 +9,22 @@ permissions:
   contents: read
 
 jobs:
+  secret-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - name: Gitleaks secret scan
+        env:
+          GITLEAKS_VERSION: "8.28.0"
+        run: |
+          curl -sSfL -o gitleaks.tar.gz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSfL -o gitleaks_checksums.txt "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_checksums.txt"
+          grep " gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz$" gitleaks_checksums.txt | sed 's/ .*/  gitleaks.tar.gz/' | sha256sum -c -
+          tar -xzf gitleaks.tar.gz gitleaks
+          ./gitleaks git --redact --verbose --exit-code 1 .
+
   test:
     runs-on: ubuntu-latest
     strategy:

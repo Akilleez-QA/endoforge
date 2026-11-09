@@ -6,7 +6,10 @@ import signal
 import subprocess
 import sys
 import tempfile
+import unittest
 from tools.factory_campaign import state
+
+check=unittest.TestCase()
 
 
 def main():
@@ -17,9 +20,9 @@ def main():
         state.record(d,{'version':1,'job':'crash-test','stage':'frozen','completed':['eval','freeze']})
         code="from tools.factory_campaign import state;import os,signal,sys;state.record(sys.argv[1],{'version':1,'job':'crash-test','stage':'generated','completed':['eval','freeze','generate']},fault=lambda s:os.kill(os.getpid(),signal.SIGKILL) if s==sys.argv[2] else None)"
         process=subprocess.run([sys.executable,'-c',code,str(d),boundary])
-        assert process.returncode==-signal.SIGKILL
-        recovered=state.recover(d);assert recovered['stage']=='generated'
-        (d/'state.json').write_text('{partial');assert state.recover(d)==recovered
+        check.assertEqual(process.returncode,-signal.SIGKILL)
+        recovered=state.recover(d);check.assertEqual(recovered['stage'],'generated')
+        (d/'state.json').write_text('{partial');check.assertEqual(state.recover(d),recovered)
         first=d/'state-events/00000001.json';first.write_text(first.read_text().replace('frozen','tampered'))
         try:state.recover(d);raise AssertionError('altered ancestor accepted')
         except ValueError:pass
@@ -33,9 +36,9 @@ def main():
         state.record(d,{'version':1,'job':'crash-test','stage':'lost'});raise AssertionError('failed write reported')
     except OSError:pass
     finally:os.fsync=real
-    assert [p.name for p in (d/'state-events').iterdir()]==['00000001.json']
-    assert state.recover(d)['stage']=='frozen'
-    assert state.record(d,{'version':1,'job':'crash-test','stage':'next'})['seq']==2
+    check.assertEqual([p.name for p in (d/'state-events').iterdir()],['00000001.json'])
+    check.assertEqual(state.recover(d)['stage'],'frozen')
+    check.assertEqual(state.record(d,{'version':1,'job':'crash-test','stage':'next'})['seq'],2)
     result={'passed':True,'scope':'metadata controller-kill checks, no hosted-model or power-loss claim','cases':rows}
     receipt=root/'state-recovery.json';receipt.write_text(json.dumps(result,indent=2)+'\n')
     print(json.dumps({'passed':True,'boundaries':len(rows),'receipt':str(receipt)}))
