@@ -293,7 +293,7 @@ test('8: the host limits model calls and tokens, whatever the cell asks', { time
   await pool.ready();
   const result = await runNeed({ need, directory: join(root, 'addition'), pool, env, limits: { maxTurns: 3, maxTokens: 25 } });
   assert.equal(result.promoted, false);
-  assert(calls <= 3, `served ${calls} calls`);
+  assert(calls <= 2 * 3, `served ${calls} calls; the token budget is per stage, so each of the two stages gets at most maxTurns calls`);
   assert(remaining <= 25);
 });
 
