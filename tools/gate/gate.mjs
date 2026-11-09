@@ -4,11 +4,21 @@ import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
-import { fileURLToPath } from 'node:url';
+import { pathToFileURL } from 'node:url';
 import { runGates } from '../../core/runtime/x1/gates.mjs';
+import { ASC_PATH } from '../asc/pin.mjs';
 
-const HERE = path.dirname(fileURLToPath(import.meta.url));
-const ASC = process.env.ENDOFORGE_ASC || path.resolve(HERE, '../../node_modules/.bin/asc');
+async function compileWith(args) {
+  if (process.env.ENDOFORGE_ASC) {
+    execFileSync(process.env.ENDOFORGE_ASC, args, { stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000 });
+    return;
+  }
+  if (!fs.existsSync(ASC_PATH)) throw new Error(`pinned compiler missing at ${ASC_PATH}; run make loop-setup or set ENDOFORGE_ASC`);
+  const asc = await import(pathToFileURL(ASC_PATH));
+  const stdout = asc.createMemoryStream(), stderr = asc.createMemoryStream();
+  const { error } = await asc.main(args, { stdout, stderr });
+  if (error) throw Object.assign(new Error(String(error.message || error)), { stderr: stderr.toString() || String(error.message || error) });
+}
 const sha = (p) => crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 const [cmd, dirArg] = process.argv.slice(2);
 if (!cmd || !dirArg) { console.error('usage: gate.mjs freeze|run <dir>'); process.exit(2); }
@@ -34,7 +44,7 @@ if (Object.hasOwn(files, 'kernel.ts')) {
   const source = crypto.createHash('sha256').update(files['kernel.ts']).digest('hex');
   try {
     fs.rmSync(f('kernel.wasm'), { force: true });
-    execFileSync(ASC, [f('kernel.ts'), '--runtime', 'stub', '-O3', '--noAssert', '--maximumMemory', '1024', '-o', f('kernel.wasm'), '--textFile', f('kernel.wat')], { stdio: ['ignore', 'pipe', 'pipe'], timeout: 60000 });
+    await compileWith([f('kernel.ts'), '--runtime', 'stub', '-O3', '--noAssert', '--maximumMemory', '1024', '-o', f('kernel.wasm'), '--textFile', f('kernel.wat')]);
     compiled = { source, wasm: fs.readFileSync(f('kernel.wasm')).toString('base64') };
   } catch (e) { compiled = { source, error: String(e.stderr || e.message).slice(0, 2000) }; }
 } else compiled = { error: 'no kernel.ts' };
