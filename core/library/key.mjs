@@ -40,6 +40,24 @@ export function numerals(text) {
   for (const [token] of stripped(text).matchAll(/(?<![\w.])-?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?(?![\w])/g)) values.add(Number(token));
   return [...values].filter(Number.isFinite).sort((a, b) => a - b);
 }
+const STOPWORDS = new Set(['a', 'an', 'and', 'are', 'as', 'at', 'be', 'by', 'for', 'from', 'in', 'into', 'is', 'it', 'its', 'of', 'on', 'or', 'over', 'that', 'the', 'then', 'this', 'to', 'with', 'within']);
+const stem = word => word.replace(/(ings|ing|ers|er|ies|es|s)$/, '') || word;
+export function contractVector(text) {
+  const vector = new Map(), bump = term => vector.set(term, (vector.get(term) ?? 0) + 1);
+  for (const [word] of stripped(text).toLowerCase().matchAll(/[a-z][a-z-]*/g)) {
+    if (STOPWORDS.has(word)) continue;
+    const root = stem(word);
+    bump(`w:${root}`);
+    for (let i = 0; i + 3 <= root.length; i++) bump(`t:${root.slice(i, i + 3)}`);
+  }
+  return vector;
+}
+export function similarity(a, b) {
+  let shared = 0, left = 0, right = 0;
+  for (const [term, weight] of a) { left += weight * weight; if (b.has(term)) shared += weight * b.get(term); }
+  for (const weight of b.values()) right += weight * weight;
+  return left && right ? Math.round(shared / Math.sqrt(left * right) * 1e6) / 1e6 : 0;
+}
 export function signatures(capability) {
   const trapped = new Set(capability.traps ?? []);
   return capability.exports.map(item => ({ name: item.name, text: canonical(signature(item, trapped)), value: signature(item, trapped) }));

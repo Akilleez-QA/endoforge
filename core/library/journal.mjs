@@ -1,9 +1,10 @@
-import { closeSync, existsSync, fsyncSync, openSync, readFileSync, writeSync } from 'node:fs';
+import { closeSync, existsSync, fsyncSync, openSync, readFileSync, renameSync, writeSync } from 'node:fs';
 import { canonical, sha256 } from './key.mjs';
 export class Journal {
-  #fd = null; #seq = 0; #tip = '0'.repeat(64); #memory;
+  #fd = null; #seq = 0; #tip = '0'.repeat(64); #memory; #path;
   constructor(path) {
     this.#memory = !path;
+    this.#path = path;
     this.records = [];
     if (this.#memory) return;
     if (existsSync(path)) for (const line of readFileSync(path, 'utf8').split('\n').filter(Boolean)) {
@@ -20,6 +21,23 @@ export class Journal {
     if (this.#fd !== null) { writeSync(this.#fd, `${JSON.stringify({ seq, previous, hash, body })}\n`); fsyncSync(this.#fd); }
     this.#tip = hash;
     return { seq, hash };
+  }
+  compact(transform) {
+    if (this.#memory) return;
+    const bodies = readFileSync(this.#path, 'utf8').split('\n').filter(Boolean).map(line => JSON.parse(JSON.parse(line).body));
+    const rows = [{ kind: 'library_compacted', previousSeq: this.#seq, previousTip: this.#tip }, ...bodies.map(transform)];
+    let seq = 0, tip = '0'.repeat(64);
+    const lines = rows.map(record => {
+      const body = canonical(record), previous = tip, hash = sha256(`${++seq}:${previous}:${body}`);
+      tip = hash;
+      return JSON.stringify({ seq, previous, hash, body });
+    });
+    const next = `${this.#path}.compact`, fd = openSync(next, 'w');
+    writeSync(fd, `${lines.join('\n')}\n`); fsyncSync(fd); closeSync(fd);
+    closeSync(this.#fd);
+    renameSync(next, this.#path);
+    this.#fd = openSync(this.#path, 'a');
+    this.#seq = seq; this.#tip = tip;
   }
   close() { if (this.#fd !== null) closeSync(this.#fd); this.#fd = null; }
 }
