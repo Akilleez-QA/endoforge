@@ -26,6 +26,23 @@ body:
       description: Include the commit SHA, operating system, Python and Node.js versions, and relevant tool or isolation setup.
     validations:
       required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity (reporter's view)
+      description: 'S1 wrong promotion, lost acknowledged records, isolation escape or credential/billing exposure; S2 unusable, no workaround; S3 degraded, workaround exists; S4 cosmetic or documentation. See docs/plan/software-management-plan.md section 9.'
+      options:
+        - S1
+        - S2
+        - S3
+        - S4
+    validations:
+      required: true
+  - type: textarea
+    id: workaround
+    attributes:
+      label: Workaround
+      description: Any workaround you found, or "none".
   - type: textarea
     id: evidence
     attributes:

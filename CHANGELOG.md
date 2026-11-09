@@ -6,12 +6,18 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Added
 
+- Documentation to the Cstack family standard (NASA-organized, self-assessed Class E analog): software management
+  plan, compliance matrix, a requirements specification with per-requirement fields and an untested-gap register, a
+  re-baselined verification matrix, test plan, design description, data dictionary, assurance record, user manual map
+  and limitations page; `tools/check_trace.py` in `make check`; `tools/gen_release_docs.py` generates the test report
+  and version description from recorded runs.
 - Documentation: a getting-started tutorial that runs the candidate loop on a fresh clone with a scripted model, an
   explanation of the candidate loop, a configuration reference covering every environment variable, `limits` key and
   options object with defaults from the code, a tools index and READMEs for every tool, and a refreshed docs index.
 - Formula oracle behind `limits.oracle`, off by default: frozen expectations are recomputed from the contract's
   formula, ranges and a model-written `reference.js`, with `verified`, `corrected`, `flagged`, `unverified` and
-  `abstained` statuses (#126, #127; P-69, P-70).
+  `abstained` statuses; round 2 evaluates piecewise rules branch by branch and reads more formula and range shapes
+  (#126, #127, #130; P-69, P-70, P-71).
 - Weekly usage governor in both Claude transports: new calls park at a 0.85 ceiling, on `allowed_warning` or
   `rejected`, or when a login draws on usage credits, as `USAGE_PARKED` with exit 75 (#125).
 - Subscription guard: every `claude -p` launch must prove a claude.ai subscription login, or it is refused with exit

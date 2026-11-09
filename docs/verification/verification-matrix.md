@@ -1,446 +1,160 @@
-# Verification matrix
+# EndoForge verification matrix
 
-Requirement definitions are in
-[docs/requirements/requirements.md](../requirements/requirements.md).
+| Field | Value |
+|---|---|
+| Document ID | ENDOFORGE-VM |
+| Version | 2.0 |
+| Status | Baselined |
+| Owner | Akilleez-QA maintainer |
+| Date | 2026-11-08 |
+| Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
+| Applies to | endoforge main at baseline commit, plus the trace tooling added in this re-baseline |
+| Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
 
-The implementation baseline below is `3083a5a5c277d6caec99eba698f6040698751400`.
-Results were observed locally
-on 2026-10-30; they are not hosted CI status or live-provider qualification.
-T means test; I means inspection.
+> Organized after [NPR 7150.2D](https://nodis3.gsfc.nasa.gov/displayAll.cfm?Internal_ID=N_PR_7150_002D_&page_name=all), [NASA-STD-8739.8B](https://standards.nasa.gov/standard/nasa/nasa-std-87398) and the [NASA Software Engineering Handbook](https://swehb.nasa.gov/display/SWEHBVD/7.18+-+Documentation+Guidance) documentation guidance. This is not a NASA compliance determination or certification. The software classification is a self-assessed analog (Class E, not safety-critical); no NASA authority, independent verification and validation, or hazard analysis is asserted. The document describes the implementation inspected at the baseline commit.
 
-| Requirement | Method | Existing test or command | Result | Implementation commit |
-|---|---|---|---|---|
-| REQ-CORE-001 | T | `make core-test`; `tests/test_endoforge_core_boundary.py` | Pass | `3083a5a` |
-| REQ-LIFE-001 | T | `make core-test`; `tests/test_endoforge_lifecycle.py`, `TransitionTests` | Pass | `3083a5a` |
-| REQ-LIFE-002 | T | `make core-test`; `tests/test_endoforge_lifecycle.py`, `TransitionTests` | Pass | `3083a5a` |
-| REQ-LIFE-003 | T | `make core-test`; `tests/test_endoforge_lifecycle.py`, `DecisionTests` | Pass | `3083a5a` |
-| REQ-LIFE-004 | T | `make core-test`; `tests/test_endoforge_lifecycle.py`, `GenerationGrantsNothingTests` | Pass | `3083a5a` |
-| REQ-LIFE-005 | T | `make core-test`; `tests/test_endoforge_lifecycle.py`, `IdentityTests` | Pass | `3083a5a` |
-| REQ-LEDGER-001 | T | `make ledger-test`; `core/ledger/test_frozen.py`, `FrozenTests.test_every_component_change_refuses_before_judging` | Pass | `3083a5a` |
-| REQ-DOCS-001 | I | `make check`; inspect `tools/check-docs.py` | Pass: link existence and digest checks present | `3083a5a` |
-
-## Reproduction
-
-Run from the repository root:
+This matrix traces every [requirement](../requirements/requirements.md) to the tests that verify it (NPR SWE-052), and
+lists every other discovered test file with its classification. Test files are those found by the same discovery
+rule `tests/test_reachability.py` uses for `make test`. Run from the repository root:
 
 ```sh
+make tools
 make check
-make core-test ledger-test
-make test ENDOFORGE_TEST_OUTPUT=/tmp/endoforge-style-test
+make test
+make test-optimized
 ```
 
-The full suite passed locally with the output override above. The override keeps
-generated evidence outside the source tree. The commit body records checks for
-this documentation change. `make test-optimized ENDOFORGE_TEST_OUTPUT=/tmp/endoforge-style-optimized`
-also passed locally on this documentation branch.
+Trace check: `python3 -I tools/check_trace.py`, run by `make check` and tested by `tests/test_check_trace.py`. It
+fails on a requirement without a row, a row naming a missing file or a test name not found in that file, a discovered
+test file that is neither traced nor listed below, a design component without a requirement, an environment variable
+read by code but missing from the [configuration reference](../configuration/configuration-reference.md), and a dead
+relative link or anchor.
 
+T = automated test, I = inspection of the named file, D = demonstration recorded in the named experiment result. A row
+cites the test file and the title (Node) or method name (Python) of the tests that check the requirement; other tests
+in the same file may also contribute. Tests are written by the code's authors with synthetic inputs and test doubles;
+they are not independent acceptance and do not qualify live model services. "Last result" points to the test report
+for the most recent recorded run; a result does not carry over to a later tree. Untested behaviour is listed in
+[SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps), not here.
 
-## Ledger relocation verification
+Evidence recorded before this re-baseline (2026-10-30 to 2026-11-02) is kept in the
+[verification history](history-2026-10-30.md).
 
-On 2026-11-01, the relocation to `core/ledger/` passed the checks below locally
-with Python 3.14.8, Node.js 26.12.0, and bubblewrap 0.13.1. The source identity is
-the Git commit containing this section. Earlier baseline results above remain
-historical; ledger test paths now refer to their relocated equivalents.
+## Requirements to tests
 
-| Scope | Command | Observed result |
-|---|---|---|
-| REQ-DOCS-001 and relocated source digests | `make check` | Exit 0; no link or digest failures |
-| REQ-CORE-001, REQ-LIFE-001 through REQ-LIFE-005, REQ-LEDGER-001 | `make core-test ledger-test` | Exit 0; 18 lifecycle/boundary and 32 ledger tests passed |
-| Full suite, including engine callers | `make test ENDOFORGE_TEST_OUTPUT=/tmp/endoforge-ledger.KCM0Ow/test` | Exit 0 |
-| Full suite with Python optimization | `make test-optimized ENDOFORGE_TEST_OUTPUT=/tmp/endoforge-ledger.KCM0Ow/optimized` | Exit 0 |
-
-The scoped import check retains the lifecycle allowlist and permits only the
-ledger's standard library dependencies plus test-only dependencies under the
-ledger package. Ledger test assertions and fixtures are unchanged; subprocess
-imports and the CLI module name use `core.ledger`. Output and logs were kept
-outside the source tree under `/tmp/endoforge-ledger.KCM0Ow/`.
-
-## Engine relocation verification
-
-On 2026-11-01, the engine relocation was checked locally with Python 3.14.8,
-Node.js 26.12.0, and bubblewrap 0.13.1. The source baseline is the Git commit
-containing this section. Earlier results above remain historical.
-
-| Scope | Command | Observed result |
-|---|---|---|
-| REQ-DOCS-001; engine source digests and links | `make check` | Exit 0; no link or digest failures |
-| REQ-CORE-001 and lifecycle boundaries; evaluator and gates | `make core-test engine-test` | Exit 0; 18 lifecycle/boundary and 19 engine tests passed |
-| Full suite, including relocated evaluator and frozen adapter | `make test ENDOFORGE_TEST_OUTPUT=/tmp/endoforge-engine.MNFEVS/test` | Exit 0 |
-| Full suite with Python optimization | `make test-optimized ENDOFORGE_TEST_OUTPUT=/tmp/endoforge-engine.MNFEVS/optimized` | Exit 0 |
-
-The relocated evaluator and gate tests and Python adapter are byte-for-byte
-unchanged. Engine tests exercise fixed gate order, frozen-content drift refusal,
-host failures, fresh finalist evaluation, and Pareto selection. The core boundary
-check grants imports only to the engine adapter's exact file path; lifecycle and
-ledger allowlists and import-isolation assertions remain in place. Full-suite logs
-and evidence are outside the source tree under `/tmp/endoforge-engine.MNFEVS/`.
-
-## Runtime relocation verification
-
-On 2026-11-01, the runtime relocation passed locally with Python 3.14.8,
-Node.js v26.13.0, and bubblewrap 0.13.1. The Git commit containing this section
-identifies the relocation baseline.
-
-| Scope | Command | Observed result |
-|---|---|---|
-| REQ-DOCS-001; runtime source digests and links | `make check` | Exit 0; no link or digest failures |
-| Full suite, including relocated pool tests and workflow callers | `make test ENDOFORGE_TEST_OUTPUT=/tmp/endoforge-runtime.IwV9kx/test` | Exit 0 |
-| Full suite with Python optimization | `make test-optimized ENDOFORGE_TEST_OUTPUT=/tmp/endoforge-runtime.IwV9kx/optimized` | Exit 0 |
-
-Pool tests retain their assertions for client selection, registry recursion
-prevention, stdin forwarding, cooldown refusal, and rate-limit failover.
-Only module paths and code comments changed in the touched JavaScript sources.
-Test expectations and fixtures are unchanged. Logs and configured test evidence
-are outside the source tree under `/tmp/endoforge-runtime.IwV9kx/`.
-
-## Domain extraction verification
-
-On 2026-11-01, domain extraction was checked locally with Python 3.14.8,
-Node.js v26.13.0, GNU Make 4.4.1, and bubblewrap 0.13.1. The Git commit
-containing this section identifies the extraction baseline.
-
-| Scope | Command | Observed result |
-|---|---|---|
-| REQ-DOCS-001; archived source paths and digests | `make check` | Exit 0; zero link or digest failures |
-| Full suite, including REQ-DOMAIN-001 synthetic identity invariant checks | `make test ENDOFORGE_TEST_OUTPUT=/tmp/endoforge-domain.Kw3REq/test` | Exit 0 |
-| Full suite with Python optimization, including caller invariant checks | `make test-optimized ENDOFORGE_TEST_OUTPUT=/tmp/endoforge-domain.Kw3REq/optimized` | Exit 0 |
-
-Inspection of Makefile, core, workflow modules, and tests found no imports or
-execution references to the archived film utilities or refrigeration adapter.
-All ten files are byte-preserving renames. Existing engine tests exercise the
-caller-supplied synthetic identity invariant and reject failed or malformed
-checks before measurement. Test assertions and fixtures are unchanged.
-Logs and configured test evidence are outside the source tree under
-`/tmp/endoforge-domain.Kw3REq/`.
-
-## V8 workcell verification
-
-On 2026-11-01, the `v8-isolate-pool` working tree based on `4ede823` was checked
-with Python 3.14.8, Node.js 26.12.0, and an installed Node.js 22.23.3 binary.
-These are local results, not an observed Ubuntu/Python 3.12 CI run.
-All new tests are in
-[isolate-pool.test.mjs](../../core/runtime/test/isolate-pool.test.mjs).
-
-| Requirement | Method | Test evidence | Observed result |
-|---|---|---|---|
-| REQ-ISO-001 | T | Native evaluator parity; concurrency 1/4/16; lazy defaults | Pass; identical reports, all configured workcells active, size never exceeded |
-| REQ-ISO-002 | T | Real heap allocation fixture; reported generation limits; invalid configuration and heap override refusal | Pass; 24/4 MiB configured, `ERR_WORKER_OUT_OF_MEMORY` observed |
-| REQ-ISO-003 | T | Heap and explicit exit fixtures with simultaneous and queued successful jobs | Pass; failed jobs unknown, replacement thread IDs distinct, independent jobs complete |
-| REQ-ISO-004 | T | Python `Ledger.records()` replay, returned digest comparison, receipt tampering and subsequent admission refusal | Pass; 40 receipts across multiple workers, tampering detected; worker-loss receipts inconclusive |
-| REQ-ISO-005 | T | Close during queued work at sizes 1/4/16 | Pass; new submissions refused, all accepted jobs resolved, zero workers after close, same promise on repeated close |
-
-| Command | Actual result |
-|---|---|
-| `make check` | Exit 0; Markdown links and source digests verified |
-| `make isolate-test` | Exit 0; seven tests passed, including real heap exhaustion |
-| Node 22.23.3 `--test --experimental-test-isolation=none --test-reporter=spec core/runtime/test/isolate-pool.test.mjs` | Exit 0; seven tests passed in about 11 seconds |
-| `PYTHONOPTIMIZE=1 node --test --test-isolation=none --test-reporter=spec core/runtime/test/isolate-pool.test.mjs` | Exit 0; seven tests passed in about 11 seconds |
-| `timeout 40s make test ENDOFORGE_TEST_OUTPUT=/tmp/ef-isolate-test` | Exit 124; check, 18 lifecycle/boundary tests and 32 ledger tests passed; unchanged engine evaluator test stalled |
-| `timeout 40s make test-optimized ENDOFORGE_TEST_OUTPUT=/tmp/ef-isolate-optimized` | Exit 124; same completed checks and engine evaluator stall |
-
-The existing evaluator test uses `execFileSync` with stdin. A minimal independent
-Node/Python stdin reproducer also stalls in this execution sandbox and reports
-`EPERM` or `ETIMEDOUT`; asynchronous subprocess I/O works. New fixtures use
-asynchronous I/O. Existing test assertions, expected results, and source files
-were not changed. The two full-suite commands therefore did not qualify later
-Makefile targets. Logs are outside the source tree at `/tmp/ef-isolate-test.log`,
-`/tmp/ef-isolate-optimized.log`, `/tmp/ef-isolate-node22-final.log`, and
-`/tmp/ef-isolate-optimized-target.log`.
-
-## WASM ceiling and breach isolation verification
-
-On 2026-11-01, the rebased uncommitted pool was extended after reading
-[P-16](../../experiments/P-16-workerd-isolates/RESULT.md) and
-[P-17](../../experiments/P-17-workcell-gap/RESULT.md). The earlier workcell table
-remains historical. The checks below use Python 3.14.8, Node 26.12.0 and the
-installed Node 22.23.3 binary; they do not claim an observed ubuntu-latest run.
-
-| Requirement | Test evidence | Actual result |
-|---|---|---|
-| REQ-ISO-001 | Lazy default equals `os.availableParallelism()`; existing concurrency 1/4/16 and evaluator parity | Pass on Node 22.23.3 |
-| REQ-ISO-002, REQ-ISO-003, REQ-ISO-004 | Real JS heap exhaustion with a two-cell barrier; healthy neighbor held mid-job; queued replacement; full accepted/rejected reports and inconclusive breach receipt | Pass on Node 22.23.3 |
-| REQ-ISO-005 | Existing graceful close and FIFO tests unchanged | Pass on Node 22.23.3 |
-| REQ-ISO-006 | JS initial/maximum/grow (including shared memory and coercion), compile/Module/Instance/instantiate and streaming paths, exported and internal growth, unexported memory, imported memory, start growth, swallowed trap, omitted maxima, smaller native maxima, default 64 MiB and signed-LEB boundary | Pass on Node 22.23.3; 20 breach subtests |
-| REQ-ISO-006 | Unsupported SIMD, malformed bytes and externally compiled modules fail closed; empty and memory-only modules still execute | Pass on Node 22.23.3 |
-| REQ-DOCS-001 | `make check`; source digests and Markdown links | Exit 0; zero failures over 47 documents |
-
-Each WASM breach case uses two workers and a barrier before the failing operation;
-a healthy neighbor waits for release until the host receives the breached cell’s
-exit result. The queued replacement and neighbor must both reproduce the complete
-native evaluator report for a passing candidate and a forbidden-effects rejection.
-Their thread IDs differ from the failed cell and each other. WASM receipts bind
-the configured cap and explicit `ERR_WORKCELL_WASM_MEMORY_LIMIT` result. JS heap
-breaches independently require `ERR_WORKER_OUT_OF_MEMORY`. No existing assertions
-or expected results were changed. The small WASM fixtures are built from bytes
-in the test and need no downloaded compiler or runtime.
-
-| Command | Actual result |
-|---|---|
-| `make check` | Exit 0; zero link or source-digest failures over 47 documents |
-| `make isolate-test` (Node 26.12.0) | Exit 0; test file passed in about 26 seconds |
-| `make isolate-test` (Node 22.23.3 first on PATH) | Exit 0; test file passed in about 24 seconds |
-| Node 22.23.3 `--test --experimental-test-isolation=none --test-reporter=spec core/runtime/test/isolate-pool.test.mjs` | Exit 0; 33 tests passed, zero failed/skipped, about 23 seconds |
-
-Logs are outside the source tree: `/tmp/ef-pool-wasm-node22.log`,
-`/tmp/ef-pool-wasm-make.log`, and `/tmp/ef-pool-wasm-make-node22.log`.
-The isolated Make runners report one passing test file; the direct Node 22 run
-exposes its 33 constituent tests. A preliminary run with an invalid synthetic
-start-body length failed before the fixture was corrected; no existing expected
-results or assertions were changed. The full `make test`/`make test-optimized`
-suites were not rerun for this extension.
-
-## Node 26 workcell startup verification
-
-Node 26.12.0 does not lazily instantiate undici WebAssembly when
-`globalThis.Response` is read. The previous unreferenced startup timer let the
-event loop empty, so every workcell exited with code 13. On main-rig,
-`isolate-pool.test.mjs` and `isolate-process.test.mjs` failed 38 of 39 on Node
-26.12.0 before the change and passed 39 of 39 after it. Node 22.23.3 passed 39
-of 39 after it. CI now runs the repository tests on Node 22 and 26. On Node 26 each workcell start costs the full 2 s wait, so the process
-compile-gate test has a 60 s timeout and the WASM breach test, which replaces a cell
-per case, has a 180 s timeout.
-
-Workcells now skip the startup wait when the bundled undici major version is 8
-or later; Node 26.12.0 bundles undici 8.11.2 and Node 22.23.3 bundles undici
-6.28.1, which still waits. On main-rig, `isolate-pool.test.mjs` and
-`isolate-process.test.mjs` together took 99 s on Node 26.12.0 before the change
-and 26 s after it, passing 39 of 39; Node 22.23.3 passed 39 of 39 in 25 s.
-
-## Process workcell verification
-
-The `v8-process-workcells` working tree was checked locally with Node 26.12.0
-and 22.23.3. This is not an observed ubuntu-latest CI run. The new
-[process tests](../../core/runtime/test/isolate-process.test.mjs) run without
-delegation and share the [P-18 fixture](../../core/runtime/test/fixtures/pool-breach.mjs).
-
-| Requirement | Evidence | Actual result |
-|---|---|---|
-| REQ-ISO-001, REQ-ISO-003, REQ-ISO-004 | N=8 process heap/WASM breaches, native accepted/rejected reports, distinct replacement, receipt observations and Python chain replay | Pass; one lost cell, zero lost siblings, 17 receipts per arm |
-| REQ-ISO-002 | Real child V8 heap exhaustion with 24/4 MiB flags | Pass; fatal heap exit classified `rejected`/`heap` |
-| REQ-ISO-005 | Existing FIFO/drain/close tests plus process shutdown | Pass |
-| REQ-ISO-006 | Process compile/instantiate of imported/defined missing/oversized limits; retained thread API and instruction growth tests | Pass; process rejection reason `wasm_memory` |
-| REQ-ISO-007 | Invalid options, unavailable explicit cgroup root, ordinary exit/replacement; cgroup helper inspection | Fallback passed; delegated memory/cpu/pids enforcement unmeasured |
-| REQ-DOCS-001 | `make check` | Exit 0; links and digests checked |
-
-`make isolate-test` passed on Node 26.12.0 and Node 22.23.3 (both test files).
-An initial thread run failed because a healthy fixture still lacked a maximum;
-its input now declares the maximum, preserving its existing verdict assertions.
-Exactly two existing assertions changed, both in the omitted-maximum test:
-`bounded.status` now expects `outcome_unknown` instead of `completed`, and
-`smaller.workcell` must differ from `bounded.workcell` instead of matching it.
-Explicit bounded growth, native smaller maxima and swallowed/internal/start
-breach coverage remain. No other existing assertion changed.
-
-[P-18](../../experiments/P-18-pool-breach/RESULT.md) records actual thread/process
-breach counts, precommit verification and the unavailable-cgroup limitation.
-Logs: `/tmp/ef-process-make-default-final.log`,
-`/tmp/ef-process-make-node22-final.log`, `/tmp/ef-p18-final.log` and
-`/tmp/ef-process-check-final.log`. The full `make test` and `make test-optimized`
-suites were not rerun for this focused extension.
-
-## Atomizer fan-out timing verification
-
-On 2026-11-01, branch `deflake-atomizer` was checked against baseline
-`33f1507ba1d2c1700d385a0d97a226e1e12efa60` with Node 22.23.3,
-Python 3.14.8 and bubblewrap 0.13.1. These are local shared-host observations,
-not an observed GitHub Actions run; affinity to CPUs 0 and 1 limits execution
-to two logical CPUs without isolating the host's load average.
-
-The fan-out fixture already uses ten `sleep 1` commands, with eight independent
-workers between seed and compose. Concurrency 9 can overlap those sleeps on
-two CPUs; this is a scheduler overlap check, not a CPU throughput benchmark.
-The planned 3.33x bound is ten work points over a three-point critical path,
-not a guarantee that accounts for throttling or harness overhead.
-The inherited headroom guard can hold ready workers when host load exceeds
-1.8 under two-CPU affinity, or available memory falls below its reserve. That
-makes the timing assertion depend on host conditions and earlier suite work.
-This fan-out scheduler invocation and the agent-swarm test scheduler invocations set `ENDOFORGE_THROTTLE=0`; the account-spread case otherwise ran one worker at a time after heavy earlier suite work and used a single account.
-Production headroom policy, fixtures, and every existing assertion are unchanged.
-
-`realizedSpeedup` rounds `sumAtomWallMs / wallMs` to two decimal places.
-The reported CI values give `10160 / 5091 = 1.99568`, correctly rounded to
-`2.00`; removing rounding would still fail `> 2`. Atom wall sums isolated
-attempts, including spawn, OS scheduling/pool waits, execution and close/cleanup;
-it excludes the scheduler's ready queue and input staging. Run wall includes
-those ready-queue delays, staging and postprocessing. It excludes earlier test
-harness work and scheduler startup/context collection. No timing boundary or
-rounding changed, and neither the >2x nor six-second threshold was widened.
-Overlapping OS waits can inflate atom wall sums, so the realized ratio can
-slightly exceed the bound calculated from declared work points.
-
-A controlled two-CPU scheduler pair set `ENDOFORGE_MAX_LOAD=0.000001` and
-`ENDOFORGE_RESERVE_GB=1000000`: throttling enabled produced 1.00x in 10081 ms
-with seven throttles; disabled produced 3.32x in 3039 ms with zero throttles.
-Both completed all ten atoms. This isolates the host guard as a cause of the
-assertion failure without changing work or the speedup calculation.
-
-Each batch ran `PYTHONOPTIMIZE=1 taskset -c 0,1 node tools/atomizer/test/run.mjs`
-30 times sequentially, using Node 22.23.3. The execution sandbox breaks
-Node synchronous pipe I/O (`EPERM`, empty output or stalled stdin); both batches
-used the same external `NODE_OPTIONS=--require=/tmp/ef-atomizer-deflake/stdin.cjs`
-adapter, which substitutes temporary files for synchronous subprocess pipes,
-preserves output and exit status, and captures fan-out receipts before cleanup.
-No assertion or fixture was altered by the adapter.
-
-| Batch | Passing test runs | Speedup min / median / p95 / max | Fan-out wall min / median / p95 / max (ms) | Throttles |
+| Requirement | Method | Test file::test name, or item inspected | Acceptance observation | Last result |
 |---|---|---|---|---|
-| Before | 12/30 | 1.00 / 1.00 / 3.32 / 3.32 | 3036 / 10077 / 10248 / 10291 | 7 in each failed run, 0 in each passing run |
-| After | 30/30 | 3.12 / 3.31 / 3.32 / 3.34 | 3045 / 3056 / 3473 / 3540 | 0 in all runs |
+| REQ-CORE-001 | T | `tests/test_endoforge_core_boundary.py::test_core_imports_only_the_allowlisted_stdlib`<br>`tests/test_endoforge_core_boundary.py::test_importing_the_core_loads_nothing_concrete` | Fresh process imports `core`; only allowlisted modules load | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-LIFE-001 | T | `tests/test_endoforge_lifecycle.py::test_every_illegal_pair_is_refused`<br>`tests/test_endoforge_lifecycle.py::test_happy_path_records_every_decision`<br>`tests/test_endoforge_lifecycle.py::test_disposal_is_always_allowed_and_recorded` | Every state pair outside the graph refuses | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-LIFE-002 | T | `tests/test_endoforge_lifecycle.py::test_qualification_needs_a_passing_receipt_under_the_frozen_oracle` | Failing, foreign or other-oracle receipts refuse | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-LIFE-003 | T | `tests/test_endoforge_lifecycle.py::test_a_transition_applies_only_with_a_decision_bound_to_its_digest`<br>`tests/test_endoforge_lifecycle.py::test_decisions_are_consumed_once_and_stale_proposals_refused`<br>`tests/test_endoforge_lifecycle.py::test_a_hand_built_proposal_cannot_skip_the_rules`<br>`tests/test_endoforge_lifecycle.py::test_a_hand_set_state_or_artifact_is_refused` | Reused, stale or unbound decisions refuse | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-LIFE-004 | T | `tests/test_endoforge_lifecycle.py::test_a_generated_artifact_holds_no_qualification_or_activation`<br>`tests/test_endoforge_lifecycle.py::test_generation_cannot_carry_its_own_claims`<br>`tests/test_endoforge_lifecycle.py::test_the_generation_decision_does_not_authorize_the_next_step` | A generated artifact holds no qualification or activation | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-LIFE-005 | T | `tests/test_endoforge_lifecycle.py::test_the_four_identities_are_distinct`<br>`tests/test_endoforge_lifecycle.py::test_same_candidate_from_other_inputs_or_task_is_another_artifact`<br>`tests/test_endoforge_lifecycle.py::test_qualification_adds_the_receipt_identity_without_changing_the_others`<br>`tests/test_endoforge_lifecycle.py::test_records_are_immutable` | Four distinct identities; records immutable | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-LEDGER-001 | T | `core/ledger/test_frozen.py::test_every_component_change_refuses_before_judging`<br>`core/ledger/test_frozen.py::test_evaluation_records_hash_before_judge_and_uses_snapshot`<br>`core/ledger/test_frozen.py::test_edit_after_failure_refused_even_with_new_identity_or_input`<br>`core/runtime/test/isolate-host-call.test.mjs::frozen checks through the ledger bridge still refuse a changed evaluator tree` | Each evaluator component change refuses before judging | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-LEDGER-002 | T | `core/runtime/test/ledger-writer.test.mjs::requests for many ledgers share one journal sync`<br>`tools/test_ledger_writer.py::test_one_journal_sync_per_batch_across_ledgers`<br>`tools/test_ledger_writer.py::test_answers_follow_the_journal_sync`<br>`tools/test_ledger_writer.py::test_lost_ledger_files_are_rebuilt_from_the_journal_after_a_kill`<br>`tools/test_ledger_writer.py::test_a_frame_cut_mid_write_is_quarantined_and_earlier_frames_survive` | One sync per batch; answers after sync; SIGKILL keeps acknowledged events once | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-LEDGER-003 | T | `core/ledger/test_ledger.py::test_missing_required_fields_and_unknown_fields_fail_schema`<br>`core/ledger/test_ledger.py::test_non_durable_and_wrong_kind_references_fail`<br>`core/ledger/test_ledger.py::test_sql_update_delete_and_replace_are_refused`<br>`core/ledger/test_ledger.py::test_reopen_and_append_detect_tampering`<br>`core/ledger/test_ledger.py::test_concurrent_duplicate_has_exactly_one_winner` | Schema, reference, SQL mutation and tamper cases refuse; one duplicate winner | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-LEDGER-004 | T | `core/ledger/test_provenance.py::test_required_metadata_on_every_kind`<br>`core/ledger/test_provenance.py::test_legacy_replay_reports_unknown_without_changing_records_or_hashes`<br>`core/ledger/test_provenance.py::test_unknown_import_policy_is_pinned_before_admission`<br>`core/ledger/test_provenance.py::test_legacy_append_cannot_bypass_current_task_policy` | Metadata required on v1; legacy replays as unknown; policy pinned | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-DOMAIN-001 | T | `core/engine/evaluator.test.mjs::engine conformance: fixed layers`<br>`core/engine/evaluator.test.mjs::first failing gate, invariant or residual prevents measurement and ranking` | Synthetic identity invariant called through the port | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ENGINE-001 | T | `core/engine/gates.test.mjs::positive control passes all five gates`<br>`core/engine/gates.test.mjs::schema rejects malformed contracts`<br>`core/engine/gates.test.mjs::bounds rejects each exceeded resource`<br>`core/engine/gates.test.mjs::incomplete, missing, invalid and wrongly typed runtime evidence fails closed`<br>`core/engine/gates.test.mjs::missing methods and rejected async port operations become first-failure records` | Five gates in order; first failure stops | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ENGINE-002 | T | `core/engine/evaluator.test.mjs::invalid frozen policies and duplicate candidate identities refuse before host operations`<br>`core/engine/evaluator.test.mjs::a finalist that fails fresh residual checks is removed`<br>`core/engine/evaluator.test.mjs::host exceptions stop the campaign as outcome_unknown`<br>`core/engine/evaluator.test.mjs::Pareto keeps ties and tradeoffs without a weighted score` | Refusal before host calls; fresh finalists; Pareto without weights | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-LIB-001 | T | `core/library/test/library.test.mjs::canonical key: semantic fields separate`<br>`core/library/test/library.test.mjs::admission, serving, refusal, revocation, requalification and restart`<br>`core/library/test/library.test.mjs::the full gate refuses an evaluator that cannot discriminate`<br>`core/library/test/library.test.mjs::the pipeline call site reuses on a pass` | Key ignores labels; non-discriminating evaluator refused; reuse on pass | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ISO-001 | T | `core/runtime/test/isolate-pool.test.mjs::native evaluator parity`<br>`core/runtime/test/isolate-pool.test.mjs::identical reports, FIFO queue and bounded workcells`<br>`core/runtime/test/isolate-pool.test.mjs::validation, frozen drift and host errors fail closed; defaults are lazy` | Concurrency 1/4/16 give native reports, FIFO order, at most size cells | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ISO-002 | T | `core/runtime/test/isolate-pool.test.mjs::only the failed workcell exits, replacement serves queued work`<br>`core/runtime/test/isolate-pool.test.mjs::heap breach while a neighbor is mid-job preserves accepted and rejected verdicts` | Configured heap limits reported; zero limit refused | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ISO-003 | T | `core/runtime/test/isolate-pool.test.mjs::only the failed workcell exits, replacement serves queued work`<br>`core/runtime/test/isolate-process.test.mjs::process fallback, validation and unknown exits` | Lost cell replaced; queued work served; no retry | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ISO-004 | T | `core/runtime/test/isolate-pool.test.mjs::native evaluator parity, rejection evidence, and a shared tamper-evident ledger`<br>`core/runtime/test/isolate-process.test.mjs::one lost cell, zero lost siblings, native verdicts and verified chain` | Receipts for every batch in one verified chain | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ISO-005 | T | `core/runtime/test/isolate-pool.test.mjs::identical reports, FIFO queue and bounded workcells`<br>`core/runtime/test/isolate-deadline.test.mjs::close finishes with a cell that traps SIGTERM` | Repeated close returns the same promise; stats drain to zero | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ISO-006 | T | `core/runtime/test/isolate-pool.test.mjs::WASM configuration refuses invalid caps`<br>`core/runtime/test/isolate-pool.test.mjs::WASM declarations and growth terminate only the breacher`<br>`core/runtime/test/isolate-pool.test.mjs::WASM default cap rejects omitted maxima`<br>`core/runtime/test/isolate-pool.test.mjs::WASM cap encoding handles signed LEB boundaries`<br>`core/runtime/test/isolate-pool.test.mjs::WASM guard refuses unsupported, malformed and externally compiled modules`<br>`core/runtime/test/isolate-process.test.mjs::process compile gate rejects missing and oversized` | Declarations, growth, swallowed traps and LEB edges handled; only the breacher stops | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ISO-007 | T/I | `core/runtime/test/isolate-process.test.mjs::process fallback, validation and unknown exits`<br>`core/runtime/test/isolate-offheap.test.mjs::a cgroup with no swap limit bounds the cell on a host without swap`<br>`core/runtime/isolate-cgroup.mjs` | Fallback records `cgroup: "unavailable"`; delegated enforcement inspected only (GAP-EF-001) | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ISO-008 | T | `core/runtime/test/isolate-toolchain.test.mjs::trusted compiler policy rejects invalid or ambiguous caps`<br>`core/runtime/test/isolate-toolchain.test.mjs::untrusted no-max remains rejected despite candidate-supplied policy`<br>`core/runtime/test/isolate-trusted-cap.test.mjs::growth up to exactly maximumPages is not a breach`<br>`core/runtime/test/isolate-trusted-cap.test.mjs::a pinned module cannot continue by catching the trap` | Only supervisor policy grants a cap; candidate policy ignored | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ISO-009 | T | `core/runtime/test/isolate-pool.test.mjs::prewarm spawns every workcell before the first job and stays lazy by default`<br>`core/runtime/test/isolate-pool.test.mjs::prewarm ready() starts the ledger bridge` | All cells and the bridge start before the first job | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ISO-010 | T | `core/runtime/test/isolate-pool.test.mjs::64 concurrent jobs at width 16 remain verifiable by a fresh Ledger`<br>`core/runtime/test/isolate-pool.test.mjs::a second writer between batches extends the verified chain`<br>`core/runtime/test/isolate-pool.test.mjs::bridge death rejects pending runs and all later requests without respawning`<br>`core/runtime/test/isolate-pool.test.mjs::schema-invalid tampering with a recomputed chain invalidates the validation cache`<br>`core/runtime/test/isolate-pool.test.mjs::a request failing after its first insert rolls back its entire savepoint` | Batched writes verify; bridge death fails closed | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ISO-011 | T | `core/runtime/test/isolate-limits.test.mjs::stackSizeMb is optional and validated`<br>`core/runtime/test/isolate-limits.test.mjs::a stack overflow under stackSizeMb is an unknown outcome`<br>`core/runtime/test/isolate-limits.test.mjs::a process stack too small for the environment is refused when the cell starts`<br>`tools/tscheck/test/tscheck.test.mjs::deep input needs the stack limit` | Overflow is a RangeError, not SIGSEGV | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ISO-012 | T | `core/runtime/test/isolate-limits.test.mjs::a job past its deadline is unknown, its cell is replaced`<br>`core/runtime/test/isolate-deadline.test.mjs::a process cell that exits with a grandchild holding stderr is not left pending`<br>`core/runtime/test/isolate-deadline.test.mjs::a verdict is kept only when it is claimed before the deadline`<br>`core/runtime/test/isolate-deadline.test.mjs::a process cell that traps SIGTERM and then returns a verdict stays inconclusive` | Deadline gives unknown/deadline and a replaced cell | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ISO-013 | T | `core/runtime/test/isolate-offheap.test.mjs::heap limits do not bound off-heap memory`<br>`core/runtime/test/isolate-offheap.test.mjs::a cgroup with no swap limit, on a host with swap, is not reported as enabled`<br>`core/runtime/test/isolate-offheap.test.mjs::process with a delegated cgroup` | Stated limit observed; delegated case skips without a delegated scope (GAP-EF-001) | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ISO-014 | T | `core/runtime/test/isolate-shared-module.test.mjs::shared modules are validated and must be pinned`<br>`core/runtime/test/isolate-shared-module.test.mjs::a shared module growing past its cap stops only its cell`<br>`core/runtime/test/isolate-shared-module.test.mjs::bytes that do not match the digest fall back to per-cell compile`<br>`core/runtime/test/isolate-shared-module.test.mjs::process cells compile per cell` | One compile per pool; per-instance limits | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ISO-015 | T | `core/runtime/test/isolate-limits.test.mjs::warm is opt-in: ready() waits for the host module`<br>`core/runtime/test/isolate-limits.test.mjs::a warm() that exits the cell stops respawning`<br>`core/runtime/test/isolate-limits.test.mjs::a warm() that hangs rejects ready() within warmTimeoutMs`<br>`tools/tscheck/test/tscheck.test.mjs::warm compiles in ready()` | Warm failure never becomes a pass; respawn halts | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ISO-016 | T | `core/runtime/test/isolate-flags.test.mjs::flags from finished jobs do not pin instances`<br>`core/runtime/test/isolate-flags.test.mjs::a breach by an instance kept across jobs is still seen`<br>`core/runtime/test/isolate-flags.test.mjs::a cell is replaced after its job allowance` | Retirement between jobs; no job lost | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ISO-017 | T | `core/runtime/test/isolate-host-call.test.mjs::a port reaches the supervisor only through its host call`<br>`core/runtime/test/isolate-host-call.test.mjs::a failed host call is an unknown outcome, never a pass`<br>`core/runtime/test/isolate-host-call.test.mjs::host calls are bounded per job`<br>`core/runtime/test/isolate-host-call.test.mjs::without hostCalls a port call is refused` | Host calls bounded; failures unknown | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-X1-001 | T | `core/runtime/test/x1.test.mjs::X1 native/pool gate parity`<br>`core/runtime/test/x1.test.mjs::original exports survive guarded memory/start instrumentation`<br>`core/runtime/test/x1-contract.test.mjs::runGates refuses mislabelled glue at G7`<br>`core/runtime/test/x1-contract.test.mjs::G7 stays quiet when glue matches the kernel and contract` | Pool verdicts equal native verdicts in both modes | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-X1-002 | T/D | `core/runtime/test/loop-waits.test.mjs::a candidate waiting on its model holds no cell`<br>`core/runtime/test/loop-waits.test.mjs::hold keeps the cell through the model turn`<br>`core/runtime/test/loop-waits.test.mjs::a supervisor gone during the wait leaves a durable continuation`<br>`core/runtime/test/loop-waits.test.mjs::a changed continuation record stops the resume before any model call`<br>`core/runtime/test/loop-waits.test.mjs::a deadline passed during the wait ends the attempt inconclusive`<br>`experiments/P-57-release-waits/RESULT.md` | A one-cell pool carries two waiting candidates; resume cannot double-commit | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-X1-003 | T | `core/runtime/test/x1-frozen.test.mjs::reads as unknown, never as a refusal`<br>`core/runtime/test/x1-frozen.test.mjs::real drift still rejects`<br>`core/runtime/test/x1-frozen.test.mjs::one candidate costs at most three frozen checks`<br>`core/runtime/test/x1-frozen.test.mjs::a timed-out compiler is unavailable`<br>`core/runtime/test/x1-frozen.test.mjs::an unavailable frozen store gives an inconclusive decision` | Stalls are unknown; drift rejects | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-X1-004 | T | `core/runtime/test/x1-measured.test.mjs::usage is read from outside the guest`<br>`core/runtime/test/x1-measured.test.mjs::memory stays visible when the kernel keeps it private`<br>`core/runtime/test/x1-measured.test.mjs::the two rounds are fresh instances in different call orders`<br>`core/runtime/test/x1-measured.test.mjs::abort is observed at run time and only abort is allowed`<br>`core/runtime/test/x1-measured.test.mjs::wall time alone never refuses`<br>`core/runtime/test/x1-measured.test.mjs::G6 refuses a kernel that never returns`<br>`core/runtime/test/x1-measured.test.mjs::runGates reports garbage wasm and a trapping start as G2` | Measured from outside; wall time unknown | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-LOOP-001 | T | `core/runtime/test/loop-agent.test.mjs::the agent loop promotes with only the ledger and the decision on disk`<br>`core/runtime/test/loop-agent.test.mjs::a failed check goes straight back to the next model turn`<br>`core/runtime/test/loop-agent.test.mjs::turn and token limits stop the loop`<br>`core/runtime/test/loop-agent.test.mjs::the model cannot change the frozen files`<br>`core/runtime/test/loop-agent.test.mjs::the job deadline stops compute`<br>`core/runtime/test/loop-agent.test.mjs::only the reply text and usage reach the cell`<br>`core/runtime/test/loop-review.test.mjs::reaching the turn or token limit does not promote`<br>`core/runtime/test/loop-review.test.mjs::cache reads count against the token budget` | Limits stop without promotion; frozen files unchanged | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-LOOP-002 | T | `core/runtime/test/loop.test.mjs::a forged receipt is refused`<br>`core/runtime/test/loop.test.mjs::an unforged commit through the same split still promotes`<br>`core/runtime/test/loop.test.mjs::commit rejects a receipt that does not bind the frozen evaluator`<br>`core/runtime/test/loop.test.mjs::a frozen tree change during the job is refused`<br>`core/runtime/test/loop.test.mjs::a self-consistent changed bundle and digest cannot promote`<br>`core/runtime/test/loop.test.mjs::an implementation in the frozen tree that differs from the cell code never passes`<br>`core/runtime/test/loop-agent.test.mjs::a tampered frozen record refuses the commit`<br>`core/runtime/test/loop-review.test.mjs::the agent path refuses a forged report` | Every forgery refuses; the unforged control promotes | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-LOOP-003 | T | `core/runtime/test/loop-crash.test.mjs::SIGKILL of the supervisor just after the commit request stays consistent`<br>`core/runtime/test/loop-crash.test.mjs::bridge and supervisor kills at random times never yield a promotion without its evidence`<br>`core/runtime/test/loop-crash.test.mjs::an implementation file changed after admission is refused at commit`<br>`core/runtime/test/loop-review.test.mjs::a process cell killed after admission loses the attempt, and the task promotes on resume`<br>`core/runtime/test/loop-review.test.mjs::resume returns a durable promotion without a model call` | No promotion without evidence at any kill point | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-LOOP-004 | T | `core/runtime/test/loop-count.test.mjs::a real syscall counter sees no spawn or write before commit`<br>`core/runtime/test/loop-review.test.mjs::the default cell is a separate process that cannot read the environment or other files`<br>`core/runtime/test/loop-review.test.mjs::the counter sees writes on an open file and memfd` | Zero spawn and write syscalls before commit | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-GEN-001 | T | `core/runtime/test/generator.test.mjs::labelled Codex test double: two exec stages, durable freeze before code and no account inspection` | Two stages; freeze before code; no account reads | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-GEN-002 | T | `core/runtime/test/generator.test.mjs::implementation prompt carries the G7 glue rules and a conforming template` | Request carries rules and template | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-GEN-003 | T | `core/runtime/test/generator.test.mjs::warm session resumes the specification thread and low effort applies only to short requests` | Resume by default; `low` only for short requests | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-GEN-004 | T | `core/runtime/test/generator.test.mjs::implementation prompt carries the G7 glue rules and a conforming template` | Instructions name `--noAssert` and `abort()`/`throw` | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-GEN-005 | T | `core/runtime/test/generator.test.mjs::self-check resumes the thread once with gate failures and keeps the frozen specification` | One resume with failures; frozen files unchanged | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-GEN-006 | T | `core/runtime/test/generator-reference.test.mjs::reference mode freezes evaluator-computed expectations, not model numbers`<br>`core/runtime/test/generator-reference.test.mjs::reference evaluator fails closed on missing functions, wrong traps and side effects`<br>`core/runtime/test/generator-scalar.test.mjs::scalar rejects NaN and infinities`<br>`core/runtime/test/generator-scalar.test.mjs::scalar fails closed before implementation when any function lacks a value test`<br>`core/runtime/test/generator-scalar.test.mjs::pipeline returns scalar drop evidence alongside a real gate receipt` | Reference values frozen; scalar drops recorded | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-GEN-007 | T | `core/runtime/test/pipeline-retry.test.mjs::gates reject the terse attempt and the normal retry is promoted`<br>`core/runtime/test/pipeline-retry.test.mjs::the retry is cancelled when the request deadline runs out`<br>`core/runtime/test/pipeline-fallback.test.mjs::terse fallback does not retry a stage error`<br>`core/runtime/test/pipeline-fallback.test.mjs::terse fallback skips the retry when the first attempt used the time budget` | One normal retry, bounded by the deadline | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-GEN-008 | T | `core/runtime/test/generator.test.mjs::terse turns default to exact and 0 turns the rules off`<br>`core/runtime/test/generator-exact.test.mjs::exact terse mode adds the numeric derivation rule to the specification stage only`<br>`core/runtime/test/generator.test.mjs::reviewed terse turns append the review rule to every stage`<br>`core/runtime/test/generator.test.mjs::packed session starts implementation fresh with the frozen files in the prompt`<br>`core/runtime/test/generator.test.mjs::stable prefix puts the fixed prompt fields before the request fields only when opted in` | Prompt modes add exactly their rules | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-PROMOTE-001 | T | `core/runtime/test/promotion.test.mjs::generation to local promotion; refusal and tamper`<br>`core/runtime/test/promotion.test.mjs::P-22 labelled twelve-record smoke harness and stage accounting` | Promotion only with all bindings; every mismatch refuses | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-UNITS-001 | T | `core/runtime/test/x1-contract.test.mjs::a unit that disagrees with a name is recorded by the glue gate and refused by the unit gate`<br>`core/runtime/test/x1-contract.test.mjs::the unit gate refuses a code labelled never returned that the tests return`<br>`core/runtime/test/x1-contract.test.mjs::runGates reports the unit gate` | G9 refuses unit errors independently | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-SYNTH-001 | T | `core/runtime/test/synth.test.mjs::the stage is off unless ENDOFORGE_SYNTH=1`<br>`core/runtime/test/synth.test.mjs::the binding prompt carries the contract and never the tests or a candidate`<br>`core/runtime/test/synth.test.mjs::a reference that reproduces the frozen tests qualifies under every meta-gate`<br>`core/runtime/test/synth.test.mjs::a model failure leaves an abstaining evaluator, never a refusal`<br>`core/runtime/test/synth-pipeline.test.mjs::the evaluator is frozen in the oracle before code`<br>`core/runtime/test/synth-pipeline.test.mjs::a kernel the frozen tests pass but the synthesized evaluator refuses is not promoted`<br>`core/runtime/test/synth-pipeline.test.mjs::synthesis stays off by default` | Candidate-blind; frozen before code; abstains on model failure | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ORACLE-001 | T | `core/runtime/test/oracle.test.mjs::two agreeing references replace a wrong literal`<br>`core/runtime/test/oracle.test.mjs::one reference that contradicts the literal is a spec problem`<br>`core/runtime/test/oracle.test.mjs::without the oracle the same wrong frozen value cannot be passed`<br>`core/runtime/test/oracle.test.mjs::a contradiction the oracle cannot settle goes back to the specification turn`<br>`core/runtime/test/oracle-parser.test.mjs::two unconditional definitions that disagree make the formula abstain`<br>`core/runtime/test/oracle-parser.test.mjs::applies each branch only inside its own condition`<br>`core/runtime/test/oracle-round2.test.mjs::a bare branch the parser cannot evaluate abstains instead of borrowing the other branch`<br>`core/runtime/test/oracle-round2.test.mjs::a guarded "for scale 0, F = ...; for scale 1, F = ..." evaluates the branch for each case`<br>`core/runtime/test/oracle-round2.test.mjs::a value test just past a stated bound the parser could not attribute is not marked verified` | Wrong literal corrected before implementation; branches evaluated in their own case; abstains on what it cannot read | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-SUB-001 | T | `core/runtime/test/subscription-guard.test.mjs::a subscription OAuth login is allowed`<br>`core/runtime/test/subscription-guard.test.mjs::an API key or billing switch in the environment is refused`<br>`core/runtime/test/subscription-guard.test.mjs::--bare and bare-equivalent launches are refused`<br>`core/runtime/test/subscription-guard.test.mjs::the child environment carries no key or billing override`<br>`core/runtime/test/subscription-guard.test.mjs::the command-line check exits 78`<br>`tools/atomizer/test/run.mjs::subscription guard: an API key in the launch refuses with exit 78`<br>`core/runtime/test/loop-review.test.mjs::the spawn transport refuses an API key source` | Non-subscription launches exit 78 before spawning | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-GOV-001 | T | `core/runtime/test/usage-governor.test.mjs::admission holds a projected ceiling with the per-call reserve`<br>`core/runtime/test/usage-governor.test.mjs::allowed_warning and rejected park at any utilization`<br>`core/runtime/test/usage-governor.test.mjs::a login drawing on usage credits is parked`<br>`core/runtime/test/usage-governor.test.mjs::in-flight calls finish after a stop`<br>`core/runtime/test/usage-governor.test.mjs::the spawn transport records each stream, parks before spawning` | Parks with `USAGE_PARKED`/75 before spawning | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-TRANSPORT-001 | T | `core/runtime/test/loop-agent.test.mjs::the warm transport spawns once, sends only new turns and clears between sessions`<br>`core/runtime/test/loop-agent.test.mjs::a dead lane takes no prompt`<br>`core/runtime/test/loop-agent.test.mjs::a hung turn times out and kills its process`<br>`core/runtime/test/loop-agent.test.mjs::instances keep one config directory each, route around a usage limit`<br>`core/runtime/test/loop-agent.test.mjs::the spawn transport takes the full history with its tools off`<br>`core/runtime/test/loop-review.test.mjs::warm fails closed with no init` | Lanes isolated; hung turns killed | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-POOL-001 | T | `core/runtime/test/agent-pool.test.mjs::unset CODEX_POOL_BIN runs the codex found on PATH`<br>`core/runtime/test/agent-pool.test.mjs::an explicit CODEX_POOL_BIN still wins over PATH`<br>`core/runtime/test/agent-pool.test.mjs::no CODEX_POOL_BIN and no codex on PATH exits 2`<br>`core/runtime/test/agent-pool.test.mjs::a registry spawn-rate refusal reaches the caller as 75`<br>`core/runtime/test/agent-pool.test.mjs::a file prompt survives a rate-limit failover`<br>`core/runtime/test/agent-pool.test.mjs::a multi-day usage cap cools every account` | Binary resolution, exit 2 and 75 pass-through | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-CAP-001 | T | `core/runtime/test/capacity.test.mjs::the probe reads the tightest quota, cache domains, SMT and memory headroom`<br>`core/runtime/test/capacity.test.mjs::the plan splits a multi-domain allotment into pinned cohorts`<br>`core/runtime/test/capacity.test.mjs::without sysfs or cgroups the probe degrades to availableParallelism`<br>`core/runtime/test/capacity.test.mjs::the tuner climbs the measured width curve`<br>`core/runtime/test/capacity.test.mjs::the CLI prints the probe and plan as JSON` | Fixed default plan; explicit width kept | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-MEM-001 | T | `core/runtime/test/dump-list.test.mjs::SIGUSR2 sheds, the file is rewritten with the new estimate`<br>`core/runtime/test/dump-list.test.mjs::an isolate pool retires idle prewarmed cells beyond the floor`<br>`core/runtime/test/dump-list.test.mjs::a contained cohort registers under its own pid`<br>`tools/test_dump_list.py::test_signal_sheds_rewrites_survives_and_exit_removes_the_file`<br>`tools/test_ledger_shed.py::test_shed_never_drops_unacknowledged_batches`<br>`tools/tscheck/test/dump-list.test.mjs::a shed drops the idle Workers` | Only idle capacity is shed; verdicts unchanged | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-CONTAINED-001 | T | `core/runtime/test/contained-js.test.mjs::a guest has no ambient authority and only an allowlist of globals`<br>`core/runtime/test/contained-js.test.mjs::dynamic import is refused before the guest runs`<br>`core/runtime/test/contained-js.test.mjs::a deadline is enforced from outside against async work`<br>`core/runtime/test/contained-js.test.mjs::a V8 fatal error takes one pool cell and no sibling`<br>`core/runtime/test/contained-js.test.mjs::a fatal error in a shared cohort is reported as unknown for all it held`<br>`core/runtime/test/contained-js.test.mjs::runTwice refuses output that differs`<br>`core/runtime/test/contained-js.test.mjs::ports are granted by name, bounded, and pass only JSON values`<br>`core/runtime/test/pipeline-contained.test.mjs::the report joins the result and does not change the decision` | No ambient authority; breaches isolated | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-RATES-001 | T | `core/runtime/test/stage-rates.test.mjs::a single server stage infers FIFO service and satisfies Little`<br>`core/runtime/test/stage-rates.test.mjs::explicit start separates waiting from service`<br>`core/runtime/test/stage-rates.test.mjs::rule V names a saturated stage, prefers net utilisation, and falls back to population` | Little's law holds; saturated stage named | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-TSC-001 | T | `tools/tscheck/test/tscheck.test.mjs::in a pinned workcell the compiler passes clean code and rejects a planted error`<br>`tools/tscheck/test/tscheck.test.mjs::the module compiles once per workcell and each check has fresh state`<br>`tools/tscheck/test/tscheck.test.mjs::a tampered or missing compiler is an unknown outcome, never a pass`<br>`tools/tscheck/test/verdict.test.mjs::a valid module with other bytes is refused by the pin` | Pinned digests; unknown on mismatch | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-TSC-002 | T | `tools/tscheck/test/tscheck.test.mjs::a clean emit binds its artifact hashes and compiler identity into the receipt`<br>`tools/tscheck/test/verdict.test.mjs::an emit that writes nothing is refused` | Emit hashes and compiler identity in the receipt | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-TSC-003 | T | `tools/tscheck/test/requalify.test.mjs::any difference from the oracle exits nonzero and names the project`<br>`tools/tscheck/test/requalify.test.mjs::one project short of the minimum never passes`<br>`tools/tscheck/test/requalify.test.mjs::a digest pin fires alone`<br>`tools/tscheck/test/requalify.test.mjs::a host option that changes the verdict shows` | Every refusal case exits nonzero | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-TSC-004 | T | `tools/tscheck/test/tscheck.test.mjs::build info feedback matches a full check, is refused with emit`<br>`tools/tscheck/test/verdict.test.mjs::build info feedback keeps the host options and refuses a candidate build info file` | Incremental equals full on measured edits | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-TSC-005 | T | `tools/tscheck/test/verdict.test.mjs::noResolve can not drop an imported file from the check`<br>`tools/tscheck/test/verdict.test.mjs::keys that differ only by case or Unicode form are refused`<br>`tools/tscheck/test/verdict.test.mjs::every way the compiler honours @ts-nocheck is refused`<br>`tools/tscheck/test/verdict.test.mjs::program membership ignores whatever the project prints`<br>`tools/tscheck/test/verdict.test.mjs::through the pool, a forged project never gets a passed receipt` | Candidate options cannot switch the check off | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-TSC-006 | T | `tools/tscheck/test/cohort-check.test.mjs::a check in the cohort gives the same verdicts as the check on the supervisor`<br>`tools/tscheck/test/cohort-check.test.mjs::a reused instance and a host baseline give the fresh full check verdicts`<br>`tools/tscheck/test/tsrs-reuse.test.mjs::a reused instance restored from its image gives what a fresh instance gives`<br>`tools/tscheck/test/tsrs-reuse.test.mjs::a trap discards the instance`<br>`tools/tscheck/test/contained-route.test.mjs::a type error stops before anything runs` | Cohort verdicts equal supervisor verdicts | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-KERNEL-001 | T | `tools/kernel/test_contract.py::test_cli_emits_record_only_for_conforming_component`<br>`tools/kernel/test_contract.py::test_artifact_identity_binds_bytes_not_only_interface`<br>`tools/kernel/test_contract.py::test_artifact_fields_cannot_be_omitted_changed_or_added`<br>`tools/kernel/test_contract.py::test_undeclared_capabilities_and_exports_rejected`<br>`tools/kernel/test_contract.py::test_tool_version_and_absence_fail_closed` | Record only for conforming bytes | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-KERNEL-002 | T | `tools/kernel/test_broker.py::test_declared_import_runs_and_missing_declaration_rejects_before_compile`<br>`tools/kernel/test_broker.py::test_undeclared_authority_imports_are_rejected_before_compile`<br>`tools/kernel/test_broker.py::test_revoked_between_reads_denies_without_returning_stale_data`<br>`tools/kernel/test_broker.py::test_authority_checker_failure_and_non_true_result_deny_size`<br>`tools/kernel/test_broker.py::test_size_and_zero_length_read_floods_stop_at_call_limit` | Only declared authority; floods stop | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-KERNEL-003 | T | `tools/kernel/test_limits.py::test_infinite_loop_and_deep_recursion`<br>`tools/kernel/test_limits.py::test_allocation_bomb_and_memory_boundary`<br>`tools/kernel/test_limits.py::test_output_flood_reaches_transport_cap_before_deadline`<br>`tools/kernel/test_limits.py::test_watchdog_stops_unresponsive_host_even_with_closed_pipes`<br>`tools/kernel/test_limits.py::test_invalid_limits_refused_before_launch`<br>`tools/kernel/test_limits.py::test_success_and_fresh_process_after_failure` | Each limit stops its case | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-KERNEL-004 | T | `tools/kernel/test_workcell.py::test_compile_once_and_fresh_state_for_1000_attempts`<br>`tools/kernel/test_workcell.py::test_only_explicit_state_and_current_buffer_carry_forward`<br>`tools/kernel/test_workcell.py::test_loop_is_stopped_by_fuel`<br>`tools/kernel/test_workcell.py::test_memory_ceiling_is_enforced_at_instantiation`<br>`tools/kernel/test_workcell.py::test_effects_are_returned_as_data`<br>`tools/kernel/test_workcell.py::test_static_contract_and_cache_identity_bind_exact_bytes` | 1000 attempts with fresh state; fuel stops loops | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-TOOLS-001 | T | `tests/test_kernel_tools.py::test_pins_match_the_code_and_ci_uses_make_tools`<br>`tests/test_kernel_tools.py::test_check_rejects_wrong_versions`<br>`tests/test_kernel_tools.py::test_wasm_tools_hash_mismatch_installs_nothing` | Wrong versions refused; hash mismatch installs nothing | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-COMPAT-001 | T | `tools/compatibility/contract.test.mjs::pins the exact EF-18 WIT and replays a working reducer`<br>`tools/compatibility/contract.test.mjs::refuses extra exports, missing exports, wrong types and asynchronous reducers`<br>`tools/compatibility/contract.test.mjs::refuses contract and schema drift, extra fields and malformed metadata`<br>`tools/compatibility/contract.test.mjs::snapshots policy, schemas and buffers before reducer code runs`<br>`tools/compatibility/contract.test.mjs::rejects invalid WIT integers and revokes on a thrown reducer` | Contract drift and malformed reducers refused | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-FAULT-001 | T | `tools/seeded_faults/test_generator.py::test_all_families_have_exact_replayable_witnesses`<br>`tools/seeded_faults/test_generator.py::test_repeated_seed_is_byte_identical_and_order_independent`<br>`tools/seeded_faults/test_generator.py::test_commutative_reversal_equal_units_and_absent_rows_are_filtered`<br>`tools/seeded_faults/test_generator.py::test_empty_duplicate_oversized_or_invalid_requests_fail`<br>`tools/seeded_faults/test_generator.py::test_exceptions_non_json_and_nondeterminism_abort` | Replayable, byte-identical, equivalents filtered | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ESCAPE-001 | T | `tools/escape_harness/test_harness.py::test_five_planted_escapes_and_reproducible_random_order`<br>`tools/escape_harness/test_harness.py::test_certification_sample_sizes_and_kill_threshold`<br>`tools/escape_harness/test_harness.py::test_incomplete_malformed_or_inconsistent_evidence_fails`<br>`tools/escape_harness/test_harness.py::test_budget_duplicates_and_unknown_oracle_abort`<br>`tools/escape_harness/test_harness.py::test_freeze_changes_before_during_and_after_callbacks_fail_closed` | Unknowns abort; bounds exact | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-STEP-001 | T | `tools/step_harness/test_harness.py::test_done_needs_matching_evidence_and_records_every_step`<br>`tools/step_harness/test_harness.py::test_repetition_stop_never_dispatches_the_looped_call`<br>`tools/step_harness/test_harness.py::test_blocked_verdict_is_separate_from_done`<br>`tools/step_harness/test_harness.py::test_no_retry_after_unknown_outcome`<br>`tools/step_harness/test_harness.py::test_compaction_crosses_once_and_reinjects_constraints`<br>`tools/step_harness/test_harness.py::test_single_use` | Done needs evidence; no retry after unknown | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-HW-001 | T | `tools/hardware_record/test_record.py::test_valid_record_and_current_environment`<br>`tools/hardware_record/test_record.py::test_receipt_corruption_and_missing_receipt`<br>`tools/hardware_record/test_record.py::test_reject_forged_enforcement_gate_and_statistics`<br>`tools/hardware_record/test_record.py::test_reject_changed_snapshot_and_probe_source` | Corrupt, forged and changed records rejected | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ATOM-001 | T | `tools/atomizer/test/run.mjs::cycle rejected`<br>`tools/atomizer/test/run.mjs::forbidden edge tests->kernel rejected`<br>`tools/atomizer/test/run.mjs::realized speedup above 2x`<br>`tools/atomizer/test/run.mjs::undeclared input: compose blocked`<br>`tools/atomizer/test/run.mjs::bind outside bindRoots is rejected`<br>`tools/atomizer/test/run.mjs::timeoutSec is capped by policy`<br>`tools/atomizer/test/run.mjs::run archive written and hashed` | Plan and input boundaries enforced; receipts written | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ATOM-002 | T | `tools/atomizer/test/routing.test.mjs::declared kinds precede heuristics`<br>`tools/atomizer/test/routing.test.mjs::automatic classification never picks throwaway`<br>`tools/atomizer/test/routing.test.mjs::load guards luna models and fallbacks`<br>`tools/atomizer/test/agent-swarm.test.mjs::failover and routing`<br>`tools/atomizer/test/agent-swarm.test.mjs::a spawn-gate 75 is labelled as such`<br>`tools/atomizer/test/agent-swarm.test.mjs::stops without retry or failover` | Routing rules hold; refusals not masked | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ATOM-003 | T | `tools/atomizer/test/trace.test.mjs::diamond analysis and nearest-rank percentiles`<br>`tools/atomizer/test/trace.test.mjs::disabled trace creates no file`<br>`tools/atomizer/test/lessons.test.mjs::runLessons` | Trace off by default; lessons fields computed | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-COND-001 | T | `tools/conductor/test/failopen.test.mjs::an exit file that is empty or garbage is not an exit code`<br>`tools/conductor/test/failopen.test.mjs::ended unknown, never 0`<br>`tools/conductor/test/failopen.test.mjs::systemctl failing is not a clean exit of an adopted lane`<br>`tools/conductor/test/failopen.test.mjs::the daemon exits 78 on a torn state`<br>`tools/conductor/test/failopen.test.mjs::atomic JSON is synced before the rename` | Unknown never reads as success | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-COND-002 | T | `tools/conductor/test/principles.test.mjs::U2: a measured outcome is compared with its target`<br>`tools/conductor/test/principles.test.mjs::U4: when an upstream atom lands a newer candidate`<br>`tools/conductor/test/principles.test.mjs::U5: a judged item list is frozen on first use`<br>`tools/conductor/test/principles.test.mjs::U6: a change that regresses a passing item and improves none is reverted`<br>`tools/conductor/test/stream.test.mjs::a check that reports 78 stops the whole job loudly`<br>`tools/conductor/test/stream.test.mjs::a daemon restart resumes an atom that was mid-check` | Frozen, stable checks; 78 stops | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-JOB-001 | T | `tools/job/test/failopen.test.mjs::a torn last line loses that line only`<br>`tools/job/test/failopen.test.mjs::the next event after a torn line is kept whole`<br>`tools/job/test/failopen.test.mjs::a log with nothing readable is unknown`<br>`tools/job/test/failopen.test.mjs::an event reported as written has been synced` | Torn logs degrade to unknown, never to "not staged" | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-LOCK-001 | T | `tools/job-locks/test_job_locks.py::test_add_render_rm`<br>`tools/job-locks/test_job_locks.py::test_a_missing_registry_is_no_jobs`<br>`tools/job-locks/test_job_locks.py::test_a_torn_registry_warns_on_read_and_is_not_overwritten`<br>`tools/job-locks/test_job_locks.py::test_a_failed_write_leaves_the_registry_and_no_temporary` | Torn registry kept; no temporaries | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-ERR-001 | T | `tools/lib/test/errors.test.mjs::classify: 0 ok, 75 transient, 78 stop, anything else fail`<br>`tools/lib/test/errors.test.mjs::runTyped waits out a busy guard with backoff`<br>`tools/lib/test/errors.test.mjs::run-typed CLI: retries busy, passes 78 through loudly` | Exit classes as stated | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-HILL-001 | T | `tools/hillclimb/test/lessons.test.mjs::the ledger counts recurrences, and a closed lesson that recurs reopens`<br>`tools/hillclimb/test/lessons.test.mjs::lessons --close records the tool change`<br>`tools/hillclimb/test/lessons.test.mjs::a torn ledger is left as it was` | Recurrences counted; torn ledger kept | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-CONSTRAINT-001 | T | `tests/test_constraint_record.py::test_resume_is_verbatim_with_source_identity`<br>`tests/test_constraint_record.py::test_replay_after_crash_does_not_duplicate`<br>`tests/test_constraint_record.py::test_tamper_is_refused`<br>`tests/test_constraint_record.py::test_origin_comes_from_transport_only`<br>`tests/test_constraint_record.py::test_withdrawal_needs_a_human_message`<br>`tests/test_constraint_record.py::test_any_extractor_exception_is_recorded` | Verbatim, durable, tamper-evident | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-CONSTRAINT-002 | T | `tests/test_constraint_laundering.py::test_seeds_never_become_active_or_permissions`<br>`tests/test_constraint_laundering.py::test_model_never_sees_quoted_or_tool_text`<br>`tests/test_constraint_laundering.py::test_reported_speech_is_not_a_user_constraint`<br>`tests/test_constraint_laundering.py::test_block_states_no_authority` | Only user words become constraints | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-FACTORY-001 | T | `tools/factory_campaign/test_state.py::recover`<br>`tools/factory_campaign/test_model_journal.py::second-live-controller-fenced`<br>`tools/factory_campaign/test_model_journal.py::orphan-worker-survives-before-reconcile` | Recovers last complete stage; second controller fenced (checks are `assert` statements, see D-01) | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-FACTORY-002 | T | `tools/factory_portability/test_checkpoint.py::roundtrip`<br>`tools/factory_portability/test_checkpoint.py::wrong-key`<br>`tools/factory_portability/test_checkpoint.py::ciphertext-tamper`<br>`tools/factory_portability/test_checkpoint.py::credential-content`<br>`tools/factory_portability/test_checkpoint.py::traversal` | Round trip; every refusal case raises (positive checks are `assert` statements, see D-01) | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-RUST-001 | T | `tools/rust_lane/test_lane.py::test_reproducible_build_and_validation`<br>`tools/rust_lane/test_lane.py::test_toolchain_mismatch_refused_before_build`<br>`tools/rust_lane/test_lane.py::test_p06_frozen_equivalence` | Not run in this baseline: `make rust-lane-test` is outside `make test` and CI (GAP-EF-013) | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-DOCS-001 | T | `tests/test_check_docs.py::test_tracked_document_is_checked`<br>`tests/test_check_docs.py::test_untracked_unignored_document_is_still_checked`<br>`tests/test_shared_files.py::test_sums_are_current` | Broken links and stale digests fail | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-REPO-001 | T | `tests/test_check_privacy.py::test_each_leak_kind_fails`<br>`tests/test_check_privacy.py::test_allowlisted_file_passes_only_while_unchanged`<br>`tests/test_check_privacy.py::test_allowlist_entries_need_a_reason_and_an_existing_file` | Each leak kind fails | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-REPO-002 | T | `tests/test_shared_files.py::test_index_is_current`<br>`tests/test_shared_files.py::test_check_reports_a_stale_index`<br>`tests/test_shared_files.py::test_parallel_lanes_get_distinct_numbers_and_commit`<br>`tests/test_shared_files.py::test_a_claimed_tag_is_never_reused`<br>`tests/test_shared_files.py::test_check_refuses_duplicates_and_missing` | Stale index, sums and duplicate numbers fail | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-REPO-003 | T | `tests/test_reachability.py::test_every_test_file_is_reached`<br>`tests/test_reachability.py::test_manifest_entries_are_current`<br>`tests/test_reachability.py::test_ci_runs_both_suites`<br>`tests/test_reachability.py::test_guard_reports_an_orphan` | An orphan test file fails | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-REPO-004 | T | `tests/test_check_trace.py::test_repository_trace_is_clean`<br>`tests/test_check_trace.py::test_untraced_requirement_is_reported`<br>`tests/test_check_trace.py::test_missing_test_name_is_reported`<br>`tests/test_check_trace.py::test_unclassified_test_file_is_reported`<br>`tests/test_check_trace.py::test_unallocated_component_is_reported`<br>`tests/test_check_trace.py::test_undocumented_environment_variable_is_reported`<br>`tests/test_check_trace.py::test_dead_anchor_is_reported` | Clean tree gives zero problems; each injected defect is reported | STR-main-20261108 ([index](reports/README.md)) |
+| REQ-REPO-005 | T | `tests/test_check_trace.py::test_data_dictionary_is_current`<br>`tests/test_check_trace.py::test_stale_data_dictionary_is_reported` | A changed generated section fails the check | STR-main-20261108 ([index](reports/README.md)) |
 
-Reported speedup counts before: 1.00x (18), 3.31x (3), 3.32x (9).
-After: 3.12x (1), 3.20x (1), 3.23x (2), 3.24x (2), 3.25x (1),
-3.27x (1), 3.31x (15), 3.32x (6), 3.34x (1). Percentiles use nearest rank.
-The 18 baseline failures each failed only the >2x and six-second checks;
-all other assertions passed. Raw unrounded ratios ranged from 0.996487 to
-3.324120 before and 3.120621 to 3.337288 after.
+## Tests without a requirement
 
-Logs, per-run summary receipts, exit statuses, the adapter and repetition/statistics
-scripts are outside the source tree under `/tmp/ef-atomizer-deflake/`:
-`baseline.jsonl`, `after.jsonl`, `baseline-*.log`, `after-*.log`,
-`*-exits.jsonl`, `distribution.txt`, `repeat.py`, `summarize.py` and
-`controlled-{0,1}/`. The receipts contain the original wall measurements;
-receipt capture runs after the scheduler has exited.
+Every other discovered test file is listed here with its classification.
 
-Additional checks used Node 22.23.3 first on PATH:
-
-| Command | Actual result |
+| Test file | Classification and reason |
 |---|---|
-| `make check` | Exit 0; zero link/digest failures over 57 documents |
-| `timeout 60s make test ENDOFORGE_TEST_OUTPUT=/tmp/ef-atomizer-deflake/full-test` | Exit 124; check, 18 lifecycle/boundary and 32 ledger tests passed; engine evaluator stalled on synchronous Python stdin |
-| `timeout 60s make test-optimized ENDOFORGE_TEST_OUTPUT=/tmp/ef-atomizer-deflake/full-optimized` | Exit 124; same completed checks and engine stall |
-| `make atomizer-test` with the external I/O adapter | Exit 2; trace tests and main scheduler tests passed; unchanged swarm model-fallback test failed (`1 !== 0`); remaining swarm checks passed |
-| Compare all 31 existing `check()` lines against baseline; `git diff --check` | Identical assertions; exit 0 |
+| `experiments/P-19-need-to-candidate/verify.py` | Experiment receipt verification: replays P-19 chain hashes and percentiles (`receipt-test`). Supports the historical P-19 record, not a current requirement |
+| `experiments/P-51-escape-rate/controls.test.mjs` | P-51 synthetic controls, run by hand with a pinned AssemblyScript; excluded from `make test` in `tests/test-reachability.json` |
+| `core/runtime/test/timing-guard.test.mjs` | Tests the shared timing-assertion fixture `core/runtime/test/fixtures/timing.mjs` used by other runtime tests (test infrastructure) |
+| `tools/conductor/test/helpers.mjs` | Helper imported by the conductor tests; defines no tests |
+| `tools/tscheck/test/global-scope-kernels.mjs` | Kernel list imported by `cohort-check.test.mjs` and `tsrs-reuse.test.mjs`; defines no tests |
 
-The full-suite attempts used native I/O without the adapter and therefore did
-not qualify later Makefile targets. Their logs are `make-test.log` and
-`make-test-optimized.log`; the focused target log is `make-atomizer.log`, all
-under the evidence directory above. No assertion was changed to obtain a pass.
-## X1 gate host port
+## Change history
 
-REQ-X1-001: `make pipeline-test` exercises native/pool parity in thread and
-process modes with in-repo minimal WASM addition/subtraction fixtures. It checks
-positive G1–G7 verdicts and independent expected refusal gates for frozen drift,
-compile failure, missing export, incorrect result and closed glue violations.
-The fixture WASM is precompiled; these CI checks do not qualify an installed asc.
-The port is derived from P-21's unchanged X1 gate runner; timing values are
-observations and are excluded from equality. Source bindings and frozen host
-bytes are checked on every residual invocation, including finalist evaluation.
-
-Local validation: `make check` and `make pipeline-test` passed on Node 26.12.0.
-An additional supervisor run with AssemblyScript 0.28.20 compared all six fixture
-variants against the unchanged P-21 `gate.mjs`: every G1–G7 boolean matched.
-WASM hashes differ because the port compiler declares a 64-MiB memory maximum;
-parity concerns verdicts and outputs, not timestamps or compiled byte identity.
-
-## Generator adapter
-
-REQ-GEN-002: `generator.test.mjs` records the request sent to the labelled test
-double and checks the rules, template and G7 kinds they cover. Root cause of the
-P-22 G7 refusals: the schema leaves precision optional while G7 requires it for
-number results, and generation received only the schema.
-
-REQ-GEN-003: `generator.test.mjs` checks the resumed thread id, effort flags and the
-fresh/default fallback through recorded client arguments. One real add(a,b) smoke on
-2026-11-01 took 92.4 s before the no-exploration instruction and 42.6 s (low) / 41.7 s
-(default) after; a single run each, not a measurement.
-
-REQ-GEN-004: `generator.test.mjs` checks that `compiler.mjs` passes `--noAssert` and that
-the recorded implementation instructions forbid `assert` and require an explicit
-`abort()` or `throw` trap. Root cause from P-24: 43 of 45 G4 refusals used `assert(`,
-0 of 34 promotions did, independent of session resume and effort.
-
-REQ-GEN-005: `generator.test.mjs` checks that with self-check off no check runs and no
-repair is made, and that with it on a failing check resumes the specification thread
-once with the failures, the repaired glue is used and `repaired` is true.
-
-REQ-GEN-001: `make pipeline-test` includes a labelled executable test double,
-two-stage generation, durable oracle creation, frozen hashes, absence of code in
-the oracle, early-code/drift/nonzero-exit refusals and missing configuration.
-The configured CODEX_HOME does not exist in the test: the adapter does not inspect
-it. No live Codex generation is run in the sandbox. Client sandbox behavior and
-semantic quality of authored acceptance tests remain outside this fixture's claim.
-`make check`, `make core-test` (18 tests) and `make pipeline-test` passed locally
-on Node 26.12.0/Python 3.14.8 after adding the generator.
-
-## Local promotion and P-22
-
-REQ-PROMOTE-001: `make pipeline-test` and `PYTHONOPTIMIZE=1 make pipeline-test` passed locally.
-Both modes exercise generated candidate → compile test double → real evaluator →
-hash-chain receipt → persisted qualification decision. Refusals cover actual bad
-glue, wrong receipt hash, each of seven failed gate booleans in passing-shaped
-ledger evidence and chain tampering. Existing tests/expected results are unchanged.
-P-22's first fake run completed 60/60 records/promotions at concurrency ten;
-this qualifies wiring, not live generation, compiler correctness or real latency.
-The real P-22 run on 2026-11-01 completed 60/60 records with real Codex and
-AssemblyScript 0.28.20; 41 promoted, 19 refused or failed with every verdict
-retained (experiments/P-22-real-need-to-candidate/RESULT.md).
-
-`make check` passed (60 documents); `make isolate-test` passed both existing
-suites after optional timing support; direct `node core/engine/gates.test.mjs`
-passed all ten tests. Normal and optimized `timeout 60s make test` attempts
-(with external output overrides) exited 124 at unchanged evaluator tests, after
-pipeline, 18 lifecycle/boundary and 32 ledger tests passed. Full-suite success
-is not claimed. Final pipeline validation includes the sixty-record harness,
-all eight timing fields and non-overlapping stage sums. A separate fake-generator
-run using real AssemblyScript 0.28.20 promoted successfully in both pool modes.
-## Trusted compiler maximum verification — 2026-11-02 UTC
-
-Node 26.12.0, existing assertions and expected results unchanged.
-The new [toolchain tests](../../core/runtime/test/isolate-toolchain.test.mjs)
-use synthetic compiler bytes without downloading a compiler.
-
-| Requirement | Evidence | Actual result |
-|---|---|---|
-| REQ-ISO-006, REQ-ISO-008 | Trusted binary through compile, Module, Instance, instantiate and streaming paths in both modes; growth beyond supplied maximum; existing smaller maximum | Pass; native maximum supplied before execution, smaller declared maximum preserved |
-| REQ-ISO-004, REQ-ISO-008 | Copied supervisor policy and receipt observations; candidate-supplied policy with mismatched binary; replacement | Pass; original cap recorded, forged trust rejected and replacement healthy |
-| REQ-ISO-008 | Invalid names/digests/caps and duplicate policy entries | Pass; refused before dispatch |
-| REQ-ISO-001–007 | `make isolate-test` | Pass; all three test files, exit 0; new file rerun after adding existing-maximum coverage also exit 0 |
-| REQ-DOCS-001 | `make check` | Pass; 0 failures over 57 documents |
-
-A real pinned AssemblyScript 0.28.20 smoke run under the guard compiled a
-synthetic identity kernel (57 bytes) and returned 7 for input 7. Binaryen's
-existing 65,536-page maximum remains intact; only the digest-pinned `f64_pow`
-helper receives 16 pages. [P-20](../../experiments/P-20-pool-speed-rerun/RESULT.md)
-appends the full compile/residency rerun and policy-bearing receipts.
-
-`make test ENDOFORGE_TEST_OUTPUT=/tmp/ef-as-maxmem-tests` passed 18 core and
-32 ledger tests, then stalled in the engine test stage and was interrupted
-(exit 130). A direct synthetic `spawnSync` diagnostic returned `EPERM` with
-status 0 and child output. Full-suite success is not claimed; the sandbox's
-synchronous subprocess limitation does not affect the measured asynchronous
-pool/ledger path. Verification logs are retained with the dated P-20 receipts.
-
-`timeout --signal=INT --kill-after=5s 90s make test-optimized ENDOFORGE_TEST_OUTPUT=/tmp/ef-as-maxmem-tests-optimized`
-also passed 18 core and 32 ledger tests, then timed out at the engine stage
-(exit 124). The evaluator file was canceled with a pending promise; the gates
-file passed. Later Make targets were not reached in either full-suite run.
-
-## Workcell pre-warm verification
-
-REQ-ISO-009: `isolate-pool.test.mjs` checks that a default pool has no workcells before
-its first job, that `prewarm: true` with `ready()` yields `size` workcells that serve a job
-without spawning more, that a non-boolean `prewarm` is refused and that `ready()` rejects
-after `close()`. On main-rig the pool and process suites passed 40 of 40 on Node 22.23.3
-and 26.12.0. Spawn-cost measurements are in P-26.
-
-## Persistent batched ledger bridge verification — 2026-11-02 UTC
-
-| Requirement | Case | Expected result |
-|---|---|---|
-| REQ-ISO-010 | 64 jobs at width 16 through one pool | Pass; every receipt present and the chain verifies from a fresh Ledger |
-| REQ-ISO-010 | Second writer appends between pool batches | Pass; pool appends chain after the external record |
-| REQ-ISO-010 | Bridge process killed with work pending | Pass; pending and later requests reject, no respawn |
-| REQ-ISO-010 | Stored row tampered after caching | Pass; next read rejects the chain |
-| REQ-ISO-010 | One invalid request inside a batch | Pass; only that request fails and the others commit |
-| REQ-ISO-011 | `stackSizeMb` validation; a deep expression traps without it and passes with it, in thread and process cells; a process stack overflow is unknown and the cell lives; a lowered hard limit is refused | Pass |
-| REQ-ISO-012 | A hung job and a compiler past its deadline end `outcome_unknown`/`deadline`, and the replacement cell completes the next job; a SIGTERM trap or a grandchild holding stderr still ends at the deadline; no job goes to a stopping cell; no stale timer stops a later cell | Pass |
-| REQ-ISO-013 | Off-heap memory past a 24 MiB heap passes in thread mode and in process mode without a cgroup; with a delegated cgroup it's killed and inconclusive | Pass; the cgroup case is skipped without a delegated scope |
-| REQ-ISO-014 | A shared module through every checked path, a breach stopping only its cell, port-supplied modules refused, digest mismatch falling back, and close during the shared compile | Pass |
-| REQ-ISO-015 | `warm` awaited by `ready()`, a failure rejecting `ready()` and making jobs unknown, off by default, in both modes | Pass |
-| REQ-TSC-001 | Pinned check passes clean code and rejects a planted error; compiled once per workcell; unpinned stopped by the guard; tampered and missing are unknown | Pass |
-| REQ-TSC-002 | A clean emit's hashes and compiler identity in the receipt; a planted error adds no artifact hash; an emit that writes nothing leaves no passed receipt and no empty row | Pass |
-| REQ-TSC-003 | Re-qualification exits zero on a matching oracle, and nonzero on location, text, exit-code, oracle-version and empty-workload differences, a workload under the minimum, one with no diagnostics, and anything skipped. These use a stub oracle; a run against the real pinned `tsc` and the original workload wasn't repeated | Pass |
-| REQ-TSC-004 | Build info feedback matches a full check; refused with `emit`; a forged file hides an error, which is the stated limit | Pass |
-| REQ-TSC-005 | `noCheck`, `incremental`, `composite` and `noResolve` from a project, including through `extends`, don't change the verdict; `@ts-nocheck`, `.tsbuildinfo` inputs, sources outside the program, `references` and a program with no TypeScript source are refused; `// @ts-ignore`, `strict`, `skipLibCheck` stated limits are pinned by a test | Pass |
-| REQ-ISO-009 | Bridge process after `ready()` with prewarm, none on a lazy pool | Pass; one bridge before the first job and none respawned by it; `start()` memoized and rejects after close |
-
+| Version | Date | Commit | Change | Reviewed in |
+|---|---|---|---|---|
+| 1.0 | 2026-10-30 | `3083a5a` | Eight-row matrix and relocation evidence (now in the verification history) | earlier PRs |
+| 2.0 | 2026-11-08 | `4d692a4` | Re-baselined against all requirements and glob-discovered tests; trace check added | this PR |

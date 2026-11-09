@@ -14,7 +14,7 @@ make test-optimized ENDOFORGE_TEST_OUTPUT="$(mktemp -d)"
 kernel tests into `.tools/`; `make kernel-test` checks their versions first. `make loop-setup` and `make tscheck-setup`
 run `npm ci` for the pinned compilers and are run by `make test` itself, so the first run needs network access.
 
-`make check` runs five checks:
+`make check` runs seven checks:
 
 | Check | Script |
 |---|---|
@@ -23,8 +23,11 @@ run `npm ci` for the pinned compilers and are run by `make test` itself, so the 
 | Source digests | `tools/source_sums.py --check` |
 | Every experiment number is allocated once | `tools/experiment_id.py check` |
 | No home paths, account paths or email addresses in experiment records | `tools/check-privacy.py` |
+| Requirements trace to tests and design; every test file is classified; documented environment variables; relative links and anchors | `tools/check_trace.py` |
+| The data dictionary matches the schema files | `tools/gen_data_dictionary.py --check` |
 
-It does not check external URLs. `make index` and `make sums` regenerate the index and the digests.
+It does not check external URLs. `make index` and `make sums` regenerate the index and the digests;
+`python3 -I tools/gen_data_dictionary.py` regenerates the data dictionary.
 
 `make test` includes `make check` and every test target in the [Makefile](../../../Makefile). Tests are found by
 glob, and `tests/test_reachability.py` fails when a test file is not run by any target. `make test-optimized` repeats
@@ -44,4 +47,6 @@ make command line, not in the environment. Do not publish sensitive receipts or 
 
 Record `git rev-parse HEAD`, runtime versions, commands, exit statuses, failures, and skipped checks with the result.
 A successful local run does not replace PR CI or independent review. See the
-[verification matrix](../../verification/verification-matrix.md) for requirement coverage and historical evidence.
+[verification matrix](../../verification/verification-matrix.md) for requirement coverage, the
+[test plan](../../verification/test-plan.md) for procedures and the [test reports](../../verification/reports/README.md)
+for recorded runs.

@@ -1,5 +1,18 @@
 # Capacity planner interface control document (Mjölnir)
 
+| Field | Value |
+|---|---|
+| Document ID | ENDOFORGE-ICD-CAPACITY |
+| Version | 2.0 |
+| Status | Baselined |
+| Owner | Akilleez-QA maintainer |
+| Date | 2026-11-08 |
+| Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
+| Applies to | endoforge main at baseline commit |
+| Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
+
+> Organized after [NPR 7150.2D](https://nodis3.gsfc.nasa.gov/displayAll.cfm?Internal_ID=N_PR_7150_002D_&page_name=all), [NASA-STD-8739.8B](https://standards.nasa.gov/standard/nasa/nasa-std-87398) and the [NASA Software Engineering Handbook](https://swehb.nasa.gov/display/SWEHBVD/7.18+-+Documentation+Guidance) documentation guidance. This is not a NASA compliance determination or certification. The software classification is a self-assessed analog (Class E, not safety-critical); no NASA authority, independent verification and validation, or hazard analysis is asserted. The document describes the implementation inspected at the baseline commit.
+
 ## Scope and ownership
 
 `core/runtime/capacity/` decides how many cells a job runs at once (width), where they run (placement on cache
@@ -89,3 +102,14 @@ CLI inside the same cgroup and affinity it will give that job (for example under
 
 The tuner's thresholds and the default policy come from P-63 and P-67 (`experiments/P-67-adaptive-width/`); the
 occupancy cap and the share rule from P-68 (`experiments/P-68-tuner-occupancy/`).
+
+## Requirements addressed
+
+REQ-CAP-001. The interface is versioned by `INTERFACE_VERSION` in `core/runtime/capacity/index.mjs`.
+
+## Change history
+
+| Version | Date | Commit | Change | Reviewed in |
+|---|---|---|---|---|
+| 1.0 | before 2026-11-08 | — | Accuracy pass in PR #129 | earlier PRs |
+| 2.0 | 2026-11-08 | `4d692a4` | Metadata header, requirements addressed and change history added; content re-baselined | this PR |

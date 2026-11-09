@@ -19,6 +19,11 @@ body:
       description: Describe inputs, outputs, affected tools, and compatibility considerations.
     validations:
       required: true
+  - type: input
+    id: affected
+    attributes:
+      label: Affected component and commit
+      description: The component (see docs/architecture/architecture.md section 4) and the commit you looked at.
   - type: textarea
     id: alternatives
     attributes:
