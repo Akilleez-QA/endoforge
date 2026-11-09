@@ -6,6 +6,10 @@ export interface BorrowedBuffer {
   size(): bigint;
   read(offset: bigint, length: number): ReadResult;
 }
+export interface HostBuffer {
+  size(): number;
+  read(offset: number, length: number): Uint8Array;
+}
 export interface Effect { capability: string; operation: string; payload: Uint8Array }
 export interface Transition { state: Uint8Array; effects: Effect[] }
 export interface Metadata {
@@ -73,6 +77,28 @@ function transition(value: unknown, policy: Limits): Transition {
   return { state, effects };
 }
 
+type Source = { byteLength: number; read(offset: number, length: number): Uint8Array };
+function copied(copy: Uint8Array): Source {
+  return { byteLength: copy.byteLength, read: (offset, length) => copy.slice(offset, offset + length) };
+}
+function hosted(value: unknown, budget: { remaining: number }): Source {
+  fields(value, ['size', 'read']);
+  const { size, read } = value;
+  requireValue(typeof size === 'function' && typeof read === 'function', 'host buffer functions required');
+  const byteLength = size();
+  requireValue(Number.isSafeInteger(byteLength) && byteLength >= 0, 'host buffer size invalid');
+  requireValue(byteLength <= budget.remaining, 'byte limit exceeded');
+  budget.remaining -= byteLength;
+  return {
+    byteLength,
+    read(offset, length) {
+      const value = read(offset, length);
+      requireValue(value instanceof Uint8Array && value.byteLength === length, 'host buffer read differs');
+      return new Uint8Array(value);
+    },
+  };
+}
+
 const envelope = { lane: 'compatibility' as const,
   validation: 'trusted-reducer-conformance-only' as const, witSha256: WIT_SHA256 };
 
@@ -82,7 +108,7 @@ export function refusal(reason: string): Receipt {
 
 export function probeTrustedReducer(
   reducer: Reducer, expected: Metadata, state: Uint8Array, event: Uint8Array,
-  snapshots: readonly Uint8Array[], policy: Limits,
+  snapshots: readonly (Uint8Array | HostBuffer)[], policy: Limits,
 ): Receipt {
   let active = true;
   try {
@@ -96,20 +122,20 @@ export function probeTrustedReducer(
     requireValue(Array.isArray(snapshots) && snapshots.length <= 1024, 'buffer limit exceeded');
     let readBudget = bound.readBytes;
     const handles = Object.freeze(Array.from(snapshots, snapshot => {
-      const copy = bytes(snapshot, inputBudget);
+      const source = snapshot instanceof Uint8Array ? copied(bytes(snapshot, inputBudget)) : hosted(snapshot, inputBudget);
       return Object.freeze({
         size(): bigint {
           requireValue(active, 'expired buffer');
-          return BigInt(copy.byteLength);
+          return BigInt(source.byteLength);
         },
         read(offset: bigint, length: number): ReadResult {
           requireValue(active, 'expired buffer');
           requireValue(typeof offset === 'bigint' && offset >= 0n && offset <= 0xffffffffffffffffn, 'u64 offset required');
           requireValue(Number.isInteger(length) && length >= 0 && length <= 0xffffffff, 'u32 length required');
-          if (offset + BigInt(length) > BigInt(copy.byteLength)) return { tag: 'err', value: 'out-of-bounds' };
+          if (offset + BigInt(length) > BigInt(source.byteLength)) return { tag: 'err', value: 'out-of-bounds' };
           if (length > readBudget) return { tag: 'err', value: 'limit-exceeded' };
           readBudget -= length;
-          return { tag: 'ok', value: copy.slice(Number(offset), Number(offset) + length) };
+          return { tag: 'ok', value: source.read(Number(offset), length) };
         },
       });
     }));

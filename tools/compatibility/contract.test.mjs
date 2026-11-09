@@ -237,3 +237,47 @@ test('shared memory cannot cross into the workcell', async t => {
   assert.match(receipt.reason, /unshared bytes required/);
   assert.equal(receipt.workcell, null);
 });
+
+test('host-backed buffers count against the input budget and must return the bytes asked for', () => {
+  const host = (bytes, lie = false) => Object.freeze({ size: () => bytes.byteLength,
+    read: (offset, length) => lie ? new Uint8Array(length + 1) : bytes.slice(offset, offset + length) });
+  const passed = probe(reducer, meta, policy, [host(Uint8Array.of(3))]);
+  assert.equal(passed.status, 'passed', passed.reason);
+  assert.deepEqual(passed.transition.state, Uint8Array.of(6));
+  refused(probe(reducer, meta, policy, [host(Uint8Array.of(3), true)]));
+  refused(probe(reducer, meta, { ...policy, inputBytes: 2 }, [host(Uint8Array.of(3))]));
+  refused(probe(reducer, meta, policy, [{ size: () => -1, read: () => new Uint8Array() }]));
+  refused(probe(reducer, meta, policy, [{ size: () => 1, read: () => new Uint8Array(1), extra: 1 }]));
+});
+
+for (const isolation of ['process', 'thread']) {
+  test(`${isolation}: snapshots stay in the host and the reducer reads them through synchronous host-buffer calls`, async t => {
+    const pool = cellPool(t, { isolation });
+    const receipt = await probeInWorkcell(pool, cellJob(referenceSource));
+    assert.equal(receipt.status, 'passed', receipt.reason);
+    assert.deepEqual([...receipt.transition.state], [6]);
+    assert.deepEqual(receipt.hostBuffers, { calls: 2, bytesRead: 1 });
+    const probing = inlineReducer(`reduce(state, event, inputs) {
+      const sizes = inputs.map(input => Number(input.size()));
+      const over = inputs[1].read(0n, 5);
+      const bounds = inputs[0].read(3n, 1);
+      const tail = inputs[1].read(2n, 2);
+      return { state: Uint8Array.of(...sizes, over.tag === 'err' ? 1 : 0, bounds.tag === 'err' ? 1 : 0, ...tail.value), effects: [] };
+    }`);
+    const snapshots = [Uint8Array.of(9, 8, 7), Uint8Array.of(1, 2, 3, 4)];
+    const read = await probeInWorkcell(pool, cellJob(probing, 'reducer', { snapshots, limits: { ...policy, readBytes: 2 } }));
+    assert.equal(read.status, 'passed', read.reason);
+    assert.deepEqual([...read.transition.state], [3, 4, 1, 1, 3, 4]);
+    assert.deepEqual(read.hostBuffers, { calls: 3, bytesRead: 2 });
+  });
+}
+
+test('refuses malformed snapshot lists before dispatch', async t => {
+  const pool = cellPool(t);
+  for (const [snapshots, reason] of [[null, /buffer limit/], [Array(1025).fill(new Uint8Array()), /buffer limit/], [[[3]], /unshared bytes/]]) {
+    const receipt = await probeInWorkcell(pool, cellJob(referenceSource, 'referenceReducer', { snapshots }));
+    refused(receipt);
+    assert.match(receipt.reason, reason);
+    assert.equal(receipt.workcell, null);
+  }
+});
