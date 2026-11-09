@@ -1,7 +1,8 @@
 # Documentation
 
-EndoForge has an AI coding model write a small numeric function from a one-line request and accepts it only if frozen
-tests and automatic checks pass. New here? Start with the [project README](../README.md), then the tutorial.
+EndoForge turns code that AI coding agents propose into trusted, reusable working software: it checks each proposal in
+V8 isolates against tests frozen before the code existed, records the verdict in a hash-chained ledger, and keeps what
+passes for reuse. New here? Start with the [project README](../README.md), then the tutorial.
 
 ## Learn
 
