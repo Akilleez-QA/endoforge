@@ -76,7 +76,7 @@ export function workerCommand(c, lane, { worktree, prompt, images = [] }) {
   const dirs = [...new Set(images.map((i) => path.dirname(i)))];
   const env = lane.configDir ? { CLAUDE_CONFIG_DIR: lane.configDir } : {};
   const args = ['-p', prompt, '--model', f.claudeModel ?? 'opus', '--permission-mode', 'acceptEdits',
-    '--allowedTools', f.claudeTools ?? 'Read Edit Write Glob Grep Bash(node:*) Bash(git diff:*) Bash(ls:*)', ...dirs.flatMap((d) => ['--add-dir', d])];
+    '--allowedTools', f.claudeTools ?? 'Read Edit Write Glob Grep Bash(node:*) Bash(npm:*) Bash(make:*) Bash(python3:*) Bash(git diff:*) Bash(git status:*) Bash(ls:*)', ...dirs.flatMap((d) => ['--add-dir', d])];
   requireSubscription({ env: { ...process.env, ...env }, cwd: worktree, args });
   return { argv: [...unsetArguments(), f.claudeBin ?? 'claude', ...args], env };
 }

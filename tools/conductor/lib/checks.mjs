@@ -66,6 +66,15 @@ async function runOnce(k, vars, wait) {
 
 /** Produce the atom's slice, run its checks, and return { pass, items, regressed, improved } | { pass: false, feedback, … }
  *  | { unscored, why, unstable? }. The atom's last items per check are its keep-list. */
+/** The checks for one atom: conductor.checks that name it (or name no atoms); without any, the runnable acceptance
+ *  checks of the criteria the atom lists, so an atom is never frozen with its own checks unrun. */
+export function atomChecks(job, id) {
+  const configured = (job.conductor?.checks ?? []).filter((k) => !k.atoms || k.atoms.includes(id));
+  if (configured.length) return configured;
+  const atom = (job.atoms ?? []).find((a) => a.id === id);
+  return (atom?.checks ?? []).map((cid) => (job.criteria ?? []).find((c) => c.id === cid))
+    .filter((c) => c?.check?.run && c.check.kind !== 'human').map((c) => ({ id: c.id, run: c.check.run }));
+}
 export async function checkAtom(ctx, id) {
   const { job, file } = ctx, c = job.conductor ?? {}, st = ctx.update(() => {}).atoms[id];
   const dir = path.join(stateDir(job, file), 'slices', id), out = path.join(dir, `i${st.iter}`); fs.mkdirSync(out, { recursive: true });
@@ -77,7 +86,7 @@ export async function checkAtom(ctx, id) {
     if (r.kind === 'transient') return { unscored: true, why: `slice command still busy after ${Math.round(r.waitedMs / 1000)} s` };
     if (r.kind !== 'ok') return { pass: false, feedback: `The slice command failed on your change (exit ${r.status}). Fix this first:\n${(r.stdout + r.stderr).trim().slice(-1200)}`, findings: [{ check: 'slice', exit: r.status }] };
   }
-  const checks = (c.checks ?? []).filter((k) => !k.atoms || k.atoms.includes(id));
+  const checks = atomChecks(job, id);
   const results = await Promise.all(checks.map(async (k) => {
     const rubric = path.join(dir, `rubric-${k.id}.json`), vars = { atom: id, input: out, out: path.join(out, `${k.id}.json`), repo: job.repo, files, rubric };
     const r = await runOnce(k, vars, wait);
