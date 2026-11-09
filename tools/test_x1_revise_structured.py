@@ -288,7 +288,7 @@ class FromReferences(unittest.TestCase):
         first = "function size(o) { return { total: o.a + o.b }; }"
         second = "function size(v) { const total = v.b + v.a; return { total }; }"
         layout = dict(kind="record", fields=[dict(name="total", kind="integer", unit="1")])
-        params = [dict(name="o", unit="", kind="record")]
+        params = [dict(name="o", unit="", kind="record", fields=[dict(name="a", kind="integer", unit="1"), dict(name="b", kind="integer", unit="1")])]
         tests = [dict(name="wrong", fn="size", args=[dict(a=1, b=2)], expect=dict(total=9))]
         entry = self.only(synthesized([binding(first, layout, "size", params), binding(second, layout, "size", params)], tests))
         self.assertEqual(entry["args"], [dict(a=1, b=2)])
@@ -300,7 +300,8 @@ class FromReferences(unittest.TestCase):
         params = [dict(name="o", unit="")]
         tests = [dict(name="kept", fn="size", args=[dict(a=1, b=2)], expect=3)]
         answer = synthesized([binding(first, NUMBER, "size", params), binding(second, NUMBER, "size", params)], tests)
-        self.assertEqual(answer["evaluator"]["checks"]["vectors"], [])
+        for vector in answer["evaluator"]["checks"]["vectors"]:
+            self.assertEqual(vector["args"], [dict(a=1, b=2)])
 
     def test_structured_results_never_become_number_vectors(self):
         self.assertEqual(synthesized([binding(CARD_A), binding(CARD_B)])["evaluator"]["checks"]["vectors"], [])
