@@ -10,17 +10,17 @@ import { layoutOf, shaped, shapeOf, validLayout } from './layout.mjs';
 import { anchorProblems, discrimination, discriminationScore, mutants, selfConsistent } from './qualify.mjs';
 import { runReferences } from './sandbox.mjs';
 import { compareUnits } from './units.mjs';
-import { vectorsFor } from './vectors.mjs';
+import { inputPools, vectorsFor, withResults } from './vectors.mjs';
 export { judge };
 const sha = text => createHash('sha256').update(text).digest('hex');
 export const enabled = env => env.ENDOFORGE_SYNTH === '1';
 export const sheetShape = { residual: ['plain-language sentence, at most 8'], quantities: [{ name: 'string', unit: 'string', sign: 'positive|nonnegative|any' }], relations: [{ output: 'string', input: 'string', direction: 'increasing|decreasing' }], invariants: Object.keys(library) };
-export const bindingShape = { exports: [{ name: 'exactExportName', params: [{ name: 'exactParameterName', unit: 'unit as stated, or ""', min: 'number|null', max: 'number|null', minInclusive: true, maxInclusive: true, integer: false, codes: '{"1":"label"} for code parameters only' }],
+export const bindingShape = { exports: [{ name: 'exactExportName', params: [{ name: 'exactParameterName', unit: 'unit as stated, or ""', min: 'number|null', max: 'number|null', minInclusive: true, maxInclusive: true, integer: false, codes: '{"1":"label"} for code parameters only', kind: 'record|list|text for a structured parameter only, with its full layout in the same keys as result' }],
   result: { kind: 'number|code|boolean|integer|record|list|text', unit: 'unit as stated, or ""', decimals: 'integer the contract says to display, or null', codes: '{"1":"label"} or null', min: 'number|null', max: 'number|null, or the largest item count for a list', maxBytes: 'largest UTF-8 byte length for text only', items: 'the layout of each item for a list only', fields: '[{name, kind, ...the same layout keys}] in contract order for a record only' }, monotone: [{ param: 'exactParameterName', direction: 'increasing|decreasing' }] }],
   reference: 'function exactExportName(a, b) { ... }' };
 export const prompts = {
   need: need => ({ stage: 'evaluator-need', need, library, sheetShape, instructions: 'You are writing the acceptance evaluator for this request before any implementation exists, and you will never see one. From the request alone, state what must be checked. Write sheet.json with one edit_file call (its JSON matches sheetShape), then done. Name only quantities and relations the request itself supports; choose invariants from library by id.' }),
-  binding: (sheet, contract) => ({ stage: 'evaluator-binding', sheet, contract, library, bindingShape, instructions: 'You are writing the acceptance evaluator for the frozen contract below, before any implementation exists; you will never see the implementation or its tests. Write binding.json with one edit_file call, then done. List every export the contract defines, parameters in contract order with exact names. Give each unit as the contract states it, or "" when it states none. Give domain bounds only as the contract states them. Give decimals as the contract says to display. List a monotone relation only where the contract makes it certain. reference is one plain JavaScript source defining one function per export with the exact name and parameter order, computing exactly what the contract specifies in double precision with only Math and Number, throwing an Error wherever the contract requires a trap, and rounding only where the contract rounds the returned value. Where the contract returns a record, list or text, declare its full layout in result and return a plain object, array or string from reference.' }),
+  binding: (sheet, contract) => ({ stage: 'evaluator-binding', sheet, contract, library, bindingShape, instructions: 'You are writing the acceptance evaluator for the frozen contract below, before any implementation exists; you will never see the implementation or its tests. Write binding.json with one edit_file call, then done. List every export the contract defines, parameters in contract order with exact names. Give each unit as the contract states it, or "" when it states none. Give domain bounds only as the contract states them. Give decimals as the contract says to display. List a monotone relation only where the contract makes it certain. reference is one plain JavaScript source defining one function per export with the exact name and parameter order, computing exactly what the contract specifies in double precision with only Math and Number, throwing an Error wherever the contract requires a trap, and rounding only where the contract rounds the returned value. Where the contract returns a record, list or text, declare its full layout in result and return a plain object, array or string from reference. Where a parameter takes a record, list or text, declare its full layout on that parameter (kind, and fields, items and max, or maxBytes, with field bounds as the contract states them), and let reference take a plain object, array or string there; generated inputs follow that layout.' }),
 };
 async function ask(provider, session, prompt, path) {
   const begin = performance.now();
@@ -44,6 +44,7 @@ function shapeProblems(entry, arity) {
   else if (entry.params.length !== arity) problems.push(`declares ${entry.params.length} parameters, the frozen tests pass ${arity}`);
   for (const p of entry.params) {
     if (typeof p?.name !== 'string') problems.push('parameter without a name');
+    if (layoutOf(p) && !validLayout(p)) problems.push(`${p?.name} has a malformed declared layout`);
     for (const k of ['min', 'max']) if (p?.[k] !== undefined && p[k] !== null && !isNumber(p[k])) problems.push(`${p.name}.${k} is not a number`);
   }
   return problems;
@@ -60,10 +61,19 @@ export async function compileMember(binding, tests) {
     exports[fn] = { qualified: !problems.length, failures: problems.map(p => `M1 ${p}`), declaration: entry ? declarationOf(entry) : null };
     if (problems.length) continue;
     const base = tests.find(t => t.fn === fn && !t.expectError)?.args;
-    const frozen = vectorsFor(entry, base, `${hash}:${fn}`), dense = vectorsFor(entry, base, `${hash}:${fn}:dense`, 192);
-    plan.push({ fn, entry, own: tests.filter(t => t.fn === fn), frozen, dense: dense.calls.filter(c => !frozen.calls.some(f => JSON.stringify(f.args) === JSON.stringify(c.args))) });
+    plan.push({ fn, entry, base, own: tests.filter(t => t.fn === fn), pools: inputPools(entry, tests, `${hash}:${fn}`), densePools: inputPools(entry, tests, `${hash}:${fn}:dense`, 40) });
   }
   if (!plan.length) return { hash, exports };
+  if (plan.some(p => p.entry.params.some(param => layoutOf(param)))) {
+    const seeds = plan.flatMap(p => vectorsFor(p.entry, p.base, `${hash}:${p.fn}:seed`, 48, p.pools).calls);
+    let returned = [];
+    try { returned = (await runReferences([binding.reference], seeds))[0]?.results?.filter(r => r && 'value' in r && typeof r.value === 'object').map(r => r.value) ?? []; } catch {}
+    for (const p of plan) { p.pools = withResults(p.entry, p.pools, returned); p.densePools = withResults(p.entry, p.densePools, returned, 48); }
+  }
+  for (const p of plan) {
+    const frozen = vectorsFor(p.entry, p.base, `${hash}:${p.fn}`, 48, p.pools), dense = vectorsFor(p.entry, p.base, `${hash}:${p.fn}:dense`, 192, p.densePools.map((pool, i) => pool && [...(p.pools[i] ?? []), ...pool]));
+    Object.assign(p, { frozen, dense: dense.calls.filter(c => !frozen.calls.some(f => JSON.stringify(f.args) === JSON.stringify(c.args))) });
+  }
   const calls = plan.flatMap(p => [...p.own.map(t => ({ fn: t.fn, args: t.args })), ...p.frozen.calls, ...p.dense]);
   const faults = mutants(binding.reference);
   let runs;
@@ -104,7 +114,7 @@ export async function combine(members) {
   const [a, b] = members, fns = Object.keys(a.exports);
   let cross = null;
   if (b) {
-    const usable = e => e?.qualified && !e.structured;
+    const usable = e => e?.qualified;
     const calls = side => fns.filter(fn => usable(side.exports[fn]) && usable((side === a ? b : a).exports[fn])).flatMap(fn => side.exports[fn].vectors.map(v => ({ fn, args: v.args })));
     try { [cross] = [await Promise.all([runReferences([b.reference], calls(a)), runReferences([a.reference], calls(b))])]; } catch { cross = null; }
   }
@@ -119,11 +129,11 @@ export async function combine(members) {
           decimals: x.result.decimals === y.result.decimals ? x.result.decimals : null,
           codes: x.result.codes && y.result.codes && JSON.stringify(Object.keys(x.result.codes).sort()) === JSON.stringify(Object.keys(y.result.codes).sort()) && !swappedLabels(x.result.codes, y.result.codes).length ? x.result.codes : null } });
     }
-    if (!sides.every(s => s?.qualified) || sides.some(s => s.structured)) continue;
+    if (!sides.every(s => s?.qualified)) continue;
     const maps = sides.map((side, k) => {
       const map = new Map();
       side.vectors.forEach((v, i) => {
-        if (b) { const other = shaped(cross?.[k]?.[0]?.results?.[crossAt[k] + i], null); if (!other || !same('value' in other ? { value: other.value } : { throws: true }, v)) return; }
+        if (b) { const other = shaped(cross?.[k]?.[0]?.results?.[crossAt[k] + i], side.layout ?? null); if (!other || other.missing || other.misfit || (!('value' in other) && !('error' in other)) || !same('value' in other ? { value: other.value } : { throws: true }, v)) return; }
         map.set(i, checks.vectors.push({ fn, ...v }) - 1);
       });
       if (b) crossAt[k] += side.vectors.length;

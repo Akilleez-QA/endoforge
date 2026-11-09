@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
 import { alike, relative, same } from './invariants.mjs';
-import { laidOut } from './layout.mjs';
+import { laidOut, layoutOf } from './layout.mjs';
 // Fixed meta-gates for a synthesized evaluator. None of them sees a candidate.
 export const discrimination = 0.8;
 const swaps = [[/^<=$/, '<'], [/^<$/, '<='], [/^>=$/, '>'], [/^>$/, '>='], [/^\+$/, '-'], [/^-$/, '+'], [/^\*$/, '/'], [/^\/$/, '*'], [/^&&$/, '||'], [/^\|\|$/, '&&'],
@@ -58,11 +58,12 @@ export function selfConsistent(entry, calls, results, sweeps) {
   for (const relation of entry.monotone ?? []) {
     const param = entry.params.findIndex(p => p.name === relation.param), sweep = sweeps.find(s => s.param === param);
     if (!sweep || !['increasing', 'decreasing'].includes(relation.direction)) { dropped.push(`monotone ${relation.param}: no such parameter`); continue; }
+    if (layoutOf(entry.params[param]) || sweep.indices.some(i => typeof calls[i].args[param] !== 'number')) { dropped.push(`monotone ${relation.param}: not a numeric parameter`); continue; }
     const chain = sweep.indices.filter(i => 'value' in results[i]).sort((a, b) => calls[a].args[param] - calls[b].args[param]);
     const broken = chain.some((i, k) => k && (relation.direction === 'increasing' ? results[i].value < results[chain[k - 1]].value : results[i].value > results[chain[k - 1]].value));
     if (broken || chain.length < 3) dropped.push(`monotone ${relation.param}: ${broken ? 'reference breaks it' : 'too few points'}`); else kept.monotone.push({ param, direction: relation.direction, chain });
   }
-  const outside = calls.findIndex((c, i) => 'value' in results[i] && entry.params.some((p, j) => !p.codes && ((Number.isFinite(p.min) && (c.args[j] < p.min || (p.minInclusive === false && c.args[j] === p.min))) || (Number.isFinite(p.max) && (c.args[j] > p.max || (p.maxInclusive === false && c.args[j] === p.max))))));
+  const outside = calls.findIndex((c, i) => 'value' in results[i] && entry.params.some((p, j) => !p.codes && typeof c.args[j] === 'number' && ((Number.isFinite(p.min) && (c.args[j] < p.min || (p.minInclusive === false && c.args[j] === p.min))) || (Number.isFinite(p.max) && (c.args[j] > p.max || (p.maxInclusive === false && c.args[j] === p.max))))));
   if (outside >= 0) dropped.push(`domain: reference returns outside the declared domain at (${calls[outside].args})`);
   return { kept, dropped };
 }

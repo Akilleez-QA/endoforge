@@ -173,7 +173,7 @@ async function frozenEvaluator(admission) {
   } catch { return null; }
 }
 const shapeOf = tests => JSON.stringify((tests ?? []).map(({ fn, args, got, pass, trap }) => [fn, args, got, pass, trap === true]));
-export async function checkAtCommit(content, observed, evaluator = null) {
+export async function checkAtCommit(content, observed, evaluator = null, cell = {}) {
   const passed = observed.status === 'completed' ? (observed.report?.attempts ?? []).filter(attempt => attempt?.stage === 'passed') : [];
   if (!passed.length) return { observed, rerun: null, synthesis: null, problem: null };
   const begin = performance.now();
@@ -189,14 +189,14 @@ export async function checkAtCommit(content, observed, evaluator = null) {
   }
   if (!evaluator) return { observed, rerun, synthesis: null, problem: null };
   let verdict;
-  try { verdict = await judgeInCell(evaluator, candidate); } catch (error) { verdict = { decision: 'refuse', failures: [`judge failed: ${error.message}`] }; }
+  try { verdict = await judgeInCell(evaluator, candidate, cell ?? {}); } catch (error) { verdict = { decision: 'refuse', failures: [`judge failed: ${error.message}`] }; }
   verdict = { ...verdict, evaluator: hash(JSON.stringify(evaluator)) };
   if (verdict.decision !== 'refuse') return { observed, rerun, synthesis: verdict, problem: null };
   const problem = 'synthesized evaluator refused the candidate';
   return { observed: { ...observed, status: 'rejected', reason: problem }, rerun, synthesis: verdict, problem };
 }
 
-export async function attemptAgent({ need, directory, pool, observe, limits = agentLimits, resume = false, deadline = Infinity, env = process.env, library = null, synthProvider, confirm, suspect, principal, containedRoute }) {
+export async function attemptAgent({ need, directory, pool, observe, limits = agentLimits, resume = false, deadline = Infinity, env = process.env, library = null, synthProvider, synthCell = {}, confirm, suspect, principal, containedRoute }) {
   const timings = Object.fromEntries(['generate', 'freeze', 'compile', 'gate', 'ledger', 'promote'].map(k => [k, null]));
   const begin = performance.now(), jobKey = `agent-${process.pid}-${++nextAgentJob}`, id = basename(directory);
   const reference = { ledger: join(directory, 'ledger.sqlite') };
@@ -240,7 +240,7 @@ export async function attemptAgent({ need, directory, pool, observe, limits = ag
       }
     }
     if (!context.admission && synthesis.enabled(env)) {
-      context.synth = synthesis.begin({ need, env, provider: synthProvider, confirm, suspect: suspectHook(context, suspect) });
+      context.synth = synthesis.begin({ need, env, provider: synthProvider, confirm, suspect: suspectHook(context, suspect), cell: synthCell });
     }
     let waiting = null, after = recovered?.seq ?? null, result;
     if (recovered && waits === 'release') {
@@ -293,7 +293,7 @@ export async function attemptAgent({ need, directory, pool, observe, limits = ag
     const sources = returned ? { 'kernel.ts': hash(context.shadow['kernel.ts'] ?? ''), 'glue.json': hash(context.shadow['glue.json'] ?? '') } : null;
     observe?.('committing');
     const outcome = await commitCandidate(pool, { evaluated: { observed: { ...observed, ...(evidence ? { evidence: kept } : {}) }, content, sources },
-      reference, digest: context.admission.digest, timings, continuation: after, evaluator: await frozenEvaluator(context.admission) });
+      reference, digest: context.admission.digest, timings, continuation: after, evaluator: await frozenEvaluator(context.admission), cell: synthCell });
     const lane = returned ? await compatibilityRoute(containedRoute, context.compatibility, directory, JSON.parse(returned)) : {};
     observe?.('returned');
     timings.promote = 0;
@@ -336,9 +336,9 @@ export async function evaluateInCell(pool, { candidate, admission, repair, timin
     sources: repair ? null : { 'kernel.ts': hash(candidate.files['kernel.ts']), 'glue.json': hash(candidate.files['glue.json']) } };
 }
 
-export async function commitCandidate(pool, { evaluated: { observed: reported, content, sources }, reference, digest, decisionPath, timings = {}, receiptId, continuation = null, evaluator = null }) {
+export async function commitCandidate(pool, { evaluated: { observed: reported, content, sources }, reference, digest, decisionPath, timings = {}, receiptId, continuation = null, evaluator = null, cell = {} }) {
   const identity = hash(content);
-  const checked = await checkAtCommit(content, reported, evaluator), observed = checked.observed;
+  const checked = await checkAtCommit(content, reported, evaluator, cell), observed = checked.observed;
   const start = performance.now();
   const template = receipt(reference, digest, identity);
   if (receiptId) template.id = receiptId;
@@ -350,17 +350,17 @@ export async function commitCandidate(pool, { evaluated: { observed: reported, c
     report: observed.report, rounds: observed.evidence?.rounds ?? [], rerun: checked.rerun, ...(checked.synthesis ? { synthesis: checked.synthesis } : {}) };
 }
 
-export async function evaluateAndCommit(pool, { candidate, reference, admission, digest = admission.digest, decisionPath, repair, observe, timings = {}, receiptId }) {
+export async function evaluateAndCommit(pool, { candidate, reference, admission, digest = admission.digest, decisionPath, repair, observe, timings = {}, receiptId, cell = {} }) {
   const evaluated = await evaluateInCell(pool, { candidate, admission, repair, timings });
   observe?.('committing');
-  const outcome = await commitCandidate(pool, { evaluated, reference, digest, decisionPath, timings, receiptId, evaluator: await frozenEvaluator(admission) });
+  const outcome = await commitCandidate(pool, { evaluated, reference, digest, decisionPath, timings, receiptId, evaluator: await frozenEvaluator(admission), cell });
   observe?.('returned');
   return outcome;
 }
 
 export const withCorrected = (candidate, corrected) => (corrected ? { ...candidate, files: { ...candidate.files, ...corrected } } : candidate);
 export const correctedLibrary = (library, corrected) => (library ? { serve: (need, options) => library.serve(corrected() ? { ...need, files: { ...need.files, ...corrected() } } : need, options) } : library);
-export async function attemptInIsolate({ need, directory, pool, env = process.env, deadline = Infinity, observe, repair, library = null, synthProvider, confirm, suspect, principal, containedRoute }) {
+export async function attemptInIsolate({ need, directory, pool, env = process.env, deadline = Infinity, observe, repair, library = null, synthProvider, synthCell = {}, confirm, suspect, principal, containedRoute }) {
   const timings = Object.fromEntries(['generate', 'freeze', 'compile', 'gate', 'ledger', 'promote'].map(k => [k, null]));
   const begin = performance.now();
   let scalarFilter;
@@ -368,7 +368,7 @@ export async function attemptInIsolate({ need, directory, pool, env = process.en
     if (!loopPools.has(pool)) throw Error('createLoopPool required');
     await pool.ready();
     const found = { suspect: null, revision: null };
-    const synth = synthesis.enabled(env) ? synthesis.begin({ need, env, provider: synthProvider, confirm, suspect: suspectHook(found, suspect) }) : null;
+    const synth = synthesis.enabled(env) ? synthesis.begin({ need, env, provider: synthProvider, confirm, suspect: suspectHook(found, suspect), cell: synthCell }) : null;
     let admission, corrected = null, lane = null;
     const generated = await generate({ need, directory, env, deadline, implementation, library: correctedLibrary(servedAs(library, principal), () => corrected),
       freeze: async ({ reference, need: frozenNeed, configuration }) => {
@@ -393,7 +393,7 @@ export async function attemptInIsolate({ need, directory, pool, env = process.en
     observe?.('generated');
     const candidate = withCorrected(generated.candidate, corrected);
     const outcome = await evaluateAndCommit(pool, { candidate, reference: { ...generated.reference, identity: admission.identity },
-      admission, decisionPath: join(directory, 'promotion.json'), timings, repair, observe: stage => stage !== 'returned' && observe?.(stage) });
+      admission, decisionPath: join(directory, 'promotion.json'), timings, repair, cell: synthCell, observe: stage => stage !== 'returned' && observe?.(stage) });
     if (outcome.synthesis) await writeFile(join(directory, 'synthesis.json'), JSON.stringify(outcome.synthesis, null, 1));
     const contained = await compatibilityRoute(containedRoute, lane, directory, candidate);
     observe?.('returned');

@@ -35,9 +35,9 @@ export function judge(evaluator, candidate) {
     checks.vectors.forEach((v, i) => {
       const o = outcomes[i];
       if (o.missing) failures.push(`value.reference: ${v.fn} is not exported with ${v.args.length} parameters`);
-      else if (o.limit) failures.push(`value.reference: ${v.fn}(${v.args}) ${o.limit}`);
+      else if (o.limit) failures.push(`value.reference: ${v.fn}(${JSON.stringify(v.args)}) ${o.limit}`);
       else if (o.problem) failures.push(`value.reference: ${v.fn}: ${o.problem}`);
-      else if (!o.skipped && !same(o.trap ? { throws: true } : o, v)) failures.push(`value.reference: ${v.fn}(${JSON.stringify(v.args)}) gives ${o.trap ? 'a trap' : JSON.stringify(o.value)}, expected ${v.throws ? 'a trap' : v.value}`);
+      else if (!o.skipped && !same(o.trap ? { throws: true } : o, v)) failures.push(`value.reference: ${v.fn}(${JSON.stringify(v.args)}) gives ${o.trap ? 'a trap' : JSON.stringify(o.value)}, expected ${v.throws ? 'a trap' : JSON.stringify(v.value)}`);
     });
     failures.push(...propertyProblems(checks, outcomes));
   }
