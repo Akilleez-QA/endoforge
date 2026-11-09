@@ -86,4 +86,5 @@ Every module has a direct test, and `make lib-test` runs them with the conductor
   file path, records a signal as 128 plus the signal, and leaves no file when the wrapper itself is killed; `readExit`
   rejects anything that is not an exit code.
 
-Engineering record: component C-23, requirement REQ-ERR-001.
+Engineering record: component C-23, requirements REQ-ERR-001 (`errors.mjs`, `run-typed`) and REQ-ERR-002 (`lock.mjs`,
+`headroom.mjs`, `exitfile.mjs`).

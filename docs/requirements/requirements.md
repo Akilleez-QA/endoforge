@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SRS |
-| Version | 2.5 |
+| Version | 2.6 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -204,7 +204,7 @@ The library shall key promoted kernels by a canonical contract key that ignores 
 
 With `retrieval: 'semantic'` (default `key`), the library shall rank entries by offline, deterministic similarity of normalized contract text before the key match, and let a need with no capability block adopt the capability of an entry scoring at least 0.4.
 
-- Rationale: A contract can still freeze without a capability block; text similarity finds the candidate entry without a model call.
+- Rationale: A need handed to the library directly, outside the loop, may carry no capability block (the loop's freeze has required one since round 6, REQ-GEN-011); text similarity finds the candidate entry without a model call.
 - Derivation: `core/library/library.mjs`, `core/library/key.mjs`
 - Allocated to: SDD §4 C-05 Library
 - Verification: T — `make library-test`
@@ -451,6 +451,16 @@ In a delegated cgroup v2 scope, process mode shall have its limits enforced, not
 - Allocated to: SDD §4 C-06 Isolate pool
 - Verification: T — `make isolate-test` (the case runs itself inside `systemd-run --user --scope` and skips with the reason where no delegated scope with those controllers exists)
 - Status: Baselined
+
+### REQ-ISO-019 — Synchronous host calls
+
+With `syncHostCalls` set, the pool shall give each job's port a channel (`portOptions.syncHostCall`: a growable shared buffer in a thread cell, blocking pipes on file descriptors 4 and 5 in a process cell) that `connectSyncHostCall` turns into a blocking call answered by the `syncHostCalls` function before the cell's next statement, counted against the same 4,096 calls per job and 1 MiB request limit as asynchronous host calls, with the job timeout paused while the host answers and the total deadline still applying, and with no channel in `portOptions` when `syncHostCalls` is unset.
+
+- Rationale: A synchronous interface such as the WIT `read` cannot await an asynchronous host call; without this path the compatibility workcell had to copy snapshots in with the job.
+- Derivation: `core/runtime/isolate-pool.mjs`
+- Allocated to: SDD §4 C-06 Isolate pool
+- Verification: T — `make isolate-test`
+- Status: Baselined (round 6)
 
 ### REQ-STUB-001 — Stub pool replay
 
@@ -774,15 +784,15 @@ After the freeze, `generate` shall re-read `tests.json` and `frozen.sha256` from
 - Verification: T — `make isolate-test`
 - Status: Baselined
 
-### REQ-GEN-011 — Capability block requested and checked at the freeze
+### REQ-GEN-011 — Capability block required at the freeze and checked at G7
 
-Generation shall ask in both specification prompts for a fenced ```capability block in `CONTRACT.md` (exports with ordered arguments, kinds, units, ranges, number precision, code tables and traps), refuse at the freeze a block that is malformed or disagrees with the frozen tests, and let library lookup serve a generated need whose block matches a promoted kernel without an implementation stage on the `current` and `agent` paths.
+Generation shall ask in both specification prompts for a fenced ```capability block in `CONTRACT.md` (exports with ordered arguments, kinds, units, ranges, number precision, code tables and traps), refuse at the freeze on the `current`, `isolate` and `agent` paths a contract with no block or with a block that is malformed or disagrees with the frozen tests (the agent path returns the refusal to the model as specification problems and never freezes), fail G7 when `glue.json` disagrees with the frozen block on exports, argument kinds, units, ranges and codes, result kind, unit, precision, rounding, codes and labels, or traps (`capabilityAgreement`, comparing units and ranges as library lookup does), and let library lookup serve a generated need whose block matches a promoted kernel without an implementation stage on the `current` and `agent` paths.
 
-- Rationale: The library keys entries by the capability that `core/library/key.mjs` `capabilityFromContract` reads from this block; without it every generated need misses with `no_capability`.
-- Derivation: `core/runtime/x1/generator.mjs`, `core/runtime/x1/agent.mjs`, `core/library/key.mjs`
+- Rationale: The library keys entries by the capability that `core/library/key.mjs` `capabilityFromContract` reads from this block. A block-less contract could freeze until round 6 and then always missed with `no_capability`; glue that disagrees with the block would describe a different capability from the one the library keys.
+- Derivation: `core/runtime/x1/generator.mjs`, `core/runtime/x1/agent.mjs`, `core/runtime/x1/contract.mjs`, `core/runtime/x1/gates.mjs`, `core/library/key.mjs`
 - Allocated to: SDD §4 C-07 X1 candidate loop
 - Verification: T — `make isolate-test`
-- Status: Baselined. The block is checked only when the contract contains one; a contract without it still freezes and misses the library with `no_capability`
+- Status: Baselined (round 5; changed in round 6, M1: the block is required on every path and G7 checks the glue against it). The stand-alone `tools/gate/gate.mjs freeze` does not require the block; `gate run` refuses its absence at G7 (GAP-EF-015)
 
 ### REQ-PROMOTE-001 — Local promotion
 
@@ -881,7 +891,7 @@ Evaluator synthesis shall generate inputs for a record, list or text parameter f
 - Rationale: A caller that tightens or widens the judging cell must get the same limits whichever path runs.
 - Derivation: `core/runtime/x1/loop.mjs`, `core/runtime/x1/pipeline.mjs`
 - Allocated to: SDD §4 C-08 Evaluator synthesis
-- Verification: T — `make isolate-test` (the `isolate` and `agent` paths); I — `core/runtime/x1/pipeline.mjs` (`attemptCurrent` passes `synthCell` to `begin`; no test drives the `current` path through `runNeed` with `synthCell`)
+- Verification: T — `make isolate-test` (all three paths; the `current` path since round 6, where a refusal by the synthesized evaluator now carries the same `problem` text as on the other paths)
 - Status: Baselined
 
 ### REQ-ORACLE-001 — Formula oracle
@@ -1100,6 +1110,16 @@ The kernel workcell shall compile a component once and give each attempt fresh s
 - Verification: T — `make kernel-test`
 - Status: Baselined
 
+### REQ-KERNEL-005 — Declared effects, durable denials and task conformance
+
+The kernel host shall release a transition only when every returned effect matches a declaration whose `id` equals the kernel's frozen effect-schema identity (capability, operation, `bytes`, `utf8` or `json` encoding, byte bounds, an optional JSON schema without `$ref`, and `max_effects`), permit no effect without a declaration, reject the whole transition with `EffectDenied` otherwise (reported by `run_candidate` as `denied`), append every effect and broker denial to a `DenialJournal`, an append-only SQLite journal hash-chained with the ledger's encoder that refuses update and delete and verifies its chain on reopening, and let `conformance.check` (also a process entry point reading JSON on stdin) run a frozen task's cases through the workcell and report each as `passed`, `wrong`, `denied`, `trapped` or `refused`.
+
+- Rationale: Effects were returned unchecked and denials left no record, and nothing outside the kernel tests used the host (round 6, M4); the Rust lane's admission is now its caller (REQ-RUST-001).
+- Derivation: `tools/kernel/effects.py`, `tools/kernel/journal.py`, `tools/kernel/conformance.py`, `tools/kernel/workcell.py`, `tools/kernel/broker.py`, `tools/kernel/limits.py`
+- Allocated to: SDD §4 C-17 Kernel host
+- Verification: T — `make kernel-test`
+- Status: Baselined (round 6)
+
 ### REQ-TOOLS-001 — Pinned kernel test tools
 
 `make tools` shall install Wasmtime and wasm-tools at the versions pinned in `tools/kernel/install_tools.py` into `.tools/`, install nothing on a hash mismatch, and `make kernel-test` refuses to run with missing or wrong versions.
@@ -1112,12 +1132,12 @@ The kernel workcell shall compile a component once and give each attempt fresh s
 
 ### REQ-COMPAT-001 — TypeScript reducer contract
 
-The compatibility contract shall pin the exact EF-18 WIT digest and refuse extra or missing exports, wrong types, asynchronous reducers, contract and schema drift, malformed budgets, transitions and effects, snapshot policy and inputs before reducer code runs, and revoke borrowed handles after a thrown reducer, with `probeInWorkcell` running these checks inside `IsolatePool` workcells, binding source, WIT, evaluator, runtime and compiler identities in the receipt, refusing a reducer that hangs, exits or exhausts the cell heap while the pool keeps serving, and refusing contract drift and shared memory before dispatch.
+The compatibility contract shall pin the exact EF-18 WIT digest and refuse extra or missing exports, wrong types, asynchronous reducers, contract and schema drift, malformed budgets, transitions and effects, snapshot policy and inputs before reducer code runs, and revoke borrowed handles after a thrown reducer, with `probeInWorkcell` running these checks inside `IsolatePool` workcells, binding source, WIT, evaluator, runtime and compiler identities in the receipt, refusing a reducer that hangs, exits or exhausts the cell heap while the pool keeps serving, refusing contract drift, shared memory and a snapshot list that is not an array of at most 1,024 unshared byte arrays before dispatch, keeping snapshots in the host and serving each borrowed buffer's `size` and `read` through synchronous host calls (`syncHostCalls: serveHostBuffer`, REQ-ISO-019) under the same input budget, with the host checking bounds again, and recording the calls and bytes served as `hostBuffers` in the receipt.
 
-- Rationale: TypeScript reducers must meet the same contract as kernel components.
+- Rationale: TypeScript reducers must meet the same contract as kernel components, and the WIT `read` is synchronous, so a borrowed buffer must be read from the host, not copied in with the job (round 6, M3).
 - Derivation: `tools/compatibility/contract.ts`, `tools/compatibility/reference.ts`, `tools/compatibility/workcell.mjs`, `tools/compatibility/port.mjs`
 - Allocated to: SDD §4 C-18 Compatibility contract
-- Verification: T — `make test` (`compatibility-test`)
+- Verification: T — `make test` (`compatibility-test`), `make isolate-test` (`gaps6-hostcall.test.mjs`)
 - Status: Baselined
 
 ### REQ-FAULT-001 — Seeded fault generator
@@ -1300,6 +1320,16 @@ The job tool shall load every bundled kind file by its id with only known rule k
 - Verification: T — `make test` (`lib-test`)
 - Status: Baselined
 
+### REQ-ERR-002 — Shared lock, headroom and exit-file modules
+
+The shared tool library shall have `lock.mjs` record the owner's pid, host and time in `<target>.lock`, reclaim a lock whose owner pid is dead on this host or an ownerless lock older than `orphanMs` but never a lock from another host, throw `LockBusy` (exit code 75) after `waitMs`, release in `withLock` even when the function throws, serialise read-modify-write across processes, and write JSON atomically leaving no temporary file; have `headroom.mjs` report `ok` only while the one-minute load is below `maxLoad` (default 0.875 of the CPUs, `ENDOFORGE_MAX_LOAD`) and available memory is at least `reserveGb` (default the larger of 8 GiB and 12% of RAM, `ENDOFORGE_RESERVE_GB`), always `ok` with `ENDOFORGE_THROTTLE=0`; and have `exitfile.mjs` record a command's exit code (128 plus the signal for a signal) without changing its output, leave no file when the wrapper itself is killed, and read back `null` for anything that is not an exit code.
+
+- Rationale: The conductor, atomizer, project scheduler and job tools rely on these modules to tell busy from failed and finished from running; only `errors.mjs` had a direct test (round 6, M6).
+- Derivation: `tools/lib/lock.mjs`, `tools/lib/headroom.mjs`, `tools/lib/exitfile.mjs`
+- Allocated to: SDD §4 C-23 Conductor and job intake
+- Verification: T — `make test` (`lib-test`)
+- Status: Baselined (round 6)
+
 ### REQ-HILL-001 — Hillclimb lessons ledger
 
 Hillclimb shall count lesson recurrences, reopen a closed lesson that recurs, write `LESSONS.md` from measurements and receipts, record `--close` and `--add` changes, and leave a torn ledger as it was.
@@ -1312,9 +1342,9 @@ Hillclimb shall count lesson recurrences, reopen a closed lesson that recurs, wr
 
 ### REQ-HILL-002 — Hillclimb default runner
 
-Hillclimb shall default its campaign runner to `bin/run-atoms.mjs` in this repository, mapping the runner contract onto the atomizer scheduler with the campaign policy, run `plan-review` from an unrelated directory, and have `hc-patch.sh` print its usage and exit 2 without its arguments.
+Hillclimb shall default its campaign runner to `bin/run-atoms.mjs` in this repository, mapping the runner contract onto the atomizer scheduler with the campaign policy, pass the stage policy as `--policy <stage>.policy.json` to a campaign's own runner as well as to the default one, run `plan-review` from an unrelated directory, and have `hc-patch.sh` print its usage and exit 2 without its arguments.
 
-- Rationale: A default must not depend on a launcher outside the repository.
+- Rationale: A default must not depend on a launcher outside the repository, and a campaign's own runner outside the atomizer's `bindRoots` needs the same stage policy (round 6, M6).
 - Derivation: `tools/hillclimb/lib/runner.mjs`, `tools/hillclimb/bin/run-atoms.mjs`, `tools/hillclimb/bin/hillclimb.mjs`, `tools/hillclimb/scripts/hc-patch.sh`
 - Allocated to: SDD §4 C-24 Hillclimb
 - Verification: T — `make test` (`lib-test`)
@@ -1392,13 +1422,13 @@ The checkpoint tool shall round-trip a campaign through an `age`-encrypted archi
 
 ### REQ-FACTORY-003 — Factory runtime
 
-The factory runtime shall validate job specs and records against its schema files, write state durably (a failed write keeps the previous content), fence a second controller, schedule FIFO within capacity with subscription-limit backoff and persisted queues (an interrupted job becomes unknown; an unknown saved version is refused on reload), publish a passed attempt once with a valid receipt, never create a container on an input-hash mismatch and never remove a container another owner labelled, reconcile a crashed attempt from its journal, deny egress outside the allowlist and a TLS hello that does not name the CONNECT authority, forward only exact allowed requests through the local provider, complete `local_provider.call_protected` through a real sandboxed worker whose only route out is the `bridge.py` relay, and refuse a WebAssembly run without a pinned, present Wasmtime.
+The factory runtime shall validate job specs and records against its schema files, write state durably (a failed write keeps the previous content), fence a second controller, schedule FIFO within capacity with subscription-limit backoff and persisted queues (an interrupted job becomes unknown; an unknown saved version is refused on reload), publish a passed attempt once with a valid receipt, never create a container on an input-hash mismatch and never remove a container another owner labelled, reconcile a crashed attempt from its journal, deny egress outside the allowlist and a TLS hello that does not name the CONNECT authority, forward only exact allowed requests through the local provider, complete `local_provider.call_protected` through a real sandboxed worker whose only route out is the `bridge.py` relay, start a local-provider turn without needing or mounting `node`, `codex` or the Codex credential while a Codex turn names a missing tool, run WebAssembly by default with the hash-pinned Wasmtime 49.0.0 wheel from `make tools` (checking its version and installed files and enforcing fuel, epoch and memory limits, and naming `make tools` when it is absent), refuse a Wasmtime CLI given in `ENDOFORGE_WASMTIME` without a matching `ENDOFORGE_WASMTIME_SHA256`, and keep `Egress.test_run_bounded_outcomes` independent of garbage other test modules leave in the same process.
 
-- Rationale: A worker attempt must leave checked, single publications and recoverable state (formerly GAP-EF-002).
-- Derivation: `tools/factory_runtime/core.py`, `tools/factory_runtime/scheduler.py`, `tools/factory_runtime/runner.py`, `tools/factory_runtime/recovery.py`, `tools/factory_runtime/egress.py`, `tools/factory_runtime/bridge.py`, `tools/factory_runtime/local_provider.py`, `tools/factory_runtime/wasm.py`
+- Rationale: A worker attempt must leave checked, single publications and recoverable state (formerly GAP-EF-002); a local-provider turn must not depend on agent tools it never runs, and the Wasmtime the runner uses must be the pinned one (round 6, M5).
+- Derivation: `tools/factory_runtime/core.py`, `tools/factory_runtime/scheduler.py`, `tools/factory_runtime/runner.py`, `tools/factory_runtime/recovery.py`, `tools/factory_runtime/egress.py`, `tools/factory_runtime/bridge.py`, `tools/factory_runtime/local_provider.py`, `tools/factory_runtime/wasm.py`, `tools/factory_runtime/wasm_host.py`
 - Allocated to: SDD §4 C-29 Factory runtime
-- Verification: T — `make test` (`gap-tools-test`; a stand-in Docker CLI and Wasmtime; the real-Wasmtime case skips unless `ENDOFORGE_WASMTIME` and `ENDOFORGE_WASMTIME_SHA256` are set; the sandboxed-worker cases start real workers through `systemd-run --user --scope`, `unshare` and `bwrap` and skip with the reason where one of those, `node` or `codex` is missing)
-- Status: Baselined
+- Verification: T — `make test` (`gap-tools-test`; most runner cases use a stand-in Docker CLI; the sandboxed-worker cases start real workers through `systemd-run --user --scope`, `unshare` and `bwrap` and skip with the reason where one of those is missing; `RealPinnedWasmtime` skips with the reason where `make tools` has not run or there is no systemd user manager; the Wasmtime CLI case skips unless `ENDOFORGE_WASMTIME` and `ENDOFORGE_WASMTIME_SHA256` are set; `RealDocker` runs the runner against a real Docker daemon reached without `sudo` and an image already on the host, and skips with the reason otherwise)
+- Status: Baselined. The `RealDocker` cases have never run: on the development host the Docker socket is not reachable without `sudo`, so they skipped on 2026-11-09, and no CI run has been recorded. Under the wheel, a `memory.grow` past the ceiling returns -1 instead of trapping; the ceiling holds
 
 ### REQ-FACTORY-004 — Approved atoms registry
 
@@ -1422,10 +1452,10 @@ The factory campaign and portability tools shall keep frozen evidence unchanged 
 
 ### REQ-RUST-001 — Rust lane
 
-The Rust lane shall build reproducibly with the pinned toolchain, refuse a toolchain mismatch before building, match the P-06 frozen equivalence, and run its component in the `tools/kernel` Wasmtime workcell.
+The Rust lane shall build reproducibly with the pinned toolchain, refuse a toolchain mismatch before building, match the P-06 frozen equivalence, and admit any Rust kernel crate that meets the kernel contract (a `cdylib` with `Cargo.lock`, `src/lib.rs`, regular files only under `src/`, no build script or workspace, crates.io dependencies only, all checked before building) only after the `tools/kernel` host runs every case of its frozen task through the Wasmtime workcell (`tools.kernel.conformance`, REQ-KERNEL-005), writing `admission.json` on a pass and raising `AdmissionRejected` with an `admission` entry in the denial journal on a build failure or any failed, denied, trapped or refused case, as shown for two distinct frozen tasks (`tasks/p06-pressure.json` and `tasks/tally.json`).
 
-- Rationale: A second language lane under the same acceptance.
-- Derivation: `tools/rust_lane/build.py`, `tools/rust_lane/equivalence.mjs`, `tools/rust_lane/package.json`
+- Rationale: A second language lane under the same acceptance; admission was limited to one reference task until round 6 (M7), and the kernel host had no caller (M4).
+- Derivation: `tools/rust_lane/build.py`, `tools/rust_lane/admit.py`, `tools/rust_lane/equivalence.mjs`, `tools/rust_lane/package.json`, `tools/rust_lane/tasks/p06-pressure.json`, `tools/rust_lane/tasks/tally.json`, `tools/rust_lane/kernels/tally/src/lib.rs`
 - Allocated to: SDD §4 C-26 Rust lane
 - Verification: T — `make rust-lane-test` (outside `make test`; run by the CI job `rust-lane`; needs the pinned Rust toolchain)
 - Status: Baselined
@@ -1539,7 +1569,8 @@ requirements until a test exists. Numbering: `GAP-EF-NNN`, never reused.
 
 | ID | Behaviour | Location | Why untested / note |
 |---|---|---|---|
-| — | None open at version 2.5 | — | — |
+| GAP-EF-015 | The stand-alone gate's freeze does not require a capability block: `tools/gate/gate.mjs freeze` hashes a `CONTRACT.md` without a ```capability block, while the loop's freeze refuses one (REQ-GEN-011) | `tools/gate/gate.mjs` | Opened in round 6. `gate run` refuses such a contract at G7 (`` CONTRACT.md has no ```capability block ``), so no kernel is reported promotable from it, but the refusal comes after the code is written instead of at the freeze. No test checks `freeze` against a block-less contract |
+| GAP-EF-016 | `make coverage` failing on any test failure, and the CI `coverage` job running to completion with its artifact uploaded | `Makefile` (`coverage`, `coverage-python`), `.github/workflows/ci.yml` (job `coverage`) | Round-6 item M2, still open. The CI `coverage` job has never run on GitHub, and no test checks that a failing unittest makes `make coverage` fail. The rest of the lint and coverage targets is REQ-REPO-009 |
 
 Closed gaps (their IDs are not reused):
 
@@ -1603,3 +1634,4 @@ Closed gaps (their IDs are not reused):
 | 2.3 | 2026-11-09 | round 3 | 6 requirements for the round-3 work: structured mutation check (REQ-LIB-009), every memory metered (REQ-X1-011), structured specification correction (REQ-LOOP-010), implementation turn reads corrected tests (REQ-GEN-010), structured references and suspects (REQ-SYNTH-005), judging structured exports (REQ-SYNTH-006); REQ-LIB-008 now gives each part its own memory | this commit |
 | 2.4 | 2026-11-09 | round 4 | 13 requirements for the round-4 work: delegated cgroup enforcement (REQ-ISO-018), stub pool replay (REQ-STUB-001), structured synthesized vectors (REQ-SYNTH-007), the caller's judging-cell limits on every path (REQ-SYNTH-008), atomizer commands (REQ-ATOM-005), job kinds and compilation (REQ-JOB-003), hillclimb fan-out, plan and scoreboard (REQ-HILL-003), project scheduler (REQ-SCHED-001), factory runtime (REQ-FACTORY-003), approved atoms (REQ-FACTORY-004), repair, qualification, resume and transfer (REQ-FACTORY-005), release-record generator (REQ-REPO-008), lint and coverage (REQ-REPO-009); GAP-EF-001, 004, 005, 007 to 010 and 014 closed; GAP-EF-002 and 006 narrowed | this commit |
 | 2.5 | 2026-11-09 | round 5 | REQ-GEN-011 (capability block in both specification prompts, checked at the freeze, library hit on generated needs) added; REQ-COMPAT-001 (workcell runs), REQ-GATECLI-001 (pinned compiler default), REQ-FACTORY-003 (sandboxed worker and protected call), REQ-FACTORY-005 (real second host) and REQ-REPO-009 (CI coverage job) extended; REQ-STEP-001 deleted with the step harness retired to `TODELETE/`; GAP-EF-002 and GAP-EF-006 closed | this commit |
+| 2.6 | 2026-11-09 | round 6 | 3 requirements added: synchronous host calls (REQ-ISO-019), declared effects, durable denials and task conformance in the kernel host (REQ-KERNEL-005), the shared lock, headroom and exit-file modules (REQ-ERR-002); REQ-GEN-011 changed (block required at the freeze on every path, G7 checks glue against it); REQ-COMPAT-001 (host-buffer calls), REQ-RUST-001 (admission of any conforming crate through the kernel host, two tasks), REQ-FACTORY-003 (local turns without agent tools, pinned Wasmtime wheel, real-Docker cases), REQ-HILL-002 (stage policy to a campaign's own runner) extended; REQ-SYNTH-008 now tested on the `current` path; REQ-LIB-003 rationale corrected; GAP-EF-015 and GAP-EF-016 opened | this commit |

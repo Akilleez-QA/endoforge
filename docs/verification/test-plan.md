@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-STP |
-| Version | 1.4 |
+| Version | 1.5 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -65,8 +65,9 @@ Outside `make test`: `make rust-lane-test` (needs the pinned Rust toolchain, TP-
 
 - `make check`, `make test` and `make test-optimized` exit 0 on Node 26 and on Node 22.
 - Zero failed tests. Skips are allowed only where a test states a missing prerequisite (for example the delegated
-  cgroup cases in `isolate-offheap.test.mjs` and `gaps4-runtime.test.mjs`, the real-Wasmtime case in
-  `test_runtime_gaps.py`, and the transfer cases without `age` or `bwrap`); the STR lists skip counts.
+  cgroup cases in `isolate-offheap.test.mjs` and `gaps4-runtime.test.mjs`, the Wasmtime CLI case, `RealPinnedWasmtime`
+  and `RealDocker` in `test_runtime_gaps.py`, and the transfer cases without `age` or `bwrap`); the STR lists skip
+  counts.
 - `make lint` exits 0.
 - Trace check: zero problems.
 - A run killed or timed out by host load may be rerun once for that single file; the STR or PR records the rerun.
@@ -79,8 +80,9 @@ No coverage target is set, and coverage is not a pass criterion. The first run, 
 integration, reported 822 Node tests passing, 1 skipped, with 90.74% of lines covered across all files, and 230
 Python tests OK under trace counts; a recorded STR has not yet included a coverage run. The trace check gives
 file-level coverage of requirements as well: every discovered test file traces to a requirement or is listed as
-supporting. The CI `coverage` job has not run on GitHub yet; the Python half is expected to fail there until
-`Egress.test_run_bounded_outcomes` tolerates the `ResourceWarning`s other modules leak into a shared process. MC/DC: N/A (not safety-critical, SWE-219).
+supporting. The CI `coverage` job has not run on GitHub yet. Round 6 made `Egress.test_run_bounded_outcomes` ignore
+the `ResourceWarning`s other modules leak into a shared process (REQ-FACTORY-003); making `make coverage` fail on any
+test failure and the job pass is still open (GAP-EF-016). MC/DC: N/A (not safety-critical, SWE-219).
 
 ## 6. Test data and fixtures
 
@@ -151,7 +153,8 @@ Automated tests: the code is the procedure. Run one Node file with `node --test 
   from 2026-11-09.
 - Expected result: exit 0.
 - Last run: CI, PR #139, run 42600069278, job `rust-lane` at `def5f24`: 15 tests OK, exit 0. Not run locally in this
-  baseline.
+  baseline. Round 6 added the admission cases: `make kernel-test rust-lane-test` passed as the round-6 conductor check
+  on 2026-11-09 (worker report: 23 Rust lane tests OK in 472 s); no CI run of them is recorded.
 
 ### TP-7 — TypeScript checker requalification (manual)
 
@@ -176,10 +179,15 @@ Live model runs (experiments) follow each experiment's `PRECOMMIT.md`; they are 
   skipped under load only when opted in.
 - Delegated cgroup enforcement (REQ-ISO-018) is checked only where a delegated user scope exists; it ran on the
   development host on 2026-11-09, and whether it runs or skips on the GitHub runner is not recorded.
-- No behaviour is registered as untested ([SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps)).
+- Two behaviours are registered as untested
+  ([SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps)): GAP-EF-015 (the gate CLI's
+  `freeze` does not require a capability block) and GAP-EF-016 (`make coverage` failing on a test failure, and the CI
+  `coverage` job).
   Some cases skip with their reason where the host lacks a prerequisite: the sandboxed factory workers need `bwrap`,
-  a systemd user manager, unprivileged namespaces, `node` and `codex`; the real second-host transfer needs
-  `ENDOFORGE_SECOND_HOST` and skips in CI, where it is unset (it passed against a separate machine on 2026-11-09).
+  a systemd user manager and unprivileged namespaces (a local-provider turn no longer needs `node` or `codex`); the
+  real second-host transfer needs `ENDOFORGE_SECOND_HOST` and skips in CI, where it is unset (it passed against a
+  separate machine on 2026-11-09); `RealPinnedWasmtime` needs `make tools` and a systemd user manager; `RealDocker`
+  needs a Docker daemon reachable without `sudo` and a local image, and has not run anywhere yet.
 
 ## 9. Traceability
 
@@ -194,3 +202,4 @@ See the [verification matrix](verification-matrix.md).
 | 1.2 | 2026-11-09 | round 3 | The glue gate CLI test runs in `make test` through `make gate-test` | this commit |
 | 1.3 | 2026-11-09 | round 4 | `gap-tools-test`, `lint` and `coverage` targets; coverage section; TP-6 records its first CI run; gap count 2 | this commit |
 | 1.4 | 2026-11-09 | round 5 | CI `coverage` job; `harness-test` runs the step harness retirement check; no gap open | this commit |
+| 1.5 | 2026-11-09 | round 6 | New skip cases (`RealPinnedWasmtime`, `RealDocker`); TP-6 records the round-6 admission cases; the coverage section and §8 record GAP-EF-015 and GAP-EF-016 | this commit |

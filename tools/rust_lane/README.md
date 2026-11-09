@@ -104,4 +104,5 @@ Admission tests check crate shapes refused before building, admit both frozen ta
 effect declarations, reject a tally crate that emits an undeclared effect (with `effect` then `admission` journal
 entries), refuse a component run against another task's schemas, and journal a build failure.
 
-Engineering record: component C-26, requirement REQ-RUST-001.
+Engineering record: component C-26, requirement REQ-RUST-001; the kernel host's conformance check it calls is
+REQ-KERNEL-005 (component C-17).

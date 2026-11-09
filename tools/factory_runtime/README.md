@@ -109,9 +109,13 @@ reason where `make tools` has not run or there is no systemd user manager.
 
 ## Limits
 
+- The `RealDocker` cases have not run against a daemon yet: on the development host the Docker socket needs `sudo`,
+  and the tests never escalate, so they skipped on 2026-11-09. The runner is shown working only against the stand-in
+  Docker CLI.
 - The Python binding has no trap-on-grow-failure setting, so under the pinned wheel a `memory.grow` past the ceiling
   returns -1, as the WebAssembly specification defines, instead of trapping. The ceiling itself holds.
 - The sandbox mounts no `/etc/hosts`, so `bridge.py` listens on `127.0.0.1:18080` and the worker's proxy variables
   name that address, not `localhost`.
 
-Engineering record: component C-29, requirement REQ-FACTORY-003 (the sandboxed worker closed GAP-EF-002).
+Engineering record: component C-29, requirement REQ-FACTORY-003 (the sandboxed worker closed GAP-EF-002; round 6 added
+local-provider turns without agent tools, the pinned Wasmtime wheel and the real-Docker cases).

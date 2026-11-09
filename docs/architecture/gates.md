@@ -78,7 +78,7 @@ gate runs and records its own verdict. `promotable` is true only when every reco
 | `G4_tests` | Every frozen test passes on the first run (comparison rules below) | `runAll` |
 | `G6_bounded` | No call in the first run ran out of fuel or stack | `runAll` |
 | `G5_deterministic` | A second run, on a fresh instance and in the same order, gives the same output and the same error-or-not for every test | `runAll` |
-| `G7_glue` | `glue.json` matches the closed schema and agrees with the module, the tests and the contract (below) | `validate`, [contract.mjs](../../core/runtime/x1/contract.mjs) `glueFindings` |
+| `G7_glue` | `glue.json` matches the closed schema and agrees with the module, the tests, the contract and the contract's capability block (below) | `validate`, [contract.mjs](../../core/runtime/x1/contract.mjs) `glueFindings`, `capabilityAgreement` |
 | `G9_units` | A static units analysis of `kernel.ts` against the glue finds no problem (below) | [dimensions.mjs](../../core/runtime/x1/dimensions.mjs) `unitFindings` |
 | `G8_nonfinite` | Every float parameter probed with NaN, `Infinity` and `-Infinity` behaves as the contract says | [measure.mjs](../../core/runtime/x1/measure.mjs) `probeCalls`, contract.mjs `nonFiniteExpectation` |
 
@@ -144,7 +144,13 @@ no unknown fields, an `id`, an `assumption` and a `question` of at least 20 char
 - every trap names an exported function, and every function with an `expectError` test has a trap entry;
 - when the contract states exactly one number of decimal places for an export, the glue's `precision` matches it;
 - code labels that fit the contract's code table better swapped are refused, unless the contract also states the
-  result as a computation, in which case the finding is advisory only.
+  result as a computation, in which case the finding is advisory only;
+- `CONTRACT.md` holds a ```capability block (`capabilityBlock`), and the glue agrees with it (`capabilityAgreement`):
+  the same exports, the same number of arguments, and per argument the same kind, unit, range and codes, per result
+  the same kind, unit, precision, rounding, codes and labels, and the same set of trapping exports. Units and ranges
+  are compared the way library lookup compares them, so `1`, `none` and `dimensionless` are one unit and `0..10` equals
+  `[0, 10]`. The loop's freeze already refuses a contract without the block (REQ-GEN-011); the stand-alone
+  [gate CLI](../../tools/gate/README.md) freezes one, and G7 is then where it is refused (GAP-EF-015).
 
 A unit that disagrees with its argument's name (`unitDisagreements`) is reported as advisory and does not fail G7;
 G9 makes the binding units decision.

@@ -142,4 +142,4 @@ executable. `make test` runs `make kernel-test` and never downloads.
 fresh dummy components from the WIT as positive and negative controls (their functions trap), and build test
 components in temporary directories without changing fixtures.
 
-Engineering record: component C-17, requirements REQ-KERNEL-001 to REQ-KERNEL-004 and REQ-TOOLS-001.
+Engineering record: component C-17, requirements REQ-KERNEL-001 to REQ-KERNEL-005 and REQ-TOOLS-001.

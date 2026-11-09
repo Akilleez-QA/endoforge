@@ -89,7 +89,7 @@ turns and ledger writes leave it.
 | [conductor](conductor/README.md) | Resumable daemon: launches Codex and Claude Code workers in git worktrees, gates each landed change, runs its checks, freezes or relaunches it, escalates what it cannot decide | Active; tested by `make lib-test` with a stub worker, including the adopt example, criteria-derived checks and the collect lock in a git worktree |
 | [atomizer](atomizer/README.md) | Validates and runs a DAG of atoms in bubblewrap sandboxes, verifies outputs against receipts, writes an append-only ledger | Active; tested by `make atomizer-test`, including `atomize`, `direct`, `fanout`, `report` and `cutover` |
 | [hillclimb](hillclimb/README.md) | Round-based improvement campaigns (render, critique, fix, apply, score) with a lessons ledger | Active; the lessons ledger, the default runner (`bin/run-atoms.mjs`, on the atomizer scheduler), `plan-review`, `scripts/hc-patch.sh`, fan-out, planning and the scoreboard have tests (`make lib-test`) |
-| [lib](lib/README.md) | Shared exit codes (75 busy, 78 stop), typed retry, file locks, headroom, exit files | Active; `errors.mjs` tested |
+| [lib](lib/README.md) | Shared exit codes (75 busy, 78 stop), typed retry, file locks, headroom, exit files | Active; every module has a direct test in `make lib-test` (REQ-ERR-001, REQ-ERR-002) |
 | [job-locks](job-locks/README.md) | Prints the locked decisions of active jobs for a session-start hook | Active; tested by `make lib-test` |
 | [project-scheduler](project-scheduler/README.md) | Runs one cross-project batch of pieces plus a recombine step under token reservations | Works; tested by `make gap-tools-test` (REQ-SCHED-001) |
 
@@ -100,9 +100,9 @@ turns and ledger writes leave it.
 | [asc](asc/README.md) | Pins the AssemblyScript compiler (0.28.20) that workcells load, with file digests and workcell limits | Active; used by every `isolate` and `agent` loop run |
 | [tscheck](tscheck/README.md) | Type checks TypeScript inside workcells with `tsrs`, a WebAssembly build of the TypeScript 7 compiler | Active, opt-in route; `make tscheck-test` |
 | [gate](gate/README.md) | Stand-alone freeze-then-check runner for one kernel directory; compiles `kernel.ts` with the `tools/asc` pin (or `ENDOFORGE_ASC`) and runs the core gates G1 to G9, structured state included | Used inside atomizer compose atoms; tested by `tools/test_gate_structured.mjs` (REQ-GATECLI-001) in `make gate-test` |
-| [kernel](kernel/README.md) | The WIT kernel contract, its exact-interface validator and a Wasmtime host with limits and a per-call broker | Standalone conformance lane; nothing in the loop imports it; `make kernel-test` |
-| [compatibility](compatibility/README.md) | TypeScript binding of the kernel contract and a probe for trusted reference reducers, run in `IsolatePool` workcells | Standalone slice; `make compatibility-test` |
-| [rust_lane](rust_lane/README.md) | Reproducible Rust build of one reference kernel as a WIT component | Standalone slice; `make rust-lane-test`, not in `make test` |
+| [kernel](kernel/README.md) | The WIT kernel contract, its exact-interface validator and a Wasmtime host with limits, a per-call broker, declared-effect checks, a hash-chained denial journal and frozen-task conformance | Conformance lane; the candidate loop does not import it, and the Rust lane's admission calls it; `make kernel-test` |
+| [compatibility](compatibility/README.md) | TypeScript binding of the kernel contract and a probe for trusted reference reducers, run in `IsolatePool` workcells that read snapshots through synchronous host calls | Standalone slice; `make compatibility-test` |
+| [rust_lane](rust_lane/README.md) | Reproducible Rust build of any kernel crate that meets the kernel contract, admitted only after the kernel host runs its frozen task (two tasks: P-06 and tally) | Standalone slice; `make rust-lane-test`, not in `make test` |
 | [factory_quality](factory_quality/README.md) | Typed request, signature, contract and eval-suite checks | Active: `core/engine/gates.mjs` imports it |
 
 ## Measurement: how much to trust the checks
@@ -123,7 +123,7 @@ READMEs; say "carried over" rather than "current design" when you cite them.
 |---|---|---|
 | [factory_campaign](factory_campaign/README.md) | Hash-chained stage state, a fenced model-ownership journal, bounded text repair | Tested by `make factory-state-test`, including bounded repair; nothing outside its own tests imports it |
 | [factory_portability](factory_portability/README.md) | Encrypted campaign checkpoints and offline WebAssembly stage resume on another machine | Tested by `make portability-test`; `campaign_transfer.py` is also tested over real `ssh` and `scp` when `ENDOFORGE_SECOND_HOST` is set (passed against a separate machine on 2026-11-09; skips in CI) |
-| [factory_runtime](factory_runtime/README.md) | One worker attempt in a locked-down Docker container with checked publication | Tested by `make gap-tools-test` against a stand-in Docker CLI (REQ-FACTORY-003); real sandboxed workers through the `bridge.py` relay are tested where `bwrap` and a systemd user manager exist; needs a qualified image to run |
+| [factory_runtime](factory_runtime/README.md) | One worker attempt in a locked-down Docker container with checked publication | Tested by `make gap-tools-test` against a stand-in Docker CLI (REQ-FACTORY-003; the real-Docker cases need a daemon reachable without `sudo` and have not run yet); real sandboxed workers through the `bridge.py` relay are tested where `bwrap` and a systemd user manager exist; needs a qualified image to run |
 
 ## Repository scripts
 

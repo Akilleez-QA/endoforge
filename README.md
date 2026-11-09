@@ -134,7 +134,7 @@ Two model turns: one wrote the contract and tests, one wrote the code. The gates
 are unchanged and the tests are not trivial (G1); the module compiled from this exact source and imports nothing but
 an abort hook (G2); the named exports exist (G3); all six tests pass, including the two that must trap (G4); a second
 run gives the same results (G5); fuel and stack stay in bounds, where fuel counts executed instructions (G6);
-`glue.json` matches its schema and the code (G7); NaN and infinity inputs behave as the contract says (G8, no probes
+`glue.json` matches its schema, the code and the capability block that ends the contract (G7); NaN and infinity inputs behave as the contract says (G8, no probes
 here because the inputs are integers); and the arithmetic agrees with the units declared in `glue.json` (G9). Units
 matter because a host connects these functions by what their values mean: adding a temperature to a pressure fails G9.
 Unit `1` means a plain number, which G9 reports as `dimensionless`.

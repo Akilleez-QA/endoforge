@@ -52,9 +52,10 @@ flowchart TD
 
 1. **Specification.** The agent writes `CONTRACT.md`, what the capability does and its assumptions, and `tests.json`,
    the expectations it must meet. Before it can be frozen, every test must assert a definite value or a trap, with a
-   tolerance of at most 1% ([test strength](gates.md#test-strength-g1)). The prompts also ask for a
-   ```capability block in `CONTRACT.md`; when one is present it must parse and agree with the tests, and it is how the
-   [library](library.md#lookup) recognises a need it has already met.
+   tolerance of at most 1% ([test strength](gates.md#test-strength-g1)). `CONTRACT.md` must also end with a
+   ```capability block that parses and agrees with the tests; on every path a contract without one is not frozen. The
+   block is how the [library](library.md#lookup) recognises a need it has already met, and G7 later checks `glue.json`
+   against it.
 2. **Freeze.** The host hashes the specification together with the exact bytes of the gate implementation and writes
    one `frozen_evaluator` record into the task's ledger. From here on, a changed specification or gate file fails the
    commit. Code written before the freeze is refused.

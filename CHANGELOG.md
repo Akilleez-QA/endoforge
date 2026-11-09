@@ -82,6 +82,26 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
   artifact `coverage-summary`.
 - Requirement REQ-GEN-011; REQ-COMPAT-001, REQ-GATECLI-001, REQ-FACTORY-003, REQ-FACTORY-005 and REQ-REPO-009
   extended; GAP-EF-002 and GAP-EF-006 closed, so no gap is open.
+- `IsolatePool` option `syncHostCalls` and export `connectSyncHostCall`: a cell can make a blocking host call (a
+  shared buffer in a thread cell, pipes on file descriptors 4 and 5 in a process cell) under the same per-job limits
+  as asynchronous host calls, with the job timeout paused while the host answers.
+- `tools/kernel`: effect declarations checked before a transition is released (`effects.py`), an append-only,
+  hash-chained `DenialJournal` for broker, effect and admission denials (`journal.py`), and `conformance.check`, which
+  runs a frozen task's cases through the workcell (`conformance.py`, also `python -m tools.kernel.conformance`).
+- `tools/rust_lane/admit.py`: admits any Rust kernel crate that meets the kernel contract, only after the kernel host
+  runs its frozen task; two frozen tasks, `tasks/p06-pressure.json` and `tasks/tally.json` (crate
+  `kernels/tally/`), and `build.py --crate`.
+- `tools/factory_runtime/wasm_host.py`: runs a WebAssembly export under the pinned Wasmtime 49.0.0 wheel from
+  `make tools`, with fuel, epoch and memory limits.
+- Tests: the capability block required on every path and checked at G7 (`gaps6-capability.test.mjs`), synchronous
+  host calls (`gaps6-hostcall.test.mjs`), `synthCell` on the `current` path (`gaps6-synthcell.test.mjs`), kernel
+  effects, journal and conformance (`tools/kernel/test_effects.py`, `test_conformance.py`), generalized Rust
+  admission, local-provider turns, the pinned Wasmtime wheel and a real Docker daemon (`RealDocker`, which skips with
+  its reason and has not run yet), and direct tests of `tools/lib/lock.mjs`, `headroom.mjs` and `exitfile.mjs`.
+- Requirements REQ-ISO-019, REQ-KERNEL-005 and REQ-ERR-002; REQ-GEN-011, REQ-COMPAT-001, REQ-RUST-001,
+  REQ-FACTORY-003 and REQ-HILL-002 changed or extended; REQ-SYNTH-008 tested on every path. GAP-EF-015 (the gate
+  CLI's `freeze` does not require a capability block) and GAP-EF-016 (`make coverage` failing on a test failure and
+  the CI `coverage` job, not yet verified) opened.
 
 - `examples/first-loop.mjs` and `examples/show-gates.py`: the README and getting-started example (a scripted model
   promotes an addition kernel and refuses a subtracting one), tested by `core/runtime/test/loop-example.test.mjs`.
@@ -161,6 +181,19 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
   These were plans for later moves; neither planning file is in the current tree.
 
 ### Changed
+
+- The freeze requires a ```capability block in `CONTRACT.md` on the `current`, `isolate` and `agent` paths (the
+  `required: false` switch is gone), and G7 fails when `glue.json` disagrees with the frozen block
+  (`capabilityAgreement` in `core/runtime/x1/contract.mjs`). A contract without the block is no longer frozen, so a
+  generated need no longer reaches library lookup to miss with `no_capability`. The test fixtures and
+  `examples/counter-loop.mjs` and `examples/agent-loop.mjs` carry blocks. `tools/gate/gate.mjs freeze` still freezes a
+  contract without one; `gate run` refuses it at G7 (GAP-EF-015).
+- The compatibility workcell keeps snapshots in the host and serves each borrowed buffer's `size` and `read` through
+  synchronous host calls instead of copying snapshots in with the job; receipts carry `hostBuffers`.
+- `tools/factory_runtime/wasm.py` uses the pinned Wasmtime wheel by default; `ENDOFORGE_WASMTIME` now names an
+  optional CLI and defaults to empty. A local-provider turn no longer needs or mounts `node`, `codex` or the Codex
+  credential.
+- Hillclimb passes `--policy <stage>.policy.json` to a campaign's own runner as well as to the default one.
 
 - `tools/gate/gate.mjs` compiles with the pinned compiler in `tools/asc` (`ASC_PATH`, run in-process) when
   `ENDOFORGE_ASC` is unset, instead of `node_modules/.bin/asc` at the repository root, which `make loop-setup` does
@@ -255,6 +288,9 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
   proxy variables name that address, so the relay works. `campaign_transfer.py` runs `ssh` and `scp` with
   `BatchMode=yes` and no inherited standard input, and no longer fails on a remote host without `/lib64`.
 - The compatibility workcell refuses shared memory before dispatch instead of letting IPC copy it into a pass.
+- On the `current` path a refusal by the synthesized evaluator carries the same `problem` text as on the other paths.
+- `Egress.test_run_bounded_outcomes` no longer fails when garbage left by other test modules (leaked sqlite
+  connections) raises `ResourceWarning`s inside its window.
 
 - A missing exit code or a torn state is no longer read as success, and ledgers and locked decisions survive a
   failed read (#99, #100).

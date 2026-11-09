@@ -102,4 +102,5 @@ identities, host-buffer reads in both modes, refusals from inside the cell, a ha
 reducer, WIT drift, shared memory and malformed snapshot lists. `core/runtime/test/gaps6-hostcall.test.mjs` tests the
 pool's synchronous host-call path itself. It installs nothing.
 
-Engineering record: component C-18, requirement REQ-COMPAT-001.
+Engineering record: component C-18, requirement REQ-COMPAT-001; the pool's synchronous host-call path is REQ-ISO-019
+(component C-06).

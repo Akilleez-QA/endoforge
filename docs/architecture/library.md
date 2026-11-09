@@ -50,8 +50,9 @@ A need declares its capability in a fenced `capability` JSON block inside its fr
 declaration is bound at the freeze. Both specification prompts ask for that block (`capabilityRule` in
 [generator.mjs](../../core/runtime/x1/generator.mjs)), and the freeze refuses a block that is not JSON, uses an unknown
 kind, leaves out a unit or a number result's precision, or disagrees with the frozen tests on exports, argument counts
-or traps. A contract without the block still freezes; with the default `retrieval: 'key'` that need misses with
-`no_capability`.
+or traps. Since round 6 the freeze also refuses a contract with no block on every loop path, so a need the loop
+generates always reaches lookup with one. A need handed to the library directly without a block misses with
+`no_capability` under the default `retrieval: 'key'`.
 
 With `retrieval: 'semantic'`, lookup first ranks the visible entries by similarity between normalized contract texts
 (`contractVector` in [key.mjs](../../core/library/key.mjs); deterministic, offline, no model). A need with no
@@ -71,7 +72,7 @@ normalized text.
 | Reason | Meaning |
 |---|---|
 | `need_not_frozen` | The need's `frozen.sha256` doesn't match its files |
-| `no_capability` | No capability block |
+| `no_capability` | No capability block (only possible for a need not frozen by the loop) |
 | `no_contract_match` | Nothing under this key |
 | `revoked` | Everything under this key was revoked |
 | `needs_requalification` | Entries exist but were qualified under different gate or host bytes |

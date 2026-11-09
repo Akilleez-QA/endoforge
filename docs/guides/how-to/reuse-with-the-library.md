@@ -38,14 +38,16 @@ generation.
 A need can only match if its frozen `CONTRACT.md` declares its capability in a fenced `capability` JSON block, so the
 capability's hash is bound at the freeze. Both specification prompts (the `current` path's Codex prompt and the
 `agent` path's stage prompt) ask the model for this block, and the freeze refuses one that is malformed or disagrees
-with the frozen tests. A contract the model writes without the block still freezes, and that need misses with
-`no_capability`.
+with the frozen tests or is missing: a contract without the block is not frozen, so it never reaches the library. A
+need you build yourself and pass to `library.lookup` without the block misses with `no_capability`.
 
 ## Try it
 
 [`examples/library-reuse.mjs`](../../../examples/library-reuse.mjs) runs three needs through the current path with
 the `fake-codex.mjs` test double as the generator and the pinned compiler. The first is promoted and admitted, the
-second declares a capability block and is served from the library, and the third has no capability block and misses:
+second declares its capability block explicitly and is served from the library. The third takes the test double's
+default contract. That contract had no block before round 6 and missed; it now carries the block the freeze requires,
+so the third need is served from the library too:
 
 ```sh
 node examples/library-reuse.mjs
@@ -73,18 +75,17 @@ node examples/library-reuse.mjs
   },
   "third": {
     "promoted": true,
-    "reused": false,
+    "reused": true,
     "modelStages": [
-      "implementation",
       "specification"
     ]
   },
-  "journal": "/tmp/ef-library-A0qAgi/library.jsonl"
+  "journal": "/tmp/ef-library-FSdeDA/library.jsonl"
 }
 ```
 
-`modelStages` lists the stages the generator was asked for. The second need never reached implementation. Its journal
-holds two records: `library_admit` and `library_reuse`. A miss before any test run writes nothing.
+`modelStages` lists the stages the generator was asked for. The second and third needs never reached implementation.
+The journal holds `library_admit` and a `library_reuse` record for each served need. A miss before any test run writes nothing.
 
 ## Why a lookup misses
 
@@ -93,7 +94,7 @@ holds two records: `library_admit` and `library_reuse`. A miss before any test r
 | Reason | Meaning |
 |---|---|
 | `need_not_frozen` | The need's `frozen.sha256` does not match its contract and tests. |
-| `no_capability` | The contract has no `capability` block. |
+| `no_capability` | The contract has no `capability` block. The loop's freeze refuses such a contract, so only a need you pass in directly can miss this way. |
 | `no_contract_match` | No admitted kernel has this key. |
 | `revoked` | The matching kernel was revoked. |
 | `needs_requalification` | The gates or host code changed since the kernel was admitted; run `requalify()`. |
