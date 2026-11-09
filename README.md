@@ -19,7 +19,7 @@ A coding model can write a function and its tests in one go. If it can also chan
   Node.js and Chrome). It runs under a fuel meter (a counter charged at every function call and loop iteration) and a memory cap, and it may
   import nothing except an abort hook, so it cannot reach files or the network.
 - Nine gates decide. A candidate that fails a gate is refused. If the evidence is incomplete, because a worker was
-  lost, a deadline passed or a model call was held back by the subscription's usage limit, the result is "inconclusive", never a
+  lost, a deadline passed or a model call was held back by a usage limit, the result is "inconclusive", never a
   pass.
 
 You get a kernel (a small, self-contained WebAssembly function) plus a SQLite ledger that shows which contract, which
@@ -27,8 +27,8 @@ tests and which checks it passed. The ledger is append-only and hash-chained, so
 promoted WebAssembly module is stored, base64-encoded, in the ledger's candidate record, so you can load it in any
 WebAssembly runtime.
 
-A kernel is a pure function: its arguments and result are numbers, integers, booleans or enumerated codes, each with
-a unit.
+A kernel is a pure function of scalar values. Each argument and the result is a number, an integer, a boolean or an
+integer code with named meanings, and each carries a unit. There are no arrays or strings.
 
 ## How it works
 
@@ -53,7 +53,7 @@ flowchart LR
 
    | Gate | Passes when |
    |---|---|
-   | G1 frozen | The contract and tests still match their frozen hashes, and no test is too weak (asserts nothing, or allows more than 1% error) |
+   | G1 frozen | The contract and tests still match their frozen hashes, and no test is too weak (it asserts nothing, or its tolerance exceeds 1% of the expected value) |
    | G2 compiles | The module was built from this exact source and imports nothing unexpected |
    | G3 exports | Every function the tests and glue name exists |
    | G4 tests | Every frozen test passes |
@@ -66,7 +66,8 @@ flowchart LR
 5. If a gate fails, its report becomes the model's next prompt. By default the model gets six turns to write and
    repair the code.
 6. At a pass, or when the turns run out, EndoForge writes the candidate, a receipt with every gate result, and the
-   decision to the ledger in one transaction.
+   decision to the ledger in one transaction: `promote` if every gate passed, `refuse` if one failed, `inconclusive`
+   if evidence is missing.
 
 The [candidate loop](docs/architecture/candidate-loop.md) page has the details.
 
@@ -90,27 +91,28 @@ $ node examples/first-loop.mjs
   "rounds": [
     "passed"
   ],
-  "ledger": "/tmp/ef-first-loop-touemR/addition/ledger.sqlite"
+  "ledger": "/tmp/ef-first-loop-rPp1e0/addition/ledger.sqlite"
 }
-$ python3 examples/show-gates.py /tmp/ef-first-loop-touemR/addition/ledger.sqlite
+$ python3 examples/show-gates.py /tmp/ef-first-loop-rPp1e0/addition/ledger.sqlite
 ledger records: task, admitted_input, frozen_evaluator, candidate, receipt
   G1_frozen         pass
   G2_compiles       pass  {"wasmBytes": 57}
   G3_exports        pass  {"exports": ["add"]}
   G4_tests          pass  {"passed": 1, "total": 1}
   G5_deterministic  pass
-  G6_bounded        pass  {"maxMs": 0.000771, "fuelUsed": 5}
+  G6_bounded        pass  {"maxMs": 0.000751, "fuelUsed": 5}
   G7_glue           pass
   G8_nonfinite      pass  {"probes": 0}
   G9_units          pass  {"checks": {"add": "dimensionless"}}
 decision: promote
+kernel: /tmp/ef-first-loop-rPp1e0/addition/kernel.wasm (57 bytes)
 ```
 
 G8 made no probes because `add` takes integers, not floating-point numbers. G9 found `add` dimensionless because both
 arguments have unit `1`. The saved `kernel.wasm` is an ordinary WebAssembly module:
 
 ```console
-$ node -e 'const m = new WebAssembly.Module(require("fs").readFileSync(process.argv[1])); console.log(new WebAssembly.Instance(m).exports.add(2, 3))' /tmp/ef-first-loop-touemR/addition/kernel.wasm
+$ node -e 'const m = new WebAssembly.Module(require("fs").readFileSync(process.argv[1])); console.log(new WebAssembly.Instance(m).exports.add(2, 3))' /tmp/ef-first-loop-rPp1e0/addition/kernel.wasm
 5
 ```
 
@@ -130,7 +132,7 @@ $ node examples/first-loop.mjs wrong
       "G4_tests"
     ],
     ...
-$ python3 examples/show-gates.py /tmp/ef-first-loop-eGPvuy/addition/ledger.sqlite
+$ python3 examples/show-gates.py /tmp/ef-first-loop-uNMOBv/addition/ledger.sqlite
   ...
   G4_tests          FAIL  {"passed": 0, "total": 1}
   ...
@@ -142,7 +144,8 @@ nothing about how good a real model is.
 
 ## Quickstart
 
-You need Git, GNU Make, Python 3.11 or later and Node.js 22.8 or later. It is tested on Linux.
+You need Git, GNU Make, Python 3.11 or later and Node.js 22.8 or later. EndoForge is developed and tested on Linux;
+other systems are untested.
 
 ```sh
 git clone https://github.com/Akilleez-QA/endoforge.git
@@ -156,8 +159,8 @@ python3 examples/show-gates.py <the "ledger" path it printed>
 The [getting-started tutorial](docs/guides/tutorials/getting-started.md) walks through the same run and explains each
 step. It takes about five minutes.
 
-The full test suite (`make tools`, then `make test`) also needs bubblewrap, `age` and `gcc`, which some tests use; see
-[run local checks](docs/guides/how-to/local-checks.md).
+The full test suite (`make tools`, then `make test`) also needs bubblewrap (process sandboxing), `age` (encrypted
+checkpoints) and `gcc` (a small helper one test compiles); see [run local checks](docs/guides/how-to/local-checks.md).
 
 ### Using a real model
 
@@ -171,8 +174,21 @@ the model conversation runs.
 | `agent` | Any provider: the example's script, or a Claude transport | The model's whole turn loop inside the isolate |
 
 The default path is the established one; the other two stay opt-in until their parity with it is accepted
-([P-50](experiments/P-50-in-isolate/RESULT.md) measured them). A Claude transport calls the `claude` CLI, and EndoForge refuses to launch it unless it is signed in with a
-claude.ai subscription. That is a deliberate project rule: no metered API billing. The
+([P-50](experiments/P-50-in-isolate/RESULT.md) measured them).
+
+For the agent path, change the provider in a copy of `examples/first-loop.mjs`, which already imports
+`createLoopPool`:
+
+```js
+import { WarmClaudeTransport } from '../core/runtime/x1/transports.mjs';
+const pool = createLoopPool({ provider: new WarmClaudeTransport() });
+```
+
+That transport keeps a `claude` CLI process open and sends it each turn. EndoForge refuses to launch the CLI unless it
+is signed in with a claude.ai subscription (Pro, Max or Team) and strips API-key variables from its environment, so a
+misconfigured machine cannot fall back to metered API billing. This README does not show a real-model run, because
+the shipped example is the scripted one; the swap above was checked to construct, not run. The
+[runtime README](core/runtime/README.md#the-agent-loop-in-the-workcell) describes the transports, and the
 [configuration reference](docs/configuration/configuration-reference.md) lists every setting.
 
 ## What is inside
@@ -180,12 +196,12 @@ claude.ai subscription. That is a deliberate project rule: no metered API billin
 | Part | What it does | Where |
 |---|---|---|
 | Candidate loop | Need to contract, freeze, code, compile, gates and decision | [`core/runtime/x1/`](docs/architecture/candidate-loop.md) |
-| Workcells | V8 isolates in threads or processes, with WebAssembly memory limits and deadlines | [`core/runtime/`](core/runtime/README.md) |
-| Ledger | Hash-chained SQLite evidence records and a batching writer | [`core/ledger/`](docs/interfaces/ledger-icd.md) |
-| Evaluator | Runs a candidate against a frozen check through host callbacks | [`core/engine/`](core/engine/evaluator.mjs) |
-| Library | Reuses a promoted kernel when a new need asks for the same thing | [`core/library/`](core/library/README.md) |
-| Lifecycle model | Validates artifact identities, state changes and decision references | [`core/lifecycle.py`](core/lifecycle.py) |
-| Tools | Agent orchestration, job intake, campaigns, a TypeScript checker and repository scripts | [`tools/`](tools/README.md) |
+| Workcells | The isolates candidates run in, as threads or processes, with memory limits and deadlines | [`core/runtime/`](core/runtime/README.md) |
+| Ledger | The append-only, hash-chained SQLite record of every step | [`core/ledger/`](docs/interfaces/ledger-icd.md) |
+| Evaluator | Runs a candidate against frozen checks | [`core/engine/`](core/engine/evaluator.mjs) |
+| Library | Reuses a promoted kernel when a new contract matches its kinds, units and ranges and the kernel passes the new tests | [`core/library/`](core/library/README.md) |
+| Lifecycle model | Checks that recorded decisions refer to real, unchanged artifacts | [`core/lifecycle.py`](core/lifecycle.py) |
+| Tools | Scripts for running many agent jobs, a TypeScript checker and repository checks | [`tools/`](tools/README.md) |
 | Experiments | The measurement behind each default, each planned in writing before it ran | [`experiments/`](experiments/README.md) |
 
 ## Limitations
@@ -196,6 +212,8 @@ claude.ai subscription. That is a deliberate project rule: no metered API billin
   kernels (3.6%) still passed every gate, down from 441 (5.6%) before that experiment's stricter gates. The broken
 kernels were copies of 118 promoted kernels, each with one seeded change to its source.
 - The repository tests use synthetic inputs and test doubles. They do not qualify a live model service.
+- The hash chain shows a ledger was edited after the fact. It is not a signature: someone who rewrites the whole file
+  can build a new valid chain.
 - Thread workcells cannot cap memory outside the JavaScript heap. Use process workcells with a cgroup for that.
 - Interfaces may change. There are no releases; only the latest `main` is supported.
 
