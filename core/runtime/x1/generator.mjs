@@ -1,6 +1,6 @@
 import { execFile } from 'node:child_process';
 import { readFile, writeFile, mkdir, readdir, lstat } from 'node:fs/promises';
-import { basename, join } from 'node:path';
+import { basename, isAbsolute, join, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { testProblems } from './gates.mjs';
 import { configuration, hash, implementationFiles } from './host.mjs';
@@ -46,13 +46,18 @@ export function promptFor(prompt, env) {
   const first = stableOrder.filter(k => k in prompt);
   return Object.fromEntries([...first, ...Object.keys(prompt).filter(k => !first.includes(k))].map(k => [k, prompt[k]]));
 }
-function invoke(directory, prompt, env, timeout, { resume = null, effort = null } = {}) {
+const relativePath = (entry, first) => typeof entry === 'string' && !isAbsolute(entry) && (/^\.\.?\//.test(entry) || (first && entry.includes('/')));
+export const commandFor = (env, cwd = process.cwd()) => {
+  const argv = env.ENDOFORGE_CODEX_CMD?.startsWith('[') ? JSON.parse(env.ENDOFORGE_CODEX_CMD) : [env.ENDOFORGE_CODEX_CMD];
+  return Array.isArray(argv) ? argv.map((entry, index) => (relativePath(entry, index === 0) ? resolve(cwd, entry) : entry)) : argv;
+};
+function invoke(directory, prompt, env, timeout, { resume = null, effort = null, cwd = process.cwd() } = {}) {
   const mode = env.ENDOFORGE_CODEX_TERSE ?? 'exact';
   if (mode === 'review') prompt = { ...prompt, instructions: `${prompt.instructions} ${reviewRule}` };
   if (mode === 'exact' || mode === 'scalar') prompt = { ...prompt, instructions: `${prompt.instructions} ${terseRule}${prompt.stage === 'specification' ? ` ${exactRule}${mode === 'scalar' ? ` ${scalarRule}` : ''}` : ''}` };
   if (mode === 'reference') prompt = { ...prompt, instructions: `${prompt.instructions} ${terseRule}${prompt.stage === 'specification' ? ` ${referenceRule}` : ''}` };
   if (mode === '1') prompt = { ...prompt, instructions: `${prompt.instructions} ${terseRule}` };
-  const argv = env.ENDOFORGE_CODEX_CMD?.startsWith('[') ? JSON.parse(env.ENDOFORGE_CODEX_CMD) : [env.ENDOFORGE_CODEX_CMD];
+  const argv = commandFor(env, cwd);
   if (!argv?.length || !argv.every(x => typeof x === 'string' && x) || !env.CODEX_HOME) throw Error('ENDOFORGE_CODEX_CMD and CODEX_HOME required');
   const tuning = effort ? ['-c', `model_reasoning_effort="${effort}"`] : [];
   const args = resume
