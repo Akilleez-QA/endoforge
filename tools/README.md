@@ -1,51 +1,173 @@
 # Tools
 
-Every tool directory and top-level script under `tools/`. Each line gives what it is, its entry point, and the `make` target that tests it. Run commands from the repository root. "None" means no `make` target exercises it.
+EndoForge is where AI coding agents (Claude Code through `claude -p`, and Codex) build software. The candidate loop
+that runs inside V8 isolates lives in [core/runtime](../core/runtime/README.md). This directory holds everything around
+it: the tools that take a whole job from a request to merged commits, the checkers that decide whether code is
+accepted, the harnesses that measure how good those checks are, and the scripts that keep this repository honest.
 
-## Directories
+Every directory has its own README with a real example. This page is the map.
 
-| Tool | What it is | Entry point | Tested by |
+Why isolates: a V8 isolate is a separate instance of the JavaScript engine inside one process. Kept warm in memory
+with a compiler already loaded, it can compile and check a candidate without starting a process, a container or a
+virtual machine, so one machine runs many attempts at once. The isolates are there for speed and density, not as a
+security sandbox.
+
+You need Git, GNU Make, Python 3.11 or later and Node.js 22.8 or later (the [repository README](../README.md) has the
+install steps). The atomizer also needs bubblewrap (`bwrap`); the conductor's `unit` command needs systemd user
+services.
+
+## Start here
+
+Two runs need no model, no account and no network, and show the core idea in seconds:
+
+```sh
+tools/conductor/demo.sh /tmp/ef-demo/job
+```
+
+runs a two-atom job end to end with a stub in place of the coding agents: each agent's first change fails the gate,
+is reverted, and is fixed on the second try with the exact error in its prompt ([conductor](conductor/README.md)).
+
+```sh
+DEMO=$(mktemp -d)
+export ATOMIZER_LEDGER_DIR=$DEMO/ledger ENDOFORGE_CLAUDE_ACCOUNTS=$DEMO/none
+node tools/atomizer/bin/schedule.mjs run tools/atomizer/test/fixtures/synthetic-fanout.json --run-dir $DEMO/run
+```
+
+runs a ten-atom dependency graph in sandboxes, ten seconds of work in three ([atomizer](atomizer/README.md)).
+
+## Words used on these pages
+
+| Word | Meaning here |
+|---|---|
+| Atom | One piece of work for one worker, with its own files or outputs and its own check |
+| Workcell | A V8 isolate kept warm in memory with a pinned compiler and the gates loaded, where candidates are checked |
+| Kernel | The application logic of a candidate: a pure WebAssembly module (state and event in, next state and effects out) plus `glue.json` describing its interface |
+| Gate | An automatic check a change must pass before it is kept |
+| Frozen | Hashed and recorded before any code exists; a later change is refused |
+| Ledger | The append-only, hash-chained record of every decision |
+| Card | The one-page summary of a job that the user confirms before any agent starts |
+| Login | One signed-in Claude Code or Codex subscription account; agents are spread across the available logins |
+| Capacity dial | A percentage in `$WORKER_STATE_DIR/CAPACITY` that scales how many workers start at once (a `DRAIN` file there stops new launches) |
+| P-number, GAP-EF, REQ, C-nn | Ids from the engineering records: experiments, known test gaps, requirements and design components |
+
+## How the tools fit together
+
+```mermaid
+flowchart TD
+  req["Request<br/>from a person or agent"] --> job["job<br/>intake gates, card"]
+  req --> atom["atomizer<br/>DAG of sandboxed atoms"]
+  job -- "user's go" --> cond["conductor<br/>one daemon per job"]
+  cond --> work["Coding agents<br/>Claude Code, Codex"]
+  atom --> work
+  work --> gate["Gates and checks<br/>collect gate, tests, gate.mjs"]
+  gate -- "fail: exact error<br/>in the next prompt" --> work
+  gate -- "pass" --> out["Accepted change<br/>commit and record"]
+```
+
+A person states what they want. [job](job/README.md) turns it into a manifest, checks it, and shows a card the user
+confirms. The [conductor](conductor/README.md) then launches one coding agent per atom (a piece of work that owns its
+own files), puts every change through a gate the moment it lands, and relaunches an agent with the exact error when
+its change fails. The [atomizer](atomizer/README.md) is the other way to split work: a dependency graph of small atoms,
+each in its own bubblewrap sandbox, with roles kept apart (the agent writing code never sees the frozen tests).
+[hillclimb](hillclimb/README.md) repeats rounds of critique and fixing against a goal.
+
+Which to use: the conductor when agents should change an existing repository and iterate until its tests and checks
+pass; the atomizer when a new capability should be built from a written need by separate atoms (contract, tests,
+code, review) that cannot see each other's work; hillclimb when quality is judged by critique over several rounds
+rather than by one test.
+
+These tools run each agent as an ordinary process, in a git worktree or a bubblewrap sandbox. The other way agents
+work here is the in-isolate agent loop (`ENDOFORGE_LOOP=agent` in [core/runtime](../core/runtime/README.md)), where
+the agent's file reads, edits and checks run against an in-memory overlay inside a V8 isolate and only the model
+turns and ledger writes leave it.
+
+## Whole-job layer: agents building real repositories
+
+| Tool | What it does | Status |
+|---|---|---|
+| [job](job/README.md) | Checks a job manifest against six intake gates and fifteen invariants, renders the card the user confirms by its SHA-256, compiles every atom's prompt | Active; tested by `make lib-test` |
+| [conductor](conductor/README.md) | Resumable daemon: launches Codex and Claude Code workers in git worktrees, gates each landed change, runs its checks, freezes or relaunches it, escalates what it cannot decide | Active; tested by `make lib-test` with a stub worker |
+| [atomizer](atomizer/README.md) | Validates and runs a DAG of atoms in bubblewrap sandboxes, verifies outputs against receipts, writes an append-only ledger | Active; tested by `make atomizer-test` |
+| [hillclimb](hillclimb/README.md) | Round-based improvement campaigns (render, critique, fix, apply, score) with a lessons ledger | Active; only the lessons ledger has a test |
+| [lib](lib/README.md) | Shared exit codes (75 busy, 78 stop), typed retry, file locks, headroom, exit files | Active; `errors.mjs` tested |
+| [job-locks](job-locks/README.md) | Prints the locked decisions of active jobs for a session-start hook | Active; tested by `make lib-test` |
+| [project-scheduler](project-scheduler/README.md) | Runs one cross-project batch of pieces plus a recombine step under token reservations | Works; no tests (GAP-EF-004) |
+
+## Checking: what decides whether code is accepted
+
+| Tool | What it does | Status |
+|---|---|---|
+| [asc](asc/README.md) | Pins the AssemblyScript compiler (0.28.20) that workcells load, with file digests and workcell limits | Active; used by every `isolate` and `agent` loop run |
+| [tscheck](tscheck/README.md) | Type checks TypeScript inside workcells with `tsrs`, a WebAssembly build of the TypeScript 7 compiler | Active, opt-in route; `make tscheck-test` |
+| [gate](gate/README.md) | Stand-alone freeze-then-check runner for one kernel directory, gates G1 to G7 | Used inside atomizer compose atoms; older and smaller than the in-loop gates G1 to G9; no tests (GAP-EF-003) |
+| [kernel](kernel/README.md) | The WIT kernel contract, its exact-interface validator and a Wasmtime host with limits and a per-call broker | Standalone conformance lane; nothing in the loop imports it; `make kernel-test` |
+| [compatibility](compatibility/README.md) | TypeScript binding of the kernel contract and a probe for trusted reference reducers | Standalone slice; `make compatibility-test` |
+| [rust_lane](rust_lane/README.md) | Reproducible Rust build of one reference kernel as a WIT component | Standalone slice; `make rust-lane-test`, not in `make test` |
+| [factory_quality](factory_quality/README.md) | Typed request, signature, contract and eval-suite checks | Active: `core/engine/gates.mjs` imports it |
+
+## Measurement: how much to trust the checks
+
+| Tool | What it does | Status |
+|---|---|---|
+| [seeded_faults](seeded_faults/README.md) | Makes known-wrong variants of a trusted function (swapped units, dropped rows, off by one, reversed inputs, stale binding) | Library; `make seeded-fault-test` |
+| [escape_harness](escape_harness/README.md) | Runs seeded faults through an evaluator and counts how many get promoted (the escape rate) | Library; `make escape-test`. P-51 measured the real gate path with its own scripts, not this harness |
+| [hardware_record](hardware_record/README.md) | Records the machine a measurement ran on and checks the record still applies | Active; `make hardware-test` |
+| [step_harness](step_harness/README.md) | Bounded agent step loop that closes a goal only on host-owned evidence | Library; nothing calls it yet; `make harness-test` |
+
+## Carried over from the earlier factory design
+
+These arrived with the first commit and sit beside, not inside, the isolate loop. They work as described in their
+READMEs; say "carried over" rather than "current design" when you cite them.
+
+| Tool | What it does | Status |
+|---|---|---|
+| [factory_campaign](factory_campaign/README.md) | Hash-chained stage state, a fenced model-ownership journal, bounded text repair | Tested by `make factory-state-test`; nothing outside its own tests imports it |
+| [factory_portability](factory_portability/README.md) | Encrypted campaign checkpoints and offline WebAssembly stage resume on another machine | Tested by `make portability-test`; `campaign_transfer.py` never run |
+| [factory_runtime](factory_runtime/README.md) | One worker attempt in a locked-down Docker container with checked publication | No tests (GAP-EF-002); needs a qualified image |
+
+## Repository scripts
+
+Run these from the repository root. `make check` runs the first seven.
+
+| Script | What it does | Entry point | Tested by |
 |---|---|---|---|
-| [asc](asc/README.md) | Pinned AssemblyScript compiler and its digests and workcell limits for the in-isolate loop | `pin.mjs` | `make loop-test` (installs via `make loop-setup`) |
-| [atomizer](atomizer/README.md) | Splits a need into atoms and runs them as a DAG in isolates, with validation, verification and a ledger | `node tools/atomizer/bin/schedule.mjs run <atoms.json> --run-dir <dir>` | `make atomizer-test` |
-| [atomizer/examples](atomizer/examples/README.md) | A minimal valid atoms file with one script atom and no model | `example.json` | None |
-| [compatibility](compatibility/README.md) | TypeScript binding of `kernel.wit` and a trusted reducer probe | `contract.ts` (`probeTrustedReducer`) | `make compatibility-test` |
-| [conductor](conductor/README.md) | Resumable per-job daemon that launches atoms, gates each landed diff, runs checks, then freezes, relaunches or escalates | `node tools/conductor/bin/conduct.mjs <command> <job.json>` | `make lib-test` |
-| [escape_harness](escape_harness/README.md) | Escape-rate harness over seeded faults | `harness.py` (`run`, `seeded`), `stats.py` | `make escape-test` |
-| [factory_campaign](factory_campaign/README.md) | Hash-chained stage state, a model ownership journal and bounded candidate repair | `state.py`, `model_journal.py`, `repair.py` (modules) | `make factory-state-test` |
-| [factory_portability](factory_portability/README.md) | Encrypted campaign checkpoints and offline WASM stage resume on another machine | `checkpoint.py pack\|unpack`, `resume_stage.py`, `qualify_wasmtime.py`, `campaign_transfer.py` | `make portability-test` |
-| [factory_quality](factory_quality/README.md) | Typed request, contract, suite freeze, candidate check and qualification | `index.mjs`, `cli.mjs` | `make engine-test` (indirectly) |
-| [factory_runtime](factory_runtime/README.md) | Trusted-host runner for one container attempt with checked publication, a scheduler and recovery | `python3 -B -m tools.factory_runtime run\|reconcile` | None |
-| [gate](gate/README.md) | Freezes a contract and tests, then checks an AssemblyScript kernel through gates G1 to G7 | `node tools/gate/gate.mjs freeze\|run <dir>` | None |
-| [hardware_record](hardware_record/README.md) | Read-only machine record with a quiet gate and noise baseline | `python3 -I tools/hardware_record/record.py collect\|validate\|check-current <dir>` | `make hardware-test` |
-| [hillclimb](hillclimb/README.md) | Round-based improvement campaigns with a lessons ledger | `node tools/hillclimb/bin/hillclimb.mjs <command> <campaign.json>` | `make lib-test` |
-| [job](job/README.md) | Job intake: checks a job manifest against the POODO gates and invariants, renders the card, compiles prompts, stages or fires | `node tools/job/bin/job.mjs <command> <job.json>` | `make lib-test` |
-| [job-locks](job-locks/README.md) | Prints the locked decisions of active jobs for a session-start hook | `python3 -B tools/job-locks/job-locks.py [add\|rm <manifest>]` | `make lib-test` |
-| [kernel](kernel/README.md) | Kernel WIT contract validator and Wasmtime component host | `python3 -B -m tools.kernel.contract component.wasm`, `Workcell` | `make kernel-test` (pinned tools via `make tools`) |
-| [lib](lib/README.md) | Shared exit-code taxonomy, typed retry, file locks, headroom and exit files | `errors.mjs`, `lock.mjs`, `headroom.mjs`, `exitfile.mjs`, `run-typed` | `make lib-test` |
-| [project-scheduler](project-scheduler/README.md) | Runs one cross-project batch of disjoint pieces plus a recombine step under token budgets and an optional GPU queue | `node tools/project-scheduler/scheduler.mjs <batch.json> [--check]` | None |
-| [rust_lane](rust_lane/README.md) | Reproducible Rust WASM component build for the P-06 task | `python3 -B -m tools.rust_lane.build <dir>` | `make rust-lane-test` (not in `make test`) |
-| [seeded_faults](seeded_faults/README.md) | Seeded semantic fault generator | `generator.py` (`generate`) | `make seeded-fault-test` |
-| [step_harness](step_harness/README.md) | Bounded agent step loop that records every step as POODO evidence | `harness.py` (`StepHarness`) | `make harness-test` |
-| [tscheck](tscheck/README.md) | Pinned tsrs TypeScript checker in V8 workcells | `checker.mjs`, `port.mjs`, `contained-route.mjs`, `requalify.mjs` | `make tscheck-test`; `make tscheck-requalify` |
-
-## Top-level scripts
-
-| Script | What it is | Entry point | Tested by |
-|---|---|---|---|
-| [check-docs.py](check-docs.py) | Fails on broken relative Markdown links and on an invalid `sources/SHA256SUMS` | `python3 -I tools/check-docs.py` | `make check`; `make core-test` |
-| [check-privacy.py](check-privacy.py) | Fails on home paths, Claude project paths, scratch workspace ids and email addresses in experiment records, except allowlisted files in `privacy-allowlist.json` | `python3 -I tools/check-privacy.py` | `make check`, `make check-privacy`; `make core-test` |
+| [check-docs.py](check-docs.py) | Fails on broken relative Markdown links and an invalid `sources/SHA256SUMS` | `python3 -I tools/check-docs.py` | `make check`; `make core-test` |
+| [check-privacy.py](check-privacy.py) | Fails on home paths, Claude project paths, scratch workspace ids and email addresses in experiment records, except files allowlisted in `privacy-allowlist.json` | `python3 -I tools/check-privacy.py` | `make check`, `make check-privacy`; `make core-test` |
+| [check_trace.py](check_trace.py) | Checks requirement, design and verification traces, anchored links and configuration coverage | `python3 -I tools/check_trace.py` | `make check` |
 | [experiment_id.py](experiment_id.py) | Checks `experiments/ALLOCATED` and reserves the next P-number | `python3 -I tools/experiment_id.py check\|reserve <slug>` | `make check`; `make core-test` |
 | [experiments_index.py](experiments_index.py) | Builds the index in `experiments/README.md` from each probe's `INDEX.md` | `python3 -I tools/experiments_index.py [--check]` (`make index`) | `make check`; `make core-test` |
 | [source_sums.py](source_sums.py) | Regenerates or checks `sources/SHA256SUMS` | `python3 -I tools/source_sums.py [--check] [--add PATH ...] [--remove PATH ...]` (`make sums`) | `make check`; `make core-test` |
-| [dump_list.py](dump_list.py) | Registers a process's sheddable memory in the memguard dump list and sheds it on `SIGUSR2`; reads `ENDOFORGE_DUMP_LIST` and `XDG_STATE_HOME` | `register(name, priority, measure, shed)` | `make ledger-test` |
+| [gen_data_dictionary.py](gen_data_dictionary.py) | Regenerates or checks `docs/data/data-dictionary.md` from the schemas | `python3 -I tools/gen_data_dictionary.py [--check]` | `make check` |
+| [gen_release_docs.py](gen_release_docs.py) | Writes the test report and version description from recorded runs | `python3 -I tools/gen_release_docs.py --name <suffix> --pr <n> --log LABEL=PATH ...` | None (GAP-EF-014) |
+| [x1_loop.py](x1_loop.py) | Ledger-bridge extension that admits, parks and commits promotion decisions for the candidate loop | loaded by `core/runtime/x1/loop.mjs` as `tools.x1_loop` | `make loop-test`, `make pipeline-test` |
+| [x1_ledger.py](x1_ledger.py) | Freezes the evaluator, registers candidates and decides promotions, JSON on stdin | `python3 -B -m tools.x1_ledger freeze\|register\|promote` | `make pipeline-test`, `make loop-test` |
 | [ledger_writer.py](ledger_writer.py) | Persistent ledger writer with a crash journal, served by the isolate ledger bridge; reads `ENDOFORGE_LEDGER_JOURNAL` and `ENDOFORGE_LEDGER_STATS` | `serve(process, extension)` | `make ledger-test` |
-| [x1_loop.py](x1_loop.py) | Ledger-bridge extension that admits, parks and commits X1 promotion decisions | loaded by `core/runtime/x1/loop.mjs` as `tools.x1_loop` | `make loop-test`, `make pipeline-test` |
-| [x1_ledger.py](x1_ledger.py) | Freezes the evaluator, registers candidates and decides promotions for the X1 pipeline, JSON on stdin | `python3 -B -m tools.x1_ledger freeze\|register\|promote` | `make pipeline-test`, `make loop-test` |
+| [dump_list.py](dump_list.py) | Registers a process's sheddable memory in the memguard dump list and sheds it on `SIGUSR2`; reads `ENDOFORGE_DUMP_LIST` and `XDG_STATE_HOME` | `register(name, priority, measure, shed)` | `make ledger-test` |
 | [constraint_store.py](constraint_store.py) | Hash-chained JSONL store for constraint records | `JsonlStore(path)` | `make core-test` |
 | [library_verify_promotion.py](library_verify_promotion.py) | Verifies promotion decisions against their ledger, one JSON result per row read from stdin | `python3 -B -m tools.library_verify_promotion` | `make library-test` |
-| [approved_atoms.py](approved_atoms.py) | Append-only JSONL registry of approved atoms with approval, retirement and consumers | `python3 -I tools/approved_atoms.py --store <file> add\|get\|consumers\|approve\|retire ...` | None |
+| [approved_atoms.py](approved_atoms.py) | Append-only JSONL registry of approved atoms with approval, retirement and consumers | `python3 -I tools/approved_atoms.py --store <file> add\|get\|consumers\|approve\|retire ...` | None (GAP-EF-007) |
 | [stage-rates.mjs](stage-rates.mjs) | Prints a stage-rates snapshot, once or every second | `node tools/stage-rates.mjs <snapshot.json> [--watch] [--json]` | `make isolate-test` |
 | [privacy-allowlist.json](privacy-allowlist.json) | Hash-pinned exceptions for `check-privacy.py` | data | `make check` |
 
-The tests for `dump_list.py` and `ledger_writer.py` are `tools/test_dump_list.py`, `tools/test_ledger_shed.py` and `tools/test_ledger_writer.py`.
+The tests for `dump_list.py` and `ledger_writer.py` are `tools/test_dump_list.py`, `tools/test_ledger_shed.py` and
+`tools/test_ledger_writer.py`.
+
+## Known defects
+
+Found while these READMEs were rewritten on 2026-11-08 and left unfixed here. Each tool's README repeats its own.
+
+- `tools/atomizer/lib/ledger.mjs` names a `LEDGER.md` schema that does not exist.
+- `tools/atomizer/bin/bench.mjs` defaults to `tools/atomizer/examples/C-005/atoms.json`, which does not exist; a bare
+  run records `ok=0`.
+- `conduct.mjs adopt` points to `tools/conductor/examples/` for its map file; that directory does not exist.
+- `node tools/atomizer/bin/testcheck.mjs` with no arguments crashes with `ERR_INVALID_ARG_TYPE` instead of printing
+  its usage.
+- `sh tools/hillclimb/scripts/hc-patch.sh` with no arguments fails with `$1: unbound variable` instead of its usage.
+- `python3 -B -m tools.x1_ledger` with no arguments crashes with `IndexError` instead of printing its usage.
+- `tools/job/lib/invariants.mjs` and `compile.mjs` cite `docs/PLAYBOOK-deadline-fanout.md`, which does not exist.
+- The Rust lane's component does not instantiate in `tools/kernel`'s Wasmtime `Workcell` (`table count too high at
+  2`); the lane's own tests run it through jco in Node instead.
+- hillclimb's default `campaign.runner` is `.local/bin/endoforge run` in the home directory, which this repository
+  does not ship.
+- hillclimb's `plan-review` refuses a campaign whose round directory or tool directory is outside
+  `policy.bindRoots` (default `.`, the current directory), so it must run from a directory that contains both.

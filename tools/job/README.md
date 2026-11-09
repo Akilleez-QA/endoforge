@@ -1,33 +1,130 @@
 # Job
 
-The job tool takes a job from intake to launch. A job is an `endoforge/job/1` JSON manifest: the user's verbatim goal, a brief, primary sources, criteria with checks, atoms with owned files, gates and resources. The tool checks it against the POODO gates (Pontificate, Observe, Orient, Decide, Orchestrate, Loop) and the invariants I1 to I15. Each refusal names the invariant it breaks. Nothing launches until the user confirms the exact job card by its sha256. After the go, the [Conductor](../conductor/README.md) runs the job.
+`job` turns a request into a checked plan that coding agents can build from, and refuses to start until the person
+who asked has confirmed exactly that plan. It is the front of EndoForge's whole-job layer: a job manifest goes in,
+gets checked against six intake gates and fifteen invariants, becomes a card the user confirms by its SHA-256, and is
+then handed to the [conductor](../conductor/README.md), which runs the coding agents.
 
-Proofs the tool makes (calibration, smoke, split, confirmation) go in `<job>.proofs.json` beside the manifest and are merged on load. Events go to `events.jsonl` and `EVENTS.md` beside the manifest.
+## Why it exists
 
-## Entry point
+Agent runs fail most often before any code is written: the goal is paraphrased instead of quoted, a reference never
+reaches the agent that needs it, two agents edit the same file, or a check cannot actually fail. `job` makes each of
+those a refusal with a named rule. The model can draft the manifest, but it cannot start the work: only the user's
+own words on the current card do that, and a relayed approval is refused.
 
-`bin/job.mjs <command> <job.json> ...`. With no arguments it prints its usage and exits 2.
+## How it works
+
+```mermaid
+flowchart TD
+  m["job.json<br/>goal, brief, sources,<br/>criteria, atoms"] --> v["validate<br/>six gates, I1 to I15"]
+  v -- "refused: rule and reason" --> m
+  v --> s["stage<br/>card + SHA-256"]
+  s --> c["User confirms<br/>that exact card"]
+  c --> f["conductor go<br/>or job fire"]
+```
+
+A manifest (`endoforge/job/1`) holds the user's goal verbatim, a brief (objective, acceptance, scope, authority, and
+stated versus inferred assumptions), the primary sources and references with what each governs, acceptance criteria
+with runnable checks, and atoms: pieces of work that each own a set of files.
+
+The gates run in order, and validating a gate runs every gate before it. The table lists the main rules and the
+invariants they cite:
+
+| Gate | What must be true | Invariants |
+|---|---|---|
+| Pontificate | The verbatim goal and who said it, a primary source, a complete brief and a running notes file | I1, I14 |
+| Observe | Every source and reference names what it governs and sits on durable disk (absolute paths, not `/tmp`) | I2, I4, I7 |
+| Orient | Atoms own disjoint files and get every input that governs their work; each atom has a local check; each criterion names the atoms that satisfy it; a critical path, the strongest rival plan and a deadline are named | I2, I5, I6, I13, I15 |
+| Decide | Every check can fail (proxy checks are calibrated on a known-good and a known-bad case), a ratchet baseline is set, every engine has a smoke receipt, earlier lessons were retrieved, and the user confirmed this card | I1, I3, I9, I10, I11, I14 |
+| Orchestrate | Launches go under the capacity dial and a named throttle (GPU atoms through the GPU queue), and the machine health check passes | I8 |
+| Loop | Every recorded round has a receipt and a `LESSONS.md` on disk | I10, I12, I14 |
+
+`node tools/job/bin/job.mjs invariants` prints all fifteen rules. The card's hash covers the goal, brief, sources,
+references, truth, criteria, atoms, contracts, seams, gates, critical path, rival and deadline, so changing any of them
+after confirmation voids it. The POODO stage names (Pontificate, Observe, Orient, Decide, Orchestrate, Loop) come from
+POODO, a reasoning discipline for agents; here each stage is code that refuses.
+
+Some words the gates use: the **truth package** is the ground truth a job measures against (survey data, reference
+measurements) with tolerances; a **seam** is a boundary between two atoms' files that needs an owner or a contract;
+the **rival** is the strongest other way to do the job; the **ratchet** is the baseline no change may make worse; a
+**smoke** is one tiny launch per engine before the wide launch; a **proxy check** measures something that stands in for
+the real outcome (a model's critique, an eval score), so it must be shown to pass a known-good case and fail a
+known-bad one; the **capacity dial** and **throttle** limit how many workers start at once.
+
+Job kinds are data in [kinds/](kinds/): `code`, `doc`, `generic`, `campus`, `model3d` and `video`. A kind adds checks: a `code` job needs a `tests`
+criterion, and a `campus` job (a site model) must include survey evidence in its truth package.
+
+## Use it
+
+`node tools/job/bin/job.mjs <command> <job.json> ...`. With no arguments it prints its usage and exits 2.
 
 | Command | Effect |
 |---|---|
 | `gates`, `invariants` | Lists the gates and the invariants. |
-| `validate <job.json> [--gate G] [--offline] [--json]` | Runs every rule up to gate G (default `orchestrate`). Exit 1 when a gate refuses. At `orchestrate` it runs the health check. |
-| `card <job.json> [--out card.md]` | Retrieves open lessons from earlier jobs of the same kind and renders the job card with its sha256. |
-| `confirm <job.json> --sha <sha> --by <user> --words "<words>" [--via direct\|relayed]` | Records the user's confirmation. A relayed one is refused at Decide. |
-| `lessons <job.json>` | Open lessons and the atoms they reach. |
-| `compile <job.json> [--out dir] [--offline]` | Writes every atom's prompt and a `manifest.json` of hashes. |
-| `stage <job.json>` | Decide without the go must pass. Writes `JOB-<id>.md` and emits `STAGED`. |
+| `validate <job.json> [--gate G] [--offline] [--json]` | Runs every rule up to gate G (default `orchestrate`). Exits 1 when a gate refuses. At `orchestrate` it runs the health check. |
+| `card <job.json> [--out card.md]` | Retrieves open lessons from earlier jobs of the same kind and renders the card; prints its SHA-256 on stderr. |
+| `stage <job.json>` | Decide, minus the user's go, must pass. Writes `JOB-<id>.md` and emits `STAGED`. |
+| `confirm <job.json> --sha <sha> --by <user> --words "<words>" [--via direct\|relayed]` | Records the user's confirmation of the staged card. A relayed one is recorded and refused at Decide. |
+| `compile <job.json> [--out dir] [--offline]` | Writes each atom's prompt and a `manifest.json` of hashes. |
 | `fire <job.json> [-- <launch command>]` | After the go: Orchestrate gates, compiled prompts, a `FIRED` event, then the launch command with `ENDOFORGE_JOB` and `ENDOFORGE_PROMPTS` set. |
-| `smoke <job.json>` | One tiny atom per engine on a discovered login. |
+| `smoke <job.json>` | One tiny model call per engine on a discovered login. |
 | `calibrate <job.json> [--criterion ID]` | Runs each proxy check on its known-good and known-bad case. |
-| `prove-split <job.json> --from <path> ...` | Writes a split's proof: a pixel diff within the noise floor, or tests passing. |
-| `event <job.json> <KIND> <summary> [--detail md] [--data json]` | Records an event. |
-| `knowledge <job.json> add --text ... --source ... [--tags a,b]` | Records a fact found during the run. |
-| `status`, `go`, `lock`, `pause`, `resume`, `budget`, `stop`, `patch` | Passed to the Conductor. |
+| `prove-split <job.json> --from <path> ...` | Proves a split changed nothing: a pixel diff within the noise floor, or tests passing. |
+| `lessons <job.json>` | Open lessons from earlier jobs and the atoms they reach. A lesson is an open row in an earlier job's `NOTES.md` mistakes table, `LESSONS.md` or hillclimb ledger; it closes when its fix cites a PR. |
+| `event <job.json> <KIND> <summary> [--detail md] [--data json]` | Records an event (`FIRED` and `STAGED` only come from `fire` and `stage`). |
+| `knowledge <job.json> add --text ... --source ... [--tags a,b]` | Records a fact found during the run; later prompts include it. |
+| `status`, `go`, `lock`, `pause`, `resume`, `budget`, `stop`, `patch` | Passed to the conductor. |
 
-`fire` and `smoke` launch model workers. `calibrate` and `prove-split --tests` run the commands in the manifest.
+`smoke` and `fire` (through its launch command) start model workers. `calibrate` and `prove-split --tests` run the
+commands in the manifest. Proofs go in `<job>.proofs.json` beside the manifest; events go to `events.jsonl` and
+`EVENTS.md`.
 
-Job kinds are data in [kinds/](kinds/): `code`, `doc`, `generic`, `campus`, `model3d` and `video`. A kind lists its proxy check kinds and required checks. The rules are in `lib/validate.mjs` and `lib/kinds.mjs`.
+Each compiled prompt carries, in order: the goal verbatim, the brief, the references and sources that govern the atom
+(source excerpts read from disk), the truth package, its checks, the files it alone may edit, the criteria it helps
+satisfy, knowledge and lessons that bear on it, and a fixed reply format.
+
+## Example
+
+[tools/conductor/demo.sh](../conductor/demo.sh) builds a two-atom `code` job with a stub worker (no model), stages
+it, gives the go and runs it. Its `job.json` is the smallest manifest that passes every gate, a good one to copy.
+`$REPO` below is the repository root. Afterwards, on that job:
+
+```console
+$ tools/conductor/demo.sh /tmp/ef-demo/job > /dev/null
+$ cd /tmp/ef-demo/job
+$ export HOME=$PWD/home ENDOFORGE_NOTIFY=none ENDOFORGE_JOBS=$PWD/none ENDOFORGE_VOLATILE=/nonexistent-volatile
+$ node $REPO/tools/job/bin/job.mjs validate job.json
+Pontificate  passed  (I1)
+Observe      passed  (I2, I4, I7)
+Orient       passed  (I5, I6, I13, I15)
+Decide       passed  (I3, I9, I11)
+Orchestrate  passed  (I8)
+Loop         not checked  (I10, I12, I14)
+I1 holds  I2 holds  I3 holds  I4 holds  I5 holds  I6 holds  I7 holds  I8 holds  I9 holds  I10 pending  I11 holds  I12 pending  I13 holds  I14 pending  I15 holds
+```
+
+Change one word of the goal after the user confirmed it, and Decide refuses:
+
+```console
+$ sed -i 's/Add add() and mul() to src."/Add add(), mul() and div() to src."/' job.json
+$ node $REPO/tools/job/bin/job.mjs validate job.json --gate decide
+...
+Decide       refused  (I3, I9, I11)
+REFUSED decide I1: the job changed after the user confirmed its card; show the new card and confirm again
+```
+
+`compile` writes the prompt each agent gets. The start of atom `ADD`'s prompt:
+
+```console
+$ node $REPO/tools/job/bin/job.mjs compile job.json --out prompts
+2 prompts in prompts; manifest 2f2c7da08209
+$ head -3 prompts/ADD.prompt
+You are atom ADD of job "demo" (code), one of 2 atoms working at once. Each atom owns different files.
+
+THE GOAL, in operator's own words (this, not any summary, is what you build):
+```
+
+The `HOME` override points login discovery at the demo's fake logins.
 
 ## Environment
 
@@ -35,27 +132,25 @@ Job kinds are data in [kinds/](kinds/): `code`, `doc`, `generic`, `campus`, `mod
 |---|---|---|
 | `ENDOFORGE_JOBS` | `./jobs` | Colon-separated roots searched for earlier jobs' lessons. |
 | `ENDOFORGE_JOB_KINDS` | none | Extra colon-separated directories of kind files. |
-| `ENDOFORGE_VOLATILE` | built-in list | Colon-separated roots treated as volatile (not durable disk). |
+| `ENDOFORGE_VOLATILE` | `/tmp`, `/var/tmp`, `/dev/shm`, `/run/user` | Colon-separated roots treated as volatile (not durable disk). |
 | `ENDOFORGE_NOTIFY` | on | `none` turns off desktop notifications (`notify-send`). |
 | `ENDOFORGE_EVENT_HOOKS`, `ENDOFORGE_PUSH_HOOKS`, `ENDOFORGE_COORDINATOR_HOOKS` | none | Extra hooks for every event, pushed events and `NEEDS-COORDINATOR`. |
 
-The health check is `resources.health` in the manifest. Without it, the tool runs `.local/bin/system-safety-status` in the home directory.
+The health check is `resources.health` in the manifest, a command that exits 0 when the machine may take the launch.
+Without it, Orchestrate runs `.local/bin/system-safety-status` in the home directory, a machine-specific script, and
+refuses if that is missing, so set `resources.health` (the demo uses `["true"]`).
 
-## Example
+## Limits
 
-These ran on a synthetic one-atom `code` job in a temp directory, with `ENDOFORGE_NOTIFY=none`, `ENDOFORGE_JOBS` pointing at an empty directory and `ENDOFORGE_VOLATILE=/nonexistent-volatile`:
-
-```sh
-node tools/job/bin/job.mjs gates
-node tools/job/bin/job.mjs validate job.json --gate decide --offline
-node tools/job/bin/job.mjs card job.json --out card.md
-node tools/job/bin/job.mjs compile job.json --out prompts --offline
-node tools/job/bin/job.mjs stage job.json
-node tools/job/bin/job.mjs status job.json
-```
-
-Before `card`, `validate` exited 1 with `REFUSED decide I14` (lessons not retrieved) and `REFUSED decide I1` (card not confirmed). `card` printed the card sha256 on stderr. `compile` wrote `A.prompt` and `manifest.json`. `stage` passed Pontificate to Decide and emitted `STAGED`.
+- The gates check the plan's shape, not whether the plan is right. A manifest can pass every gate and still ask for
+  the wrong thing; that is what the user's confirmation is for.
+- `validate` without `--offline` checks that every named path exists; with `--offline` it skips disk checks and
+  source excerpts.
+- `invariants.mjs` and `compile.mjs` cite `docs/PLAYBOOK-deadline-fanout.md`, which is not in this repository.
 
 ## Tests
 
-`make lib-test` runs `test/failopen.test.mjs`, which passed. The Conductor tests in the same target also drive `stage` and `go`.
+`make lib-test` runs `test/failopen.test.mjs` (a torn or unreadable event log never reads as "not staged"). The
+conductor tests in the same target drive `stage` and `go`.
+
+Engineering record: component C-23, requirement REQ-JOB-001.
