@@ -13,8 +13,9 @@ try {
   fs.cpSync(source, host, { recursive: true });
   const state = process.env.CODEX_POOL_STATE_DIR, home = path.join(state, 'home');
   fs.mkdirSync(home, { recursive: true });
-  fs.appendFileSync(path.join(state, 'log'), `ts=${new Date().toISOString()} account=stub exit=0 class=ok\n`);
+  fs.appendFileSync(path.join(state, 'log'), `ts=${new Date().toISOString()} account=stub pid=${process.pid} child=0 exit=0 class=ok failover=no attempt=1 model=stub guard=no\n`);
   const child = spawn(process.env.CODEX_POOL_BIN, process.argv.slice(2), { env: { ...process.env, CODEX_HOME: home }, stdio: 'inherit' });
+  for (const signal of ['SIGTERM', 'SIGINT']) process.on(signal, () => child.kill(signal));
   child.on('error', e => { console.error(`stub-pool: ${e.message}`); process.exitCode = 1; });
   child.on('exit', code => process.exit(code ?? 1));
 } catch (e) { console.error(`stub-pool: ${e.message}`); process.exitCode = 1; }
