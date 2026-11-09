@@ -1,8 +1,8 @@
-// Build the isolate command, mounts and prompt for one atom's worker (script | sonnet | opus | codex).
 import path from 'node:path';
 import fs from 'node:fs';
 import { expand } from './isolate.mjs';
 import { codexArgs } from './routing.mjs';
+import { capabilityRule } from '../../../core/runtime/x1/generator.mjs';
 const INLINE_LIMIT = 60_000;
 const toolchainEnv = (name) => `ENDOFORGE_TOOLCHAIN_${name.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`;
 export function resolveToolchainPath(name, policy, repoRoot) {
@@ -35,7 +35,7 @@ function procedureFor(atom, doc, policy, repoRoot) {
   const asc = path.join(repo(policy.toolchain.asc), '.bin', 'asc');
   let glueSchema = '';
   try { glueSchema = fs.readFileSync(path.join(repo(policy.toolchain.gate), 'glue.schema.json'), 'utf8'); } catch { glueSchema = '(schema file unavailable)'; }
-  return t.replaceAll('{needId}', doc.need.id).replaceAll('{asc}', asc).replaceAll('{gate}', path.join(repo(policy.toolchain.gate), 'gate.mjs')).replaceAll('{helper}', path.join(repo(policy.toolchain.atomizer), 'bin', 'compose-kernel.mjs')).replaceAll('{glueSchema}', glueSchema);
+  return t.replaceAll('{needId}', doc.need.id).replaceAll('{asc}', asc).replaceAll('{gate}', path.join(repo(policy.toolchain.gate), 'gate.mjs')).replaceAll('{helper}', path.join(repo(policy.toolchain.atomizer), 'bin', 'compose-kernel.mjs')).replaceAll('{capabilityRule}', capabilityRule).replaceAll('{glueSchema}', glueSchema);
 }
 export function buildPrompt(doc, atom, staged, toolUsing, procedure) {
   const L = [];
@@ -56,7 +56,6 @@ export function buildPrompt(doc, atom, staged, toolUsing, procedure) {
   if (procedure) L.push('', '## Fixed procedure for this kind of atom', '', procedure);
   return L.join('\n');
 }
-/** Returns { cmd, stdin, toolchain, captureResultTo } for the atom. */
 export function workerCommand(doc, atom, staged, policy, repoRoot, sel) {
   const w = atom.worker;
   const subst = (s) => s.replaceAll('{in}', '/in').replaceAll('{out}', '/out').replaceAll('{work}', '/work').replaceAll('{atomizer}', path.join(path.resolve(repoRoot, policy.toolchain.atomizer)));
@@ -77,7 +76,6 @@ export function workerCommand(doc, atom, staged, policy, repoRoot, sel) {
   if (w.effort) cmd.push('--effort', w.effort);
   return { cmd, stdin: prompt, toolchain: toolchainFor(['claude', 'node', ...kindTools, ...declared], policy, repoRoot), captureResultTo: toolUsing ? null : atom.outputs[0].path, prompt };
 }
-/** Parse usage from Claude's JSON result or Codex's JSONL events. */
 export function parseUsage(stdout, model) {
   try {
     if (model === 'codex') {

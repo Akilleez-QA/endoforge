@@ -6,6 +6,7 @@ import crypto from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 import { pathToFileURL } from 'node:url';
 import { runGates } from '../../core/runtime/x1/gates.mjs';
+import { capabilityProblems } from '../../core/runtime/x1/generator.mjs';
 import { ASC_PATH } from '../asc/pin.mjs';
 
 async function compileWith(args) {
@@ -28,7 +29,9 @@ const f = (n) => path.join(dir, n);
 if (cmd === 'freeze') {
   for (const n of ['CONTRACT.md', 'tests.json']) if (!fs.existsSync(f(n))) { console.error(`missing ${n}`); process.exit(2); }
   if (fs.existsSync(f('kernel.ts'))) { console.error('refusing to freeze: kernel.ts already exists (tests must be frozen before any code)'); process.exit(2); }
-  JSON.parse(fs.readFileSync(f('tests.json'), 'utf8'));
+  const tests = JSON.parse(fs.readFileSync(f('tests.json'), 'utf8'));
+  const capability = capabilityProblems(fs.readFileSync(f('CONTRACT.md'), 'utf8'), tests);
+  if (capability.length) { console.error(`refusing to freeze: ${capability.join('; ')}`); process.exit(2); }
   const rec = { at: new Date().toISOString(), contract: sha(f('CONTRACT.md')), tests: sha(f('tests.json')) };
   fs.writeFileSync(f('frozen.sha256'), JSON.stringify(rec, null, 2) + '\n');
   console.log(`frozen contract ${rec.contract.slice(0, 16)}… tests ${rec.tests.slice(0, 16)}…`);

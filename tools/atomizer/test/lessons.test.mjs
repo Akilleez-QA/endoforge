@@ -1,4 +1,3 @@
-// runLessons: the measurements each run receipt carries (failed launches, retries, failovers, slowest atom, queue waits).
 import assert from 'node:assert/strict';
 import { runLessons } from '../lib/lessons.mjs';
 const t = (s) => new Date(Date.UTC(2026, 9, 26, 12, 0, s)).toISOString();
