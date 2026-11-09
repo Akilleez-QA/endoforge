@@ -1,117 +1,183 @@
 # The candidate loop
 
-The candidate loop is how EndoForge turns a coding model's proposal into code it can trust: the checks are frozen
-first, the code is written and repaired against them in a workcell, and the ledger records the verdict. Its default
-candidate form is a kernel: a pure function compiled to WebAssembly. This page follows a test need (`integer add(a,b)`)
-to a promoted kernel, what each gate checks, and where each part lives in
-the code. To see it run,
-follow the [getting-started tutorial](../guides/tutorials/getting-started.md). Settings are in the
-[configuration reference](../configuration/configuration-reference.md).
+The candidate loop is how work from a coding agent becomes a capability EndoForge will run again without asking a model.
+A person or an agent brings a need, a request for something software should do. The agent first writes what will be
+checked; EndoForge freezes that in a ledger before any code exists; the agent then writes the code and repairs it
+against the frozen checks inside a RAM-resident workcell; and the ledger, not the agent, decides whether the result is
+promoted. The model writes all of the code and never grades its own work.
+
+## Terms
+
+| Term | Meaning here |
+|---|---|
+| Need | The request, in words, that starts a task. Each need gets its own ledger |
+| Capability | What a promoted candidate provides: working code plus the contract and evidence that say what it does |
+| Candidate | One proposed implementation, identified by the SHA-256 of its content |
+| Kernel | The candidate form the stage prompts ask for today: application logic as a pure WebAssembly module (state in, event in, state out, effects out as data), with no imports except `env.abort` |
+| Glue | `glue.json`: declarative data that names, types, labels and gives units to each kernel export, validated against a closed schema |
+| Frozen evaluator | The specification plus the exact gate code, hashed into the ledger before any candidate exists. The ledger action that does it is `admit` on the in-cell paths and `freeze` on the host-side path |
+| Workcell | A warm V8 isolate that keeps the compiler and gates loaded between jobs ([workcells](workcells.md)) |
+| Evaluator round | One pass of the engine's six checks over a candidate (five universal checks, then the residual check, which runs the nine gates); it includes two fresh runs of the tests in opposite call orders. A promotion needs two rounds ([gates](gates.md#from-gates-to-a-decision)). Not to be confused with the agent's check rounds, one per implementation check |
+| Receipt | The ledger record of one evaluation: what was precommitted, what was observed, and the outcome. An evaluation that never reached an outcome is recorded `outcome_unknown`, and the decision on it is `inconclusive` |
+
+Why a WebAssembly kernel: a module instantiates in well under a millisecond, its declared imports are its only
+capabilities, its memory is its own, and a pure function of state and event is the easiest software to test
+deterministically and to mutation-test. The glue travels as data checked against a closed schema, so no generated
+imperative JavaScript runs on this path. Code that doesn't fit that split goes through the
+[compatibility lane](compatibility-lane.md) instead.
+
+This page is the map. Each mechanism has its own page:
+
+| Page | Mechanism |
+|---|---|
+| [The agent loop](agent-loop.md) | The whole agent conversation running inside a workcell, with model turns parked in the ledger |
+| [Workcells](workcells.md) | `IsolatePool`: V8 isolates in threads or processes, limits, warm machinery, the ledger bridge |
+| [The gates](gates.md) | The nine deterministic checks and the ledger's promotion rule |
+| [Evaluator synthesis](evaluator-synthesis.md) | A second evaluator written blind from the need, before any candidate |
+| [The library](library.md) | Reusing a promoted capability instead of writing it again |
+| [The compatibility lane](compatibility-lane.md) | Type checking and running TypeScript as JavaScript in a contained cohort |
 
 ## The shape of one attempt
 
 ```mermaid
 flowchart TD
-  spec["1 Specification<br/>CONTRACT.md, tests.json"] --> freeze["2 Freeze<br/>ledger record"]
-  freeze --> impl["3 Implementation<br/>kernel.ts, glue.json"]
-  impl --> compile["4 Compile<br/>pinned asc"]
-  compile --> gates["5 Gates<br/>G1–G9 in a workcell"]
-  gates -- "fail" --> impl
-  gates -- "pass or<br/>turn limit" --> commit["6 Commit<br/>candidate, receipt"]
-  commit --> decision["7 Decision<br/>promote, refuse<br/>or inconclusive"]
+  need["Need"] --> spec["Specification<br/>CONTRACT.md, tests.json"]
+  spec --> freeze["Freeze<br/>ledger record"]
+  freeze --> impl["Implementation<br/>kernel.ts, glue.json"]
+  impl --> check["Compile and<br/>run the gates"]
+  check -- "a gate failed" --> impl
+  check -- "passed or<br/>turn limit" --> commit["Commit<br/>candidate, receipt"]
+  commit --> decision["Decision<br/>promote, refuse<br/>or inconclusive"]
 ```
 
-1. **Specification.** A model writes `CONTRACT.md` (what the kernel computes) and `tests.json` (frozen expectations).
-2. **Freeze.** The supervisor hashes the specification and the evaluator and stores them in the task's ledger before
-   any code exists. Code written before the freeze, or a specification changed after it, is refused.
-3. **Implementation.** The model writes `kernel.ts` (AssemblyScript) and `glue.json` (how each export's arguments and
-   result are typed, labelled and given units).
-4. **Compile.** The pinned AssemblyScript compiler builds a WebAssembly module with `--noAssert` and a 64 MiB memory
-   maximum.
-5. **Gates.** The frozen evaluator runs the gates in a workcell. A failure goes back to the model as its next prompt.
-6. **Commit.** One ledger transaction registers the candidate, appends the receipt and evaluates the promotion rule.
-7. **Decision.** `promote` only when every gate passed for the exact candidate bytes under the exact frozen evaluator,
-   with a verified hash chain. A lost workcell, a deadline or a parked model call is `outcome_unknown` and never a pass.
+1. **Specification.** The agent writes `CONTRACT.md`, what the capability does and its assumptions, and `tests.json`,
+   the expectations it must meet. Before it can be frozen, every test must assert a definite value or a trap, with a
+   tolerance of at most 1% ([test strength](gates.md#test-strength-g1)).
+2. **Freeze.** The host hashes the specification together with the exact bytes of the gate implementation and writes
+   one `frozen_evaluator` record into the task's ledger. From here on, a changed specification or gate file fails the
+   commit. Code written before the freeze is refused.
+3. **Implementation.** The agent writes the candidate: today `kernel.ts`, AssemblyScript compiled to the kernel
+   module, and `glue.json`.
+4. **Check.** The pinned AssemblyScript 0.28.20 compiler builds the module and the [gates](gates.md) run on it. On
+   the agent path a failure goes back to the agent as its next prompt, up to the turn limit; on the other two paths a
+   repair happens only when it is switched on (`ENDOFORGE_SELF_CHECK=1`, or a `repair` module).
+5. **Commit.** One ledger transaction registers the candidate, appends a receipt for its evaluation and re-checks the
+   evidence against the frozen bundle.
+6. **Decision.** The ledger's rule, `decide` in [tools/x1_loop.py](../../tools/x1_loop.py), returns `promote` only
+   when every gate passed in both evaluator rounds for these bytes under this frozen evaluator. A lost cell, a deadline
+   or a failed model call after the freeze is `inconclusive`, never a pass.
 
-## The gates
+The test needs in the experiments, such as `integer add(a,b)`, are workloads that measure this loop. They are not a
+limit on what an agent is asked to build: the overlay, the check hook, the freeze and the ledger are the same whatever
+the stage prompts ask for, and today's stage prompts and gates implement the kernel form.
 
-Gates are in [core/runtime/x1/gates.mjs](../../core/runtime/x1/gates.mjs). Promotion requires all nine to be present
-and passing ([tools/x1_loop.py](../../tools/x1_loop.py)).
+## After promotion
 
-| Gate | Checks |
-|---|---|
-| `G1_frozen` | `CONTRACT.md` and `tests.json` match the frozen hashes, and the tests are not too weak |
-| `G2_compiles` | The module compiled from this exact source, instantiates and has no unexpected imports |
-| `G3_exports` | Every export the tests and glue name exists |
-| `G4_tests` | Every frozen test passes |
-| `G5_deterministic` | Two fresh instances in opposite call orders give the same results |
-| `G6_bounded` | Metered fuel, stack and memory stay within bounds ([meter.mjs](../../core/runtime/x1/meter.mjs)) |
-| `G7_glue` | The glue matches the closed schema, the kernel's parameters and the contract |
-| `G8_nonfinite` | Float parameters probed with NaN and infinity behave as the contract says |
-| `G9_units` | A static units check reads the kernel's arithmetic, the glue's kinds and parameter names, never the contract or evaluator ([dimensions.mjs](../../core/runtime/x1/dimensions.mjs), P-65) |
+A promoted candidate stays in its task's ledger with the decision that promoted it. From there the
+[library](library.md) can admit it, after re-verifying the promotion, and serve later needs that declare the same
+capability without another model turn. EndoForge does not activate anything in a host application: the lifecycle
+model ([core/lifecycle.py](../../core/lifecycle.py)) checks decision references for a host that does. An
+`inconclusive` attempt promoted nothing and decided nothing about the candidate; running the need again is a new
+attempt, and on the agent path `resume` continues it from the ledger.
 
 ## Three loop paths
 
-`runNeed` in [pipeline.mjs](../../core/runtime/x1/pipeline.mjs) picks a path from `ENDOFORGE_LOOP`:
+`runNeed` in [pipeline.mjs](../../core/runtime/x1/pipeline.mjs) runs one need. `ENDOFORGE_LOOP` picks where the work
+happens:
 
-| `ENDOFORGE_LOOP` | Path | Model | Where the work runs |
+| `ENDOFORGE_LOOP` | Path | Model | Where the rest runs |
 |---|---|---|---|
-| unset (default) | current | Two `codex exec` sessions through `ENDOFORGE_CODEX_CMD` ([generator.mjs](../../core/runtime/x1/generator.mjs)) | Generation in a client process; compile on the supervisor; gates in an `IsolatePool` |
-| `isolate` | in-isolate | Same generator | Compile, frozen check, gates and repair in one warm cell ([loop-port.mjs](../../core/runtime/x1/loop-port.mjs)) |
-| `agent` | agent loop | A provider port, such as the warm Claude transport | Everything, including the agent's turn loop over an in-memory overlay ([agent.mjs](../../core/runtime/x1/agent.mjs)) |
+| unset (default) | `current` | Two `codex exec` sessions through `ENDOFORGE_CODEX_CMD` ([generator.mjs](../../core/runtime/x1/generator.mjs)) | Generation in a temporary workspace; compile on the supervisor ([compiler.mjs](../../core/runtime/x1/compiler.mjs)); gates in an `IsolatePool`; ledger through `python3 -m tools.x1_ledger` per step |
+| `isolate` | in-isolate | The same two `codex exec` sessions | Freeze, compile, gates, repair and commit in one warm cell and one persistent ledger bridge ([loop.mjs](../../core/runtime/x1/loop.mjs) `attemptInIsolate`) |
+| `agent` | agent loop | A provider port: the warm or spawned Claude transport, or a scripted test double | Everything except the model call, including the conversation and the files, in the cell ([agent loop](agent-loop.md)) |
 
-The `isolate` and `agent` paths are off by default until their parity is accepted. P-50 measured them.
+The `isolate` and `agent` paths need a pool from `createLoopPool`. The default stays `current` until the maintainer
+accepts the in-cell paths' parity with it. [P-50](../../experiments/P-50-in-isolate/RESULT.md) measured all three on the same corpus
+after its review (p50 / p95 non-model time per candidate, one cell, loaded desktop):
 
-In the agent path the cell holds the turn loop. The model can call `read_file`, `edit_file`, `check` and `done`, up to
-16 calls per reply. Turns and tokens are bounded by `limits` (`maxTurns` 6, `maxTokens` 64000). With `waits: 'release'`
-(the default) a cell waiting for a model reply goes back to the pool; the continuation is written to the ledger first,
-and the reply is admitted fresh into any free cell, which rechecks the frozen evaluator and the compiler identity.
+| Path | Non-model time | Spawns per candidate |
+|---|---|---|
+| `current` | 1,297 / 1,766 ms | 9 |
+| `isolate`, process cell | 148 / 173 ms | 0 |
+| `agent`, process cell | 116 / 123 ms | 0 |
+
+Verdicts matched across paths on all 39 parity inputs. About half of the agent path's time is creating a new ledger
+per task.
+
+### The `current` path, step by step
+
+1. `generate` makes `<directory>/candidate` (the agent's workspace) and `<directory>/oracle` (the frozen root, the
+   directory whose files the freeze hashes), then
+   runs the specification session. It refuses if the workspace holds anything except `CONTRACT.md` and `tests.json`
+   (plus `reference.js` in `reference` mode), any file over 1 MiB, or a symlink.
+2. It writes `frozen.sha256`, copies the specification and the gate implementation files into the oracle root, and
+   asks the ledger to `freeze`.
+3. With a library, `library.serve` may answer the need here, and no implementation session runs.
+4. The implementation session resumes the same Codex thread by default (`ENDOFORGE_CODEX_SESSION=resume`). It may
+   write only `kernel.ts` and `glue.json`; any change to a frozen file refuses the attempt. With
+   `ENDOFORGE_SELF_CHECK=1` one repair session runs on gate failures.
+5. The supervisor compiles, `register`s the candidate, runs the pool job, then calls `promote`, which writes and
+   fsyncs `promotion.json`.
+
+`ENDOFORGE_CODEX_TERSE` shapes the prompts: `exact` (the default) adds a rule to derive every expected value from the
+formula, `scalar` adds a finite-scalar boundary rule and filters tests before the freeze, `reference` has the model
+write `reference.js` and the supervisor fill in expected values from it, and `fallback` runs once terse and retries
+once verbose within `ENDOFORGE_RETRY_BUDGET_MS`. The [configuration reference](../configuration/configuration-reference.md)
+lists every variable.
+
+### The `isolate` path
+
+Generation is the same two Codex sessions, but the freeze, the checks and the commit go through the pool:
+`admit` freezes in one bridge request, a generator self-check is a cell job with no durable effect
+(`checkCandidate`), and `evaluateAndCommit` compiles, gates and commits in one cell job plus one bridge request. A
+`repair` module can run repair rounds inside the cell. [The runtime README](../../core/runtime/README.md#the-loop-inside-the-workcell)
+has the details.
 
 ## Around the loop
 
-These parts are optional or sit outside the cell. Each is off by default unless the table says otherwise.
+Each of these is optional or sits beside the cell.
 
 | Part | What it does | Default | Code |
 |---|---|---|---|
-| Library | A need that a promoted kernel already satisfies skips implementation | Off; pass `library` from `openLibrary` | [core/library](../../core/library/README.md) |
-| Formula oracle | Recomputes frozen expectations from the contract's formula, ranges and a model-written `reference.js` before the freeze; corrects or flags wrong values, evaluates a piecewise rule branch by branch, and abstains on what it cannot read | Off; `limits.oracle` | [oracle.mjs](../../core/runtime/x1/oracle.mjs) |
-| Evaluator synthesis | A candidate-blind evaluator is built from the need, qualified, and can refuse a candidate after the gates | Off; `ENDOFORGE_SYNTH=1`, current path only | [design](evaluator-synthesis.md) |
-| Scalar filter and terse prompts | Generator prompt rules; `ENDOFORGE_CODEX_TERSE=exact` is the default | `exact` | [generator.mjs](../../core/runtime/x1/generator.mjs) |
-| Contained route | Type checks, emits and runs the candidate's TypeScript in a supervised V8 cohort; reported under `contained`, never changes the decision | Off; pass `containedRoute` | [contained-route.mjs](../../tools/tscheck/contained-route.mjs) |
-| Subscription guard | Refuses any `claude -p` launch that is not on a proven claude.ai subscription login (exit 78) | Always on for Claude launches | [subscription-guard.mjs](../../core/runtime/subscription-guard.mjs) |
-| Usage governor | Parks new model calls near the weekly usage ceiling (`USAGE_PARKED`, exit 75) | On in both Claude transports; ceiling 0.85 | [usage-governor.mjs](../../core/runtime/usage-governor.mjs) |
-| Capacity planner | Picks width, placement on L3 cache domains and the split into cohorts | Used by the contained route when no width is given | [capacity ICD](../interfaces/capacity-icd.md) |
-| Stage rates | Per-stage throughput, queue and bottleneck verdict for a running loop | Off; pass `rates` | [stage-rates.mjs](../../core/runtime/stage-rates.mjs) |
-| Dump list | Registers sheddable memory so a machine memory guard can ask for it back with `SIGUSR2` | On only if the dump-list directory exists or `ENDOFORGE_DUMP_LIST=1` | [runtime](../../core/runtime/README.md#memory-on-the-dump-list) |
+| Library | A need that a promoted capability already meets skips implementation | Off; pass `library` from `openLibrary` (current path) | [library](library.md) |
+| Formula oracle | Recomputes frozen expectations from the contract's formula and a model-written reference before the freeze | Off; `limits.oracle` (agent path) | [agent loop](agent-loop.md#formula-oracle) |
+| Evaluator synthesis | A candidate-blind evaluator built from the need can refuse a candidate after the gates | Off; `ENDOFORGE_SYNTH=1` (current path) | [evaluator synthesis](evaluator-synthesis.md) |
+| Compatibility route | Type checks, emits and runs the candidate's TypeScript in a contained cohort; reported, never changes the decision | Off; pass `containedRoute` (current path) | [compatibility lane](compatibility-lane.md) |
+| Subscription guard | Refuses any `claude -p` launch not on a proven claude.ai subscription login (exit 78, a configuration error) | Always on for Claude launches | [subscription-guard.mjs](../../core/runtime/subscription-guard.mjs) |
+| Usage governor | Parks new model calls near the usage ceiling (`USAGE_PARKED`, exit 75: try again after the reset) | On in both Claude transports; ceiling 0.85 | [usage-governor.mjs](../../core/runtime/usage-governor.mjs) |
+| Stage rates | Per-stage throughput, queues and a bottleneck verdict | Off; pass `rates` to `createLoopPool` | [workcells](workcells.md#stage-rates) |
+| Dump list | Registers sheddable memory so a machine memory guard can ask for it back | On only when the dump-list directory exists or `ENDOFORGE_DUMP_LIST=1` | [workcells](workcells.md#the-dump-list) |
+| Capacity planner | Picks width and placement on L3 cache domains | Used by the compatibility route when no width is given | [capacity ICD](../interfaces/capacity-icd.md) |
 
 ## Where the evidence lives
 
-- **Ledger.** A SQLite file per task, hash-chained, written through one persistent bridge per pool. The group-commit
-  writer ([tools/ledger_writer.py](../../tools/ledger_writer.py)) shares one journal `fdatasync` across a batch.
-  See the [ledger ICD](../interfaces/ledger-icd.md).
-- **Decisions.** The agent path stores its decision in an `x1_decisions` table beside the chain; `promote` reaches the
-  same answer from the chain alone.
-- **Experiments.** Measurements behind each default are in [experiments](../../experiments/README.md), one P-number
-  per probe, with a precommitted plan and a result.
+- **Ledger.** One SQLite file per task (`<directory>/ledger.sqlite`), append-only and hash-chained: `task`,
+  `admitted_input`, `frozen_evaluator`, `candidate`, `receipt`. The in-cell paths write it through one persistent
+  bridge per pool, whose group-commit writer shares one `fdatasync` across a batch
+  ([ledger ICD](../interfaces/ledger-icd.md#ledger-writer-journal)).
+- **Decisions.** The `current` and `isolate` paths write a sealed `promotion.json`; the agent path stores its decision
+  in an `x1_decisions` table beside the chain. `promote` reaches the same answer from the chain alone.
+- **Experiments.** The measurement behind each default has a P-number in [experiments](../../experiments/README.md),
+  with a precommitted plan and a result.
 
 ## Trust boundaries
 
-Workcells are V8 isolates, not an OS sandbox. Host ports, the supervisor and the ledger writers are trusted code. A
-cell never receives the ledger path or the frozen root. Thread-mode cells cannot bound off-heap memory; process mode
-with a delegated cgroup can. The hash chain detects changes; it is not a signature or an external witness. The
-lifecycle model ([core/lifecycle.py](../../core/lifecycle.py)) validates decision references; it grants no authority
-and activates nothing in a host.
+Workcells are V8 isolates chosen for speed, density and low resource pressure. They are not an OS sandbox. Host ports,
+the supervisor and the ledger writer are trusted code. A cell never receives the ledger path or the frozen root. A
+thread cell cannot bound off-heap memory; a process cell in a delegated cgroup can. The hash chain detects changes; it
+is not a signature or an external witness. The lifecycle model ([core/lifecycle.py](../../core/lifecycle.py))
+validates decision references; it grants no authority and activates nothing in a host.
 
 ## Document control
 
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SDD-LOOP |
-| Version | 2.1 |
+| Version | 3.0 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-08 |
-| Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
+| Baseline commit | 63e95c7 |
 | Applies to | endoforge main at baseline commit |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
 
@@ -123,4 +189,5 @@ and activates nothing in a host.
 |---|---|---|---|---|
 | 1.0 | before 2026-11-08 | — | Written in PR #129 at `d4d7efa` | earlier PRs |
 | 2.0 | 2026-11-08 | `4d692a4` | Metadata header and change history added; content re-baselined | #131 |
-| 2.1 | 2026-11-08 | `ea7b8d6` | Metadata header and NASA notice moved to this section; flow drawn as a diagram; plainer introduction. Content unchanged otherwise | this PR |
+| 2.1 | 2026-11-08 | `ea7b8d6` | Metadata header and NASA notice moved to this section; flow drawn as a diagram; plainer introduction. Content unchanged otherwise | #132 |
+| 3.0 | 2026-11-08 | `63e95c7` | Rewritten from the code as the map of the loop; gates, agent loop, workcells, library and compatibility lane moved to their own pages; G5 described as the code runs it | this PR |
