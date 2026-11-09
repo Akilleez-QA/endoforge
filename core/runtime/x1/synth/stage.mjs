@@ -3,13 +3,14 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { parseReply } from '../agent.mjs';
-import { kernelFuel, callKernel, freshKernel } from '../measure.mjs';
-import { loadKernel } from '../meter.mjs';
-import { glueProblems, library, propertyProblems, same, swappedLabels } from './invariants.mjs';
+import { judgeInCell } from './cell-host.mjs';
+import { library, same, swappedLabels } from './invariants.mjs';
+import { judge } from './judge.mjs';
 import { anchorProblems, discrimination, discriminationScore, mutants, selfConsistent } from './qualify.mjs';
 import { runReferences } from './sandbox.mjs';
 import { compareUnits } from './units.mjs';
 import { vectorsFor } from './vectors.mjs';
+export { judge };
 const sha = text => createHash('sha256').update(text).digest('hex');
 export const enabled = env => env.ENDOFORGE_SYNTH === '1';
 export const sheetShape = { residual: ['plain-language sentence, at most 8'], quantities: [{ name: 'string', unit: 'string', sign: 'positive|nonnegative|any' }], relations: [{ output: 'string', input: 'string', direction: 'increasing|decreasing' }], invariants: Object.keys(library) };
@@ -75,7 +76,9 @@ export async function compileMember(binding, tests) {
     if (!reference) { Object.assign(record, { qualified: false, failures: [`M2 reference did not load: ${runs[0].load}`] }); continue; }
     if (JSON.stringify(reference) !== JSON.stringify(again)) record.failures.push('M2 two runs differ');
     if (reference.some(r => r.error === 'budget' || /timed out/.test(r.error ?? ''))) record.failures.push('M2 reference exceeded its time budget');
-    record.failures.push(...anchorProblems(p.own, reference.slice(0, nOwn)).map(x => `M3 ${x}`));
+    const anchors = reference.slice(0, nOwn);
+    record.failures.push(...anchorProblems(p.own, anchors).map(x => `M3 ${x}`));
+    record.contested = p.own.flatMap((t, i) => (anchors[i] && !anchors[i].missing && anchorProblems([t], [anchors[i]]).length ? [{ test: t.name ?? String(i), args: t.args, ...(t.expectError ? { expectError: true } : { expect: t.expect }), outcome: 'value' in anchors[i] ? { value: anchors[i].value } : { throws: true } }] : []));
     const vectorResults = reference.slice(nOwn, nOwn + nFrozen);
     const { kept, dropped } = selfConsistent(p.entry, p.frozen.calls, vectorResults, p.frozen.sweeps);
     const score = discriminationScore(reference.slice(nOwn), runs.slice(2).map(run => ({ results: run.results?.slice(offset - nFrozen - nDense, offset) })), nFrozen);
@@ -128,6 +131,27 @@ export async function combine(members) {
   }
   return checks;
 }
+const outcomeOf = r => (r && 'value' in r ? { value: r.value } : { throws: true });
+export async function suspectTests(members) {
+  const [a, b] = members;
+  if (members.length !== 2 || members.some(m => m.error || typeof m.reference !== 'string')) return [];
+  const suspects = [];
+  for (const fn of Object.keys(a.exports)) {
+    const x = a.exports[fn], y = b.exports[fn];
+    if (!x?.contested?.length || !y?.contested?.length) continue;
+    if ([x, y].some(e => e.failures.some(f => !f.startsWith('M3 ')) || e.failures.length !== e.contested.length)) continue;
+    const names = side => side.contested.map(c => c.test).sort().join('\n');
+    if (names(x) !== names(y)) continue;
+    const agree = x.contested.every(c => same(c.outcome, y.contested.find(d => d.test === c.test).outcome));
+    if (!agree) continue;
+    let cross;
+    try { cross = await Promise.all([runReferences([b.reference], x.vectors.map(v => ({ fn, args: v.args }))), runReferences([a.reference], y.vectors.map(v => ({ fn, args: v.args })))]); } catch { continue; }
+    const matches = (side, run) => side.vectors.length > 0 && side.vectors.every((v, i) => run?.[0]?.results?.[i] && same(outcomeOf(run[0].results[i]), v));
+    if (!matches(x, cross[0]) || !matches(y, cross[1])) continue;
+    for (const c of x.contested) suspects.push({ fn, test: c.test, args: c.args, ...('expectError' in c ? { expectError: true } : { expect: c.expect }), references: [c.outcome, y.contested.find(d => d.test === c.test).outcome] });
+  }
+  return suspects;
+}
 export function residualText(evaluator) {
   const lines = [...(evaluator.residual ?? [])];
   const byFn = new Map();
@@ -138,7 +162,7 @@ export function residualText(evaluator) {
   return lines.join('\n');
 }
 // Starts the need-alone step immediately; finish() binds, compiles, confirms and writes the frozen file.
-export function begin({ need, env = process.env, provider: given = null, confirm = null }) {
+export function begin({ need, env = process.env, provider: given = null, confirm = null, suspect = null, cell: cellOptions = {} }) {
   const width = env.ENDOFORGE_SYNTH_WIDTH === '2' ? 2 : 1, timings = { needMs: null, bindMs: null, compileMs: null, evaluateMs: null }, usage = { tokens: 0 };
   const providerReady = given ? Promise.resolve(given) : createProvider(env);
   const sheets = providerReady.then(provider => Promise.all(Array.from({ length: width }, (_, k) => ask(provider, `need-${k}`, prompts.need(need), 'sheet.json').catch(error => ({ error: error.message })))));
@@ -159,13 +183,14 @@ export function begin({ need, env = process.env, provider: given = null, confirm
       const members = await Promise.all(bindings.map(binding => (binding.error ? { error: binding.error, exports: {} } : compileMember(binding.value, tests))));
       const usable = members.every(m => !m.error);
       const checks = usable ? await combine(members) : { vectors: [], ranges: [], codes: [], monotone: [], glue: [] };
+      const suspects = usable ? await suspectTests(members) : [];
       timings.compileMs = performance.now() - compileStart;
       evaluator = { version: 1, width, library: Object.keys(library), residual: needs.find(n => n.value)?.value?.residual?.slice(0, 8) ?? [],
         members: members.map((m, k) => ({ sheet: needs[k].text ? sha(needs[k].text) : null, binding: m.hash ?? null, error: m.error ?? null,
           exports: Object.fromEntries(Object.entries(m.exports).map(([fn, e]) => [fn, { qualified: e.qualified, failures: e.failures, dropped: e.dropped ?? [], discrimination: e.discrimination ?? null }])) })),
-        checks };
+        checks, suspects };
     } catch (error) {
-      evaluator = { version: 1, width, error: `synthesis failed: ${error.message}`, residual: [], members: [], checks: { vectors: [], ranges: [], codes: [], monotone: [], glue: [] } };
+      evaluator = { version: 1, width, error: `synthesis failed: ${error.message}`, residual: [], members: [], checks: { vectors: [], ranges: [], codes: [], monotone: [], glue: [] }, suspects: [] };
     }
     const text = residualText(evaluator);
     const answer = confirm ? await confirm(text, evaluator) : { approved: true, confirmed_by: 'task contract, no person' };
@@ -174,8 +199,15 @@ export function begin({ need, env = process.env, provider: given = null, confirm
     await mkdir(join(root, 'synth'), { recursive: true });
     await writeFile(join(root, 'synth', 'evaluator.json'), content);
     frozen = { root, hash: sha(content) };
+    if (evaluator.suspects.length) {
+      const report = { kind: 'suspect_frozen_tests', before: 'implementation', evaluator: frozen.hash, tests: evaluator.suspects,
+        revision: { reason: 'specification_correction', references: evaluator.members.map(m => m.binding),
+          rule: 'a corrected test is frozen as a revision of the latest frozen evaluator, with outcome-independent admitted evidence' } };
+      await writeFile(join(root, 'synth', 'suspect.json'), `${JSON.stringify(report, null, 1)}\n`);
+      if (suspect) await suspect(report);
+    }
     timings.finishMs = performance.now() - start;
-    return frozen;
+    return { ...frozen, suspects: evaluator.suspects };
   }
   async function evaluate(candidate) {
     const start = performance.now();
@@ -183,48 +215,8 @@ export function begin({ need, env = process.env, provider: given = null, confirm
       if (!frozen) return { decision: 'abstain', reason: 'no frozen evaluator' };
       const content = await readFile(join(frozen.root, 'synth', 'evaluator.json'), 'utf8');
       if (sha(content) !== frozen.hash) return { decision: 'refuse', reason: 'synthesized evaluator changed after freeze', evaluator: frozen.hash };
-      return { ...judge(JSON.parse(content), candidate), evaluator: frozen.hash };
+      return { ...(await judgeInCell(JSON.parse(content), candidate, cellOptions)), evaluator: frozen.hash };
     } finally { timings.evaluateMs = performance.now() - start; }
   }
   return { finish, evaluate, timings, usage, width };
-}
-// Runs the frozen checks on one compiled candidate, in this process, under the fuel meter.
-export function judge(evaluator, candidate) {
-  if (!evaluator.confirmation?.approved) return { decision: 'abstain', reason: 'residual not confirmed' };
-  const { checks } = evaluator;
-  if (!checks.vectors.length && !checks.glue.length) return { decision: 'abstain', reason: evaluator.error ?? 'nothing qualified' };
-  const failures = [];
-  let outcomes = [];
-  if (checks.vectors.length) {
-    let loaded;
-    try { loaded = loadKernel(Buffer.from(candidate.compiled.wasm, 'base64'), kernelFuel); } catch { return { decision: 'refuse', failures: ['module did not load'] }; }
-    const run = order => {
-      const kernel = freshKernel(loaded), out = new Array(checks.vectors.length);
-      for (const i of order) {
-        const v = checks.vectors[i], type = loaded.shape.functions[v.fn];
-        if (!type || type.params.length !== v.args.length) { out[i] = { missing: true }; continue; }
-        if (type.params.some((t, j) => t !== 'f64' && t !== 'f32' && !Number.isInteger(v.args[j]))) { out[i] = { skipped: true }; continue; }
-        const r = callKernel(kernel, v.fn, type.params.map((t, j) => (t === 'i64' ? BigInt(v.args[j]) : v.args[j])));
-        out[i] = r.limit ? { limit: r.limit } : r.trap ? { trap: true } : { value: Number(r.value) };
-      }
-      return out;
-    };
-    const order = checks.vectors.map((_, i) => i);
-    outcomes = run(order);
-    const again = run([...order].reverse());
-    if (JSON.stringify(outcomes) !== JSON.stringify(again)) failures.push('determinism: two instances disagree');
-    checks.vectors.forEach((v, i) => {
-      const o = outcomes[i];
-      if (o.missing) failures.push(`value.reference: ${v.fn} is not exported with ${v.args.length} parameters`);
-      else if (o.limit) failures.push(`value.reference: ${v.fn}(${v.args}) ${o.limit}`);
-      else if (!o.skipped && !same(o.trap ? { throws: true } : o, v)) failures.push(`value.reference: ${v.fn}(${v.args}) gives ${o.trap ? 'a trap' : o.value}, expected ${v.throws ? 'a trap' : v.value}`);
-    });
-    failures.push(...propertyProblems(checks, outcomes));
-  }
-  let glue = null;
-  try { glue = JSON.parse(candidate.files['glue.json']); } catch {}
-  const g = glueProblems(checks, glue);
-  failures.push(...g.problems);
-  return { decision: failures.length ? 'refuse' : 'pass', failures: [...new Set(failures)].slice(0, 20), counted: failures.length, vectors: checks.vectors.length,
-    skipped: outcomes.filter(o => o?.skipped).length, unknownUnits: g.unknown.length };
 }
