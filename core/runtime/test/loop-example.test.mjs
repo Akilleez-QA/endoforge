@@ -52,3 +52,24 @@ test('the README counter example promotes the reducer, prints all nine passing g
   const host = 'const m = new WebAssembly.Module(require("fs").readFileSync(process.argv[1])); const { next } = new WebAssembly.Instance(m, { env: { abort() { throw Error("abort") } } }).exports; let c = 0; for (const e of [0, 0, 0, 1, 2, 1]) { c = next(c, e); process.stdout.write(c + " ") } console.log()';
   assert.equal(run(process.execPath, ['-e', host, module]), '1 2 3 2 0 0 \n');
 });
+
+test('the tutorial turnstile example fails G4 once, repairs and promotes; stubborn is refused at the turn limit', { timeout: 180000 }, t => {
+  const result = JSON.parse(run(process.execPath, ['examples/agent-loop.mjs']));
+  t.after(() => rmSync(dirname(dirname(result.ledger)), { recursive: true, force: true }));
+  assert.deepEqual({ ...result, ledger: undefined }, { promoted: true, testDouble: true, turns: 3, exit: 'stop',
+    rounds: [{ failed: ['G4_tests'], tests: ['push locks'] }, 'passed'], ledger: undefined });
+  const printed = gates(result.ledger);
+  assert.match(printed, /^  G4_tests +pass  \{"passed": 5, "total": 5\}$/m);
+  assert.match(printed, /^decision: promote$/m);
+  const module = printed.match(/^kernel: (.+) \(114 bytes\)$/m)[1];
+  const host = 'const m = new WebAssembly.Module(require("fs").readFileSync(process.argv[1])); const { next } = new WebAssembly.Instance(m, { env: { abort() { throw Error("trap") } } }).exports; let out = [next(0, 0), next(1, 1)]; try { next(0, 7) } catch (e) { out.push(e.message) } console.log(out.join(" "))';
+  assert.equal(run(process.execPath, ['-e', host, module]), '1 0 trap\n');
+  const stubborn = JSON.parse(run(process.execPath, ['examples/agent-loop.mjs', 'stubborn']));
+  t.after(() => rmSync(dirname(dirname(stubborn.ledger)), { recursive: true, force: true }));
+  assert.equal(stubborn.promoted, false);
+  assert.equal(stubborn.exit, 'max_turns');
+  assert.equal(stubborn.turns, 7);
+  const refused = gates(stubborn.ledger);
+  assert.match(refused, /^  G4_tests +FAIL  \{"passed": 4, "total": 5\}$/m);
+  assert.match(refused, /^decision: refuse$/m);
+});
