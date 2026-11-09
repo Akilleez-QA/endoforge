@@ -114,7 +114,7 @@ def worker_command(home,work,proxy_socket,command,readonly=None):
   from .core import validate_mount_tree
   validate_mount_tree(source)
   b+=['--ro-bind',str(source),target]
- for key,value in {'HOME':'/home/worker','PATH':':'.join(map(str,[node.parent,codex.parent,'/usr/bin','/bin'])),'LANG':'C.UTF-8','HTTPS_PROXY':'http://localhost:18080','HTTP_PROXY':'http://localhost:18080','ALL_PROXY':'http://localhost:18080','NO_PROXY':''}.items():b+=['--setenv',key,value]
+ for key,value in {'HOME':'/home/worker','PATH':':'.join(map(str,[node.parent,codex.parent,'/usr/bin','/bin'])),'LANG':'C.UTF-8','HTTPS_PROXY':'http://127.0.0.1:18080','HTTP_PROXY':'http://127.0.0.1:18080','ALL_PROXY':'http://127.0.0.1:18080','NO_PROXY':''}.items():b+=['--setenv',key,value]
  # Unshare leaves loopback down. Raising only loopback needs namespaced cap_net_admin;
  # bwrap drops caps, so unshare net wrapper raises it before inner bwrap.
  b.remove('--unshare-net');b.remove('--unshare-user');b+=['--remount-ro','/']

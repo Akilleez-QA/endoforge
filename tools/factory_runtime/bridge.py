@@ -27,7 +27,7 @@ async def client(reader,writer):
     except OSError:pass
   active-=1
 async def main():
- server=await asyncio.start_server(client,'localhost',18080,limit=65536,backlog=32)
+ server=await asyncio.start_server(client,'127.0.0.1',18080,limit=65536,backlog=32)
  Path('/tmp/bridge-ready').touch()
  async with server:await server.serve_forever()
 if __name__=='__main__':asyncio.run(main())

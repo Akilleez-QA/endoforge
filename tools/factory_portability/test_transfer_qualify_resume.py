@@ -260,7 +260,10 @@ raise SystemExit(subprocess.run(['/bin/sh', '-c', command]).returncode)
 '''
 
 FAKE_SCP = '''import os, shutil, sys
-a = [x for x in sys.argv[1:] if x not in ('-q', '-r')]
+a = sys.argv[1:]
+while a and a[0] == '-o':
+    a = a[2:]
+a = [x for x in a if x not in ('-q', '-r')]
 src, dst = [x.split(':', 1)[1] if x.startswith('second-host:') else x for x in a]
 if os.path.isdir(src):
     shutil.copytree(src, dst)
@@ -349,6 +352,11 @@ class Transfer(Workspace):
         self.assertEqual(before, {p.name: sha(p.read_bytes()) for p in self.source.iterdir()})
         logged = (receipt / 'commands.json').read_text()
         self.assertNotIn('AGE-SECRET-KEY', logged)
+        remote_rows = [row['argv'] for row in json.loads(logged) if row['argv'][0] in ('ssh', 'scp')]
+        self.assertEqual({argv[0] for argv in remote_rows}, {'ssh', 'scp'})
+        for argv in remote_rows:
+            with self.subTest(argv=argv[:4]):
+                self.assertEqual(argv[1:3], ['-o', 'BatchMode=yes'])
 
     def test_remote_failure_removes_owned_staging(self):
         reason = sandbox_reason()
@@ -361,6 +369,70 @@ class Transfer(Workspace):
         self.assertEqual(summary['state'], 'failed')
         self.assertTrue(summary['remoteOwnedStagingRemoved'])
         self.assertFalse(Path(self.remote).exists())
+
+
+SECOND_HOST = os.environ.get('ENDOFORGE_SECOND_HOST', '')
+
+
+def ssh(host, command, timeout=30):
+    return subprocess.run(['ssh', '-o', 'BatchMode=yes', '-o', 'ConnectTimeout=10', host, command],
+                          stdin=subprocess.DEVNULL, capture_output=True, text=True, timeout=timeout)
+
+
+@unittest.skipUnless(SECOND_HOST, 'ENDOFORGE_SECOND_HOST is unset; set it to an ssh destination reachable with '
+                                  'BatchMode=yes that has age, bwrap and python3 to transfer to a real second host')
+class RealSecondHost(Workspace):
+    def setUp(self):
+        super().setUp()
+        reason = sandbox_reason()
+        if reason:
+            self.skipTest(reason)
+        probe = ssh(SECOND_HOST, 'command -v age && command -v bwrap && command -v python3 && sha256sum /etc/machine-id')
+        self.assertEqual(probe.returncode, 0, 'ENDOFORGE_SECOND_HOST=%s is set but not usable: %s'
+                         % (SECOND_HOST, probe.stderr.strip()[:300] or probe.stdout.strip()[:300]))
+        self.remote_machine = probe.stdout.split()[-2]
+        self.local_machine = sha(Path('/etc/machine-id').read_bytes())
+        self.source = stage(self.dir / 'source')
+        self.bundle = bundle(self.dir / 'bundle')
+        self.remote = '/tmp/endoforge-transfer-' + uuid.uuid4().hex
+        self.addCleanup(ssh, SECOND_HOST, 'rm -rf -- ' + self.remote)
+        self.identity = self.dir / 'keys/identity'
+
+    def transfer(self):
+        return T.execute_transfer(self.source, self.bundle, self.dir / 'receipt', self.identity, SECOND_HOST,
+                                  self.remote)
+
+    def test_same_machine_is_refused_before_staging(self):
+        if self.remote_machine != self.local_machine:
+            self.skipTest('ENDOFORGE_SECOND_HOST is a distinct machine; the same-machine refusal does not apply')
+        with self.assertRaisesRegex(ValueError, 'second host identity equals source'):
+            self.transfer()
+        summary = json.loads((self.dir / 'receipt/summary.json').read_text())
+        self.assertEqual((summary['state'], summary['remoteOwnedStagingRemoved']), ('failed', False))
+        self.assertNotEqual(ssh(SECOND_HOST, 'test -e ' + self.remote).returncode, 0)
+
+    def test_real_second_host_resume(self):
+        if self.remote_machine == self.local_machine:
+            self.skipTest('ENDOFORGE_SECOND_HOST=%s reaches this machine (same /etc/machine-id); a real transfer '
+                          'needs a distinct host' % SECOND_HOST)
+        before = {p.name: sha(p.read_bytes()) for p in self.source.iterdir()}
+        summary = self.transfer()
+        self.assertTrue(summary['passed'], summary)
+        self.assertEqual((summary['host'], summary['state']), (SECOND_HOST, 'passed'))
+        self.assertEqual(summary['sourceMachineSha256'], self.local_machine)
+        self.assertEqual(summary['destinationMachineSha256'], self.remote_machine)
+        self.assertTrue(summary['onePublication'] and summary['secondResumeIdempotent'])
+        self.assertTrue(summary['remoteOwnedStagingRemoved'])
+        self.assertEqual(summary['completedStagesPreserved'], ['contract', 'generate'])
+        self.assertEqual(summary['resumedState']['stage'], 'verify-completed')
+        self.assertNotEqual(ssh(SECOND_HOST, 'test -e ' + self.remote).returncode, 0)
+        receipt = self.dir / 'receipt'
+        self.assertEqual(sha((receipt / 'remote-output/stage.json').read_bytes()), summary['matchingPublicationSha256'])
+        self.assertEqual(sha((receipt / 'local-output/stage.json').read_bytes()), summary['matchingPublicationSha256'])
+        self.assertEqual(before, {p.name: sha(p.read_bytes()) for p in self.source.iterdir()})
+        logged = (receipt / 'commands.json').read_text()
+        self.assertNotIn('AGE-SECRET-KEY', logged)
+        self.assertTrue(any(row['argv'][0] == 'scp' for row in json.loads(logged)))
 
 
 if __name__ == '__main__':

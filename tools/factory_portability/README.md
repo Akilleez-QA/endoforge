@@ -53,17 +53,22 @@ The test packs and unpacks a real `age`-encrypted checkpoint and confirms each r
 
 ## Limits
 
-- `campaign_transfer.py` has not been run against a real second host. Its test emulates one with stand-in `ssh` and
-  `scp` commands that run the remote side locally in the same `bwrap` sandbox; the machine-identity check is faked.
+- The real second-host test runs only when `ENDOFORGE_SECOND_HOST` names an `ssh` destination reachable with
+  `BatchMode=yes` that has `age`, `bwrap` and `python3`; otherwise it skips with that reason. A destination that is
+  this machine (same `/etc/machine-id`, such as `localhost`) is checked for refusal before any staging, not for a
+  transfer. The emulated test runs the remote side locally with stand-in `ssh` and `scp` and a faked machine identity.
+- Every `ssh` and `scp` runs with `BatchMode=yes` and no inherited standard input, so an unreachable or
+  password-only host fails instead of waiting for a prompt.
 - The tests use a stand-in Wasmtime unless `ENDOFORGE_WASMTIME` names a real binary; no pinned Wasmtime bundle is in
   this repository.
-- No environment variables are read by the scripts. `age` must be on `PATH`.
+- No environment variables are read by the scripts; only the test reads `ENDOFORGE_SECOND_HOST`. `age` must be on `PATH`.
 
 ## Tests
 
 `make portability-test` runs `test_checkpoint.py` and `test_transfer_qualify_resume.py` (REQ-FACTORY-005): qualification
 (also under `python -O`), stage resume with one publication, idempotent reuse, failing and refused stages, path and
-inventory refusals, and an emulated second-host transfer with remote cleanup on failure. The transfer cases skip,
+inventory refusals, an emulated second-host transfer with remote cleanup on failure, and a transfer over real `ssh` and `scp` to
+`ENDOFORGE_SECOND_HOST`. The transfer cases skip,
 with the reason, where `age` or an unprivileged `bwrap` sandbox is unavailable.
 
 Engineering record: component C-25, requirements REQ-FACTORY-002 and REQ-FACTORY-005; a real second host is GAP-EF-006.
