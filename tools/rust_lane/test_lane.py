@@ -1,13 +1,141 @@
 import json
 import os
 from pathlib import Path
+import shutil
+import struct
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
 
 from tools.kernel.contract import validate_artifact
-from tools.rust_lane.build import ROOT, build, run
+from tools.rust_lane.build import ROOT, build, cargo_home, fetch_locked, prefer_checkout_wasm_tools, run, rust_tool
+
+WORKCELL_PROBE = """
+import json, sys
+from pathlib import Path
+from tools.kernel.workcell import Workcell
+cell = Workcell(Path(sys.argv[1]).read_bytes(), ("p06-result-i32le-v1", "p06-args-4xi32le-v1", "empty-v1"))
+rows = []
+for event, inputs in json.loads(sys.argv[2]):
+    r = cell.run(b"", bytes.fromhex(event), [bytes.fromhex(i) for i in inputs], fuel=1000000)
+    rows.append([r["state"].hex(), r["effects"], r["buffer_bytes_read"]])
+print(json.dumps(rows))
+"""
+
+
+def node_tool(name, package, *, env_name):
+    configured = os.environ.get(env_name)
+    if configured:
+        return configured
+    local = package / "node_modules/.bin" / name
+    if local.exists():
+        return str(local)
+    found = shutil.which(name)
+    if found:
+        return found
+    subprocess.run(["npm", "ci", "--ignore-scripts", "--no-audit", "--no-fund", "--prefix", str(package)],
+                   check=True, capture_output=True, text=True, timeout=300)
+    return str(local)
+
+
+class ToolDiscoveryTests(unittest.TestCase):
+    def test_cargo_home_defaults_to_user_cache_and_honours_override(self):
+        without = {k: v for k, v in os.environ.items() if k != "CARGO_HOME"}
+        with patch.dict(os.environ, without, clear=True):
+            self.assertEqual(cargo_home(), (Path.home() / ".cargo").resolve())
+        with patch.dict(os.environ, {"CARGO_HOME": "/synthetic/cache"}):
+            self.assertEqual(cargo_home(), Path("/synthetic/cache").resolve())
+
+    def test_rust_tool_asks_rustup_for_the_pinned_toolchain_binary(self):
+        without = {k: v for k, v in os.environ.items() if k != "RUSTC"}
+        found = subprocess.CompletedProcess([], 0, stdout="/synthetic/toolchain/bin/rustc\n")
+        with patch.dict(os.environ, without, clear=True), \
+                patch("tools.rust_lane.build.shutil.which", return_value="/synthetic/rustup"), \
+                patch("tools.rust_lane.build.subprocess.run", return_value=found) as asked:
+            self.assertEqual(rust_tool("rustc"), Path("/synthetic/toolchain/bin/rustc").resolve())
+        self.assertEqual(asked.call_args.args[0],
+                         ["/synthetic/rustup", "which", "rustc", "--toolchain", "1.98.1"])
+
+    def test_explicit_rust_tool_is_not_replaced_by_rustup(self):
+        with patch.dict(os.environ, {"RUSTC": sys.executable}), \
+                patch("tools.rust_lane.build.subprocess.run") as asked:
+            self.assertEqual(rust_tool("rustc"), Path(sys.executable).resolve())
+        asked.assert_not_called()
+
+    def test_checkout_wasm_tools_used_only_without_override(self):
+        without = {k: v for k, v in os.environ.items() if k != "WASM_TOOLS"}
+        with tempfile.TemporaryDirectory() as directory:
+            local = Path(directory) / ".tools/bin/wasm-tools"
+            local.parent.mkdir(parents=True)
+            local.touch()
+            with patch("tools.rust_lane.build.REPOSITORY", Path(directory)):
+                with patch.dict(os.environ, without, clear=True):
+                    prefer_checkout_wasm_tools()
+                    self.assertEqual(os.environ["WASM_TOOLS"], str(local))
+                with patch.dict(os.environ, {"WASM_TOOLS": "/synthetic/wasm-tools"}):
+                    prefer_checkout_wasm_tools()
+                    self.assertEqual(os.environ["WASM_TOOLS"], "/synthetic/wasm-tools")
+
+
+class NodeToolTests(unittest.TestCase):
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.package = Path(directory.name)
+        self.local = self.package / "node_modules/.bin/jco"
+        self.environment = {k: v for k, v in os.environ.items() if k != "JCO"}
+
+    def resolve(self, *, which=None):
+        with patch.dict(os.environ, self.environment, clear=True), \
+                patch("tools.rust_lane.test_lane.shutil.which", return_value=which), \
+                patch("tools.rust_lane.test_lane.subprocess.run") as ran:
+            return node_tool("jco", self.package, env_name="JCO"), ran
+
+    def test_explicit_path_wins(self):
+        self.environment["JCO"] = "/synthetic/jco"
+        found, ran = self.resolve(which="/synthetic/path/jco")
+        self.assertEqual(found, "/synthetic/jco")
+        ran.assert_not_called()
+
+    def test_checkout_install_beats_path(self):
+        self.local.parent.mkdir(parents=True)
+        self.local.touch()
+        found, ran = self.resolve(which="/synthetic/path/jco")
+        self.assertEqual(found, str(self.local))
+        ran.assert_not_called()
+
+    def test_path_used_before_any_install(self):
+        found, ran = self.resolve(which="/synthetic/path/jco")
+        self.assertEqual(found, "/synthetic/path/jco")
+        ran.assert_not_called()
+
+    def test_missing_tool_installed_from_the_lockfile_without_scripts(self):
+        found, ran = self.resolve()
+        self.assertEqual(found, str(self.local))
+        self.assertEqual(ran.call_args.args[0][:3], ["npm", "ci", "--ignore-scripts"])
+        self.assertEqual(ran.call_args.args[0][-1], str(self.package))
+
+
+class CrateFetchTests(unittest.TestCase):
+    def test_primed_cache_stays_offline(self):
+        with patch("tools.rust_lane.build.run", return_value=b"") as ran:
+            fetch_locked("/synthetic/cargo", {}, "/synthetic/crate")
+        self.assertEqual([call.args[0] for call in ran.call_args_list],
+                         [["/synthetic/cargo", "fetch", "--frozen"]])
+
+    def test_empty_cache_fetches_only_what_the_lock_pins(self):
+        with patch("tools.rust_lane.build.run", side_effect=[ValueError("offline"), b""]) as ran:
+            fetch_locked("/synthetic/cargo", {}, "/synthetic/crate")
+        self.assertEqual([call.args[0] for call in ran.call_args_list],
+                         [["/synthetic/cargo", "fetch", "--frozen"],
+                          ["/synthetic/cargo", "fetch", "--locked"]])
+
+    def test_failed_fetch_is_reported(self):
+        with patch("tools.rust_lane.build.run", side_effect=[ValueError("offline"), ValueError("no route")]):
+            with self.assertRaisesRegex(ValueError, "no route"):
+                fetch_locked("/synthetic/cargo", {}, "/synthetic/crate")
 
 
 class RustLaneTests(unittest.TestCase):
@@ -36,11 +164,26 @@ class RustLaneTests(unittest.TestCase):
                 build(self.root / "wrong")
         self.assertFalse((self.root / "wrong").exists())
 
+    def test_component_runs_in_wasmtime_workcell(self):
+        args = struct.pack("<4i", 1, 2, 0, 0)
+        invalid = struct.pack("<4i", 1, 2, 4, 0)
+        cases = [(args, []), (b"", [args]), (invalid, []), (b"", [b"x"])]
+        venv = ROOT.parents[1] / ".tools/venv/bin/python"
+        request = [[event.hex(), [item.hex() for item in inputs]] for event, inputs in cases]
+        result = subprocess.run(
+            [str(venv) if venv.exists() else sys.executable, "-B", "-c", WORKCELL_PROBE,
+             str(self.root / "first/kernel.wasm"), json.dumps(request)],
+            check=True, capture_output=True, text=True, timeout=120, cwd=ROOT.parents[1])
+        low = struct.pack("<i", -2147483648).hex()
+        hundred = struct.pack("<i", 100).hex()
+        self.assertEqual(json.loads(result.stdout), [[hundred, [], 0], [hundred, [], 16], [low, [], 0], [low, [], 0]])
+
     def test_p06_frozen_equivalence(self):
         def tool(command):
             return subprocess.run(command, check=True, capture_output=True, text=True, timeout=600)
 
-        jco, asc = os.environ.get("JCO", "jco"), os.environ.get("ASC", "asc")
+        jco = node_tool("jco", ROOT, env_name="JCO")
+        asc = node_tool("asc", ROOT, env_name="ASC")
         self.assertEqual(tool([jco, "--version"]).stdout.strip(), "1.16.1")
         self.assertEqual(tool([asc, "--version"]).stdout.strip(), "Version 0.28.9")
         probe = ROOT.parents[1] / "experiments/P-06-bounded-equivalence"

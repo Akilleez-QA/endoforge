@@ -17,9 +17,9 @@ ATOMIZER_INDIRECT := $(addprefix tools/atomizer/test/,lessons.test.mjs routing.t
 ATOMIZER_TESTS := $(filter-out $(ATOMIZER_INDIRECT),$(wildcard tools/atomizer/test/*.test.mjs))
 LIB_NODE_TESTS := $(wildcard $(addsuffix /test/*.test.mjs,tools/lib tools/conductor tools/hillclimb tools/job))
 
-.PHONY: test test-optimized check index sums core-test ledger-test engine-test isolate-test tscheck-setup tscheck-test tscheck-requalify atomizer-test harness-test hardware-test runtime-test lib-test library-test portability-test factory-state-test seeded-fault-test escape-test compatibility-test
+.PHONY: test test-optimized check index sums core-test ledger-test engine-test isolate-test tscheck-setup tscheck-test tscheck-requalify atomizer-test harness-test hardware-test runtime-test lib-test library-test portability-test factory-state-test seeded-fault-test escape-test compatibility-test gate-test
 
-test: pipeline-test loop-test check core-test ledger-test engine-test isolate-test tscheck-test atomizer-test harness-test hardware-test runtime-test lib-test library-test portability-test factory-state-test seeded-fault-test escape-test compatibility-test kernel-test
+test: pipeline-test loop-test check core-test ledger-test engine-test isolate-test tscheck-test atomizer-test harness-test hardware-test runtime-test lib-test library-test portability-test factory-state-test seeded-fault-test escape-test compatibility-test kernel-test gate-test
 
 test-optimized:
 	PYTHONOPTIMIZE=1 $(MAKE) test PYTHON="$(PYTHON) -O"
@@ -55,7 +55,7 @@ ledger-test:
 engine-test:
 	node --test core/engine/*.test.mjs
 
-isolate-test:
+isolate-test: tscheck-setup loop-setup
 	node --test $(ISOLATE_TESTS)
 
 tscheck-setup:
@@ -124,9 +124,15 @@ kernel-test:
 	@$(KERNEL_ENV) $(KERNEL_PYTHON) -B -m tools.kernel.install_tools --check
 	$(KERNEL_ENV) $(KERNEL_PYTHON) -B -m unittest $(call pymods,$(wildcard tools/kernel/test_*.py)) -v
 
-.PHONY: rust-lane-test
-rust-lane-test:
+.PHONY: rust-lane-setup rust-lane-test
+rust-lane-setup:
+	npm ci --ignore-scripts --no-audit --no-fund --prefix tools/rust_lane
+
+rust-lane-test: rust-lane-setup
 	$(PYTHON) -B -m unittest $(call pymods,$(wildcard tools/rust_lane/test_*.py)) -v
+
+gate-test:
+	node --test tools/test_gate_structured.mjs
 
 compatibility-test:
 	node --test tools/compatibility/*.test.mjs

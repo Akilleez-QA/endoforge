@@ -176,7 +176,7 @@ test('a tampered frozen record refuses the commit, with no promotion', { timeout
 import sqlite3, sys
 with sqlite3.connect(sys.argv[1]) as db:
     db.execute('DROP TRIGGER no_update')
-    db.execute("UPDATE records SET body=replace(body, 'X1 G1-G7', 'X1 G1-G6') WHERE seq=3")
+    db.execute("UPDATE records SET body=replace(body, 'X1 G1-G9', 'X1 G1-G6') WHERE seq=3")
 `, join(directory, 'ledger.sqlite')]);
   } });
   assert.equal(result.promoted, false);

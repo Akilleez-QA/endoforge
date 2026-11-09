@@ -129,7 +129,7 @@ lines:
 - response: `{ id, result }` or `{ id, error }`; `{ id: 0, result: 'ready' }` once imports are done.
 
 Built-in actions are `prepare`, `append` and `frozen`. An `extension` module adds its `LOOP` actions;
-`createLoopPool` passes `tools.x1_loop`, which adds `admit`, `park` and `commit`. If the process exits, pending
+`createLoopPool` passes `tools.x1_loop`, which adds `admit`, `park`, `commit` and `revise`. If the process exits, pending
 requests reject with `error.outcome === 'outcome_unknown'` and are never resent. With `restart: true` and after a
 first ready, it restarts up to three times in a row; otherwise later requests reject. `close()` drains, then ends
 the bridge's input so it retires its journal before exiting.
@@ -171,6 +171,7 @@ The loop's ledger actions live in [tools/x1_loop.py](../../tools/x1_loop.py) (br
 | `register` (process) | Appends the candidate; prints its identity |
 | `park` (bridge) | `{ after, body, sha256 }`: checks the digest, refuses unless `after` names the latest waiting continuation (or is null with none waiting), marks it `resumed`, inserts the new row as `waiting`, returns `{ seq }` |
 | `commit` (bridge) | Appends the candidate if new, numbers the receipt (`receipt`, `receipt-2`, ...), closes the continuation named by `continuation`, re-checks the evidence (`evidence_problem`), appends the receipt, runs `decide`, and stores the decision in `x1_decisions`; with `decisionPath`, the writer also writes and fsyncs the decision file after the journal sync. Returns `{ receipts, decision, problem }` |
+| `revise` (bridge, or `python3 -B -m tools.x1_loop revise` as one process) | `{ report }` with `reference.identity` naming the latest frozen evaluator: refuses unless the report is a `suspect_frozen_tests` report made before implementation and no candidate exists; appends the report as an `admitted_input` (`suspect-N`, origin `evaluator_synthesis`) and a `frozen_evaluator` with the corrected `tests.json` and `frozen.sha256` and `revision: { of, reason: "specification_correction", evidence }`. Returns `{ identity, digest, encoded, revision, files }` ([specification correction](../architecture/evaluator-synthesis.md#4b-acting-on-suspects-a-specification-correction)) |
 | `promote` (process) | Runs `decide` under a write lock and exclusively writes and fsyncs the decision to `decisionPath`. An unavailable ledger gives `inconclusive` |
 
 `problem` is `frozen_drift` (the frozen tree or a repository implementation file changed), a named report problem, or
@@ -180,14 +181,16 @@ are in [the gates](../architecture/gates.md#from-gates-to-a-decision).
 ### Decision record
 
 ```json
-{ "version": 1, "issuer": "endoforge.local.x1", "policy": "X1-G1-G8/v1", "scope": "qualification",
+{ "version": 1, "issuer": "endoforge.local.x1", "policy": "X1-G1-G9/v2", "scope": "qualification",
   "candidate": "<sha256>", "frozen_evaluator": "evr:<sha256>", "receipt": { "id": "receipt", "hash": "<hash>" },
   "decision": "promote", "chain_tip": "<hash>", "evaluator_digest": "<sha256>", "sha256": "<seal>" }
 ```
 
 `refuse` and `inconclusive` carry a `reason` instead of `chain_tip` and `evaluator_digest`. `sha256` seals the other
-fields as sorted compact JSON. The `policy` label predates G9; all nine gates are required
-([known issue](../architecture/gates.md#known-issue-stale-gate-labels)). This is a local, trusted-host qualification
+fields as sorted compact JSON. Decisions written before 2026-11-09 carry `X1-G1-G8/v1`;
+both labels required all nine gates ([migration note](../architecture/gates.md#gate-labels-and-the-migration-note)).
+The compatibility lane's decisions use issuer `endoforge.local.compat`, policy `COMPAT-TS-CHECK-RUN2-TESTS/v1` and
+`lane: compatibility`, and are stored in a `compat_decisions` table ([compatibility lane](../architecture/compatibility-lane.md#promotion)). This is a local, trusted-host qualification
 decision: not a signature, not a POODO authorization, and it activates nothing.
 
 ## Candidate generator interface
@@ -236,3 +239,4 @@ REQ-PROMOTE-001, REQ-LOOP-002, REQ-LOOP-003.
 | 1.0 | before 2026-11-08 | — | Accuracy pass in PR #129 | earlier PRs |
 | 2.0 | 2026-11-08 | `4d692a4` | Metadata header, requirements addressed and change history added; content re-baselined | #131 |
 | 3.0 | 2026-11-08 | `63e95c7` | Rewritten from the code: records, writers, bridge protocol, loop actions and decision record; runtime launcher entries moved to the runtime README; metadata moved to this section | this PR |
+| 3.1 | 2026-11-09 | round 2 | `revise` loop action (specification correction) | this commit |

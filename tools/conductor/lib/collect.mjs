@@ -15,7 +15,7 @@ const ok = (r, what) => { if (r.status !== 0) throw new Error(`${what}: ${r.stde
 const inFiles = (p, files) => files.some((f) => p === f || p.startsWith(f.replace(/\/$/, '') + '/'));
 
 export const gateFile = (job, file, id, iter) => path.join(stateDir(job, file), 'gates', `${id}-i${iter}.gate.json`);
-export const collectLock = (job) => path.join(job.repo, '.git', 'endoforge-collect');
+export const collectLock = (job) => path.join(ok(git(job.repo, 'rev-parse', '--absolute-git-dir'), 'rev-parse --absolute-git-dir'), 'endoforge-collect');
 
 export function collectAtom(job, file, st, id, { waitMs = 600_000 } = {}) {
   const a = (job.atoms ?? []).find((x) => x.id === id), files = a.files, lane = st.lane, gf = gateFile(job, file, id, st.iter);

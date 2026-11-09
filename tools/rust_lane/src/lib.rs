@@ -38,7 +38,9 @@ pub unsafe extern "C" fn reduce(state: *mut u8, state_len: usize,
         }
     }
     if inputs_len > 0 {
-        drop(Vec::from_raw_parts(inputs, inputs_len, inputs_len));
+        for handle in Vec::from_raw_parts(inputs, inputs_len, inputs_len) {
+            drop(Buffer::from_handle(handle));
+        }
     }
     let mut result = i32::MIN;
     if event.len() == 16 {

@@ -8,7 +8,8 @@ import { agentStage, frozenSpecification, specificationFiles, specificationProbl
 import { runGates } from './gates.mjs';
 import { createPort as x1Port, hash, implementationFiles as hostFiles } from './host.mjs';
 
-export const implementationFiles = Object.freeze([...hostFiles, 'loop-port.mjs', 'agent.mjs', 'oracle.mjs']);
+export const cellFiles = Object.freeze(['loop-port.mjs', 'agent.mjs', 'oracle.mjs']);
+export const implementationFiles = Object.freeze([...hostFiles, ...cellFiles]);
 const oracleFiles = ['CONTRACT.md', 'tests.json', 'frozen.sha256'];
 const maximumKernelPages = 1024;
 const implementation = Object.fromEntries(implementationFiles.map(name => [name, readFileSync(new URL(name, import.meta.url)).toString('hex')]));
@@ -54,6 +55,7 @@ async function compileInCell(files, onRead) {
     return { source, wasm: Buffer.from(bytes).toString('base64') };
   } catch { return { source, error: 'compiler failed or timed out' }; }
 }
+const stageLimits = (limits, spent) => ({ ...limits, maxTokens: limits.maxTokens + spent });
 const summary = result => result.promotable ? null : { gates: Object.fromEntries(Object.entries(result.gates).filter(([, gate]) => !gate.ok)),
   tests: (result.tests || []).filter(test => !test.pass).slice(0, 20) };
 
@@ -124,11 +126,12 @@ export function createPort(options, { stage = () => {}, host } = {}) {
       overlay['frozen.sha256'] = JSON.stringify({ contract: hash(overlay['CONTRACT.md']), tests: hash(overlay['tests.json']) });
       const frozen = Object.fromEntries(oracleFiles.map(name => [name, Buffer.from(overlay[name]).toString('hex')]));
       options.admission = await host({ kind: 'admit', files: { ...frozen, ...implementation }, ...(oracle ? { oracle } : {}) });
+      if (options.admission.reused) return null;
     }
     stage('admitted');
     const files = () => ({ 'CONTRACT.md': overlay['CONTRACT.md'], 'tests.json': overlay['tests.json'], 'frozen.sha256': overlay['frozen.sha256'], 'kernel.ts': overlay['kernel.ts'] ?? '', 'glue.json': overlay['glue.json'] ?? '' });
     agentReceipt.exit_reason = await agentStage({ ask, messages, overlay, editable: ['kernel.ts', 'glue.json'], prompt: stagePrompts.implementation({ id, overlay: messages.length ? null : overlay }),
-      check: async () => (overlay['kernel.ts'] === undefined ? { problems: ['kernel.ts is missing'] } : checkRound(await compileRound(files()))), receipt: agentReceipt, limits });
+      check: async () => (overlay['kernel.ts'] === undefined ? { problems: ['kernel.ts is missing'] } : checkRound(await compileRound(files()))), receipt: agentReceipt, limits: stageLimits(limits, agentReceipt.tokens) });
     if (overlay['kernel.ts'] === undefined) throw Error(`implementation stopped: ${agentReceipt.exit_reason}`);
     return compileRound(files());
   };
@@ -154,12 +157,12 @@ export function createPort(options, { stage = () => {}, host } = {}) {
       implementation: { editable: ['kernel.ts', 'glue.json'], prompt: () => stagePrompts.implementation({ id, overlay: messages.length ? null : overlay }),
         check: async () => (overlay['kernel.ts'] === undefined ? { problems: ['kernel.ts is missing'] } : checkRound(await compileRound(files()))) },
     };
-    const begin = name => { messages.push({ role: 'user', content: stages[name].prompt() }); Object.assign(state, { stage: name, turn: 0 }); };
+    const begin = name => { messages.push({ role: 'user', content: stages[name].prompt() }); Object.assign(state, { stage: name, turn: 0, stageTokens: state.receipt.tokens }); };
     if (options.admission) await admitted();
     if (!state.stage) begin(options.admission ? 'implementation' : 'specification');
     else {
       const { stage: name } = state;
-      let exit = await takeReply({ messages, overlay, editable: stages[name].editable, check: stages[name].check, receipt: state.receipt, limits }, options.reply);
+      let exit = await takeReply({ messages, overlay, editable: stages[name].editable, check: stages[name].check, receipt: state.receipt, limits: stageLimits(limits, state.stageTokens ?? 0) }, options.reply);
       state.turn += 1;
       if (!exit && state.turn >= limits.maxTurns) exit = 'max_turns';
       if (exit) {
@@ -170,6 +173,7 @@ export function createPort(options, { stage = () => {}, host } = {}) {
           overlay['frozen.sha256'] = JSON.stringify({ contract: hash(overlay['CONTRACT.md']), tests: hash(overlay['tests.json']) });
           const frozen = Object.fromEntries(oracleFiles.map(file => [file, Buffer.from(overlay[file]).toString('hex')]));
           options.admission = await host({ kind: 'admit', files: { ...frozen, ...implementation }, ...(oracle ? { oracle } : {}) });
+          if (options.admission.reused) return { reused: true };
           stage('admitted');
           begin('implementation');
         } else {
@@ -205,8 +209,9 @@ export function createPort(options, { stage = () => {}, host } = {}) {
       if (options.waits === 'release') {
         const next = await releasedCandidate();
         if (next.waiting) { port.waiting = next.waiting; return { stage: 'waiting' }; }
-        candidate = next.candidate;
+        candidate = next.candidate ?? null;
       } else candidate = options.mode === 'agent' ? await agentCandidate() : options.repair ? await repairRounds() : await compileRound(options.candidate.files);
+      if (!candidate) { port.reused = true; return { stage: 'reused' }; }
       const content = JSON.stringify(candidate);
       identity = hash(content);
       base = x1Port({ candidates: { [identity]: candidate } });
@@ -215,6 +220,7 @@ export function createPort(options, { stage = () => {}, host } = {}) {
     },
     evidence() {
       if (port.waiting) return { waiting: port.waiting, compiler, timings: { compile: compileMs, gates: gateMs } };
+      if (port.reused) return { reused: true, compiler, ...(agentReceipt ? { agent: agentReceipt } : {}), timings: { compile: compileMs, gates: gateMs } };
       stage('verdict');
       return { content: port.content, identity, compiler, rounds, ...(agentReceipt ? { agent: agentReceipt } : {}), timings: { compile: compileMs, gates: gateMs } };
     },

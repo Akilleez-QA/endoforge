@@ -37,11 +37,14 @@ Phases run as a state machine: `staged`, `go`, `smoke`, `fired`, `streaming`, `g
 
 In `streaming` there is no barrier between atoms. For each atom whose worker has exited:
 
-1. **Collect.** Under an exclusive lock on the integration repository, take the diff of only the atom's own files
-   from its worktree, apply it, run the collect gate (`conductor.gate` or the atom's `gate`), and commit. If the apply
+1. **Collect.** Under an exclusive lock on the integration repository (a file `endoforge-collect` in its real git
+   directory, from `git rev-parse --absolute-git-dir`, so a repository that is itself a git worktree works), take the
+   diff of only the atom's own files from its worktree, apply it, run the collect gate (`conductor.gate` or the atom's `gate`), and commit. If the apply
    or the gate fails, revert only that atom's files and write the error to `conductor/gates/<atom>-i<n>.gate.json`.
    Edits outside the atom's files are reported as stray and never applied.
-2. **Check.** Run the atom's checks from `conductor.checks`: exit status, a JSON result with judged items, or a
+2. **Check.** Run the atom's checks: the `conductor.checks` entries that name it (or name no atoms); if there are none,
+   the runnable acceptance checks (`check.run`, not `human`) of the criteria the atom lists, so an atom is never frozen
+   with its own checks unrun. A check is judged by exit status, a JSON result with judged items, or a
    measured number against a target and tolerance. The first time a check returns a list of judged items, that list
    is saved and every later run must score the same items; a check that changes its list, or disagrees with itself
    between two runs, is marked unstable and not acted on.
@@ -68,15 +71,17 @@ job. A check that cannot run is "not scored", never a pass or a fail.
 | `budget [--launches N] [--iterations N] [--by ... --words ...]` | Shows or raises the budget. Raising it needs the user's words. |
 | `stop [--by who] [--why text]` | Stops the lanes and ends the job. |
 | `patch <patch.json>` | The coordinator's reply to an escalation, applied through the same gates. A patch that changes the confirmed card holds launches until the user's new go. |
-| `adopt <new job.json> --map <map.json> ...` | Converts a job running on older scripts into a manifest and state. |
+| `adopt <new job.json> --map <map.json> ...` | Converts a job running on older scripts into a manifest and state. The old layout is data in the map; [examples/](examples/README.md) has a map with a matching old manifest and loop state. |
 
 `run` and `unit` launch real workers. The `conductor` block of the manifest sets `launcher` (`systemd` by default, or
 `local` for a detached child), `maxIterations` (3), `maxLaunches` (200), `atomTimeoutSec` (2400), `gate`, `checks`,
 `slice`, `checkConcurrency` (4), `worktrees`, `links`, `codexPool`, `claudeBin`, `codexModel`, `claudeModel` (default
-`opus`), `busyBaseSec` (2) and `busyWaitSec` (900).
+`opus`), `claudeTools`, `busyBaseSec` (2) and `busyWaitSec` (900).
 
 Workers get the compiled prompt from the job tool. Codex runs as `exec --sandbox workspace-write` in the worktree;
-Claude Code runs as `claude -p` with `acceptEdits` and a fixed tool list, after the subscription guard
+Claude Code runs as `claude -p` with `acceptEdits` and the tool list `conductor.claudeTools`, by default
+`Read Edit Write Glob Grep Bash(node:*) Bash(npm:*) Bash(make:*) Bash(python3:*) Bash(git diff:*) Bash(git status:*)
+Bash(ls:*)` so a worker can run its own tests, after the subscription guard
 (`core/runtime/subscription-guard.mjs`) confirms the login is a subscription account and strips API-key billing
 variables.
 
@@ -145,12 +150,13 @@ The job tool's event variables (`ENDOFORGE_NOTIFY` and the hook lists) apply too
   Decide gate refuses uncalibrated proxy checks, but not a weak command.
 - Workers run as ordinary processes (a systemd unit or a detached child). The worktree separates their files; it is
   not a security sandbox.
-- `adopt` tells you to see `tools/conductor/examples` for a map file; that directory does not exist.
 - The default model for Claude Code lanes is `opus` unless `conductor.claudeModel` says otherwise.
 
 ## Tests
 
 `make lib-test` runs `test/failopen.test.mjs`, `test/principles.test.mjs` and `test/stream.test.mjs`, which use a
-stub worker and fake logins like the demo.
+stub worker and fake logins like the demo, `test/adopt-example.test.mjs`, which adopts the example old job with
+the example map, and `test/conductor-gaps.test.mjs` (checks derived from criteria, the collect lock in a worktree
+repository, the worker tool list).
 
 Engineering record: component C-23, requirements REQ-COND-001 and REQ-COND-002.

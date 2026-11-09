@@ -43,7 +43,7 @@ export function launchAtom(job, file, state, id, { prompt, images = [] }) {
   for (const f of [promptFile, log]) fs.mkdirSync(path.dirname(f), { recursive: true });
   fs.writeFileSync(promptFile, prompt); fs.rmSync(exitFile, { force: true });
   const lane = { engine: st.login?.engine ?? a.engine, account: st.login?.account ?? 'default', configDir: st.login?.configDir };
-  const { argv, env } = workerCommand({ fanout: { codexPool: c.codexPool, claudeBin: c.claudeBin, claudeModel: c.claudeModel, codexModel: c.codexModel } }, lane, { worktree: wt, prompt, images });
+  const { argv, env } = workerCommand({ fanout: { codexPool: c.codexPool, claudeBin: c.claudeBin, claudeModel: c.claudeModel, codexModel: c.codexModel, claudeTools: c.claudeTools } }, lane, { worktree: wt, prompt, images });
   if (lane.engine === 'codex') { const bin = process.env.CODEX_POOL_BIN || codexOnPath(); if (bin) env.CODEX_POOL_BIN = bin; }
   const wrapped = ['sh', '-c', exitWrapper(exitFile), 'atom', ...argv];
   let handle;

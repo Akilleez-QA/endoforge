@@ -97,7 +97,7 @@ separation of method only; agent review is not independent review.
 | Privacy lint | `tools/check-privacy.py` | Home paths, account paths or email addresses in experiment records | CI log |
 | Trace check | `tools/check_trace.py` | Untraced requirement; missing test; unclassified test file; unallocated component; undocumented environment variable; dead link or anchor | CI log; STR metrics |
 | Reachability | `tests/test_reachability.py` | A test file no make target runs | CI log |
-| Secret scan | Not in CI. The release-record generator runs Gitleaks when installed | Recorded only | STR; SAR |
+| Secret scan | CI job `secret-scan` (Gitleaks 8.28.0, checksum verified, full history); the release-record generator also runs Gitleaks when installed | Any finding fails CI | CI log; STR; SAR |
 | Static analysis | No linter is configured | — | SAR notes the gap |
 | Peer review | Pull request with template | Owner does not merge | PR; SAR summary |
 
@@ -166,11 +166,11 @@ Reviewed at each recorded state. Likelihood (L) and consequence (C) on 1–5.
 | ID | Risk | L | C | Mitigation | Status | Issue |
 |---|---|---|---|---|---|---|
 | R-1 | Model-written code escapes a workcell or exhausts the host (off-heap memory in thread mode, blocking native calls) | 2 | 4 | Process mode with cgroups; stated limits REQ-ISO-013; deadlines from outside; delegated cgroup enforcement is untested (GAP-EF-001) | Open | — |
-| R-2 | A model launch bills an API key or usage credits | 2 | 4 | Subscription guard (exit 78) and usage governor (exit 75); `WarmClaudeTransport` ignores a custom governor (D-03) | Open | — |
+| R-2 | A model launch bills an API key or usage credits | 2 | 4 | Subscription guard (exit 78) and usage governor (exit 75): both Claude transports admit every turn through it and feed it every rate-limit event; `WarmClaudeTransport` uses a caller's governor (D-03 closed 2026-11-09) | Open | — |
 | R-3 | A promotion is read as engineering approval | 2 | 3 | README Status, [limitations](../guides/explanation/limitations.md) | Open | — |
 | R-4 | Documentation drifts from code under parallel agent lanes | 4 | 2 | `tools/check_trace.py` in `make check`; PR template asks for SRS and matrix updates | Open | — |
-| R-5 | Optimized runs give false assurance for tests that use `assert` statements (D-01) | 3 | 2 | Recorded in the assurance record and STR | Open | — |
-| R-6 | No branch protection and no secret scanning in CI | 3 | 3 | Owner-only merges; Gitleaks run by the release-record generator | Open | — |
+| R-5 | Optimized runs give false assurance for tests that use `assert` statements (D-01) | 3 | 2 | The three tests now use `unittest` assertions (D-01 closed 2026-11-09) | Closed | — |
+| R-6 | No branch protection and no secret scanning in CI | 3 | 3 | Owner-only merges; CI job `secret-scan` runs Gitleaks on the full history (added 2026-11-09); branch protection is still off | Open | — |
 | R-7 | Single maintainer: no independent review | 5 | 2 | Stated plainly; agent review labelled not independent; CI gates | Accepted | — |
 
 ## 13. Measurement

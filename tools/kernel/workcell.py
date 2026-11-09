@@ -13,6 +13,7 @@ from tools.kernel.broker import Broker, DECLARED_IMPORTS, MAX_HOST_CALLS
 RUNTIME_VERSION = "49.0.0"
 MAX_INPUT = 1024 * 1024
 BUFFER_TYPE = 1
+MAX_TABLES = 2
 
 
 class Workcell:
@@ -54,7 +55,7 @@ class Workcell:
         broker = Broker(snapshots, MAX_INPUT, authorize, max_host_calls)
         with self._lock, Store(self._engine) as store, Linker(self._engine) as linker:
             store.set_limits(memory_size=memory_bytes, memories=1, instances=16,
-                             tables=1, table_elements=1024)
+                             tables=MAX_TABLES, table_elements=1024)
             store.set_fuel(fuel)
             def source_handle(context, handle):
                 with handle.to_host(context) as host:

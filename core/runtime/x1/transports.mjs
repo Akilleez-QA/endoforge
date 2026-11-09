@@ -1,7 +1,7 @@
 import { spawn } from 'node:child_process';
 import { mkdtempSync, rmSync, statSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
-import { join } from 'node:path';
+import { basename, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { createInterface } from 'node:readline';
 import { replySchema, transportSystem } from './agent.mjs';
@@ -25,7 +25,9 @@ const launchEnvironment = (configDir, base = process.env, extra = {}, cwd, args)
   requireSubscription({ env: { ...base, ...extra, CLAUDE_CONFIG_DIR: undefined }, configDir, cwd, args });
   return claudeEnvironment(configDir, base, extra);
 };
-const sharedArguments = ({ model, system = transportSystem, effort }) => ['-p', '--json-schema', JSON.stringify(replySchema), '--tools', '', '--no-session-persistence', '--strict-mcp-config',
+export const defaultModel = 'sonnet';
+const standIn = command => basename(String(command)) !== 'claude';
+const sharedArguments = ({ model = defaultModel, system = transportSystem, effort }) => ['-p', '--json-schema', JSON.stringify(replySchema), '--tools', '', '--no-session-persistence', '--strict-mcp-config',
   '--setting-sources', '', '--permission-mode', 'dontAsk', '--safe-mode', '--model', model, ...(effort ? ['--effort', effort] : []), '--system-prompt', system];
 export const warmArguments = options => [...sharedArguments(options), '--input-format', 'stream-json', '--output-format', 'stream-json', '--verbose'];
 export const spawnArguments = options => [...sharedArguments(options), '--disable-slash-commands', '--output-format', 'stream-json', '--verbose'];
@@ -72,10 +74,10 @@ export function scriptedProvider(script) {
 
 export class SpawnClaudeTransport {
   name = 'claude-spawn';
-  testDouble = false;
   #directory;
-  constructor({ configDir, model, system, effort, cwd, command = 'claude', timeoutMs = 300000, base, environment, governor, usageState, watchdog } = {}) {
+  constructor({ configDir, model, system, effort, cwd, command = 'claude', timeoutMs = 300000, base, environment, governor, usageState, watchdog, testDouble = standIn(command) } = {}) {
     requireDirectory(configDir);
+    this.testDouble = Boolean(testDouble);
     refuseCredentials(environment);
     this.#directory = new WorkingDirectory(cwd);
     const watched = watchdogEnvironment(watchdog, { base: base ?? process.env, timeoutMs });
@@ -196,22 +198,22 @@ class Lane {
 
 export class WarmClaudeTransport {
   name = 'claude-warm';
-  testDouble = false;
   #lanes = [];
   #waiting = [];
   #sessions = new Map();
   #closed = false;
   #directory;
   #recheck;
-  constructor({ instances = [{ name: 'default' }], model, system, effort, cwd, command = 'claude', timeoutMs = 300000, queueTimeoutMs = timeoutMs, idleMs = 300000, base, environment, governor, usageState, watchdog } = {}) {
+  constructor({ instances = [{ name: 'default' }], model, system, effort, cwd, command = 'claude', timeoutMs = 300000, queueTimeoutMs = timeoutMs, idleMs = 300000, base, environment, governor, usageState, watchdog, testDouble = standIn(command) } = {}) {
     refuseCredentials(environment);
+    this.testDouble = Boolean(testDouble);
     this.#directory = new WorkingDirectory(cwd);
     const watched = watchdogEnvironment(watchdog, { base: base ?? process.env, timeoutMs });
     Object.assign(this, { command, timeoutMs, queueTimeoutMs, idleMs, base, environment: { ...environment, ...watched } });
     this.arguments = warmArguments({ model, system, effort });
     for (const instance of instances) {
       requireDirectory(instance.configDir);
-      const shared = { ...instance, limitedUntil: 0, governor: governed(governor === null ? null : undefined, instance.configDir, usageState, base) };
+      const shared = { ...instance, limitedUntil: 0, governor: governed(instance.governor !== undefined ? instance.governor : governor, instance.configDir, usageState, base) };
       for (let i = 0; i < (instance.lanes ?? 1); i++) this.#lanes.push(new Lane(this, shared));
     }
   }

@@ -84,6 +84,9 @@ asks for a pure, bounded AssemblyScript kernel with explicit assumptions, export
 trap cases, decimal places for every number result, and expected values derived from the formula; the implementation
 prompt sends the frozen files, the closed glue schema, the glue rules and a template, and asks for AssemblyScript
 0.28.20 on the stub runtime with no imports except `env.abort` and no `assert` (the compiler runs with `--noAssert`).
+Both prompts carry `stateRules`: when the need keeps state, such as a list of items, the kernel is a reducer over
+records, lists and text (state and event in, next state out), with the memory layout and pointer convention described
+in [structured state](gates.md#structured-state), and `tests.json` holds that state as JSON objects and arrays.
 The loop itself does not depend on that form: the overlay, the check callback, the freeze and the ledger are the same
 for any stage definitions.
 
@@ -97,10 +100,13 @@ and skips recompiling when `kernel.ts` hasn't changed since the last check.
 
 - **Turns.** Each stage gets at most `maxTurns` model replies. The host also refuses a model call past
   `2 × maxTurns` calls for the attempt.
-- **Tokens.** One budget for the whole attempt, both stages together, counted as the transport reports usage (input,
-  output, cache creation and cache reads). The host passes the remainder with each call. A transport refuses a reply
-  whose usage exceeds it (`model token budget exceeded`), and the cell ends the stage with `max_tokens` once the total
-  reaches the budget.
+- **Tokens.** `maxTokens` is a budget per stage: the specification stage gets `maxTokens`, and the implementation
+  stage gets `maxTokens` again from the freeze on (the export `tokenBudget = 'stage'` in
+  [loop.mjs](../../core/runtime/x1/loop.mjs) records the choice, which P-56 assumed). Usage is counted as the transport
+  reports it (input, output, cache creation and cache reads). The host passes the stage's remainder with each call. A
+  transport refuses a reply whose usage exceeds it (`model token budget exceeded`), and the cell ends the stage with
+  `max_tokens` once the stage's total reaches the budget. The receipt's `tokens` is still the attempt's total. The
+  per-stage base is part of the parked continuation, so `release` and `hold` count the same way.
 - **Failed model calls.** Before the freeze, a failed call ends the attempt with an error and nothing durable. After
   the freeze it ends the attempt as `outcome_unknown`, which the ledger records as `inconclusive`.
 - **Deadline.** `deadline` (milliseconds since the epoch) bounds the request; the transport's own timeout bounds each
@@ -111,15 +117,26 @@ and skips recompiling when `kernel.ts` hasn't changed since the last check.
 ## The freeze
 
 When the specification stage ends, the cell writes `frozen.sha256` and sends `{kind: 'admit', files}`: the three
-frozen files and the exact bytes of its implementation files (`host.mjs`, `gates.mjs`, `glue.schema.json`,
-`measure.mjs`, `meter.mjs`, `contract.mjs`, `loop-port.mjs`, `agent.mjs`, `oracle.mjs`), all hex-encoded. The host
-then:
+frozen files and the exact bytes of its implementation files (the host list `host.mjs`, `gates.mjs`,
+`glue.schema.json`, `measure.mjs`, `meter.mjs`, `contract.mjs`, `dimensions.mjs`, `generator.mjs`, `ledger.mjs`,
+`reference.mjs`, `scalar.mjs`, plus the cell list `loop-port.mjs`, `agent.mjs`, `oracle.mjs`), all hex-encoded. The
+host then:
 
 1. checks that the frozen `CONTRACT.md` and `tests.json` equal its own shadow copy, built by applying the model's
    `edit_file` calls itself (`applyReply`), so the cell cannot freeze files the model didn't write;
 2. runs `testProblems` again;
-3. sends one `admit` request to the ledger bridge, which appends `task`, `admitted_input` and the `frozen_evaluator`
-   in one transaction and returns its identity, digest and canonical encoding.
+3. with `ENDOFORGE_SYNTH=1`, finishes [evaluator synthesis](evaluator-synthesis.md) from its shadow copy and adds
+   `synth/evaluator.json` to the files;
+4. sends one `admit` request to the ledger bridge, which appends `task`, `admitted_input` and the `frozen_evaluator`
+   in one transaction and returns its identity, digest and canonical encoding;
+5. if synthesis reported suspect frozen tests, sends a `revise` request, which freezes a
+   [specification correction](evaluator-synthesis.md#4b-acting-on-suspects-a-specification-correction) as the new
+   frozen evaluator, and restarts the cell so the implementation turn reads the corrected `tests.json`;
+6. with a compatibility route that has `freeze` and `promote`, freezes the tests into `compatibility.sqlite` for the
+   [compatibility lane](compatibility-lane.md#the-route-on-a-candidate);
+7. with a library, calls `library.serve` with the frozen files and the caller's `principal`. A pass answers `{ ..., reused: true }`, the cell stops
+   with stage `reused`, and the attempt returns `promoted: true` with the library's reuse receipt as `reused` and its
+   hash as `decision`; no implementation stage runs. A resumed attempt asks the library again before continuing.
 
 There is no frozen tree on disk. From then on the cell recomputes the evaluator's identity from that encoding at each
 check (`verifyFromMemory`), and the commit compares EndoForge's own implementation files on disk with the frozen bundle.
@@ -156,19 +173,24 @@ close() }`, and `send` returns at least `{ text, usage }`.
 | `scriptedProvider(script)` | A test double for tests and examples; marks results `testDouble: true` |
 
 Both Claude transports launch `claude` with `--tools ""`, `--json-schema` (the reply schema), `--no-session-persistence`,
-`--strict-mcp-config`, `--setting-sources ""`, `--permission-mode dontAsk`, `--safe-mode`, `--model` and a fixed system
-prompt, in an allow-listed environment with `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1`. A session whose `init`
+`--strict-mcp-config`, `--setting-sources ""`, `--permission-mode dontAsk`, `--safe-mode`, `--model` (the `model`
+option, default `sonnet`, exported as `defaultModel`) and a fixed system prompt, in an allow-listed environment with `CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC=1`. A session whose `init`
 event reports any tool except `StructuredOutput`, an API key source, or an MCP server is refused. Before every launch
 the [subscription guard](../../core/runtime/README.md#subscription-guard) proves the login is a claude.ai
 subscription (or refuses with exit 78), and the [usage governor](../../core/runtime/README.md#usage-governor) parks
-new calls near the usage ceiling (exit 75).
+new calls near the usage ceiling (exit 75). The warm transport takes the governor from an `instances` entry's
+`governor`, else the transport's `governor` option, else a default governor per login; `null` turns governing off.
+Each transport sets `testDouble: true` when its `command` is not named `claude` (a stand-in CLI), unless the
+`testDouble` option says otherwise.
 
 ### Codex
 
 Codex reaches EndoForge through the `current` and `isolate` paths, not through a provider port.
 [generator.mjs](../../core/runtime/x1/generator.mjs) runs `codex exec --json --sandbox workspace-write` for the
 specification and resumes the same thread (`codex exec resume`) for the implementation, in a temporary workspace, with
-`ENDOFORGE_CODEX_CMD` as the executable and `CODEX_HOME` as its home. Point `ENDOFORGE_CODEX_CMD` at
+`ENDOFORGE_CODEX_CMD` as the executable and `CODEX_HOME` as its home. A relative path in `ENDOFORGE_CODEX_CMD` (or a
+`./` or `../` entry in its JSON argv) is resolved against the caller's working directory first, since Codex runs in
+`candidate/`; a bare name is found on `PATH`. Point `ENDOFORGE_CODEX_CMD` at
 [agent-pool.mjs](../../core/runtime/agent-pool.mjs) to spread those calls over several Codex accounts: it takes at most
 `CODEX_POOL_PER_ACCOUNT` (2) launches per account, puts a rate-limited account in cooldown until the reset its error
 names, and fails over to the next ([agent pool contract](../../core/runtime/README.md#agent-pool-contract)).
@@ -190,7 +212,12 @@ continue that work.
 ## The result
 
 `runNeed` returns `{ promoted, inconclusive?, candidate, receipt, decision, problem, status, agent, rounds, content,
-testDouble, modelMs, timings, oracle? }`. `agent` is the receipt `{ turns, tokens, tool_calls, exit_reason }`;
+testDouble, modelMs, timings, rerun, synthesis?, synthTimings?, oracle?, contained?, compatibility?, revision?,
+suspects? }`. `contained` and `compatibility` come from the compatibility route; `revision` and `suspects` from a
+specification correction. `rerun` is `{ agrees, ms }` from the
+[re-run at commit](gates.md#commit-re-runs-the-gates) (`null` when no attempt claimed a pass); `synthesis` is the
+synthesized evaluator's verdict. A reused capability returns `{ promoted: true, reused, decision, agent, testDouble,
+modelMs, timings }` instead. `agent` is the receipt `{ turns, tokens, tool_calls, exit_reason }`;
 `exit_reason` is `stop`, `max_turns` or `max_tokens`; anything but `stop` is recorded as a rejected evaluation,
 so the ledger refuses the candidate. `rounds` lists
 every implementation check, failed ones included. A failure before the freeze returns `promoted: false` with an
@@ -207,8 +234,7 @@ every implementation check, failed ones included. A failure before the freeze re
 ## Limits
 
 - The cell's report comes from EndoForge's own code running in the cell. The commit checks it against the frozen
-  bundle and the stored module but doesn't run the kernel again, so a bug that produced a consistent wrong report
-  would not be caught there.
+  bundle and the stored module and runs the gates again on the supervisor; a bug in the shared gate code would affect
+  both.
 - The supervisor's shadow copy guards the frozen files, not the implementation files, which the cell reports and the
   commit re-checks.
-- The library and evaluator synthesis are not wired into this path yet; both run on the `current` path.

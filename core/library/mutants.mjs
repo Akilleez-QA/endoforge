@@ -32,7 +32,7 @@ function scan(bytes) {
         for (const [to, kind] of OPS.get(op) ?? []) sites.push({ at, write: [to], kind, op: `${op.toString(16)}>${to.toString(16)}` });
         if (op >= 0xa0 && op <= 0xa3) for (const [insert, name] of INSERTS) sites.push({ at: p, insert, section, body, kind: 'rounding', op: name });
         if (op === 0x02 || op === 0x03 || op === 0x04) leb();
-        else if (op === 0x0c || op === 0x0d || op === 0x10 || (op >= 0x20 && op <= 0x24)) leb();
+        else if (op === 0x0c || op === 0x0d || op === 0x10 || (op >= 0x20 && op <= 0x26)) leb();
         else if (op === 0x0e) { for (let n = uint() + 1; n; n--) leb(); }
         else if (op === 0x11) { leb(); leb(); }
         else if (op === 0x1c) { for (let n = uint(); n; n--) p++; }
@@ -61,7 +61,8 @@ function scan(bytes) {
           p += 8;
         } else if (op === 0xfc) {
           const sub = uint();
-          if (sub > 7) throw unsupported(`0xfc ${sub}`);
+          if (sub > 17) throw unsupported(`0xfc ${sub}`);
+          if (sub > 7) for (let n = { 8: 2, 9: 1, 10: 2, 11: 1, 12: 2, 13: 1, 14: 2, 15: 1, 16: 1, 17: 1 }[sub]; n; n--) leb();
         } else if (op > 0xc4 || (op >= 0x06 && op <= 0x0a) || op === 0x12 || op === 0x13 || op === 0x18 || op === 0x19) throw unsupported(`opcode ${op}`);
       }
     }

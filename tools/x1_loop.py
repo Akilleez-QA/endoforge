@@ -3,16 +3,28 @@ import hashlib
 import json
 import math
 import os
+import sqlite3
+import sys
+from contextlib import closing
 from pathlib import Path
 
 from core.ledger.frozen import digest, frozen_record, snapshot
-from core.ledger.ledger import encode
+from core.ledger.ledger import Ledger, encode
 
 REPOSITORY = Path(__file__).resolve().parents[1]
 ROUND_CHECKS = ["schema", "interface", "bounds", "determinism", "forbidden_effects", "residual"]
 GATES = {"G1_frozen", "G2_compiles", "G3_exports", "G4_tests", "G5_deterministic", "G6_bounded", "G7_glue", "G8_nonfinite", "G9_units"}
+GATE_LABEL = "X1 G1-G9"
+POLICY = "X1-G1-G9/v2"
+LABEL_MIGRATION = ("New records use the task acceptance and frozen residual label 'X1 G1-G9' and the decision policy 'X1-G1-G9/v2'. "
+                   "Records written earlier keep 'X1 G1-G7' and 'X1-G1-G8/v1' unchanged: the labels are part of their hashes and "
+                   "identities, drift checks recompute from the label stored in the record, and no verdict reads a label, so "
+                   "existing ledgers verify and need no rewrite. Both generations of decision required all nine gates.")
 ORACLE_FILES = ("CONTRACT.md", "tests.json", "frozen.sha256")
-IMPLEMENTATION_FILES = ("host.mjs", "gates.mjs", "glue.schema.json", "measure.mjs", "meter.mjs", "contract.mjs", "loop-port.mjs", "agent.mjs")
+IMPLEMENTATION_FILES = ("host.mjs", "gates.mjs", "glue.schema.json", "measure.mjs", "meter.mjs", "contract.mjs", "dimensions.mjs",
+                        "generator.mjs", "ledger.mjs", "reference.mjs", "scalar.mjs", "loop-port.mjs", "agent.mjs", "oracle.mjs")
+SUSPECT_ORIGIN = "evaluator_synthesis"
+USAGE = "usage: python3 -B -m tools.x1_loop revise < request.json"
 
 
 FREEZE_FACTS = dict(confirmed_by="none: frozen by the host with no reviewer",
@@ -21,7 +33,7 @@ FREEZE_FACTS = dict(confirmed_by="none: frozen by the host with no reviewer",
 
 
 def decide(records, tip, stored_hash, request):
-    decision = dict(version=1, issuer="endoforge.local.x1", policy="X1-G1-G8/v1", scope="qualification",
+    decision = dict(version=1, issuer="endoforge.local.x1", policy=POLICY, scope="qualification",
                     candidate=request["candidate"], frozen_evaluator=request["reference"]["identity"],
                     receipt=request["receipt"])
     try:
@@ -59,7 +71,7 @@ def decide(records, tip, stored_hash, request):
             x1 = json.loads(residual["reason"])
             if (x1["promotable"] is not True or set(x1["gates"]) != GATES
                     or not all(g["ok"] is True for g in x1["gates"].values())):
-                raise ValueError("all seven gates must pass")
+                raise ValueError("all nine gates must pass")
         decision.update(decision="promote", chain_tip=tip, evaluator_digest=report["evaluator_digest"])
     except (ValueError, KeyError, TypeError):
         return refusal(decision)
@@ -120,10 +132,10 @@ def admit(request, prior, append, _process, db):
             raise ValueError("running evaluator tree digest differs from frozen record")
     elif "identity" not in reference:
         need = payload["need"]
-        append(dict(version=0, kind="task", id="task", data=dict(intent=need, acceptance="X1 G1-G7")))
+        append(dict(version=0, kind="task", id="task", data=dict(intent=need, acceptance=GATE_LABEL)))
         append(dict(version=0, kind="admitted_input", id="input", data=dict(task="task", content=need, origin="caller")))
         record = frozen_record(reference.get("root"), files=payload.get("files"), task="task", admitted_input="input",
-                               **FREEZE_FACTS, configuration=payload["configuration"], residual="X1 G1-G7", invariant_version="1")
+                               **FREEZE_FACTS, configuration=payload["configuration"], residual=GATE_LABEL, invariant_version="1")
         append(record)
     else:
         record = prior.get(reference["identity"])
@@ -184,25 +196,65 @@ def frozen_drift(record, root):
                for name in IMPLEMENTATION_FILES)
 
 
-def value_meets(frozen, seen):
+def usable_tolerance(tolerance):
+    return isinstance(tolerance, (int, float)) and not isinstance(tolerance, bool) and math.isfinite(tolerance)
+
+
+def number_meets(expect, got, tolerance):
+    if isinstance(got, bool) or not isinstance(got, (int, float, str)):
+        return False
+    try:
+        value = float(got)
+    except ValueError:
+        return False
+    if usable_tolerance(tolerance):
+        return abs(value - expect) <= tolerance
+    return value == expect
+
+
+def structure_meets(expect, got, tolerance, declared):
+    kind = declared.get("kind") if isinstance(declared, dict) else None
+    if isinstance(expect, bool):
+        return not isinstance(got, (dict, list)) and kind in (None, "boolean") and (bool(got) == expect or got == (1 if expect else 0))
+    if isinstance(expect, (int, float)):
+        return kind in (None, "number", "integer", "code", "boolean") and number_meets(expect, got, tolerance)
+    if isinstance(expect, list):
+        if kind not in (None, "list") or not isinstance(got, list) or len(got) != len(expect):
+            return False
+        limit = declared.get("max") if kind == "list" else None
+        if isinstance(limit, int) and len(got) > limit:
+            return False
+        items = declared.get("items") if kind == "list" else None
+        return all(structure_meets(e, g, tolerance, items) for e, g in zip(expect, got))
+    if isinstance(expect, dict):
+        if kind not in (None, "record") or not isinstance(got, dict):
+            return False
+        fields = {f.get("name"): f for f in declared.get("fields", []) if isinstance(f, dict)} if kind == "record" else None
+        if set(got) != set(expect) or (fields is not None and set(expect) != set(fields)):
+            return False
+        return all(structure_meets(expect[name], got[name], tolerance, fields and fields[name]) for name in expect)
+    if isinstance(got, (dict, list)):
+        return False
+    if kind == "text":
+        limit = declared.get("maxBytes")
+        if not isinstance(got, str) or (isinstance(limit, int) and len(got.encode()) > limit):
+            return False
+    return str(got) == str(expect)
+
+
+def value_meets(frozen, seen, declared=None):
     got = seen.get("got")
     if frozen.get("expectError"):
         return isinstance(got, str) and seen.get("trap") is True
-    expect = frozen.get("expect")
-    if isinstance(expect, bool):
-        return bool(got) == expect or got == (1 if expect else 0)
-    if isinstance(expect, (int, float)):
-        if isinstance(got, bool) or not isinstance(got, (int, float, str)):
-            return False
-        try:
-            value = float(got)
-        except ValueError:
-            return False
-        tolerance = frozen.get("tol")
-        if isinstance(tolerance, (int, float)) and not isinstance(tolerance, bool) and math.isfinite(tolerance):
-            return abs(value - expect) <= tolerance
-        return value == expect
-    return str(got) == str(expect)
+    return structure_meets(frozen.get("expect"), got, frozen.get("tol"), declared)
+
+
+def declared_results(glue_text):
+    try:
+        glue = json.loads(glue_text)
+        return {entry["name"]: entry.get("result") for entry in glue["exports"] if isinstance(entry, dict)}
+    except (ValueError, KeyError, TypeError):
+        return {}
 
 
 def report_problem(record, candidate, result, sources):
@@ -219,6 +271,7 @@ def report_problem(record, candidate, result, sources):
     if report["frozen_evaluator"] != record["id"] or report["evaluator_digest"] != record["data"]["freeze"]["digest"]:
         return "report binds a different frozen evaluator"
     tests = json.loads(bytes.fromhex(bundle["files"]["tests.json"]))
+    declared = declared_results(candidate["files"].get("glue.json", ""))
     wasm = candidate["compiled"].get("wasm")
     wasm_digest = wasm and hashlib.sha256(base64.b64decode(wasm)).hexdigest()
     for attempt in report["attempts"]:
@@ -234,7 +287,7 @@ def report_problem(record, candidate, result, sources):
             return "report does not cover the frozen tests"
         for frozen, seen in zip(tests, x1["tests"]):
             if (seen["fn"] != frozen["fn"] or seen["args"] != frozen["args"] or seen["pass"] is not True
-                    or not value_meets(frozen, seen)):
+                    or not value_meets(frozen, seen, declared.get(frozen["fn"]))):
                 return "reported test result does not meet the frozen test"
     return None
 
@@ -286,4 +339,97 @@ def commit(request, prior, append, process, db):
     return answer
 
 
-LOOP = dict(admit=admit, commit=commit, park=park)
+def corrected_tests(tests, suspects):
+    tests = [dict(entry) for entry in tests]
+    for suspect in suspects:
+        outcomes = suspect.get("references")
+        if not isinstance(outcomes, list) or len(outcomes) != 2 or outcomes[0] != outcomes[1]:
+            raise ValueError("a suspect needs two agreeing reference outcomes")
+        matched = [i for i, entry in enumerate(tests) if entry.get("fn") == suspect.get("fn") and entry.get("args") == suspect.get("args")
+                   and (entry.get("name") if "name" in entry else str(i)) == suspect.get("test")]
+        if len(matched) != 1:
+            raise ValueError("a suspect must name exactly one frozen test")
+        entry, outcome = tests[matched[0]], outcomes[0]
+        if outcome.get("throws") is True:
+            entry.pop("expect", None)
+            entry.pop("tol", None)
+            entry["expectError"] = True
+        elif isinstance(outcome.get("value"), (int, float)) and not isinstance(outcome.get("value"), bool) and math.isfinite(outcome["value"]):
+            value = outcome["value"]
+            entry.pop("expectError", None)
+            entry["expect"] = int(value) if float(value).is_integer() and abs(value) < 2 ** 53 else value
+        else:
+            raise ValueError("a suspect reference outcome must be a finite value or a throw")
+    return tests
+
+
+def js_json(value):
+    return json.dumps(value, separators=(",", ":"), ensure_ascii=False, allow_nan=False)
+
+
+def revise(request, prior, append, _process, _db):
+    reference, payload = request["job"]["reference"], request["result"]
+    frozen = [r for r in prior.values() if r["kind"] == "frozen_evaluator" and "freeze" in r["data"]]
+    if not frozen or frozen[-1]["id"] != reference.get("identity"):
+        raise ValueError("a revision must name the latest frozen evaluator")
+    report = payload["report"]
+    if (not isinstance(report, dict) or report.get("kind") != "suspect_frozen_tests" or report.get("before") != "implementation"
+            or not isinstance(report.get("tests"), list) or not report["tests"]):
+        raise ValueError("a revision needs a suspect frozen test report made before implementation")
+    if any(r["kind"] == "candidate" for r in prior.values()):
+        raise ValueError("a specification correction must precede every candidate")
+    latest = frozen[-1]
+    stored = json.loads(latest["data"]["content"])
+    files = dict(stored["files"])
+    tests = corrected_tests(json.loads(bytes.fromhex(files["tests.json"])), report["tests"])
+    tests_text = js_json(tests)
+    contract = bytes.fromhex(files["CONTRACT.md"]).decode()
+    frozen_text = js_json(dict(contract=hashlib.sha256(contract.encode()).hexdigest(), tests=hashlib.sha256(tests_text.encode()).hexdigest()))
+    files["tests.json"], files["frozen.sha256"] = tests_text.encode().hex(), frozen_text.encode().hex()
+    evidence = f"suspect-{1 + sum(1 for r in prior.values() if r['kind'] == 'admitted_input')}"
+    append(dict(version=0, kind="admitted_input", id=evidence, data=dict(task="task", content=encode(report), origin=SUSPECT_ORIGIN)))
+    record = frozen_record(None, files=files, task="task", admitted_input="input", **FREEZE_FACTS, configuration=stored["configuration"],
+                           residual=stored["residual"], invariant_version=stored["invariant_version"],
+                           revision=dict(of=latest["id"], reason="specification_correction", evidence=evidence))
+    append(record)
+    return dict(identity=record["id"], digest=record["data"]["freeze"]["digest"], encoded=encode(record["data"]), decision=None,
+                revision=dict(of=latest["id"], evidence=evidence), files={"tests.json": tests_text, "frozen.sha256": frozen_text})
+
+
+LOOP = dict(admit=admit, commit=commit, park=park, revise=revise)
+
+
+def main(arguments):
+    if arguments != ["revise"]:
+        print(USAGE, file=sys.stderr)
+        return 2
+    try:
+        request = json.load(sys.stdin)
+        ledger = Ledger(request["reference"]["ledger"])
+        return run_revise(ledger, request)
+    except (ValueError, KeyError, TypeError, OSError, sqlite3.Error) as error:
+        print(f"revise refused: {error}", file=sys.stderr)
+        return 1
+
+
+def run_revise(ledger, request):
+    with closing(ledger._connect()) as db, db:
+        db.execute("BEGIN IMMEDIATE")
+        prior, previous = ledger._read(db)
+        tip = [previous]
+
+        def append(record):
+            tip[0] = ledger._append(db, record, prior, tip[0])
+            return tip[0]
+
+        try:
+            answer = revise(dict(job=dict(reference=request["reference"]), result=request), prior, append, None, db)
+        except (ValueError, KeyError, TypeError, sqlite3.Error) as error:
+            print(f"revise refused: {error}", file=sys.stderr)
+            return 1
+    print(json.dumps(answer))
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

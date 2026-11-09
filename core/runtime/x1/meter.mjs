@@ -154,7 +154,7 @@ function compileKernel(bytes, fuel) {
     const instance = new WebAssembly.Instance(module, hosts);
     const remaining = () => instance.exports[fuelExport].value;
     return { instance, used: () => Number(BigInt(fuel) - remaining()), exhausted: () => remaining() < 0n,
-      memoryBytes: () => (memoryName ? instance.exports[memoryName].buffer.byteLength : 0) };
+      memoryBytes: () => (memoryName ? instance.exports[memoryName].buffer.byteLength : 0), memory: () => (memoryName ? instance.exports[memoryName] : null) };
   };
   return { shape, start };
 }

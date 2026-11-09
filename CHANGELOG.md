@@ -6,6 +6,38 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Added
 
+- Structured state at the kernel boundary: glue kinds `record`, `list` and `text` with a declared little-endian,
+  naturally aligned layout, passed through host-owned linear memory; every gate and the commit-time measured port
+  handle them, and the agent's stage prompts carry `stateRules`. Evidence: an AssemblyScript to-do reducer passes all
+  nine gates (`core/runtime/test/gaps-gluestate.test.mjs`).
+- Library: composition (unions, output-to-input pipelines, argument adapters linked into one module, gated on the
+  need's tests), opt-in semantic retrieval (`retrieval: 'semantic'`), tenant and lineage scopes with journaled grants,
+  `reclaim()` with journal compaction, refusals kept as counterexamples, and qualification per environment.
+- Compatibility-lane promotion rule `COMPAT-TS-CHECK-RUN2-TESTS/v1` (`tools/compat_policy.py`,
+  `core/runtime/contained/promotion.mjs`, `route.freeze` and `route.promote`), with an independent re-score of the
+  route's output.
+- Evaluator synthesis: judging in a worker-thread cell with heap, stack and deadline limits; suspect frozen tests
+  reported at freeze (`synth/suspect.json`, `begin({ suspect })`).
+- CI job `secret-scan` (Gitleaks 8.28.0, checksum verified, full history).
+- `tools/atomizer/LEDGER.md`, `tools/conductor/examples/` (adopt map with an old manifest and loop state),
+  `tools/hillclimb/bin/run-atoms.mjs` (the default campaign runner, on the atomizer scheduler).
+- Requirements REQ-X1-005 to 008, REQ-LOOP-005 and 006, REQ-GEN-009, REQ-SYNTH-002 and 003, REQ-TRANSPORT-002,
+  REQ-CONTAINED-002, REQ-LIB-002 to 007, REQ-ATOM-004, REQ-COND-003 and 004, REQ-JOB-002, REQ-HILL-002 and
+  REQ-REPO-006, traced in the verification matrix; GAP-EF-011 and GAP-EF-012 closed.
+- Specification correction from suspect frozen tests: on every loop path a suspect report from evaluator synthesis
+  is recorded in the ledger (`admitted_input`) and a revised `frozen_evaluator` (`specification_correction`) is
+  frozen before any candidate; the commit judges against the corrected tests. New ledger action `revise`
+  (`python3 -B -m tools.x1_loop revise`); `runNeed({ suspect })`; results carry `revision` and `suspects`.
+- `runNeed` decides the compatibility lane on every path: a route with `freeze` and `promote` is frozen into
+  `compatibility.sqlite` before any candidate and promoted under `COMPAT-TS-CHECK-RUN2-TESTS/v1`, returned as
+  `compatibility`.
+- `runNeed({ principal })` is passed to `library.serve` on every path.
+- Library composition across parts with linear memory or tables: each part gets a bounds-checked region of the
+  module's memory and its own table; structured values cross between parts as layout-checked copies.
+- CI job `rust-lane` runs `make rust-lane-test` on Rust 1.98.1; new target `rust-lane-setup`.
+- Requirements REQ-X1-009, REQ-X1-010, REQ-LOOP-007 to 009, REQ-SYNTH-004, REQ-LIB-008, REQ-REPO-007 and
+  REQ-GATECLI-001; GAP-EF-003 and GAP-EF-013 closed.
+
 - `examples/first-loop.mjs` and `examples/show-gates.py`: the README and getting-started example (a scripted model
   promotes an addition kernel and refuses a subtracting one), tested by `core/runtime/test/loop-example.test.mjs`.
 - Documentation to the Cstack family standard (NASA-organized, self-assessed Class E analog): software management
@@ -85,6 +117,21 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Changed
 
+- The library and evaluator synthesis work on all three loop paths: `isolate` and `agent` consult a library after the
+  freeze or admission and skip implementation on a pass, and freeze `synth/evaluator.json` before code and refuse at
+  commit what it refuses.
+- Commit re-runs the gates on the supervisor whenever the cell report claims a pass and rejects a disagreeing report;
+  results carry `rerun`.
+- The agent loop's `maxTokens` is a budget per stage, not per attempt (`tokenBudget = 'stage'`).
+- New ledger records carry `X1 G1-G9` and policy `X1-G1-G9/v2`; older records keep their labels and still verify
+  (`LABEL_MIGRATION` in `tools/x1_loop.py`).
+- The frozen implementation list includes `dimensions.mjs`, `generator.mjs`, `ledger.mjs`, `reference.mjs` and
+  `scalar.mjs`.
+- Claude transports default `--model` to `sonnet` and report `testDouble: true` for a stand-in command; the Conductor
+  passes `conductor.claudeTools` to workers, and the default list allows `make`, `npm` and `python3`.
+- The Conductor runs an atom's criteria checks when no `conductor.checks` entry names it.
+- The Rust lane installs its pinned `jco` and AssemblyScript itself and fetches missing crates under `Cargo.lock`.
+
 - README rewritten for first-time readers: what EndoForge is, why, a diagram of the loop, the gate table, a real
   example run and a quickstart; the engineering records moved to one section at the end. The docs index now leads with
   learn, do, look up and understand. The candidate-loop page keeps its document control at the end.
@@ -103,6 +150,27 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
   The current README includes that contact in its License section.
 
 ### Fixed
+
+- The commit's evidence re-check compares structured results by structure (records by field name, `tol` on every
+  numeric leaf, kinds and limits from the declared glue) instead of by their string form; the to-do reducer now
+  promotes through the in-cell commit on the `isolate` and `agent` paths.
+- The bridge's drift check (`IMPLEMENTATION_FILES` in `tools/x1_loop.py`) names all 14 frozen x1 files; receipts
+  carry `acceptance_boundary: 'X1 G1-G9'` instead of `G1-G7`.
+- On the `isolate` and `agent` paths the synthesized evaluator judges at commit in a bounded worker thread
+  (`judgeInCell`), not on the controller thread.
+- `make isolate-test` installs the compiler and checker it needs (`loop-setup`, `tscheck-setup`) first, so `make test`
+  works on a fresh clone; the heap-breach test allows 240 s.
+- `tools/gate` judges with the core `runGates` and the core glue schema, so a kernel on disk gets the nine gates and
+  structured state; tested by `tools/test_gate_structured.mjs`, which no `make` target runs yet.
+- `WarmClaudeTransport` honours a caller-supplied usage governor (per transport or per instance).
+- A relative `ENDOFORGE_CODEX_CMD` resolves against the caller's working directory.
+- The Conductor's collect lock works when the repository is a git worktree.
+- Bare runs print usage and exit 2: `testcheck.mjs`, `hc-patch.sh`, `run-atoms.mjs`, `python3 -m tools.x1_ledger`,
+  `python3 -m tools.compat_policy`; `bench.mjs` defaults to an atoms file that exists.
+- The job tool no longer cites a playbook the repository does not ship; hillclimb `plan-review` works from any
+  directory.
+- The Rust lane's component runs in the `tools/kernel` Wasmtime workcell.
+- Three tool tests that used bare `assert` use `unittest` assertions, so `make test-optimized` checks them.
 
 - A missing exit code or a torn state is no longer read as success, and ledgers and locked decisions survive a
   failed read (#99, #100).

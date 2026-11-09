@@ -3,10 +3,10 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SAR |
-| Version | 1.0 |
+| Version | 1.1 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
-| Date | 2026-11-08 |
+| Date | 2026-11-09 |
 | Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
 | Applies to | endoforge main at baseline commit |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
@@ -37,10 +37,11 @@ Findings:
   check; the 45 existing statements were kept, with secondary "shall" clauses reworded so each has one.
 - F15 (#130) changed the formula oracle during this pass. The trace check caught the renamed test, and REQ-ORACLE-001
   was updated to branch-by-branch evaluation of piecewise rules.
-- Fourteen behaviours have no test and are registered as GAP-EF-001 to GAP-EF-014 in
+- Ten behaviours have no test and are registered as GAP-EF-001 to GAP-EF-014 (003, 011, 012 and 013 closed) in
   [SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps), not as requirements.
 - Trace check after the update (`python3 -I tools/check_trace.py`): 95 requirements, 95 traced, 14 gaps, 0 TBD; 97
-  discovered test files, 92 traced and 5 supporting; 0 problems.
+  discovered test files, 92 traced and 5 supporting; 0 problems. After the round-2 records pass on 2026-11-09: 127
+  requirements, 127 traced, 10 gaps; 111 discovered test files, 105 traced and 6 supporting; 0 problems.
 
 ### Design analysis
 
@@ -58,10 +59,13 @@ test bodies where a title was ambiguous; the full suites on both Node versions (
 
 Findings:
 
-- D-01: three tool tests check only with `assert` statements, which `make test-optimized` strips (`python3 -O`).
+- D-01: three tool tests checked only with `assert` statements, which `make test-optimized` strips (`python3 -O`);
+  closed on 2026-11-09.
 - No coverage tool is configured, so coverage is not measured.
-- Delegated cgroup enforcement is skipped without a delegated scope (GAP-EF-001); the Rust lane is outside CI
-  (GAP-EF-013).
+- Delegated cgroup enforcement is skipped without a delegated scope (GAP-EF-001). The Rust lane runs in its own CI
+  job from 2026-11-09 (GAP-EF-013 closed; first run pending).
+- `tools/test_gate_structured.mjs` (REQ-GATECLI-001) is run by no `make` target, so `tests/test_reachability.py`
+  fails on it and `make test` is red until it is wired in or listed with a reason.
 
 ### Source code quality
 
@@ -94,22 +98,23 @@ No issues were filed for these findings; they are reported to the maintainer thr
 
 | ID | Severity | Finding | Location | Status |
 |---|---|---|---|---|
-| D-01 | S3 | Tests that check only with `assert` statements pass vacuously under `make test-optimized`, which runs them with `python3 -O` | `tools/factory_campaign/test_state.py`, `tools/factory_campaign/test_model_journal.py`, `tools/factory_portability/test_checkpoint.py` (its refusal checks raise `AssertionError` explicitly and still run) | Open |
+| D-01 | S3 | Tests that check only with `assert` statements pass vacuously under `make test-optimized`, which runs them with `python3 -O` | `tools/factory_campaign/test_state.py`, `tools/factory_campaign/test_model_journal.py`, `tools/factory_portability/test_checkpoint.py` (its refusal checks raise `AssertionError` explicitly and still run) | Closed 2026-11-09: `unittest` assertions |
 | D-02 | S4 | 9 unused imports (ruff F401) | see Source code quality | Open |
-| D-03 | S3 | `WarmClaudeTransport` replaces a caller-supplied `governor` with the default one: the constructor passes `governor === null ? null : undefined` to `governed()` | `core/runtime/x1/transports.mjs:214` | Open |
-| D-04 | S4 | Referenced inputs missing: `bench.mjs` defaults to `tools/atomizer/examples/C-005/atoms.json`; `lib/ledger.mjs` names a `LEDGER.md` schema; `conduct adopt` points to `tools/conductor/examples`. None exist | `tools/atomizer/`, `tools/conductor/` | Open |
+| D-03 | S3 | Until 2026-11-09 `WarmClaudeTransport` replaced a caller-supplied `governor` with the default per-login one: the constructor passed `governor === null ? null : undefined` to `governed()`. The defect was which governor was used, not whether one was: both transports call the governor's `admit()` before every turn and its `observe()` on every `rate_limit_event` (`transports.mjs` lines 95, 105, 156 and 277). Now an `instances` entry's `governor`, else the caller's, else the default is used | `core/runtime/x1/transports.mjs:216` | Closed 2026-11-09: REQ-TRANSPORT-002 |
+| D-04 | S4 | Referenced inputs missing: `bench.mjs` defaults to `tools/atomizer/examples/C-005/atoms.json`; `lib/ledger.mjs` names a `LEDGER.md` schema; `conduct adopt` points to `tools/conductor/examples`. None exist | `tools/atomizer/`, `tools/conductor/` | Closed 2026-11-09: REQ-ATOM-004, REQ-COND-004 |
 | D-05 | S3 | SECURITY.md directs reporters to GitHub private vulnerability reporting, which is disabled for the repository (`gh api repos/Akilleez-QA/endoforge/private-vulnerability-reporting` returns `enabled: false`). SECURITY.md now gives the fallback; enabling it is a repository setting for the owner | `SECURITY.md`, repository settings | Open |
-| D-06 | S4 | `main` has no branch protection; CI has no secret-scanning job | repository settings, `.github/workflows/ci.yml` | Open (risk R-6) |
+| D-06 | S4 | `main` has no branch protection; CI has no secret-scanning job | repository settings, `.github/workflows/ci.yml` | Secret scan added to CI 2026-11-09; branch protection still open (risk R-6) |
 | D-07 | S4 | Code comments exist despite the no-comments rule, for example `tools/conductor/lib/adopt.mjs:5`, `tools/atomizer/lib/ledger.mjs:2`, `tools/atomizer/test/run.mjs:1` | several files | Open |
 | D-08 | S4 | Stale documentation (verification matrix baseline, oracle wording, missing control documents) | `docs/` | Closed in this PR |
 
 ### Overall assessment
 
 Every requirement traces to tests that exist, and every discovered test file traces to a requirement or is classified.
-Fourteen behaviours remain untested. Assurance is author-side only; no independent review has been performed.
+Ten behaviours remain untested (GAP-EF-003, GAP-EF-011, GAP-EF-012 and GAP-EF-013 were closed on 2026-11-09). Assurance is author-side only; no independent review has been performed.
 
 ## Change history
 
 | Version | Date | Commit | Change | Reviewed in |
 |---|---|---|---|---|
 | 1.0 | 2026-11-08 | `4d692a4` | First entry | this PR |
+| 1.1 | 2026-11-09 | round 2 | D-03 restated: the transports always called the governor's `admit()` and `observe()`; the defect was replacing the caller's governor. Gap count 10; the unrun gate CLI test noted | this commit |

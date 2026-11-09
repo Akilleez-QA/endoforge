@@ -1,3 +1,4 @@
+import { bufferArity, isBuffer, scalarLeaves } from './measure.mjs';
 const Q = (dims, scale = null, affine = null, family = null) => ({ kind: 'q', dims, scale, affine, family });
 const CODE = { kind: 'code' }, UNKNOWN = { kind: 'unknown' };
 const lit = value => ({ kind: 'literal', value });
@@ -286,7 +287,8 @@ export function unitFindings(glue, { source = '', outputs = [] } = {}) {
   let program = null;
   try { program = functions(source); } catch { program = null; }
   for (const entry of glue?.exports ?? []) {
-    const fields = [...entry.args.map(arg => ({ field: `${entry.name}.${arg.name}`, name: arg.name, kind: arg.kind, unit: arg.unit })), { field: `${entry.name} result`, name: entry.name, kind: entry.result.kind, unit: entry.result.unit }];
+    const leaf = ({ field, name, type }) => ({ field, name, kind: type.kind, unit: type.unit });
+    const fields = [...entry.args.flatMap(arg => scalarLeaves(arg, arg.name, `${entry.name}.${arg.name}`).map(leaf)), ...scalarLeaves(entry.result, entry.name, `${entry.name} result`).map(leaf)];
     for (const f of fields) {
       const d = unitDimension(f.unit);
       if ((f.kind === 'code' || f.kind === 'boolean') && d && (Object.keys(d.dims).length || d.scale === 0.01)) problems.push(`K: ${f.field} is a ${f.kind} but its unit ${f.unit} is a physical quantity`);
@@ -298,7 +300,7 @@ export function unitFindings(glue, { source = '', outputs = [] } = {}) {
     }
     entry.args.forEach((arg, a) => {
       const next = entry.args[a + 1];
-      if (!next || arg.unit === next.unit) return;
+      if (!next || isBuffer(arg) || isBuffer(next) || arg.unit === next.unit) return;
       if (overlap(arg.name, next.unit) > overlap(arg.name, arg.unit) && overlap(next.name, arg.unit) > overlap(next.name, next.unit)) problems.push(`L: ${entry.name} units of ${arg.name} and ${next.name} fit their names better swapped`);
     });
     if (entry.result.codes) {
@@ -307,8 +309,8 @@ export function unitFindings(glue, { source = '', outputs = [] } = {}) {
     }
     if (!program?.found.has(entry.name)) { checks[entry.name] = 'no source'; continue; }
     const fn = program.found.get(entry.name);
-    if (fn.params.length !== entry.args.length) { checks[entry.name] = 'arity'; continue; }
-    const env = new Map(fn.params.map((p, i) => { const d = unitDimension(entry.args[i].unit); return [p, d ? { ...d, definite: true } : (entry.args[i].kind === 'code' || entry.args[i].kind === 'boolean') ? CODE : UNKNOWN]; }));
+    if (fn.params.length !== bufferArity(entry)) { checks[entry.name] = 'arity'; continue; }
+    const env = new Map(fn.params.map((p, i) => { const arg = entry.args[i], d = isBuffer(arg) ? null : unitDimension(arg?.unit); return [p, d ? { ...d, definite: true } : (arg?.kind === 'code' || arg?.kind === 'boolean') ? CODE : UNKNOWN]; }));
     const imbalances = [];
     let inferred = UNKNOWN;
     try { inferred = evaluate(program, entry.name, env, imbalances); } catch { inferred = UNKNOWN; }

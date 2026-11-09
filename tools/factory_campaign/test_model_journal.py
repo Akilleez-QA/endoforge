@@ -8,6 +8,7 @@ import signal
 import subprocess
 import sys
 import time
+import unittest
 import uuid
 
 from tools.factory_campaign.model_journal import ModelJournal,identity,alive,_atomic
@@ -56,7 +57,7 @@ def main():
     base=Path(__file__).resolve().parents[2];out=Path(os.environ['ENDOFORGE_TEST_OUTPUT'])/('model-journal-'+uuid.uuid4().hex)
     out.mkdir(parents=True);root=out/'journal';ready=out/'ready.json';checks=[];foreign=None;child=None
     def record(name,passed,**details):
-        checks.append({'name':name,'passed':bool(passed),**details});assert passed,name
+        checks.append({'name':name,'passed':bool(passed),**details});unittest.TestCase().assertTrue(passed,name)
     try:
         badroot=out/'bad-root';badroot.mkdir(mode=0o700);target=out/'foreign-events';target.mkdir();(badroot/'model-attempts').symlink_to(target,target_is_directory=True)
         refused=False

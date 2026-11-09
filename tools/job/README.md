@@ -146,11 +146,11 @@ refuses if that is missing, so set `resources.health` (the demo uses `["true"]`)
   the wrong thing; that is what the user's confirmation is for.
 - `validate` without `--offline` checks that every named path exists; with `--offline` it skips disk checks and
   source excerpts.
-- `invariants.mjs` and `compile.mjs` cite `docs/PLAYBOOK-deadline-fanout.md`, which is not in this repository.
 
 ## Tests
 
-`make lib-test` runs `test/failopen.test.mjs` (a torn or unreadable event log never reads as "not staged"). The
+`make lib-test` runs `test/failopen.test.mjs` (a torn or unreadable event log never reads as "not staged") and
+`test/references.test.mjs` (the job, conductor, atomizer and hillclimb sources cite only repository files that exist). The
 conductor tests in the same target drive `stage` and `go`.
 
 Engineering record: component C-23, requirement REQ-JOB-001.

@@ -1,5 +1,5 @@
 // Prompt compiler: JOB manifest → one prompt per atom. Atom prompts are never hand-written: a brief written from a
-// summary loses the source and the references (see docs/PLAYBOOK-deadline-fanout.md). Each prompt carries, in this order:
+// summary loses the source and the references. Each prompt carries, in this order:
 // the goal verbatim; the decompressed brief; the inputs that govern this atom, references first, with paths, what
 // they govern and thumbnails to look at; primary-source excerpts read from disk; the truth package; its checks; its
 // files, contracts and seams; this round's findings and outputs; knowledge and lessons that bear on it; the return format.

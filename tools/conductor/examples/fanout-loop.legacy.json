@@ -1,0 +1,14 @@
+{
+ "title": "Example fan-out job on the old scripts",
+ "goal": "Every module builds and its tests pass",
+ "governing": {
+  "request": { "path": "REQUEST.md", "governs": "what the user asked for" },
+  "framing": { "path": "FRAMING.md", "governs": "how the project is built" }
+ },
+ "atoms": {
+  "A1": { "engine": "claude", "account": "a1", "files": ["src/parser.ts"], "tests": "test/parser.test.ts" },
+  "B2": { "engine": "codex", "files": ["src/render.ts"] },
+  "C3": { "engine": "claude", "files": ["docs/usage.md"] }
+ },
+ "checks": ["make test passes", "the docs build without broken links"]
+}

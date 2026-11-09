@@ -30,15 +30,17 @@ You do not write the code yourself; the agents do. For a single need, EndoForge 
 logic can be checked exactly and the side effects stay with the host:
 
 - **The kernel** (here, the logic module, not an operating-system kernel) is a WebAssembly module of pure functions. Each takes the current state and an event and
-  returns the new state, plus any effects (save this, send that, show this) as plain data. It can import nothing
+  returns the new state, plus any effects (save this, send that, show this) as plain data. State and events can be
+  numbers and codes or structured records, lists and text, laid out in memory the host owns. It can import nothing
   except an abort hook, so it cannot touch files, the network or the screen.
 - **The glue** (`glue.json`) is data: it declares each function's label, inputs, outputs and their units, so a host
   application can show the function, call it and carry out its effects.
 
 So an application here is kernels plus glue running in a host. The host supplies the screen, storage and network once
-and runs the event loop; each feature is a kernel the agents write and the gates check. As an illustration of the shape (not a recorded run), a to-do list is a
-kernel that takes the list and an "add item" event and returns the new list and a
-"save" effect; the host draws the list and does the saving. The host is whatever code loads the kernel and acts on its
+and runs the event loop; each feature is a kernel the agents write and the gates check. A to-do list, for example, is a
+kernel that takes the list and an "add item" event and returns the new list and a "save" effect; the host draws the
+list and does the saving. The test suite includes such a to-do reducer in AssemblyScript (records, a list, UTF-8
+titles) that passes all nine gates ([gaps-gluestate.test.mjs](core/runtime/test/gaps-gluestate.test.mjs)). The host is whatever code loads the kernel and acts on its
 effects: your own program (a promoted kernel is an ordinary WebAssembly file, as the example shows) or a host
 application such as Cstack. The counter in the example below and the small functions in the
 [experiments](experiments/README.md) are test workloads that measure the engine, not the limit of what agents build.
@@ -81,8 +83,8 @@ flowchart TD
    tests are strong enough to reject deliberately broken copies of it.
 4. **Workcell.** Otherwise the agent writes the code into the workcell's overlay (an in-memory set of files) and calls
    `check`. The check compiles with the pinned compiler and runs nine gates on the exact compiled bytes, then sends any failure back
-   as the agent's next prompt. By default the agent gets six turns for the specification stage (contract and tests) and
-   six for the implementation stage (the code).
+   as the agent's next prompt. By default the agent gets six turns and 64,000 tokens for the specification stage
+   (contract and tests), and the same again for the implementation stage (the code).
 5. **Decision.** The ledger records the candidate, every gate result and the decision in one transaction. The ledger is
    append-only and hash-chained, so an edited record is detected.
 
@@ -242,9 +244,9 @@ where the agent's conversation runs.
 | `isolate` | Codex CLI | Codex writes the files on disk; check and repair run in one workcell that stays warm between rounds |
 | `agent` | Claude Code (`claude -p`) or any provider object | The whole agent conversation runs inside the workcell |
 
-Start with the agent path to see a real agent at work. The default path is the longest-established one, and capability-library reuse (pass `library: await openLibrary()` from
-`core/library/library.mjs`) and evaluator synthesis (`ENDOFORGE_SYNTH=1`, a second check written by a model that never
-saw the candidate) plug into it, so use it when you need those. The `agent`
+Start with the agent path to see a real agent at work. The default path is the longest-established one. Capability-library
+reuse (pass `library: await openLibrary()` from `core/library/library.mjs`) and evaluator synthesis (`ENDOFORGE_SYNTH=1`,
+a second check written by a model that never saw the candidate) plug into all three paths. The `agent`
 path removes process spawns from the repair loop: experiment [P-50](experiments/P-50-in-isolate/RESULT.md) measured the same
 verdicts as the default path on 31 inputs, with non-model time per need down from about 1.5 s to about 0.13 s at the
 median. The [runtime README](core/runtime/README.md#the-agent-loop-in-the-workcell) describes the transports, and the

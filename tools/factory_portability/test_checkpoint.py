@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-import importlib.util, io, json, os, subprocess, tarfile, tempfile
+import importlib.util, io, json, os, subprocess, tarfile, tempfile, unittest
 from pathlib import Path
 spec=importlib.util.spec_from_file_location('checkpoint',Path(__file__).with_name('checkpoint.py')); c=importlib.util.module_from_spec(spec); spec.loader.exec_module(c)
+check=unittest.TestCase()
 def run():
     results=[]
     with tempfile.TemporaryDirectory(prefix='endoforge-checkpoint-test-') as td:
@@ -13,12 +14,12 @@ def run():
         (source/'checkpoint.json').write_text(json.dumps(meta)); (source/'candidate.wasm').write_bytes(b'\x00asm-fixture')
         before={p.name:c.sha(p.read_bytes()) for p in source.iterdir()}
         archive=w/'campaign.age'; c.pack(source,archive,pub); c.unpack(archive,w/'restored',key)
-        assert (w/'restored/candidate.wasm').read_bytes()==(source/'candidate.wasm').read_bytes(); results.append('roundtrip')
-        assert before=={p.name:c.sha(p.read_bytes()) for p in source.iterdir()}; results.append('source-immutable')
+        check.assertEqual((w/'restored/candidate.wasm').read_bytes(),(source/'candidate.wasm').read_bytes()); results.append('roundtrip')
+        check.assertEqual(before,{p.name:c.sha(p.read_bytes()) for p in source.iterdir()}); results.append('source-immutable')
         def reject(label,fn,dest=None):
             try: fn()
             except (ValueError,FileExistsError,KeyError):
-                assert dest is None or not dest.exists(); results.append(label); return
+                check.assertTrue(dest is None or not dest.exists(),label); results.append(label); return
             raise AssertionError('accepted '+label)
         reject('wrong-key',lambda:c.unpack(archive,w/'badkey',wrong),w/'badkey')
         data=bytearray(archive.read_bytes()); data[-20]^=1; (w/'corrupt.age').write_bytes(data)

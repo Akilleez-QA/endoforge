@@ -7,8 +7,8 @@ the gates pass, the candidate must also agree with this evaluator, or it is refu
 of Edition 3 §6: the part of acceptance that only this request determines, written blind, frozen, qualified and
 confirmed before any candidate exists.
 
-Code: [core/runtime/x1/synth/](../../core/runtime/x1/synth/stage.mjs). Off by default; `ENDOFORGE_SYNTH=1` turns it on,
-on the `current` path only. Measured in [P-56](../../experiments/P-56-evaluator-synthesis/RESULT.md).
+Code: [core/runtime/x1/synth/](../../core/runtime/x1/synth/stage.mjs). Off by default; `ENDOFORGE_SYNTH=1` turns it on
+for all three loop paths (`current`, `isolate`, `agent`). Measured in [P-56](../../experiments/P-56-evaluator-synthesis/RESULT.md).
 
 ## Why
 
@@ -36,7 +36,9 @@ flowchart TD
   sheet --> bind
   bind --> compile["Vectors and<br/>meta-gates M1 to M5"]
   compile --> confirm["Confirm the<br/>plain-language residual"]
+  compile --> suspect["Suspect frozen tests<br/>width 2 only"]
   confirm --> freeze["synth/evaluator.json<br/>inside the ledger freeze"]
+  suspect --> freeze
   freeze --> judge["Judge the candidate<br/>after the gates"]
 ```
 
@@ -49,8 +51,8 @@ invariants apply. The reply uses the agent reply protocol (one `edit_file` call,
 
 ### 2. Binding (model, from the sheet and the frozen contract)
 
-When the specification is ready, the freeze callback calls `finish(root)`. It reads the frozen `CONTRACT.md` and
-`tests.json` from the oracle root and asks for `binding.json` (`prompts.binding`): for every export, parameters in
+When the specification is ready, the freeze calls `finish(root)`. It reads the frozen `CONTRACT.md` and `tests.json`
+from the oracle root (on the agent path, from a temporary root written from the host's shadow copy) and asks for `binding.json` (`prompts.binding`): for every export, parameters in
 contract order with units, bounds and openness, integer flags and code tables; the result kind, unit, displayed
 decimals, codes and range; monotone relations the contract makes certain; and `reference`, one plain JavaScript source
 computing every export in double precision with only `Math` and `Number`, throwing where the contract traps. The
@@ -96,6 +98,58 @@ labels only when both tables have the same codes and no label is swapped. Ranges
 the union. Width 1 keeps one member's qualified checks. In P-56 the agreed set refused exactly the same kernel faults
 as one member alone.
 
+### 4a. Suspect frozen tests (width 2, no model)
+
+M3 refuses an export whose reference contradicts a frozen test. That usually means the reference is wrong, but when two
+independent references agree with each other against the same test, the test is the likelier error (P-56 found one
+such case). `compileMember` records, per export, every frozen test its reference contradicts and what the reference
+returned. `suspectTests` then reports a test as suspect only when all of these hold:
+
+- the width is 2 and both members compiled;
+- for that export, both references fail no meta-gate except M3, and every M3 failure is a contested test;
+- both contradict the same set of tests, with the same outcome on each;
+- each reference reproduces the other's frozen vectors.
+
+`finish` runs this at the freeze, before the implementation turn. The suspects go into `evaluator.json` under
+`suspects` and into `synth/suspect.json`:
+
+```json
+{ "kind": "suspect_frozen_tests", "before": "implementation", "evaluator": "<sha256 of evaluator.json>",
+  "tests": [{ "fn": "allowance", "test": "negative", "args": [-1], "expectError": true,
+              "references": [{ "value": 0 }, { "value": 0 }] }],
+  "revision": { "reason": "specification_correction", "references": ["<binding sha256>", "<binding sha256>"],
+                "rule": "a corrected test is frozen as a revision of the latest frozen evaluator, with outcome-independent admitted evidence" } }
+```
+
+`begin({ suspect })` takes a hook that receives the same report before `finish` returns, and `finish` returns
+`{ root, hash, suspects }`. The export itself stays unqualified. Width 1, references that disagree, and a reference
+that fails another meta-gate give no suspects.
+
+### 4b. Acting on suspects: a specification correction
+
+Every loop path passes its own hook to `begin`, so the report reaches the pipeline before the ledger freeze returns.
+Right after the first freeze, and before any candidate exists, the pipeline asks the ledger to `revise`
+([tools/x1_loop.py](../../tools/x1_loop.py); through the pool's ledger bridge on `isolate` and `agent`, and as
+`python3 -B -m tools.x1_loop revise < request.json` on `current`). `revise`:
+
+1. refuses unless the request names the latest frozen evaluator, the report is a `suspect_frozen_tests` report made
+   `before: "implementation"` with at least one test, and the ledger holds no candidate yet;
+2. corrects each suspect test from the two agreeing reference outcomes: a returned finite number becomes the new
+   `expect`, a throw becomes `expectError: true`; a suspect must name exactly one frozen test (by `name`, `fn` and
+   `args`);
+3. appends the report as an `admitted_input` (`suspect-1`, `suspect-2`, ...; origin `evaluator_synthesis`), then a new
+   `frozen_evaluator` with the corrected `tests.json` and `frozen.sha256` and
+   `revision: { of: <previous identity>, reason: "specification_correction", evidence: <admitted input id> }`.
+
+From then on the revised identity is the frozen evaluator: the self-check, the library lookup, the commit and the
+decision all use the corrected tests. The result carries `revision` (the new identity) and `suspects` (the corrected
+tests). A caller's own `runNeed({ suspect })` hook is still called with the report.
+
+| Path | What the implementation turn sees |
+|---|---|
+| `agent` | The cell restarts after the revision, so the implementation turn reads the corrected `tests.json` |
+| `current`, `isolate` | The corrected files go into the oracle root and into every check; the Codex workspace keeps the original `tests.json`, so the implementation turn reads the uncorrected file |
+
 ### 5. Confirm
 
 `residualText` renders the need sheet's sentences plus one line per checked export, unit and relation. A `confirm`
@@ -105,14 +159,38 @@ unconfirmed evaluator abstains.
 
 ### 6. Freeze
 
-`finish` writes `synth/evaluator.json` (version, width, library ids, residual, per-member qualification, the checks
-and the confirmation) into the oracle root before the ledger freeze runs, so the `frozen_evaluator` record's digest
-covers it. Its SHA-256 is kept for step 7.
+`finish` writes `synth/evaluator.json` (version, width, library ids, residual, per-member qualification, the checks,
+the suspects and the confirmation) before the ledger freeze runs, so the `frozen_evaluator` record's digest covers it.
+Its SHA-256 is kept for step 7.
+
+| Path | Where the file goes |
+|---|---|
+| `current` | The oracle root, before `python3 -m tools.x1_ledger freeze` |
+| `isolate` | The oracle root, inside the `freeze` callback, before the pool's `admit` |
+| `agent` | Added to the frozen files the host sends to `admit` (the cell never sees the evaluator), so it lives in the ledger's frozen bundle |
+
+On the `agent` path `begin` starts with the attempt, unless the ledger already holds a frozen evaluator (a resumed
+attempt keeps the one it froze).
 
 ### 7. Judge
 
-After the pool gates and before the ledger's `promote`, `evaluate(candidate)` re-reads `synth/evaluator.json` and
-refuses if its hash changed. Then `judge`:
+`judge` ([judge.mjs](../../core/runtime/x1/synth/judge.mjs)) runs the frozen checks on one compiled candidate. Where it
+runs depends on the path:
+
+- **`current`.** After the pool gates and before the ledger's `promote`, `evaluate(candidate)` re-reads
+  `synth/evaluator.json`, refuses if its hash changed, and judges in a separate worker thread
+  ([cell-host.mjs](../../core/runtime/x1/synth/cell-host.mjs) `judgeInCell`): 128 MiB old generation, 16 MiB young,
+  4 MiB stack, an empty environment and a 30 s deadline (`begin({ cell: { deadlineMs, resourceLimits } })` overrides
+  them). A timeout (`cell_timeout`), an out-of-memory error (`cell_limit`), a crash or an exit without a verdict refuses
+  the candidate; it never passes. The verdict records the cell's thread id.
+- **`isolate` and `agent`.** At commit, after the [independent re-run](gates.md#commit-re-runs-the-gates) agrees,
+  `checkAtCommit` reads `synth/evaluator.json` from the ledger's verified frozen bundle and judges in the same bounded
+  worker thread (`judgeInCell`, with its default limits and deadline), so the verdict carries a thread id that is not
+  the controller's. A refusal, a cell failure, or an exception marks the receipt `rejected` with
+  "synthesized evaluator refused the candidate", so the ledger refuses the promotion. The result carries the verdict
+  as `synthesis`, with the evaluator's hash.
+
+On every path `judge`:
 
 - abstains when the residual wasn't approved, or when nothing qualified;
 - runs every vector on a fresh fuel-metered instance, then again in reverse order on another, and refuses if the two
@@ -124,8 +202,9 @@ refuses if its hash changed. Then `judge`:
 - compares the glue with the declarations: units by dimension and scale (a unit it can't parse is left unknown,
   never refused), displayed decimals, and code labels.
 
-A `refuse` stops the pipeline before `promote`: `runNeed` returns `promoted: false` with the verdict, and
-`synthesis.json` in the run directory holds it. `pass` and `abstain` leave the decision to the gates and the ledger.
+A `refuse` means no promotion: on `current` `runNeed` returns `promoted: false` before `promote`; on `isolate` and
+`agent` the receipt is rejected. `synthesis.json` in the run directory holds the verdict on `current` and `isolate`.
+`pass` and `abstain` leave the decision to the gates and the ledger.
 
 ## Configuration
 
@@ -136,6 +215,10 @@ A `refuse` stops the pipeline before `promote`: `runNeed` returns `promoted: fal
 | `ENDOFORGE_SYNTH_MODEL` | `sonnet` | Model for `claude -p` (`SpawnClaudeTransport`) |
 | `ENDOFORGE_SYNTH_CONFIG_DIR` | unset | Claude configuration directory for that transport |
 | `ENDOFORGE_SYNTH_PROVIDER` | unset | A module exporting `createProvider(env)`, for replay and tests |
+
+`runNeed({ synthProvider, confirm, suspect })` passes a provider object, the confirmation callback and a suspect hook
+on every path. Called directly, `begin({ need, env, provider, confirm, suspect, cell })` also takes the judging cell's
+limits.
 
 ## The invariant library
 
@@ -159,11 +242,13 @@ code. The model only selects and parameterizes them: `value.reference`, `boundar
 P-56 ran 702 `claude -p` calls on Sonnet: four calls and about 14.4k tokens per task at width 2, 6.1 s mean per call.
 Offline, compile, qualify and judge took 495 ms at p50; judging alone 0.6 ms.
 
-## Gaps in the current code
+## Limits
 
-- The `isolate` and `agent` paths don't call the stage yet; only the `current` path does.
-- Judging runs in the controller process under the fuel meter, not yet in a pool cell.
-- A frozen test that two qualified, agreeing references both contradict (P-56 found one) only unqualifies that
-  export. There is no step yet that reports such a test as suspect before the implementation turn, so it can be
-  repaired under the ledger's revision rule. The [formula oracle](agent-loop.md#formula-oracle) is the agent path's check of frozen
-  expectations.
+- On the `current` and `isolate` paths the implementation turn still reads the uncorrected `tests.json` in its
+  workspace after a specification correction ([4b](#4b-acting-on-suspects-a-specification-correction)); the checks
+  use the corrected tests, so a kernel written to the old value fails them.
+- A correction takes only a finite number or a throw from the references; a suspect whose agreed outcome is
+  structured state is refused by `revise`, and the attempt fails.
+- The `begin` cell limits apply on `current` only; at commit on `isolate` and `agent` the judging cell uses the
+  defaults.
+- The [formula oracle](agent-loop.md#formula-oracle) is the agent path's other check of frozen expectations.

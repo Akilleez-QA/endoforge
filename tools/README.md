@@ -86,9 +86,9 @@ turns and ledger writes leave it.
 | Tool | What it does | Status |
 |---|---|---|
 | [job](job/README.md) | Checks a job manifest against six intake gates and fifteen invariants, renders the card the user confirms by its SHA-256, compiles every atom's prompt | Active; tested by `make lib-test` |
-| [conductor](conductor/README.md) | Resumable daemon: launches Codex and Claude Code workers in git worktrees, gates each landed change, runs its checks, freezes or relaunches it, escalates what it cannot decide | Active; tested by `make lib-test` with a stub worker |
+| [conductor](conductor/README.md) | Resumable daemon: launches Codex and Claude Code workers in git worktrees, gates each landed change, runs its checks, freezes or relaunches it, escalates what it cannot decide | Active; tested by `make lib-test` with a stub worker, including the adopt example, criteria-derived checks and the collect lock in a git worktree |
 | [atomizer](atomizer/README.md) | Validates and runs a DAG of atoms in bubblewrap sandboxes, verifies outputs against receipts, writes an append-only ledger | Active; tested by `make atomizer-test` |
-| [hillclimb](hillclimb/README.md) | Round-based improvement campaigns (render, critique, fix, apply, score) with a lessons ledger | Active; only the lessons ledger has a test |
+| [hillclimb](hillclimb/README.md) | Round-based improvement campaigns (render, critique, fix, apply, score) with a lessons ledger | Active; the lessons ledger, the default runner (`bin/run-atoms.mjs`, on the atomizer scheduler), `plan-review` and `scripts/hc-patch.sh` have tests |
 | [lib](lib/README.md) | Shared exit codes (75 busy, 78 stop), typed retry, file locks, headroom, exit files | Active; `errors.mjs` tested |
 | [job-locks](job-locks/README.md) | Prints the locked decisions of active jobs for a session-start hook | Active; tested by `make lib-test` |
 | [project-scheduler](project-scheduler/README.md) | Runs one cross-project batch of pieces plus a recombine step under token reservations | Works; no tests (GAP-EF-004) |
@@ -99,7 +99,7 @@ turns and ledger writes leave it.
 |---|---|---|
 | [asc](asc/README.md) | Pins the AssemblyScript compiler (0.28.20) that workcells load, with file digests and workcell limits | Active; used by every `isolate` and `agent` loop run |
 | [tscheck](tscheck/README.md) | Type checks TypeScript inside workcells with `tsrs`, a WebAssembly build of the TypeScript 7 compiler | Active, opt-in route; `make tscheck-test` |
-| [gate](gate/README.md) | Stand-alone freeze-then-check runner for one kernel directory, gates G1 to G7 | Used inside atomizer compose atoms; older and smaller than the in-loop gates G1 to G9; no tests (GAP-EF-003) |
+| [gate](gate/README.md) | Stand-alone freeze-then-check runner for one kernel directory; compiles `kernel.ts` and runs the core gates G1 to G9, structured state included | Used inside atomizer compose atoms; tested by `tools/test_gate_structured.mjs` (REQ-GATECLI-001), which no `make` target runs yet |
 | [kernel](kernel/README.md) | The WIT kernel contract, its exact-interface validator and a Wasmtime host with limits and a per-call broker | Standalone conformance lane; nothing in the loop imports it; `make kernel-test` |
 | [compatibility](compatibility/README.md) | TypeScript binding of the kernel contract and a probe for trusted reference reducers | Standalone slice; `make compatibility-test` |
 | [rust_lane](rust_lane/README.md) | Reproducible Rust build of one reference kernel as a WIT component | Standalone slice; `make rust-lane-test`, not in `make test` |
@@ -140,34 +140,16 @@ Run these from the repository root. `make check` runs the first seven.
 | [gen_data_dictionary.py](gen_data_dictionary.py) | Regenerates or checks `docs/data/data-dictionary.md` from the schemas | `python3 -I tools/gen_data_dictionary.py [--check]` | `make check` |
 | [gen_release_docs.py](gen_release_docs.py) | Writes the test report and version description from recorded runs | `python3 -I tools/gen_release_docs.py --name <suffix> --pr <n> --log LABEL=PATH ...` | None (GAP-EF-014) |
 | [x1_loop.py](x1_loop.py) | Ledger-bridge extension that admits, parks and commits promotion decisions for the candidate loop | loaded by `core/runtime/x1/loop.mjs` as `tools.x1_loop` | `make loop-test`, `make pipeline-test` |
-| [x1_ledger.py](x1_ledger.py) | Freezes the evaluator, registers candidates and decides promotions, JSON on stdin | `python3 -B -m tools.x1_ledger freeze\|register\|promote` | `make pipeline-test`, `make loop-test` |
+| [x1_ledger.py](x1_ledger.py) | Freezes the evaluator, registers candidates and decides promotions, JSON on stdin | `python3 -B -m tools.x1_ledger freeze\|register\|promote`; usage and exit 2 otherwise | `make pipeline-test`, `make loop-test` |
+| [compat_policy.py](compat_policy.py) | The compatibility lane's promotion rule (`COMPAT-TS-CHECK-RUN2-TESTS/v1`): freezes tests and compiler, records receipts, re-scores the route's output and decides | `python3 -B -m tools.compat_policy freeze\|register\|receipt\|promote` (JSON on stdin; usage and exit 2 otherwise) | `make isolate-test` (`core/runtime/test/gaps-compat.test.mjs`) |
 | [ledger_writer.py](ledger_writer.py) | Persistent ledger writer with a crash journal, served by the isolate ledger bridge; reads `ENDOFORGE_LEDGER_JOURNAL` and `ENDOFORGE_LEDGER_STATS` | `serve(process, extension)` | `make ledger-test` |
 | [dump_list.py](dump_list.py) | Registers a process's sheddable memory in the memguard dump list and sheds it on `SIGUSR2`; reads `ENDOFORGE_DUMP_LIST` and `XDG_STATE_HOME` | `register(name, priority, measure, shed)` | `make ledger-test` |
 | [constraint_store.py](constraint_store.py) | Hash-chained JSONL store for constraint records | `JsonlStore(path)` | `make core-test` |
 | [library_verify_promotion.py](library_verify_promotion.py) | Verifies promotion decisions against their ledger, one JSON result per row read from stdin | `python3 -B -m tools.library_verify_promotion` | `make library-test` |
-| [approved_atoms.py](approved_atoms.py) | Append-only JSONL registry of approved atoms with approval, retirement and consumers | `python3 -I tools/approved_atoms.py --store <file> add\|get\|consumers\|approve\|retire ...` | None (GAP-EF-007) |
+| [approved_atoms.py](approved_atoms.py) | Append-only JSONL registry of approved atoms with approval, retirement and consumers | `python3 -I tools/approved_atoms.py --store <file> add\|get\|consumers\|approve\|retire ...` | None (GAP-EF-005) |
 | [stage-rates.mjs](stage-rates.mjs) | Prints a stage-rates snapshot, once or every second | `node tools/stage-rates.mjs <snapshot.json> [--watch] [--json]` | `make isolate-test` |
 | [privacy-allowlist.json](privacy-allowlist.json) | Hash-pinned exceptions for `check-privacy.py` | data | `make check` |
 
 The tests for `dump_list.py` and `ledger_writer.py` are `tools/test_dump_list.py`, `tools/test_ledger_shed.py` and
-`tools/test_ledger_writer.py`.
-
-## Known defects
-
-Found while these READMEs were rewritten on 2026-11-08 and left unfixed here. Each tool's README repeats its own.
-
-- `tools/atomizer/lib/ledger.mjs` names a `LEDGER.md` schema that does not exist.
-- `tools/atomizer/bin/bench.mjs` defaults to `tools/atomizer/examples/C-005/atoms.json`, which does not exist; a bare
-  run records `ok=0`.
-- `conduct.mjs adopt` points to `tools/conductor/examples/` for its map file; that directory does not exist.
-- `node tools/atomizer/bin/testcheck.mjs` with no arguments crashes with `ERR_INVALID_ARG_TYPE` instead of printing
-  its usage.
-- `sh tools/hillclimb/scripts/hc-patch.sh` with no arguments fails with `$1: unbound variable` instead of its usage.
-- `python3 -B -m tools.x1_ledger` with no arguments crashes with `IndexError` instead of printing its usage.
-- `tools/job/lib/invariants.mjs` and `compile.mjs` cite `docs/PLAYBOOK-deadline-fanout.md`, which does not exist.
-- The Rust lane's component does not instantiate in `tools/kernel`'s Wasmtime `Workcell` (`table count too high at
-  2`); the lane's own tests run it through jco in Node instead.
-- hillclimb's default `campaign.runner` is `.local/bin/endoforge run` in the home directory, which this repository
-  does not ship.
-- hillclimb's `plan-review` refuses a campaign whose round directory or tool directory is outside
-  `policy.bindRoots` (default `.`, the current directory), so it must run from a directory that contains both.
+`tools/test_ledger_writer.py`; `tools/test_x1_labels.py` checks the nine-gate labels and usage of `x1_loop.py` and
+`x1_ledger.py`. All run in `make ledger-test`.

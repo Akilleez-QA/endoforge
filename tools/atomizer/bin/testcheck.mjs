@@ -6,6 +6,11 @@
 //        drop it when they disagree; keep-and-flag when the checker gave no answer; widen tol when they agree but differ by more than tol.
 import fs from 'node:fs';
 const [mode, ...f] = process.argv.slice(2);
+const ARITY = { strip: 2, merge: 4 };
+if (!(mode in ARITY) || f.length !== ARITY[mode]) {
+  console.error('usage: testcheck.mjs strip <tests.json> <cases.json>\n       testcheck.mjs merge <tests.json> <computed.json> <out.json> <report.json>');
+  process.exit(2);
+}
 const enc = (v) => (typeof v === 'number' ? (Number.isNaN(v) ? '"NaN"' : v === Infinity ? '1e999' : v === -Infinity ? '-1e999' : JSON.stringify(v)) : JSON.stringify(v));
 const encArgs = (a) => '[' + a.map(enc).join(',') + ']';
 const testText = (t) => '{' + Object.entries(t).map(([k, v]) => `${JSON.stringify(k)}:${k === 'args' ? encArgs(v) : enc(v)}`).join(',') + '}';
@@ -13,7 +18,7 @@ const tests = JSON.parse(fs.readFileSync(f[0], 'utf8'));
 if (mode === 'strip') {
   fs.writeFileSync(f[1], '[\n' + tests.map((t) => testText({ name: t.name, fn: t.fn, args: t.args })).join(',\n') + '\n]\n');
   console.log(`stripped ${tests.length} cases`);
-} else if (mode === 'merge') {
+} else {
   let computed = []; try { computed = JSON.parse(fs.readFileSync(f[1], 'utf8')); } catch {}
   const byName = new Map((Array.isArray(computed) ? computed : []).map((c) => [String(c.name), c.value]));
   const kept = [], report = [];
@@ -39,4 +44,4 @@ if (mode === 'strip') {
   const s = report.reduce((m, r) => { m[r.action] = (m[r.action] ?? 0) + 1; return m; }, {});
   fs.writeFileSync(f[3], JSON.stringify({ summary: s, total: tests.length, kept: kept.length, report }, null, 1));
   console.log(JSON.stringify(s));
-} else { console.error('usage: testcheck.mjs strip|merge ...'); process.exit(2); }
+}

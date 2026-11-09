@@ -17,8 +17,10 @@ for every input.
   [P-52](../../../experiments/P-52-real-gates/RESULT.md) measured this by seeding faults into promoted candidates: with
   P-52's gates, 280 of 7,883 broken candidates (3.6%) still passed.
 - **The independent checks are opt-in.** Evaluator synthesis (a check written by a model that has seen no candidate)
-  and the formula oracle add evidence the coding agent did not produce. Both are off by default, and synthesis runs
-  only on the default loop path. The oracle missed its adoption bars in
+  and the formula oracle add evidence the coding agent did not produce. Both are off by default. Synthesis runs on every loop path
+  when turned on and judges in a bounded worker thread; when two of its references agree against a frozen test, the
+  test is corrected as a ledger revision before any code. On the Codex-driven `current` and `isolate` paths the
+  implementation turn still reads the uncorrected test file, though every check uses the corrected one. The oracle missed its adoption bars in
   [P-71](../../../experiments/P-71-oracle-round2/RESULT.md).
 - **A promotion is not an approval.** It is not an engineering, safety or regulatory sign-off. Before you rely on
   promoted code for such a decision, check it against an authoritative source. EndoForge is not safety-critical
@@ -27,7 +29,9 @@ for every input.
 ## What the candidate form covers
 
 The nine gates check one candidate form: a WebAssembly kernel plus `glue.json`, which declares each input's and
-output's kind and unit. The stage prompts ask for the kernel in AssemblyScript. Code that does not fit that split goes
+output's kind and unit. Inputs and outputs are scalars or structured state (records, lists and text in a declared memory
+layout), so a kernel can take state and an event and return the next state. The ledger's evidence re-check at commit
+compares structured values field by field against the declared layout. The stage prompts ask for the kernel in AssemblyScript. Code that does not fit that split goes
 through the TypeScript compatibility lane, where a WebAssembly build of the TypeScript 7 checker type checks it and the
 emitted JavaScript runs twice in a contained V8 process. That lane has its own checks
 ([contained JavaScript](../../../core/runtime/README.md#contained-javascript)); the G1–G9 gates do not apply to it.

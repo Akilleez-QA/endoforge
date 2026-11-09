@@ -2,7 +2,10 @@
 
 `gate.mjs` checks one AssemblyScript kernel against a contract and tests that were frozen before the code existed. It
 is a stand-alone command: point it at a directory, and it either says the kernel is promotable or names the first gate
-that failed. The [atomizer](../atomizer/README.md)'s compose atoms use it to check the kernel they assemble.
+that failed. It compiles `kernel.ts` and hands the directory to the candidate loop's gates (`runGates` in
+[core/runtime/x1/gates.mjs](../../core/runtime/x1/gates.mjs)), so a kernel on disk is judged exactly as the loop
+judges it, structured state included. The [atomizer](../atomizer/README.md)'s compose atoms use it to check the kernel
+they assemble.
 
 A kernel here is the application-logic part of a candidate: a pure WebAssembly module plus `glue.json`, the
 declarative description of its arguments, results and refusals.
@@ -10,23 +13,35 @@ declarative description of its arguments, results and refusals.
 ## How it works
 
 `freeze` hashes `CONTRACT.md` and `tests.json` into `frozen.sha256`, and refuses if `kernel.ts` already exists, so the
-tests are fixed before any code. `run` then checks, in this order, stopping at the first gate that cannot continue:
+tests are fixed before any code. `run` compiles `kernel.ts` with the core compiler's flags (`asc --runtime stub -O3
+--noAssert --maximumMemory 1024`, plus `--textFile kernel.wat`), then runs the nine core gates on `CONTRACT.md`,
+`tests.json`, `frozen.sha256`, `kernel.ts`, `glue.json` and the compiled module, stopping at the first gate that cannot
+continue:
 
 | Gate | Passes when |
 |---|---|
-| `G1_frozen` | `CONTRACT.md` and `tests.json` still match `frozen.sha256` |
-| `G2_compiles` | `kernel.ts` compiles with `asc --runtime stub -O3 --noAssert`, and the module imports nothing but `env.abort` |
+| `G1_frozen` | `CONTRACT.md` and `tests.json` still match `frozen.sha256`, and every test asserts something (no empty `tests.json`, no `tol` above 1% of the expected value) |
+| `G2_compiles` | `kernel.ts` compiles, and the module imports nothing but `env.abort` |
 | `G3_exports` | Every `fn` named in `tests.json` is exported |
-| `G4_tests` | Each test's `expect` (number within `tol`, boolean or string) or `expectError` holds |
-| `G6_bounded` | No call takes over 2000 ms |
+| `G4_tests` | Each test's `expect` (numbers within `tol`, booleans, strings, and records and lists compared field by field) or `expectError` (a trap) holds |
+| `G6_bounded` | No call runs out of fuel or stack |
 | `G5_deterministic` | A second fresh instance, called in the same order, gives the same outputs |
-| `G7_glue` | `glue.json` matches the closed [glue.schema.json](glue.schema.json), its `id` is the folder name, and it describes exactly the module's exports, arities, result codes and traps |
+| `G7_glue` | `glue.json` matches the closed [glue.schema.json](glue.schema.json), its `id` is the folder name, and it describes exactly the module's exports, arities, buffer pointers, result codes and traps |
+| `G9_units` | Units in the glue agree with the kernel and the test outputs |
+| `G8_nonfinite` | Non-finite probes of number arguments and number fields give what the contract says |
 
 It writes `result.json` and prints the gate summary. It exits 0 only when every gate passes (`promotable: true`).
 
-This is the older, smaller gate set. The candidate loop in [core/runtime](../../core/runtime/README.md) runs its own
-gates G1 to G9 inside workcells (`core/runtime/x1/gates.mjs`), which add weak-test detection, a fuel meter, non-finite
-probes and a units check. Use those for the loop; use this for a kernel directory on disk.
+[glue.schema.json](glue.schema.json) is the core schema ([core/runtime/x1/glue.schema.json](../../core/runtime/x1/glue.schema.json)),
+so glue can declare `record`, `list` and `text` values with `fields`, `items`, `max` and `maxBytes`. A structured
+argument or result is passed through linear memory in the declared layout
+([structured state](../../docs/architecture/gates.md#structured-state)): the gate writes the input state, passes one
+pointer per structured argument and one for a structured result, refuses a kernel that writes into its input, and
+decodes the output state for comparison. A to-do reducer `reduce(state, event)` over a record holding a list of items
+gates here as it does in the loop.
+
+The loop runs the same gates inside workcells on candidate files held in memory; use this for a kernel directory on
+disk.
 
 ## Use it
 
@@ -74,9 +89,11 @@ $ node $REPO/tools/gate/gate.mjs run .
   "G2_compiles": { "ok": true, "wasmBytes": 103, "wasmSha256": "1b6a1f43…" },
   "G3_exports": { "ok": true, "exports": [ "shippingCents" ] },
   "G4_tests": { "ok": true, "passed": 4, "total": 4 },
-  "G6_bounded": { "ok": true, "maxMs": 0.045124 },
+  "G6_bounded": { "ok": true, "maxMs": 0.108772, "fuelUsed": 104 },
   "G5_deterministic": { "ok": true },
-  "G7_glue": { "ok": true }
+  "G7_glue": { "ok": true },
+  "G9_units": { "ok": true, "checks": { … } },
+  "G8_nonfinite": { "ok": true, "probes": 0 }
  }
 }
 ```
@@ -108,9 +125,12 @@ The atomizer finds this tool through `toolchain.gate` in [policy.json](../atomiz
 
 ## Limits
 
-- No weak-test check: an empty `tests.json` frozen before the code passes G4. The in-loop G1 refuses tests that assert
-  nothing or have a tolerance above 1% of the expected value.
-- G6 measures wall time per call, not fuel; G5 repeats the same call order.
-- No `make` target runs it (GAP-EF-003).
+- G5 repeats the same call order.
+- `glue.schema.json` is a copy of the core schema, kept because the atomizer puts it in worker prompts;
+  [test_gate_structured.mjs](../test_gate_structured.mjs) fails if the two differ.
+- That test runs the CLI end to end. When the pinned `asc` is not installed it uses a fixture compiler that returns
+  prebuilt modules for its kernels. No `make` target runs it yet: run `node --test tools/test_gate_structured.mjs`.
+- The atomizer's compose prompts in [policy.json](../atomizer/policy.json) still say the gate runs "G1-G7"; it runs
+  the nine core gates.
 
-Engineering record: component C-30, GAP-EF-003.
+Engineering record: component C-30, REQ-GATECLI-001.

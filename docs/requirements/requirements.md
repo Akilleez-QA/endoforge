@@ -3,10 +3,10 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SRS |
-| Version | 2.0 |
+| Version | 2.2 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
-| Date | 2026-11-08 |
+| Date | 2026-11-09 |
 | Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
 | Applies to | endoforge main at baseline commit |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
@@ -23,9 +23,10 @@ work, and it does not qualify live model services: tests use synthetic inputs an
 
 ### 1.2 System overview
 
-EndoForge turns a short need into a small numeric WebAssembly kernel. A model writes a contract and tests, the
-supervisor freezes them in a hash-chained ledger, the model writes the kernel, and a frozen evaluator runs gates inside
-V8 workcells. The [design description](../architecture/architecture.md) lists the components. The Python core holds the
+EndoForge is where coding agents build software as a runtime operation. For a need, an agent writes a contract and
+tests, the supervisor freezes them in a hash-chained ledger, the agent writes the code (today in the kernel candidate
+form: a WebAssembly module taking state and events in and giving state out as data, plus declarative glue), and a
+frozen evaluator runs gates inside V8 workcells. The [design description](../architecture/architecture.md) lists the components. The Python core holds the
 lifecycle model, the ledger and constraint records; `core/engine/` holds the evaluator and gates; `core/runtime/`
 holds the workcell pool, the X1 candidate loop and the model-access controls; `tools/` holds workflow tools and
 repository scripts.
@@ -185,6 +186,76 @@ The library shall key promoted kernels by a canonical contract key that ignores 
 
 - Rationale: A need that a promoted kernel already satisfies should skip implementation.
 - Derivation: `core/library/library.mjs`, `core/library/key.mjs`, `core/library/discriminate.mjs`, `core/library/mutants.mjs`, `tools/library_verify_promotion.py`
+- Allocated to: SDD §4 C-05 Library
+- Verification: T — `make library-test`
+- Status: Baselined
+
+### REQ-LIB-002 — Library composition
+
+`library.compose` shall link a union of entries, output-to-input pipelines and argument adapters into one module, serve it only after the need's frozen tests pass on it and journal it against every part, refuse a wrong composition, and let `serve` build a union when no single entry holds the capability.
+
+- Rationale: A need that two promoted capabilities cover together should not need a new model turn.
+- Derivation: `core/library/library.mjs`, `core/library/compose.mjs`, `core/library/link.mjs`
+- Allocated to: SDD §4 C-05 Library
+- Verification: T — `make library-test`
+- Status: Baselined
+
+### REQ-LIB-003 — Semantic retrieval
+
+With `retrieval: 'semantic'` (default `key`), the library shall rank entries by offline, deterministic similarity of normalized contract text before the key match, and let a need with no capability block adopt the capability of an entry scoring at least 0.4.
+
+- Rationale: Generated needs often carry no capability block; text similarity finds the candidate entry without a model call.
+- Derivation: `core/library/library.mjs`, `core/library/key.mjs`
+- Allocated to: SDD §4 C-05 Library
+- Verification: T — `make library-test`
+- Status: Baselined
+
+### REQ-LIB-004 — Tenant and lineage scopes
+
+The library shall hide another tenant's entries, miss with `permission_denied` when the caller's lineage is outside an entry's lineage, record an entry's scope from the admit row or the admitting principal, and journal every grant and ungrant.
+
+- Rationale: Entries admitted for one tenant or lineage must not be reused by another without a recorded grant.
+- Derivation: `core/library/library.mjs`, `core/library/scope.mjs`
+- Allocated to: SDD §4 C-05 Library
+- Verification: T — `make library-test`
+- Status: Baselined
+
+### REQ-LIB-005 — Reclaiming duplicates
+
+`library.reclaim` shall keep one entry per behaviour within a scope, free the others in memory and on disk, and compact the journal behind a `library_compacted` record that names the previous tip.
+
+- Rationale: Duplicate entries cost memory and journal size without adding behaviour.
+- Derivation: `core/library/library.mjs`, `core/library/journal.mjs`
+- Allocated to: SDD §4 C-05 Library
+- Verification: T — `make library-test`
+- Status: Baselined
+
+### REQ-LIB-006 — Refusals become counterexamples
+
+A refused reuse shall record its counterexamples so that a later lookup whose tests that entry is known to fail, or an identical refused need, misses with `counterexample` before any cell runs, across restarts.
+
+- Rationale: A refusal is evidence; spending a cell on the same refusal again is waste.
+- Derivation: `core/library/library.mjs`
+- Allocated to: SDD §4 C-05 Library
+- Verification: T — `make library-test`
+- Status: Baselined
+
+### REQ-LIB-007 — Per-environment qualification
+
+The library shall record qualification per environment (Node, V8, platform, architecture), serve an entry only where it is qualified, and keep an entry qualified elsewhere when requalification fails in a new environment.
+
+- Rationale: A failure on one runtime says nothing about another.
+- Derivation: `core/library/library.mjs`
+- Allocated to: SDD §4 C-05 Library
+- Verification: T — `make library-test`
+- Status: Baselined
+
+### REQ-LIB-008 — Composition across separate memories
+
+`library.compose` shall link parts that each use linear memory or a table, giving each part its own bounds-checked region of the composed module's memory and its own table, copy structured values between parts only through layout-checked wrappers, and refuse a plan whose parts do not fit the 64 MiB workcell memory, whose stage layouts disagree, or that passes a buffer address as a scalar.
+
+- Rationale: Kernels with state live in linear memory; composition must not be limited to at most one such part.
+- Derivation: `core/library/link.mjs`, `core/library/compose.mjs`, `core/library/mutants.mjs`
 - Allocated to: SDD §4 C-05 Library
 - Verification: T — `make library-test`
 - Status: Baselined
@@ -403,6 +474,66 @@ The universal gates shall read memory and usage from outside the guest, run two 
 - Verification: T — `make pipeline-test`
 - Status: Baselined
 
+### REQ-X1-005 — Structured state at the kernel boundary
+
+The X1 gates shall pass glue kinds `record`, `list` and `text` through host-owned linear-memory buffers in the declared little-endian, naturally aligned layout, compare structured results structurally, refuse a kernel that writes into an input buffer or a value that does not fit its layout without counting it as a trap, and keep scalar kernels' behaviour.
+
+- Rationale: Edition 3 §5 kernels take state and events in and give state out as data.
+- Derivation: `core/runtime/x1/measure.mjs`, `core/runtime/x1/gates.mjs`, `core/runtime/x1/glue.schema.json`, `core/runtime/x1/contract.mjs`, `core/runtime/x1/dimensions.mjs`, `core/runtime/x1/agent.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-X1-006 — Independent re-run at commit
+
+The commit shall re-run the gates on the committed candidate whenever the cell report claims a pass, and reject the receipt when the re-run's verdict or test outcomes disagree with the report.
+
+- Rationale: A consistent wrong report from code in the cell must not promote (P-50).
+- Derivation: `core/runtime/x1/loop.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-X1-007 — Frozen implementation lists cover the loop
+
+The frozen implementation lists shall include every x1 file the host and the cell import, so that a frozen tree whose `dimensions.mjs` or `generator.mjs` differs from the running code never passes.
+
+- Rationale: The drift check must cover the code that decides G9 and generation.
+- Derivation: `core/runtime/x1/host.mjs`, `core/runtime/x1/loop-port.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-X1-008 — Nine-gate labels
+
+The X1 ledger tools shall write the labels `X1 G1-G9` (task and frozen residual) and `X1-G1-G9/v2` (decision policy) into new records, verify and promote records with the older labels unchanged, and print `tools.x1_ledger` usage with exit 2 on missing, unknown or extra arguments.
+
+- Rationale: Labels must match the nine-gate rule without rewriting stored identities.
+- Derivation: `tools/x1_loop.py`, `tools/x1_ledger.py`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make ledger-test`
+- Status: Baselined
+
+### REQ-X1-009 — Structured comparison at commit
+
+The commit's evidence re-check shall compare a recorded structured result with its frozen expectation by structure: records by field name with exactly the frozen fields, lists by length and item, text by its bytes within `maxBytes`, each leaf against the kind the candidate's glue declares, and the frozen `tol` on every numeric leaf.
+
+- Rationale: A structured-state kernel must promote through the in-cell commit whatever order the frozen test lists record fields in.
+- Derivation: `tools/x1_loop.py`, `core/runtime/x1/loop.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-X1-010 — Python drift list and receipt label
+
+The X1 commit tools shall name, in the bridge's drift check (`IMPLEMENTATION_FILES` in `tools/x1_loop.py`), every frozen x1 implementation file that the host and cell lists name, and write the nine-gate label `X1 G1-G9` as the receipt's `acceptance_boundary` (`core/runtime/x1/ledger.mjs`).
+
+- Rationale: The commit must refuse drift in any file that decides a verdict, and labels must match the nine-gate rule.
+- Derivation: `tools/x1_loop.py`, `core/runtime/x1/ledger.mjs`, `core/runtime/x1/host.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
 ### REQ-LOOP-001 — Agent loop in the cell
 
 The agent loop shall run model turns and checks in one job, return a failed check to the next turn, stop at turn, token and deadline limits as a recorded failure without promotion, keep the model out of the frozen files and outside the overlay, and pass only reply text and usage into the cell and its records.
@@ -441,6 +572,56 @@ The default loop cell shall be a separate process that cannot read the environme
 - Derivation: `core/runtime/x1/loop.mjs`, `core/runtime/x1/loop-port.mjs`
 - Allocated to: SDD §4 C-07 X1 candidate loop
 - Verification: T — `make loop-test`
+- Status: Baselined
+
+### REQ-LOOP-005 — Library and synthesis on every path
+
+The `isolate` and `agent` paths shall consult a supplied library after the freeze and skip implementation on a pass, and with `ENDOFORGE_SYNTH=1` freeze `synth/evaluator.json` into the ledger bundle before any code exists and refuse at commit what that evaluator refuses.
+
+- Rationale: Reuse and the candidate-blind evaluator apply whichever path runs the need.
+- Derivation: `core/runtime/x1/loop.mjs`, `core/runtime/x1/loop-port.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-LOOP-006 — Per-stage token budget
+
+On the agent path, `limits.maxTokens` shall bound each stage (specification, implementation) separately, in both wait modes.
+
+- Rationale: P-56 sized budgets per stage; one shared budget let a long specification starve implementation.
+- Derivation: `core/runtime/x1/loop.mjs`, `core/runtime/x1/loop-port.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`, `make loop-test`
+- Status: Baselined
+
+### REQ-LOOP-007 — Suspect tests become a specification correction
+
+When evaluator synthesis reports suspect frozen tests, every loop path shall, before any candidate, record the report in the ledger as an `admitted_input` and freeze a revision of the latest frozen evaluator with reason `specification_correction` whose tests take the references' agreed outcome, then judge the candidate against the revised tests.
+
+- Rationale: A frozen test that two qualified references contradict is likely wrong (P-56); correcting it under the ledger's revision rule before code costs no failed candidate.
+- Derivation: `tools/x1_loop.py`, `core/runtime/x1/loop.mjs`, `core/runtime/x1/pipeline.mjs`, `core/runtime/x1/ledger.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-LOOP-008 — Compatibility promotion on every path
+
+When `runNeed` is given a compatibility route with `freeze` and `promote`, every loop path shall freeze the specification's tests into `compatibility.sqlite` before any candidate and decide the TypeScript candidate with `route.promote` under policy `COMPAT-TS-CHECK-RUN2-TESTS/v1`, returning that decision as `compatibility` without changing the kernel decision.
+
+- Rationale: The compatibility lane has its own promotion rule; a pipeline that only reported it left the decision to the caller.
+- Derivation: `core/runtime/x1/loop.mjs`, `core/runtime/x1/pipeline.mjs`, `core/runtime/contained/promotion.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-LOOP-009 — Caller principal reaches the library
+
+Every loop path shall pass the `principal` given to `runNeed` to `library.serve`.
+
+- Rationale: Tenant and lineage scopes (REQ-LIB-004) must apply to the caller of the pipeline, not to the principal the library was opened with.
+- Derivation: `core/runtime/x1/loop.mjs`, `core/runtime/x1/pipeline.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
 - Status: Baselined
 
 ### REQ-GEN-001 — Two-stage generation with freeze
@@ -523,6 +704,16 @@ Generation prompt modes shall add exactly their own rules: terse turns default t
 - Verification: T — `make pipeline-test`
 - Status: Baselined
 
+### REQ-GEN-009 — Relative Codex command
+
+The generator shall resolve a relative `ENDOFORGE_CODEX_CMD` path, or a `./` or `../` entry in its JSON argv, against the caller's working directory before running Codex in `candidate/`, and leave bare command names to `PATH`.
+
+- Rationale: Generation runs in a different directory from the caller.
+- Derivation: `core/runtime/x1/generator.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
 ### REQ-PROMOTE-001 — Local promotion
 
 Local promotion shall issue a persisted qualification decision only for the exact candidate, frozen oracle, verified receipt hash and chain with two complete passing pool rounds and all nine X1 gates (G1–G9) present and passing, and refuse on any mismatch.
@@ -551,6 +742,36 @@ With `ENDOFORGE_SYNTH=1` (default off), the X1 path shall synthesize an evaluato
 - Derivation: `core/runtime/x1/synth/stage.mjs`, `core/runtime/x1/synth/qualify.mjs`, `core/runtime/x1/synth/vectors.mjs`, `core/runtime/x1/synth/sandbox.mjs`
 - Allocated to: SDD §4 C-08 Evaluator synthesis
 - Verification: T — `make pipeline-test`
+- Status: Baselined
+
+### REQ-SYNTH-002 — Judging in a cell
+
+`evaluate` shall judge each candidate against the frozen synthesized evaluator in a separate worker thread with heap and stack limits, an empty environment and a deadline, and refuse the candidate when that cell times out, crashes or runs out of memory.
+
+- Rationale: Judging runs candidate code; it belongs in a bounded cell, not on the controller thread.
+- Derivation: `core/runtime/x1/synth/cell-host.mjs`, `core/runtime/x1/synth/cell.mjs`, `core/runtime/x1/synth/judge.mjs`, `core/runtime/x1/synth/stage.mjs`
+- Allocated to: SDD §4 C-08 Evaluator synthesis
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-SYNTH-003 — Suspect frozen tests
+
+At width 2, `finish` shall report a frozen test as suspect, before implementation, only when both references pass every meta-gate except M3, contradict the same tests the same way and reproduce each other's vectors, writing `synth/suspect.json` and calling the caller's `suspect` hook.
+
+- Rationale: A frozen test two independent qualified references both contradict is likely wrong (P-56) and should be revised before code.
+- Derivation: `core/runtime/x1/synth/stage.mjs`
+- Allocated to: SDD §4 C-08 Evaluator synthesis
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-SYNTH-004 — Judging in a cell at commit
+
+On the `isolate` and `agent` paths, the commit shall judge the candidate against the frozen synthesized evaluator with `judgeInCell`, in a bounded worker thread separate from the controller thread.
+
+- Rationale: Judging runs candidate code; every path must keep it off the controller thread.
+- Derivation: `core/runtime/x1/loop.mjs`, `core/runtime/x1/synth/cell-host.mjs`
+- Allocated to: SDD §4 C-08 Evaluator synthesis
+- Verification: T — `make isolate-test`
 - Status: Baselined
 
 ### REQ-ORACLE-001 — Formula oracle
@@ -595,6 +816,16 @@ The warm transport shall spawn one process per lane, send only new turns, refuse
 - Verification: T — `make loop-test`
 - Status: Baselined
 
+### REQ-TRANSPORT-002 — Transport defaults
+
+The Claude transports shall pass `--model sonnet` unless the caller names a model, report `testDouble: true` when the command is not named `claude` unless overridden, and, in the warm transport, admit every turn through a governor passed per instance or by the caller.
+
+- Rationale: A transport must not launch with an undefined model, mislabel a stand-in, or ignore the caller's usage governor.
+- Derivation: `core/runtime/x1/transports.mjs`
+- Allocated to: SDD §4 C-09 Model access
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
 ### REQ-POOL-001 — Codex agent pool
 
 The agent pool shall run the Codex binary named by `CODEX_POOL_BIN`, else the `codex` found on `PATH` other than itself, exit 2 when none exists, pass a spawn-rate refusal through as exit 75 without failover, deliver piped and file prompts across a rate-limit failover, and cool an account with a multi-day usage cap until its reset.
@@ -633,6 +864,16 @@ The contained runner shall run guest JavaScript with only an allowlist of global
 
 - Rationale: Emitted JavaScript runs with no ambient authority and cannot hurt its neighbours.
 - Derivation: `core/runtime/contained/runner.mjs`, `core/runtime/contained/cohort.cjs`, `core/runtime/contained/cell.cjs`, `core/runtime/contained/guest.js`, `core/runtime/contained/cohort-set.mjs`
+- Allocated to: SDD §4 C-10 Contained JavaScript
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-CONTAINED-002 — Compatibility-lane promotion
+
+The compatibility lane shall promote a TypeScript candidate under policy `COMPAT-TS-CHECK-RUN2-TESTS/v1` only when its tests equal the tests frozen before it, the pinned compiler matches, the type check was clean, the two runs agreed and the policy's own re-score of the recorded output passes every frozen test, refuse forged or tampered evidence, and return `inconclusive` for an unknown route outcome.
+
+- Rationale: The lane needs its own promotion rule; a report alone decides nothing.
+- Derivation: `core/runtime/contained/promotion.mjs`, `tools/compat_policy.py`, `tools/tscheck/contained-route.mjs`
 - Allocated to: SDD §4 C-10 Contained JavaScript
 - Verification: T — `make isolate-test`
 - Status: Baselined
@@ -839,6 +1080,16 @@ The atomizer trace shall be off unless enabled, account for its own overhead, re
 - Verification: T — `make atomizer-test`
 - Status: Baselined
 
+### REQ-ATOM-004 — Atomizer references and usage
+
+The atomizer shall ship `LEDGER.md` listing exactly the events its code emits, default `bench.mjs` to an atoms file in the repository and refuse a missing one with exit 2, and print `testcheck.mjs` usage with exit 2 when arguments are missing.
+
+- Rationale: A tool must not point at files that do not exist or crash on a bare run.
+- Derivation: `tools/atomizer/LEDGER.md`, `tools/atomizer/bin/bench.mjs`, `tools/atomizer/bin/testcheck.mjs`
+- Allocated to: SDD §4 C-22 Atomizer
+- Verification: T — `make atomizer-test`
+- Status: Baselined
+
 ### REQ-COND-001 — Conductor fails closed on unknown state
 
 The conductor shall treat an empty or garbage exit file, a vanished process or a failing `systemctl` as unknown, never as exit 0, stop on an unreadable state file without rewriting it, exit 78 on torn state without restart, and write state atomically with a sync before rename.
@@ -859,12 +1110,42 @@ The conductor shall compare a measured outcome with its target and tolerance, re
 - Verification: T — `make test` (`lib-test`)
 - Status: Baselined
 
+### REQ-COND-003 — Conductor checks, worktree lock and worker tools
+
+The conductor shall run, for an atom without `conductor.checks`, the runnable checks of the criteria it lists, keep its collect lock in the repository's real git directory, and launch Claude workers allowed `make` and `python3` unless `conductor.claudeTools` replaces the list.
+
+- Rationale: An atom must never be frozen with its own acceptance checks unrun, and a worker must be able to run its tests (G29–G31).
+- Derivation: `tools/conductor/lib/checks.mjs`, `tools/conductor/lib/collect.mjs`, `tools/conductor/lib/launch.mjs`, `tools/hillclimb/lib/fanout.mjs`
+- Allocated to: SDD §4 C-23 Conductor and job intake
+- Verification: T — `make test` (`lib-test`)
+- Status: Baselined
+
+### REQ-COND-004 — Adopt example
+
+`conduct adopt` shall name an example map directory that exists and whose shipped map adopts the shipped old job, with running lanes tracked, collected ones checked and others keeping their status.
+
+- Rationale: The adopt path needs a working example.
+- Derivation: `tools/conductor/lib/adopt.mjs`, `tools/conductor/examples/fanout-loop.adopt-map.json`
+- Allocated to: SDD §4 C-23 Conductor and job intake
+- Verification: T — `make test` (`lib-test`)
+- Status: Baselined
+
 ### REQ-JOB-001 — Job event log
 
 The job event log shall lose only a torn last line and say the log is incomplete, keep the next event whole, report a log with nothing readable as unknown, and sync an event before reporting it written.
 
 - Rationale: Job status is derived from a durable log.
 - Derivation: `tools/job/lib/events.mjs`
+- Allocated to: SDD §4 C-23 Conductor and job intake
+- Verification: T — `make test` (`lib-test`)
+- Status: Baselined
+
+### REQ-JOB-002 — Workflow tools cite existing files
+
+The job, conductor, atomizer and hillclimb sources shall cite only repository files that exist.
+
+- Rationale: A citation to a missing playbook misleads the reader.
+- Derivation: `tools/job/lib/compile.mjs`, `tools/job/lib/invariants.mjs`
 - Allocated to: SDD §4 C-23 Conductor and job intake
 - Verification: T — `make test` (`lib-test`)
 - Status: Baselined
@@ -897,6 +1178,26 @@ Hillclimb shall count lesson recurrences, reopen a closed lesson that recurs, wr
 - Derivation: `tools/hillclimb/lib/lessons.mjs`
 - Allocated to: SDD §4 C-24 Hillclimb
 - Verification: T — `make test` (`lib-test`)
+- Status: Baselined
+
+### REQ-HILL-002 — Hillclimb default runner
+
+Hillclimb shall default its campaign runner to `bin/run-atoms.mjs` in this repository, mapping the runner contract onto the atomizer scheduler with the campaign policy, run `plan-review` from an unrelated directory, and have `hc-patch.sh` print its usage and exit 2 without its arguments.
+
+- Rationale: A default must not depend on a launcher outside the repository.
+- Derivation: `tools/hillclimb/lib/runner.mjs`, `tools/hillclimb/bin/run-atoms.mjs`, `tools/hillclimb/bin/hillclimb.mjs`, `tools/hillclimb/scripts/hc-patch.sh`
+- Allocated to: SDD §4 C-24 Hillclimb
+- Verification: T — `make test` (`lib-test`)
+- Status: Baselined
+
+### REQ-GATECLI-001 — Glue gate CLI uses the core gates
+
+`tools/gate/gate.mjs run` shall compile `kernel.ts` with the core compiler flags and judge the kernel with the core `runGates`, so a kernel on disk gets the same nine gates and structured state as the loop, with a `glue.schema.json` equal to the core schema.
+
+- Rationale: Two gate implementations drift; the atomizer's stand-alone check must agree with the loop.
+- Derivation: `tools/gate/gate.mjs`, `tools/gate/glue.schema.json`
+- Allocated to: SDD §4 C-30 Glue gate CLI and project scheduler
+- Verification: T — `node --test tools/test_gate_structured.mjs` (no `make` target runs it yet; `tests/test_reachability.py` reports it)
 - Status: Baselined
 
 ### REQ-CONSTRAINT-001 — Constraint records
@@ -941,12 +1242,12 @@ The checkpoint tool shall round-trip a campaign through an `age`-encrypted archi
 
 ### REQ-RUST-001 — Rust lane
 
-The Rust lane shall build reproducibly with the pinned toolchain, refuse a toolchain mismatch before building, and match the P-06 frozen equivalence.
+The Rust lane shall build reproducibly with the pinned toolchain, refuse a toolchain mismatch before building, match the P-06 frozen equivalence, and run its component in the `tools/kernel` Wasmtime workcell.
 
 - Rationale: A second language lane under the same acceptance.
-- Derivation: `tools/rust_lane/build.py`, `tools/rust_lane/equivalence.mjs`
+- Derivation: `tools/rust_lane/build.py`, `tools/rust_lane/equivalence.mjs`, `tools/rust_lane/package.json`
 - Allocated to: SDD §4 C-26 Rust lane
-- Verification: T — `make rust-lane-test` (outside `make test` and CI; needs the pinned Rust toolchain)
+- Verification: T — `make rust-lane-test` (outside `make test`; run by the CI job `rust-lane`; needs the pinned Rust toolchain)
 - Status: Baselined
 
 ## 10. Repository checks
@@ -1011,6 +1312,26 @@ Repository checks shall validate local Markdown link targets and source digests.
 - Verification: T — `make core-test`
 - Status: Baselined
 
+### REQ-REPO-006 — Secret scan in CI
+
+CI shall run a Gitleaks scan of the full history with a checksum-verified binary and fail on any finding.
+
+- Rationale: Credentials must not reach a public repository unnoticed.
+- Derivation: `.github/workflows/ci.yml`
+- Allocated to: SDD §4 C-27 Repository checks
+- Verification: I — `.github/workflows/ci.yml` job `secret-scan`
+- Status: Baselined
+
+### REQ-REPO-007 — Make targets install what their tests import
+
+`make isolate-test` shall depend on `tscheck-setup` and `loop-setup` and `make rust-lane-test` on `rust-lane-setup`, with CI running `make rust-lane-test` on the pinned Rust toolchain after `make tools`, in a job that is not allowed to fail silently.
+
+- Rationale: `make test` must work on a fresh clone, and the Rust lane must be checked on every push (formerly GAP-EF-013).
+- Derivation: `Makefile`, `.github/workflows/ci.yml`
+- Allocated to: SDD §4 C-27 Repository checks
+- Verification: T — `make isolate-test`; I — `.github/workflows/ci.yml` job `rust-lane`
+- Status: Baselined
+
 ## 11. Untested behaviour (requirement gaps)
 
 These behaviours exist in the code at the baseline but no test in `make test` checks them. They are not
@@ -1020,7 +1341,6 @@ requirements until a test exists. Numbering: `GAP-EF-NNN`, never reused.
 |---|---|---|---|
 | GAP-EF-001 | Delegated cgroup v2 enforcement (`memory.max`, `memory.swap.max=0`, `cpu.max`, `pids.max`) in process mode | `core/runtime/isolate-cgroup.mjs` | The test needs a delegated systemd scope and skips without one; not measured locally or in CI |
 | GAP-EF-002 | Factory runtime: job specs, scheduler, recovery, egress and WebAssembly runner | `tools/factory_runtime/` | No test file exists |
-| GAP-EF-003 | Glue gate CLI | `tools/gate/gate.mjs` | No test file exists |
 | GAP-EF-004 | Project scheduler | `tools/project-scheduler/scheduler.mjs` | No test file exists |
 | GAP-EF-005 | Approved-atoms helper | `tools/approved_atoms.py` | No test file or caller found |
 | GAP-EF-006 | Campaign repair and transfer, Wasmtime qualification and stage resume | `tools/factory_campaign/repair.py`, `tools/factory_portability/campaign_transfer.py`, `tools/factory_portability/qualify_wasmtime.py`, `tools/factory_portability/resume_stage.py` | No test file exists |
@@ -1028,10 +1348,16 @@ requirements until a test exists. Numbering: `GAP-EF-NNN`, never reused.
 | GAP-EF-008 | Atomizer commands other than schedule, verify and bench (for example `atomize`, `fanout`, `direct`, `report`, `cutover`) | `tools/atomizer/bin/` | No test runs them |
 | GAP-EF-009 | Hillclimb fan-out, plan and scoreboard | `tools/hillclimb/lib/fanout.mjs`, `tools/hillclimb/lib/plan.mjs`, `tools/hillclimb/lib/scoreboard.mjs` | Only the lessons ledger is tested |
 | GAP-EF-010 | Job kinds, card compilation and source loading | `tools/job/kinds/`, `tools/job/lib/compile.mjs`, `tools/job/lib/card.mjs` | Exercised only indirectly through conductor fixtures; no direct assertions |
-| GAP-EF-011 | `WarmClaudeTransport` with a custom usage governor | `core/runtime/x1/transports.mjs` | Defect D-03 in the assurance record: the option is ignored, and no test covers it |
-| GAP-EF-012 | Atomizer `bench` default example and `conduct adopt` example paths | `tools/atomizer/bin/bench.mjs`, `tools/conductor/bin/conduct.mjs` | Defect D-04: the default inputs are missing; the bench test passes explicit inputs |
-| GAP-EF-013 | Rust lane in CI | `tools/rust_lane/` | REQ-RUST-001 is tested only by `make rust-lane-test`, which CI does not run |
 | GAP-EF-014 | Release-record generator (log parsing, STR and VDD rendering) | `tools/gen_release_docs.py` | No automated test; exercised by test plan TP-5 at each recorded state |
+
+Closed gaps (their IDs are not reused):
+
+- GAP-EF-011, `WarmClaudeTransport` with a custom usage governor: fixed and tested on 2026-11-09; now REQ-TRANSPORT-002.
+- GAP-EF-012, atomizer `bench` default example and `conduct adopt` example paths: fixed and tested on 2026-11-09; now
+  REQ-ATOM-004 and REQ-COND-004.
+- GAP-EF-003, glue gate CLI: tested on 2026-11-09 by `tools/test_gate_structured.mjs`; now REQ-GATECLI-001. No `make`
+  target runs that file yet.
+- GAP-EF-013, Rust lane in CI: CI job `rust-lane` added on 2026-11-09; now REQ-REPO-007. Its first CI run is pending.
 
 ## 12. Not-applicable requirement categories
 
@@ -1048,3 +1374,5 @@ requirements until a test exists. Numbering: `GAP-EF-NNN`, never reused.
 |---|---|---|---|---|
 | 1.0 | 2026-10-30 | `3083a5a` | Table of implemented requirements | earlier PRs |
 | 2.0 | 2026-11-08 | `4d692a4` | Per-requirement fields; 45 existing requirements kept and 50 added for tested areas, gap register, N/A categories | this PR |
+| 2.1 | 2026-11-09 | gap closure | 23 requirements added for the gap-closure work (structured state, commit re-run, library composition, scopes, reclaim, counterexamples and per-environment qualification, synthesis and library on every path, compatibility-lane promotion, transport defaults, nine-gate labels, tool fixes, CI secret scan); GAP-EF-011 and GAP-EF-012 closed | `dc6ba4c` |
+| 2.2 | 2026-11-09 | round 2 | 9 requirements for the round-2 work: structured comparison at commit (REQ-X1-009), Python drift list and receipt label (REQ-X1-010), suspect tests as a specification correction (REQ-LOOP-007), compatibility promotion in `runNeed` (REQ-LOOP-008), caller principal (REQ-LOOP-009), judging in a cell at commit (REQ-SYNTH-004), composition across separate memories (REQ-LIB-008), make setup dependencies and the Rust lane in CI (REQ-REPO-007), glue gate CLI parity (REQ-GATECLI-001); GAP-EF-003 and GAP-EF-013 closed | this commit |

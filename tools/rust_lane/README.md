@@ -11,7 +11,8 @@ build recipe for one task, not a build service.
 The P-06 pressure converter. The event is four little-endian i32 values: value, from-unit, to-unit and basis; an empty
 event may instead read those 16 bytes from exactly one borrowed buffer. Prior state is ignored. The output state is
 one little-endian i32 and there are no effects. Malformed events, buffer read errors and invalid codes return P-06's
-reserved `INT32_MIN` sentinel. Buffer snapshots are host-owned and never dropped by Rust. A handwritten `reduce`
+reserved `INT32_MIN` sentinel. The host owns the buffer snapshots; Rust releases each borrowed handle before `reduce`
+returns, as the Component Model requires. A handwritten `reduce`
 adapter avoids a wit-bindgen code-generation error with borrowed lists; it uses guest-memory pointers, never host
 pointers.
 
@@ -19,7 +20,8 @@ pointers.
 
 The build key covers the source, the Cargo manifest and lock, the WIT, the target, the flags, the complete compiler
 version, the compiler, Cargo and `wasm-tools` binary hashes, and the recipe. Every build runs in a fresh directory with
-a clean environment, offline and locked, with one Cargo job and CPU, one build-dependency codegen unit, 4 GiB
+a clean environment. Crates come from the Cargo cache; only if some are missing does the build download them, limited
+to the versions and checksums `Cargo.lock` pins. The compile itself is offline and locked, with one Cargo job and CPU, one build-dependency codegen unit, 4 GiB
 address-space and 120 CPU-second per-process limits, and a 180-second process-group timeout. The result is packaged
 with `wasm-tools` 1.262.0 and admitted only through the kernel contract's exact interface validator. The record binds
 the component identity and says `qualification: required`; no earlier qualification carries over.
@@ -30,19 +32,25 @@ Pinned tools: Rust 1.98.1 (48a229cea) with the `wasm32-unknown-unknown` target, 
 tests jco 1.16.1 and AssemblyScript 0.28.9.
 
 ```sh
-export RUSTC=$(rustup which rustc) CARGO=$(rustup which cargo)   # real executables, not shims
-export WASM_TOOLS=$PWD/.tools/bin/wasm-tools                      # from make tools
-export CARGO_HOME=/path/to/writable/cache
-cargo fetch --locked --manifest-path tools/rust_lane/Cargo.toml   # the only step that uses the network
+make tools                                                        # pinned wasm-tools in .tools/
 python3 -B -m tools.rust_lane.build NEW_DIRECTORY
-make rust-lane-test                                               # also needs JCO and ASC set
+make rust-lane-test
 ```
+
+The tests take `jco` and `asc` from `JCO` and `ASC`, then `tools/rust_lane/node_modules`, then `PATH`, and otherwise
+run `npm ci` without install scripts from this lane's lockfile; `make rust-lane-test` runs that install first
+(`make rust-lane-setup`). The lane locks AssemblyScript 0.28.9, the version P-06
+froze, separately from the newer compiler in `tools/asc`.
+
+The build asks rustup for the real binaries of the pinned toolchain, uses `.tools/bin/wasm-tools` when present, and
+caches crates in `~/.cargo`. Set `RUSTC`, `CARGO`, `WASM_TOOLS` or `CARGO_HOME` to override any of these; `RUSTC` and
+`CARGO` must name real executables, not rustup shims.
 
 ## Example
 
 ```console
 $ python3 -B -m tools.rust_lane.build /tmp/rust-lane-out
-{"artifact":{"component_sha256":"f7dc69ec3614186776ed45ab5d672eff88e4809ff6d53a483c345618f5899930","contract_version":"1.0.0","id":"c12be20c…","validation":"static-interface-only","validator":"wasm-tools/1.262.0","version":1,"wit_sha256":"4768b0a5910d7adedd071b26d2eb46e1e849ea5e7988015a80e29ec91c57613e","world":"endoforge:kernel/kernel@1.0.0"},"build_key":"7187434f09f1d198c2838fa1cb5770e12bf610629a03d90daeb3e0017b86b455",...,"lane":"rust-native","qualification":"required"}
+{"artifact":{"component_sha256":"<sha256>","contract_version":"1.0.0","id":"<sha256>","validation":"static-interface-only","validator":"wasm-tools/1.262.0","version":1,"wit_sha256":"4768b0a5910d7adedd071b26d2eb46e1e849ea5e7988015a80e29ec91c57613e","world":"endoforge:kernel/kernel@1.0.0"},"build_key":"<sha256>",...,"lane":"rust-native","qualification":"required"}
 $ ls /tmp/rust-lane-out
 build.json  kernel  kernel.core.wasm  kernel.wasm  rust_lane  target
 ```
@@ -54,16 +62,18 @@ contract pins.
 ## Limits
 
 - One reference task, no governed build service, no generalized admission.
-- It is not Wasmtime evidence: the tests run the component in Node through jco's Component Model polyfill. Loading
-  the built component in [tools/kernel](../kernel/README.md)'s Wasmtime `Workcell` fails with `table count too high
-  at 2`, because that host allows one table.
-- The lane is not part of `make test`, so CI does not run it.
+- The bounded equivalence runs in Node through jco's Component Model polyfill. In Wasmtime, the built component is
+  checked only on four cases through the [tools/kernel](../kernel/README.md) `Workcell`.
+- The lane is not part of `make test`. CI runs it in its own job, `rust-lane`, which installs Rust 1.98.1 with the
+  `wasm32-unknown-unknown` target, runs `make tools`, then `make rust-lane-test` (REQ-REPO-007). That job has not yet
+  run on GitHub.
 
 ## Tests
 
 `make rust-lane-test` builds twice in independent directories and compares every output byte and record, rejects a
 changed artifact and toolchain, and runs P-06's hash-pinned evaluator functions through the component reducer: all
-67,108,864 bounded inputs, the frozen BigInt oracle sample, invalid codes, and the existing seeded rounding fault. The
-probe sources it reads are in `experiments/P-06-bounded-equivalence/`.
+67,108,864 bounded inputs, the frozen BigInt oracle sample, invalid codes, and the existing seeded rounding fault. It
+also runs the component in the Wasmtime `Workcell`, with the event inline, read from a buffer, and malformed; that
+step uses `.tools/venv` when present. The probe sources it reads are in `experiments/P-06-bounded-equivalence/`.
 
 Engineering record: component C-26, requirement REQ-RUST-001.

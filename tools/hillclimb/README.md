@@ -120,18 +120,27 @@ at least 20 characters each, and an engine of `codex` or `claude` where one is n
 
 The runner gets `ENDOFORGE_WORKER` set to `native`, or to the stage's worker when `campaign.mix` is `false`.
 
+The default `campaign.runner` is [bin/run-atoms.mjs](bin/run-atoms.mjs), which runs
+`<atoms.json> --out <dir> --concurrency N --timeout S` on the atomizer scheduler (`schedule.mjs run`, run directory
+`<dir>/run`). A campaign's own `runner` gets the same arguments.
+
+Each atom stage writes `<stage>.policy.json` next to `<stage>.atoms.json`: the atomizer policy with the campaign's
+`workdir`, this tool and the campaign `repo` added to `bindRoots`. The stage validates its atoms against that policy
+and the default runner passes it to the scheduler, so `plan-review` and the other stages work from any directory.
+Binds stay read-only; any other bind (such as `references.binds`) must still be under the atomizer's own `bindRoots`.
+
 ## Limits
 
-- The default `campaign.runner` is `.local/bin/endoforge run` in the home directory, a launcher that is not part of
-  this repository. Set `runner` to a command that takes `<atoms.json> --out <dir> --concurrency N --timeout S`.
-- `plan-review` and the other atom stages refuse atoms whose binds (the round directory, the tool itself) are outside
-  `policy.bindRoots`, which is `.`, the current directory. Run from a directory that contains both.
-- Only the lessons ledger has tests; the round stages are exercised by use, not by `make test`.
-- `sh scripts/hc-patch.sh` with no arguments fails with `$1: unbound variable` instead of printing its usage.
+- The round stages that launch model atoms (`review`, `fix`, `judge`, `round`) are exercised by use; the tests cover
+  planning, the runner contract and the patch helper with no model.
+- A campaign's own `runner` is not given the stage policy, so from outside the atomizer's `bindRoots` it must apply
+  its own.
 
 ## Tests
 
-`make lib-test` runs `test/lessons.test.mjs`. The fan-out library (`lib/fanout.mjs`: logins, lanes, worker commands,
+`make lib-test` runs `test/lessons.test.mjs` and `test/runner.test.mjs` (the default runner is in the repository and
+maps onto the scheduler, `plan-review` works from an unrelated directory, `scripts/hc-patch.sh` prints its usage
+without arguments and still produces a repo-relative patch). The fan-out library (`lib/fanout.mjs`: logins, lanes, worker commands,
 the capacity dial) is also used by [job](../job/README.md), the [conductor](../conductor/README.md) and the
 [project scheduler](../project-scheduler/README.md).
 

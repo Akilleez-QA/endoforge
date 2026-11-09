@@ -121,6 +121,15 @@ class WorkcellTests(unittest.TestCase):
         with self.assertRaisesRegex(WasmtimeError, "memory"):
             Workcell(build(wat), SCHEMAS).run(b"\x00", b"\x00")
 
+    def test_guest_table_beside_import_shim_is_admitted_and_ceiling_holds(self):
+        def with_tables(count):
+            return REFERENCE.replace('(global $heap', '(table 1 funcref) ' * count + '(global $heap', 1)
+
+        result = Workcell(build(with_tables(1)), SCHEMAS).run(b"\x01", b"\x02", [b"\x03"])
+        self.assertEqual(result["state"], b"\x06")
+        with self.assertRaisesRegex(WasmtimeError, "table"):
+            Workcell(build(with_tables(2)), SCHEMAS).run(b"\x01", b"\x02", [b"\x03"])
+
     def test_metadata_runtime_and_input_admission(self):
         with patch("tools.kernel.workcell.version", return_value="0.0.0"):
             with self.assertRaisesRegex(ValueError, "49.0.0"):

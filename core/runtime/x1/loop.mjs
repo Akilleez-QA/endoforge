@@ -1,4 +1,6 @@
 import { existsSync, realpathSync } from 'node:fs';
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { fileURLToPath } from 'node:url';
 import { basename, dirname, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
@@ -6,16 +8,22 @@ import { ASC_PATH, WORKCELL } from '../../../tools/asc/pin.mjs';
 import { IsolatePool } from '../isolate-pool.mjs';
 import { applyReply, specificationFiles } from './agent.mjs';
 import { applyChanges } from './oracle.mjs';
-import { testProblems } from './gates.mjs';
+import { runGates, testProblems } from './gates.mjs';
 import { generate } from './generator.mjs';
-import { verifyFromMemory } from './loop-port.mjs';
+import { cellFiles, verifyFromMemory } from './loop-port.mjs';
 import { configuration, hash } from './host.mjs';
 import { receipt } from './ledger.mjs';
+import { judgeInCell } from './synth/cell-host.mjs';
+import * as synthesis from './synth/stage.mjs';
+import { COMPAT_POLICY } from '../contained/promotion.mjs';
 
 const loopPools = new WeakSet();
 const hostPortPath = fileURLToPath(new URL('./loop-port.mjs', import.meta.url));
-export const implementation = Object.freeze(['loop-port.mjs', 'agent.mjs', 'oracle.mjs']);
+export const implementation = cellFiles;
 export const agentLimits = Object.freeze({ maxTurns: 6, maxTokens: 64000 });
+export const tokenBudget = 'stage';
+export const evaluatorFile = 'synth/evaluator.json';
+const frozenNames = ['CONTRACT.md', 'tests.json', 'frozen.sha256'];
 
 const providers = new WeakMap();
 const agentJobs = new Map();
@@ -49,7 +57,7 @@ export function createLoopPool({ size = 1, isolation = 'process', jobTimeoutMs =
 
 const frozenText = (files, name) => Buffer.from(files?.[name] ?? '', 'hex').toString();
 async function modelTurn(context, provider, session, messages) {
-  const { limits, deadline } = context, remaining = limits.maxTokens - context.tokens;
+  const { limits, deadline } = context, remaining = limits.maxTokens - (context.tokens - context.stageBase);
   if (Date.now() >= deadline) throw Error('request deadline reached');
   if (context.calls >= 2 * limits.maxTurns) throw Error('model call limit reached');
   if (remaining <= 0) throw Error('model token budget reached');
@@ -90,21 +98,116 @@ async function answerKind(pool, provider, call, job, context) {
     if (testProblems(tests).length) throw Error('frozen tests must each assert something a kernel can fail');
     context.observe?.('admitting');
     const begin = performance.now();
-    context.admission = await admit(pool, context.reference, { need: context.need, configuration, files: call.files });
+    let files = context.synth ? { ...call.files, [evaluatorFile]: await freezeEvaluator(context.synth, context.shadow) } : call.files;
+    const first = await admit(pool, context.reference, { need: context.need, configuration, files });
+    context.admission = first;
+    context.reference.identity = first.identity;
+    if (context.suspect) {
+      const revised = await reviseFrozen(pool, context.reference, context.suspect);
+      context.admission = revised.admission;
+      context.reference.identity = revised.admission.identity;
+      context.revision = { identity: revised.admission.identity, ...revised.revision };
+      Object.assign(context.shadow, revised.files);
+      files = { ...files, ...Object.fromEntries(Object.entries(revised.files).map(([name, text]) => [name, Buffer.from(text).toString('hex')])) };
+      context.restart = true;
+    }
     context.freezeMs = performance.now() - begin;
-    context.reference.identity = context.admission.identity;
     context.editable = ['kernel.ts', 'glue.json'];
+    context.stageBase = context.tokens;
+    context.compatibility = await compatibilityFreeze(context.containedRoute, context.directory, context.need, context.shadow['tests.json']);
     context.observe?.('admitted');
-    return context.admission;
+    context.reused = await reuse(context.library, context.id, files, context.principal);
+    if (context.reused) context.restart = false;
+    return context.reused || context.restart ? { ...first, reused: true } : context.admission;
   }
   throw Error('unknown host call');
 }
+async function freezeEvaluator(synth, shadow) {
+  const root = await mkdtemp(join(tmpdir(), 'ef-synth-'));
+  try {
+    for (const name of ['CONTRACT.md', 'tests.json']) await writeFile(join(root, name), shadow[name]);
+    await synth.finish(root);
+    return (await readFile(join(root, evaluatorFile))).toString('hex');
+  } finally {
+    await rm(root, { recursive: true, force: true });
+  }
+}
+export async function reviseFrozen(pool, reference, report) {
+  const { files, revision, ...admission } = await pool.ledger.request('revise', { reference }, { report });
+  if (reference.root) for (const [name, text] of Object.entries(files)) await writeFile(join(reference.root, name), text);
+  return { admission, files, revision };
+}
+export const servedAs = (library, principal) => (library && principal !== undefined ? { serve: (need, options = {}) => library.serve(need, { ...options, principal }) } : library);
+async function reuse(library, id, files, principal) {
+  if (!library) return null;
+  const served = await servedAs(library, principal).serve({ id, files: Object.fromEntries(frozenNames.map(name => [name, frozenText(files, name)])) });
+  return served?.verdict === 'pass' ? served : null;
+}
+const unknownCompatibility = reason => ({ lane: 'compatibility', status: 'outcome_unknown', reason });
+export async function compatibilityFreeze(route, directory, need, tests) {
+  if (!route?.freeze || !route?.promote) return null;
+  try { return { frozen: await route.freeze({ ledger: join(directory, 'compatibility.sqlite'), need, tests }) }; }
+  catch (error) { return { error: error.message }; }
+}
+export async function compatibilityRoute(route, frozen, directory, candidate) {
+  if (!route) return {};
+  if (!frozen) return { contained: await route.check(candidate).catch(error => unknownCompatibility(error.message)) };
+  if (frozen.error) return { contained: unknownCompatibility(frozen.error), compatibility: { promoted: false, decision: 'inconclusive', policy: COMPAT_POLICY, reason: frozen.error } };
+  try {
+    const out = await route.promote(candidate, { ledger: join(directory, 'compatibility.sqlite'), frozen: frozen.frozen.identity, decisionPath: join(directory, 'compatibility-promotion.json') });
+    return { contained: out.report, compatibility: { promoted: out.promoted, decision: out.decision.decision, policy: out.decision.policy, candidate: out.candidate, receipt: out.receipt, sha256: out.decision.sha256,
+      ...(out.decision.reason ? { reason: out.decision.reason } : {}) } };
+  } catch (error) {
+    return { contained: unknownCompatibility(error.message), compatibility: { promoted: false, decision: 'inconclusive', policy: COMPAT_POLICY, reason: error.message } };
+  }
+}
+export const suspectHook = (target, caller) => async report => {
+  target.suspect = report;
+  if (caller) await caller(report);
+};
+async function frozenEvaluator(admission) {
+  try {
+    const { bundle } = await verifyFromMemory(admission)({ identity: admission.identity });
+    const text = bundle.files?.[evaluatorFile];
+    return text ? JSON.parse(Buffer.from(text, 'hex').toString()) : null;
+  } catch { return null; }
+}
+const shapeOf = tests => JSON.stringify((tests ?? []).map(({ fn, args, got, pass, trap }) => [fn, args, got, pass, trap === true]));
+export async function checkAtCommit(content, observed, evaluator = null) {
+  const passed = observed.status === 'completed' ? (observed.report?.attempts ?? []).filter(attempt => attempt?.stage === 'passed') : [];
+  if (!passed.length) return { observed, rerun: null, synthesis: null, problem: null };
+  const begin = performance.now();
+  let candidate = null, result = null;
+  try { candidate = JSON.parse(content); result = runGates(candidate); } catch { }
+  const agrees = result?.promotable === true && passed.every(attempt => {
+    try { return shapeOf(JSON.parse(attempt.results.find(check => check.check === 'residual').reason).tests) === shapeOf(result.tests); } catch { return false; }
+  });
+  const rerun = { agrees, ms: performance.now() - begin };
+  if (!agrees) {
+    const problem = 'independent re-run at commit disagrees with the cell report';
+    return { observed: { ...observed, status: 'rejected', reason: problem }, rerun, synthesis: null, problem };
+  }
+  if (!evaluator) return { observed, rerun, synthesis: null, problem: null };
+  let verdict;
+  try { verdict = await judgeInCell(evaluator, candidate); } catch (error) { verdict = { decision: 'refuse', failures: [`judge failed: ${error.message}`] }; }
+  verdict = { ...verdict, evaluator: hash(JSON.stringify(evaluator)) };
+  if (verdict.decision !== 'refuse') return { observed, rerun, synthesis: verdict, problem: null };
+  const problem = 'synthesized evaluator refused the candidate';
+  return { observed: { ...observed, status: 'rejected', reason: problem }, rerun, synthesis: verdict, problem };
+}
 
-export async function attemptAgent({ need, directory, pool, observe, limits = agentLimits, resume = false, deadline = Infinity }) {
+export async function attemptAgent({ need, directory, pool, observe, limits = agentLimits, resume = false, deadline = Infinity, env = process.env, library = null, synthProvider, confirm, suspect, principal, containedRoute }) {
   const timings = Object.fromEntries(['generate', 'freeze', 'compile', 'gate', 'ledger', 'promote'].map(k => [k, null]));
   const begin = performance.now(), jobKey = `agent-${process.pid}-${++nextAgentJob}`, id = basename(directory);
   const reference = { ledger: join(directory, 'ledger.sqlite') };
-  const context = { need, observe, modelMs: 0, admission: null, reference, limits: { ...limits }, deadline, calls: 0, tokens: 0, shadow: {}, editable: specificationFiles(limits) };
+  const context = { need, id, observe, modelMs: 0, admission: null, reference, limits: { ...limits }, deadline, calls: 0, tokens: 0, stageBase: 0, shadow: {}, editable: specificationFiles(limits), library, synth: null, reused: null, principal, directory, containedRoute, suspect: null, revision: null, restart: false, compatibility: null };
+  const reusedResult = agent => {
+    timings.generate = context.modelMs;
+    timings.freeze = context.freezeMs ?? null;
+    timings.promote = 0;
+    timings.total = performance.now() - begin;
+    return { promoted: true, reused: context.reused.receipt, decision: context.reused.hash, agent, testDouble: provider.testDouble, modelMs: context.modelMs, timings };
+  };
   const { provider, waits, rates } = providers.get(pool) ?? {};
   context.rates = rates;
   agentJobs.set(jobKey, context);
@@ -131,7 +234,13 @@ export async function attemptAgent({ need, directory, pool, observe, limits = ag
         const { bundle } = await verifyFromMemory(admission)({ identity: admission.identity });
         for (const name of ['CONTRACT.md', 'tests.json']) context.shadow[name] = frozenText(bundle.files, name);
         context.editable = ['kernel.ts', 'glue.json'];
+        context.compatibility = await compatibilityFreeze(containedRoute, directory, need, context.shadow['tests.json']);
+        context.reused = await reuse(library, id, bundle.files, principal);
+        if (context.reused) { provider.endSession(jobKey); return reusedResult(null); }
       }
+    }
+    if (!context.admission && synthesis.enabled(env)) {
+      context.synth = synthesis.begin({ need, env, provider: synthProvider, confirm, suspect: suspectHook(context, suspect) });
     }
     let waiting = null, after = recovered?.seq ?? null, result;
     if (recovered && waits === 'release') {
@@ -154,12 +263,17 @@ export async function attemptAgent({ need, directory, pool, observe, limits = ag
         }
         result = await job({ continuation: waiting.cell, reply });
       } else result = await job({});
+      if (context.restart && result.report?.stage === 'reused') {
+        context.restart = false;
+        waiting = null;
+        continue;
+      }
       timings.compile += result.evidence?.timings?.compile ?? 0;
       timings.gate += result.evidence?.timings?.gates ?? 0;
       if (rates && result.evidence?.timings) { rates.span('cell.compile', result.evidence.timings.compile); rates.span('cell.gates', result.evidence.timings.gates); }
       if (result.status !== 'waiting') break;
-      const { shadow, calls, tokens, editable } = context;
-      waiting = { cell: result.evidence.waiting, host: { shadow, calls, tokens, editable } };
+      const { shadow, calls, tokens, stageBase, editable } = context;
+      waiting = { cell: result.evidence.waiting, host: { shadow, calls, tokens, stageBase, editable } };
       if (!context.admission || !waiting.cell.receipt.turns) continue;
       const body = JSON.stringify(waiting);
       observe?.('parking');
@@ -169,6 +283,8 @@ export async function attemptAgent({ need, directory, pool, observe, limits = ag
     provider.endSession(jobKey);
     const { evidence, timings: _, ...observed } = result;
     const { content: returned, ...kept } = evidence ?? {};
+    if (context.reused) return reusedResult(kept.agent ?? null);
+    if (result.report?.stage === 'reused') throw Error('the cell stopped for a reuse the host did not grant');
     timings.generate = context.modelMs;
     timings.freeze = context.freezeMs ?? null;
     if (!context.admission) throw Error('no frozen evaluator');
@@ -177,12 +293,14 @@ export async function attemptAgent({ need, directory, pool, observe, limits = ag
     const sources = returned ? { 'kernel.ts': hash(context.shadow['kernel.ts'] ?? ''), 'glue.json': hash(context.shadow['glue.json'] ?? '') } : null;
     observe?.('committing');
     const outcome = await commitCandidate(pool, { evaluated: { observed: { ...observed, ...(evidence ? { evidence: kept } : {}) }, content, sources },
-      reference, digest: context.admission.digest, timings, continuation: after });
+      reference, digest: context.admission.digest, timings, continuation: after, evaluator: await frozenEvaluator(context.admission) });
+    const lane = returned ? await compatibilityRoute(containedRoute, context.compatibility, directory, JSON.parse(returned)) : {};
     observe?.('returned');
     timings.promote = 0;
     timings.total = performance.now() - begin;
-    return { promoted: outcome.promoted, ...(outcome.inconclusive ? { inconclusive: true } : {}), candidate: outcome.candidate, receipt: outcome.receipt, decision: outcome.decision, problem: outcome.problem, status: outcome.status,
-      agent: kept.agent ?? null, rounds: kept.rounds ?? [], content: returned ?? null, testDouble: provider.testDouble, modelMs: context.modelMs, timings, ...(context.oracle ? { oracle: context.oracle } : {}) };
+    return { promoted: outcome.promoted, ...lane, ...revisionOf(context), ...(outcome.inconclusive ? { inconclusive: true } : {}), candidate: outcome.candidate, receipt: outcome.receipt, decision: outcome.decision, problem: outcome.problem, status: outcome.status,
+      agent: kept.agent ?? null, rounds: kept.rounds ?? [], content: returned ?? null, testDouble: provider.testDouble, modelMs: context.modelMs, timings, rerun: outcome.rerun,
+      ...(outcome.synthesis ? { synthesis: outcome.synthesis } : {}), ...(context.synth ? { synthTimings: context.synth.timings } : {}), ...(context.oracle ? { oracle: context.oracle } : {}) };
   } catch (error) {
     provider?.endSession(jobKey);
     timings.total = performance.now() - begin;
@@ -193,6 +311,7 @@ export async function attemptAgent({ need, directory, pool, observe, limits = ag
 }
 
 const unknownOutcome = error => error?.outcome === 'outcome_unknown' ? { status: 'outcome_unknown' } : {};
+export const revisionOf = context => (context.revision ? { revision: context.revision.identity, suspects: context.suspect.tests } : {});
 export function admit(pool, reference, input = {}) {
   return pool.ledger.request('admit', { reference }, input);
 }
@@ -217,8 +336,9 @@ export async function evaluateInCell(pool, { candidate, admission, repair, timin
     sources: repair ? null : { 'kernel.ts': hash(candidate.files['kernel.ts']), 'glue.json': hash(candidate.files['glue.json']) } };
 }
 
-export async function commitCandidate(pool, { evaluated: { observed, content, sources }, reference, digest, decisionPath, timings = {}, receiptId, continuation = null }) {
+export async function commitCandidate(pool, { evaluated: { observed: reported, content, sources }, reference, digest, decisionPath, timings = {}, receiptId, continuation = null, evaluator = null }) {
   const identity = hash(content);
+  const checked = await checkAtCommit(content, reported, evaluator), observed = checked.observed;
   const start = performance.now();
   const template = receipt(reference, digest, identity);
   if (receiptId) template.id = receiptId;
@@ -226,38 +346,62 @@ export async function commitCandidate(pool, { evaluated: { observed, content, so
     { content, decisionPath, result: observed, ...(receiptId ? {} : { nextReceipt: true }), ...(sources ? { sources } : {}), ...(continuation === null ? {} : { continuation }) });
   timings.ledger = performance.now() - start;
   return { promoted: committed.decision.decision === 'promote', ...(committed.decision.decision === 'inconclusive' ? { inconclusive: true } : {}), candidate: identity, receipt: committed.decision.receipt,
-    decision: committed.decision.sha256, problem: committed.problem, status: committed.receipts[0].record.data.outcome_state,
-    report: observed.report, rounds: observed.evidence?.rounds ?? [] };
+    decision: committed.decision.sha256, problem: committed.problem ?? checked.problem, status: committed.receipts[0].record.data.outcome_state,
+    report: observed.report, rounds: observed.evidence?.rounds ?? [], rerun: checked.rerun, ...(checked.synthesis ? { synthesis: checked.synthesis } : {}) };
 }
 
 export async function evaluateAndCommit(pool, { candidate, reference, admission, digest = admission.digest, decisionPath, repair, observe, timings = {}, receiptId }) {
   const evaluated = await evaluateInCell(pool, { candidate, admission, repair, timings });
   observe?.('committing');
-  const outcome = await commitCandidate(pool, { evaluated, reference, digest, decisionPath, timings, receiptId });
+  const outcome = await commitCandidate(pool, { evaluated, reference, digest, decisionPath, timings, receiptId, evaluator: await frozenEvaluator(admission) });
   observe?.('returned');
   return outcome;
 }
 
-export async function attemptInIsolate({ need, directory, pool, env = process.env, deadline = Infinity, observe, repair }) {
+export const withCorrected = (candidate, corrected) => (corrected ? { ...candidate, files: { ...candidate.files, ...corrected } } : candidate);
+export const correctedLibrary = (library, corrected) => (library ? { serve: (need, options) => library.serve(corrected() ? { ...need, files: { ...need.files, ...corrected() } } : need, options) } : library);
+export async function attemptInIsolate({ need, directory, pool, env = process.env, deadline = Infinity, observe, repair, library = null, synthProvider, confirm, suspect, principal, containedRoute }) {
   const timings = Object.fromEntries(['generate', 'freeze', 'compile', 'gate', 'ledger', 'promote'].map(k => [k, null]));
   const begin = performance.now();
   let scalarFilter;
   try {
     if (!loopPools.has(pool)) throw Error('createLoopPool required');
     await pool.ready();
-    let admission;
-    const generated = await generate({ need, directory, env, deadline, implementation,
-      freeze: async ({ reference, need: frozenNeed, configuration }) => (admission = await admit(pool, reference, { need: frozenNeed, configuration })),
-      check: candidate => checkCandidate(pool, admission, candidate) });
+    const found = { suspect: null, revision: null };
+    const synth = synthesis.enabled(env) ? synthesis.begin({ need, env, provider: synthProvider, confirm, suspect: suspectHook(found, suspect) }) : null;
+    let admission, corrected = null, lane = null;
+    const generated = await generate({ need, directory, env, deadline, implementation, library: correctedLibrary(servedAs(library, principal), () => corrected),
+      freeze: async ({ reference, need: frozenNeed, configuration }) => {
+        if (synth) await synth.finish(reference.root);
+        admission = await admit(pool, reference, { need: frozenNeed, configuration });
+        if (found.suspect) {
+          const revised = await reviseFrozen(pool, { ...reference, identity: admission.identity }, found.suspect);
+          admission = revised.admission;
+          corrected = revised.files;
+          found.revision = { identity: admission.identity, ...revised.revision };
+        }
+        lane = await compatibilityFreeze(containedRoute, directory, frozenNeed, await readFile(join(reference.root, 'tests.json'), 'utf8'));
+        return admission;
+      },
+      check: candidate => checkCandidate(pool, admission, withCorrected(candidate, corrected)) });
     scalarFilter = generated.scalarFilter;
     Object.assign(timings, generated.timings);
+    if (generated.reused) {
+      timings.total = performance.now() - begin;
+      return { promoted: true, reused: generated.reused.receipt, decision: generated.reused.hash, testDouble: generated.testDouble, modelMs: generated.modelMs, timings };
+    }
     observe?.('generated');
-    const outcome = await evaluateAndCommit(pool, { candidate: generated.candidate, reference: { ...generated.reference, identity: admission.identity },
-      admission, decisionPath: join(directory, 'promotion.json'), observe, timings, repair });
+    const candidate = withCorrected(generated.candidate, corrected);
+    const outcome = await evaluateAndCommit(pool, { candidate, reference: { ...generated.reference, identity: admission.identity },
+      admission, decisionPath: join(directory, 'promotion.json'), timings, repair, observe: stage => stage !== 'returned' && observe?.(stage) });
+    if (outcome.synthesis) await writeFile(join(directory, 'synthesis.json'), JSON.stringify(outcome.synthesis, null, 1));
+    const contained = await compatibilityRoute(containedRoute, lane, directory, candidate);
+    observe?.('returned');
     timings.promote = 0;
     timings.total = performance.now() - begin;
-    return { promoted: outcome.promoted, ...(outcome.inconclusive ? { inconclusive: true } : {}), candidate: outcome.candidate, receipt: outcome.receipt, decision: outcome.decision, problem: outcome.problem, rounds: outcome.rounds,
-      testDouble: generated.testDouble, modelMs: generated.modelMs, timings, ...(scalarFilter ? { scalarFilter } : {}) };
+    return { promoted: outcome.promoted, ...contained, ...revisionOf(found), ...(outcome.inconclusive ? { inconclusive: true } : {}), candidate: outcome.candidate, receipt: outcome.receipt, decision: outcome.decision, problem: outcome.problem, rounds: outcome.rounds,
+      testDouble: generated.testDouble, modelMs: generated.modelMs, timings, rerun: outcome.rerun, ...(outcome.synthesis ? { synthesis: outcome.synthesis } : {}),
+      ...(synth ? { synthTimings: synth.timings } : {}), ...(scalarFilter ? { scalarFilter } : {}) };
   } catch (error) {
     scalarFilter ??= error?.scalarFilter;
     timings.total = performance.now() - begin;
