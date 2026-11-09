@@ -69,7 +69,7 @@ async function attemptCurrent({ need, directory, pool, env = process.env, compil
     if (synth) {
       const verdict = await synth.evaluate(candidate);
       await writeFile(join(directory, 'synthesis.json'), JSON.stringify(verdict, null, 1));
-      if (verdict.decision === 'refuse') return { promoted: false, ...revisionOf(found), candidate: identity, synthesis: verdict, synthTimings: synth.timings, testDouble: generated.testDouble, modelMs: generated.modelMs, timings, ...(scalarFilter ? { scalarFilter } : {}) };
+      if (verdict.decision === 'refuse') return { promoted: false, ...revisionOf(found), candidate: identity, problem: 'synthesized evaluator refused the candidate', synthesis: verdict, synthTimings: synth.timings, testDouble: generated.testDouble, modelMs: generated.modelMs, timings, ...(scalarFilter ? { scalarFilter } : {}) };
     }
     start = performance.now();
     const decision = await ledger('promote', { reference, candidate: identity,

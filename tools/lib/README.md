@@ -70,12 +70,20 @@ exit 75
 ## Limits
 
 - Locks are directories on a local file system. Dead-owner reclaim only works for owners on the same host.
-- Only `errors.mjs` has a test; `lock.mjs`, `headroom.mjs` and `exitfile.mjs` are exercised through the conductor and
-  job tests.
 
 ## Tests
 
-`make lib-test` runs [test/errors.test.mjs](test/errors.test.mjs) with the conductor, hillclimb, job and
-[job-locks](../job-locks/README.md) tests.
+Every module has a direct test, and `make lib-test` runs them with the conductor, hillclimb, job and
+[job-locks](../job-locks/README.md) tests:
+
+- [test/errors.test.mjs](test/errors.test.mjs): `errors.mjs` and [run-typed](run-typed).
+- [test/lock.test.mjs](test/lock.test.mjs): owner record, `LockBusy` after `waitMs`, dead-owner and orphan reclaim
+  (and no reclaim across hosts), `withLock` release on throw, no lost update across four processes, and
+  `writeJSONAtomic` output and cleanup.
+- [test/headroom.test.mjs](test/headroom.test.mjs): default and overridden limits, the ok rule, `ENDOFORGE_THROTTLE=0`
+  and the `MemAvailable` reading with its fallback.
+- [test/exitfile.test.mjs](test/exitfile.test.mjs): the wrapper keeps the exit code, output and arguments, quotes the
+  file path, records a signal as 128 plus the signal, and leaves no file when the wrapper itself is killed; `readExit`
+  rejects anything that is not an exit code.
 
 Engineering record: component C-23, requirement REQ-ERR-001.
