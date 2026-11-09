@@ -1,41 +1,51 @@
 # Documentation
 
-Start with the [getting-started tutorial](guides/tutorials/getting-started.md). It runs the candidate loop on a fresh clone
-with a scripted model in about five minutes.
+EndoForge has an AI coding model write a small numeric function from a one-line request and accepts it only if frozen
+tests and automatic checks pass. New here? Start with the [project README](../README.md), then the tutorial.
 
-Use synthetic identifiers and local paths in documentation, and keep generated evidence outside the source tree.
+## Learn
 
-The control documents follow the Cstack family documentation standard, organized after NASA NPR 7150.2D and the NASA
-Software Engineering Handbook. The canonical standard is in the
+- [Getting started](guides/tutorials/getting-started.md): clone, ask for an addition kernel, see it promoted with its
+  gate results, then see a wrong kernel refused. About five minutes, no model account.
+
+## Do
+
+- [Run local checks](guides/how-to/local-checks.md): the full test suite, as CI runs it.
+
+## Look up
+
+- [Configuration](configuration/configuration-reference.md): every environment variable, `limits` key and options
+  object, with defaults.
+- [Data dictionary](data/data-dictionary.md): ledger, hardware and factory records (generated from the schemas) and
+  exit codes.
+- [Runtime](../core/runtime/README.md): isolate pool, WebAssembly limits, contained JavaScript, dump list, the loop
+  inside a workcell, model transports, subscription guard and usage governor.
+- [Library](../core/library/README.md): reuse of promoted kernels.
+- [Tools](../tools/README.md): every tool and script under `tools/`.
+- [Experiments](../experiments/README.md): the measurement behind each default, by P-number.
+- Interfaces: [ledger and workcell pool](interfaces/ledger-icd.md), [capacity planner](interfaces/capacity-icd.md),
+  [constraint record](interfaces/constraint-record.md), [Cstack](icd/icd-cstack.md).
+
+## Understand
+
+- [The candidate loop](architecture/candidate-loop.md): how a need becomes a promoted kernel, and what each gate
+  checks.
+- [Limitations and safe use](guides/explanation/limitations.md): what a promotion does and does not mean.
+- [Design description](architecture/architecture.md): components, design decisions and execution, for a reader about to
+  change the code.
+
+When you write documentation, use synthetic identifiers and local paths, and keep generated evidence outside the source
+tree.
+
+## Engineering records
+
+EndoForge keeps a full engineering document set under the Cstack family documentation standard, organized after NASA
+NPR 7150.2D and the NASA Software Engineering Handbook. The canonical standard is in the
 [Cstack repository](https://github.com/Akilleez-QA/cstack/tree/main/docs/standards). EndoForge self-assesses as a Class E
 analog and is not safety-critical; this is not a NASA compliance determination
 ([SMP §1](plan/software-management-plan.md#1-software-classification-self-assessed)).
 
-## Tutorials
-
-- [Getting started](guides/tutorials/getting-started.md): clone, check, and promote a first candidate.
-
-## How-to guides
-
-- [Run local checks](guides/how-to/local-checks.md): the full suite, as CI runs it.
-
-## Reference
-
-- [Configuration](configuration/configuration-reference.md): every environment variable, `limits` key and options object, with defaults.
-- [Data dictionary](data/data-dictionary.md): ledger, hardware and factory records (generated from the schemas) and exit codes.
-- [Runtime](../core/runtime/README.md): isolate pool, WebAssembly limits, contained JavaScript, dump list, X1 loop,
-  transports, subscription guard and usage governor.
-- [Library](../core/library/README.md): reuse of promoted kernels.
-- [Tools](../tools/README.md): every tool and script under `tools/`.
-- [Experiments](../experiments/README.md): the measurements behind each default, by P-number.
-
-## Explanation
-
-- [The candidate loop](architecture/candidate-loop.md): from a need to a promotion decision.
-- [Limitations and safe use](guides/explanation/limitations.md): what a promotion does and does not mean.
-- [User manual map](guides/SUM-MAP.md): where each user-manual element lives.
-
-## Control documents
+### Control documents
 
 | Document | ID | Path |
 |---|---|---|
@@ -61,7 +71,7 @@ analog and is not safety-critical; this is not a NASA compliance determination
 ICDs live in both `icd/` and `interfaces/`. New ICDs go in `icd/`; the `interfaces/` files stay where they are until a
 later change moves them and fixes the links.
 
-## Historical records
+### Historical records
 
 These are kept as written and carry no metadata header:
 
@@ -69,7 +79,7 @@ These are kept as written and carry no metadata header:
 - [Verification history](verification/history-2026-10-30.md): verification evidence from 2026-10-30 to 2026-11-02.
 - Experiment `PRECOMMIT.md` and `RESULT.md` files, indexed in [experiments/README.md](../experiments/README.md).
 
-## Archived
+### Archived
 
 Unused placeholder inputs are under `TODELETE/`, for example the
 [independent check placeholder](../TODELETE/docs/example.json).

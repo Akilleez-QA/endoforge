@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-VM |
-| Version | 2.0 |
+| Version | 2.1 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-08 |
@@ -151,10 +151,12 @@ Every other discovered test file is listed here with its classification.
 | `core/runtime/test/timing-guard.test.mjs` | Tests the shared timing-assertion fixture `core/runtime/test/fixtures/timing.mjs` used by other runtime tests (test infrastructure) |
 | `tools/conductor/test/helpers.mjs` | Helper imported by the conductor tests; defines no tests |
 | `tools/tscheck/test/global-scope-kernels.mjs` | Kernel list imported by `cohort-check.test.mjs` and `tsrs-reuse.test.mjs`; defines no tests |
+| `core/runtime/test/loop-example.test.mjs` | Documentation example: runs `examples/first-loop.mjs` and `examples/show-gates.py`, the README and getting-started example, and checks the promote and refuse outputs they print (`loop-test`). Keeps the published example from going stale; the behaviour it exercises is traced under the loop and promotion requirements |
 
 ## Change history
 
 | Version | Date | Commit | Change | Reviewed in |
 |---|---|---|---|---|
 | 1.0 | 2026-10-30 | `3083a5a` | Eight-row matrix and relocation evidence (now in the verification history) | earlier PRs |
-| 2.0 | 2026-11-08 | `4d692a4` | Re-baselined against all requirements and glob-discovered tests; trace check added | this PR |
+| 2.0 | 2026-11-08 | `4d692a4` | Re-baselined against all requirements and glob-discovered tests; trace check added | #131 |
+| 2.1 | 2026-11-08 | `ea7b8d6` | Supporting entry for the documentation example test `core/runtime/test/loop-example.test.mjs` | this PR |

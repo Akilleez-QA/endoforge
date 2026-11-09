@@ -1,10 +1,13 @@
 # Getting started
 
-This tutorial takes a fresh clone to a first promoted candidate. It runs the real candidate loop (freeze, compile,
-gates, ledger and promotion decision) with a scripted model, so it needs no model account and makes no network call
-after setup. It takes about five minutes.
+In this tutorial you clone EndoForge, ask it for an integer addition kernel, and watch it get promoted. Then you give it
+a wrong kernel and watch it get refused. It takes about five minutes.
 
-Every command below was run on a fresh clone of `main` on Linux with Node.js 26.13.0 and Python 3.
+The model in this tutorial is a script that replays fixed answers, so you need no model account and no network after
+setup. Everything else is the real code: the freeze, the pinned compiler, the V8 isolate, gates G1 to G9 and the
+ledger.
+
+Every command below was run on a fresh clone on Linux with Node.js 26.13.0 and 22.23.3 and Python 3.
 
 ## 1. Install the prerequisites
 
@@ -12,7 +15,8 @@ You need:
 
 - Git, GNU Make and Python 3.11 or later.
 - Node.js 22.8 or later. CI runs Node 22 and Node 26.
-- bubblewrap (`bwrap`), `age` and `gcc` for the full test suite. This tutorial does not need them.
+
+The full test suite also needs bubblewrap (`bwrap`), `age` and `gcc`. This tutorial does not.
 
 ## 2. Clone and run the repository checks
 
@@ -23,21 +27,11 @@ make check
 ```
 
 `make check` takes about a second. It checks Markdown links, the experiments index, source digests, experiment
-number allocation, the privacy lint (`0 failure(s) over N records`), requirement traceability (a JSON summary with
-`"problems": 0`) and the data dictionary. The last line reads `data dictionary current`.
+numbers, privacy and requirement traceability. The last line reads `data dictionary current`.
 
-## 3. Run a few test targets
+## 3. Install the pinned compiler
 
-```sh
-make core-test engine-test library-test
-```
-
-`core-test` runs the Python lifecycle and boundary tests (`Ran 71 tests ... OK`). `engine-test` runs the evaluator and
-gate tests (`pass 19`, `fail 0`). `library-test` runs the kernel library tests. Together they take about 20 seconds.
-
-## 4. Install the pinned compiler
-
-The candidate loop compiles AssemblyScript inside a workcell with a pinned compiler:
+The loop compiles AssemblyScript (a TypeScript-like language) to WebAssembly with a pinned compiler:
 
 ```sh
 make loop-setup
@@ -45,120 +39,153 @@ make loop-setup
 
 This runs `npm ci` in `tools/asc` and needs network access once.
 
-## 5. Run the candidate loop with a scripted model
+## 4. Look at the two example scripts
 
-Save this as `first-loop.mjs` in the repository root:
+The repository ships the two scripts this tutorial runs.
+
+[`examples/first-loop.mjs`](../../../examples/first-loop.mjs) sends the need `integer add(a,b)` through the loop and
+prints the outcome. The scripted model comes from the test fixtures: in its first turn it writes the contract and
+tests, and in its second turn the kernel. With the argument `wrong` it writes a kernel that subtracts instead.
 
 ```js
-import { mkdtempSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { createLoopPool } from './core/runtime/x1/loop.mjs';
-import { runNeed } from './core/runtime/x1/pipeline.mjs';
-import { scriptedProvider } from './core/runtime/x1/transports.mjs';
-import { candidate } from './core/runtime/test/fixtures/x1/candidate.mjs';
-import { inputFor, modelFor } from './core/runtime/test/fixtures/x1/scripted-model.mjs';
-import { good, seeds } from './core/runtime/test/fixtures/x1/seeds.mjs';
-
+const need = 'integer add(a,b)';
 const kernel = process.argv[2] === 'wrong' ? seeds[1] : good;
 const { files } = candidate();
 const script = modelFor(inputFor(files['CONTRACT.md'], files['tests.json'], kernel.kernel, kernel.glue));
 const pool = createLoopPool({ provider: scriptedProvider(script) });
 const directory = join(mkdtempSync(join(tmpdir(), 'ef-first-loop-')), 'addition');
 try {
-  const result = await runNeed({ need: 'integer add(a,b)', directory, pool, env: { ENDOFORGE_LOOP: 'agent' } });
-  console.log(JSON.stringify({
-    promoted: result.promoted,
-    testDouble: result.testDouble,
-    turns: result.agent?.turns,
-    exit: result.agent?.exit_reason,
-    rounds: result.rounds?.map(round => round.failures ? Object.keys(round.failures.gates) : "passed"),
-    ledger: join(directory, 'ledger.sqlite'),
-  }, null, 2));
-} finally {
-  await pool.close();
-}
+  const result = await runNeed({ need, directory, pool, env: { ENDOFORGE_LOOP: 'agent' } });
 ```
 
-Run it:
+`runNeed` is the same entry point a real run uses. Only the provider differs: here it is `scriptedProvider`, in a real
+run a model transport.
+
+[`examples/show-gates.py`](../../../examples/show-gates.py) opens the ledger that run wrote, which also verifies its
+hash chain, and prints each gate's result from the receipt and the final decision. If the kernel was promoted, it
+also saves the WebAssembly module as `kernel.wasm` next to the ledger.
+
+## 5. Promote a kernel
 
 ```sh
-node first-loop.mjs
+node examples/first-loop.mjs
 ```
 
-The output looks like this (the temporary path differs):
+It finishes in about three seconds. Your temporary path will differ:
 
 ```json
 {
+  "need": "integer add(a,b)",
   "promoted": true,
   "testDouble": true,
   "turns": 2,
-  "exit": "stop",
   "rounds": [
     "passed"
   ],
-  "ledger": "/tmp/ef-first-loop-LQUkB6/addition/ledger.sqlite"
+  "ledger": "/tmp/ef-first-loop-touemR/addition/ledger.sqlite"
 }
+```
+
+Now look at the evidence, using the ledger path from your output:
+
+```sh
+python3 examples/show-gates.py /tmp/ef-first-loop-touemR/addition/ledger.sqlite
+```
+
+```text
+ledger records: task, admitted_input, frozen_evaluator, candidate, receipt
+  G1_frozen         pass
+  G2_compiles       pass  {"wasmBytes": 57}
+  G3_exports        pass  {"exports": ["add"]}
+  G4_tests          pass  {"passed": 1, "total": 1}
+  G5_deterministic  pass
+  G6_bounded        pass  {"maxMs": 0.000771, "fuelUsed": 5}
+  G7_glue           pass
+  G8_nonfinite      pass  {"probes": 0}
+  G9_units          pass  {"checks": {"add": "dimensionless"}}
+decision: promote
+kernel: /tmp/ef-first-loop-touemR/addition/kernel.wasm (57 bytes)
 ```
 
 What happened:
 
-1. `ENDOFORGE_LOOP=agent` selected the agent loop inside the workcell. See the
-   [candidate loop](../../architecture/candidate-loop.md) for the three loop paths.
-2. The scripted model wrote `CONTRACT.md` and `tests.json` in its first turn. The host froze them into the ledger.
-3. In its second turn it wrote `kernel.ts` and `glue.json`. The cell compiled the kernel with the pinned compiler and
-   ran gates G1 to G9.
-4. All gates passed, so the host committed the candidate, its receipt and a promotion decision in one transaction.
-5. `testDouble: true` says a test double wrote the code. A scripted run is never evidence of model quality.
+1. `ENDOFORGE_LOOP=agent` chose the agent loop, where the model's whole turn loop runs inside one workcell. The
+   [candidate loop](../../architecture/candidate-loop.md#three-loop-paths) page compares the three loop paths.
+2. Turn 1: the scripted model wrote `CONTRACT.md` ("Integer addition on [-10,10].") and `tests.json` (`add(2,3)`
+   must be 5). The host stored their hashes in the ledger. That is the `frozen_evaluator` record.
+3. Turn 2: the model wrote `kernel.ts` and `glue.json`. The workcell compiled the kernel to a 57-byte WebAssembly
+   module and ran gates G1 to G9.
+4. Every gate passed, so the host wrote the candidate, its receipt and a `promote` decision in one transaction.
+5. `testDouble: true` says a test double wrote the code. A scripted run shows the machinery works. It is not evidence
+   about any real model.
 
-## 6. Look at the ledger
+The ledger is append-only: SQLite triggers refuse updates and deletes. The records are also hash-chained, each hash
+covering the one before it, so if someone removes the triggers and edits a record, `Ledger(path).records()` fails with
+`ledger chain failed at sequence N`. The [ledger ICD](../../interfaces/ledger-icd.md) describes each record kind.
 
-The ledger is the only durable output. Print its record kinds, using the path from the output above:
+The promoted kernel is an ordinary WebAssembly module. Call it from Node.js:
 
 ```sh
-python3 -c 'import sys; from core.ledger.ledger import Ledger; print([r["kind"] for r in Ledger(sys.argv[1]).records()])' /tmp/ef-first-loop-LQUkB6/addition/ledger.sqlite
+node -e 'const m = new WebAssembly.Module(require("fs").readFileSync(process.argv[1])); console.log(new WebAssembly.Instance(m).exports.add(2, 3))' /tmp/ef-first-loop-touemR/addition/kernel.wasm
 ```
 
 ```text
-['task', 'admitted_input', 'frozen_evaluator', 'candidate', 'receipt']
+5
 ```
 
-The records are hash-chained. The [ledger ICD](../../interfaces/ledger-icd.md) describes each kind.
+## 6. Watch a wrong kernel get refused
 
-## 7. Watch a candidate fail
-
-Run the same script with a kernel that subtracts instead of adding:
+Run the same script with `wrong`. The scripted model answers the same need with a kernel that subtracts:
 
 ```sh
-node first-loop.mjs wrong
+node examples/first-loop.mjs wrong
 ```
 
-```json
+```text
 {
+  "need": "integer add(a,b)",
   "promoted": false,
   "testDouble": true,
   "turns": 7,
-  "exit": "max_turns",
   "rounds": [
     [
       "G4_tests"
     ],
     ...
   ],
-  ...
+  "ledger": "/tmp/ef-first-loop-eGPvuy/addition/ledger.sqlite"
 }
 ```
 
-Each round failed `G4_tests`, and each failure went back to the model as its next prompt. The scripted model never
-fixes the kernel, so the loop stopped at the turn limit (`limits.maxTurns`, default 6 for the implementation stage,
-after one specification turn). Nothing was promoted.
+```sh
+python3 examples/show-gates.py /tmp/ef-first-loop-eGPvuy/addition/ledger.sqlite
+```
+
+```text
+ledger records: task, admitted_input, frozen_evaluator, candidate, receipt
+  G1_frozen         pass
+  G2_compiles       pass  {"wasmBytes": 57}
+  G3_exports        pass  {"exports": ["add"]}
+  G4_tests          FAIL  {"passed": 0, "total": 1}
+  G5_deterministic  pass
+  G6_bounded        pass  {"maxMs": 0.000961, "fuelUsed": 5}
+  G7_glue           pass
+  G8_nonfinite      pass  {"probes": 0}
+  G9_units          pass  {"checks": {"add": "dimensionless"}}
+decision: refuse
+```
+
+The kernel compiled and ran, but `add(2,3)` returned -1, so `G4_tests` failed. Each failure went back to the model as
+its next prompt. The script never fixes the kernel, so the loop stopped at the turn limit: one specification turn plus
+six implementation turns (`limits.maxTurns`, default 6). The receipt was still written, and the decision is `refuse`.
 
 ## Next steps
 
 - Run the full suite: [run local checks](../how-to/local-checks.md).
-- Read how the loop works: [candidate loop](../../architecture/candidate-loop.md).
+- Read how the loop works and what each gate checks: [candidate loop](../../architecture/candidate-loop.md).
 - Look up a setting: [configuration reference](../../configuration/configuration-reference.md).
 - Use a real model: the agent loop takes a provider such as `WarmClaudeTransport`. Real calls go through the
   subscription guard and the usage governor; see [runtime](../../../core/runtime/README.md#the-agent-loop-in-the-workcell).
 
-Delete `first-loop.mjs` when you are done; it is not part of the repository.
+The run leaves its ledger in a temporary directory (`ef-first-loop-*` under your system's temporary folder). Delete it
+when you are done.
