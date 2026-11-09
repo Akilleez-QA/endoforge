@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { readFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { test } from 'node:test';
 import { probeTrustedReducer, WIT_SHA256 } from './contract.ts';
 import { referenceReducer as reducer } from './reference.ts';
+import { createCompatibilityPool, probeInWorkcell } from './workcell.mjs';
 
 const meta = { contractVersion: '1.0.0', stateSchema: 'counter-v1', eventSchema: 'increment-v1', effectSchema: 'notify-v1' };
 const policy = { inputBytes: 32, readBytes: 4, outputBytes: 64, effects: 2 };
@@ -138,4 +141,99 @@ test('rejects malformed budgets, excessive inputs and shared memory before invoc
   refused(probe(impl, meta, policy, Array(1)));
   refused(probe(impl, meta, policy, [new Uint8Array(new SharedArrayBuffer(1))]));
   assert.equal(called, false);
+});
+
+const sha256 = value => createHash('sha256').update(value).digest('hex');
+const referenceSource = readFileSync(new URL('./reference.ts', import.meta.url), 'utf8');
+const cellJob = (source, exportName = 'referenceReducer', over = {}) => ({ reducer: { source, exportName }, expected: meta,
+  state: Uint8Array.of(1), event: Uint8Array.of(2), snapshots: [Uint8Array.of(3)], limits: policy, ...over });
+const cellPool = (t, options) => {
+  const pool = createCompatibilityPool(options);
+  t.after(() => pool.close());
+  return pool;
+};
+const describeSource = `describe: () => (${JSON.stringify(meta)})`;
+const inlineReducer = (...members) => `export const reducer = { ${[describeSource, ...members].join(', ')} };`;
+const working = 'reduce: (state, event) => ({ state: Uint8Array.of(state[0] + event[0]), effects: [] })';
+
+test('runs the reference reducer in a process-mode IsolatePool workcell and binds its identities', async t => {
+  const receipt = await probeInWorkcell(cellPool(t), cellJob(referenceSource));
+  assert.equal(receipt.status, 'passed', receipt.reason);
+  assert.equal(receipt.lane, 'compatibility');
+  assert.equal(receipt.validation, 'trusted-reducer-conformance-only');
+  assert.deepEqual([...receipt.transition.state], [6]);
+  assert.deepEqual([...receipt.transition.effects[0].payload], [2]);
+  assert.equal(receipt.workcell.isolation, 'process');
+  assert.ok(Number.isSafeInteger(receipt.workcell.id) && receipt.workcell.id !== process.pid);
+  assert.equal(receipt.identities.source, sha256(referenceSource));
+  assert.equal(receipt.identities.wit, WIT_SHA256);
+  assert.equal(receipt.identities.runtime, process.version);
+  assert.equal(receipt.identities.compiler, `node-strip-types/${process.versions.amaro}`);
+  assert.match(receipt.identities.evaluator, /^[0-9a-f]{64}$/);
+});
+
+test('gives the same transition in a thread-mode workcell', async t => {
+  const receipt = await probeInWorkcell(cellPool(t, { isolation: 'thread' }), cellJob(referenceSource));
+  assert.equal(receipt.status, 'passed', receipt.reason);
+  assert.equal(receipt.workcell.isolation, 'thread');
+  assert.deepEqual([...receipt.transition.state], [6]);
+});
+
+test('refuses non-conforming reducers from inside the workcell', async t => {
+  const pool = cellPool(t);
+  const cases = [
+    [inlineReducer(working, 'hidden() {}'), /record fields differ/],
+    [inlineReducer('reduce: async () => ({ state: new Uint8Array(), effects: [] })'), /record fields differ/],
+    [inlineReducer('reduce: () => { throw new Error("planted failure"); }'), /planted failure/],
+    ['export const other = 1;', /no reducer export/],
+    ['export const reducer = {', /./],
+  ];
+  for (const [source, reason] of cases) {
+    const receipt = await probeInWorkcell(pool, cellJob(source, 'reducer'));
+    refused(receipt);
+    assert.match(receipt.reason, reason);
+    assert.equal(receipt.identities.source, sha256(source));
+  }
+  refused(await probeInWorkcell(pool, cellJob(referenceSource, 'referenceReducer', { snapshots: [Uint8Array.of(255)] })));
+  refused(await probeInWorkcell(pool, cellJob(referenceSource, 'referenceReducer', { limits: { ...policy, outputBytes: 14 } })));
+});
+
+test('a reducer that hangs or exits is stopped and refused, and the pool keeps working', async t => {
+  const pool = cellPool(t, { jobTimeoutMs: 3000 });
+  const hung = await probeInWorkcell(pool, cellJob(inlineReducer('reduce() { for (;;); }'), 'reducer'));
+  refused(hung);
+  assert.match(hung.reason, /deadline/);
+  const exited = await probeInWorkcell(pool, cellJob(inlineReducer('reduce() { process.exit(0); }'), 'reducer'));
+  refused(exited);
+  assert.match(exited.reason, /worker_exit/);
+  assert.equal((await probeInWorkcell(pool, cellJob(referenceSource))).status, 'passed');
+});
+
+test('a reducer that exhausts the workcell heap is stopped and refused', async t => {
+  const pool = cellPool(t, { jobTimeoutMs: 30000, resourceLimits: { maxOldGenerationSizeMb: 32, maxYoungGenerationSizeMb: 4 } });
+  const body = 'reduce() { const kept = []; for (;;) kept.push(new Array(4096).fill({})); }';
+  const receipt = await probeInWorkcell(pool, cellJob(inlineReducer(body), 'reducer'));
+  refused(receipt);
+  assert.match(receipt.reason, /heap/);
+  assert.equal((await probeInWorkcell(pool, cellJob(referenceSource))).status, 'passed');
+});
+
+test('refuses before dispatch when the kernel contract no longer matches the pin', async t => {
+  const directory = mkdtempSync(join(tmpdir(), 'compat-wit-'));
+  t.after(() => rmSync(directory, { recursive: true, force: true }));
+  const witPath = join(directory, 'kernel.wit');
+  writeFileSync(witPath, 'package drifted:kernel;\n');
+  const receipt = await probeInWorkcell(cellPool(t), cellJob(referenceSource), { witPath });
+  refused(receipt);
+  assert.match(receipt.reason, /WIT/);
+  assert.equal(receipt.workcell, null);
+  assert.equal(receipt.identities.wit, sha256('package drifted:kernel;\n'));
+});
+
+test('shared memory cannot cross into the workcell', async t => {
+  const snapshots = [new Uint8Array(new SharedArrayBuffer(1))];
+  const receipt = await probeInWorkcell(cellPool(t), cellJob(referenceSource, 'referenceReducer', { snapshots }));
+  refused(receipt);
+  assert.match(receipt.reason, /unshared bytes required/);
+  assert.equal(receipt.workcell, null);
 });
