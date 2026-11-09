@@ -128,16 +128,33 @@ plan lists the need's exports:
   final result. A lossy conversion, such as `f64` to `i32`, without `narrow` is refused.
 
 [link.mjs](../../core/library/link.mjs) parses each part's module and writes one new module; it refuses what it cannot
-link safely. At most one part may use linear memory and at most one a table. The composed module then goes through the
+link safely. Any number of parts may use linear memory or a table:
+
+- **Memory.** When one part uses memory, the module keeps that part's memory as it is. When two or more do, the
+  composed module has one linear memory holding a region per part, sized to the part's initial pages or, if it grows
+  memory, up to its maximum or its share, with 64 pages (4 MiB) of headroom above for the buffers the host passes in;
+  everything must fit in 1024 pages (64 MiB, the workcell budget). Then every load, store, `memory.size`, `memory.grow`, data
+  segment and bulk memory operation of a part is rewritten to its region and bounds-checked, so a part cannot read or
+  write another part's state; an access outside the region traps.
+- **Tables.** Each part keeps its own table, and `call_indirect` dispatches through it.
+- **Structured values.** A part whose export takes or returns a `record`, `list` or `text` gets an exchange window
+  after its region. The linked wrapper copies each structured argument from the host buffer (or from the previous
+  stage's result) into that window and the result back out, so structured state crosses between parts only as a
+  copy. The plan's layouts must match: a stage whose argument layout differs from what it is given, or a final stage
+  that does not produce the declared layout, is refused. A plan cannot pass a buffer address, or the hidden result
+  pointer, into a scalar parameter.
+
+The copies are linker-generated code inside the module, not host calls: a kernel stays one module that imports only
+`env.abort`. The composed module then goes through the
 same cell as a single entry: the need's frozen tests, then the discrimination check. A pass journals
 `library_compose` naming every source promotion and the plan; a refusal journals `library_refused`.
 
 | Miss reason | Meaning |
 |---|---|
 | `unknown_part` | The plan names an entry the library doesn't hold |
-| `memory_conflict`, `table_conflict` | More than one part uses linear memory, or a table |
+| `memory_conflict` | The parts do not fit in the 64 MiB memory, or a part declares or addresses more than one memory |
 | `adapter_arity`, `adapter_constant`, `adapter_narrowing` | An adapter's argument count, constant or narrowing is invalid |
-| `plan_mismatch`, `unknown_export` | The plan doesn't match the need's capability or names a missing export |
+| `plan_mismatch`, `unknown_export` | The plan doesn't match the need's capability or a part's declared layout, passes a buffer as a scalar, or names a missing export |
 | `import_unsupported`, `data_unsupported`, `element_unsupported`, `initializer_unsupported`, `opcode_unsupported`, `malformed_module`, `link_invalid` | A part uses a module feature the linker doesn't rewrite, or the result doesn't validate |
 
 The composition-wide reasons `need_not_frozen`, `no_capability`, `permission_denied`, `revoked`,
@@ -147,7 +164,8 @@ The composition-wide reasons `need_not_frozen`, `no_capability`, `permission_den
 
 An entry's `scope` is `{ tenant?, lineage? }`, taken from the admit row or, failing that, from the admitting
 principal. The caller passes a principal (`openLibrary({ principal })` as the default, or per call to `lookup`,
-`serve`, `compose`, `retrieve`); it is never read from the need.
+`serve`, `compose`, `retrieve`); it is never read from the need. `runNeed({ library, principal })` passes its
+`principal` to every `serve` on all three loop paths.
 
 | The caller is | Result |
 |---|---|
@@ -209,8 +227,14 @@ Equivalent contracts written with different numerals miss, which costs a regener
 of 92 seeded faults with an in-range witness when the need's frozen files said exactly what the kernel's own said;
 that class needs a stronger evaluator, which is why reuse stays opt-in.
 
-Composition inherits these limits from its parts, and the linker refuses a plan where more than one part uses linear
-memory or a table, so such kernels can't yet be composed with each other.
+Composition inherits these limits from its parts. Two more apply to it:
+
+- The parts share one WebAssembly memory with bounds-checked regions, not one memory each, because the meter
+  ([meter.mjs](../../core/runtime/x1/meter.mjs)) reads only memory 0. The parts' combined memory is limited to the
+  64 MiB budget.
+- The discrimination check ([discriminate.mjs](../../core/library/discriminate.mjs)) calls exports with scalar
+  arguments only, so a kernel with structured arguments, composed or not, gets no real mutation check under
+  `gate: 'full'`.
 
 ## Boundary with the engine
 

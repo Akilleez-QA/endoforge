@@ -129,7 +129,12 @@ host then:
    `synth/evaluator.json` to the files;
 4. sends one `admit` request to the ledger bridge, which appends `task`, `admitted_input` and the `frozen_evaluator`
    in one transaction and returns its identity, digest and canonical encoding;
-5. with a library, calls `library.serve` with the frozen files. A pass answers `{ ..., reused: true }`, the cell stops
+5. if synthesis reported suspect frozen tests, sends a `revise` request, which freezes a
+   [specification correction](evaluator-synthesis.md#4b-acting-on-suspects-a-specification-correction) as the new
+   frozen evaluator, and restarts the cell so the implementation turn reads the corrected `tests.json`;
+6. with a compatibility route that has `freeze` and `promote`, freezes the tests into `compatibility.sqlite` for the
+   [compatibility lane](compatibility-lane.md#the-route-on-a-candidate);
+7. with a library, calls `library.serve` with the frozen files and the caller's `principal`. A pass answers `{ ..., reused: true }`, the cell stops
    with stage `reused`, and the attempt returns `promoted: true` with the library's reuse receipt as `reused` and its
    hash as `decision`; no implementation stage runs. A resumed attempt asks the library again before continuing.
 
@@ -207,7 +212,9 @@ continue that work.
 ## The result
 
 `runNeed` returns `{ promoted, inconclusive?, candidate, receipt, decision, problem, status, agent, rounds, content,
-testDouble, modelMs, timings, rerun, synthesis?, synthTimings?, oracle? }`. `rerun` is `{ agrees, ms }` from the
+testDouble, modelMs, timings, rerun, synthesis?, synthTimings?, oracle?, contained?, compatibility?, revision?,
+suspects? }`. `contained` and `compatibility` come from the compatibility route; `revision` and `suspects` from a
+specification correction. `rerun` is `{ agrees, ms }` from the
 [re-run at commit](gates.md#commit-re-runs-the-gates) (`null` when no attempt claimed a pass); `synthesis` is the
 synthesized evaluator's verdict. A reused capability returns `{ promoted: true, reused, decision, agent, testDouble,
 modelMs, timings }` instead. `agent` is the receipt `{ turns, tokens, tool_calls, exit_reason }`;
@@ -231,4 +238,3 @@ every implementation check, failed ones included. A failure before the freeze re
   both.
 - The supervisor's shadow copy guards the frozen files, not the implementation files, which the cell reports and the
   commit re-checks.
-- The synthesized evaluator judges at commit on the controller thread, not in a bounded cell.

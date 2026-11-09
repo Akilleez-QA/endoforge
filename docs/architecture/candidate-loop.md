@@ -114,8 +114,11 @@ per task.
    runs the specification session. It refuses if the workspace holds anything except `CONTRACT.md` and `tests.json`
    (plus `reference.js` in `reference` mode), any file over 1 MiB, or a symlink.
 2. It writes `frozen.sha256`, copies the specification and the gate implementation files into the oracle root, and
-   asks the ledger to `freeze`.
-3. With a library, `library.serve` may answer the need here, and no implementation session runs.
+   asks the ledger to `freeze`. If evaluator synthesis reported suspect frozen tests, the ledger then freezes a
+   [specification correction](evaluator-synthesis.md#4b-acting-on-suspects-a-specification-correction)
+   (`python3 -B -m tools.x1_loop revise`), and every later check uses the corrected tests.
+3. With a library, `library.serve` may answer the need here (with the caller's `principal`), and no implementation
+   session runs.
 4. The implementation session resumes the same Codex thread by default (`ENDOFORGE_CODEX_SESSION=resume`). It may
    write only `kernel.ts` and `glue.json`; any change to a frozen file refuses the attempt. With
    `ENDOFORGE_SELF_CHECK=1` one repair session runs on gate failures.
@@ -143,10 +146,10 @@ Each of these is optional or sits beside the cell.
 
 | Part | What it does | Default | Code |
 |---|---|---|---|
-| Library | A need that a promoted capability, or a composition of several, already meets skips implementation | Off; pass `library` from `openLibrary` (all paths) | [library](library.md) |
+| Library | A need that a promoted capability, or a composition of several, already meets skips implementation; `runNeed({ principal })` is passed to every `serve` | Off; pass `library` from `openLibrary` (all paths) | [library](library.md) |
 | Formula oracle | Recomputes frozen expectations from the contract's formula and a model-written reference before the freeze | Off; `limits.oracle` (agent path) | [agent loop](agent-loop.md#formula-oracle) |
 | Evaluator synthesis | A candidate-blind evaluator built from the need can refuse a candidate after the gates, and flags frozen tests two references contradict | Off; `ENDOFORGE_SYNTH=1` (all paths) | [evaluator synthesis](evaluator-synthesis.md) |
-| Compatibility route | Type checks, emits and runs the candidate's TypeScript in a contained cohort; inside `runNeed` it is reported and never changes the kernel decision; called directly, `route.promote` decides under the lane's own policy | Off; pass `containedRoute` (current path) | [compatibility lane](compatibility-lane.md) |
+| Compatibility route | Type checks, emits and runs the candidate's TypeScript in a contained cohort; a route with `freeze` and `promote` is frozen before any candidate and decided under the lane's own policy (`compatibility` in the result); it never changes the kernel decision | Off; pass `containedRoute` (every path) | [compatibility lane](compatibility-lane.md) |
 | Subscription guard | Refuses any `claude -p` launch not on a proven claude.ai subscription login (exit 78, a configuration error) | Always on for Claude launches | [subscription-guard.mjs](../../core/runtime/subscription-guard.mjs) |
 | Usage governor | Parks new model calls near the usage ceiling (`USAGE_PARKED`, exit 75: try again after the reset) | On in both Claude transports; ceiling 0.85 | [usage-governor.mjs](../../core/runtime/usage-governor.mjs) |
 | Stage rates | Per-stage throughput, queues and a bottleneck verdict | Off; pass `rates` to `createLoopPool` | [workcells](workcells.md#stage-rates) |
@@ -195,4 +198,5 @@ validates decision references; it grants no authority and activates nothing in a
 | 2.0 | 2026-11-08 | `4d692a4` | Metadata header and change history added; content re-baselined | #131 |
 | 2.1 | 2026-11-08 | `ea7b8d6` | Metadata header and NASA notice moved to this section; flow drawn as a diagram; plainer introduction. Content unchanged otherwise | #132 |
 | 3.0 | 2026-11-08 | `63e95c7` | Rewritten from the code as the map of the loop; gates, agent loop, workcells, library and compatibility lane moved to their own pages; G5 described as the code runs it | earlier PR |
-| 3.1 | 2026-11-09 | gap closure | Structured state in glue; commit re-run; library and synthesis on all paths; compatibility-lane promotion | this commit |
+| 3.1 | 2026-11-09 | gap closure | Structured state in glue; commit re-run; library and synthesis on all paths; compatibility-lane promotion | `dc6ba4c` |
+| 3.2 | 2026-11-09 | round 2 | Specification correction from suspect tests; caller principal; compatibility promotion inside `runNeed` on every path | this commit |

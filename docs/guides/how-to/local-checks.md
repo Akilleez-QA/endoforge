@@ -53,15 +53,18 @@ Each test area has its own target, which is faster while you work:
 |---|---|
 | `make loop-test` | The agent loop and the `isolate` loop (`core/runtime/test/loop*.test.mjs`), including `examples/first-loop.mjs` |
 | `make pipeline-test` | `runNeed` on the current path, the generator, promotion and evaluator synthesis |
-| `make isolate-test` | The rest of `core/runtime/test`: the workcell pool and its limits, the ledger writer, the subscription guard, the usage governor, the formula oracle and the contained JavaScript lane |
+| `make isolate-test` | The rest of `core/runtime/test`: the workcell pool and its limits, the ledger writer, the subscription guard, the usage governor, the formula oracle, the contained JavaScript lane and the gap-closure tests (`gaps-*`, `gaps2-commit`); it runs `loop-setup` and `tscheck-setup` first |
 | `make library-test` | The library (`core/library/test`) |
 | `make atomizer-test` | The atomizer's scheduler, isolation, validation and routing |
 | `make lib-test` | The job tool, the Conductor, hillclimb and shared tool libraries |
 | `make kernel-test` | The kernel contract tools, with the pinned wasmtime and wasm-tools |
 | `make engine-test`, `make core-test`, `make ledger-test` | The engine, the repository-level tests and the ledger |
+| `make rust-lane-test` | The Rust lane, after `make rust-lane-setup`; needs the pinned Rust toolchain, outside `make test`, run by the CI job `rust-lane` |
 
 The [Makefile](../../../Makefile) lists the rest. Tests are found by glob, and `tests/test_reachability.py` fails if a
-test file is not run by any target, so a new test file is picked up as long as it matches a target's pattern.
+test file is not run by any target, so a new test file is picked up as long as it matches a target's pattern. As of
+2026-11-09 one file matches none: `tools/test_gate_structured.mjs` (the glue gate CLI), so that check fails until a
+target runs it; run it by hand with `node --test tools/test_gate_structured.mjs`.
 
 ## Run on both Node versions
 

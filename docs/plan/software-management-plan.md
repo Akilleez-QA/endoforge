@@ -166,7 +166,7 @@ Reviewed at each recorded state. Likelihood (L) and consequence (C) on 1–5.
 | ID | Risk | L | C | Mitigation | Status | Issue |
 |---|---|---|---|---|---|---|
 | R-1 | Model-written code escapes a workcell or exhausts the host (off-heap memory in thread mode, blocking native calls) | 2 | 4 | Process mode with cgroups; stated limits REQ-ISO-013; deadlines from outside; delegated cgroup enforcement is untested (GAP-EF-001) | Open | — |
-| R-2 | A model launch bills an API key or usage credits | 2 | 4 | Subscription guard (exit 78) and usage governor (exit 75), including a caller's governor in `WarmClaudeTransport` (D-03 closed 2026-11-09) | Open | — |
+| R-2 | A model launch bills an API key or usage credits | 2 | 4 | Subscription guard (exit 78) and usage governor (exit 75): both Claude transports admit every turn through it and feed it every rate-limit event; `WarmClaudeTransport` uses a caller's governor (D-03 closed 2026-11-09) | Open | — |
 | R-3 | A promotion is read as engineering approval | 2 | 3 | README Status, [limitations](../guides/explanation/limitations.md) | Open | — |
 | R-4 | Documentation drifts from code under parallel agent lanes | 4 | 2 | `tools/check_trace.py` in `make check`; PR template asks for SRS and matrix updates | Open | — |
 | R-5 | Optimized runs give false assurance for tests that use `assert` statements (D-01) | 3 | 2 | The three tests now use `unittest` assertions (D-01 closed 2026-11-09) | Closed | — |

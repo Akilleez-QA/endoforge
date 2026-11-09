@@ -38,9 +38,10 @@ Composition: `library.compose(need, plan)` takes `{ exports: [{ name, entry, fn 
 An argument is `{ input }`, `{ previous: true }` or `{ const }`, with optional `scale`, `offset` and `narrow` (`trunc` or
 `nearest`; lossy conversions are refused without it). The result is linked into one module and must pass the need's
 frozen tests and the discrimination check, like a single entry. `serve` builds a union by itself when no single entry
-holds the capability. Parts that use linear memory keep separate memories: each gets its own bounds-checked address space inside the module's
-one linear memory, and structured values cross between parts only through copies made by the linked wrapper. Each part
-keeps its own table. A plan misses with `memory_conflict` when the parts cannot all fit the 64 MiB workcell budget.
+holds the capability. Parts that use linear memory keep their state apart: each gets its own bounds-checked region
+inside the module's one linear memory, and structured values cross between parts only through copies made by the
+linked wrapper. Each part keeps its own table. A plan misses with `memory_conflict` when the parts cannot all fit the
+64 MiB workcell budget, or a part declares or addresses more than one memory.
 
 Scopes: an entry's `scope` comes from the admit row or the principal. Another tenant's entry is invisible, a lineage
 outside the entry's path misses with `permission_denied`, and `grant` opens an entry to a named tenant or lineage. The

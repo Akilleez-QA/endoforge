@@ -38,7 +38,8 @@ make rust-lane-test
 ```
 
 The tests take `jco` and `asc` from `JCO` and `ASC`, then `tools/rust_lane/node_modules`, then `PATH`, and otherwise
-run `npm ci` without install scripts from this lane's lockfile. The lane locks AssemblyScript 0.28.9, the version P-06
+run `npm ci` without install scripts from this lane's lockfile; `make rust-lane-test` runs that install first
+(`make rust-lane-setup`). The lane locks AssemblyScript 0.28.9, the version P-06
 froze, separately from the newer compiler in `tools/asc`.
 
 The build asks rustup for the real binaries of the pinned toolchain, uses `.tools/bin/wasm-tools` when present, and
@@ -63,7 +64,9 @@ contract pins.
 - One reference task, no governed build service, no generalized admission.
 - The bounded equivalence runs in Node through jco's Component Model polyfill. In Wasmtime, the built component is
   checked only on four cases through the [tools/kernel](../kernel/README.md) `Workcell`.
-- The lane is not part of `make test`, so CI does not run it.
+- The lane is not part of `make test`. CI runs it in its own job, `rust-lane`, which installs Rust 1.98.1 with the
+  `wasm32-unknown-unknown` target, runs `make tools`, then `make rust-lane-test` (REQ-REPO-007). That job has not yet
+  run on GitHub.
 
 ## Tests
 

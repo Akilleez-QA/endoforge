@@ -264,6 +264,21 @@ oracle files equal the frozen ones, the compiled `source` is the hash of `kernel
 the stored module, and every frozen test appears in the report with its recorded value meeting the frozen
 expectation. A problem marks the receipt `failed`, and the decision refuses.
 
+"Meeting the frozen expectation" (`value_meets` in [tools/x1_loop.py](../../tools/x1_loop.py)) follows the
+[G4 rules](#how-a-test-passes-g4) and reads the declared result of each export from the candidate's `glue.json`:
+
+- a record must have exactly the frozen keys (and, when the glue declares the record, exactly its `fields`), in any
+  order; each field is compared by these rules against its declared field;
+- a list must have the frozen length, no more than its declared `max`, and each item must match against the declared
+  `items`;
+- text must not exceed its declared `maxBytes` and is compared as a string;
+- a number matches within the test's `tol` when one is given, exactly otherwise, and the same `tol` applies to every
+  numeric leaf inside a record or list;
+- a leaf whose kind disagrees with its declaration (for example a number where the glue declares a list) fails.
+
+A test in `core/runtime/test/gaps2-commit.test.mjs` promotes the structured to-do reducer through this commit on the
+`isolate` path and on the `agent` path in both wait modes.
+
 ## Gate labels and the migration note
 
 Records written from 2026-11-09 carry labels that match the nine-gate rule; earlier records keep theirs.
@@ -277,27 +292,24 @@ Records written from 2026-11-09 carry labels that match the nine-gate rule; earl
 The note, kept as `LABEL_MIGRATION` in [tools/x1_loop.py](../../tools/x1_loop.py): the labels are part of each
 record's hash and identity, so old records are not rewritten. Drift checks recompute from the label stored in the
 record, and no verdict reads a label, so an existing ledger still verifies and promotes. Both generations of decision
-required all nine gates. The receipt precommit field `acceptance_boundary` (`core/runtime/x1/ledger.mjs`) still reads
-`G1-G7`; it is a label inside the receipt and is not checked.
+required all nine gates. The receipt precommit field `acceptance_boundary` (`receipt` in
+[core/runtime/x1/ledger.mjs](../../core/runtime/x1/ledger.mjs)) also reads `X1 G1-G9` (its own `GATE_LABEL`) from
+2026-11-09; earlier receipts read `G1-G7`. It is a label inside the receipt and is not checked.
 
 ## Limits
 
 - The gates trust the code that runs them. On the in-cell paths, `commit` now runs the gates again on the supervisor
   ([above](#commit-re-runs-the-gates)), so a consistent wrong report from the cell is refused; a bug in `gates.mjs`
   itself would affect both runs ([P-50](../../experiments/P-50-in-isolate/RESULT.md) raised the first point).
-- The ledger's evidence re-check at commit (`value_meets` in `tools/x1_loop.py`) has no structured comparison: it
-  compares a record or list by its Python string form, so the frozen test must list record fields in layout order,
-  and a `tol` is not applied inside structured values. No test yet promotes a structured-state kernel through the
-  in-cell commit.
 - G7, G8 and G9 read contract text and names with fixed patterns. They catch the mistakes they were measured on
   ([P-52](../../experiments/P-52-real-gates/RESULT.md), [P-65](../../experiments/P-65-unit-gate/RESULT.md)), not
   every way glue can mislabel a result.
 - The frozen evaluator records the bytes of `host.mjs`, `gates.mjs`, `glue.schema.json`, `measure.mjs`, `meter.mjs`,
   `contract.mjs`, `dimensions.mjs`, `generator.mjs`, `ledger.mjs`, `reference.mjs` and `scalar.mjs`
   (`implementationFiles` in [host.mjs](../../core/runtime/x1/host.mjs)) and, on the in-cell paths, `loop-port.mjs`,
-  `agent.mjs` and `oracle.mjs`; the commit refuses if any drifts. A test checks that the lists cover every x1 file the
-  host and the cell import. The Python list `IMPLEMENTATION_FILES` in `tools/x1_loop.py` is shorter (it lacks
-  `oracle.mjs` and the files added above).
+  `agent.mjs` and `oracle.mjs`; the commit refuses if any drifts. The ledger's own drift check, `IMPLEMENTATION_FILES` in
+  [tools/x1_loop.py](../../tools/x1_loop.py), names the same 14 files. Tests check that the lists cover every x1 file
+  the host and the cell import, and that the Python list matches them.
 - Frozen tests decide G4. A wrong expected value in a frozen test refuses every correct kernel; the
   [formula oracle](agent-loop.md#formula-oracle) and [evaluator synthesis](evaluator-synthesis.md) are the two
   mechanisms that check frozen tests from a second source.

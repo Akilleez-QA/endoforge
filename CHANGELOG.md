@@ -24,6 +24,19 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 - Requirements REQ-X1-005 to 008, REQ-LOOP-005 and 006, REQ-GEN-009, REQ-SYNTH-002 and 003, REQ-TRANSPORT-002,
   REQ-CONTAINED-002, REQ-LIB-002 to 007, REQ-ATOM-004, REQ-COND-003 and 004, REQ-JOB-002, REQ-HILL-002 and
   REQ-REPO-006, traced in the verification matrix; GAP-EF-011 and GAP-EF-012 closed.
+- Specification correction from suspect frozen tests: on every loop path a suspect report from evaluator synthesis
+  is recorded in the ledger (`admitted_input`) and a revised `frozen_evaluator` (`specification_correction`) is
+  frozen before any candidate; the commit judges against the corrected tests. New ledger action `revise`
+  (`python3 -B -m tools.x1_loop revise`); `runNeed({ suspect })`; results carry `revision` and `suspects`.
+- `runNeed` decides the compatibility lane on every path: a route with `freeze` and `promote` is frozen into
+  `compatibility.sqlite` before any candidate and promoted under `COMPAT-TS-CHECK-RUN2-TESTS/v1`, returned as
+  `compatibility`.
+- `runNeed({ principal })` is passed to `library.serve` on every path.
+- Library composition across parts with linear memory or tables: each part gets a bounds-checked region of the
+  module's memory and its own table; structured values cross between parts as layout-checked copies.
+- CI job `rust-lane` runs `make rust-lane-test` on Rust 1.98.1; new target `rust-lane-setup`.
+- Requirements REQ-X1-009, REQ-X1-010, REQ-LOOP-007 to 009, REQ-SYNTH-004, REQ-LIB-008, REQ-REPO-007 and
+  REQ-GATECLI-001; GAP-EF-003 and GAP-EF-013 closed.
 
 - `examples/first-loop.mjs` and `examples/show-gates.py`: the README and getting-started example (a scripted model
   promotes an addition kernel and refuses a subtracting one), tested by `core/runtime/test/loop-example.test.mjs`.
@@ -138,6 +151,17 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Fixed
 
+- The commit's evidence re-check compares structured results by structure (records by field name, `tol` on every
+  numeric leaf, kinds and limits from the declared glue) instead of by their string form; the to-do reducer now
+  promotes through the in-cell commit on the `isolate` and `agent` paths.
+- The bridge's drift check (`IMPLEMENTATION_FILES` in `tools/x1_loop.py`) names all 14 frozen x1 files; receipts
+  carry `acceptance_boundary: 'X1 G1-G9'` instead of `G1-G7`.
+- On the `isolate` and `agent` paths the synthesized evaluator judges at commit in a bounded worker thread
+  (`judgeInCell`), not on the controller thread.
+- `make isolate-test` installs the compiler and checker it needs (`loop-setup`, `tscheck-setup`) first, so `make test`
+  works on a fresh clone; the heap-breach test allows 240 s.
+- `tools/gate` judges with the core `runGates` and the core glue schema, so a kernel on disk gets the nine gates and
+  structured state; tested by `tools/test_gate_structured.mjs`, which no `make` target runs yet.
 - `WarmClaudeTransport` honours a caller-supplied usage governor (per transport or per instance).
 - A relative `ENDOFORGE_CODEX_CMD` resolves against the caller's working directory.
 - The Conductor's collect lock works when the repository is a git worktree.

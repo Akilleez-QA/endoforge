@@ -125,6 +125,31 @@ returned. `suspectTests` then reports a test as suspect only when all of these h
 `{ root, hash, suspects }`. The export itself stays unqualified. Width 1, references that disagree, and a reference
 that fails another meta-gate give no suspects.
 
+### 4b. Acting on suspects: a specification correction
+
+Every loop path passes its own hook to `begin`, so the report reaches the pipeline before the ledger freeze returns.
+Right after the first freeze, and before any candidate exists, the pipeline asks the ledger to `revise`
+([tools/x1_loop.py](../../tools/x1_loop.py); through the pool's ledger bridge on `isolate` and `agent`, and as
+`python3 -B -m tools.x1_loop revise < request.json` on `current`). `revise`:
+
+1. refuses unless the request names the latest frozen evaluator, the report is a `suspect_frozen_tests` report made
+   `before: "implementation"` with at least one test, and the ledger holds no candidate yet;
+2. corrects each suspect test from the two agreeing reference outcomes: a returned finite number becomes the new
+   `expect`, a throw becomes `expectError: true`; a suspect must name exactly one frozen test (by `name`, `fn` and
+   `args`);
+3. appends the report as an `admitted_input` (`suspect-1`, `suspect-2`, ...; origin `evaluator_synthesis`), then a new
+   `frozen_evaluator` with the corrected `tests.json` and `frozen.sha256` and
+   `revision: { of: <previous identity>, reason: "specification_correction", evidence: <admitted input id> }`.
+
+From then on the revised identity is the frozen evaluator: the self-check, the library lookup, the commit and the
+decision all use the corrected tests. The result carries `revision` (the new identity) and `suspects` (the corrected
+tests). A caller's own `runNeed({ suspect })` hook is still called with the report.
+
+| Path | What the implementation turn sees |
+|---|---|
+| `agent` | The cell restarts after the revision, so the implementation turn reads the corrected `tests.json` |
+| `current`, `isolate` | The corrected files go into the oracle root and into every check; the Codex workspace keeps the original `tests.json`, so the implementation turn reads the uncorrected file |
+
 ### 5. Confirm
 
 `residualText` renders the need sheet's sentences plus one line per checked export, unit and relation. A `confirm`
@@ -159,8 +184,9 @@ runs depends on the path:
   them). A timeout (`cell_timeout`), an out-of-memory error (`cell_limit`), a crash or an exit without a verdict refuses
   the candidate; it never passes. The verdict records the cell's thread id.
 - **`isolate` and `agent`.** At commit, after the [independent re-run](gates.md#commit-re-runs-the-gates) agrees,
-  `checkAtCommit` reads `synth/evaluator.json` from the ledger's verified frozen bundle and calls `judge` on the
-  controller thread under the fuel meter. A refusal, or an exception in `judge`, marks the receipt `rejected` with
+  `checkAtCommit` reads `synth/evaluator.json` from the ledger's verified frozen bundle and judges in the same bounded
+  worker thread (`judgeInCell`, with its default limits and deadline), so the verdict carries a thread id that is not
+  the controller's. A refusal, a cell failure, or an exception marks the receipt `rejected` with
   "synthesized evaluator refused the candidate", so the ledger refuses the promotion. The result carries the verdict
   as `synthesis`, with the evaluator's hash.
 
@@ -190,8 +216,8 @@ A `refuse` means no promotion: on `current` `runNeed` returns `promoted: false` 
 | `ENDOFORGE_SYNTH_CONFIG_DIR` | unset | Claude configuration directory for that transport |
 | `ENDOFORGE_SYNTH_PROVIDER` | unset | A module exporting `createProvider(env)`, for replay and tests |
 
-`runNeed({ synthProvider, confirm })` passes a provider object and the confirmation callback on every path. Called
-directly, `begin({ need, env, provider, confirm, suspect, cell })` also takes the suspect hook and the judging cell's
+`runNeed({ synthProvider, confirm, suspect })` passes a provider object, the confirmation callback and a suspect hook
+on every path. Called directly, `begin({ need, env, provider, confirm, suspect, cell })` also takes the judging cell's
 limits.
 
 ## The invariant library
@@ -218,9 +244,11 @@ Offline, compile, qualify and judge took 495 ms at p50; judging alone 0.6 ms.
 
 ## Limits
 
-- On the `isolate` and `agent` paths judging runs on the controller thread at commit, under the fuel meter but not in a
-  bounded cell; only the `current` path uses `judgeInCell`.
-- Suspect tests are reported, not acted on: no path yet records a `specification_correction` revision in the ledger
-  from `suspect.json`, and no path passes a `suspect` hook. On the `agent` path `finish` runs in a temporary root that
-  is removed afterwards, so the suspects survive only inside the frozen `evaluator.json`. The [formula oracle](agent-loop.md#formula-oracle) is the agent path's other check of frozen
-  expectations.
+- On the `current` and `isolate` paths the implementation turn still reads the uncorrected `tests.json` in its
+  workspace after a specification correction ([4b](#4b-acting-on-suspects-a-specification-correction)); the checks
+  use the corrected tests, so a kernel written to the old value fails them.
+- A correction takes only a finite number or a throw from the references; a suspect whose agreed outcome is
+  structured state is refused by `revise`, and the attempt fails.
+- The `begin` cell limits apply on `current` only; at commit on `isolate` and `agent` the judging cell uses the
+  defaults.
+- The [formula oracle](agent-loop.md#formula-oracle) is the agent path's other check of frozen expectations.

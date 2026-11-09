@@ -112,7 +112,7 @@ change, or in a new environment (Node, V8, platform, architecture), and retires 
 | To | Use |
 |---|---|
 | Find an entry for a need with no capability block | `openLibrary({ retrieval: 'semantic' })` |
-| Keep tenants apart | `openLibrary({ principal: { tenant, lineage } })`, or `principal` per call; `library.grant(id, { tenant, lineage })` to share |
+| Keep tenants apart | `openLibrary({ principal: { tenant, lineage } })`, or `principal` per call (`runNeed({ library, principal })` passes it to `serve`); `library.grant(id, { tenant, lineage })` to share |
 | Serve a need from parts of several entries | `library.compose(need, plan)`; `serve` builds a union by itself when it can |
 | Drop duplicates and shrink the journal | `library.reclaim()` |
 | See why a need keeps missing | `library.counterexamples(id)`, `library.qualifications(id)` |

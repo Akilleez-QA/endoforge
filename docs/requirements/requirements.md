@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SRS |
-| Version | 2.1 |
+| Version | 2.2 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -246,6 +246,16 @@ The library shall record qualification per environment (Node, V8, platform, arch
 
 - Rationale: A failure on one runtime says nothing about another.
 - Derivation: `core/library/library.mjs`
+- Allocated to: SDD §4 C-05 Library
+- Verification: T — `make library-test`
+- Status: Baselined
+
+### REQ-LIB-008 — Composition across separate memories
+
+`library.compose` shall link parts that each use linear memory or a table, giving each part its own bounds-checked region of the composed module's memory and its own table, copy structured values between parts only through layout-checked wrappers, and refuse a plan whose parts do not fit the 64 MiB workcell memory, whose stage layouts disagree, or that passes a buffer address as a scalar.
+
+- Rationale: Kernels with state live in linear memory; composition must not be limited to at most one such part.
+- Derivation: `core/library/link.mjs`, `core/library/compose.mjs`, `core/library/mutants.mjs`
 - Allocated to: SDD §4 C-05 Library
 - Verification: T — `make library-test`
 - Status: Baselined
@@ -504,6 +514,26 @@ The X1 ledger tools shall write the labels `X1 G1-G9` (task and frozen residual)
 - Verification: T — `make ledger-test`
 - Status: Baselined
 
+### REQ-X1-009 — Structured comparison at commit
+
+The commit's evidence re-check shall compare a recorded structured result with its frozen expectation by structure: records by field name with exactly the frozen fields, lists by length and item, text by its bytes within `maxBytes`, each leaf against the kind the candidate's glue declares, and the frozen `tol` on every numeric leaf.
+
+- Rationale: A structured-state kernel must promote through the in-cell commit whatever order the frozen test lists record fields in.
+- Derivation: `tools/x1_loop.py`, `core/runtime/x1/loop.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-X1-010 — Python drift list and receipt label
+
+The X1 commit tools shall name, in the bridge's drift check (`IMPLEMENTATION_FILES` in `tools/x1_loop.py`), every frozen x1 implementation file that the host and cell lists name, and write the nine-gate label `X1 G1-G9` as the receipt's `acceptance_boundary` (`core/runtime/x1/ledger.mjs`).
+
+- Rationale: The commit must refuse drift in any file that decides a verdict, and labels must match the nine-gate rule.
+- Derivation: `tools/x1_loop.py`, `core/runtime/x1/ledger.mjs`, `core/runtime/x1/host.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
 ### REQ-LOOP-001 — Agent loop in the cell
 
 The agent loop shall run model turns and checks in one job, return a failed check to the next turn, stop at turn, token and deadline limits as a recorded failure without promotion, keep the model out of the frozen files and outside the overlay, and pass only reply text and usage into the cell and its records.
@@ -562,6 +592,36 @@ On the agent path, `limits.maxTokens` shall bound each stage (specification, imp
 - Derivation: `core/runtime/x1/loop.mjs`, `core/runtime/x1/loop-port.mjs`
 - Allocated to: SDD §4 C-07 X1 candidate loop
 - Verification: T — `make isolate-test`, `make loop-test`
+- Status: Baselined
+
+### REQ-LOOP-007 — Suspect tests become a specification correction
+
+When evaluator synthesis reports suspect frozen tests, every loop path shall, before any candidate, record the report in the ledger as an `admitted_input` and freeze a revision of the latest frozen evaluator with reason `specification_correction` whose tests take the references' agreed outcome, then judge the candidate against the revised tests.
+
+- Rationale: A frozen test that two qualified references contradict is likely wrong (P-56); correcting it under the ledger's revision rule before code costs no failed candidate.
+- Derivation: `tools/x1_loop.py`, `core/runtime/x1/loop.mjs`, `core/runtime/x1/pipeline.mjs`, `core/runtime/x1/ledger.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-LOOP-008 — Compatibility promotion on every path
+
+When `runNeed` is given a compatibility route with `freeze` and `promote`, every loop path shall freeze the specification's tests into `compatibility.sqlite` before any candidate and decide the TypeScript candidate with `route.promote` under policy `COMPAT-TS-CHECK-RUN2-TESTS/v1`, returning that decision as `compatibility` without changing the kernel decision.
+
+- Rationale: The compatibility lane has its own promotion rule; a pipeline that only reported it left the decision to the caller.
+- Derivation: `core/runtime/x1/loop.mjs`, `core/runtime/x1/pipeline.mjs`, `core/runtime/contained/promotion.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-LOOP-009 — Caller principal reaches the library
+
+Every loop path shall pass the `principal` given to `runNeed` to `library.serve`.
+
+- Rationale: Tenant and lineage scopes (REQ-LIB-004) must apply to the caller of the pipeline, not to the principal the library was opened with.
+- Derivation: `core/runtime/x1/loop.mjs`, `core/runtime/x1/pipeline.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
 - Status: Baselined
 
 ### REQ-GEN-001 — Two-stage generation with freeze
@@ -700,6 +760,16 @@ At width 2, `finish` shall report a frozen test as suspect, before implementatio
 
 - Rationale: A frozen test two independent qualified references both contradict is likely wrong (P-56) and should be revised before code.
 - Derivation: `core/runtime/x1/synth/stage.mjs`
+- Allocated to: SDD §4 C-08 Evaluator synthesis
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-SYNTH-004 — Judging in a cell at commit
+
+On the `isolate` and `agent` paths, the commit shall judge the candidate against the frozen synthesized evaluator with `judgeInCell`, in a bounded worker thread separate from the controller thread.
+
+- Rationale: Judging runs candidate code; every path must keep it off the controller thread.
+- Derivation: `core/runtime/x1/loop.mjs`, `core/runtime/x1/synth/cell-host.mjs`
 - Allocated to: SDD §4 C-08 Evaluator synthesis
 - Verification: T — `make isolate-test`
 - Status: Baselined
@@ -1120,6 +1190,16 @@ Hillclimb shall default its campaign runner to `bin/run-atoms.mjs` in this repos
 - Verification: T — `make test` (`lib-test`)
 - Status: Baselined
 
+### REQ-GATECLI-001 — Glue gate CLI uses the core gates
+
+`tools/gate/gate.mjs run` shall compile `kernel.ts` with the core compiler flags and judge the kernel with the core `runGates`, so a kernel on disk gets the same nine gates and structured state as the loop, with a `glue.schema.json` equal to the core schema.
+
+- Rationale: Two gate implementations drift; the atomizer's stand-alone check must agree with the loop.
+- Derivation: `tools/gate/gate.mjs`, `tools/gate/glue.schema.json`
+- Allocated to: SDD §4 C-30 Glue gate CLI and project scheduler
+- Verification: T — `node --test tools/test_gate_structured.mjs` (no `make` target runs it yet; `tests/test_reachability.py` reports it)
+- Status: Baselined
+
 ### REQ-CONSTRAINT-001 — Constraint records
 
 Constraint records shall resume verbatim with their source identity, survive a crash without duplication in one durable crossing, refuse tampering, take origin from the transport only, require a human message for withdrawal, and record every extractor failure visibly.
@@ -1167,7 +1247,7 @@ The Rust lane shall build reproducibly with the pinned toolchain, refuse a toolc
 - Rationale: A second language lane under the same acceptance.
 - Derivation: `tools/rust_lane/build.py`, `tools/rust_lane/equivalence.mjs`, `tools/rust_lane/package.json`
 - Allocated to: SDD §4 C-26 Rust lane
-- Verification: T — `make rust-lane-test` (outside `make test` and CI; needs the pinned Rust toolchain)
+- Verification: T — `make rust-lane-test` (outside `make test`; run by the CI job `rust-lane`; needs the pinned Rust toolchain)
 - Status: Baselined
 
 ## 10. Repository checks
@@ -1242,6 +1322,16 @@ CI shall run a Gitleaks scan of the full history with a checksum-verified binary
 - Verification: I — `.github/workflows/ci.yml` job `secret-scan`
 - Status: Baselined
 
+### REQ-REPO-007 — Make targets install what their tests import
+
+`make isolate-test` shall depend on `tscheck-setup` and `loop-setup` and `make rust-lane-test` on `rust-lane-setup`, with CI running `make rust-lane-test` on the pinned Rust toolchain after `make tools`, in a job that is not allowed to fail silently.
+
+- Rationale: `make test` must work on a fresh clone, and the Rust lane must be checked on every push (formerly GAP-EF-013).
+- Derivation: `Makefile`, `.github/workflows/ci.yml`
+- Allocated to: SDD §4 C-27 Repository checks
+- Verification: T — `make isolate-test`; I — `.github/workflows/ci.yml` job `rust-lane`
+- Status: Baselined
+
 ## 11. Untested behaviour (requirement gaps)
 
 These behaviours exist in the code at the baseline but no test in `make test` checks them. They are not
@@ -1251,7 +1341,6 @@ requirements until a test exists. Numbering: `GAP-EF-NNN`, never reused.
 |---|---|---|---|
 | GAP-EF-001 | Delegated cgroup v2 enforcement (`memory.max`, `memory.swap.max=0`, `cpu.max`, `pids.max`) in process mode | `core/runtime/isolate-cgroup.mjs` | The test needs a delegated systemd scope and skips without one; not measured locally or in CI |
 | GAP-EF-002 | Factory runtime: job specs, scheduler, recovery, egress and WebAssembly runner | `tools/factory_runtime/` | No test file exists |
-| GAP-EF-003 | Glue gate CLI | `tools/gate/gate.mjs` | No test file exists |
 | GAP-EF-004 | Project scheduler | `tools/project-scheduler/scheduler.mjs` | No test file exists |
 | GAP-EF-005 | Approved-atoms helper | `tools/approved_atoms.py` | No test file or caller found |
 | GAP-EF-006 | Campaign repair and transfer, Wasmtime qualification and stage resume | `tools/factory_campaign/repair.py`, `tools/factory_portability/campaign_transfer.py`, `tools/factory_portability/qualify_wasmtime.py`, `tools/factory_portability/resume_stage.py` | No test file exists |
@@ -1259,7 +1348,6 @@ requirements until a test exists. Numbering: `GAP-EF-NNN`, never reused.
 | GAP-EF-008 | Atomizer commands other than schedule, verify and bench (for example `atomize`, `fanout`, `direct`, `report`, `cutover`) | `tools/atomizer/bin/` | No test runs them |
 | GAP-EF-009 | Hillclimb fan-out, plan and scoreboard | `tools/hillclimb/lib/fanout.mjs`, `tools/hillclimb/lib/plan.mjs`, `tools/hillclimb/lib/scoreboard.mjs` | Only the lessons ledger is tested |
 | GAP-EF-010 | Job kinds, card compilation and source loading | `tools/job/kinds/`, `tools/job/lib/compile.mjs`, `tools/job/lib/card.mjs` | Exercised only indirectly through conductor fixtures; no direct assertions |
-| GAP-EF-013 | Rust lane in CI | `tools/rust_lane/` | REQ-RUST-001 is tested only by `make rust-lane-test`, which CI does not run |
 | GAP-EF-014 | Release-record generator (log parsing, STR and VDD rendering) | `tools/gen_release_docs.py` | No automated test; exercised by test plan TP-5 at each recorded state |
 
 Closed gaps (their IDs are not reused):
@@ -1267,6 +1355,9 @@ Closed gaps (their IDs are not reused):
 - GAP-EF-011, `WarmClaudeTransport` with a custom usage governor: fixed and tested on 2026-11-09; now REQ-TRANSPORT-002.
 - GAP-EF-012, atomizer `bench` default example and `conduct adopt` example paths: fixed and tested on 2026-11-09; now
   REQ-ATOM-004 and REQ-COND-004.
+- GAP-EF-003, glue gate CLI: tested on 2026-11-09 by `tools/test_gate_structured.mjs`; now REQ-GATECLI-001. No `make`
+  target runs that file yet.
+- GAP-EF-013, Rust lane in CI: CI job `rust-lane` added on 2026-11-09; now REQ-REPO-007. Its first CI run is pending.
 
 ## 12. Not-applicable requirement categories
 
@@ -1283,4 +1374,5 @@ Closed gaps (their IDs are not reused):
 |---|---|---|---|---|
 | 1.0 | 2026-10-30 | `3083a5a` | Table of implemented requirements | earlier PRs |
 | 2.0 | 2026-11-08 | `4d692a4` | Per-requirement fields; 45 existing requirements kept and 50 added for tested areas, gap register, N/A categories | this PR |
-| 2.1 | 2026-11-09 | gap closure | 23 requirements added for the gap-closure work (structured state, commit re-run, library composition, scopes, reclaim, counterexamples and per-environment qualification, synthesis and library on every path, compatibility-lane promotion, transport defaults, nine-gate labels, tool fixes, CI secret scan); GAP-EF-011 and GAP-EF-012 closed | this commit |
+| 2.1 | 2026-11-09 | gap closure | 23 requirements added for the gap-closure work (structured state, commit re-run, library composition, scopes, reclaim, counterexamples and per-environment qualification, synthesis and library on every path, compatibility-lane promotion, transport defaults, nine-gate labels, tool fixes, CI secret scan); GAP-EF-011 and GAP-EF-012 closed | `dc6ba4c` |
+| 2.2 | 2026-11-09 | round 2 | 9 requirements for the round-2 work: structured comparison at commit (REQ-X1-009), Python drift list and receipt label (REQ-X1-010), suspect tests as a specification correction (REQ-LOOP-007), compatibility promotion in `runNeed` (REQ-LOOP-008), caller principal (REQ-LOOP-009), judging in a cell at commit (REQ-SYNTH-004), composition across separate memories (REQ-LIB-008), make setup dependencies and the Rust lane in CI (REQ-REPO-007), glue gate CLI parity (REQ-GATECLI-001); GAP-EF-003 and GAP-EF-013 closed | this commit |

@@ -15,9 +15,21 @@ the kernel path, and nothing on the kernel path depends on it.
 
 ## The route on a candidate
 
-`runNeed({ ..., containedRoute })` on the `current` path calls `containedRoute.check(candidate)` after the decision.
-Its report joins the result under `contained` and never changes the decision; an exception becomes
-`{ lane: 'compatibility', status: 'outcome_unknown' }`.
+`runNeed({ ..., containedRoute })` runs the route on every loop path (`current`, `isolate` and `agent`). What it does
+depends on the route:
+
+- A route with only `check` is run once, after the kernel decision: `containedRoute.check(candidate)`. Its report
+  joins the result under `contained`.
+- A route with `freeze` and `promote` (such as `createContainedRoute()`) has its tests frozen right after the kernel
+  freeze, before any candidate: `route.freeze({ ledger: <directory>/compatibility.sqlite, need, tests })` with the
+  frozen `tests.json`. After the kernel decision the pipeline calls `route.promote(candidate, { ledger, frozen,
+  decisionPath: <directory>/compatibility-promotion.json })` ([below](#promotion)). The report joins the result under
+  `contained`, and the lane's own decision under `compatibility`:
+  `{ promoted, decision, policy: 'COMPAT-TS-CHECK-RUN2-TESTS/v1', candidate, receipt, sha256, reason? }`.
+
+Neither changes the kernel decision: `promoted` is still the nine-gate result. An exception in `check` becomes
+`{ lane: 'compatibility', status: 'outcome_unknown' }`; an exception in `freeze` or `promote` also gives
+`compatibility: { promoted: false, decision: 'inconclusive', reason }`.
 
 ```mermaid
 flowchart TD
@@ -140,6 +152,6 @@ requalification run that compares it with Microsoft's native compiler on every v
 - The cohort is not an OS sandbox and not a Spectre boundary. The permission model doesn't cover signals, and on
   Node 22 it doesn't cover the network. Passing the attack suite doesn't prove no escape exists.
 - Mathematical and Unicode results follow the V8 and ICU of the running Node.
-- Inside `runNeed`, the route still only reports under `contained`; nothing in the pipeline calls `route.promote`, so
-  a compatibility promotion happens only when the caller runs it.
+- Inside `runNeed`, the lane is decided only for the TypeScript of a candidate that reached the kernel decision; a
+  need served from the library runs no compatibility route.
 - Requires Node 22.8 or later.

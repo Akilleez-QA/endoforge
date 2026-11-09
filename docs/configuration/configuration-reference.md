@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-CFG |
-| Version | 3.1 |
+| Version | 3.2 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -224,8 +224,10 @@ Fixed limits in `core/runtime/x1/agent.mjs`: 64 KiB per file, four times that pe
 | `repair` | isolate | none | `{ module, maxRounds, options }`: repair rounds inside the cell. |
 | `compiler` | current | `ENDOFORGE_ASC_CMD` | Path to `asc`. |
 | `library` | all | none | A library from `openLibrary`, consulted once the specification is frozen; a pass skips implementation. See [below](#openlibraryoptions-corelibrarylibrarymjs). |
+| `principal` | all | the library's own (`openLibrary({ principal })`) | `{ tenant, lineage }` passed to every `library.serve`, so the library's scopes apply to this caller. |
 | `synthProvider`, `confirm` | all | `createProvider(env)`, none | Evaluator synthesis provider and confirmation callback (with `ENDOFORGE_SYNTH=1`). |
-| `containedRoute` | current | none | A compatibility-lane route whose `check(candidate)` result is returned as `contained`. |
+| `suspect` | all | none | Called with the `suspect_frozen_tests` report when synthesis finds suspect frozen tests. The pipeline also freezes a [specification correction](../architecture/evaluator-synthesis.md#4b-acting-on-suspects-a-specification-correction) from it whether or not this is given; the result then carries `revision` and `suspects`. |
+| `containedRoute` | all | none | A compatibility-lane route. With only `check`, its report after the kernel decision is returned as `contained`. With `freeze` and `promote` (`createContainedRoute()`), its tests are frozen into `<directory>/compatibility.sqlite` before any candidate, and `route.promote` decides the candidate's TypeScript (decision file `<directory>/compatibility-promotion.json`), returned as `compatibility`. Never changes `promoted`. |
 
 ### `createLoopPool(options)` (`core/runtime/x1/loop.mjs`)
 
@@ -319,7 +321,8 @@ The [reuse how-to](../guides/how-to/reuse-with-the-library.md) shows `admit`, `s
 
 ### Evaluator synthesis `begin` (`core/runtime/x1/synth/stage.mjs`)
 
-`begin({ need, env, provider, confirm, suspect, cell })`. `runNeed` passes `need`, `env`, `synthProvider` and `confirm`.
+`begin({ need, env, provider, confirm, suspect, cell })`. `runNeed` passes `need`, `env`, `synthProvider`, `confirm`
+and a `suspect` hook of its own that records the report and then calls the caller's `suspect`.
 
 | Option | Default | Effect |
 |---|---|---|
@@ -333,6 +336,14 @@ The [reuse how-to](../guides/how-to/reuse-with-the-library.md) shows `admit`, `s
 |---|---|
 | `route.freeze({ ledger, need, tests })` | Freezes `tests` (a JSON string) and the pinned checker digest into the ledger at path `ledger`; returns `{ identity, digest }`. |
 | `route.promote(candidate, { ledger, frozen, decisionPath?, contract? })` | Registers the candidate, runs `route.check`, records the receipt and decides under `COMPAT-TS-CHECK-RUN2-TESTS/v1`; returns `{ candidate, receipt, report, decision, promoted }`. `frozen` is the identity from `freeze`. |
+
+### Specification correction (`tools/x1_loop.py` `revise`)
+
+`python3 -B -m tools.x1_loop revise < request.json`, with `{ "reference": { "ledger", "identity" }, "report" }` on
+stdin; the pool's ledger bridge takes the same action as `revise`. `identity` must be the latest frozen evaluator and
+`report` a `suspect_frozen_tests` report made `before: "implementation"`; the ledger must hold no candidate. It prints
+`{ identity, digest, encoded, decision: null, revision: { of, evidence }, files }` and exits 0; a refusal prints
+`revise refused: <reason>` and exits 1; any other arguments print the usage and exit 2.
 
 ### Contained JavaScript (`core/runtime/contained/runner.mjs`)
 
@@ -431,6 +442,11 @@ own `runner` gets `<atoms.json> --out <dir> --concurrency N --timeout S`, withou
 | `TOOLS_DIR` | `$(CURDIR)/.tools` | Where `make tools` installs the kernel test tools; `kernel-test` uses `$(TOOLS_DIR)/venv/bin/python` and puts `$(TOOLS_DIR)/bin` first on `PATH` when they exist. |
 | `WORK`, `TSC` | empty | Required by `make tscheck-requalify` (`--work DIR --tsc PATH`). |
 
+Setup targets run `npm ci --ignore-scripts` from a lockfile: `loop-setup` (`tools/asc`), `tscheck-setup`
+(`tools/tscheck`) and `rust-lane-setup` (`tools/rust_lane`). `isolate-test` depends on `loop-setup` and
+`tscheck-setup`, `loop-test` on `loop-setup`, `tscheck-test` on `tscheck-setup`, and `rust-lane-test` on
+`rust-lane-setup`.
+
 ## Change history
 
 | Version | Date | Commit | Change | Reviewed in |
@@ -438,4 +454,5 @@ own `runner` gets `<atoms.json> --out <dir> --concurrency N --timeout S`, withou
 | 1.0 | before 2026-11-08 | — | Written in PR #129 at `d4d7efa` | earlier PRs |
 | 2.0 | 2026-11-08 | `4d692a4` | Metadata header and change history added; content re-baselined | #131 |
 | 3.0 | 2026-11-08 | `63e95c7` | Rewritten and re-verified against the code: common-settings table, `runNeed`, `openLibrary`, dump-list, job and atomizer settings added; `HC_WORK`, `XDG_RUNTIME_DIR`, `XDG_STATE_HOME` listed | this PR |
-| 3.1 | 2026-11-09 | gap closure | Library `retrieval`, `principal`, `environment`; synthesis `begin` options; compatibility route `freeze`/`promote`; transport `model` default, `testDouble` and per-instance `governor`; per-stage `maxTokens`; relative `ENDOFORGE_CODEX_CMD`; Conductor `claudeTools` and criteria checks; hillclimb default runner | this commit |
+| 3.1 | 2026-11-09 | gap closure | Library `retrieval`, `principal`, `environment`; synthesis `begin` options; compatibility route `freeze`/`promote`; transport `model` default, `testDouble` and per-instance `governor`; per-stage `maxTokens`; relative `ENDOFORGE_CODEX_CMD`; Conductor `claudeTools` and criteria checks; hillclimb default runner | `dc6ba4c` |
+| 3.2 | 2026-11-09 | round 2 | `runNeed` `principal` and `suspect`; `containedRoute` on every path with promotion; `revise` ledger action; `rust-lane-setup` and the `isolate-test` setup dependencies | this commit |

@@ -99,7 +99,7 @@ turns and ledger writes leave it.
 |---|---|---|
 | [asc](asc/README.md) | Pins the AssemblyScript compiler (0.28.20) that workcells load, with file digests and workcell limits | Active; used by every `isolate` and `agent` loop run |
 | [tscheck](tscheck/README.md) | Type checks TypeScript inside workcells with `tsrs`, a WebAssembly build of the TypeScript 7 compiler | Active, opt-in route; `make tscheck-test` |
-| [gate](gate/README.md) | Stand-alone freeze-then-check runner for one kernel directory, gates G1 to G7 | Used inside atomizer compose atoms; older and smaller than the in-loop gates G1 to G9; no tests (GAP-EF-003) |
+| [gate](gate/README.md) | Stand-alone freeze-then-check runner for one kernel directory; compiles `kernel.ts` and runs the core gates G1 to G9, structured state included | Used inside atomizer compose atoms; tested by `tools/test_gate_structured.mjs` (REQ-GATECLI-001), which no `make` target runs yet |
 | [kernel](kernel/README.md) | The WIT kernel contract, its exact-interface validator and a Wasmtime host with limits and a per-call broker | Standalone conformance lane; nothing in the loop imports it; `make kernel-test` |
 | [compatibility](compatibility/README.md) | TypeScript binding of the kernel contract and a probe for trusted reference reducers | Standalone slice; `make compatibility-test` |
 | [rust_lane](rust_lane/README.md) | Reproducible Rust build of one reference kernel as a WIT component | Standalone slice; `make rust-lane-test`, not in `make test` |

@@ -3,10 +3,10 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-STP |
-| Version | 1.0 |
+| Version | 1.1 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
-| Date | 2026-11-08 |
+| Date | 2026-11-09 |
 | Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
 | Applies to | endoforge main at baseline commit, plus the trace and release-record tooling added in this re-baseline |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
@@ -31,7 +31,7 @@ N/A; the owner's merge is the sign-off. How-to detail: [run local checks](../gui
 | Unit (Python core and repository) | `core-test` | `python3 -B -m unittest discover -s tests -v` |
 | Unit (ledger, writer, dump list) | `ledger-test` | `core/ledger/test_*.py`, `tools/test_*.py` |
 | Unit (engine) | `engine-test` | `node --test core/engine/*.test.mjs` |
-| Integration (workcells, contained JS, capacity, transports, oracle) | `isolate-test` | `core/runtime/test/*.test.mjs` except the loop, pipeline, retry and agent-pool files |
+| Integration (workcells, contained JS, capacity, transports, oracle, the gap-closure tests) | `isolate-test` | `loop-setup` and `tscheck-setup` first, then `core/runtime/test/*.test.mjs` except the loop, pipeline, retry and agent-pool files |
 | Integration (X1 pipeline) | `pipeline-test` | `x1*`, `generator*`, `promotion*`, `synth*`, `pipeline-contained*` tests |
 | Integration (retry) | `pipeline-retry-test` | `pipeline-fallback*`, `pipeline-retry*` tests |
 | System (candidate loop, crash) | `loop-test` | `npm ci` in `tools/asc`, then `core/runtime/test/loop*.test.mjs` |
@@ -40,9 +40,11 @@ N/A; the owner's merge is the sign-off. How-to detail: [run local checks](../gui
 | Kernel host | `kernel-test` | Version check of `.tools/`, then `tools/kernel/test_*.py` |
 | Experiment receipt | `receipt-test` | `experiments/P-19-need-to-candidate/verify.py` |
 | Regression | CI `test` job | `make -k test` and `make -k test-optimized` on Node 22 and 26 |
+| Rust lane | CI `rust-lane` job | `make tools`, then `make rust-lane-test` on Rust 1.98.1 |
 
-Outside `make test`: `make rust-lane-test` (needs the pinned Rust toolchain, TP-6), `make tscheck-requalify` (TP-7)
-and the P-51 controls (TP-8).
+Outside `make test`: `make rust-lane-test` (needs the pinned Rust toolchain, TP-6; CI runs it in its own job),
+`make tscheck-requalify` (TP-7), the P-51 controls (TP-8) and `node --test tools/test_gate_structured.mjs`, which no
+`make` target runs yet (so `tests/test_reachability.py` reports it).
 
 ## 3. Test environment
 
@@ -135,9 +137,10 @@ Automated tests: the code is the procedure. Run one Node file with `node --test 
 
 - Purpose / requirements: REQ-RUST-001.
 - Preconditions: the pinned Rust toolchain from `tools/rust_lane/README.md`.
-- Steps: `make rust-lane-test`.
+- Steps: `make rust-lane-test` (runs `make rust-lane-setup` first). CI runs the same target in the `rust-lane` job
+  from 2026-11-09.
 - Expected result: exit 0.
-- Last run: not run in this baseline (GAP-EF-013).
+- Last run: not run in this baseline; the CI job's first run is pending.
 
 ### TP-7 — TypeScript checker requalification (manual)
 
@@ -161,7 +164,7 @@ Live model runs (experiments) follow each experiment's `PRECOMMIT.md`; they are 
 - Timing assertions can be disturbed by host load; `core/runtime/test/fixtures/timing.mjs` lets a run report them as
   skipped under load only when opted in.
 - Delegated cgroup enforcement needs a delegated scope and is untested locally and in CI (GAP-EF-001).
-- Twelve behaviours have no test; see [SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps).
+- Ten behaviours have no test; see [SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps).
 
 ## 9. Traceability
 
@@ -172,3 +175,4 @@ See the [verification matrix](verification-matrix.md).
 | Version | Date | Commit | Change | Reviewed in |
 |---|---|---|---|---|
 | 1.0 | 2026-11-08 | `4d692a4` | Initial baseline | this PR |
+| 1.1 | 2026-11-09 | round 2 | TP-6 runs in CI; gap count 10 | this commit |
