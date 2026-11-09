@@ -1,16 +1,26 @@
 # Getting started
 
-EndoForge is where AI coding agents build software. An agent such as Claude Code or Codex works inside a V8 isolate
-workcell: it writes a contract and tests, EndoForge freezes them, the agent writes the code, and the workcell compiles
-and checks it against the frozen tests. Only code that passes is promoted, and every step lands in a hash-chained
-ledger.
+EndoForge is where AI coding agents build software. An agent such as Claude Code or Codex works inside a
+*workcell*: a V8 isolate (the lightweight JavaScript sandbox Node.js and browsers use) that keeps the agent's
+conversation and files in memory, so many agents can work at once without starting processes or writing temporary
+files. In the workcell the agent first writes a contract and tests. EndoForge freezes them, so the agent cannot
+change what it will be judged by. Then the agent writes the code, and the workcell compiles it and checks it against
+the frozen tests. Only code that passes is promoted, and every step is recorded in a ledger: an append-only SQLite
+file where each record carries a hash of the one before it, so later edits are detectable.
 
-In this tutorial you run that loop on your own machine. First a scripted agent plays the model, so you need no account
-and every step is repeatable: you watch it ask for a coin-operated turnstile, fail a check, fix the code and get
-promoted. Then you read the ledger it wrote and call the program it built. At the end you see the exact commands that
-put Claude Code or Codex in the scripted agent's place.
+Why bother, instead of letting an agent run its own tests? Because here the agent never grades its own work: the
+evaluator is frozen before any code exists, the checks run outside the agent's control, and what passed is on record.
+A promoted program can be served again from the library instead of asking a model again.
 
-It takes about ten minutes. Every command below was run on Linux with Node.js 26.13.0 and Python 3.
+In this tutorial you run that loop on your own machine. First a scripted agent plays the model (a *test double*: a
+script that replays fixed answers), so you need no account and every step is repeatable. You watch it build a small
+coin-operated turnstile, fail a check, fix the code and get promoted. The turnstile is kept small so every step fits
+on screen; real agents in the same loop build whatever they are asked to. (For work that spans a whole repository,
+[run a job](../how-to/run-a-job.md) has Codex and Claude Code workers edit a real repository side by side, each change
+gated the same way.) Then you read the ledger and call the program. At the end you see the exact commands that put Claude Code or Codex in the scripted agent's place.
+
+It takes about ten minutes. The commands in sections 1 to 6 were run on Linux with Node.js 26.13.0 and Python 3.14;
+section 7 says how its commands were checked without a real model.
 
 ## 1. Check the prerequisites
 
@@ -30,8 +40,9 @@ cd endoforge
 make check
 ```
 
-`make check` takes about a second. It checks Markdown links, the experiments index, source digests, experiment
-numbers, privacy and requirement traceability. The last line it prints is `data dictionary current`.
+`make check` takes about a second. It checks the repository itself (Markdown links, the experiments index, source
+digests, privacy and traceability), so a clean result means your clone is complete. The last line it prints is
+`data dictionary current`.
 
 ## 3. Install the pinned compiler
 
@@ -52,9 +63,10 @@ words:
 > A coin-operated turnstile. State 0 is locked, 1 is unlocked. Event 0 is a coin, 1 is a push. A coin unlocks it; a
 > push locks it again. Any other state or event is an error.
 
-The program the agent must write is a *kernel*: a pure WebAssembly module that takes the current state and an event
-and returns the next state. The agent also writes `glue.json`, which describes each argument and result for a user
-interface (here, code tables that name `locked`, `unlocked`, `coin` and `push`).
+The program the agent must write is a *kernel*: a pure WebAssembly function with no access to anything outside it,
+which takes the current state and an event and returns the next state. (Kernel here means application logic, not an
+operating-system kernel.) The agent also writes `glue.json`, which tells a user interface how to show each argument
+and result: here, tables that name the codes `locked`, `unlocked`, `coin` and `push`.
 
 The scripted agent answers the way a model does, as tool calls (`edit_file`, `check`, `done`). Its first kernel has a
 bug: a push leaves the state unchanged instead of locking. Its second kernel is correct. Run it:
@@ -86,14 +98,15 @@ It finishes in about two seconds. Your temporary path will differ:
 }
 ```
 
-What happened, turn by turn:
+What happened, in three agent turns and one commit:
 
 1. **Specification turn.** The workcell sent the need to the agent. The agent wrote `CONTRACT.md` and `tests.json`
    (five tests, including `push locks`: `next(1, 1)` must be `0`, and one test that an unknown event traps).
    EndoForge checked that every test can fail, then froze both files: their hashes went into the ledger before any
    code existed.
 2. **First implementation turn.** The agent wrote `kernel.ts` and `glue.json`. The workcell compiled the kernel and
-   ran gates G1 to G9. `G4_tests` failed on `push locks`.
+   ran gates G1 to G9, nine independent checks described in section 5. `G4_tests`, the frozen tests, failed on
+   `push locks`.
 3. **Repair turn.** The failure went back to the agent as its next prompt. It rewrote the kernel, every gate passed,
    and the agent said `done`.
 4. **Commit.** The host wrote the candidate, its receipt and a `promote` decision to the ledger in one transaction.
@@ -133,7 +146,8 @@ hash covers the one before it, so an edited record makes `Ledger(path).records()
 `ledger chain failed at sequence N`. The [ledger ICD](../../interfaces/ledger-icd.md) describes every record.
 
 The gates, briefly: G1 the frozen files are unchanged; G2 the kernel compiled and imports nothing but `env.abort`; G3
-it exports what the tests call; G4 the frozen tests pass on a fuel-metered instance; G5 a second fresh instance gives
+it exports what the tests call; G4 the frozen tests pass on a fuel-metered instance (one that counts instructions
+and stops a runaway loop); G5 a second fresh instance gives
 the same results; G6 it never runs out of fuel or stack; G7 the glue matches its closed schema and the exports;
 G8 float arguments given NaN or infinity behave as the contract says; G9 the units in the glue agree with the
 kernel's arithmetic. The
@@ -184,9 +198,11 @@ stopped. The receipt was still written, and `show-gates.py` on this ledger print
 
 ## 7. Put a real agent in the loop
 
-The scripted agent stands in for a model transport. To use a real one, swap the provider; everything else (the
-workcell, the freeze, the gates, the ledger) stays the same. This tutorial does not call a real model. The commands
-below were run against test-double CLIs, and the experiments linked under each one ran them with real models.
+The scripted agent stands in for a *provider*, the piece that answers the workcell's model turns. A real provider
+wraps a model CLI (a *transport*). Swap it, and everything else (the workcell, the freeze, the gates, the ledger)
+stays the same. This tutorial does not call a real model: we ran the commands below with stand-in CLIs that behave
+like `claude` and `codex` without a model behind them, and the experiments linked under each one ran them with real
+models.
 
 ### Claude Code
 
@@ -223,8 +239,9 @@ effort arms).
 
 ### Codex
 
-Codex writes files in a working directory rather than answering with tool calls, so it runs on the `isolate` path:
-`codex exec` generates on the host, and the freeze, compile, gates and commit happen in the workcell. Log in with a
+Codex writes files in a working directory rather than answering with tool calls, so it uses a different loop path,
+`isolate`: `codex exec` writes the files on the host machine, and the freeze, compile, gates and commit happen in the
+workcell. Log in with a
 ChatGPT plan (`codex login`), then check:
 
 ```sh

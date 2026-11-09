@@ -31,32 +31,50 @@ can only edit `kernel.ts` and `glue.json`.
 
 ## Run one need
 
+This runs one need with Claude Code as the agent:
+
 ```js
 import { createLoopPool } from './core/runtime/x1/loop.mjs';
 import { runNeed } from './core/runtime/x1/pipeline.mjs';
-import { scriptedProvider } from './core/runtime/x1/transports.mjs';
+import { WarmClaudeTransport } from './core/runtime/x1/transports.mjs';
 
+const provider = new WarmClaudeTransport({ model: 'sonnet', effort: 'low' });
 const pool = createLoopPool({ provider });
 try {
   const result = await runNeed({ need, directory, pool, env: { ENDOFORGE_LOOP: 'agent' } });
+  console.log(result.promoted, result.agent);
 } finally {
   await pool.close();
+  await provider.close();
 }
 ```
 
-- `need` is the request in plain words, a non-empty string.
-- `directory` is where this need's ledger goes (`<directory>/ledger.sqlite`). Its last path segment becomes the
-  candidate's id, which `glue.json` must repeat. Use a fresh path per need.
+- `need` is the request in plain words, a non-empty string. Say what the program must do, its inputs and outputs,
+  and which inputs are errors; the agent turns it into the contract and tests.
+- `directory` is where this need's ledger goes (`<directory>/ledger.sqlite`). Use a fresh path per need. Its last
+  path segment becomes the candidate's id, which the agent repeats in `glue.json`.
 - `env` selects the loop. Pass `{ ENDOFORGE_LOOP: 'agent' }` explicitly; without it, `runNeed` reads `process.env`.
+- With no `instances` option, the transport uses the login in `~/.claude` (or `CLAUDE_CONFIG_DIR`). It must be a
+  claude.ai Pro, Max or Team login; check with `claude auth status`.
+- `provider.close()` stops the long-lived `claude -p` processes.
 
-[`examples/agent-loop.mjs`](../../../examples/agent-loop.mjs) is a complete, runnable version with a scripted
-provider:
+Two runnable versions are in `examples/`. [`agent-loop.mjs`](../../../examples/agent-loop.mjs) uses a scripted
+provider and needs no account:
 
 ```sh
 node examples/agent-loop.mjs
 ```
 
 It prints `"promoted": true` after one failed round and three agent turns.
+[`claude-agent-loop.mjs`](../../../examples/claude-agent-loop.mjs) is the snippet above with command-line options:
+
+```sh
+node examples/claude-agent-loop.mjs --model sonnet --effort low "Convert kilowatts to mechanical horsepower for 0 to 10000 kW."
+```
+
+We ran it here only with the P-56 stand-in CLI (`--command experiments/P-56-model-effort/fake-cli.mjs` and a
+throwaway login directory), where it printed `"promoted": true` after one failed round. Real runs of this transport
+are in [P-50](../../../experiments/P-50-in-isolate/RESULT.md) and [P-56](../../../experiments/P-56-model-effort/RESULT.md).
 
 ## Choose a provider
 
@@ -79,33 +97,32 @@ which parks new calls before the login's usage window runs out. `instances` take
 `[{ name, configDir, lanes }]` to spread turns over several logins. Every option is in the
 [configuration reference](../../configuration/configuration-reference.md#claude-transports).
 
-[`examples/claude-agent-loop.mjs`](../../../examples/claude-agent-loop.mjs) wires a `WarmClaudeTransport` into the
-loop:
-
-```sh
-node examples/claude-agent-loop.mjs --model sonnet --effort low "Convert kilowatts to mechanical horsepower for 0 to 10000 kW."
-```
-
-We ran it here only against the P-56 test-double CLI
-(`--command experiments/P-56-model-effort/fake-cli.mjs` and a throwaway login directory), where it printed
-`"promoted": true` after one failed round. [P-56](../../../experiments/P-56-model-effort/RESULT.md) ran this
-transport with real models.
-
 ### Codex
 
-Codex is not a provider: it edits files in a working directory instead of replying with tool calls. Run it on the
-`isolate` path, where `codex exec` generates on the host and the freeze, compile, gates and commit happen in a
-workcell. Create the pool without a provider and set the Codex command and login:
+Codex is not a provider: it edits files in a working directory instead of replying with tool calls. It runs on the
+`isolate` path, where `codex exec` writes the files on the host and the freeze, compile, gates and commit happen in a
+workcell. Create the pool without a provider and pass the Codex command and login in `env`:
+
+```js
+const pool = createLoopPool();
+const result = await runNeed({ need, directory, pool,
+  env: { ...process.env, ENDOFORGE_LOOP: 'isolate', ENDOFORGE_CODEX_CMD: 'codex', CODEX_HOME: `${process.env.HOME}/.codex` } });
+```
+
+`CODEX_HOME` holds a ChatGPT-plan login made with `codex login`; `codex login status` should print
+`Logged in using ChatGPT`. [`examples/codex-loop.mjs`](../../../examples/codex-loop.mjs) is the same with the
+settings read from the environment:
 
 ```sh
 ENDOFORGE_CODEX_CMD=codex CODEX_HOME=~/.codex node examples/codex-loop.mjs "<need>"
 ```
 
-[`examples/codex-loop.mjs`](../../../examples/codex-loop.mjs) calls `runNeed` with
-`{ ...process.env, ENDOFORGE_LOOP: 'isolate' }`. Set `ENDOFORGE_CODEX_CMD` to `["node","<absolute path>/core/runtime/agent-pool.mjs"]`
-to rotate over several Codex logins. We ran it here with the `fake-codex.mjs` test fixture as `ENDOFORGE_CODEX_CMD`,
-directly and through the account pool. The `ENDOFORGE_CODEX_*` variables in the
-[configuration reference](../../configuration/configuration-reference.md#x1-loop-and-generation) tune the prompts,
+To spread needs over several Codex logins, set `ENDOFORGE_CODEX_CMD` to
+`["node","<absolute path>/core/runtime/agent-pool.mjs"]`: the account pool runs `codex` with the next free login and
+cools a login down when it hits a rate limit. We ran the example here with the `fake-codex.mjs` test fixture as the
+command, directly and through the pool. Real Codex runs are in [P-22](../../../experiments/P-22-real-need-to-candidate/RESULT.md)
+and [P-28](../../../experiments/P-28-p21-nov2/RESULT.md). The `ENDOFORGE_CODEX_*` variables in the
+[configuration reference](../../configuration/configuration-reference.md#x1-loop-and-generation) tune its prompts,
 effort and sessions.
 
 ## The three loop paths
@@ -116,8 +133,13 @@ effort and sessions.
 | `isolate` | `codex exec` on the host | Freeze, compile, gates and commit in a workcell | `createLoopPool()` |
 | unset | `codex exec` on the host | Compile on the host (`ENDOFORGE_ASC_CMD`), gates in a workcell | `new IsolatePool({ hostPort: 'core/runtime/x1/host.mjs' })` |
 
-Evaluator synthesis and the library are wired into the unset (current) path only; see
-[turn on evaluator synthesis](turn-on-evaluator-synthesis.md) and [reuse with the library](reuse-with-the-library.md).
+The unset path, called `current`, is the original one: it spawns the compiler and writes temporary files on the
+host, and it is where evaluator synthesis and the library are wired in (see
+[turn on evaluator synthesis](turn-on-evaluator-synthesis.md) and [reuse with the library](reuse-with-the-library.md)).
+The `agent` and `isolate` paths keep everything up to the commit inside the workcell. With a scripted model,
+[P-50](../../../experiments/P-50-in-isolate/RESULT.md) measured the time spent outside the model per candidate at
+1,472 ms on `current`, 301 ms on `isolate` and 132 ms on `agent` (p50). Use `agent` for Claude Code, `isolate` for
+Codex, and `current` when you need synthesis or the library.
 
 ## Set the pool
 
