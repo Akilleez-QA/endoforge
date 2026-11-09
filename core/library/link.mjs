@@ -185,7 +185,7 @@ export function signatureOf(bytes, fn) {
   return shape;
 }
 function wrapper(spec, parts, resolved, placeOf) {
-  const params = spec.params.length, locals = [], code = [];
+  const params = spec.params.length, inputs = params - (spec.bufferResult === undefined ? 0 : 1), locals = [], code = [];
   const local = index => [0x20, ...uleb(index)];
   let previous = null, previousType = null, previousBuffer = null;
   spec.stages.forEach((stage, index) => {
@@ -203,7 +203,7 @@ function wrapper(spec, parts, resolved, placeOf) {
         if (index === 0 || !previousBuffer || previousBuffer.size !== size) refuse('adapter_arity', `${stage.fn} takes a ${size}-byte buffer the previous stage does not produce`);
         code.push(...narrowConst(physical), ...narrowConst(previousBuffer.at));
       } else {
-        if (!Number.isInteger(arg.input) || arg.input < 0 || arg.input >= params) refuse('adapter_arity', `input ${arg.input}`);
+        if (!Number.isInteger(arg.input) || arg.input < 0 || arg.input >= inputs) refuse('adapter_arity', `input ${arg.input}`);
         code.push(...narrowConst(physical), ...local(arg.input));
       }
       code.push(...narrowConst(size), 0xfc, 10, 0, 0);
@@ -217,7 +217,7 @@ function wrapper(spec, parts, resolved, placeOf) {
         if (index === 0 || previous === null) refuse('adapter_arity', 'the first stage has no previous output');
         code.push(...local(previous), ...adapted(previousType, wanted, arg));
       } else {
-        if (!Number.isInteger(arg.input) || arg.input < 0 || arg.input >= params) refuse('adapter_arity', `input ${arg.input}`);
+        if (!Number.isInteger(arg.input) || arg.input < 0 || arg.input >= inputs) refuse('adapter_arity', `input ${arg.input}`);
         code.push(...local(arg.input), ...adapted(spec.params[arg.input], wanted, arg));
       }
     });

@@ -548,3 +548,27 @@ test('H7 a pipeline whose stage layouts disagree is refused', async t => {
   const plan = { exports: [{ name: 'step', stages: [{ entry: 'incer', fn: 'inc' }, { entry: 'doubler', fn: 'dbl' }] }] };
   assert.equal((await library.compose({ capability: stepCap('step'), files: frozen('Add one then double the balance.', tests) }, plan)).reason, 'plan_mismatch');
 });
+const count = { kind: 'integer', unit: '1', name: 'n', label: 'N' }, whole = { kind: 'integer', unit: '1' };
+test('H7 a plan cannot hand the hidden output pointer to a scalar parameter', async t => {
+  const root = await scratch(t);
+  const cap = name => ({ exports: [{ name, args: [count], result: balance }], traps: [] });
+  const library = await seed(join(root, 'l.jsonl'), [{ id: 'poker', bytes: poke, cap: cap('poke'), contract: 'Writes a balance.' }]);
+  t.after(() => library.close());
+  const tests = JSON.stringify([{ name: 'step', fn: 'step', args: [1], expect: { total: 0 } }]);
+  const plan = { exports: [{ name: 'step', stages: [{ entry: 'poker', fn: 'poke', args: [{ input: 1 }] }] }] };
+  assert.equal((await library.compose({ capability: cap('step'), files: frozen('Write a balance.', tests) }, plan)).reason, 'adapter_arity');
+});
+test('H7 a plan cannot pass a host buffer address as a scalar', async t => {
+  const root = await scratch(t);
+  const library = await seed(join(root, 'l.jsonl'), [
+    { id: 'peeker', bytes: peek, cap: { exports: [{ name: 'peek', args: [count], result: whole }], traps: [] }, contract: 'Reads a word.' },
+    { id: 'poker', bytes: poke, cap: { exports: [{ name: 'poke', args: [count], result: balance }], traps: [] }, contract: 'Writes a balance.' }]);
+  t.after(() => library.close());
+  const reading = { exports: [{ name: 'read', args: [{ ...balance, name: 'state' }], result: whole }], traps: [] };
+  const readTests = JSON.stringify([{ name: 'read', fn: 'read', args: [{ total: 1 }], expect: 0 }]);
+  const writeTests = JSON.stringify([{ name: 'write', fn: 'write', args: [{ total: 1 }], expect: { total: 0 } }]);
+  const scalar = await library.compose({ capability: reading, files: frozen('Read a word.', readTests) }, { exports: [{ name: 'read', stages: [{ entry: 'peeker', fn: 'peek', args: [{ input: 0 }] }] }] });
+  assert.equal(scalar.reason, 'plan_mismatch', JSON.stringify(scalar));
+  const mixed = await library.compose({ capability: stepCap('write'), files: frozen('Write a balance.', writeTests) }, { exports: [{ name: 'write', stages: [{ entry: 'poker', fn: 'poke', args: [{ input: 0 }] }] }] });
+  assert.equal(mixed.reason, 'plan_mismatch', JSON.stringify(mixed));
+});

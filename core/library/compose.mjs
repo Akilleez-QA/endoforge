@@ -40,6 +40,10 @@ export function buildComposition({ plan, capability, parts }) {
     const staged = stages.map((stage, index) => {
       const part = partIndex.get(stage.entry), own = declaredBy(stage.entry, stage.fn), abi = own ? abiOf(own) : null;
       const fallback = index === 0 ? inputs.map((_, input) => ({ input })) : [{ previous: true }], args = stage.args ?? fallback;
+      args.forEach((arg, position) => {
+        const source = shape.args[arg.input], target = own?.args[position];
+        if (source && isBuffer(source) && !(target && isBuffer(target))) refuseStage(`${stage.fn} argument ${position} is a scalar and cannot take a buffer`);
+      });
       if (!abi) signatureOf(buffers[part], stage.fn);
       else {
         if (args.length !== own.args.length) throw new LinkError('adapter_arity', `${stage.fn} takes ${own.args.length} arguments, the plan gives ${args.length}`);
