@@ -2,8 +2,8 @@
 
 EndoForge is where AI coding agents build software. An agent such as Claude Code or Codex works inside a
 *workcell*: a V8 isolate (the lightweight JavaScript sandbox Node.js and browsers use) that keeps the agent's
-conversation and files in memory, so many agents can work at once without starting processes or writing temporary
-files. In the workcell the agent first writes a contract and tests. EndoForge freezes them, so the agent cannot
+conversation and files in memory, so many agents can work at once without starting a process or writing a temporary
+file for each step. In the workcell the agent first writes a contract and tests. EndoForge freezes them, so the agent cannot
 change what it will be judged by. Then the agent writes the code, and the workcell compiles it and checks it against
 the frozen tests. Only code that passes is promoted, and every step is recorded in a ledger: an append-only SQLite
 file where each record carries a hash of the one before it, so later edits are detectable.
