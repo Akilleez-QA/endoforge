@@ -9,29 +9,31 @@ Follow [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) and
 
 ## Repository boundaries
 
-- `core/` contains the Python lifecycle model, evidence ledger, and engine evaluator
-  and gates, plus local agent execution pools in `core/runtime/`. It models
-  proposals and decisions, stores linked evidence, evaluates candidates through
-  caller-supplied host callbacks, and launches configured agent clients. Lifecycle
-  transitions validate references without granting authority.
-- `tools/` contains workflow orchestration, quality support, and scheduling utilities,
-  including Python and JavaScript modules.
-- `tests/` exercises lifecycle behavior and the core boundary.
-- `campaigns/`, `experiments/`, and `docs/` provide guidance for supplying inputs.
-- `sources/SHA256SUMS` records source digests checked by `make check`.
-- `experiments/README.md`'s index and `sources/SHA256SUMS` are generated (`make index`, `make sums`); reserve experiment numbers with `tools/experiment_id.py reserve` (see `experiments/README.md`).
+- `core/` holds the Python lifecycle model (`core/lifecycle.py`), ledger (`core/ledger/`), constraint records
+  (`core/constraints/`), the engine evaluator and gates (`core/engine/`), the kernel library (`core/library/`) and the
+  runtime (`core/runtime/`: isolate workcells, the X1 candidate loop, contained JavaScript, model transports, the
+  subscription guard, the usage governor, the capacity planner and the dump list). Lifecycle transitions validate
+  references without granting authority.
+- `tools/` holds workflow tools and repository scripts; [tools/README.md](tools/README.md) lists each.
+- `tests/` exercises lifecycle behaviour, the core boundary and the repository checks.
+- `experiments/` holds precommitted measurements. Don't rewrite a merged `PRECOMMIT.md` or `RESULT.md`; their hashes are
+  recorded.
+- `sources/SHA256SUMS` and the index in `experiments/README.md` are generated: run `make sums` and `make index` after
+  changing a listed file or an experiment's `INDEX.md`. Reserve a new P-number with `python3 -I tools/experiment_id.py
+  reserve <slug>`.
+- `docs/` is indexed by [docs/README.md](docs/README.md). Add new docs there.
 
 Keep changes focused. Open an issue before larger work, as CONTRIBUTING requires.
 Use synthetic identifiers and local paths in examples. Keep generated evidence
-outside the source tree. Do not publish credentials, account directories,
-private inputs, or sensitive receipts.
+outside the source tree. Do not publish credentials, account directories, home-directory paths,
+private inputs, or sensitive receipts; `make check` runs a privacy lint over experiment records.
+Model calls must run on a subscription login: the subscription guard refuses anything else, and tests use test doubles.
 
 ## Verification
 
-The README requires Python 3.11+, Node.js 20+, GNU Make, and bubblewrap for
-isolate checks. CI uses Python 3.12 and Node.js 22 and 26 and installs `age`, bubblewrap and `gcc`.
-Public agent clients are optional; tests use synthetic inputs and stubs.
-`make test` also needs the kernel tools in [tools/kernel/README.md](tools/kernel/README.md).
+Requirements: Python 3.11+, Node.js 22.8+, GNU Make, and bubblewrap. CI uses Python 3.12 and Node.js 22 and 26 and
+installs `age`, bubblewrap and `gcc`. Run `make tools` once per checkout; it installs the pinned wasm-tools and a
+Python virtual environment for the kernel tests into `.tools/`.
 
 Run from the repository root:
 
@@ -41,14 +43,13 @@ make test
 make test-optimized
 ```
 
-`make check` checks Markdown links and source digests. `make test` includes that
-check and the test targets in [Makefile](Makefile); `make test-optimized` repeats
-the suite with Python optimization enabled. Report commands and actual results,
+`make check` checks Markdown links, source digests, the experiments index, experiment number allocation and the
+privacy lint. `make test` includes that check and the test targets in [Makefile](Makefile); `make test-optimized`
+repeats the suite with Python optimization enabled. Report commands and actual results,
 including failures or unavailable prerequisites. Do not claim unrun checks passed.
 
-`tests/test_reachability.py` fails when a test file is not reached by `make test`.
-Wire a new test into a target, or list it with a reason in
-`tests/test-reachability.json`.
+Tests are discovered by glob in the Makefile. `tests/test_reachability.py` fails when a test file is not reached by
+`make test`. Wire a new test into a target, or list it with a reason in `tests/test-reachability.json`.
 
 ## Contributions
 
