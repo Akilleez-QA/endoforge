@@ -102,8 +102,11 @@ async function runAtom(atom) {
         w = { cmd: [] }; r = { exit: 127, stdout: '', stderr: meta.reason, wallMs: 0 }; break;
       }
       w = workerCommand(doc, atom, staged, policy, REPO, sel);
-      r = await runIsolated({ homeTemplate, mounts: [{ host: inDir, guest: '/in', mode: 'ro' }, { host: outDir, guest: '/out', mode: 'rw' }, { host: workDir, guest: '/work', mode: 'rw' }, ...atomBinds(atom, policy).mounts], toolchain: w.toolchain, cmd: w.cmd, stdin: w.stdin, cwd: '/work', timeoutMs: atomTimeoutMs(atom, policy, TIMEOUT),
-        ...(isCodex ? { pool: { bin, env: { CODEX_POOL_TIER: sel.tier, ...(sel.tier === 'throwaway' ? { CODEX_POOL_THROWAWAY: '1' } : {}) } } } : {}) });
+      try { r = await runIsolated({ homeTemplate, mounts: [{ host: inDir, guest: '/in', mode: 'ro' }, { host: outDir, guest: '/out', mode: 'rw' }, { host: workDir, guest: '/work', mode: 'rw' }, ...atomBinds(atom, policy).mounts], toolchain: w.toolchain, cmd: w.cmd, stdin: w.stdin, cwd: '/work', timeoutMs: atomTimeoutMs(atom, policy, TIMEOUT),
+        ...(isCodex ? { pool: { bin, env: { CODEX_POOL_TIER: sel.tier, ...(sel.tier === 'throwaway' ? { CODEX_POOL_THROWAWAY: '1' } : {}) } } } : {}) }); } catch (error) {
+        if (error?.code !== 'EX_CONFIG') throw error;
+        meta.reason = error.message; r = { exit: error.exitCode ?? 78, stdout: '', stderr: error.message, wallMs: 0, tries: [] }; break;
+      }
       if (r.claudeAccount) meta.account = r.claudeAccount;
       T.span('isolate.home', r.spawnEpoch - r.homeMs, r.spawnEpoch, { atom: atom.id, attempt });
       if (isCodex) {

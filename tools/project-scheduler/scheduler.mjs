@@ -1,4 +1,3 @@
-// Cross-project fan-out: one bounded batch, disjoint pieces, then a project-local join.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -6,7 +5,6 @@ import { spawn } from 'node:child_process';
 import { ownershipMap, workerCapacity, waveSize } from '../hillclimb/lib/fanout.mjs';
 import { headroom } from '../lib/headroom.mjs';
 
-const queue = process.env.ENDOFORGE_GPU_QUEUE;
 const key = (s) => typeof s === 'string' && /^[a-zA-Z0-9][a-zA-Z0-9_-]*$/.test(s);
 const integer = (n) => Number.isSafeInteger(n) && n >= 0;
 const argv = (a) => Array.isArray(a) && a.length > 0 && a.every((s) => typeof s === 'string' && s.length > 0);
@@ -17,10 +15,11 @@ export function validate(batch) {
   if (!Array.isArray(batch.jobs) || !batch.jobs.length) throw Error('jobs required');
   const ids = new Set(), pieces = {}, reservations = {};
   for (const [project, policy] of Object.entries(batch.projects ?? {})) {
-    if (!key(project) || !integer(policy.tokenBudget) ||
+    if (!key(project) || !policy || typeof policy !== 'object' || !integer(policy.tokenBudget) ||
         !integer(policy.gpuPriority ?? 5)) throw Error(`invalid project policy: ${project}`);
   }
   for (const job of batch.jobs) {
+    if (!job || typeof job !== 'object') throw Error('invalid job');
     if (!key(job.id) || ids.has(job.id)) throw Error(`invalid or duplicate job: ${job.id}`);
     ids.add(job.id);
     if (!key(job.project) || !Object.hasOwn(batch.projects ?? {}, job.project)) throw Error(`unknown project: ${job.project}`);
@@ -32,14 +31,14 @@ export function validate(batch) {
       if (!Array.isArray(piece.files) || !piece.files.length || piece.files.some((f) =>
         typeof f !== 'string' || !f.length || path.isAbsolute(f) || f.includes('\\') || f.split('/').some((s) => !s || s === '.' || s === '..'))) throw Error(`${job.id}: invalid files`);
       if (piece.gpu != null && typeof piece.gpu !== 'boolean') throw Error(`${job.id}: gpu must be boolean`);
-      pieces[`${job.id}:${piece.id}`] = piece;
+      (pieces[job.project] ??= {})[`${job.id}:${piece.id}`] = piece;
       reservations[job.project] = (reservations[job.project] ?? 0) + piece.maxTokens;
     }
     if (job.recombine.gpu != null && typeof job.recombine.gpu !== 'boolean') throw Error(`${job.id}: gpu must be boolean`);
     if (!integer(job.recombine.maxTokens)) throw Error(`${job.id}: recombine.maxTokens required`);
     reservations[job.project] += job.recombine.maxTokens;
   }
-  const errors = ownershipMap({ pieces, contracts: batch.contracts ?? [] }).errors;
+  const errors = Object.values(pieces).flatMap((owned) => ownershipMap({ pieces: owned, contracts: batch.contracts ?? [] }).errors);
   if (errors.length) throw Error(errors.join('; '));
   for (const [project, tokens] of Object.entries(reservations)) {
     if (!integer(tokens) || tokens > batch.projects[project].tokenBudget) throw Error(`${project}: token budget exceeded (${tokens})`);
@@ -47,15 +46,14 @@ export function validate(batch) {
   return reservations;
 }
 
-export function commandFor(batch, job, piece) {
+export function commandFor(batch, job, piece, env = process.env) {
   if (!piece.gpu) return piece.command;
+  const queue = env.ENDOFORGE_GPU_QUEUE;
   if (!queue) throw Error('Set ENDOFORGE_GPU_QUEUE before requesting GPU execution');
   const priority = batch.projects[job.project].gpuPriority ?? 5;
   return ['python3', queue, '--name', `${job.project}-${job.id}-${piece.id}`, '--priority', String(priority), '--', ...piece.command];
 }
 
-// Commands receive their reservation. Model runners must enforce maxTokens; this scheduler
-// reserves worst-case usage up front and never refunds failures or silently retries a billable atom.
 export function execute(command, context) {
   return new Promise((resolve, reject) => {
     const child = spawn(command[0], command.slice(1), { stdio: ['ignore', 2, 2], env: {
@@ -68,17 +66,23 @@ export function execute(command, context) {
   });
 }
 
+export function preflight(batch, env = process.env) {
+  const reserved = validate(batch);
+  for (const job of batch.jobs) for (const step of [...job.pieces, job.recombine]) commandFor(batch, job, step, env);
+  return reserved;
+}
+
 export async function schedule(batch, {
   run = execute, capacity = workerCapacity, room = () => headroom().ok,
-  pause = () => new Promise((resolve) => setTimeout(resolve, 250)),
+  pause = () => new Promise((resolve) => setTimeout(resolve, 250)), env = process.env,
 } = {}) {
-  const reserved = validate(batch); // Complete preflight before any command can spend tokens.
+  const reserved = preflight(batch, env);
   const jobs = batch.jobs.map((job) => ({ ...job, state: 'pending', results: [], next: 0, active: 0 }));
   const running = new Set();
   let cursor = 0;
   function launch(job, piece, joining = false) {
     job.active++;
-    const task = Promise.resolve().then(() => run(commandFor(batch, job, piece), {
+    const task = Promise.resolve().then(() => run(commandFor(batch, job, piece, env), {
       project: job.project, job: job.id, piece: piece.id, maxTokens: piece.maxTokens,
       results: joining ? job.results : undefined,
     })).then((result) => {
@@ -92,7 +96,6 @@ export async function schedule(batch, {
     const slots = waveSize(batch.concurrency, capacity());
     let launched = false;
     if (running.size < slots && room()) {
-      // Rotate across jobs so a job's pending pieces cannot monopolize slots.
       for (let i = 0; i < jobs.length; i++) {
         const at = (cursor + i) % jobs.length, job = jobs[at];
         if (['failed', 'succeeded', 'joining'].includes(job.state)) continue;
@@ -114,7 +117,7 @@ export async function schedule(batch, {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const batch = JSON.parse(fs.readFileSync(process.argv[2], 'utf8'));
-    const report = process.argv.includes('--check') ? { reserved: validate(batch) } : await schedule(batch);
+    const report = process.argv.includes('--check') ? { reserved: preflight(batch) } : await schedule(batch);
     console.log(JSON.stringify(report, null, 2));
     if (report.jobs?.some((j) => j.state === 'failed')) process.exitCode = 1;
   } catch (error) { console.error(error.message); process.exitCode = 1; }

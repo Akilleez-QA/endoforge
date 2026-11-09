@@ -1,0 +1,146 @@
+{
+ "schema": "endoforge/atoms/1",
+ "need": {
+  "id": "synthetic-pair",
+  "text": "Synthetic need: one seed, two parts, one composition; exists only to exercise the atomizer commands."
+ },
+ "acceptance": [
+  {
+   "id": "A1",
+   "statement": "the composition holds both parts in order",
+   "check": {
+    "kind": "command",
+    "run": "test \"$(cat /in/compose/all.txt)\" = \"$(printf 'seed left\\nseed right')\""
+   }
+  }
+ ],
+ "atoms": [
+  {
+   "id": "src",
+   "kind": "data",
+   "title": "src",
+   "contract": "Synthetic atom src: run its command and write its declared outputs; nothing else.",
+   "inputs": [
+    {
+     "from": "need"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "seed",
+     "path": "seed.txt"
+    }
+   ],
+   "verify": "declared outputs exist and are non-empty",
+   "worker": {
+    "model": "script",
+    "command": [
+     "sh",
+     "-c",
+     "echo seed > /out/seed.txt"
+    ]
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "left",
+   "kind": "data",
+   "title": "left",
+   "contract": "Synthetic atom left: run its command and write its declared outputs; nothing else.",
+   "inputs": [
+    {
+     "from": "src",
+     "output": "seed"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "part",
+     "path": "part.txt"
+    }
+   ],
+   "verify": "declared outputs exist and are non-empty",
+   "worker": {
+    "model": "script",
+    "command": [
+     "sh",
+     "-c",
+     "echo \"$(cat /in/src/seed.txt) left\" > /out/part.txt"
+    ]
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "right",
+   "kind": "data",
+   "title": "right",
+   "contract": "Synthetic atom right: run its command and write its declared outputs; nothing else.",
+   "inputs": [
+    {
+     "from": "src",
+     "output": "seed"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "part",
+     "path": "part.txt"
+    }
+   ],
+   "verify": "declared outputs exist and are non-empty",
+   "worker": {
+    "model": "script",
+    "command": [
+     "sh",
+     "-c",
+     "echo \"$(cat /in/src/seed.txt) right\" > /out/part.txt"
+    ]
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  },
+  {
+   "id": "compose",
+   "kind": "compose",
+   "title": "compose",
+   "contract": "Synthetic atom compose: run its command and write its declared outputs; nothing else.",
+   "inputs": [
+    {
+     "from": "left",
+     "output": "part"
+    },
+    {
+     "from": "right",
+     "output": "part"
+    }
+   ],
+   "outputs": [
+    {
+     "name": "all",
+     "path": "all.txt"
+    }
+   ],
+   "verify": "declared outputs exist and are non-empty",
+   "worker": {
+    "model": "script",
+    "command": [
+     "sh",
+     "-c",
+     "cat /in/left/part.txt /in/right/part.txt > /out/all.txt"
+    ]
+   },
+   "size": {
+    "work": 1,
+    "interface": 1
+   }
+  }
+ ]
+}

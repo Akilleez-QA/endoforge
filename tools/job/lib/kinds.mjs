@@ -13,10 +13,17 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const DIRS = [path.join(path.dirname(fileURLToPath(import.meta.url)), '../kinds'), ...(process.env.ENDOFORGE_JOB_KINDS ?? '').split(':').filter(Boolean)];
-export const KINDS = {};
+const RULE_KEYS = ['id', 'note', 'proxyCheckKinds', 'splitByTests', 'requireCheckKinds', 'requireAnyCheckKind', 'measureReferencesGoverning', 'requireCheckField', 'requiresTruth'];
+export const KINDS = Object.create(null);
 for (const d of DIRS) {
   let files = []; try { files = fs.readdirSync(d).filter((f) => f.endsWith('.json')); } catch { continue; }
-  for (const f of files) { const k = JSON.parse(fs.readFileSync(path.join(d, f), 'utf8')); KINDS[k.id] = withChecks(k); }
+  for (const f of files) {
+    const file = path.join(d, f), k = JSON.parse(fs.readFileSync(file, 'utf8'));
+    if (!k || typeof k !== 'object' || typeof k.id !== 'string' || !/^[a-z0-9][a-z0-9_-]*$/.test(k.id)) throw new Error(`job kind ${file}: id must be a lower-case name`);
+    const unknown = Object.keys(k).filter((key) => !RULE_KEYS.includes(key));
+    if (unknown.length) throw new Error(`job kind ${file}: unknown rule ${unknown.join(', ')} (known: ${RULE_KEYS.join(', ')})`);
+    KINDS[k.id] = withChecks(k);
+  }
 }
 
 const kindOf = (x, k) => x.criteria.filter((c) => c.check?.kind === k);

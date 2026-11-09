@@ -62,7 +62,12 @@ async function turn(text, label) {
   let cmd, stdin = null, toolchain;
   if (model === 'codex') { cmd = ['codex', ...policy.codexFlags, '-o', '/work/atoms.json', text]; toolchain = toolchainFor(['codex'], policy, REPO); }
   else { cmd = ['claude', '-p', ...policy.claudeLeanFlags, '--model', policy.models[model], '--tools', '']; stdin = text; toolchain = toolchainFor(['claude', 'node'], policy, REPO); }
-  const r = await runIsolated({ homeTemplate, mounts: [{ host: work, guest: '/work', mode: 'rw' }], toolchain, cmd, stdin, cwd: '/work', timeoutMs: 900_000 });
+  let r;
+  try { r = await runIsolated({ homeTemplate, mounts: [{ host: work, guest: '/work', mode: 'rw' }], toolchain, cmd, stdin, cwd: '/work', timeoutMs: 900_000 }); } catch (error) {
+    fs.rmSync(work, { recursive: true, force: true });
+    if (error?.code !== 'EX_CONFIG') throw error;
+    return { json: '', wallMs: 0, usage: null, exit: error.exitCode ?? 78, refused: error.message, stderrTail: error.message.slice(-300) };
+  }
   const usage = parseUsage(r.stdout, model);
   const json = model === 'codex' ? (fs.existsSync(path.join(work, 'atoms.json')) ? fs.readFileSync(path.join(work, 'atoms.json'), 'utf8') : '') : (usage?.result ?? '');
   fs.writeFileSync(path.join(OUT, 'receipt', `${label}-stdout.json`), r.stdout); fs.writeFileSync(path.join(OUT, 'receipt', `${label}-prompt.md`), text);
@@ -77,11 +82,11 @@ try {
     let parsed = null, parseError = null;
     try { parsed = JSON.parse(stripFences(t.json)); } catch (e) { parseError = String(e.message); }
     if (parsed && !parsed.need?.text) parsed.need = { ...(parsed.need ?? {}), id: needId, text: needText.trim() };
-    v = parsed ? validate(parsed, policy) : { ok: false, errors: [`output is not JSON: ${parseError}`], warnings: [] };
+    v = t.refused ? { ok: false, errors: [`model call refused: ${t.refused}`], warnings: [] } : parsed ? validate(parsed, policy) : { ok: false, errors: [`output is not JSON: ${parseError}`], warnings: [] };
     receipt.attempts.push({ attempt, wallMs: t.wallMs, usage: t.usage, exit: t.exit, parsed: !!parsed, errors: v.errors, warnings: v.warnings, atoms: parsed?.atoms?.length ?? 0 });
     doc = parsed;
     emit('atomize.attempt', { atomizeId: ATOMIZE_ID, need: needId, model, attempt, wallMs: t.wallMs, exit: t.exit ?? null, usage: t.usage, parsed: !!parsed, valid: v.ok, errors: v.errors, warnings: v.warnings, atoms: parsed?.atoms?.length ?? 0, outputBytes: Buffer.byteLength(t.json ?? '') });
-    if (v.ok) break;
+    if (v.ok || t.refused) break;
     text = `${prompt}\n## Your previous answer failed validation. Fix every error and output the complete corrected JSON only.\n\nErrors:\n${v.errors.map((e) => '- ' + e).join('\n')}\n\nPrevious answer:\n${stripFences(t.json).slice(0, 60_000)}\n`;
   }
 } finally { fs.rmSync(homeTemplate, { recursive: true, force: true }); }
