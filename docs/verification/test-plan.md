@@ -43,8 +43,8 @@ N/A; the owner's merge is the sign-off. How-to detail: [run local checks](../gui
 | Rust lane | CI `rust-lane` job | `make tools`, then `make rust-lane-test` on Rust 1.98.1 |
 
 Outside `make test`: `make rust-lane-test` (needs the pinned Rust toolchain, TP-6; CI runs it in its own job),
-`make tscheck-requalify` (TP-7), the P-51 controls (TP-8) and `node --test tools/test_gate_structured.mjs`, which no
-`make` target runs yet (so `tests/test_reachability.py` reports it).
+`make tscheck-requalify` (TP-7) and the P-51 controls (TP-8). The glue gate CLI test runs in `make test` through
+`make gate-test`.
 
 ## 3. Test environment
 
@@ -176,3 +176,4 @@ See the [verification matrix](verification-matrix.md).
 |---|---|---|---|---|
 | 1.0 | 2026-11-08 | `4d692a4` | Initial baseline | this PR |
 | 1.1 | 2026-11-09 | round 2 | TP-6 runs in CI; gap count 10 | this commit |
+| 1.2 | 2026-11-09 | round 3 | The glue gate CLI test runs in `make test` through `make gate-test` | this commit |

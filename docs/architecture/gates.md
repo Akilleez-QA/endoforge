@@ -116,6 +116,11 @@ when the fuel goes negative. Bulk memory operations are charged a fixed 65,536. 
 (`kernelFuel`). A kernel that never returns therefore stops inside the guest instead of hanging the cell. G6 reports
 `fuelUsed` and the slowest call (`maxMs`), but only fuel and stack exhaustion fail it.
 
+The meter reads every memory a module declares or imports, not only the first. It exports each unexported memory
+(`__ef_memory`, then `__ef_memory1`, `__ef_memory2`, ...), parses loads and stores that name a memory index, and counts
+measured memory as the sum of all of them. A [composed library module](library.md#composition), which has one memory
+per part, is therefore metered and measured whole.
+
 Memory is bounded elsewhere: the in-cell compile refuses a module that declares more than 1,024 pages (64 MiB), the
 workcell's WASM guard enforces the pool's ceiling, and the evaluator's `bounds` check (below) compares measured memory
 with the 64 MiB limit.

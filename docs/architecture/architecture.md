@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SDD |
-| Version | 3.1 |
+| Version | 3.2 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -89,10 +89,10 @@ requirement; see [SRS §11](../requirements/requirements.md#11-untested-behaviou
 | C-02 | Ledger | `core/ledger/` | The SQLite record: schema validation, durable references, hash chaining, provenance, the frozen evaluator | REQ-LEDGER-001, REQ-LEDGER-003, REQ-LEDGER-004 |
 | C-03 | Engine evaluator and gates | `core/engine/`, `tools/factory_quality/` | Five ordered gates, caller invariants, fresh finalists, Pareto selection | REQ-DOMAIN-001, REQ-ENGINE-001, REQ-ENGINE-002 |
 | C-04 | Constraint records | `core/constraints/`, `tools/constraint_store.py` | Constraints kept word for word outside transcript compaction; laundering refused | REQ-CONSTRAINT-001, REQ-CONSTRAINT-002 |
-| C-05 | Library | `core/library/`, `tools/library_verify_promotion.py` | Reuse of promoted capabilities behind a canonical contract key and a discrimination gate | REQ-LIB-001, REQ-LIB-002, REQ-LIB-003, REQ-LIB-004, REQ-LIB-005, REQ-LIB-006, REQ-LIB-007, REQ-LIB-008 |
+| C-05 | Library | `core/library/`, `tools/library_verify_promotion.py` | Reuse of promoted capabilities behind a canonical contract key and a discrimination gate | REQ-LIB-001, REQ-LIB-002, REQ-LIB-003, REQ-LIB-004, REQ-LIB-005, REQ-LIB-006, REQ-LIB-007, REQ-LIB-008, REQ-LIB-009 |
 | C-06 | Isolate pool | `core/runtime/isolate-pool.mjs`, `isolate-workcell.mjs`, `isolate-wasm.mjs`, `isolate-wasm-compile.mjs`, `isolate-cgroup.mjs`, `isolate-ledger.mjs` | Thread or process workcells, heap, stack and WebAssembly limits, cgroups, deadlines, warm start, host calls, the persistent ledger bridge | REQ-ISO-001, REQ-ISO-002, REQ-ISO-003, REQ-ISO-004, REQ-ISO-005, REQ-ISO-006, REQ-ISO-007, REQ-ISO-008, REQ-ISO-009, REQ-ISO-010, REQ-ISO-011, REQ-ISO-012, REQ-ISO-013, REQ-ISO-014, REQ-ISO-015, REQ-ISO-016, REQ-ISO-017 |
-| C-07 | X1 candidate loop | `core/runtime/x1/` (except `synth/` and `transports.mjs`), `tools/x1_loop.py`, `tools/x1_ledger.py`, `tools/asc/` | The three loop paths, generator, compiler, gates G1–G9, the in-cell agent loop, formula oracle, commit and promotion rule | REQ-X1-001, REQ-X1-002, REQ-X1-003, REQ-X1-004, REQ-LOOP-001, REQ-LOOP-002, REQ-LOOP-003, REQ-LOOP-004, REQ-GEN-001, REQ-GEN-002, REQ-GEN-003, REQ-GEN-004, REQ-GEN-005, REQ-GEN-006, REQ-GEN-007, REQ-GEN-008, REQ-PROMOTE-001, REQ-UNITS-001, REQ-ORACLE-001, REQ-X1-005, REQ-X1-006, REQ-X1-007, REQ-X1-008, REQ-LOOP-005, REQ-LOOP-006, REQ-GEN-009, REQ-X1-009, REQ-X1-010, REQ-LOOP-007, REQ-LOOP-008, REQ-LOOP-009 |
-| C-08 | Evaluator synthesis | `core/runtime/x1/synth/` | A candidate-blind evaluator, meta-gates M1–M5, frozen before code | REQ-SYNTH-001, REQ-SYNTH-002, REQ-SYNTH-003, REQ-SYNTH-004 |
+| C-07 | X1 candidate loop | `core/runtime/x1/` (except `synth/` and `transports.mjs`), `tools/x1_loop.py`, `tools/x1_ledger.py`, `tools/asc/` | The three loop paths, generator, compiler, gates G1–G9, the in-cell agent loop, formula oracle, commit and promotion rule | REQ-X1-001, REQ-X1-002, REQ-X1-003, REQ-X1-004, REQ-LOOP-001, REQ-LOOP-002, REQ-LOOP-003, REQ-LOOP-004, REQ-GEN-001, REQ-GEN-002, REQ-GEN-003, REQ-GEN-004, REQ-GEN-005, REQ-GEN-006, REQ-GEN-007, REQ-GEN-008, REQ-PROMOTE-001, REQ-UNITS-001, REQ-ORACLE-001, REQ-X1-005, REQ-X1-006, REQ-X1-007, REQ-X1-008, REQ-LOOP-005, REQ-LOOP-006, REQ-GEN-009, REQ-X1-009, REQ-X1-010, REQ-LOOP-007, REQ-LOOP-008, REQ-LOOP-009, REQ-X1-011, REQ-LOOP-010, REQ-GEN-010 |
+| C-08 | Evaluator synthesis | `core/runtime/x1/synth/` | A candidate-blind evaluator, meta-gates M1–M5, frozen before code | REQ-SYNTH-001, REQ-SYNTH-002, REQ-SYNTH-003, REQ-SYNTH-004, REQ-SYNTH-005, REQ-SYNTH-006 |
 | C-09 | Model access | `core/runtime/x1/transports.mjs`, `core/runtime/subscription-guard.mjs`, `core/runtime/usage-governor.mjs` | Claude Code transports, subscription proof, weekly usage parking | REQ-SUB-001, REQ-GOV-001, REQ-TRANSPORT-001, REQ-TRANSPORT-002 |
 | C-10 | Contained JavaScript | `core/runtime/contained/`, `tools/compat_policy.py` | A supervised V8 cohort that runs emitted JavaScript, and the compatibility lane's promotion rule | REQ-CONTAINED-001, REQ-CONTAINED-002 |
 | C-11 | Capacity planner | `core/runtime/capacity/` | Width, placement and split fitted from a machine probe (Mjölnir) | REQ-CAP-001 |
@@ -271,3 +271,4 @@ synthetic identity invariant, including failure propagation.
 | 2.0 | 2026-11-08 | `4d692a4` | Metadata header; component table with requirement IDs; execution concept, resource use, interfaces and quality attributes | PR #131 |
 | 3.0 | 2026-11-08 | `63e95c7` | Rewritten as the system overview: two products on one substrate, the five-stage production cycle mapped to code, the three loop paths and why the agent path runs in the isolate; component IDs and requirement allocation unchanged | this PR |
 | 3.1 | 2026-11-09 | round 2 | Round-2 requirements allocated to C-05, C-07, C-08, C-27 and C-30; C-30's glue gate now delegates to the core gates (GAP-EF-003 closed) | this commit |
+| 3.2 | 2026-11-09 | round 3 | Round-3 requirements allocated to C-05, C-07 and C-08 | this commit |

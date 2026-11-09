@@ -27,7 +27,10 @@ promotion; on the current and `isolate` paths the verdict is written to `<direct
 
 With `ENDOFORGE_SYNTH_WIDTH=2`, two independent members are written, and only the checks both agree on are kept. When
 both references agree with each other against a frozen test, that test is reported as suspect before the
-implementation turn, in `synth/suspect.json` and in the evaluator's `suspects`.
+implementation turn, in `synth/suspect.json` and in the evaluator's `suspects`. The ledger then freezes a corrected
+`tests.json` as a revision, and the implementation turn on every path reads the corrected file. Where the contract
+returns a record, list or text, the binding declares its layout and the references return plain values, so a
+structured test can be corrected too.
 
 ## Turn it on
 

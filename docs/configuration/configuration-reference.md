@@ -310,7 +310,7 @@ the login draws on usage credits. `UsageParked` has `code: 'USAGE_PARKED'`, exit
 | `cells` | `1` | Worker threads that run qualification. |
 | `deadlineMs` | `5000` | Per-run deadline in a cell; a timeout is a refusal. |
 | `keyMode` | `contract` | Lookup key: `contract` (exports plus contract numerals), `interface` (exports only) or `prose` (exports plus contract text). |
-| `gate` | `full` | Discrimination gate: `full` refuses surviving mutants, wrappers and untested bounds; `none` skips it; any other value checks mutants only. |
+| `gate` | `full` | Discrimination gate: `full` refuses surviving mutants, wrappers and untested bounds; `none` skips it; any other value checks mutants only. Exports over records, lists or text are mutated and probed through their declared layout. |
 | `retrieval` | `key` | `semantic` ranks entries by contract-text similarity first and lets a need with no capability block adopt the capability of an entry scoring at least 0.4. |
 | `principal` | `null` | Default `{ tenant, lineage }` for admission, lookup, serving and composition; each call can pass its own. |
 | `environment` | the running Node, V8, platform and architecture | Replaces the environment that qualifications are recorded under (for tests). |
@@ -456,3 +456,4 @@ Setup targets run `npm ci --ignore-scripts` from a lockfile: `loop-setup` (`tool
 | 3.0 | 2026-11-08 | `63e95c7` | Rewritten and re-verified against the code: common-settings table, `runNeed`, `openLibrary`, dump-list, job and atomizer settings added; `HC_WORK`, `XDG_RUNTIME_DIR`, `XDG_STATE_HOME` listed | this PR |
 | 3.1 | 2026-11-09 | gap closure | Library `retrieval`, `principal`, `environment`; synthesis `begin` options; compatibility route `freeze`/`promote`; transport `model` default, `testDouble` and per-instance `governor`; per-stage `maxTokens`; relative `ENDOFORGE_CODEX_CMD`; Conductor `claudeTools` and criteria checks; hillclimb default runner | `dc6ba4c` |
 | 3.2 | 2026-11-09 | round 2 | `runNeed` `principal` and `suspect`; `containedRoute` on every path with promotion; `revise` ledger action; `rust-lane-setup` and the `isolate-test` setup dependencies | this commit |
+| 3.3 | 2026-11-09 | round 3 | Library `gate` covers structured exports through the declared layout; no new option or environment variable | this commit |

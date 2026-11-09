@@ -41,7 +41,9 @@ Findings:
   [SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps), not as requirements.
 - Trace check after the update (`python3 -I tools/check_trace.py`): 95 requirements, 95 traced, 14 gaps, 0 TBD; 97
   discovered test files, 92 traced and 5 supporting; 0 problems. After the round-2 records pass on 2026-11-09: 127
-  requirements, 127 traced, 10 gaps; 111 discovered test files, 105 traced and 6 supporting; 0 problems.
+  requirements, 127 traced, 10 gaps; 111 discovered test files, 105 traced and 6 supporting; 0 problems. After the
+  round-3 records pass: 133 requirements, 133 traced, 10 gaps; 114 discovered test files, 108 traced and 6
+  supporting; 0 problems.
 
 ### Design analysis
 
@@ -64,8 +66,7 @@ Findings:
 - No coverage tool is configured, so coverage is not measured.
 - Delegated cgroup enforcement is skipped without a delegated scope (GAP-EF-001). The Rust lane runs in its own CI
   job from 2026-11-09 (GAP-EF-013 closed; first run pending).
-- `tools/test_gate_structured.mjs` (REQ-GATECLI-001) is run by no `make` target, so `tests/test_reachability.py`
-  fails on it and `make test` is red until it is wired in or listed with a reason.
+- `tools/test_gate_structured.mjs` (REQ-GATECLI-001) is run by `make gate-test`, part of `make test`.
 
 ### Source code quality
 
@@ -118,3 +119,4 @@ Ten behaviours remain untested (GAP-EF-003, GAP-EF-011, GAP-EF-012 and GAP-EF-01
 |---|---|---|---|---|
 | 1.0 | 2026-11-08 | `4d692a4` | First entry | this PR |
 | 1.1 | 2026-11-09 | round 2 | D-03 restated: the transports always called the governor's `admit()` and `observe()`; the defect was replacing the caller's governor. Gap count 10; the unrun gate CLI test noted | this commit |
+| 1.2 | 2026-11-09 | round 3 | Round-3 trace counts; the gate CLI test now runs under `make gate-test` | this commit |

@@ -62,9 +62,8 @@ Each test area has its own target, which is faster while you work:
 | `make rust-lane-test` | The Rust lane, after `make rust-lane-setup`; needs the pinned Rust toolchain, outside `make test`, run by the CI job `rust-lane` |
 
 The [Makefile](../../../Makefile) lists the rest. Tests are found by glob, and `tests/test_reachability.py` fails if a
-test file is not run by any target, so a new test file is picked up as long as it matches a target's pattern. As of
-2026-11-09 one file matches none: `tools/test_gate_structured.mjs` (the glue gate CLI), so that check fails until a
-target runs it; run it by hand with `node --test tools/test_gate_structured.mjs`.
+test file is not run by any target, so a new test file is picked up as long as it matches a target's pattern. The
+glue gate CLI test, `tools/test_gate_structured.mjs`, has its own target, `make gate-test`.
 
 ## Run on both Node versions
 

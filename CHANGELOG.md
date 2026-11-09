@@ -37,6 +37,21 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 - CI job `rust-lane` runs `make rust-lane-test` on Rust 1.98.1; new target `rust-lane-setup`.
 - Requirements REQ-X1-009, REQ-X1-010, REQ-LOOP-007 to 009, REQ-SYNTH-004, REQ-LIB-008, REQ-REPO-007 and
   REQ-GATECLI-001; GAP-EF-003 and GAP-EF-013 closed.
+- After a specification correction, the implementation turn on the `current` and `isolate` paths reads the
+  corrected frozen tests: `generate` checks them against the frozen digest and sends them in the implementation
+  prompt with a notice that they replace the earlier version.
+- Structured specification corrections: synthesis references may return records, lists and text against a declared
+  layout in the binding (`core/runtime/x1/synth/layout.mjs`); structured suspects carry that layout, and `revise`
+  freezes the agreed value in declared field order.
+- `judge` runs synthesized vectors against exports over records, lists and text through the declared layout.
+- Library composition gives each part its own WebAssembly memory (multi-memory) instead of a region of one shared
+  memory, with memory 0 holding the host's buffers; the meter reads, exports and counts every memory.
+- The library's mutation check builds its probe grid for exports over records, lists and text from the declared
+  layout, calls the kernel and its mutants through host buffers on a metered instance, and compares results field by
+  field.
+- Requirements REQ-LIB-009, REQ-X1-011, REQ-LOOP-010, REQ-GEN-010, REQ-SYNTH-005 and REQ-SYNTH-006, traced to
+  `core/runtime/test/gaps3-generator.test.mjs`, `core/runtime/test/gaps3-meter.test.mjs` and
+  `tools/test_x1_revise_structured.py`.
 
 - `examples/first-loop.mjs` and `examples/show-gates.py`: the README and getting-started example (a scripted model
   promotes an addition kernel and refuses a subtracting one), tested by `core/runtime/test/loop-example.test.mjs`.

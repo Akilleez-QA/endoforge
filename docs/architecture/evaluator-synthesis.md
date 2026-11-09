@@ -55,7 +55,9 @@ When the specification is ready, the freeze calls `finish(root)`. It reads the f
 from the oracle root (on the agent path, from a temporary root written from the host's shadow copy) and asks for `binding.json` (`prompts.binding`): for every export, parameters in
 contract order with units, bounds and openness, integer flags and code tables; the result kind, unit, displayed
 decimals, codes and range; monotone relations the contract makes certain; and `reference`, one plain JavaScript source
-computing every export in double precision with only `Math` and `Number`, throwing where the contract traps. The
+computing every export in double precision with only `Math` and `Number`, throwing where the contract traps. Where
+the contract returns a record, list or text, the binding declares the result's full layout (`fields`, `items` and
+`max`, `maxBytes`, the same keys as the glue's) and the reference returns a plain object, array or string. The
 model never sees `tests.json`, `kernel.ts`, `glue.json` or any candidate output.
 
 The binding has to wait for the contract because the contract fixes the export names; one model turn is therefore on
@@ -71,10 +73,18 @@ edge, one step inside and outside it, a point well outside, and non-round interi
 parameter, every code and one past each end); then 48 seeded random points inside the domain. A denser set of 192
 random points is kept aside for M5.
 
+A parameter whose frozen base argument is a record, list or text is held at that value; only the numeric parameters
+beside it are swept.
+
 **The reference** runs in [sandbox.mjs](../../core/runtime/x1/synth/sandbox.mjs): a separate Node process under the
 permission model, with an empty environment, where each variant gets a fresh `vm` context holding only `Math`,
 `Number`, `Error`, `RangeError`, `TypeError`, `isFinite` and `isNaN`; 2 s to load, 200 ms per call, 4 s per variant, 30 s
-in all.
+in all. A reference may return a number, a boolean, a string, or a plain object or array; the sandbox copies an
+object or array out as JSON, so a later call cannot see it change. Anything else (`undefined`, a function, a value
+that can't be serialized) is marked unusable, which is a failure, never a throw. For an export with a declared
+layout, [layout.mjs](../../core/runtime/x1/synth/layout.mjs) checks and normalizes each returned value by the same
+rules as `revise` (declared field order, integer and code range, booleans from `0`/`1`, text within `maxBytes`, list
+length within `max`); a value that does not fit fails M2.
 
 **Meta-gates** ([qualify.mjs](../../core/runtime/x1/synth/qualify.mjs)). An export failing M1, M2, M3 or M5 is
 unqualified and contributes no value check; a declaration failing M4 is dropped.
@@ -82,12 +92,12 @@ unqualified and contributes no value check; a declaration failing M4 is dropped.
 | Meta-gate | Passes when |
 |---|---|
 | M1 shape | The export exists in the binding with as many parameters as the frozen tests pass, numeric bounds, and a reference source |
-| M2 deterministic and bounded | Two runs of the reference give identical results, within the time budget |
-| M3 anchor | The reference reproduces every frozen value test of the export (within its `tol`, or 1e-9 relative) and throws on its `expectError` tests |
+| M2 deterministic and bounded | Two runs of the reference give identical results, within the time budget, and every result fits the declared layout |
+| M3 anchor | The reference reproduces every frozen value test of the export (within its `tol`, or 1e-9 relative; a structured value field by field, exactly unless the test sets `tol`) and throws on its `expectError` tests |
 | M4 self-consistency | Each declared range, code table and monotone relation holds on the reference's own outputs, and the reference doesn't return outside its declared domain |
 | M5 discrimination | Of the reference's seeded faults (constant shift, comparison flip, operator swap, rounding swap, argument swap; at most 40) that the denser sample can tell apart, the frozen vectors reject at least 80% |
 
-Only vectors whose reference result is finite or a throw are kept.
+Only vectors whose reference result is finite, a value of the declared layout, or a throw are kept.
 
 ### 4. One or two evaluators
 
@@ -95,7 +105,9 @@ Only vectors whose reference result is finite or a throw are kept.
 members agree on: a vector counts only when the other member's reference gives the same outcome on it; a monotone
 relation only when both declared it; a glue unit only when both state the same unit; decimals only when equal; code
 labels only when both tables have the same codes and no label is swapped. Ranges take the wider bound, and code sets
-the union. Width 1 keeps one member's qualified checks. In P-56 the agreed set refused exactly the same kernel faults
+the union. Width 1 keeps one member's qualified checks. An export that takes or returns a record, list or text contributes
+only its glue checks to the combined set, at either width; its outcomes are checked by the frozen tests and, through
+suspects, by the references (see [Limits](#limits)). In P-56 the agreed set refused exactly the same kernel faults
 as one member alone.
 
 ### 4a. Suspect frozen tests (width 2, no model)
@@ -107,7 +119,8 @@ returned. `suspectTests` then reports a test as suspect only when all of these h
 
 - the width is 2 and both members compiled;
 - for that export, both references fail no meta-gate except M3, and every M3 failure is a contested test;
-- both contradict the same set of tests, with the same outcome on each;
+- both contradict the same set of tests, with the same outcome on each (for a structured export: both declare the
+  same layout shape, units aside, and their values agree field by field, exactly unless the test sets `tol`);
 - each reference reproduces the other's frozen vectors.
 
 `finish` runs this at the freeze, before the implementation turn. The suspects go into `evaluator.json` under
@@ -120,6 +133,9 @@ returned. `suspectTests` then reports a test as suspect only when all of these h
   "revision": { "reason": "specification_correction", "references": ["<binding sha256>", "<binding sha256>"],
                 "rule": "a corrected test is frozen as a revision of the latest frozen evaluator, with outcome-independent admitted evidence" } }
 ```
+
+For a structured export each suspect also carries the declared `layout`, which `revise` needs, since no glue exists
+yet. A suspect names its test by `name`, or by its index in the frozen `tests.json` when it has none.
 
 `begin({ suspect })` takes a hook that receives the same report before `finish` returns, and `finish` returns
 `{ root, hash, suspects }`. The export itself stays unqualified. Width 1, references that disagree, and a reference
@@ -135,8 +151,12 @@ Right after the first freeze, and before any candidate exists, the pipeline asks
 1. refuses unless the request names the latest frozen evaluator, the report is a `suspect_frozen_tests` report made
    `before: "implementation"` with at least one test, and the ledger holds no candidate yet;
 2. corrects each suspect test from the two agreeing reference outcomes: a returned finite number becomes the new
-   `expect`, a throw becomes `expectError: true`; a suspect must name exactly one frozen test (by `name`, `fn` and
-   `args`);
+   `expect`, a throw becomes `expectError: true`, and a record, list or text value becomes the new `expect` when the
+   suspect carries its declared `layout` (both values must fit it and agree under the commit's structured comparison,
+   [REQ-X1-009](../requirements/requirements.md#req-x1-009--structured-comparison-at-commit), with the test's own
+   `tol`; the value is frozen in the layout's field order). A structure without a layout, a malformed layout, a value
+   that misfits it, references that disagree, or a throw against a value is refused, and nothing is appended. A
+   suspect must name exactly one frozen test (by `name`, `fn` and `args`);
 3. appends the report as an `admitted_input` (`suspect-1`, `suspect-2`, ...; origin `evaluator_synthesis`), then a new
    `frozen_evaluator` with the corrected `tests.json` and `frozen.sha256` and
    `revision: { of: <previous identity>, reason: "specification_correction", evidence: <admitted input id> }`.
@@ -148,7 +168,7 @@ tests). A caller's own `runNeed({ suspect })` hook is still called with the repo
 | Path | What the implementation turn sees |
 |---|---|
 | `agent` | The cell restarts after the revision, so the implementation turn reads the corrected `tests.json` |
-| `current`, `isolate` | The corrected files go into the oracle root and into every check; the Codex workspace keeps the original `tests.json`, so the implementation turn reads the uncorrected file |
+| `current`, `isolate` | After the freeze, `generate` ([generator.mjs](../../core/runtime/x1/generator.mjs)) re-reads `tests.json` and `frozen.sha256` from the oracle root. If they changed, it checks them against the frozen digest and the "each test can fail" rule (refusing before implementation on a mismatch), writes them into the Codex workspace, and sends the corrected `tests.json` in the implementation prompt with a notice that it replaces the earlier one, since a resumed session still remembers the first. The library lookup and the returned candidate use the corrected files too |
 
 ### 5. Confirm
 
@@ -194,7 +214,9 @@ On every path `judge`:
 
 - abstains when the residual wasn't approved, or when nothing qualified;
 - runs every vector on a fresh fuel-metered instance, then again in reverse order on another, and refuses if the two
-  disagree;
+  disagree; an export whose `glue.json` entry takes or returns a record, list or text is called through the declared
+  layout and the host buffers, as the gates call it ([structured state](gates.md#structured-state)), and its whole
+  decoded value is compared; a value that misfits the layout is a failure at the boundary, not a trap;
 - refuses a result that differs from the reference by more than 1e-9 relative, a trap where the reference returned or
   a return where it threw, a missing export, or a fuel or stack limit; skips a vector with a fractional argument for
   an integer parameter;
@@ -244,11 +266,10 @@ Offline, compile, qualify and judge took 495 ms at p50; judging alone 0.6 ms.
 
 ## Limits
 
-- On the `current` and `isolate` paths the implementation turn still reads the uncorrected `tests.json` in its
-  workspace after a specification correction ([4b](#4b-acting-on-suspects-a-specification-correction)); the checks
-  use the corrected tests, so a kernel written to the old value fails them.
-- A correction takes only a finite number or a throw from the references; a suspect whose agreed outcome is
-  structured state is refused by `revise`, and the attempt fails.
+- `combine` keeps no value vectors, ranges, codes or monotone relations for an export that takes or returns a record,
+  list or text, at width 1 or 2, so the frozen evaluator holds no synthesized vectors for such an export and `judge`
+  checks only its glue. `judge` can run structured vectors (the to-do reducer test feeds it some directly), but synthesis
+  produces none. Structured outcomes still reach the evaluator through M3 and suspect corrections.
 - The `begin` cell limits apply on `current` only; at commit on `isolate` and `agent` the judging cell uses the
   defaults.
 - The [formula oracle](agent-loop.md#formula-oracle) is the agent path's other check of frozen expectations.

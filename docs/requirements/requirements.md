@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SRS |
-| Version | 2.2 |
+| Version | 2.3 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -252,12 +252,22 @@ The library shall record qualification per environment (Node, V8, platform, arch
 
 ### REQ-LIB-008 — Composition across separate memories
 
-`library.compose` shall link parts that each use linear memory or a table, giving each part its own bounds-checked region of the composed module's memory and its own table, copy structured values between parts only through layout-checked wrappers, and refuse a plan whose parts do not fit the 64 MiB workcell memory, whose stage layouts disagree, or that passes a buffer address as a scalar.
+`library.compose` shall link parts that each use linear memory or a table, giving each part its own WebAssembly memory (after memory 0, which holds the host's buffers), bounds-checked to the part's own size, and its own table, copy structured values between parts only as layout-checked copies between memories made by the linked wrapper, and refuse a plan whose parts do not fit the 64 MiB workcell memory, whose stage layouts disagree, or that passes a buffer address as a scalar.
 
 - Rationale: Kernels with state live in linear memory; composition must not be limited to at most one such part.
-- Derivation: `core/library/link.mjs`, `core/library/compose.mjs`, `core/library/mutants.mjs`
+- Derivation: `core/library/link.mjs`, `core/library/compose.mjs`, `core/library/mutants.mjs`, `core/runtime/x1/meter.mjs`
 - Allocated to: SDD §4 C-05 Library
 - Verification: T — `make library-test`
+- Status: Baselined
+
+### REQ-LIB-009 — Structured mutation check
+
+For an export that takes or returns a `record`, `list` or `text`, the library's discrimination check shall build its probe grid from the declared layout, call the kernel and each mutant through the host buffers of a fuel-metered instance, compare results field by field, and apply its result wrappers to every `number` leaf.
+
+- Rationale: A kernel over records or lists must get a real mutation check under `gate: 'full'`; scalar-only probing reports every mutant killed without exercising it.
+- Derivation: `core/library/discriminate.mjs`, `core/library/mutants.mjs`, `core/library/cell.mjs`
+- Allocated to: SDD §4 C-05 Library
+- Verification: T — `make isolate-test`, `make library-test`
 - Status: Baselined
 
 ## 5. Workcell runtime
@@ -534,6 +544,16 @@ The X1 commit tools shall name, in the bridge's drift check (`IMPLEMENTATION_FIL
 - Verification: T — `make isolate-test`
 - Status: Baselined
 
+### REQ-X1-011 — Every memory metered
+
+The meter shall read every memory a module declares or imports, export each unexported one, meter loads and stores that name a memory index, and count measured memory as the sum of all memories.
+
+- Rationale: A composed library module has one memory per part; reading only the first would leave the others unmeasured.
+- Derivation: `core/runtime/x1/meter.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
 ### REQ-LOOP-001 — Agent loop in the cell
 
 The agent loop shall run model turns and checks in one job, return a failed check to the next turn, stop at turn, token and deadline limits as a recorded failure without promotion, keep the model out of the frozen files and outside the overlay, and pass only reply text and usage into the cell and its records.
@@ -622,6 +642,16 @@ Every loop path shall pass the `principal` given to `runNeed` to `library.serve`
 - Derivation: `core/runtime/x1/loop.mjs`, `core/runtime/x1/pipeline.mjs`
 - Allocated to: SDD §4 C-07 X1 candidate loop
 - Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-LOOP-010 — Structured specification correction
+
+`revise` shall correct a suspect test to a record, list or text value only when the suspect carries a valid declared layout, both reference values fit it and agree under the structured comparison of REQ-X1-009 with the test's `tol`, freezing the value in declared field order, and refuse otherwise without appending to the ledger.
+
+- Rationale: A kernel over structured state can have a wrong frozen test too; without a declared layout a structure cannot be compared or frozen soundly.
+- Derivation: `tools/x1_loop.py`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make ledger-test`
 - Status: Baselined
 
 ### REQ-GEN-001 — Two-stage generation with freeze
@@ -714,6 +744,16 @@ The generator shall resolve a relative `ENDOFORGE_CODEX_CMD` path, or a `./` or 
 - Verification: T — `make isolate-test`
 - Status: Baselined
 
+### REQ-GEN-010 — Implementation turn reads corrected tests
+
+After the freeze, `generate` shall re-read `tests.json` and `frozen.sha256` from the oracle root and, when a specification correction changed them, refuse them unless they match the frozen digest and every test can fail, then give the corrected files to the workspace, the implementation prompt, the library lookup and the returned candidate.
+
+- Rationale: On the Codex paths the implementation turn must write code against the same tests every check uses.
+- Derivation: `core/runtime/x1/generator.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
 ### REQ-PROMOTE-001 — Local promotion
 
 Local promotion shall issue a persisted qualification decision only for the exact candidate, frozen oracle, verified receipt hash and chain with two complete passing pool rounds and all nine X1 gates (G1–G9) present and passing, and refuse on any mismatch.
@@ -770,6 +810,26 @@ On the `isolate` and `agent` paths, the commit shall judge the candidate against
 
 - Rationale: Judging runs candidate code; every path must keep it off the controller thread.
 - Derivation: `core/runtime/x1/loop.mjs`, `core/runtime/x1/synth/cell-host.mjs`
+- Allocated to: SDD §4 C-08 Evaluator synthesis
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-SYNTH-005 — Structured references and suspects
+
+Evaluator synthesis shall accept references that return records, lists or text for an export whose binding declares a valid layout, fail M2 for a value that misfits it, compare structured anchors field by field, and attach the declared layout to every structured suspect.
+
+- Rationale: Suspect correction (REQ-LOOP-010) needs agreeing structured reference values and their declared layout before any glue exists.
+- Derivation: `core/runtime/x1/synth/sandbox.mjs`, `core/runtime/x1/synth/layout.mjs`, `core/runtime/x1/synth/stage.mjs`, `core/runtime/x1/synth/qualify.mjs`, `core/runtime/x1/synth/invariants.mjs`, `core/runtime/x1/synth/vectors.mjs`
+- Allocated to: SDD §4 C-08 Evaluator synthesis
+- Verification: T — `make ledger-test`
+- Status: Baselined
+
+### REQ-SYNTH-006 — Judging structured exports
+
+`judge` shall call an export whose glue entry takes or returns a record, list or text through the declared layout and the host buffers, compare the whole decoded value with the vector's expected value, and refuse on a difference or a boundary problem.
+
+- Rationale: Synthesized checks of a kernel over structured state must run against the kernel, not be skipped.
+- Derivation: `core/runtime/x1/synth/judge.mjs`, `core/runtime/x1/measure.mjs`
 - Allocated to: SDD §4 C-08 Evaluator synthesis
 - Verification: T — `make isolate-test`
 - Status: Baselined
@@ -1197,7 +1257,7 @@ Hillclimb shall default its campaign runner to `bin/run-atoms.mjs` in this repos
 - Rationale: Two gate implementations drift; the atomizer's stand-alone check must agree with the loop.
 - Derivation: `tools/gate/gate.mjs`, `tools/gate/glue.schema.json`
 - Allocated to: SDD §4 C-30 Glue gate CLI and project scheduler
-- Verification: T — `node --test tools/test_gate_structured.mjs` (no `make` target runs it yet; `tests/test_reachability.py` reports it)
+- Verification: T — `make gate-test`
 - Status: Baselined
 
 ### REQ-CONSTRAINT-001 — Constraint records
@@ -1355,8 +1415,8 @@ Closed gaps (their IDs are not reused):
 - GAP-EF-011, `WarmClaudeTransport` with a custom usage governor: fixed and tested on 2026-11-09; now REQ-TRANSPORT-002.
 - GAP-EF-012, atomizer `bench` default example and `conduct adopt` example paths: fixed and tested on 2026-11-09; now
   REQ-ATOM-004 and REQ-COND-004.
-- GAP-EF-003, glue gate CLI: tested on 2026-11-09 by `tools/test_gate_structured.mjs`; now REQ-GATECLI-001. No `make`
-  target runs that file yet.
+- GAP-EF-003, glue gate CLI: tested on 2026-11-09 by `tools/test_gate_structured.mjs`; now REQ-GATECLI-001, run by
+  `make gate-test`.
 - GAP-EF-013, Rust lane in CI: CI job `rust-lane` added on 2026-11-09; now REQ-REPO-007. Its first CI run is pending.
 
 ## 12. Not-applicable requirement categories
@@ -1376,3 +1436,4 @@ Closed gaps (their IDs are not reused):
 | 2.0 | 2026-11-08 | `4d692a4` | Per-requirement fields; 45 existing requirements kept and 50 added for tested areas, gap register, N/A categories | this PR |
 | 2.1 | 2026-11-09 | gap closure | 23 requirements added for the gap-closure work (structured state, commit re-run, library composition, scopes, reclaim, counterexamples and per-environment qualification, synthesis and library on every path, compatibility-lane promotion, transport defaults, nine-gate labels, tool fixes, CI secret scan); GAP-EF-011 and GAP-EF-012 closed | `dc6ba4c` |
 | 2.2 | 2026-11-09 | round 2 | 9 requirements for the round-2 work: structured comparison at commit (REQ-X1-009), Python drift list and receipt label (REQ-X1-010), suspect tests as a specification correction (REQ-LOOP-007), compatibility promotion in `runNeed` (REQ-LOOP-008), caller principal (REQ-LOOP-009), judging in a cell at commit (REQ-SYNTH-004), composition across separate memories (REQ-LIB-008), make setup dependencies and the Rust lane in CI (REQ-REPO-007), glue gate CLI parity (REQ-GATECLI-001); GAP-EF-003 and GAP-EF-013 closed | this commit |
+| 2.3 | 2026-11-09 | round 3 | 6 requirements for the round-3 work: structured mutation check (REQ-LIB-009), every memory metered (REQ-X1-011), structured specification correction (REQ-LOOP-010), implementation turn reads corrected tests (REQ-GEN-010), structured references and suspects (REQ-SYNTH-005), judging structured exports (REQ-SYNTH-006); REQ-LIB-008 now gives each part its own memory | this commit |
