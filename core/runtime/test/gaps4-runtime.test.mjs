@@ -146,6 +146,7 @@ if (process.env.EF_GAPS4_IN_SCOPE) {
   const probeSource = `const fs = require('node:fs');
     const group = '/sys/fs/cgroup' + fs.readFileSync('/proc/self/cgroup', 'utf8').match(/^0::(.*)$/m)[1];
     console.log(JSON.stringify({ controllers: fs.readFileSync(group + '/cgroup.controllers', 'utf8').trim().split(/\\s+/) }));`;
+  const isolationFlag = process.allowedNodeEnvironmentFlags.has('--test-isolation') ? '--test-isolation=none' : '--experimental-test-isolation=none';
   const delegatedScope = () => {
     const probe = scoped([process.execPath, '-e', probeSource]);
     if (probe.error) return { reason: `systemd-run is unavailable: ${probe.error.code ?? probe.error.message}` };
@@ -157,7 +158,7 @@ if (process.env.EF_GAPS4_IN_SCOPE) {
   test('delegated cgroup v2 limits are enforced in process mode inside a systemd scope', { timeout: 300000 }, t => {
     const { reason } = delegatedScope();
     if (reason) return t.skip(reason);
-    const run = scoped([process.execPath, '--test', '--test-isolation=none', '--test-reporter=tap', thisFile],
+    const run = scoped([process.execPath, '--test', isolationFlag, '--test-reporter=tap', thisFile],
       { env: { ...scopeEnv(), EF_GAPS4_IN_SCOPE: '1' }, timeout: 280000 });
     assert.equal(run.status, 0, `${run.stdout}\n${run.stderr}`);
     assert.match(run.stdout, /^# pass 6$/m, run.stdout);
