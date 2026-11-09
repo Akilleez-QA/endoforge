@@ -10,11 +10,14 @@ class BrokerDenied(PermissionError):
 
 
 class Broker:
-    def __init__(self, snapshots, byte_limit, authorize, max_calls):
+    def __init__(self, snapshots, byte_limit, authorize, max_calls, record=None):
         if type(max_calls) is not int or not 1 <= max_calls <= MAX_HOST_CALLS:
             raise ValueError("host-call limit must be between 1 and 4096")
         if authorize is not None and not callable(authorize):
             raise ValueError("authority checker must be callable")
+        if record is not None and not callable(record):
+            raise ValueError("denial recorder must be callable")
+        self._record = record
         self._snapshots = snapshots
         self._authorize = authorize
         self._remaining = byte_limit
@@ -37,6 +40,8 @@ class Broker:
             self._denials[-1] = entry
         else:
             self._denials.append(entry)
+        if self._record is not None:
+            self._record(dict(entry))
         if fatal:
             raise BrokerDenied(self.report())
         return reason

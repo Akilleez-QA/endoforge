@@ -12,6 +12,7 @@ import tempfile
 import time
 
 from tools.kernel.contract import MAX_COMPONENT_BYTES
+from tools.kernel.effects import EffectDenied, declaration
 
 
 @dataclass(frozen=True)
@@ -108,13 +109,15 @@ def _watch(command, source, limits):
     if reason is None and process.returncode == 0:
         try:
             response = json.loads(payload, object_hook=_decode)
-            if response["outcome"] not in ("passed", "trapped", "host_failed"):
+            if response["outcome"] not in ("passed", "trapped", "denied", "host_failed"):
                 raise ValueError("invalid host outcome")
             if response["outcome"] != "host_failed" and execution_started is None:
                 raise ValueError("missing execution timestamp")
             receipt["outcome"] = response["outcome"]
             if response["outcome"] == "passed":
                 receipt["result"] = response["result"]
+            elif response["outcome"] == "denied":
+                receipt["denials"] = response["denials"]
             elif "error" in response:
                 receipt["error"] = response["error"]
         except (ValueError, KeyError, TypeError):
@@ -125,7 +128,7 @@ def _watch(command, source, limits):
     return receipt
 
 
-def run_candidate(component, schemas, state, event, inputs=(), *, limits=Limits()):
+def run_candidate(component, schemas, state, event, inputs=(), *, limits=Limits(), effects=None):
     if type(component) is not bytes or not 8 <= len(component) <= MAX_COMPONENT_BYTES:
         raise ValueError("component bytes required within 16 MiB limit")
     snapshots = tuple(inputs)
@@ -134,8 +137,10 @@ def run_candidate(component, schemas, state, event, inputs=(), *, limits=Limits(
         raise ValueError("immutable inputs required within 1 MiB and 64 buffers")
     if len(schemas) != 3 or any(type(s) is not str or not 1 <= len(s) <= 256 for s in schemas):
         raise ValueError("three bounded schema identities required")
+    if effects is not None:
+        declaration(effects)
     request = dict(component=component, schemas=schemas, state=state, event=event,
-                   inputs=snapshots, limits=asdict(limits))
+                   inputs=snapshots, limits=asdict(limits), effects=effects)
     with tempfile.TemporaryFile() as source:
         source.write(json.dumps(request, default=_encode).encode("ascii"))
         source.seek(0)
@@ -150,11 +155,13 @@ def _host():
     try:
         request = json.loads(sys.stdin.buffer.read(24 * 1024 * 1024), object_hook=_decode)
         limits = Limits(**request.pop("limits"))
-        cell = Workcell(request.pop("component"), request.pop("schemas"))
+        cell = Workcell(request.pop("component"), request.pop("schemas"), effects=request.pop("effects"))
         execution_started = time.monotonic_ns()
         print(json.dumps({"execution_started_ns": execution_started}), flush=True)
         result = cell.run(**request, fuel=limits.fuel, memory_bytes=limits.memory_bytes)
         response = {"outcome": "passed", "result": result}
+    except EffectDenied as error:
+        response = {"outcome": "denied", "denials": error.denials}
     except WasmtimeError as error:
         response = {"outcome": "trapped" if execution_started else "host_failed",
                     "error": str(error)[-512:]}

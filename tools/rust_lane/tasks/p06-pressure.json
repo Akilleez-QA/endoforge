@@ -1,0 +1,69 @@
+{
+  "id": "p06-pressure-v1",
+  "schemas": {
+    "state": "p06-result-i32le-v1",
+    "event": "p06-args-4xi32le-v1",
+    "effect": "empty-v1"
+  },
+  "effects": {
+    "id": "empty-v1",
+    "max_effects": 0,
+    "effects": []
+  },
+  "cases": [
+    {
+      "name": "inline-event",
+      "state": "",
+      "event": "01000000020000000000000000000000",
+      "inputs": [],
+      "expect": {
+        "state": "64000000",
+        "effects": []
+      }
+    },
+    {
+      "name": "event-from-buffer",
+      "state": "",
+      "event": "",
+      "inputs": [
+        "01000000020000000000000000000000"
+      ],
+      "expect": {
+        "state": "64000000",
+        "effects": []
+      }
+    },
+    {
+      "name": "gauge-basis",
+      "state": "",
+      "event": "96000000000000000200000000000000",
+      "inputs": [],
+      "expect": {
+        "state": "02000000",
+        "effects": []
+      }
+    },
+    {
+      "name": "invalid-unit",
+      "state": "",
+      "event": "01000000020000000400000000000000",
+      "inputs": [],
+      "expect": {
+        "state": "00000080",
+        "effects": []
+      }
+    },
+    {
+      "name": "short-buffer",
+      "state": "",
+      "event": "",
+      "inputs": [
+        "78"
+      ],
+      "expect": {
+        "state": "00000080",
+        "effects": []
+      }
+    }
+  ]
+}

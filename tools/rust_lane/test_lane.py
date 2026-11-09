@@ -10,7 +10,10 @@ import unittest
 from unittest.mock import patch
 
 from tools.kernel.contract import validate_artifact
-from tools.rust_lane.build import ROOT, build, cargo_home, fetch_locked, prefer_checkout_wasm_tools, run, rust_tool
+from tools.kernel.journal import DenialJournal
+from tools.rust_lane.admit import TASKS, AdmissionRejected, admit, conform, load_task
+from tools.rust_lane.build import (ROOT, build, cargo_home, crate_sources, fetch_locked,
+                                   prefer_checkout_wasm_tools, run, rust_tool)
 
 WORKCELL_PROBE = """
 import json, sys
@@ -136,6 +139,132 @@ class CrateFetchTests(unittest.TestCase):
         with patch("tools.rust_lane.build.run", side_effect=[ValueError("offline"), ValueError("no route")]):
             with self.assertRaisesRegex(ValueError, "no route"):
                 fetch_locked("/synthetic/cargo", {}, "/synthetic/crate")
+
+
+TALLY = ROOT / "kernels/tally"
+
+
+def crate_copy(directory, source=TALLY, replace=()):
+    crate = Path(directory) / "crate"
+    shutil.copytree(source, crate, ignore=shutil.ignore_patterns("target", "node_modules", "tasks", "kernels"))
+    for name, old, new in replace:
+        path = crate / name
+        text = path.read_text()
+        if old not in text:
+            raise AssertionError(f"{old!r} not in {path}")
+        path.write_text(text.replace(old, new))
+    return crate
+
+
+class CrateAdmissionShapeTests(unittest.TestCase):
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.directory = Path(directory.name)
+
+    def test_any_conforming_crate_layout_is_collected(self):
+        for crate, library in ((ROOT, "ef24_kernel"), (TALLY, "ef24_tally")):
+            name, sources = crate_sources(crate)
+            self.assertEqual(name, library)
+            self.assertEqual(list(sources)[:3], ["Cargo.toml", "Cargo.lock", "src/lib.rs"])
+        crate = crate_copy(self.directory)
+        (crate / "src/model.rs").write_text("pub const LIMIT: u64 = 1;\n")
+        self.assertIn("src/model.rs", crate_sources(crate)[1])
+
+    def test_crates_outside_the_kernel_contract_are_refused_before_building(self):
+        library = crate_copy(self.directory / "rlib", replace=[("Cargo.toml", '"cdylib"', '"rlib"')])
+        with self.assertRaisesRegex(ValueError, "cdylib"):
+            crate_sources(library)
+        local = crate_copy(self.directory / "path", replace=[
+            ("Cargo.toml", "[dependencies]\n", '[dependencies]\nlocal = { path = "../local" }\n')])
+        with self.assertRaisesRegex(ValueError, "crates.io"):
+            crate_sources(local)
+        script = crate_copy(self.directory / "script")
+        (script / "build.rs").write_text("fn main() {}\n")
+        with self.assertRaisesRegex(ValueError, "build script"):
+            crate_sources(script)
+        unlocked = crate_copy(self.directory / "unlocked")
+        (unlocked / "Cargo.lock").unlink()
+        with self.assertRaisesRegex(ValueError, "Cargo.lock"):
+            crate_sources(unlocked)
+        linked = crate_copy(self.directory / "linked")
+        (linked / "src/outside.rs").symlink_to(self.directory / "rlib/crate/src/lib.rs")
+        with self.assertRaisesRegex(ValueError, "regular files"):
+            crate_sources(linked)
+
+    def test_kernel_host_failure_rejects_and_is_journaled(self):
+        receipt = {"artifact": {"id": "0" * 64}}
+        journal = self.directory / "denials.sqlite"
+        with patch("tools.rust_lane.admit.build", return_value=receipt), \
+                patch("tools.rust_lane.admit.conform", side_effect=ValueError("kernel host failed: crash")):
+            with self.assertRaises(AdmissionRejected) as raised:
+                admit(TALLY, TASKS / "tally.json", self.directory / "out", journal)
+        self.assertEqual(raised.exception.record["reason"], "kernel-host-failed")
+        self.assertEqual([(e["kind"], e["reason"]) for e in DenialJournal(journal).entries()],
+                         [("admission", "kernel-host-failed")])
+
+    def test_tasks_are_frozen_and_distinct(self):
+        p06, tally = load_task(TASKS / "p06-pressure.json"), load_task(TASKS / "tally.json")
+        self.assertNotEqual(p06["schemas"], tally["schemas"])
+        self.assertEqual(p06["effects"]["effects"], [])
+        self.assertEqual({(e["capability"], e["operation"]) for e in tally["effects"]["effects"]},
+                         {("notify", "threshold"), ("audit", "malformed")})
+
+
+class GeneralizedAdmissionTests(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        cls.workspace = tempfile.TemporaryDirectory(prefix="ef24-admit-")
+        cls.addClassCleanup(cls.workspace.cleanup)
+        cls.root = Path(cls.workspace.name)
+        cls.journal = cls.root / "denials.sqlite"
+        cls.p06 = admit(ROOT, TASKS / "p06-pressure.json", cls.root / "p06", cls.journal)
+        cls.tally = admit(TALLY, TASKS / "tally.json", cls.root / "tally", cls.journal)
+        rogue = crate_copy(cls.root / "rogue", replace=[("src/lib.rs", 'b"threshold"', 'b"broadcast"')])
+        try:
+            admit(rogue, TASKS / "tally.json", cls.root / "rogue-build", cls.journal)
+            cls.rejected = None
+        except AdmissionRejected as error:
+            cls.rejected = error.record
+
+    def test_two_distinct_tasks_are_built_checked_and_admitted(self):
+        for record, name, directory in ((self.p06, "p06-pressure", "p06"), (self.tally, "tally", "tally")):
+            task = load_task(TASKS / f"{name}.json")
+            with self.subTest(task=name):
+                self.assertEqual(record["status"], "admitted")
+                self.assertEqual(record["task"], task["id"])
+                self.assertEqual(record["cases"], [case["name"] for case in task["cases"]])
+                self.assertEqual(record["qualification"], "required")
+                validate_artifact(record["artifact"], (self.root / directory / "kernel.wasm").read_bytes())
+                self.assertEqual(json.loads((self.root / directory / "admission.json").read_text()), record)
+        self.assertNotEqual(self.p06["artifact"]["component_sha256"], self.tally["artifact"]["component_sha256"])
+        self.assertNotEqual(self.p06["effect_declaration_sha256"], self.tally["effect_declaration_sha256"])
+
+    def test_undeclared_effect_rejects_admission_with_durable_denials(self):
+        self.assertIsNotNone(self.rejected)
+        self.assertEqual(self.rejected["reason"], "conformance-failed")
+        self.assertEqual(self.rejected["failed_cases"], ["threshold-crossed"])
+        self.assertFalse((self.root / "rogue-build/admission.json").exists())
+        entries = DenialJournal(self.journal).entries()
+        effect = [e for e in entries if e["kind"] == "effect"]
+        self.assertEqual([(e["capability"], e["operation"], e["reason"]) for e in effect],
+                         [("notify", "broadcast", "undeclared-effect")])
+        admission = [e for e in entries if e["kind"] == "admission"]
+        self.assertEqual(admission[0]["artifact_id"], effect[0]["artifact_id"])
+        self.assertLess(effect[0]["seq"], admission[0]["seq"])
+
+    def test_component_is_checked_against_its_own_task_only(self):
+        report = conform(self.root / "p06/kernel.wasm", load_task(TASKS / "tally.json"), self.root / "cross.sqlite")
+        self.assertFalse(report["passed"])
+        self.assertEqual({row["outcome"] for row in report["cases"]}, {"refused"})
+
+    def test_build_failure_is_journaled(self):
+        broken = crate_copy(self.root / "broken", replace=[("src/lib.rs", "fn amounts(", "fn renamed(")])
+        journal = self.root / "broken.sqlite"
+        with self.assertRaises(AdmissionRejected) as raised:
+            admit(broken, TASKS / "tally.json", self.root / "broken-build", journal)
+        self.assertEqual(raised.exception.record["reason"], "build-failed")
+        self.assertEqual([e["reason"] for e in DenialJournal(journal).entries()], ["build-failed"])
 
 
 class RustLaneTests(unittest.TestCase):

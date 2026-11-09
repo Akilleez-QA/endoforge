@@ -14,6 +14,22 @@ SCHEMAS = ("test:byte", "test:byte", "test:none")
 REFERENCE = Path(__file__).with_name("reference.wat").read_text()
 
 
+def emitting(capability="demo", operation="emit", payload="!"):
+    escaped = (capability + operation + payload).replace('"', '\\22')
+    base, cap, op = 320, len(capability), len(operation)
+    stores = ''.join(f'(i32.store (i32.const {p}) (i32.const {v}))' for p, v in
+                     ((192, base), (196, cap), (200, base + cap), (204, op),
+                      (208, base + cap + op), (212, len(payload))))
+    wat = REFERENCE.replace('(data (i32.const 256)', f'(data (i32.const {base}) "{escaped}") (data (i32.const 256)')
+    return wat.replace('(i32.store (i32.const 8) (i32.const 0))', stores +
+                       '(i32.store (i32.const 8) (i32.const 192))').replace(
+                           '(i32.store (i32.const 12) (i32.const 0))',
+                           '(i32.store (i32.const 12) (i32.const 1))')
+
+
+EMITTING = emitting()
+
+
 def build(wat=REFERENCE, wit=WIT):
     with tempfile.TemporaryDirectory(prefix="ef19-") as directory:
         path = Path(directory) / "kernel.wit"
@@ -106,14 +122,9 @@ class WorkcellTests(unittest.TestCase):
             Workcell(build(forged), SCHEMAS).run(b"\x01", b"\x02", [b"x"])
 
     def test_effects_are_returned_as_data(self):
-        stores = ''.join(f'(i32.store (i32.const {p}) (i32.const {v}))' for p, v in
-                         ((192, 320), (196, 4), (200, 324), (204, 4), (208, 328), (212, 1)))
-        wat = REFERENCE.replace('(data (i32.const 256)', '(data (i32.const 320) "demoemit!") (data (i32.const 256)')
-        wat = wat.replace('(i32.store (i32.const 8) (i32.const 0))', stores +
-                          '(i32.store (i32.const 8) (i32.const 192))').replace(
-                              '(i32.store (i32.const 12) (i32.const 0))',
-                              '(i32.store (i32.const 12) (i32.const 1))')
-        result = Workcell(build(wat), SCHEMAS).run(b"\x01", b"\x02")
+        declared = {"id": SCHEMAS[2], "effects": [
+            {"capability": "demo", "operation": "emit", "payload": {"encoding": "utf8", "max_bytes": 1}}]}
+        result = Workcell(build(EMITTING), SCHEMAS, effects=declared).run(b"\x01", b"\x02")
         self.assertEqual(result["effects"], [{"capability": "demo", "operation": "emit", "payload": b"!"}])
 
     def test_memory_ceiling_is_enforced_at_instantiation(self):

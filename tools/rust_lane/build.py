@@ -5,6 +5,7 @@ import resource
 import shutil
 import signal
 import subprocess
+import tomllib
 
 from tools.kernel.contract import WIT, check_tool, validate_component, wasm_tools
 from core.ledger.ledger import encode
@@ -14,6 +15,7 @@ REPOSITORY = ROOT.parents[1]
 TARGET = "wasm32-unknown-unknown"
 FLAGS = "-C debuginfo=0 --remap-path-prefix={root}=/ef24"
 VERSION = "rustc 1.98.1 (48a229cea 2026-09-01)"
+MAX_SOURCE_BYTES = 4 * 1024 * 1024
 
 
 def sha(data):
@@ -74,8 +76,43 @@ def fetch_locked(cargo, env, cwd):
         run([str(cargo), "fetch", "--locked"], env=env, cwd=cwd)
 
 
-def build(destination):
+def crate_sources(crate):
+    crate = Path(crate).resolve()
+    try:
+        manifest = tomllib.loads((crate / "Cargo.toml").read_text())
+    except (OSError, UnicodeDecodeError, tomllib.TOMLDecodeError) as error:
+        raise ValueError("kernel crate needs a readable Cargo.toml") from error
+    package = manifest.get("package")
+    if type(package) is not dict or type(package.get("name")) is not str:
+        raise ValueError("kernel crate needs a named package")
+    library = manifest.get("lib", {})
+    if "cdylib" not in library.get("crate-type", []):
+        raise ValueError("kernel crate must build a cdylib")
+    if "build" in package or (crate / "build.rs").exists() or "workspace" in manifest:
+        raise ValueError("kernel crate may not have a build script or workspace")
+    tables = [manifest.get("dependencies", {}), manifest.get("build-dependencies", {})]
+    tables += [t.get("dependencies", {}) for t in manifest.get("target", {}).values()]
+    for table in tables:
+        for name, spec in table.items():
+            if type(spec) is dict and spec.keys() & {"path", "git", "registry"}:
+                raise ValueError(f"dependency {name} must come from crates.io through Cargo.lock")
+    if not (crate / "Cargo.lock").is_file() or not (crate / "src/lib.rs").is_file():
+        raise ValueError("kernel crate needs Cargo.lock and src/lib.rs")
+    names = ["Cargo.toml", "Cargo.lock"]
+    for path in sorted((crate / "src").rglob("*")):
+        if path.is_symlink() or not (path.is_file() or path.is_dir()):
+            raise ValueError("kernel crate sources must be regular files")
+        if path.is_file():
+            names.append(path.relative_to(crate).as_posix())
+    sources = {name: (crate / name).read_bytes() for name in names}
+    if sum(map(len, sources.values())) > MAX_SOURCE_BYTES:
+        raise ValueError("kernel crate sources exceed 4 MiB")
+    return library.get("name", package["name"]).replace("-", "_"), sources
+
+
+def build(destination, crate=ROOT):
     destination = Path(destination).resolve()
+    library, sources = crate_sources(crate)
     prefer_checkout_wasm_tools()
     rustc = rust_tool("rustc")
     cargo = rust_tool("cargo")
@@ -86,8 +123,7 @@ def build(destination):
     if version.splitlines()[0] != VERSION:
         raise ValueError(f"{VERSION} required")
     check_tool()
-    sources = {name: (ROOT / name).read_bytes() for name in ("Cargo.toml", "Cargo.lock", "src/lib.rs")}
-    identity = dict(toolchain=version, rustc_sha256=sha(rustc.read_bytes()),
+    identity = dict(toolchain=version, library=library, rustc_sha256=sha(rustc.read_bytes()),
                     cargo_sha256=sha(cargo.read_bytes()), target=TARGET, flags=FLAGS,
                     source_sha256={name: sha(data) for name, data in sources.items()},
                     wit_sha256=sha(WIT), wasm_tools_sha256=sha(executable("wasm_tools").read_bytes()),
@@ -108,7 +144,7 @@ def build(destination):
     fetch_locked(cargo, env, crate)
     run([str(cargo), "build", "--frozen", "--release", "--target", TARGET, "--jobs", "1"],
         env=env, cwd=crate)
-    core = (destination / "target" / TARGET / "release" / "ef24_kernel.wasm").read_bytes()
+    core = (destination / "target" / TARGET / "release" / f"{library}.wasm").read_bytes()
     component = wasm_tools("component", "new", "-", data=core)
     artifact = validate_component(component)
     receipt = dict(lane="rust-native", build_key=key, inputs=identity, artifact=artifact,
@@ -123,5 +159,6 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("destination", type=Path)
+    parser.add_argument("--crate", type=Path, default=ROOT)
     args = parser.parse_args()
-    print(encode(build(args.destination)))
+    print(encode(build(args.destination, args.crate)))
