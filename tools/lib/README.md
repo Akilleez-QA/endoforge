@@ -1,25 +1,63 @@
 # Shared tool library
 
-Small modules that the atomizer, conductor, hillclimb, job and project-scheduler tools import. Node only, no dependencies.
+Small Node modules that the whole-job tools ([atomizer](../atomizer/README.md), [conductor](../conductor/README.md),
+[hillclimb](../hillclimb/README.md), [job](../job/README.md) and the [project scheduler](../project-scheduler/README.md))
+share, so they agree on what an exit code means, how to wait for a busy resource, and how to write state that survives
+a crash. No dependencies.
+
+## Why it exists
+
+When many agents and checks run at once, "the command failed" is not one thing. A check may be busy (try again
+later), may have found a reason to stop the whole job, or may simply have failed. If every tool guessed differently, a
+busy machine would look like a failing test and a stop signal would be retried. This library fixes one meaning for
+each exit code and gives every tool the same retry, lock and atomic-write behaviour.
+
+| Exit code | Name | Meaning | What callers do |
+|---|---|---|---|
+| 0 | `OK` | Passed | Continue |
+| 1 | `FAIL` | Failed | Report it; feed it back to the agent |
+| 2 | `USAGE` | Wrong arguments | Fix the call |
+| 75 | `TRANSIENT` | Busy (a lock, a queue, no headroom) | Wait with doubling backoff and retry |
+| 78 | `STOP` | Something is unsafe or broken | Stop the whole job, loudly |
+| 124 | `TIMEOUT` | Ran out of time | Treat as not finished |
+
+A gate or evaluation that could not run is `{scored: false, why}` (`unscored`), never a number, so it cannot be
+mistaken for a pass or a zero.
 
 ## Modules
 
-- [errors.mjs](errors.mjs): one exit-code taxonomy.
-  - `EXIT`: `OK 0`, `FAIL 1`, `USAGE 2`, `TRANSIENT 75`, `STOP 78`, `TIMEOUT 124`.
-  - `classify(status)`: returns `'ok'`, `'transient'` (75), `'stop'` (78) or `'fail'`.
-  - `runTyped(argv, opts)` and `runTypedAsync(argv, opts)`: run a command. On 75 they wait and retry with doubling backoff (defaults: `baseMs` 2000, `capMs` 60000, `maxWaitMs` 600000). On 78 or any failure they return at once. The result is `{status, kind, attempts, waitedMs, stdout, stderr}`.
-  - `StopError`: an error with `exitCode` 78.
-  - `unscored(why)` and `isScored(x)`: a gate or eval that could not run is `{scored: false}`, never a number.
-- [lock.mjs](lock.mjs): file locks.
-  - `acquire(target, {waitMs, pollMs, orphanMs})`: creates the directory `<target>.lock` holding the owner pid, host and time. A lock whose owner pid is dead on this host is reclaimed. After `waitMs` (default 60000) it throws `LockBusy`, which has `exitCode` 75. Returns a release function.
-  - `withLock(target, fn, opts)`: runs `fn` under the lock and always releases it.
-  - `writeJSONAtomic(file, value)`: writes to a temp file, fsyncs, renames, then fsyncs the directory.
-- [headroom.mjs](headroom.mjs): load and memory headroom.
-  - `limits(env)`: `maxLoad` and `reserveGb`.
-  - `availableGb()`: `MemAvailable` from `/proc/meminfo`.
-  - `headroom(env, sample)`: returns `{ok, load1, availGb, maxLoad, reserveGb}`. `ok` is true when the 1-minute load is below `maxLoad` and available memory is at least `reserveGb`.
-- [exitfile.mjs](exitfile.mjs): `exitWrapper(file)` returns a shell fragment that runs `"$@"` and writes its exit code to `file` atomically. `readExit(file)` reads it back, or returns `null`.
-- [run-typed](run-typed): a CLI over `runTyped`.
+- [errors.mjs](errors.mjs): `EXIT`, `classify(status)` (`'ok'`, `'transient'`, `'stop'` or `'fail'`), `runTyped` and
+  `runTypedAsync` (on 75 they wait and retry with doubling backoff, defaults `baseMs` 2000, `capMs` 60000, `maxWaitMs`
+  600000; on 78 or any other failure they return at once with `{status, kind, attempts, waitedMs, stdout, stderr}`),
+  `StopError` (`exitCode` 78), `unscored(why)` and `isScored(x)`.
+- [lock.mjs](lock.mjs): `acquire(target, {waitMs, pollMs, orphanMs})` creates the directory `<target>.lock` with the
+  owner's pid, host and time. A lock whose owner pid is dead on this host, or an ownerless lock older than `orphanMs`,
+  is reclaimed. After `waitMs` (default 60000) it throws `LockBusy` (`exitCode` 75). `withLock(target, fn, opts)` runs
+  `fn` under the lock and always releases it. `writeJSONAtomic(file, value)` writes a temp file, fsyncs, renames and
+  fsyncs the directory.
+- [headroom.mjs](headroom.mjs): `headroom(env, sample)` returns `{ok, load1, availGb, maxLoad, reserveGb}`; `ok` is
+  true when the one-minute load is below `maxLoad` and available memory is at least `reserveGb`. `limits(env)` and
+  `availableGb()` are the parts.
+- [exitfile.mjs](exitfile.mjs): `exitWrapper(file)` is a shell fragment that runs `"$@"` and writes its exit code to
+  `file` atomically; `readExit(file)` reads it back or returns `null`. The conductor uses it to tell a finished worker
+  from a running one after a restart.
+- [run-typed](run-typed): the command-line form of `runTyped`.
+
+## Example
+
+```console
+$ node tools/lib/run-typed
+usage: run-typed [--max-wait SEC] [--base SEC] -- <command …>
+$ node tools/lib/run-typed -- sh -c 'exit 78'; echo "exit $?"
+run-typed: STOP: sh exited 78; not retrying
+exit 78
+$ node tools/lib/run-typed --max-wait 1 --base 1 -- sh -c 'exit 75'; echo "exit $?"
+run-typed: sh is busy (exit 75); retrying in 1 s (attempt 1)
+run-typed: still busy after 1 s; giving up with 75
+exit 75
+```
+
+`--max-wait` defaults to 600 seconds and `--base` to 2. With no command, `run-typed` prints its usage and exits 2.
 
 ## Environment
 
@@ -29,21 +67,15 @@ Small modules that the atomizer, conductor, hillclimb, job and project-scheduler
 | `ENDOFORGE_RESERVE_GB` | `headroom.mjs` | the larger of 8 and 12% of total RAM, in GiB |
 | `ENDOFORGE_THROTTLE` | `headroom.mjs` | unset; `0` makes `headroom()` always return `ok` |
 
-## run-typed
+## Limits
 
-```sh
-node tools/lib/run-typed [--max-wait SEC] [--base SEC] -- <command ...>
-```
-
-`--max-wait` defaults to 600 seconds and `--base` to 2. These were run:
-
-```sh
-node tools/lib/run-typed                                               # prints usage, exits 2
-node tools/lib/run-typed -- true                                       # exits 0
-node tools/lib/run-typed -- sh -c 'exit 78'                            # STOP, not retried, exits 78
-node tools/lib/run-typed --max-wait 1 --base 1 -- sh -c 'exit 75'      # retries once, gives up, exits 75
-```
+- Locks are directories on a local file system. Dead-owner reclaim only works for owners on the same host.
+- Only `errors.mjs` has a test; `lock.mjs`, `headroom.mjs` and `exitfile.mjs` are exercised through the conductor and
+  job tests.
 
 ## Tests
 
-`make lib-test` runs [test/errors.test.mjs](test/errors.test.mjs) along with the conductor, hillclimb and job tests, and the [job-locks](../job-locks/README.md) test. There is no separate test for `lock.mjs`, `headroom.mjs` or `exitfile.mjs`.
+`make lib-test` runs [test/errors.test.mjs](test/errors.test.mjs) with the conductor, hillclimb, job and
+[job-locks](../job-locks/README.md) tests.
+
+Engineering record: component C-23, requirement REQ-ERR-001.

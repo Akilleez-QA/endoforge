@@ -1,159 +1,125 @@
-# Kernel contract v1
+# Kernel contract
 
-`kernel.wit` defines `endoforge:kernel/kernel@1.0.0`. The component imports only
-the `buffers` interface and exports only the `reducer` interface. There is no
-WASI, clock, randomness, filesystem, network, renderer, broker or ledger import.
-Validation rejects added imports, exports, functions, types and changed types,
-including within an otherwise correctly named interface. It reads the actual
-component binary, not a candidate-supplied interface manifest.
+This directory defines the kernel contract as a WebAssembly component interface (WIT), validates components against
+it byte for byte, and hosts them in Wasmtime with fuel, memory and call limits. A kernel is the application logic of a
+candidate: a pure function from state and an event to the next state plus effects, where effects are requests
+returned as data that the kernel can never carry out itself.
 
-`reduce(state, event, inputs)` returns a transition containing the next state
-and ordered effects. State, event and effect payloads are byte sequences whose
-encodings belong to the task's frozen schemas. The host supplies immutable
-buffer snapshots in `inputs` for large values. Replaying the same state, event
-and snapshots must produce the same transition. Guest heaps are disposable;
-state needed by another call must be in the returned state.
+It is a standalone conformance lane. The candidate loop in [core/runtime](../../core/runtime/README.md) runs in V8
+isolates and imports nothing from here; this is where the portable, language-neutral form of the kernel contract is
+pinned and tested, with Wasmtime as the reference host. [compatibility](../compatibility/README.md) binds the same
+contract to TypeScript and [rust_lane](../rust_lane/README.md) builds a Rust component against it.
 
-A buffer is a host-owned WIT resource, borrowed only for the call. There is no
-constructor, pointer, address, write operation or ownership transfer. `size`
-returns its byte length. `read(offset, length)` returns a copy, or
-`out-of-bounds` when the range exceeds that snapshot, or `limit-exceeded` when
-the host's admission read budget would be exceeded. The host must bound reads,
-check ranges without integer overflow and reject stale or foreign handles.
-These are runtime obligations; this slice checks their interface only.
+## The contract
 
-An effect has a capability name, operation name and byte payload. It requests
-an action as data; it grants no authority and is never executed by the kernel.
-The host must validate each effect against the frozen task effect schema and
-permitted effects before any dispatch. `describe()` returns the exact contract
-version and the state/event/effect schema identities. They must match the
-admitted contract; this slice validates the function's type, not its result.
+`kernel.wit` defines `endoforge:kernel/kernel@1.0.0`:
 
-Every record produced by `validate_component(bytes)` contains the component
-SHA-256, exact WIT SHA-256, contract version, world and validator version. The
-record ID hashes that canonical envelope using the existing ledger encoder.
-`validate_artifact(record, bytes)` revalidates and rejects missing, extra or
-changed fields. These are standalone static artifact records, not a new
-Ledger v0 record kind. Their `static-interface-only` result is not qualification.
+```wit
+interface reducer {
+  use buffers.{buffer};
+  record effect { capability: string, operation: string, payload: list<u8> }
+  record transition { state: list<u8>, effects: list<effect> }
+  record metadata { contract-version: string, state-schema: string, event-schema: string, effect-schema: string }
+  reduce: func(state: list<u8>, event: list<u8>, inputs: list<borrow<buffer>>) -> transition;
+  describe: func() -> metadata;
+}
+world kernel { import buffers; export reducer; }
+```
 
-A major contract change invalidates qualification and requires requalification
-of every affected artifact. Any WIT byte change, including within a major
-version, invalidates these static records; there is no automatic carry-forward
-or implicit semver compatibility. Version and hash are both pinned.
+- `reduce(state, event, inputs)` returns the next state and ordered effects. State, event and effect payloads are
+  bytes whose encodings belong to the task's frozen schemas. Replaying the same state, event and snapshots must give
+  the same transition. Guest heaps are disposable: anything needed by the next call must be in the returned state.
+- A `buffer` is a host-owned resource borrowed only for the call: `size()` and `read(offset, length)`, which returns a
+  copy, `out-of-bounds` or `limit-exceeded`. There is no constructor, pointer, write or ownership transfer.
+- An effect names a capability, an operation and a byte payload. It grants no authority; the host must check it
+  against the task's frozen effect schema and permitted effects before any dispatch.
+- `describe()` returns the contract version and the three schema identities, which must match the admitted contract.
 
-Checks require the upstream `wasm-tools` 1.262.0 executable on PATH, or its path
-in `WASM_TOOLS`. No download occurs in tests. The x86_64 Linux release archive
-used here has SHA-256
-`655b8df67d54c3ef9b52fc237c4e94bbfbb5f5f43825245cb0940a7002a9ed65`.
-See the [upstream release](https://github.com/bytecodealliance/wasm-tools/releases/tag/v1.262.0)
-and [WIT reference](https://component-model.bytecodealliance.org/design/wit.html).
-`make test` runs `make kernel-test`, so it needs this executable and Python
-`wasmtime` 49.0.0 too. `make tools` installs both, hash-checked, into the
-git-ignored `.tools/` (a venv and `.tools/bin/wasm-tools`); CI runs the same
-target. `make kernel-test` uses `.tools/` automatically when present and fails
-with a message naming `make tools` when either tool is missing. Pins live in
-`requirements.txt` and `install_tools.py`; `make test` itself never downloads.
-From the repository root, run `make kernel-test` or
-`python3 -B -m tools.kernel.contract component.wasm` for a JSON artifact record.
-The validator accepts binary components up to 16 MiB, caps each tool call at
-10 seconds and limits expanded interface complexity. The caller must still
-govern process memory and concurrent validations.
+The component imports only `buffers` and exports only `reducer`: no WASI, clock, randomness, file system, network,
+renderer, broker or ledger.
 
-Tests compile fresh dummy components from WIT as static positive/negative
-controls. Their functions trap; they are not a working reference kernel.
-This is a static slice. It doesn't run a reference kernel, check semantic conformance or admit artifacts into the ledger.
+## How validation works
 
-## Relation to the V8 workcell
+`validate_component(bytes)` reads the actual component binary (not a manifest the candidate supplies) with
+`wasm-tools`, and rejects any added import, export, function or type, and any changed type, even inside a correctly
+named interface. It accepts components up to 16 MiB, caps each tool call at 10 seconds and limits expanded interface
+complexity.
 
-The candidate loop in [core/runtime](../../core/runtime/README.md) runs in V8 isolates. This lane targets Wasmtime in Python and is separate from that loop: nothing in `core/` imports it, and neither Wasmtime nor a Python process is part of the loop. `kernel.wit` and its validator don't depend on Wasmtime. A Wasmtime host in this directory is a conformance host for kernels, not a loop component.
+Every record it produces carries the component SHA-256, the exact WIT SHA-256, the contract version, the world and the
+validator version, and a record id that hashes that envelope with the ledger encoder. `validate_artifact(record,
+bytes)` revalidates and rejects missing, extra or changed fields. The result is `static-interface-only`: it is not
+qualification and not a ledger record. Any change to the WIT bytes, even within a major version, invalidates these
+records; there is no carry-forward.
 
-## Resident component host
+## Running a kernel
 
-Install `requirements.txt` into a virtual environment and select that interpreter
-with `make kernel-test PYTHON=/path/to/venv/bin/python`. `make test` runs this target too, so select the same interpreter there; missing dependencies fail these checks.
+- `Workcell(component_bytes, (state_schema, event_schema, effect_schema))` validates the contract and compiles once.
+  `run(state, event, inputs)` instantiates into a fresh store for every attempt, checks `describe`, calls `reduce`,
+  cleans up and destroys the store, and returns state, effects, artifact and cache identity, timings, fuel used and
+  bytes read. Guest limits: 16 MiB memory, 1 MiB total input, 64 snapshots, 1 MiB cumulative reads, at most 10 million
+  fuel. Attempts serialize.
+- `run(..., authorize=checker, max_host_calls=4096)` creates a fresh broker per attempt. The checker sees
+  `(buffer_index, operation)` on every `size` and `read` before any bytes are fetched and must return exactly `True`;
+  revocation or an exception aborts with `BrokerDenied`. The host-call limit (1 to 4096) counts size calls, zero-length
+  reads and typed read errors. Results carry a `broker` report; at most 64 denial records are kept, never source bytes.
+- `declared_imports` (default `("endoforge:kernel/buffers@1.0.0",)`) must match the fixed import list exactly;
+  declaring an extra capability cannot grant it.
+- `tools.kernel.limits.run_candidate(component, schemas, state, event, inputs, limits=Limits(...))` runs one candidate
+  in a new host process watched from outside Wasmtime, including compilation, and kills the process group on timeout
+  or output overflow. `Limits`: fuel 1–10,000,000 (default 100,000), memory 64 KiB–16 MiB (default 16 MiB), combined
+  output 1 byte–1 MiB (default 1 MiB), wall time 0.01–60 s (default 5). Receipts give `wall_ns`, `time_to_stop_ns` and
+  `time_to_kill_ns`; a failure to confirm the process group is gone is `cleanup_failed`.
 
-`Workcell(component_bytes, (state_schema, event_schema, effect_schema))` validates
-the kernel contract and compiles once. Call `run(state_bytes, event_bytes, inputs)`
-with immutable byte snapshots. Each attempt instantiates into a fresh store,
-checks `describe`, invokes `reduce`, performs canonical post-return cleanup,
-and destroys the store on success or failure. Results include state/effect data,
-artifact identity, cache identity, host timings, fuel use and buffer-read bytes.
-Effects grant no authority and are never dispatched by this host.
+## Example
 
-The cache holds one component for this engine's lifetime, keyed by the kernel
-artifact identity and pinned runtime/compiler configuration. Attempts serialize;
-compiler parallelism is disabled. Guest limits: 16 MiB memory, 1 MiB total input,
-64 snapshots, 1 MiB cumulative reads and at most 10 million fuel units.
+`reference.wat` is a hand-written control kernel: its next state is state plus event plus the first byte of the first
+buffer, modulo 256. Build it into a component, validate it, then run it:
 
-`reference.wat` is a hand-written conformance control, not a generation route.
-Its byte reducer adds state, event and the first buffer byte modulo 256; a
-mutable call counter deliberately detects accidental instance reuse. Tests build
-components in temporary directories without changing existing fixtures.
+```console
+$ make tools
+...
+kernel tools ready: <repo>/.tools/venv/bin/python (wasmtime 49.0.0), <repo>/.tools/bin/wasm-tools (1.262.0)
+$ export PATH=$PWD/.tools/bin:$PATH
+$ wasm-tools component embed tools/kernel/kernel.wit tools/kernel/reference.wat -o /tmp/core.wasm
+$ wasm-tools component new /tmp/core.wasm -o /tmp/kernel.wasm
+$ .tools/venv/bin/python -B -m tools.kernel.contract /tmp/kernel.wasm
+{"component_sha256":"fe2ee95d88f8e16567f7588e374e3a5015a2f78ac37790823320b0fc2a3bb493","contract_version":"1.0.0","id":"2c0892d9abf4db0e24d87857d2a7b735ecc0056703797d02946ce4a64ba12e27","validation":"static-interface-only","validator":"wasm-tools/1.262.0","version":1,"wit_sha256":"4768b0a5910d7adedd071b26d2eb46e1e849ea5e7988015a80e29ec91c57613e","world":"endoforge:kernel/kernel@1.0.0"}
+$ .tools/venv/bin/python -B -c "
+from pathlib import Path
+from tools.kernel.workcell import Workcell
+cell = Workcell(Path('/tmp/kernel.wasm').read_bytes(), ('test:byte', 'test:byte', 'test:none'))
+r = cell.run(bytes([5]), bytes([3]), [bytes([2, 9])])
+print({k: r[k] for k in ('state', 'effects', 'fuel_consumed', 'buffer_bytes_read')})"
+{'state': b'\n', 'effects': [], 'fuel_consumed': 184, 'buffer_bytes_read': 1}
+```
 
-The tests run 1,000 attempts with one actual compilation and distinct closed
-stores. Performance is not claimed.
-This embedding is for local conformance controls until the remaining slices
-provide OS sandboxing, cgroup ownership and helper containment, an external
-watchdog, compile-process limits, integrated cheap gates and calibration. Full effect-payload validation and ledger admission also remain open.
+5 + 3 + 2 = 10, the byte `\n`. The kernel read one byte of its buffer and used 184 units of fuel.
 
-## Declared buffer imports and per-call broker
+## Tools
 
-`Workcell(..., declared_imports=("endoforge:kernel/buffers@1.0.0",))` binds
-the candidate declaration to the fixed v1 WIT import list. This is also the
-default declaration. Missing or additional entries fail admission before
-compilation; the binary still undergoes exact interface validation. Declaring
-an extra capability cannot grant it. No WIT or artifact identity changes.
+`make tools` installs the pinned `wasm-tools` 1.262.0 and Python `wasmtime` 49.0.0, hash-checked, into the
+git-ignored `.tools/` (a virtual environment and `.tools/bin/wasm-tools`); CI runs the same target. `make kernel-test`
+uses `.tools/` when present and fails naming `make tools` when a tool is missing. Pins live in `requirements.txt` and
+`install_tools.py`; the x86_64 Linux `wasm-tools` archive has SHA-256
+`655b8df67d54c3ef9b52fc237c4e94bbfbb5f5f43825245cb0940a7002a9ed65`
+([release](https://github.com/bytecodealliance/wasm-tools/releases/tag/v1.262.0),
+[WIT reference](https://component-model.bytecodealliance.org/design/wit.html)). `WASM_TOOLS` overrides the
+executable. `make test` runs `make kernel-test` and never downloads.
 
-`run(..., authorize=checker, max_host_calls=4096)` creates a fresh broker for
-each attempt. The trusted host checker receives `(buffer_index, operation)`
-on every size/read, before retrieving snapshot bytes; it must return exactly
-`True`. Revocation or a checker exception aborts with `BrokerDenied`, even
-after a successful read of that same buffer. The checker must consult current
-authority and return promptly; the default `None` treats the explicit immutable
-inputs as attempt-scoped grants.
+## Limits
 
-The host-call limit is an integer from 1 to 4096. Size calls, zero-length reads
-and typed read errors consume it; the next call traps before authority lookup
-or data access. Canonical resource drops only release handles and confer no
-capability, so they are outside this service-call count. Fuel still bounds guest
-instructions. The existing cumulative byte budget remains in force.
+- Validation is static: it does not run a reference kernel, check semantic conformance or admit artifacts into the
+  ledger. Effect payloads are not validated and denials have no durable record yet.
+- The in-process `Workcell` bounds guest instructions (fuel) and linear memory only. `run_candidate` adds a
+  process-group watchdog on Linux; it does not claim cgroup or hostile native-code containment, OS sandboxing or
+  calibrated timings.
+- The tests run 1,000 attempts with one compilation and distinct stores; performance is not claimed.
+- The Rust lane's component does not instantiate here (`table count too high at 2`; the `Workcell` allows one table).
 
-Successful results include a `broker` report with host-call/byte counters,
-the declared limit and denial records. Fatal broker denials carry the same
-report on `BrokerDenied.report`; the host retains it after store destruction.
-At most 64 denial records are retained, with the last slot tracking the newest
-denial, plus an exact total count. Records contain operation, buffer index and
-reason, never source bytes or authority-service exception text.
+## Tests
 
-Declarations are tested at admission and the broker through real guest calls. Effects remain return data. There is no durable record of denials yet.
+`make kernel-test` runs `test_contract.py`, `test_workcell.py`, `test_broker.py` and `test_limits.py`. They compile
+fresh dummy components from the WIT as positive and negative controls (their functions trap), and build test
+components in temporary directories without changing fixtures.
 
-## Supervised candidates
-
-Use `tools.kernel.limits.run_candidate(component, schemas, state, event, inputs,
-limits=Limits(...))` for per-candidate supervision. Each call starts a new host
-session; the caller watches from outside Wasmtime, including admission and
-compilation, and kills the process group on timeout or transport overflow.
-It reaps the host and checks group absence before reporting success. Failure
-to verify closure produces `cleanup_failed`; failure to reap within one second
-raises rather than waiting without a bound. Existing `Workcell.run` remains the
-in-process primitive, with fuel and configurable linear memory only.
-
-`Limits` accepts fuel 1–10,000,000 (default 100,000), linear memory 64 KiB–16 MiB
-(default 16 MiB), combined stdout/stderr 1 byte–1 MiB (default 1 MiB), and wall
-seconds 0.01–60 (default 5). Transport accounting includes the timing header,
-JSON envelope, base64 expansion and diagnostics. Overflow observes at most one
-extra byte, retains no more than the cap, and withholds the candidate result.
-The frozen WIT still grants no timers or process/IO capabilities to guests.
-
-Receipts distinguish `wall_ns` (launch through host reap), `time_to_stop_ns`
-(host's pre-instantiation marker through reap, excluding startup/compile), and
-`time_to_kill_ns` (SIGKILL request through reap, only on a supervisor limit).
-Runtime traps have no kill latency: they stopped without watchdog termination.
-Missing execution markers stay null. These are functional containment timings,
-not calibrated performance claims or proof of outcome recovery.
-
-The new tests exercise loop, recursion, allocation, initial memory, output flood,
-combined-stream limits, stalled hosts (including closed pipes), invalid budgets,
-and recovery by a fresh process. They derive new WAT controls without editing
-existing fixtures. The flood must hit its cap before the deadline.
-This Linux process-group slice doesn't claim cgroup or hostile native-code containment.
+Engineering record: component C-17, requirements REQ-KERNEL-001 to REQ-KERNEL-004 and REQ-TOOLS-001.
