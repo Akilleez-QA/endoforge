@@ -20,8 +20,14 @@ def fsync_dir(p):
  finally: os.close(fd)
 def durable(p,value,exclusive=True):
  p=Path(p);p.parent.mkdir(parents=True,exist_ok=True)
- with p.open('x' if exclusive else 'w') as f:
-  json.dump(value,f,indent=2);f.write('\n');f.flush();os.fsync(f.fileno())
+ if exclusive and os.path.lexists(p):raise FileExistsError(str(p))
+ tmp=p.with_name(f'.{p.name}.{uuid.uuid4().hex}.tmp')
+ try:
+  with tmp.open('x') as f:
+   json.dump(value,f,indent=2);f.write('\n');f.flush();os.fsync(f.fileno())
+  if exclusive:os.link(tmp,p)
+  else:os.replace(tmp,p)
+ finally:tmp.unlink(missing_ok=True)
  fsync_dir(p.parent)
 def identity(pid=None):
  pid=pid or os.getpid()

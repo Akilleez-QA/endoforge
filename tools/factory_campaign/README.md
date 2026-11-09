@@ -26,8 +26,10 @@ is fenced out, and an interrupted model stage is recorded as `unknown` instead o
     through its states. `reconcile` records `unknown` for an interrupted stage. Cleanup stops a scope only when its
     Description matches. `promotionAllowed` and `automaticRetry` are always false.
 - `repair.py`: `patch(...)` applies one bounded text replacement to a failed `kernel.ts` or `glue.json` candidate and
-  writes a new `<name>.repair-<n>` file. It refuses if the candidate's hash changed, the match is not unique, the round
-  limit is reached, the dispute is not an `implementation-defect`, or any frozen path changed.
+  writes a new `<name>.repair-<n>` file. Round 0 patches the original; round `n` patches `<name>.repair-<n>`. It
+  refuses if the candidate's hash changed, the match is not unique, the round limit is reached, the dispute is not an
+  `implementation-defect`, no frozen path is given, the candidate is itself listed as frozen, or any frozen path
+  changed (the new file is then removed).
 
 ## Example
 
@@ -42,13 +44,13 @@ The journal test passed 31 checks; the state test crashed the writer at two boun
 
 ## Limits
 
-- `repair.py` has no test of its own.
 - The tests use `unittest` assertions, so they still check under `make test-optimized` (`python3 -O`).
 - The journal test uses short-lived local `sleep` processes with `stop_scope=False`, so it never touches systemd.
 
 ## Tests
 
-`make factory-state-test` runs `test_model_journal` and `test_state`. Both write receipts under
-`ENDOFORGE_TEST_OUTPUT` (the Makefile sets `.test-work`).
+`make factory-state-test` runs `test_model_journal`, `test_repair` and `test_state`. The journal and state tests
+write receipts under `ENDOFORGE_TEST_OUTPUT` (the Makefile sets `.test-work`); `test_repair` (GAP-EF-006) covers
+chained rounds, every refusal and frozen-path mutation.
 
 Engineering record: component C-25, requirement REQ-FACTORY-001.

@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 """Trusted-host offline worker runner. Workers cannot access receipts/publication."""
-import argparse
 import hashlib
 import json
 import os
@@ -11,7 +10,7 @@ import subprocess
 import time
 import uuid
 from .recovery import journal_before_create
-from .core import Fence, identity, fsync_dir, durable, import_regular, validate_record
+from .core import Fence, fsync_dir, durable, import_regular, validate_record
 
 IMAGE = os.environ.get('ENDOFORGE_WORKER_IMAGE', '')
 DOCKER = ['sudo', '-n', 'docker']
@@ -74,9 +73,9 @@ def _run_attempt(root, attempt, job, frozen_input, input_sha, expected_sha, scri
         state = json.loads(r.stdout)
         return state, not state['Running']
 
+    journal_before_create(root, attempt, job, token, expected_sha, fence, capture_only)
     for sig in (signal.SIGINT, signal.SIGTERM):
         previous[sig] = signal.signal(sig, received)
-    journal_before_create(root, attempt, job, token, expected_sha, fence, capture_only)
     owned = False
     stage = None
     try:

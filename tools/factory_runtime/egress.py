@@ -139,7 +139,7 @@ def run_bounded(command,timeout=180,output_limit=1048576,preexec_fn=None):
  if reason:
   try:os.killpg(p.pid,signal.SIGKILL)
   except ProcessLookupError:pass
- p.wait(timeout=10);sel.close()
+ p.wait(timeout=10);sel.close();p.stdout.close();p.stderr.close()
  # Keep at most the declared receipt payload bytes.
  left=output_limit;out={}
  for key in ['stdout','stderr']:
@@ -152,7 +152,7 @@ def role_worker_command(role,home,work,proxy_socket,command,inputs,freeze=None):
  Named resources map to individual /in/<name> mounts. Generator/repairer cannot
  start until host verifies a frozen suite digest (suite itself is never mounted).
  """
- from .core import ROLES,valid_id
+ from .core import ROLES
  import re
  if role not in ['eval_writer','generator','repairer','consumer']:raise ValueError('not a model-worker role')
  if not isinstance(inputs,dict) or not set(inputs).issubset(ROLES[role]['read']):raise ValueError('role input authority violation')

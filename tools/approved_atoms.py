@@ -36,7 +36,8 @@ class Registry:
 
     def _apply(self, row):
         if row.get('event') == 'consumer':
-            if row.get('id') not in self._atoms or not nonempty(row.get('consumer')):
+            if (set(row) != {'event', 'id', 'consumer'} or row.get('id') not in self._atoms or
+                    self._atoms[row['id']]['approval'] != 'approved' or not nonempty(row.get('consumer'))):
                 raise ValueError('Invalid consumer record')
             self._consumers.setdefault(row['id'], set()).add(row['consumer'])
             return
@@ -92,6 +93,7 @@ class Registry:
     def _append(self, stream, row):
         data = (encoded(row) + '\n').encode()
         self._apply(row)
+        start = self._offset
         try:
             stream.write(data)
             stream.flush()
@@ -99,6 +101,11 @@ class Registry:
             self._offset = stream.tell()
         except OSError:
             self._offset, self._atoms, self._consumers = 0, {}, {}
+            try:
+                stream.truncate(start)
+                os.fsync(stream.fileno())
+            except OSError:
+                pass
             raise
 
     def _get(self, atom_id):

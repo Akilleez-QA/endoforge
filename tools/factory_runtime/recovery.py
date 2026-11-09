@@ -6,7 +6,7 @@ from pathlib import Path
 import re
 import subprocess
 import uuid
-from .core import Fence, alive, identity, durable
+from .core import Fence, alive, identity
 
 DOCKER=['sudo','-n','docker']
 

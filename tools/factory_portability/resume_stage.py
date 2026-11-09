@@ -6,17 +6,29 @@ from pathlib import Path,PurePosixPath
 def sha(p):return hashlib.sha256(Path(p).read_bytes()).hexdigest()
 def encode(obj):return (json.dumps(obj,sort_keys=True,separators=(',',':'),allow_nan=False)+'\n').encode()
 def relative(root,name):
+    if not isinstance(name,str):raise ValueError('unsafe stage input path')
     p=PurePosixPath(name)
-    if p.is_absolute() or '..'in p.parts or str(p)!=name:raise ValueError('unsafe stage input path')
+    if not name or p.is_absolute() or '..'in p.parts or str(p)!=name:raise ValueError('unsafe stage input path')
     target=root/name
     if target.is_symlink() or not target.is_file():raise ValueError('stage input is not a regular file')
+    if not target.resolve().is_relative_to(root.resolve()):raise ValueError('stage input escapes checkpoint')
     return target
+
+def argument(x):
+    if type(x) in (int,float):return str(x)
+    if type(x) is str:
+        if x in ('NaN','Infinity','-Infinity'):return {'NaN':'nan','Infinity':'inf','-Infinity':'-inf'}[x]
+        try:float(x)
+        except ValueError:raise ValueError('numeric WASM arguments only') from None
+        return x
+    raise ValueError('numeric WASM arguments only')
 
 def run(checkpoint,bundle,output):
     checkpoint,bundle,output=map(lambda p:Path(p).resolve(),(checkpoint,bundle,output))
     manifest=json.loads((checkpoint/'checkpoint.json').read_text()); spec=json.loads((checkpoint/'resume.json').read_text())
     if manifest['schema']!='endoforge.checkpoint.v1' or spec.get('schema')!='endoforge.portable-stage.v1':raise ValueError('schema version')
     if spec.get('requiresModelAuthentication') is not False:raise ValueError('this stage is offline and must not need model authentication')
+    if not isinstance(manifest.get('files'),dict) or any(spec.get(k) not in manifest['files'] for k in ('statePath','modulePath')):raise ValueError('stage state and module must be inventoried checkpoint files')
     state=json.loads(relative(checkpoint,spec['statePath']).read_text()); stage=spec['stage']
     if not state.get('completedStages') or stage not in state.get('pendingStages',[]):raise ValueError('checkpoint is not partly complete at requested stage')
     before={name:sha(relative(checkpoint,name)) for name in manifest['files']}
@@ -29,10 +41,7 @@ def run(checkpoint,bundle,output):
     rows=[];semantics=[];started=time.monotonic()
     for case in spec['cases']:
         if time.monotonic()-started>120:raise TimeoutError('stage deadline')
-        args=[]
-        for x in case['args']:
-            if type(x) not in (int,float,str):raise ValueError('numeric WASM arguments only')
-            args.append({'NaN':'nan','Infinity':'inf','-Infinity':'-inf'}.get(str(x),str(x)))
+        args=[argument(x) for x in case['args']]
         argv=[str(wt),'run','-W','fuel=100000','-W','max-memory-size=1048576','-W','trap-on-grow-failure=y','-W','timeout=100ms','--invoke',case['fn'],str(module),*args]
         t=time.monotonic();cp=subprocess.run(argv,capture_output=True,text=True,timeout=5)
         if len(cp.stdout)+len(cp.stderr)>1048576:raise ValueError('runtime output budget')

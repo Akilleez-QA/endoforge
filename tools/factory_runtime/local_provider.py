@@ -59,7 +59,7 @@ def call_protected(root,stage,prompt,port,max_tokens=3072,timeout=180,role='eval
  result and invokes journal.cleanup_owned afterward. Helper always stops only
  its checked scope; it preserves journal-owned temporary data for that cleanup.
  """
- import hashlib,shutil,tempfile,time,subprocess,uuid
+ import hashlib,shutil,tempfile,time,subprocess
  from pathlib import Path
  from . import core,egress
  if (journal is None)!=(row is None):raise ValueError('journal and row must be supplied together')
