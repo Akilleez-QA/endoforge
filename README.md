@@ -13,11 +13,11 @@ code can be trusted. It is not a finished code generator for production use.
 A coding model can write a function and its tests in one go. If it can also change the tests after it sees them fail,
 "all tests pass" tells you very little. EndoForge splits the work into fixed steps:
 
-- The request (a "need": free text, such as `integer add(a,b)`) first becomes a written contract and a set of tests. Their hashes
-  are stored before any code exists. Any later change to them is refused.
+- The request (a "need": free text, such as `integer add(a,b)`) first becomes a written contract and a set of
+  tests. Their hashes are stored before any code exists. Any later change to them is refused.
 - The code is compiled to WebAssembly and run inside a V8 isolate (a separate instance of the JavaScript engine in
-  Node.js and Chrome). It runs under a fuel meter (a counter charged at every function call and loop iteration) and a memory cap, and it may
-  import nothing except an abort hook, so it cannot reach files or the network.
+  Node.js and Chrome). It runs under a fuel meter (a counter charged at every function call and loop iteration) and
+  a memory cap, and it may import nothing except an abort hook, so it cannot reach files or the network.
 - Nine gates decide. A candidate that fails a gate is refused. If the evidence is incomplete, because a worker was
   lost, a deadline passed or a model call was held back by a usage limit, the result is "inconclusive", never a
   pass.
@@ -174,7 +174,9 @@ the model conversation runs.
 | `agent` | Any provider: the example's script, or a Claude transport | The model's whole turn loop inside the isolate |
 
 The default path is the established one; the other two stay opt-in until their parity with it is accepted
-([P-50](experiments/P-50-in-isolate/RESULT.md) measured them).
+([P-50](experiments/P-50-in-isolate/RESULT.md) measured them). Real-model results are in the experiments: in
+[P-42](experiments/P-42-scalar/RESULT.md), the default path with a Codex model promoted 177 of 180 attempts (30 needs,
+six runs each), with a median of about 49 seconds per need.
 
 For the agent path, change the provider in a copy of `examples/first-loop.mjs`, which already imports
 `createLoopPool`:
@@ -210,7 +212,7 @@ the shipped example is the scripted one; the swap above was checked to construct
   later, not from writing weak ones. A promotion means the frozen tests and the gates passed; it does not prove the
   kernel right for every input. In [P-52](experiments/P-52-real-gates/RESULT.md), 280 of 7,883 deliberately broken
   kernels (3.6%) still passed every gate, down from 441 (5.6%) before that experiment's stricter gates. The broken
-kernels were copies of 118 promoted kernels, each with one seeded change to its source.
+  kernels were copies of 118 promoted kernels, each with one seeded change to its source.
 - The repository tests use synthetic inputs and test doubles. They do not qualify a live model service.
 - The hash chain shows a ledger was edited after the fact. It is not a signature: someone who rewrites the whole file
   can build a new valid chain.
