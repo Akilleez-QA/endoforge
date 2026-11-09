@@ -78,7 +78,8 @@ A promoted candidate stays in its task's ledger with the decision that promoted 
 capability without another model turn. EndoForge does not activate anything in a host application: the lifecycle
 model ([core/lifecycle.py](../../core/lifecycle.py)) checks decision references for a host that does. An
 `inconclusive` attempt promoted nothing and decided nothing about the candidate; running the need again is a new
-attempt, and on the agent path `resume` continues it from the ledger.
+attempt. On the agent path, a rerun on the same ledger starts the implementation again under the same frozen
+evaluator, or picks up a parked conversation.
 
 ## Three loop paths
 
