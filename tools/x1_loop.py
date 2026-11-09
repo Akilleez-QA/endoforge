@@ -24,6 +24,8 @@ ORACLE_FILES = ("CONTRACT.md", "tests.json", "frozen.sha256")
 IMPLEMENTATION_FILES = ("host.mjs", "gates.mjs", "glue.schema.json", "measure.mjs", "meter.mjs", "contract.mjs", "dimensions.mjs",
                         "generator.mjs", "ledger.mjs", "reference.mjs", "scalar.mjs", "loop-port.mjs", "agent.mjs", "oracle.mjs")
 SUSPECT_ORIGIN = "evaluator_synthesis"
+SCALAR_KINDS = ("number", "integer", "boolean", "code")
+BUFFER_KINDS = ("record", "list", "text")
 USAGE = "usage: python3 -B -m tools.x1_loop revise < request.json"
 
 
@@ -339,27 +341,102 @@ def commit(request, prior, append, process, db):
     return answer
 
 
+def finite_number(value):
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return False
+    try:
+        return math.isfinite(value)
+    except OverflowError:
+        return False
+
+
+def plain_number(value):
+    return int(value) if float(value).is_integer() and abs(value) < 2 ** 53 else value
+
+
+def positive_limit(value):
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 1
+
+
+def check_layout(declared):
+    kind = declared.get("kind") if isinstance(declared, dict) else None
+    if kind in SCALAR_KINDS or (kind == "text" and positive_limit(declared.get("maxBytes"))):
+        return
+    if kind == "list" and positive_limit(declared.get("max")):
+        check_layout(declared.get("items"))
+        return
+    fields = declared.get("fields") if kind == "record" else None
+    if isinstance(fields, list) and fields and all(isinstance(field, dict) and isinstance(field.get("name"), str) for field in fields):
+        if len({field["name"] for field in fields}) == len(fields):
+            for field in fields:
+                check_layout(field)
+            return
+    raise ValueError("a suspect names a malformed declared layout")
+
+
+def laid_out(value, declared, at):
+    kind = declared["kind"]
+    if kind in ("integer", "code"):
+        codes = declared.get("codes")
+        if (finite_number(value) and float(value).is_integer() and -(2 ** 31) <= value < 2 ** 31
+                and (kind == "integer" or not isinstance(codes, dict) or str(int(value)) in codes)):
+            return int(value)
+    elif kind == "boolean":
+        if isinstance(value, bool) or (finite_number(value) and value in (0, 1)):
+            return bool(value)
+    elif kind == "number":
+        if finite_number(value):
+            return plain_number(value)
+    elif kind == "text":
+        if isinstance(value, str) and len(value.encode()) <= declared["maxBytes"]:
+            return value
+    elif kind == "list":
+        if isinstance(value, list) and len(value) <= declared["max"]:
+            return [laid_out(item, declared["items"], f"{at}[{index}]") for index, item in enumerate(value)]
+    elif isinstance(value, dict) and set(value) == {field["name"] for field in declared["fields"]}:
+        return {field["name"]: laid_out(value[field["name"]], field, f"{at}.{field['name']}") for field in declared["fields"]}
+    raise ValueError(f"{at}: the reference value does not fit the declared layout")
+
+
+def structured_correction(entry, suspect, outcomes):
+    declared = suspect.get("layout")
+    if not isinstance(declared, dict) or declared.get("kind") not in BUFFER_KINDS:
+        raise ValueError("a structured correction needs the declared layout")
+    check_layout(declared)
+    if any(outcome.get("throws") for outcome in outcomes):
+        raise ValueError("the references do not agree: one throws")
+    first, second = [laid_out(outcome.get("value"), declared, str(suspect.get("fn"))) for outcome in outcomes]
+    if not structure_meets(first, second, entry.get("tol"), declared):
+        raise ValueError("the references do not agree under the declared layout")
+    return first
+
+
 def corrected_tests(tests, suspects):
     tests = [dict(entry) for entry in tests]
     for suspect in suspects:
         outcomes = suspect.get("references")
-        if not isinstance(outcomes, list) or len(outcomes) != 2 or outcomes[0] != outcomes[1]:
+        if not isinstance(outcomes, list) or len(outcomes) != 2 or not all(isinstance(outcome, dict) for outcome in outcomes):
             raise ValueError("a suspect needs two agreeing reference outcomes")
-        matched = [i for i, entry in enumerate(tests) if entry.get("fn") == suspect.get("fn") and entry.get("args") == suspect.get("args")
+        structured = any(isinstance(outcome.get("value"), (dict, list, str)) for outcome in outcomes)
+        if not structured and outcomes[0] != outcomes[1]:
+            raise ValueError("a suspect needs two agreeing reference outcomes")
+        matched =[i for i, entry in enumerate(tests) if entry.get("fn") == suspect.get("fn") and entry.get("args") == suspect.get("args")
                    and (entry.get("name") if "name" in entry else str(i)) == suspect.get("test")]
         if len(matched) != 1:
             raise ValueError("a suspect must name exactly one frozen test")
         entry, outcome = tests[matched[0]], outcomes[0]
-        if outcome.get("throws") is True:
+        if structured:
+            entry["expect"] = structured_correction(entry, suspect, outcomes)
+            entry.pop("expectError", None)
+        elif outcome.get("throws") is True:
             entry.pop("expect", None)
             entry.pop("tol", None)
             entry["expectError"] = True
-        elif isinstance(outcome.get("value"), (int, float)) and not isinstance(outcome.get("value"), bool) and math.isfinite(outcome["value"]):
-            value = outcome["value"]
+        elif finite_number(outcome.get("value")):
             entry.pop("expectError", None)
-            entry["expect"] = int(value) if float(value).is_integer() and abs(value) < 2 ** 53 else value
+            entry["expect"] = plain_number(outcome["value"])
         else:
-            raise ValueError("a suspect reference outcome must be a finite value or a throw")
+            raise ValueError("a suspect reference outcome must be a finite value, a declared structure or a throw")
     return tests
 
 
