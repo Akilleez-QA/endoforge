@@ -33,15 +33,13 @@ integer code with named meanings, and each carries a unit. There are no arrays o
 ## How it works
 
 ```mermaid
-flowchart TD
-  need["Need: integer add(a,b)"] --> spec["Model writes the contract: CONTRACT.md + tests.json"]
-  spec --> freeze["Freeze: their hashes go into the ledger"]
-  freeze --> impl["Model writes the code: kernel.ts + glue.json"]
-  impl --> compile["Compile to WebAssembly with a pinned AssemblyScript compiler"]
-  compile --> gates["Run gates G1–G9 in a V8 isolate"]
-  gates -- "a gate fails and turns are left: the failures go back to the model" --> impl
-  gates -- "all gates pass, or the turns run out" --> commit["Commit candidate and receipt to the hash-chained SQLite ledger"]
-  commit --> decision{"promote, refuse or inconclusive"}
+flowchart LR
+  need["Need<br/>integer add(a,b)"] --> spec["Model writes<br/>CONTRACT.md<br/>tests.json"]
+  spec --> freeze["Freeze<br/>hashes into<br/>the ledger"]
+  freeze --> impl["Model writes<br/>kernel.ts<br/>glue.json"]
+  impl --> gates["Compile, then<br/>gates G1–G9<br/>in a V8 isolate"]
+  gates -- "fail: retry" --> impl
+  gates -- "pass, or<br/>out of turns" --> decision{"Ledger:<br/>promote, refuse<br/>or inconclusive"}
 ```
 
 1. A model turns the need into `CONTRACT.md` (what the function computes) and `tests.json` (inputs and expected
