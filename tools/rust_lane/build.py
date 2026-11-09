@@ -10,6 +10,7 @@ from tools.kernel.contract import WIT, check_tool, validate_component, wasm_tool
 from core.ledger.ledger import encode
 
 ROOT = Path(__file__).resolve().parent
+REPOSITORY = ROOT.parents[1]
 TARGET = "wasm32-unknown-unknown"
 FLAGS = "-C debuginfo=0 --remap-path-prefix={root}=/ef24"
 VERSION = "rustc 1.98.1 (48a229cea 2026-09-01)"
@@ -46,11 +47,32 @@ def executable(name):
     return Path(path).resolve()
 
 
+def rust_tool(name):
+    rustup = None if name.upper() in os.environ else shutil.which("rustup")
+    if rustup is not None:
+        located = subprocess.run([rustup, "which", name, "--toolchain", VERSION.split()[1]],
+                                 capture_output=True, text=True, timeout=30)
+        if located.returncode == 0:
+            return Path(located.stdout.strip()).resolve()
+    return executable(name)
+
+
+def cargo_home():
+    return Path(os.environ.get("CARGO_HOME") or Path.home() / ".cargo").resolve()
+
+
+def prefer_checkout_wasm_tools():
+    local = REPOSITORY / ".tools/bin/wasm-tools"
+    if "WASM_TOOLS" not in os.environ and local.exists():
+        os.environ["WASM_TOOLS"] = str(local)
+
+
 def build(destination):
     destination = Path(destination).resolve()
-    rustc = executable("rustc")
-    cargo = executable("cargo")
-    cache = Path(os.environ["CARGO_HOME"]).resolve()
+    prefer_checkout_wasm_tools()
+    rustc = rust_tool("rustc")
+    cargo = rust_tool("cargo")
+    cache = cargo_home()
     env = dict(PATH=str(rustc.parent) + os.pathsep + os.defpath,
                CARGO_HOME=str(cache), RUSTC=str(rustc), CARGO_INCREMENTAL="0")
     version = run([str(rustc), "-vV"], env=env, cwd=ROOT).decode()

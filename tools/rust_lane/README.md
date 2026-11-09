@@ -31,13 +31,15 @@ Pinned tools: Rust 1.98.1 (48a229cea) with the `wasm32-unknown-unknown` target, 
 tests jco 1.16.1 and AssemblyScript 0.28.9.
 
 ```sh
-export RUSTC=$(rustup which rustc) CARGO=$(rustup which cargo)   # real executables, not shims
-export WASM_TOOLS=$PWD/.tools/bin/wasm-tools                      # from make tools
-export CARGO_HOME=/path/to/writable/cache
+make tools                                                        # pinned wasm-tools in .tools/
 cargo fetch --locked --manifest-path tools/rust_lane/Cargo.toml   # the only step that uses the network
 python3 -B -m tools.rust_lane.build NEW_DIRECTORY
-make rust-lane-test                                               # also needs JCO and ASC set
+make rust-lane-test                                               # also needs jco and asc, on PATH or in JCO and ASC
 ```
+
+The build asks rustup for the real binaries of the pinned toolchain, uses `.tools/bin/wasm-tools` when present, and
+caches crates in `~/.cargo`. Set `RUSTC`, `CARGO`, `WASM_TOOLS` or `CARGO_HOME` to override any of these; `RUSTC` and
+`CARGO` must name real executables, not rustup shims.
 
 ## Example
 

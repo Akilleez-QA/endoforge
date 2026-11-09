@@ -9,7 +9,7 @@ import unittest
 from unittest.mock import patch
 
 from tools.kernel.contract import validate_artifact
-from tools.rust_lane.build import ROOT, build, run
+from tools.rust_lane.build import ROOT, build, cargo_home, prefer_checkout_wasm_tools, run, rust_tool
 
 WORKCELL_PROBE = """
 import json, sys
@@ -22,6 +22,45 @@ for event, inputs in json.loads(sys.argv[2]):
     rows.append([r["state"].hex(), r["effects"], r["buffer_bytes_read"]])
 print(json.dumps(rows))
 """
+
+
+class ToolDiscoveryTests(unittest.TestCase):
+    def test_cargo_home_defaults_to_user_cache_and_honours_override(self):
+        without = {k: v for k, v in os.environ.items() if k != "CARGO_HOME"}
+        with patch.dict(os.environ, without, clear=True):
+            self.assertEqual(cargo_home(), (Path.home() / ".cargo").resolve())
+        with patch.dict(os.environ, {"CARGO_HOME": "/synthetic/cache"}):
+            self.assertEqual(cargo_home(), Path("/synthetic/cache").resolve())
+
+    def test_rust_tool_asks_rustup_for_the_pinned_toolchain_binary(self):
+        without = {k: v for k, v in os.environ.items() if k != "RUSTC"}
+        found = subprocess.CompletedProcess([], 0, stdout="/synthetic/toolchain/bin/rustc\n")
+        with patch.dict(os.environ, without, clear=True), \
+                patch("tools.rust_lane.build.shutil.which", return_value="/synthetic/rustup"), \
+                patch("tools.rust_lane.build.subprocess.run", return_value=found) as asked:
+            self.assertEqual(rust_tool("rustc"), Path("/synthetic/toolchain/bin/rustc").resolve())
+        self.assertEqual(asked.call_args.args[0],
+                         ["/synthetic/rustup", "which", "rustc", "--toolchain", "1.98.1"])
+
+    def test_explicit_rust_tool_is_not_replaced_by_rustup(self):
+        with patch.dict(os.environ, {"RUSTC": sys.executable}), \
+                patch("tools.rust_lane.build.subprocess.run") as asked:
+            self.assertEqual(rust_tool("rustc"), Path(sys.executable).resolve())
+        asked.assert_not_called()
+
+    def test_checkout_wasm_tools_used_only_without_override(self):
+        without = {k: v for k, v in os.environ.items() if k != "WASM_TOOLS"}
+        with tempfile.TemporaryDirectory() as directory:
+            local = Path(directory) / ".tools/bin/wasm-tools"
+            local.parent.mkdir(parents=True)
+            local.touch()
+            with patch("tools.rust_lane.build.REPOSITORY", Path(directory)):
+                with patch.dict(os.environ, without, clear=True):
+                    prefer_checkout_wasm_tools()
+                    self.assertEqual(os.environ["WASM_TOOLS"], str(local))
+                with patch.dict(os.environ, {"WASM_TOOLS": "/synthetic/wasm-tools"}):
+                    prefer_checkout_wasm_tools()
+                    self.assertEqual(os.environ["WASM_TOOLS"], "/synthetic/wasm-tools")
 
 
 class RustLaneTests(unittest.TestCase):
