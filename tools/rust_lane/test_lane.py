@@ -1,13 +1,27 @@
 import json
 import os
 from pathlib import Path
+import struct
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
 
 from tools.kernel.contract import validate_artifact
 from tools.rust_lane.build import ROOT, build, run
+
+WORKCELL_PROBE = """
+import json, sys
+from pathlib import Path
+from tools.kernel.workcell import Workcell
+cell = Workcell(Path(sys.argv[1]).read_bytes(), ("p06-result-i32le-v1", "p06-args-4xi32le-v1", "empty-v1"))
+rows = []
+for event, inputs in json.loads(sys.argv[2]):
+    r = cell.run(b"", bytes.fromhex(event), [bytes.fromhex(i) for i in inputs], fuel=1000000)
+    rows.append([r["state"].hex(), r["effects"], r["buffer_bytes_read"]])
+print(json.dumps(rows))
+"""
 
 
 class RustLaneTests(unittest.TestCase):
@@ -35,6 +49,20 @@ class RustLaneTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "1.98.1"):
                 build(self.root / "wrong")
         self.assertFalse((self.root / "wrong").exists())
+
+    def test_component_runs_in_wasmtime_workcell(self):
+        args = struct.pack("<4i", 1, 2, 0, 0)
+        invalid = struct.pack("<4i", 1, 2, 4, 0)
+        cases = [(args, []), (b"", [args]), (invalid, []), (b"", [b"x"])]
+        venv = ROOT.parents[1] / ".tools/venv/bin/python"
+        request = [[event.hex(), [item.hex() for item in inputs]] for event, inputs in cases]
+        result = subprocess.run(
+            [str(venv) if venv.exists() else sys.executable, "-B", "-c", WORKCELL_PROBE,
+             str(self.root / "first/kernel.wasm"), json.dumps(request)],
+            check=True, capture_output=True, text=True, timeout=120, cwd=ROOT.parents[1])
+        low = struct.pack("<i", -2147483648).hex()
+        hundred = struct.pack("<i", 100).hex()
+        self.assertEqual(json.loads(result.stdout), [[hundred, [], 0], [hundred, [], 16], [low, [], 0], [low, [], 0]])
 
     def test_p06_frozen_equivalence(self):
         def tool(command):

@@ -56,8 +56,9 @@ records; there is no carry-forward.
 - `Workcell(component_bytes, (state_schema, event_schema, effect_schema))` validates the contract and compiles once.
   `run(state, event, inputs)` instantiates into a fresh store for every attempt, checks `describe`, calls `reduce`,
   cleans up and destroys the store, and returns state, effects, artifact and cache identity, timings, fuel used and
-  bytes read. Guest limits: 16 MiB memory, 1 MiB total input, 64 snapshots, 1 MiB cumulative reads, at most 10 million
-  fuel. Attempts serialize.
+  bytes read. Guest limits: 16 MiB memory, two tables (a compiled language's function table beside the Component
+  Model import shim's), 1 MiB total input, 64 snapshots, 1 MiB cumulative reads, at most 10 million fuel. Attempts
+  serialize.
 - `run(..., authorize=checker, max_host_calls=4096)` creates a fresh broker per attempt. The checker sees
   `(buffer_index, operation)` on every `size` and `read` before any bytes are fetched and must return exactly `True`;
   revocation or an exception aborts with `BrokerDenied`. The host-call limit (1 to 4096) counts size calls, zero-length
@@ -114,7 +115,6 @@ executable. `make test` runs `make kernel-test` and never downloads.
   process-group watchdog on Linux; it does not claim cgroup or hostile native-code containment, OS sandboxing or
   calibrated timings.
 - The tests run 1,000 attempts with one compilation and distinct stores; performance is not claimed.
-- The Rust lane's component does not instantiate here (`table count too high at 2`; the `Workcell` allows one table).
 
 ## Tests
 
