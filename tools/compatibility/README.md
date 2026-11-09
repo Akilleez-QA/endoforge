@@ -1,42 +1,78 @@
 # TypeScript reducer compatibility
 
-`contract.ts` binds [`kernel.wit`](../kernel/README.md) to erasable TypeScript. WIT byte lists
-are `Uint8Array`, u64 is `bigint`, and u32 is a checked integer. Record names use
-camelCase; read results use `{tag: 'ok', value}` or `{tag: 'err', value}`. The
-exact WIT SHA-256 is pinned and tested against the source file.
-`reference.ts` is a typed, one-byte counter control used by the conformance
-tests; its schema names are test identifiers, not production schema registrations.
+This lane binds the [kernel contract](../kernel/README.md) (`kernel.wit`) to plain TypeScript, so a reducer written in
+TypeScript can be described and checked against the same interface as a WebAssembly kernel: state and an event in,
+next state and effects (as data) out. It holds the TypeScript types, a pinned hash of the WIT file, and a conformance
+probe for trusted reference reducers. It does not run untrusted code.
 
-`probeTrustedReducer(reducer, expected, state, event, snapshots, limits)` checks
-trusted reference implementations. It requires exactly `describe` and `reduce`,
-contract version 1.0.0 and the admitted schema identities. It copies input and
-output bytes, exposes frozen borrowed resources with only `size` and `read`,
-counts reads across all resources and revokes handles on return or throw.
-Bad WIT integers trap; valid reads return the WIT range/budget error variants.
-Each invocation resets the read budget. Limits must be supplied explicitly;
-input/output budgets count bytes, including UTF-8 effect names in output.
-Each byte budget is capped at 16 MiB, with at most 1,024 inputs and effects.
+## How it works
 
-Every passed or refused receipt has `lane: compatibility`, the WIT hash and
-`validation: trusted-reducer-conformance-only`. Effects are returned as data;
-no capability is dispatched. A pass does not certify determinism, authorize an
-effect, admit an artifact or introduce a ledger record kind. Callers must not
-mistake a compatibility receipt for a component-validation record.
+`contract.ts` maps the WIT to erasable TypeScript: byte lists are `Uint8Array`, u64 is `bigint`, u32 is a checked
+integer, record names are camelCase, and read results are `{tag: 'ok', value}` or `{tag: 'err', value}`. `WIT_SHA256`
+pins the exact WIT bytes, and a test checks it against the file.
 
-This probe executes synchronously in the caller and is ONLY for trusted test
-reducers. It cannot enforce CPU/heap bounds, restrict ambient JavaScript
-capabilities or safely execute an untrusted candidate. Runtime integration must
-move candidate invocation into an owned child isolate.
-Snapshot copying is a bounded conformance model, not production host-buffer RPC.
+`probeTrustedReducer(reducer, expected, state, event, snapshots, limits)`:
 
-## Checker
+- requires exactly `describe` and `reduce`, contract version 1.0.0 and the admitted schema identities;
+- copies input and output bytes, and exposes borrowed buffers that are frozen and have only `size` and `read`;
+- counts reads across all buffers, resets the read budget per call, and revokes handles on return or throw;
+- traps on bad WIT integers and returns the WIT `out-of-bounds` or `limit-exceeded` variants for valid reads;
+- needs explicit limits: input, read and output budgets in bytes (UTF-8 effect names count), each capped at 16 MiB,
+  and at most 1,024 inputs and effects.
 
-This lane holds no type checker. The checker is [tools/tscheck](../tscheck/README.md), which runs inside a V8 workcell of [IsolatePool](../../core/runtime/isolate-pool.mjs).
+Every receipt, passed or refused, has `lane: compatibility`, the WIT hash and
+`validation: trusted-reducer-conformance-only`. Effects are returned as data; nothing is dispatched.
+
+`reference.ts` is a one-byte counter used by the tests; its schema names are test identifiers.
+
+## Example
+
+Saved as `compat-demo.mjs` in the repository root (Node 22.18 or later strips the TypeScript types without a flag):
+
+```js
+import { probeTrustedReducer } from './tools/compatibility/contract.ts';
+import { referenceReducer } from './tools/compatibility/reference.ts';
+const meta = { contractVersion: '1.0.0', stateSchema: 'counter-v1', eventSchema: 'increment-v1', effectSchema: 'notify-v1' };
+const limits = { inputBytes: 32, readBytes: 4, outputBytes: 64, effects: 2 };
+const ok = probeTrustedReducer(referenceReducer, meta, Uint8Array.of(1), Uint8Array.of(2), [Uint8Array.of(3)], limits);
+console.log(ok.status, ok.transition);
+const extra = probeTrustedReducer({ ...referenceReducer, hidden() {} }, meta, Uint8Array.of(1), Uint8Array.of(2), [Uint8Array.of(3)], limits);
+console.log(extra.status, extra.reason);
+```
+
+```console
+$ node compat-demo.mjs
+passed {
+  state: Uint8Array(1) [ 6 ],
+  effects: [
+    {
+      capability: 'notify',
+      operation: 'changed',
+      payload: [Uint8Array]
+    }
+  ]
+}
+refused record fields differ
+```
+
+State 1 plus event 2 plus buffer byte 3 gives 6, with one `notify` effect. A reducer with an extra export is refused.
+
+## Limits
+
+- The probe runs synchronously in the caller and is only for trusted test reducers. It cannot bound CPU or heap,
+  restrict ambient JavaScript capabilities, or safely run an untrusted candidate.
+- A pass does not certify determinism, authorize an effect, admit an artifact or create a ledger record. Do not
+  mistake a compatibility receipt for a component-validation record.
+- Snapshot copying is a bounded conformance model, not production host-buffer calls.
+- This lane does not run in a workcell yet. The remaining work: move invocation into a process-mode `IsolatePool`
+  workcell with host-buffer calls and a watchdog, then bind source, compiler, runtime, WIT and evaluator identities to
+  receipts. Containment is not established until then.
+
+The type checker for TypeScript is [tscheck](../tscheck/README.md); this lane holds none.
 
 ## Tests
 
-Run `make compatibility-test`. It needs Node with TypeScript stripping and installs nothing. The tests cover the contract and the reference reducer only.
+`make compatibility-test` runs `contract.test.mjs` (11 tests: the WIT pin, the reference reducer, refusals of extra,
+missing, wrongly typed and asynchronous exports, budgets and borrowed-buffer revocation). It installs nothing.
 
-## Relation to the V8 workcell
-
-This is the lane closest to the workcell: TypeScript kernels bound to the runtime-neutral WIT. It doesn't yet run in one. Remaining work is moving invocation into a process-mode `IsolatePool` workcell with host-buffer calls and a watchdog, then binding source, compiler, runtime, WIT and evaluator identities to receipts. Containment isn't established until then.
+Engineering record: component C-18, requirement REQ-COMPAT-001.
