@@ -30,6 +30,7 @@ check:
 	$(PYTHON) -I tools/source_sums.py --check
 	$(PYTHON) -I tools/experiment_id.py check
 	$(PYTHON) -I tools/check-privacy.py
+	$(PYTHON) -I tools/check_trace.py
 
 index:
 	$(PYTHON) -I tools/experiments_index.py
