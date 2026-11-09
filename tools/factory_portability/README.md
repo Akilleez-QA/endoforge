@@ -71,4 +71,4 @@ inventory refusals, an emulated second-host transfer with remote cleanup on fail
 `ENDOFORGE_SECOND_HOST`. The transfer cases skip,
 with the reason, where `age` or an unprivileged `bwrap` sandbox is unavailable.
 
-Engineering record: component C-25, requirements REQ-FACTORY-002 and REQ-FACTORY-005; a real second host is GAP-EF-006.
+Engineering record: component C-25, requirements REQ-FACTORY-002 and REQ-FACTORY-005 (the real second host closed GAP-EF-006).

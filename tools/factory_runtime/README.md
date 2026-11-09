@@ -108,4 +108,4 @@ replaced by [fixtures/fake_docker.py](fixtures/fake_docker.py), which runs each 
   name that address, not `localhost`.
 - `worker_command` needs `node` and `codex` on `PATH` even for a local-provider turn.
 
-Engineering record: component C-29, requirement REQ-FACTORY-003, GAP-EF-002.
+Engineering record: component C-29, requirement REQ-FACTORY-003 (the sandboxed worker closed GAP-EF-002).

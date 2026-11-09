@@ -81,9 +81,13 @@ A reply that isn't a calls object, or has too many calls, gets an error message 
 
 The stage prompts (`stagePrompts`) are JSON. Today they ask for the kernel candidate form: the specification prompt
 asks for a pure, bounded AssemblyScript kernel with explicit assumptions, exports and tests including boundary and
-trap cases, decimal places for every number result, and expected values derived from the formula; the implementation
+trap cases, decimal places for every number result, expected values derived from the formula, and a closing ```capability block in `CONTRACT.md` declaring the exports,
+argument and result kinds, units, ranges, precision, codes and traps (`capabilityRule`), which is how the
+[library](library.md#lookup) finds an already promoted kernel; `specificationProblems` returns a malformed block, or
+one that disagrees with `tests.json`, to the model as problems before the freeze. The implementation
 prompt sends the frozen files, the closed glue schema, the glue rules and a template, and asks for AssemblyScript
-0.28.20 on the stub runtime with no imports except `env.abort` and no `assert` (the compiler runs with `--noAssert`).
+0.28.20 on the stub runtime with no imports except `env.abort` and no `assert` (the compiler runs with `--noAssert`), and asks
+`glue.json` to declare the same capability as the block.
 Both prompts carry `stateRules`: when the need keeps state, such as a list of items, the kernel is a reducer over
 records, lists and text (state and event in, next state out), with the memory layout and pointer convention described
 in [structured state](gates.md#structured-state), and `tests.json` holds that state as JSON objects and arrays.

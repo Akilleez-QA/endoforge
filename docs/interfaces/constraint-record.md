@@ -32,7 +32,7 @@ flowchart TD
 | `.resume_block()` | `<constraint-record>`: a header saying the constraints restrict the work and grant nothing, then each active constraint as a JSON string with its id and source message id, then any refusal count, `EXTRACTION FAILED` and `NOT YET EXTRACTED` lines |
 | `.set_status(id, status, by)` | Appends a status event (`active`, `withdrawn`, `superseded`). Only a `human` message may do this, and only on a constraint whose origin is `human`; otherwise `PromotionRefused` |
 | `tools.constraint_store.JsonlStore(path)` | Durable store: hash-chained JSON lines, the chain verified before every append, one `fsync` per append, file mode 0600 |
-| `StepHarness(constraints=port)` | Crosses before each fold and adds `constraint_record` to the model's view after the first checkpoint ([tools/step_harness](../../tools/step_harness/README.md)) |
+| `StepHarness(constraints=port)` | Retired 2026-11-09 with the step harness ([reason](../../tools/step_harness/README.md)); the archived code in `TODELETE/tools/step_harness/` crosses before each fold and adds `constraint_record` to the model's view after the first checkpoint. Nothing in EndoForge constructs it |
 
 ## Provenance rules
 
@@ -62,7 +62,7 @@ REQ-CONSTRAINT-001, REQ-CONSTRAINT-002.
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-ICD-CONSTRAINT |
-| Version | 3.0 |
+| Version | 3.1 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-08 |
@@ -79,3 +79,4 @@ REQ-CONSTRAINT-001, REQ-CONSTRAINT-002.
 | 1.0 | before 2026-11-08 | — | Written with P-55 | earlier PRs |
 | 2.0 | 2026-11-08 | `4d692a4` | Metadata header, requirements addressed and change history added; content re-baselined | #131 |
 | 3.0 | 2026-11-08 | `63e95c7` | Rewritten from the code with the problem it solves, the flow and the classification rules; metadata moved to this section | this PR |
+| 3.1 | 2026-11-09 | round 5 | `StepHarness` row marked retired | this commit |

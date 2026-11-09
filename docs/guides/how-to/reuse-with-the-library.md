@@ -36,8 +36,10 @@ tests are too weak to tell the kernel apart and the library refuses. A pass retu
 generation.
 
 A need can only match if its frozen `CONTRACT.md` declares its capability in a fenced `capability` JSON block, so the
-capability's hash is bound at the freeze. The generator's specification prompt does not ask for this block yet, so
-generated needs currently miss with `no_capability`.
+capability's hash is bound at the freeze. Both specification prompts (the `current` path's Codex prompt and the
+`agent` path's stage prompt) ask the model for this block, and the freeze refuses one that is malformed or disagrees
+with the frozen tests. A contract the model writes without the block still freezes, and that need misses with
+`no_capability`.
 
 ## Try it
 

@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-STP |
-| Version | 1.3 |
+| Version | 1.4 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -43,10 +43,10 @@ N/A; the owner's merge is the sign-off. How-to detail: [run local checks](../gui
 | Regression | CI `test` job | `make -k test` and `make -k test-optimized` on Node 22 and 26 |
 | Rust lane | CI `rust-lane` job | `make tools`, then `make rust-lane-test` on Rust 1.98.1 |
 | Static analysis | `lint`; CI `lint` job | ruff 0.17.0 with `ruff.toml`, and `node --check` on every `.mjs`, `.js` and `.cjs` file |
-| Coverage | `coverage` | Node suites under `--experimental-test-coverage`; Python under coverage.py, else trace counts |
+| Coverage | `coverage`; CI `coverage` job | Node suites under `--experimental-test-coverage`; Python under coverage.py, else trace counts. The CI job installs coverage.py 7.10.7, runs `make coverage -k` and uploads `coverage-summary.txt` as the artifact `coverage-summary` |
 
 Outside `make test`: `make rust-lane-test` (needs the pinned Rust toolchain, TP-6; CI runs it in its own job),
-`make lint` (CI runs it in its own job), `make coverage`, `make tscheck-requalify` (TP-7) and the P-51 controls (TP-8). The glue gate CLI test runs in `make test` through
+`make lint` and `make coverage` (CI runs each in its own job), `make tscheck-requalify` (TP-7) and the P-51 controls (TP-8). The glue gate CLI test runs in `make test` through
 `make gate-test`.
 
 ## 3. Test environment
@@ -79,7 +79,8 @@ No coverage target is set, and coverage is not a pass criterion. The first run, 
 integration, reported 822 Node tests passing, 1 skipped, with 90.74% of lines covered across all files, and 230
 Python tests OK under trace counts; a recorded STR has not yet included a coverage run. The trace check gives
 file-level coverage of requirements as well: every discovered test file traces to a requirement or is listed as
-supporting. MC/DC: N/A (not safety-critical, SWE-219).
+supporting. The CI `coverage` job has not run on GitHub yet; the Python half is expected to fail there until
+`Egress.test_run_bounded_outcomes` tolerates the `ResourceWarning`s other modules leak into a shared process. MC/DC: N/A (not safety-critical, SWE-219).
 
 ## 6. Test data and fixtures
 
@@ -175,8 +176,10 @@ Live model runs (experiments) follow each experiment's `PRECOMMIT.md`; they are 
   skipped under load only when opted in.
 - Delegated cgroup enforcement (REQ-ISO-018) is checked only where a delegated user scope exists; it ran on the
   development host on 2026-11-09, and whether it runs or skips on the GitHub runner is not recorded.
-- Two behaviours have no test (GAP-EF-002 and GAP-EF-006, both narrowed in round 4); see
-  [SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps).
+- No behaviour is registered as untested ([SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps)).
+  Some cases skip with their reason where the host lacks a prerequisite: the sandboxed factory workers need `bwrap`,
+  a systemd user manager, unprivileged namespaces, `node` and `codex`; the real second-host transfer needs
+  `ENDOFORGE_SECOND_HOST` and skips in CI, where it is unset (it passed against a separate machine on 2026-11-09).
 
 ## 9. Traceability
 
@@ -190,3 +193,4 @@ See the [verification matrix](verification-matrix.md).
 | 1.1 | 2026-11-09 | round 2 | TP-6 runs in CI; gap count 10 | this commit |
 | 1.2 | 2026-11-09 | round 3 | The glue gate CLI test runs in `make test` through `make gate-test` | this commit |
 | 1.3 | 2026-11-09 | round 4 | `gap-tools-test`, `lint` and `coverage` targets; coverage section; TP-6 records its first CI run; gap count 2 | this commit |
+| 1.4 | 2026-11-09 | round 5 | CI `coverage` job; `harness-test` runs the step harness retirement check; no gap open | this commit |

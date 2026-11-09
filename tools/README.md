@@ -99,9 +99,9 @@ turns and ledger writes leave it.
 |---|---|---|
 | [asc](asc/README.md) | Pins the AssemblyScript compiler (0.28.20) that workcells load, with file digests and workcell limits | Active; used by every `isolate` and `agent` loop run |
 | [tscheck](tscheck/README.md) | Type checks TypeScript inside workcells with `tsrs`, a WebAssembly build of the TypeScript 7 compiler | Active, opt-in route; `make tscheck-test` |
-| [gate](gate/README.md) | Stand-alone freeze-then-check runner for one kernel directory; compiles `kernel.ts` and runs the core gates G1 to G9, structured state included | Used inside atomizer compose atoms; tested by `tools/test_gate_structured.mjs` (REQ-GATECLI-001) in `make gate-test` |
+| [gate](gate/README.md) | Stand-alone freeze-then-check runner for one kernel directory; compiles `kernel.ts` with the `tools/asc` pin (or `ENDOFORGE_ASC`) and runs the core gates G1 to G9, structured state included | Used inside atomizer compose atoms; tested by `tools/test_gate_structured.mjs` (REQ-GATECLI-001) in `make gate-test` |
 | [kernel](kernel/README.md) | The WIT kernel contract, its exact-interface validator and a Wasmtime host with limits and a per-call broker | Standalone conformance lane; nothing in the loop imports it; `make kernel-test` |
-| [compatibility](compatibility/README.md) | TypeScript binding of the kernel contract and a probe for trusted reference reducers | Standalone slice; `make compatibility-test` |
+| [compatibility](compatibility/README.md) | TypeScript binding of the kernel contract and a probe for trusted reference reducers, run in `IsolatePool` workcells | Standalone slice; `make compatibility-test` |
 | [rust_lane](rust_lane/README.md) | Reproducible Rust build of one reference kernel as a WIT component | Standalone slice; `make rust-lane-test`, not in `make test` |
 | [factory_quality](factory_quality/README.md) | Typed request, signature, contract and eval-suite checks | Active: `core/engine/gates.mjs` imports it |
 
@@ -112,7 +112,7 @@ turns and ledger writes leave it.
 | [seeded_faults](seeded_faults/README.md) | Makes known-wrong variants of a trusted function (swapped units, dropped rows, off by one, reversed inputs, stale binding) | Library; `make seeded-fault-test` |
 | [escape_harness](escape_harness/README.md) | Runs seeded faults through an evaluator and counts how many get promoted (the escape rate) | Library; `make escape-test`. P-51 measured the real gate path with its own scripts, not this harness |
 | [hardware_record](hardware_record/README.md) | Records the machine a measurement ran on and checks the record still applies | Active; `make hardware-test` |
-| [step_harness](step_harness/README.md) | Bounded agent step loop that closes a goal only on host-owned evidence | Library; nothing calls it yet; `make harness-test` |
+| [step_harness](step_harness/README.md) | Retired 2026-11-09: the bounded agent step loop over a POODO decision core had no caller here and moved to `TODELETE/tools/step_harness/` | `make harness-test` checks the retirement and runs the archived tests |
 
 ## Carried over from the earlier factory design
 
@@ -122,8 +122,8 @@ READMEs; say "carried over" rather than "current design" when you cite them.
 | Tool | What it does | Status |
 |---|---|---|
 | [factory_campaign](factory_campaign/README.md) | Hash-chained stage state, a fenced model-ownership journal, bounded text repair | Tested by `make factory-state-test`, including bounded repair; nothing outside its own tests imports it |
-| [factory_portability](factory_portability/README.md) | Encrypted campaign checkpoints and offline WebAssembly stage resume on another machine | Tested by `make portability-test`; `campaign_transfer.py` is tested against an emulated second host only (GAP-EF-006) |
-| [factory_runtime](factory_runtime/README.md) | One worker attempt in a locked-down Docker container with checked publication | Tested by `make gap-tools-test` against a stand-in Docker CLI (REQ-FACTORY-003); a sandboxed worker launch is untested (GAP-EF-002); needs a qualified image to run |
+| [factory_portability](factory_portability/README.md) | Encrypted campaign checkpoints and offline WebAssembly stage resume on another machine | Tested by `make portability-test`; `campaign_transfer.py` is also tested over real `ssh` and `scp` when `ENDOFORGE_SECOND_HOST` is set (passed against a separate machine on 2026-11-09; skips in CI) |
+| [factory_runtime](factory_runtime/README.md) | One worker attempt in a locked-down Docker container with checked publication | Tested by `make gap-tools-test` against a stand-in Docker CLI (REQ-FACTORY-003); real sandboxed workers through the `bridge.py` relay are tested where `bwrap` and a systemd user manager exist; needs a qualified image to run |
 
 ## Repository scripts
 
