@@ -50,7 +50,7 @@ def parse_log(label, path):
     totals = {"tests": 0, "pass": 0, "fail": 0, "skipped": 0}
     failures = []
     for key in ("tests", "pass", "fail", "skipped"):
-        totals[key] += sum(int(n) for n in re.findall(rf"^ℹ {key} (\d+)$", text, flags=re.M))
+        totals[key] += sum(int(n) for n in re.findall(rf"^(?:ℹ|#) {key} (\d+)$", text, flags=re.M))
     ran = [int(n) for n in re.findall(r"^Ran (\d+) tests? in", text, flags=re.M)]
     py_fail = sum(int(n) for n in re.findall(r"^FAILED \(.*?failures=(\d+)", text, flags=re.M))
     py_err = sum(int(n) for n in re.findall(r"^FAILED \(.*?errors=(\d+)", text, flags=re.M))
@@ -65,7 +65,7 @@ def parse_log(label, path):
     totals["pass"] += script_pass
     totals["fail"] += script_fail
     for line in text.splitlines():
-        if (line.startswith("✖ ") and not line.startswith("✖ failing tests")) or re.match(r"^(FAIL|ERROR): |^FAIL ", line):
+        if (line.startswith("✖ ") and not line.startswith("✖ failing tests")) or re.match(r"^(FAIL|ERROR): |^FAIL |^not ok ", line):
             if line not in failures:
                 failures.append(line)
     header = dict(re.findall(r"^# ([a-z-]+): (.+)$", text, flags=re.M))
@@ -131,6 +131,8 @@ def collect(args):
         "since": git("log", "--format=%h %cs %s", "--merges", f"{args.since}..HEAD").splitlines() if args.since else [],
         "commit_count": int(git("rev-list", "--count", "HEAD")),
         "runs": [parse_log(*item.split("=", 1)) for item in args.log],
+        "run_drift": {c: git("diff", "--name-only", c, "HEAD").splitlines()
+                      for c in {parse_log(*item.split("=", 1))["header"].get("commit") for item in args.log} if c and c != commit},
         "trace_problems": problems,
         "trace": summary,
         "gaps": gap_rows,
@@ -187,12 +189,15 @@ def str_report(d, name, pr):
               "- Test-environment impact: one local Linux machine. GitHub CI runs the same targets on `ubuntu-latest` with Python 3.12 and Node 22 and 26; local runs used the Python shown below.",
               "", "## 2. Test log", "",
               f"Commit `{d['commit']}` (tree `{d['tree']}`). Generated {d['generated']}. Run by: operator, local `make` under `heavy-run`.", "",
-              "| Run | Node | Python | Command | Exit | Log | Log SHA-256 |", "|---|---|---|---|---|---|---|"]
+              "| Run | Run commit | Node | Python | Command | Exit | Log | Log SHA-256 |", "|---|---|---|---|---|---|---|---|"]
     for r in runs:
         h = r["header"]
-        lines.append(f"| {r['label']} | {h.get('node', '?')} | {h.get('python', '?')} | `{h.get('command', '?')}` | {r['exit']} | `{r['file']}` | `{r['sha256']}` |")
+        lines.append(f"| {r['label']} | `{h.get('commit', '?')[:7]}` | {h.get('node', '?')} | {h.get('python', '?')} | `{h.get('command', '?')}` | {r['exit']} | `{r['file']}` | `{r['sha256']}` |")
+    for run_commit, files in d["run_drift"].items():
+        lines += ["", f"The runs at `{run_commit[:7]}` precede the record commit. Files changed between them: "
+                  + (", ".join(f"`{f}`" for f in files) or "none") + ". Those changes are not covered by these runs unless listed in section 4."]
     lines += ["", "## 3. Results", "",
-              "Totals are summed from each log: Node test runner summaries (`ℹ tests`), Python `unittest` summaries (`Ran N tests`) and script checks (`PASS`/`FAIL` lines). Per-requirement coverage is in the [verification matrix](../verification-matrix.md).", "",
+              "Totals are summed from each log: Node test runner summaries (`ℹ tests` with the spec reporter on Node 26, `# tests` with the TAP reporter Node 22 uses when output is not a terminal), Python `unittest` summaries (`Ran N tests`) and script checks (`PASS`/`FAIL` lines). Per-requirement coverage is in the [verification matrix](../verification-matrix.md).", "",
               "| Run | Tests | Passed | Failed | Skipped | unittest runs |", "|---|---|---|---|---|---|"]
     for r in runs:
         x = r["totals"]
