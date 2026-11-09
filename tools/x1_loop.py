@@ -403,8 +403,16 @@ def main(arguments):
     if arguments != ["revise"]:
         print(USAGE, file=sys.stderr)
         return 2
-    request = json.load(sys.stdin)
-    ledger = Ledger(request["reference"]["ledger"])
+    try:
+        request = json.load(sys.stdin)
+        ledger = Ledger(request["reference"]["ledger"])
+        return run_revise(ledger, request)
+    except (ValueError, KeyError, TypeError, OSError, sqlite3.Error) as error:
+        print(f"revise refused: {error}", file=sys.stderr)
+        return 1
+
+
+def run_revise(ledger, request):
     with closing(ledger._connect()) as db, db:
         db.execute("BEGIN IMMEDIATE")
         prior, previous = ledger._read(db)
