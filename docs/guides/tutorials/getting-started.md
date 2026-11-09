@@ -82,14 +82,14 @@ It finishes in about three seconds. Your temporary path will differ:
   "rounds": [
     "passed"
   ],
-  "ledger": "/tmp/ef-first-loop-touemR/addition/ledger.sqlite"
+  "ledger": "/tmp/ef-first-loop-rPp1e0/addition/ledger.sqlite"
 }
 ```
 
 Now look at the evidence, using the ledger path from your output:
 
 ```sh
-python3 examples/show-gates.py /tmp/ef-first-loop-touemR/addition/ledger.sqlite
+python3 examples/show-gates.py /tmp/ef-first-loop-rPp1e0/addition/ledger.sqlite
 ```
 
 ```text
@@ -99,12 +99,12 @@ ledger records: task, admitted_input, frozen_evaluator, candidate, receipt
   G3_exports        pass  {"exports": ["add"]}
   G4_tests          pass  {"passed": 1, "total": 1}
   G5_deterministic  pass
-  G6_bounded        pass  {"maxMs": 0.000771, "fuelUsed": 5}
+  G6_bounded        pass  {"maxMs": 0.000751, "fuelUsed": 5}
   G7_glue           pass
   G8_nonfinite      pass  {"probes": 0}
   G9_units          pass  {"checks": {"add": "dimensionless"}}
 decision: promote
-kernel: /tmp/ef-first-loop-touemR/addition/kernel.wasm (57 bytes)
+kernel: /tmp/ef-first-loop-rPp1e0/addition/kernel.wasm (57 bytes)
 ```
 
 What happened:
@@ -126,7 +126,7 @@ covering the one before it, so if someone removes the triggers and edits a recor
 The promoted kernel is an ordinary WebAssembly module. Call it from Node.js:
 
 ```sh
-node -e 'const m = new WebAssembly.Module(require("fs").readFileSync(process.argv[1])); console.log(new WebAssembly.Instance(m).exports.add(2, 3))' /tmp/ef-first-loop-touemR/addition/kernel.wasm
+node -e 'const m = new WebAssembly.Module(require("fs").readFileSync(process.argv[1])); console.log(new WebAssembly.Instance(m).exports.add(2, 3))' /tmp/ef-first-loop-rPp1e0/addition/kernel.wasm
 ```
 
 ```text
@@ -153,12 +153,12 @@ node examples/first-loop.mjs wrong
     ],
     ...
   ],
-  "ledger": "/tmp/ef-first-loop-eGPvuy/addition/ledger.sqlite"
+  "ledger": "/tmp/ef-first-loop-uNMOBv/addition/ledger.sqlite"
 }
 ```
 
 ```sh
-python3 examples/show-gates.py /tmp/ef-first-loop-eGPvuy/addition/ledger.sqlite
+python3 examples/show-gates.py /tmp/ef-first-loop-uNMOBv/addition/ledger.sqlite
 ```
 
 ```text
@@ -168,7 +168,7 @@ ledger records: task, admitted_input, frozen_evaluator, candidate, receipt
   G3_exports        pass  {"exports": ["add"]}
   G4_tests          FAIL  {"passed": 0, "total": 1}
   G5_deterministic  pass
-  G6_bounded        pass  {"maxMs": 0.000961, "fuelUsed": 5}
+  G6_bounded        pass  {"maxMs": 0.001452, "fuelUsed": 5}
   G7_glue           pass
   G8_nonfinite      pass  {"probes": 0}
   G9_units          pass  {"checks": {"add": "dimensionless"}}
