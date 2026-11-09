@@ -4,10 +4,11 @@ The library lets EndoForge answer a need with a capability it already promoted i
 again. A promoted candidate is admitted only after its promotion is re-verified from its ledger and it re-passes the
 current gates. A later need that declares the same capability is served from it only after the new need's own frozen
 tests pass on it and a mutation check shows those tests could tell it apart from a near variant. Every admission,
-reuse, refusal and revocation is written to a hash-chained journal.
+reuse, composition, refusal, grant, reclaim and revocation is written to a hash-chained journal.
 
-Code: [core/library](../../core/library/README.md). Off by default: the `current` path consults a library only when
-the caller passes one from `openLibrary` to `runNeed`. Measurements: [P-53](../../experiments/P-53-library-v0/RESULT.md).
+Code: [core/library](../../core/library/README.md). Off by default: a loop path consults a library only when the
+caller passes one from `openLibrary` to `runNeed`. All three paths do: `current` and `isolate` right after the freeze,
+`agent` right after admission (and again on resume). Measurements: [P-53](../../experiments/P-53-library-v0/RESULT.md).
 
 ## Where it sits in the loop
 
@@ -46,8 +47,15 @@ ranges, precision, codes and labels, and which exports trap.
 ## Lookup
 
 A need declares its capability in a fenced `capability` JSON block inside its frozen `CONTRACT.md`, so the hash of the
-declaration is bound at the freeze. The current generator prompt doesn't ask for that block, so generated needs miss
-with `no_capability` until it does.
+declaration is bound at the freeze. The stage prompts don't ask for that block, so with the default `retrieval: 'key'`
+a generated need misses with `no_capability`.
+
+With `retrieval: 'semantic'`, lookup first ranks the visible entries by similarity between normalized contract texts
+(`contractVector` in [key.mjs](../../core/library/key.mjs); deterministic, offline, no model). A need with no
+capability block may then adopt the capability of an entry scoring at least 0.4 (`SEMANTIC_THRESHOLD`), provided the
+adopted capability's key, computed over the need's own contract, equals that entry's key. The key match below still
+decides. `library.retrieve(text)` returns the ranking on its own, and a `no_contract_match` miss lists the three
+nearest entries.
 
 The key (`keysOf`, mode `contract` by default) hashes, per export and by position, without export or argument names:
 argument kind, unit, parsed range and its openness, code tables; result kind, unit, precision, declared rounding, code
@@ -64,9 +72,14 @@ normalized text.
 | `no_contract_match` | Nothing under this key |
 | `revoked` | Everything under this key was revoked |
 | `needs_requalification` | Entries exist but were qualified under different gate or host bytes |
+| `permission_denied` | Entries exist under the key in the caller's tenant, but none is open to the caller's lineage |
 | `ambiguous_key` | Two entries under one key have different fingerprints, so the key doesn't pin the meaning |
 | `artifact_tampered` | The stored module no longer matches its digest |
 | `no_binding`, `unbound_test` | The need's exports can't be mapped one-to-one onto the entry's |
+| `counterexample` | The entry already failed one of this need's tests, or this exact need was refused before; no cell runs |
+
+Entries that were revoked, reclaimed, belong to another tenant, or are not qualified in the current environment are
+not served.
 
 ## Serving
 
@@ -82,9 +95,88 @@ limits and WASM guard as a pool cell:
 3. Any survivor refuses the reuse (`evaluator_cannot_discriminate`): the need's tests can't tell this kernel from a
    wrong one, so passing them proves too little.
 
-A pass journals a `library_reuse` receipt naming the source promotion, the need's frozen hashes, the binding and the
-host digests, and returns the candidate. A refusal journals `library_refused` with its reason. A cell timeout, a
-guard breach or a crash is a refusal, never a pass. A miss before any cell runs writes nothing.
+A pass journals a `library_reuse` receipt naming the source promotion, the need's frozen hashes, the binding, the
+host digests, the environment and the principal, and returns the candidate. A refusal journals `library_refused` with
+its reason, its counterexamples (the need's tests the entry failed, for `evaluator_failed`) and up to 16 surviving
+mutant witnesses. A cell timeout, a guard breach or a crash is a refusal, never a pass. A miss before any cell runs
+writes nothing.
+
+When lookup finds nothing under the key and the need has two or more exports, `serve` tries a union: for each wanted
+export it picks a usable entry whose export has the same signature and whose contract numerals all appear in the
+need's contract, and composes them when more than one entry is involved.
+
+## Composition
+
+`library.compose(need, plan)` builds one module from parts of several entries and serves it like a single entry. A
+plan lists the need's exports:
+
+```json
+{ "exports": [
+  { "name": "fee", "entry": "<entry id>", "fn": "fee" },
+  { "name": "net", "stages": [
+      { "entry": "<entry id>", "fn": "gross", "args": [{ "input": 0 }, { "input": 1 }] },
+      { "entry": "<entry id>", "fn": "afterTax", "args": [{ "previous": true }, { "const": 0.2 }] }
+    ], "output": { "scale": 100, "narrow": "nearest" } }
+] }
+```
+
+- **Union.** An export taken as it is from one entry.
+- **Pipeline.** Stages run in order. Without `args`, the first stage takes the export's inputs in order and each later
+  stage takes the previous stage's result.
+- **Adapter.** Each argument is `{ input: n }` (the export's n-th input), `{ previous: true }` or `{ const: v }`,
+  optionally with `scale`, `offset` and `narrow` (`trunc` or `nearest`); `output` applies the same adapter to the
+  final result. A lossy conversion, such as `f64` to `i32`, without `narrow` is refused.
+
+[link.mjs](../../core/library/link.mjs) parses each part's module and writes one new module; it refuses what it cannot
+link safely. At most one part may use linear memory and at most one a table. The composed module then goes through the
+same cell as a single entry: the need's frozen tests, then the discrimination check. A pass journals
+`library_compose` naming every source promotion and the plan; a refusal journals `library_refused`.
+
+| Miss reason | Meaning |
+|---|---|
+| `unknown_part` | The plan names an entry the library doesn't hold |
+| `memory_conflict`, `table_conflict` | More than one part uses linear memory, or a table |
+| `adapter_arity`, `adapter_constant`, `adapter_narrowing` | An adapter's argument count, constant or narrowing is invalid |
+| `plan_mismatch`, `unknown_export` | The plan doesn't match the need's capability or names a missing export |
+| `import_unsupported`, `data_unsupported`, `element_unsupported`, `initializer_unsupported`, `opcode_unsupported`, `malformed_module`, `link_invalid` | A part uses a module feature the linker doesn't rewrite, or the result doesn't validate |
+
+The composition-wide reasons `need_not_frozen`, `no_capability`, `permission_denied`, `revoked`,
+`needs_requalification`, `artifact_tampered` and `counterexample` mean what they mean for a single entry.
+
+## Scopes and permissions
+
+An entry's `scope` is `{ tenant?, lineage? }`, taken from the admit row or, failing that, from the admitting
+principal. The caller passes a principal (`openLibrary({ principal })` as the default, or per call to `lookup`,
+`serve`, `compose`, `retrieve`); it is never read from the need.
+
+| The caller is | Result |
+|---|---|
+| In another tenant | The entry is invisible |
+| In the tenant, lineage outside the entry's lineage | `permission_denied` |
+| In the tenant, lineage equal to or under the entry's (`a/b` is under `a`) | Allowed |
+| Named by a grant | Allowed |
+
+`grant(id, { tenant, lineage? })` and `ungrant(...)` open or close an entry to another tenant or lineage. Only a
+principal the entry already allows may change its grants. Both are journaled.
+
+## Duplicates, counterexamples and environments
+
+- **Reclaim.** `reclaim()` groups usable entries by key, fingerprint, scope and source run, keeps the oldest of each
+  group, and marks the others as reclaimed into it, releasing their stored module and own files. It then rewrites the
+  journal: a first `library_compacted` record names the previous sequence number and tip, and the hash chain restarts
+  from it. `reclaim({ compact: false })` skips the rewrite. A plan that names a reclaimed entry is redirected to its
+  survivor.
+- **Counterexamples.** A refusal records the failing tests as counterexamples on the entry. A later lookup whose tests
+  include one of them, with an expectation the recorded output fails, misses with `counterexample` without running a
+  cell, as does an identical need (same entry, tests, contract numerals, gate mode and host). `counterexamples(id)`
+  lists them. They are rebuilt from the journal on open, so they survive a restart.
+- **Environments.** Qualification is recorded per environment: Node version, V8 version, platform and architecture,
+  hashed into an environment id (`openLibrary({ environment })` replaces it, for tests). An entry is served only in an
+  environment where it has a passing qualification under the current host digests. `requalify()` runs entries that
+  are not qualified here: a pass adds this environment; a failure after a host change revokes the entry; a failure in
+  a new environment only records `ok: false` for that environment and leaves the others standing.
+  `qualifications(id)` lists them. A journal written before this rule has no per-environment records, so its entries
+  requalify once.
 
 ## Revocation and requalification
 
@@ -92,8 +184,9 @@ guard breach or a crash is a refusal, never a pass. A miss before any cell runs 
   and returns the reuse receipts that named them. Past receipts are kept.
 - `dependants(id)` lists the reuse receipts that named an entry.
 - `requalify()` re-runs each entry's own tests when the digests of `gates.mjs` or `host.mjs` have changed since it
-  was qualified. Passing entries are journaled with the new host; failing ones are revoked with "no passing
-  qualification against the current host". Until then those entries are not served.
+  was qualified, or when it has no qualification in the current environment. Passing entries are journaled with the
+  new host and environment; after a host change failing ones are revoked with "no passing qualification against the
+  current host". Until then those entries are not served.
 
 ## What it cannot tell apart
 
@@ -116,16 +209,8 @@ Equivalent contracts written with different numerals miss, which costs a regener
 of 92 seeded faults with an in-range witness when the need's frozen files said exactly what the kernel's own said;
 that class needs a stronger evaluator, which is why reuse stays opt-in.
 
-## Gaps in the current code
-
-- Composition serves one entry with its export names bound. There is no union of entries yet, no pipeline from one
-  entry's output to another's input, and no argument adapter.
-- Retrieval is a key match; there is no semantic search step yet.
-- There are no tenant or lineage scopes on entries yet, and no permission check on reuse.
-- Duplicates are flagged but not reclaimed.
-- Refusals are journaled, but nothing yet turns them into counterexamples that narrow later search.
-- Qualification records are not yet kept per environment.
-- The `isolate` and `agent` paths don't consult the library yet; only the `current` path does.
+Composition inherits these limits from its parts, and the linker refuses a plan where more than one part uses linear
+memory or a table, so such kernels can't yet be composed with each other.
 
 ## Boundary with the engine
 

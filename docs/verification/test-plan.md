@@ -97,7 +97,7 @@ Automated tests: the code is the procedure. Run one Node file with `node --test 
 
 - Purpose: the code must not depend on `assert`.
 - Steps: `make test-optimized ENDOFORGE_TEST_OUTPUT="$(mktemp -d)"` on both Node versions.
-- Expected result: exit 0. Known limit: three tool tests check with `assert` statements and are vacuous here (D-01).
+- Expected result: exit 0. The three tool tests that used bare `assert` now use `unittest` assertions (D-01 closed).
 - Last run: recorded in the test reports.
 
 ### TP-3 — Getting-started tutorial
@@ -112,7 +112,7 @@ Automated tests: the code is the procedure. Run one Node file with `node --test 
 
 ### TP-4 — Secret scan
 
-- Purpose: no credentials in history. CI has no secret-scanning job.
+- Purpose: no credentials in history. CI also runs this as the `secret-scan` job.
 - Steps: `gitleaks git --no-banner --redact --log-opts=HEAD .`
 - Expected result: `no leaks found`.
 - Last run: recorded in the STR (the generator runs it when Gitleaks is installed).
@@ -161,7 +161,7 @@ Live model runs (experiments) follow each experiment's `PRECOMMIT.md`; they are 
 - Timing assertions can be disturbed by host load; `core/runtime/test/fixtures/timing.mjs` lets a run report them as
   skipped under load only when opted in.
 - Delegated cgroup enforcement needs a delegated scope and is untested locally and in CI (GAP-EF-001).
-- Fourteen behaviours have no test; see [SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps).
+- Twelve behaviours have no test; see [SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps).
 
 ## 9. Traceability
 

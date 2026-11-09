@@ -43,8 +43,7 @@ The journal test passed 31 checks; the state test crashed the writer at two boun
 ## Limits
 
 - `repair.py` has no test of its own.
-- The tests check with bare `assert` statements, so they pass vacuously under `make test-optimized` (`python3 -O`);
-  this is open defect D-01 in the assurance record.
+- The tests use `unittest` assertions, so they still check under `make test-optimized` (`python3 -O`).
 - The journal test uses short-lived local `sleep` processes with `stop_scope=False`, so it never touches systemd.
 
 ## Tests

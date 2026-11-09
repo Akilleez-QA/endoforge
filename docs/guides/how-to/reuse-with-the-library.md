@@ -4,8 +4,8 @@ Once a kernel is promoted, a later need that asks for the same thing can reuse i
 implementation turn. The library holds promoted kernels, finds one whose contract matches a new need, and serves it
 only after running the new need's own frozen tests against it.
 
-The library is off by default. `runNeed` consults it only when you pass one, and only on the current path (with
-`ENDOFORGE_LOOP` unset). The specification stage still runs, because the new need's frozen tests are what a reused
+The library is off by default. `runNeed` consults it only when you pass one. Every loop path does: the current and
+`isolate` paths right after the freeze, the `agent` path right after admission. The specification stage still runs, because the new need's frozen tests are what a reused
 kernel is judged against. A hit saves the implementation turn and the compile and gate work behind it.
 
 ## 1. Open a library and admit a promotion
@@ -104,7 +104,20 @@ holds two records: `library_admit` and `library_reuse`. A miss before any test r
 
 `library.revoke(id, reason)` stops the kernel and every admitted kernel with the same key and fingerprint, and returns
 the reuse receipts that named them. `library.requalify()` re-runs each entry's own tests after the gates or host
-change and retires the ones that fail. `library.close()` stops the worker threads.
+change, or in a new environment (Node, V8, platform, architecture), and retires the ones that fail after a host change.
+`library.close()` stops the worker threads.
+
+## More options
+
+| To | Use |
+|---|---|
+| Find an entry for a need with no capability block | `openLibrary({ retrieval: 'semantic' })` |
+| Keep tenants apart | `openLibrary({ principal: { tenant, lineage } })`, or `principal` per call; `library.grant(id, { tenant, lineage })` to share |
+| Serve a need from parts of several entries | `library.compose(need, plan)`; `serve` builds a union by itself when it can |
+| Drop duplicates and shrink the journal | `library.reclaim()` |
+| See why a need keeps missing | `library.counterexamples(id)`, `library.qualifications(id)` |
+
+The [library design](../../architecture/library.md) has the plan format, the scope rules and the miss reasons.
 
 ## Limits
 
@@ -112,4 +125,4 @@ The key reads declared fields and numerals, not prose: two contracts that differ
 "exclusive") get the same key, and only the new need's tests stand between them. In
 [P-53](../../../experiments/P-53-library-v0/RESULT.md), 0 of 5,493 lookups served a wrong kernel when the tests
 carried the fault, but 93 of 313 did when nothing frozen differed. That is why the library stays off by default. The
-[library README](../../../core/library/README.md) covers the key, the discrimination gate and what v0 leaves out.
+[library README](../../../core/library/README.md) covers the key, the discrimination gate and the options.

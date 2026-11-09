@@ -14,7 +14,7 @@ promoted. The model writes all of the code and never grades its own work.
 | Capability | What a promoted candidate provides: working code plus the contract and evidence that say what it does |
 | Candidate | One proposed implementation, identified by the SHA-256 of its content |
 | Kernel | The candidate form the stage prompts ask for today: application logic as a pure WebAssembly module (state in, event in, state out, effects out as data), with no imports except `env.abort` |
-| Glue | `glue.json`: declarative data that names, types, labels and gives units to each kernel export, validated against a closed schema |
+| Glue | `glue.json`: declarative data that names, types, labels and gives units to each kernel export, validated against a closed schema. A value is a scalar (`number`, `integer`, `boolean`, `code`) or structured state (`record`, `list`, `text`) with a declared memory layout |
 | Frozen evaluator | The specification plus the exact gate code, hashed into the ledger before any candidate exists. The ledger action that does it is `admit` on the in-cell paths and `freeze` on the host-side path |
 | Workcell | A warm V8 isolate that keeps the compiler and gates loaded between jobs ([workcells](workcells.md)) |
 | Evaluator round | One pass of the engine's six checks over a candidate (five universal checks, then the residual check, which runs the nine gates); it includes two fresh runs of the tests in opposite call orders. A promotion needs two rounds ([gates](gates.md#from-gates-to-a-decision)). Not to be confused with the agent's check rounds, one per implementation check |
@@ -61,8 +61,10 @@ flowchart TD
 4. **Check.** The pinned AssemblyScript 0.28.20 compiler builds the module and the [gates](gates.md) run on it. On
    the agent path a failure goes back to the agent as its next prompt, up to the turn limit; on the other two paths a
    repair happens only when it is switched on (`ENDOFORGE_SELF_CHECK=1`, or a `repair` module).
-5. **Commit.** One ledger transaction registers the candidate, appends a receipt for its evaluation and re-checks the
-   evidence against the frozen bundle.
+5. **Commit.** On the in-cell paths the supervisor first runs the gates again on the committed bytes and refuses if
+   they disagree with the cell's report ([re-run at commit](gates.md#commit-re-runs-the-gates)). One ledger transaction
+   then registers the candidate, appends a receipt for its evaluation and re-checks the evidence against the frozen
+   bundle.
 6. **Decision.** The ledger's rule, `decide` in [tools/x1_loop.py](../../tools/x1_loop.py), returns `promote` only
    when every gate passed in both evaluator rounds for these bytes under this frozen evaluator. A lost cell, a deadline
    or a failed model call after the freeze is `inconclusive`, never a pass.
@@ -129,7 +131,8 @@ lists every variable.
 ### The `isolate` path
 
 Generation is the same two Codex sessions, but the freeze, the checks and the commit go through the pool:
-`admit` freezes in one bridge request, a generator self-check is a cell job with no durable effect
+`admit` freezes in one bridge request (after evaluator synthesis writes its file into the oracle root, when on), a
+library may answer the need right after it, a generator self-check is a cell job with no durable effect
 (`checkCandidate`), and `evaluateAndCommit` compiles, gates and commits in one cell job plus one bridge request. A
 `repair` module can run repair rounds inside the cell. [The runtime README](../../core/runtime/README.md#the-loop-inside-the-workcell)
 has the details.
@@ -140,10 +143,10 @@ Each of these is optional or sits beside the cell.
 
 | Part | What it does | Default | Code |
 |---|---|---|---|
-| Library | A need that a promoted capability already meets skips implementation | Off; pass `library` from `openLibrary` (current path) | [library](library.md) |
+| Library | A need that a promoted capability, or a composition of several, already meets skips implementation | Off; pass `library` from `openLibrary` (all paths) | [library](library.md) |
 | Formula oracle | Recomputes frozen expectations from the contract's formula and a model-written reference before the freeze | Off; `limits.oracle` (agent path) | [agent loop](agent-loop.md#formula-oracle) |
-| Evaluator synthesis | A candidate-blind evaluator built from the need can refuse a candidate after the gates | Off; `ENDOFORGE_SYNTH=1` (current path) | [evaluator synthesis](evaluator-synthesis.md) |
-| Compatibility route | Type checks, emits and runs the candidate's TypeScript in a contained cohort; reported, never changes the decision | Off; pass `containedRoute` (current path) | [compatibility lane](compatibility-lane.md) |
+| Evaluator synthesis | A candidate-blind evaluator built from the need can refuse a candidate after the gates, and flags frozen tests two references contradict | Off; `ENDOFORGE_SYNTH=1` (all paths) | [evaluator synthesis](evaluator-synthesis.md) |
+| Compatibility route | Type checks, emits and runs the candidate's TypeScript in a contained cohort; inside `runNeed` it is reported and never changes the kernel decision; called directly, `route.promote` decides under the lane's own policy | Off; pass `containedRoute` (current path) | [compatibility lane](compatibility-lane.md) |
 | Subscription guard | Refuses any `claude -p` launch not on a proven claude.ai subscription login (exit 78, a configuration error) | Always on for Claude launches | [subscription-guard.mjs](../../core/runtime/subscription-guard.mjs) |
 | Usage governor | Parks new model calls near the usage ceiling (`USAGE_PARKED`, exit 75: try again after the reset) | On in both Claude transports; ceiling 0.85 | [usage-governor.mjs](../../core/runtime/usage-governor.mjs) |
 | Stage rates | Per-stage throughput, queues and a bottleneck verdict | Off; pass `rates` to `createLoopPool` | [workcells](workcells.md#stage-rates) |
@@ -191,4 +194,5 @@ validates decision references; it grants no authority and activates nothing in a
 | 1.0 | before 2026-11-08 | — | Written in PR #129 at `d4d7efa` | earlier PRs |
 | 2.0 | 2026-11-08 | `4d692a4` | Metadata header and change history added; content re-baselined | #131 |
 | 2.1 | 2026-11-08 | `ea7b8d6` | Metadata header and NASA notice moved to this section; flow drawn as a diagram; plainer introduction. Content unchanged otherwise | #132 |
-| 3.0 | 2026-11-08 | `63e95c7` | Rewritten from the code as the map of the loop; gates, agent loop, workcells, library and compatibility lane moved to their own pages; G5 described as the code runs it | this PR |
+| 3.0 | 2026-11-08 | `63e95c7` | Rewritten from the code as the map of the loop; gates, agent loop, workcells, library and compatibility lane moved to their own pages; G5 described as the code runs it | earlier PR |
+| 3.1 | 2026-11-09 | gap closure | Structured state in glue; commit re-run; library and synthesis on all paths; compatibility-lane promotion | this commit |

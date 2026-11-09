@@ -112,5 +112,9 @@ The atomizer finds this tool through `toolchain.gate` in [policy.json](../atomiz
   nothing or have a tolerance above 1% of the expected value.
 - G6 measures wall time per call, not fuel; G5 repeats the same call order.
 - No `make` target runs it (GAP-EF-003).
+- Its [glue.schema.json](glue.schema.json) is a separate, older copy: scalar kinds only (`number`, `integer`,
+  `boolean`, `code`), with no `record`, `list` or `text` and no layout fields (`fields`, `items`, `max`, `maxBytes`),
+  and it calls kernels with scalar arguments only. Structured-state kernels pass only the in-loop gates
+  ([structured state](../../docs/architecture/gates.md#structured-state)).
 
 Engineering record: component C-30, GAP-EF-003.

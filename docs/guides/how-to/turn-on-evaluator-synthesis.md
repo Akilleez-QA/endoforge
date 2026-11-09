@@ -5,7 +5,8 @@ thin, and a kernel that passes thin tests can still be wrong. Evaluator synthesi
 separate model calls that never see the code or the frozen tests, and frozen before any code exists. A kernel is
 promoted only if it passes both.
 
-It is off by default and runs on the current path only (`ENDOFORGE_LOOP` unset).
+It is off by default. With `ENDOFORGE_SYNTH=1` it runs on every loop path (`ENDOFORGE_LOOP` unset, `isolate` or
+`agent`).
 
 ## How it works
 
@@ -19,11 +20,14 @@ Two model stages, each blind to the candidate:
 EndoForge then compiles each binding into checks without a model and qualifies them: the binding has the right shape,
 the reference gives the same answers twice, agrees with the frozen tests, is consistent with itself, and tells
 mutants of itself apart. It generates input vectors from the declared ranges and writes the qualified checks to
-`oracle/synth/evaluator.json`, whose hash is fixed before code. After the gates run, the candidate runs those vectors
-under the fuel meter and is compared with the reference. A refusal blocks promotion; the verdict is written to
-`<directory>/synthesis.json`.
+`synth/evaluator.json`, whose hash is fixed in the ledger freeze before code. After the gates run, the candidate runs
+those vectors under the fuel meter and is compared with the reference: on the current path in a separate worker
+thread with its own memory limits and a 30 s deadline, on the `isolate` and `agent` paths at commit. A refusal blocks
+promotion; on the current and `isolate` paths the verdict is written to `<directory>/synthesis.json`.
 
-With `ENDOFORGE_SYNTH_WIDTH=2`, two independent members are written, and only the checks both agree on are kept.
+With `ENDOFORGE_SYNTH_WIDTH=2`, two independent members are written, and only the checks both agree on are kept. When
+both references agree with each other against a frozen test, that test is reported as suspect before the
+implementation turn, in `synth/suspect.json` and in the evaluator's `suspects`.
 
 ## Turn it on
 

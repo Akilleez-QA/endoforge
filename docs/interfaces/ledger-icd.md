@@ -180,14 +180,16 @@ are in [the gates](../architecture/gates.md#from-gates-to-a-decision).
 ### Decision record
 
 ```json
-{ "version": 1, "issuer": "endoforge.local.x1", "policy": "X1-G1-G8/v1", "scope": "qualification",
+{ "version": 1, "issuer": "endoforge.local.x1", "policy": "X1-G1-G9/v2", "scope": "qualification",
   "candidate": "<sha256>", "frozen_evaluator": "evr:<sha256>", "receipt": { "id": "receipt", "hash": "<hash>" },
   "decision": "promote", "chain_tip": "<hash>", "evaluator_digest": "<sha256>", "sha256": "<seal>" }
 ```
 
 `refuse` and `inconclusive` carry a `reason` instead of `chain_tip` and `evaluator_digest`. `sha256` seals the other
-fields as sorted compact JSON. The `policy` label predates G9; all nine gates are required
-([known issue](../architecture/gates.md#known-issue-stale-gate-labels)). This is a local, trusted-host qualification
+fields as sorted compact JSON. Decisions written before 2026-11-09 carry `X1-G1-G8/v1`;
+both labels required all nine gates ([migration note](../architecture/gates.md#gate-labels-and-the-migration-note)).
+The compatibility lane's decisions use issuer `endoforge.local.compat`, policy `COMPAT-TS-CHECK-RUN2-TESTS/v1` and
+`lane: compatibility`, and are stored in a `compat_decisions` table ([compatibility lane](../architecture/compatibility-lane.md#promotion)). This is a local, trusted-host qualification
 decision: not a signature, not a POODO authorization, and it activates nothing.
 
 ## Candidate generator interface

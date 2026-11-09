@@ -37,7 +37,7 @@ Findings:
   check; the 45 existing statements were kept, with secondary "shall" clauses reworded so each has one.
 - F15 (#130) changed the formula oracle during this pass. The trace check caught the renamed test, and REQ-ORACLE-001
   was updated to branch-by-branch evaluation of piecewise rules.
-- Fourteen behaviours have no test and are registered as GAP-EF-001 to GAP-EF-014 in
+- Twelve behaviours have no test and are registered as GAP-EF-001 to GAP-EF-014 (011 and 012 closed) in
   [SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps), not as requirements.
 - Trace check after the update (`python3 -I tools/check_trace.py`): 95 requirements, 95 traced, 14 gaps, 0 TBD; 97
   discovered test files, 92 traced and 5 supporting; 0 problems.
@@ -58,7 +58,8 @@ test bodies where a title was ambiguous; the full suites on both Node versions (
 
 Findings:
 
-- D-01: three tool tests check only with `assert` statements, which `make test-optimized` strips (`python3 -O`).
+- D-01: three tool tests checked only with `assert` statements, which `make test-optimized` strips (`python3 -O`);
+  closed on 2026-11-09.
 - No coverage tool is configured, so coverage is not measured.
 - Delegated cgroup enforcement is skipped without a delegated scope (GAP-EF-001); the Rust lane is outside CI
   (GAP-EF-013).
@@ -94,19 +95,19 @@ No issues were filed for these findings; they are reported to the maintainer thr
 
 | ID | Severity | Finding | Location | Status |
 |---|---|---|---|---|
-| D-01 | S3 | Tests that check only with `assert` statements pass vacuously under `make test-optimized`, which runs them with `python3 -O` | `tools/factory_campaign/test_state.py`, `tools/factory_campaign/test_model_journal.py`, `tools/factory_portability/test_checkpoint.py` (its refusal checks raise `AssertionError` explicitly and still run) | Open |
+| D-01 | S3 | Tests that check only with `assert` statements pass vacuously under `make test-optimized`, which runs them with `python3 -O` | `tools/factory_campaign/test_state.py`, `tools/factory_campaign/test_model_journal.py`, `tools/factory_portability/test_checkpoint.py` (its refusal checks raise `AssertionError` explicitly and still run) | Closed 2026-11-09: `unittest` assertions |
 | D-02 | S4 | 9 unused imports (ruff F401) | see Source code quality | Open |
-| D-03 | S3 | `WarmClaudeTransport` replaces a caller-supplied `governor` with the default one: the constructor passes `governor === null ? null : undefined` to `governed()` | `core/runtime/x1/transports.mjs:214` | Open |
-| D-04 | S4 | Referenced inputs missing: `bench.mjs` defaults to `tools/atomizer/examples/C-005/atoms.json`; `lib/ledger.mjs` names a `LEDGER.md` schema; `conduct adopt` points to `tools/conductor/examples`. None exist | `tools/atomizer/`, `tools/conductor/` | Open |
+| D-03 | S3 | `WarmClaudeTransport` replaces a caller-supplied `governor` with the default one: the constructor passes `governor === null ? null : undefined` to `governed()` | `core/runtime/x1/transports.mjs:214` | Closed 2026-11-09: REQ-TRANSPORT-002 |
+| D-04 | S4 | Referenced inputs missing: `bench.mjs` defaults to `tools/atomizer/examples/C-005/atoms.json`; `lib/ledger.mjs` names a `LEDGER.md` schema; `conduct adopt` points to `tools/conductor/examples`. None exist | `tools/atomizer/`, `tools/conductor/` | Closed 2026-11-09: REQ-ATOM-004, REQ-COND-004 |
 | D-05 | S3 | SECURITY.md directs reporters to GitHub private vulnerability reporting, which is disabled for the repository (`gh api repos/Akilleez-QA/endoforge/private-vulnerability-reporting` returns `enabled: false`). SECURITY.md now gives the fallback; enabling it is a repository setting for the owner | `SECURITY.md`, repository settings | Open |
-| D-06 | S4 | `main` has no branch protection; CI has no secret-scanning job | repository settings, `.github/workflows/ci.yml` | Open (risk R-6) |
+| D-06 | S4 | `main` has no branch protection; CI has no secret-scanning job | repository settings, `.github/workflows/ci.yml` | Secret scan added to CI 2026-11-09; branch protection still open (risk R-6) |
 | D-07 | S4 | Code comments exist despite the no-comments rule, for example `tools/conductor/lib/adopt.mjs:5`, `tools/atomizer/lib/ledger.mjs:2`, `tools/atomizer/test/run.mjs:1` | several files | Open |
 | D-08 | S4 | Stale documentation (verification matrix baseline, oracle wording, missing control documents) | `docs/` | Closed in this PR |
 
 ### Overall assessment
 
 Every requirement traces to tests that exist, and every discovered test file traces to a requirement or is classified.
-Fourteen behaviours remain untested. Assurance is author-side only; no independent review has been performed.
+Twelve behaviours remain untested (GAP-EF-011 and GAP-EF-012 were closed on 2026-11-09). Assurance is author-side only; no independent review has been performed.
 
 ## Change history
 

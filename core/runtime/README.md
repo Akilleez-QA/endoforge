@@ -82,12 +82,15 @@ repair and commit into one warm cell and one bridge. `createLoopPool` in [x1/loo
 | `admit(pool, reference, { need, configuration, files?, resume? })` | One bridge request. Without `reference.identity` it appends task, input and frozen evaluator in one transaction; with one it re-verifies the tree. Returns `{ identity, digest, encoded }` |
 | `checkCandidate(pool, admission, { id, files })` | One cell job with no durable effect; returns failing gates and tests, or `null` |
 | `evaluateInCell(pool, { candidate, admission, repair?, timings? })` | One cell job; returns `{ observed, content, sources }`. A lost cell gives an `outcome_unknown` observation |
-| `commitCandidate(pool, { evaluated, reference, digest, decisionPath?, timings?, receiptId?, continuation? })` | One bridge request; returns `{ promoted, inconclusive?, candidate, receipt, decision, problem, status, report, rounds }` |
+| `commitCandidate(pool, { evaluated, reference, digest, decisionPath?, timings?, receiptId?, continuation?, evaluator? })` | Re-runs the gates on the supervisor when the report claims a pass (`checkAtCommit`), applies a frozen synthesized `evaluator`, then one bridge request; returns `{ promoted, inconclusive?, candidate, receipt, decision, problem, status, report, rounds, rerun, synthesis? }` |
 | `evaluateAndCommit(pool, {...})` | The last two together |
 | `repair: { module, maxRounds, options }` | Runs a host-supplied repair module inside the cell, a fresh compile and instances each round; it may not change the oracle files |
 
 The commit re-reads the frozen tree and the repository implementation files inside its transaction, so a change on
-disk after admission refuses. The cell never receives the ledger path or the frozen root.
+disk after admission refuses. Before that, the supervisor runs `runGates` again on the committed bytes and rejects the
+receipt if the verdict or any test outcome differs from the cell's report. `attemptInIsolate` also takes `library`
+(served right after the freeze; a pass returns `{ promoted: true, reused }`), `synthProvider` and `confirm` (evaluator
+synthesis, written into the oracle root before `admit` and judged at commit). The cell never receives the ledger path or the frozen root.
 [x1/reference.mjs](x1/reference.mjs), used by `ENDOFORGE_CODEX_TERSE=reference`, keeps its own permission-restricted
 process: a `vm` context is not a boundary, and from a cell its escape reached the file system, while under
 `--permission` in its own process it didn't ([P-50](../../experiments/P-50-in-isolate/RESULT.md)).
@@ -97,11 +100,15 @@ process: a `vm` context is not a boundary, and from a cell its escape reached th
 `ENDOFORGE_LOOP=agent` moves the agent's conversation in too. Create the pool with `createLoopPool({ provider })`. The
 cell holds the messages, an in-memory file overlay, and the tools `read_file`, `edit_file`, `check` and `done`; it asks
 the host only for model turns and the freeze, and under `waits: 'release'` a waiting conversation is parked in the
-ledger instead of holding a cell. [Agent loop](../../docs/architecture/agent-loop.md) is the full description.
+ledger instead of holding a cell. `maxTokens` is a budget per stage. With `library` the host asks the library right
+after admission; with `ENDOFORGE_SYNTH=1` it freezes `synth/evaluator.json` in the admitted bundle and judges at
+commit. [Agent loop](../../docs/architecture/agent-loop.md) is the full description.
 
 A provider is `{ name, testDouble, start(), send({ session, messages, remaining, timeoutMs }), endSession(session),
 close() }` returning `{ text, usage }`. [x1/transports.mjs](x1/transports.mjs) has `WarmClaudeTransport`,
-`SpawnClaudeTransport` and `scriptedProvider`. Another source can replace them without touching the loop.
+`SpawnClaudeTransport` and `scriptedProvider`. Another source can replace them without touching the loop. Both Claude
+transports pass `--model sonnet` unless given `model` (`defaultModel`), mark themselves `testDouble: true` when
+`command` is not named `claude`, and accept a `governor` (the warm one also per `instances` entry).
 
 `createLoopPool({ rates: createStageRates({ stages: loopStages({ cells }) }) })` adds
 [stage rates](../../docs/architecture/workcells.md#stage-rates); `node tools/stage-rates.mjs <snapshot> --watch`
@@ -218,7 +225,7 @@ compatibility route uses it when no width is given; `IsolatePool` defaults to `a
   with `--runtime stub -O3 --noAssert --maximumMemory 1024`, a 60 s timeout and bounded output. A killed or
   resource-starved compiler is marked `unavailable`, which the evaluator treats as an unknown outcome.
 - [x1/generator.mjs](x1/generator.mjs) runs the two Codex sessions. `ENDOFORGE_CODEX_CMD` (an executable or a JSON
-  argv array) and `CODEX_HOME` are required; the adapter never reads or copies account files. The executable is trusted
+  argv array; a relative path is resolved against the caller's working directory) and `CODEX_HOME` are required; the adapter never reads or copies account files. The executable is trusted
   and Codex enforces its own workspace-write sandbox. CI uses an explicitly labelled
   [fake Codex](test/fixtures/x1/fake-codex.mjs), a test double that supplies no evidence of synthesis quality.
 - `ENDOFORGE_CODEX_TERSE=scalar` adds a finite-scalar boundary rule: before the freeze it drops tests with non-numeric
@@ -226,4 +233,8 @@ compatibility route uses it when no width is given; `IsolatePool` defaults to `a
   must keep a value test. `scalar-filter.json` records what was dropped ([P-42](../../experiments/P-42-scalar/PRECOMMIT.md)).
 
 `make loop-test` runs the loop's tests, including kills of the cell, the supervisor and the bridge at each stage;
-`make pipeline-test` runs the `current` path's.
+`make pipeline-test` runs the `current` path's. The gap-closure tests `test/gaps-*.test.mjs` (structured state, commit
+re-run, library and synthesis on the in-cell paths, judging cell, suspect tests, transports, compatibility promotion)
+run in `make isolate-test`. `gaps-x1runtime` and `gaps-gluestate` need the pinned compiler from `make loop-setup`, and
+`gaps-compat` needs the checker from `make tscheck-setup`; `make test` runs `loop-setup` before `isolate-test` but
+`tscheck-setup` after it, so on a fresh clone run `make tscheck-setup` first.

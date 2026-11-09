@@ -14,7 +14,8 @@ const served = await library.serve({ id: 'need-7', files });   // { verdict: 'pa
 await library.close();
 ```
 
-Pass the same object to `runNeed({ ..., library })` and the `current` path consults it after the freeze.
+Pass the same object to `runNeed({ ..., library })`: every loop path consults it once the specification is frozen
+(`current` and `isolate` after the freeze, `agent` after admission), and a pass skips the implementation.
 
 | File | Role |
 |---|---|
@@ -30,7 +31,7 @@ Pass the same object to `runNeed({ ..., library })` and the `current` path consu
 `keyMode` (`contract`, also `interface` or `prose`) and `gate` (`full`; `none` skips discrimination; any other value, such as
 `mutants`, counts module mutants only, without wrappers or untested bounds), `retrieval` (`key`; `semantic` also lets a
 need with no capability block adopt the capability of a textually similar entry, score at least 0.4, whose key then
-matches), `principal` (default `{ tenant, lineage }` for admission and reuse) and `environment` (replaces the recorded
+matches), `principal` (`null`; the default `{ tenant, lineage }` for admission and reuse) and `environment` (replaces the recorded
 Node, V8, platform and architecture).
 
 Composition: `library.compose(need, plan)` takes `{ exports: [{ name, entry, fn } | { name, stages: [{ entry, fn, args }], output }] }`.

@@ -3,10 +3,10 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-CFG |
-| Version | 3.0 |
+| Version | 3.1 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
-| Date | 2026-11-08 |
+| Date | 2026-11-09 |
 | Baseline commit | 63e95c79afb282a7fcae4decd57d2e7ed6cf0d40 |
 | Applies to | endoforge main at baseline commit |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
@@ -34,8 +34,9 @@ How to read the tables:
 | Rotate over several Codex logins | `ENDOFORGE_CODEX_CMD` set to `["node","<absolute path>/core/runtime/agent-pool.mjs"]`, logins under `~/.codex-accounts` |
 | Give the agent more room | `runNeed({ limits: { maxTurns, maxTokens } })` |
 | Run more needs at once | `createLoopPool({ size })` |
-| Add a second, independent evaluator | `ENDOFORGE_SYNTH=1` (current path) |
-| Reuse promoted kernels | `runNeed({ library: await openLibrary({ journal }) })` (current path) |
+| Add a second, independent evaluator | `ENDOFORGE_SYNTH=1` (any path) |
+| Reuse promoted kernels | `runNeed({ library: await openLibrary({ journal }) })` (any path) |
+| Promote a TypeScript candidate in the compatibility lane | `route.freeze(...)`, then `route.promote(candidate, { ledger, frozen })` on `createContainedRoute()` |
 | Keep test output out of the checkout | `make test ENDOFORGE_TEST_OUTPUT="$(mktemp -d)"` |
 
 ## Environment variables
@@ -45,7 +46,7 @@ How to read the tables:
 | Variable | Default | Values | Effect | Read in |
 |---|---|---|---|---|
 | `ENDOFORGE_LOOP` | unset: the current path | `agent`, `isolate` | Which loop `runNeed` drives. `agent`: the whole agent loop in a workcell. `isolate`: Codex generates on the host, checks and commit run in a workcell. Unset: Codex generates and the compiler runs on the host, gates run in a workcell. | `core/runtime/x1/pipeline.mjs` |
-| `ENDOFORGE_CODEX_CMD` | none; required on the `isolate` and current paths | A command, or a JSON argv array when it starts with `[` | The Codex CLI the generator runs as `<cmd> exec --json --skip-git-repo-check --sandbox workspace-write -`, in the need's `candidate/` directory, so a path in it must be absolute. | `core/runtime/x1/generator.mjs` |
+| `ENDOFORGE_CODEX_CMD` | none; required on the `isolate` and current paths | A command, or a JSON argv array when it starts with `[` | The Codex CLI the generator runs as `<cmd> exec --json --skip-git-repo-check --sandbox workspace-write -`, in the need's `candidate/` directory. A relative path (the command itself when it contains `/`, or any `./` or `../` entry of the JSON argv) is resolved against the caller's working directory first; a bare name is looked up on `PATH`. | `core/runtime/x1/generator.mjs` |
 | `CODEX_HOME` | none; required with `ENDOFORGE_CODEX_CMD` | Directory | Passed to the Codex child, which reads its login there. EndoForge never reads the auth file. | `generator.mjs` |
 | `ENDOFORGE_CODEX_TERSE` | `exact` | `exact`, `scalar`, `reference`, `review`, `1`, `fallback`; any other value adds no rule | Extra prompt rules. `exact` asks for one edit and derived expectations; `scalar` also limits exports to finite numbers; `reference` has the model write `reference.js`, from which expectations are filled; `review` asks for a silent self-check; `1` asks for one edit. `fallback` (read by `runNeed`) runs once with `1`, then once more with `0` in `<directory>-retry` if not promoted. | `generator.mjs`, `pipeline.mjs` |
 | `ENDOFORGE_RETRY_BUDGET_MS` | `Infinity` | Positive milliseconds | Wall budget across both attempts under `fallback`. | `pipeline.mjs` |
@@ -56,7 +57,7 @@ How to read the tables:
 | `ENDOFORGE_CODEX_TEST_DOUBLE` | off | `1` | Labels results `testDouble: true`. Changes no behaviour. | `generator.mjs`, `loop.mjs` |
 | `ENDOFORGE_ASC_CMD` | none; required on the current path | Path to `asc` (AssemblyScript 0.28.20) | The compiler on the host. The `isolate` and `agent` paths use the pinned [tools/asc](../../tools/asc/README.md) inside the workcell instead. | `core/runtime/x1/compiler.mjs`, `pipeline.mjs` |
 | `ENDOFORGE_ASC` | `node_modules/.bin/asc` at the repository root | Path to `asc` | The compiler for `tools/gate/gate.mjs`. | `tools/gate/gate.mjs` |
-| `ENDOFORGE_SYNTH` | off | `1` | Turns on [evaluator synthesis](../guides/how-to/turn-on-evaluator-synthesis.md) on the current path. | `core/runtime/x1/synth/stage.mjs` |
+| `ENDOFORGE_SYNTH` | off | `1` | Turns on [evaluator synthesis](../guides/how-to/turn-on-evaluator-synthesis.md) on every loop path. | `core/runtime/x1/synth/stage.mjs` |
 | `ENDOFORGE_SYNTH_PROVIDER` | unset: a `SpawnClaudeTransport` | Module specifier that exports `createProvider(env)` | Replaces the synthesis model provider. | `synth/stage.mjs` |
 | `ENDOFORGE_SYNTH_MODEL` | `sonnet` | Model name | Model for the default synthesis transport. | `synth/stage.mjs` |
 | `ENDOFORGE_SYNTH_CONFIG_DIR` | unset: the subscription guard's default login | Existing directory | Claude login directory for synthesis. | `synth/stage.mjs` |
@@ -201,7 +202,7 @@ in `core/runtime/x1/loop.mjs`. Values are not validated.
 | Key | Default | Effect |
 |---|---|---|
 | `maxTurns` | `6` | Turns per stage (specification, then implementation) before exit `max_turns`. The host refuses any model call after `2 × maxTurns` calls. |
-| `maxTokens` | `64000` | Token budget for the whole need, counted from each reply's `usage`. The remainder is passed to the provider; reaching it ends with `max_tokens`. |
+| `maxTokens` | `64000` | Token budget per stage (`tokenBudget = 'stage'` in `loop.mjs`): the specification and the implementation each get it, counted from each reply's `usage`. The stage's remainder is passed to the provider; reaching it ends the stage with `max_tokens`. |
 | `oracle` | off | When truthy, the specification stage may also write `reference.js`, and `tests.json` is checked against the contract's formula, ranges and the reference before the freeze. Each test becomes `verified`, `corrected`, `flagged`, `unverified` or `abstained`; flagged tests go back to the model, corrected values are frozen, and the result carries an `oracle` report. Off by default after P-69, P-70 and P-71. |
 
 Fixed limits in `core/runtime/x1/agent.mjs`: 64 KiB per file, four times that per reply, 16 calls per reply.
@@ -222,8 +223,8 @@ Fixed limits in `core/runtime/x1/agent.mjs`: 64 KiB per file, four times that pe
 | `resume` | agent | `false` | Resume from the ledger. An existing ledger in `directory` resumes anyway. |
 | `repair` | isolate | none | `{ module, maxRounds, options }`: repair rounds inside the cell. |
 | `compiler` | current | `ENDOFORGE_ASC_CMD` | Path to `asc`. |
-| `library` | current | none | A library from `openLibrary`; see [below](#openlibraryoptions-corelibrarylibrarymjs). |
-| `synthProvider`, `confirm` | current | `createProvider(env)`, none | Evaluator synthesis provider and confirmation callback. |
+| `library` | all | none | A library from `openLibrary`, consulted once the specification is frozen; a pass skips implementation. See [below](#openlibraryoptions-corelibrarylibrarymjs). |
+| `synthProvider`, `confirm` | all | `createProvider(env)`, none | Evaluator synthesis provider and confirmation callback (with `ENDOFORGE_SYNTH=1`). |
 | `containedRoute` | current | none | A compatibility-lane route whose `check(candidate)` result is returned as `contained`. |
 
 ### `createLoopPool(options)` (`core/runtime/x1/loop.mjs`)
@@ -273,19 +274,20 @@ lane), in `core/runtime/x1/transports.mjs`.
 
 | Option | Default | Effect |
 |---|---|---|
-| `model` | none | Passed to `--model`. Always set it: without one the CLI receives `--model undefined`. |
+| `model` | `sonnet` (`defaultModel`) | Passed to `--model`. |
 | `effort` | none | Passed to `--effort`. |
 | `timeoutMs` | `300000` | Per-turn timeout. |
-| `instances` (warm) | `[{ name: 'default' }]` | `{ name, configDir, lanes = 1 }`; one long-lived `claude -p` per lane. `configDir` must exist. |
+| `instances` (warm) | `[{ name: 'default' }]` | `{ name, configDir, lanes = 1, governor? }`; one long-lived `claude -p` per lane. `configDir` must exist. An instance's `governor` overrides the transport's. |
 | `configDir` (spawn) | unset | Login directory; must exist. |
 | `queueTimeoutMs` (warm) | `timeoutMs` | Wait for a free lane; when every login is parked past this, fail at once with `UsageParked`. |
 | `idleMs` (warm) | `300000` | An idle lane's process is stopped after this. |
-| `governor` | a governor per login | `null` turns governing off. The warm transport ignores a custom governor object and builds its own. |
+| `governor` | a governor per login | A `UsageGovernor` to admit every turn through; `null` turns governing off. |
 | `usageState` | the `ENDOFORGE_USAGE_STATE` default | Governor state file. |
 | `watchdog` | from `CLAUDE_CODE_RETRY_WATCHDOG` | `true`, `false` or `{ maxWaitMs, recheckMs }`. |
 | `system` | EndoForge's tool-call system prompt | Replaces it. |
 | `cwd` | a fresh temporary directory | Working directory of the child. |
 | `command` | `claude` | The CLI to run; a test double can stand in. |
+| `testDouble` | `true` when the basename of `command` is not `claude` | Copied to the provider's `testDouble`, which labels results. |
 | `base`, `environment` | `process.env`, `{}` | Where the copied variables come from, and extra child variables (credential-shaped names are refused). |
 
 `scriptedProvider(script)` in the same module is the test-double provider: `script({ session, messages, turn,
@@ -307,8 +309,30 @@ the login draws on usage credits. `UsageParked` has `code: 'USAGE_PARKED'`, exit
 | `deadlineMs` | `5000` | Per-run deadline in a cell; a timeout is a refusal. |
 | `keyMode` | `contract` | Lookup key: `contract` (exports plus contract numerals), `interface` (exports only) or `prose` (exports plus contract text). |
 | `gate` | `full` | Discrimination gate: `full` refuses surviving mutants, wrappers and untested bounds; `none` skips it; any other value checks mutants only. |
+| `retrieval` | `key` | `semantic` ranks entries by contract-text similarity first and lets a need with no capability block adopt the capability of an entry scoring at least 0.4. |
+| `principal` | `null` | Default `{ tenant, lineage }` for admission, lookup, serving and composition; each call can pass its own. |
+| `environment` | the running Node, V8, platform and architecture | Replaces the environment that qualifications are recorded under (for tests). |
+
+`library.reclaim({ compact = true })` rewrites the journal after reclaiming; `compact: false` keeps it as it is.
 
 The [reuse how-to](../guides/how-to/reuse-with-the-library.md) shows `admit`, `serve`, `revoke` and `requalify`.
+
+### Evaluator synthesis `begin` (`core/runtime/x1/synth/stage.mjs`)
+
+`begin({ need, env, provider, confirm, suspect, cell })`. `runNeed` passes `need`, `env`, `synthProvider` and `confirm`.
+
+| Option | Default | Effect |
+|---|---|---|
+| `suspect` | none | Called with the `suspect_frozen_tests` report before `finish` returns, when width 2 finds suspect frozen tests. |
+| `cell.deadlineMs` | `30000` (`cellDeadlineMs`) | Deadline of the judging worker thread used by `evaluate`. |
+| `cell.resourceLimits` | `{ maxOldGenerationSizeMb: 128, maxYoungGenerationSizeMb: 16, stackSizeMb: 4 }` (`cellLimits`) | Its heap and stack limits. |
+
+### Compatibility route promotion (`tools/tscheck/contained-route.mjs`)
+
+| Call | Effect |
+|---|---|
+| `route.freeze({ ledger, need, tests })` | Freezes `tests` (a JSON string) and the pinned checker digest into the ledger at path `ledger`; returns `{ identity, digest }`. |
+| `route.promote(candidate, { ledger, frozen, decisionPath?, contract? })` | Registers the candidate, runs `route.check`, records the receipt and decides under `COMPAT-TS-CHECK-RUN2-TESTS/v1`; returns `{ candidate, receipt, report, decision, promoted }`. `frozen` is the identity from `freeze`. |
 
 ### Contained JavaScript (`core/runtime/contained/runner.mjs`)
 
@@ -373,6 +397,8 @@ The `conductor` block of an `endoforge/job/1` manifest:
 | `dir` | `<directory of job.json>/conductor` | The Conductor's state directory (`state.json`, prompts, logs, gate results). |
 | `codexPool` | `core/runtime/agent-pool.mjs` | Command run for Codex atoms. |
 | `claudeBin`, `claudeModel` | `claude`, `opus` | Command and model for Claude atoms. |
+| `claudeTools` | `Read Edit Write Glob Grep Bash(node:*) Bash(npm:*) Bash(make:*) Bash(python3:*) Bash(git diff:*) Bash(git status:*) Bash(ls:*)` | `--allowedTools` for Claude atoms. |
+| `checks` | none | Per-atom checks. An atom no check names runs the runnable checks of the criteria it lists. |
 | `codexModel` | the client default | Passed as `-m` to Codex atoms. |
 | `worktrees` | `<state directory>/worktrees` | Where atom worktrees go. |
 | `links` | `[]` | `{ path, target }` symlinks made in each worktree. |
@@ -386,6 +412,13 @@ manifest is the health check; without it the job tool runs `.local/bin/system-sa
 `schedule.mjs run <atoms.json> --run-dir <dir>` takes `--concurrency` (8, or `ENDOFORGE_CODEX_CONCURRENCY` with the
 Codex backend), `--retries` (1), `--timeout-ms` (900000), `--policy` (`tools/atomizer/policy.json`), `--force` and
 `--no-augment`. Policy limits: at most 64 atoms, `size.work` at most 3, atom timeouts capped at 5400 seconds.
+
+## Hillclimb campaign defaults
+
+In an `endoforge/hillclimb/1` campaign, `runner` defaults to `node tools/hillclimb/bin/run-atoms.mjs`, which runs the
+atoms on the atomizer scheduler with a per-stage policy (`<stage>.policy.json`) whose `bindRoots` add the campaign
+`workdir`, the hillclimb directory and `repo`. `concurrency` defaults to 3 and `runTimeoutSec` to 14400. A campaign's
+own `runner` gets `<atoms.json> --out <dir> --concurrency N --timeout S`, without the policy.
 
 ## Makefile variables
 
@@ -405,3 +438,4 @@ Codex backend), `--retries` (1), `--timeout-ms` (900000), `--policy` (`tools/ato
 | 1.0 | before 2026-11-08 | — | Written in PR #129 at `d4d7efa` | earlier PRs |
 | 2.0 | 2026-11-08 | `4d692a4` | Metadata header and change history added; content re-baselined | #131 |
 | 3.0 | 2026-11-08 | `63e95c7` | Rewritten and re-verified against the code: common-settings table, `runNeed`, `openLibrary`, dump-list, job and atomizer settings added; `HC_WORK`, `XDG_RUNTIME_DIR`, `XDG_STATE_HOME` listed | this PR |
+| 3.1 | 2026-11-09 | gap closure | Library `retrieval`, `principal`, `environment`; synthesis `begin` options; compatibility route `freeze`/`promote`; transport `model` default, `testDouble` and per-instance `governor`; per-stage `maxTokens`; relative `ENDOFORGE_CODEX_CMD`; Conductor `claudeTools` and criteria checks; hillclimb default runner | this commit |
