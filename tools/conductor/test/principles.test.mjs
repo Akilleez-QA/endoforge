@@ -1,6 +1,3 @@
-// Universal principles from the live run, as Conductor mechanism (job specifics are data in these tests' manifests):
-// U2 measured outcomes, U3 knowledge written back, U4 dependency-consistent checks, U5 stable measures, U6 per-item
-// ratchet. (U1, the same failure twice escalates, is covered in launch.test.mjs and stream.test.mjs.)
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -21,7 +18,6 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'conductor-principles-'));
 let fails = 0; const pending = [];
 const test = (name, fn) => { const done = (e) => { if (e) { fails++; console.log(`FAIL ${name}: ${e.message}`); } else console.log(`PASS ${name}`); };
   pending.push(Promise.resolve().then(fn).then(() => done(), done)); };
-// One worker for every test, driven by the file's first line and the feedback in its compiled prompt.
 const setup = scratch(tmp, `#!/bin/bash
 for a in "$@"; do case "$a" in *READY*) echo READY; exit 0;; *"You own ONLY"*) brief="$a";; esac; done
 f=$(printf '%s\\n' "$brief" | sed -n '/You own ONLY/{n;s/^- //p;q}')
@@ -35,7 +31,6 @@ esac
 `);
 const run = (f, ticks = 300) => conduct(f, { load: loadJob, handlers, tickMs: 50, maxTicks: ticks }).then(async () => { await idle(); return loadState(loadJob(f), f); });
 const firstNeeds = (f) => readEvents(loadJob(f), f).find((e) => e.kind === 'NEEDS-COORDINATOR');
-// A JSON critic over named items: A passes when the atom's file contains A, B when it contains B.
 const critic = `t=$(cat \${files}); a=false; b=false; case "$t" in *A*) a=true;; esac; case "$t" in *B*) b=true;; esac; ` +
   `p=false; [ $a = true ] && [ $b = true ] && p=true; echo "{\\"pass\\": $p, \\"fix\\": \\"make A and B both show\\", \\"findings\\": [{\\"name\\": \\"A\\", \\"pass\\": $a}, {\\"name\\": \\"B\\", \\"pass\\": $b}]}" > \${out}`;
 

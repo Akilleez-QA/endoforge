@@ -1,4 +1,3 @@
-// Shared scratch-repo setup for the conductor tests: fake logins, a git repo, a staged and confirmed job.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -18,8 +17,6 @@ export function scratch(tmp, workerScript) {
   Object.assign(process.env, { HOME: home, ENDOFORGE_NOTIFY: 'none', ENDOFORGE_JOBS: path.join(tmp, 'none'), ENDOFORGE_VOLATILE: '/nonexistent-volatile', WORKER_STATE_DIR: path.join(tmp, 'workers') });
   for (const k of Object.keys(process.env)) if (k.startsWith('CODEX_POOL_')) delete process.env[k];
 
-  // The stub worker: finds its owned file in the compiled prompt; "bad" → good; "breaks" → a syntax error the first
-  // time, fixed once its prompt carries the gate's error; "stuck" → always broken.
   const worker = path.join(tmp, 'worker.sh');
   fs.writeFileSync(worker, workerScript ?? `#!/bin/bash
   for a in "$@"; do case "$a" in *READY*) echo READY; exit 0;; *"You own ONLY"*) brief="$a";; esac; done

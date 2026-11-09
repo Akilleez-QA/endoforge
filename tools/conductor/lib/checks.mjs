@@ -1,21 +1,3 @@
-// Per-atom streaming checks: after an atom's change passes the collect gate, produce ONLY its slice and run ITS
-// checks, then freeze it or relaunch it at once with the findings. No barrier: each atom climbs on its own. The tool
-// never knows what a check measures; checks are data in the manifest:
-//
-// conductor.slice.command  command (string or argv) that produces one atom's slice in ${out}; ${atom}, ${repo}, ${files}
-// conductor.checks         [{ id, atoms?, … }] in one of three forms:
-//   { run }                        pass is exit 0
-//   { run, json: true }            pass is the result file's `pass`; `fix` and `findings` (judged items:
-//                                  { name, pass } or { name, score }, passing at score ≥ itemPass, default 1) go into
-//                                  the next prompt
-//   { measure, target, tolerance } an observable outcome, measured (U2): the command prints a number; pass is
-//                                  |value − target| ≤ tolerance. Measure the outcome, not the input.
-//   Vars: ${input} the slice dir, ${out} the JSON result path, ${atom}, ${files}, ${repo}, ${rubric} (see U5).
-// U5 stable measures: a check that returns judged items freezes its item list on first use (rubric-<check>.json) and
-//   must re-score exactly those items; a changed list, or two runs that disagree (noiseRuns: 2), mark the check
-//   unstable: it is not acted on, and the coordinator is told.
-// U6 per-item ratchet: items that passed before are a keep-list; the result says which regressed and which improved.
-// Typed errors: 75 waits; 78 stops the job; a check that cannot run is "not scored".
 import fs from 'node:fs';
 import path from 'node:path';
 import { runTypedAsync, StopError } from '../../lib/errors.mjs';
@@ -32,7 +14,6 @@ function readRubric(f) {
   try { raw = fs.readFileSync(f, 'utf8'); } catch (e) { return e.code === 'ENOENT' ? null : { unreadable: e.message }; }
   try { const r = JSON.parse(raw); return Array.isArray(r?.items) ? r : { unreadable: 'it has no item list' }; } catch (e) { return { unreadable: e.message }; }
 }
-/** Judged items as { name: true|false }; items without a verdict (no pass, no numeric score) are left out. */
 export function items(findings, itemPass = 1) {
   const out = {};
   for (const f of findings ?? []) {
@@ -64,10 +45,6 @@ async function runOnce(k, vars, wait) {
   return { pass: j.pass, fix: j.fix ?? null, findings: j.findings ?? j.elements ?? [] };
 }
 
-/** Produce the atom's slice, run its checks, and return { pass, items, regressed, improved } | { pass: false, feedback, … }
- *  | { unscored, why, unstable? }. The atom's last items per check are its keep-list. */
-/** The checks for one atom: conductor.checks that name it (or name no atoms); without any, the runnable acceptance
- *  checks of the criteria the atom lists, so an atom is never frozen with its own checks unrun. */
 export function atomChecks(job, id) {
   const configured = (job.conductor?.checks ?? []).filter((k) => !k.atoms || k.atoms.includes(id));
   if (configured.length) return configured;

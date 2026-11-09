@@ -1,16 +1,4 @@
 #!/usr/bin/env node
-// endoforge conduct <job.json>            start the job's Conductor as a systemd user service (heavy.slice, restarts on
-//                                        failure, resumes from <jobdir>/conductor/state.json)
-// conduct.mjs run <job.json> [--tick S] [--max-ticks N]   the daemon in the foreground (what the service runs)
-// conduct.mjs unit <job.json> [--dry-run]
-// conduct.mjs status|go|lock|pause|resume|budget|stop <job.json> …   also as `endoforge job <command>`
-//   go     --sha <card sha> --by <user> --words "<their words>"      the user's go on the staged card
-//   lock   <atom> --by <user> --words "<their words>"                a taste lock
-//   budget [--launches N] [--iterations N] [--by … --words …]        raising it is spend: the user's words
-//   stop   [--by <who>] [--why <text>]
-//   adopt  <new job.json> --map <adopt-map.json> --legacy <manifest> --loop-state <loop.json> --lanes <dir> --logs <dir> --repo <dir>
-//          --notes <NOTES.md> --deadline <ISO> [--atoms A,B] [--checks checks.json] [--slice cmd] [--baseline file]
-//   patch  <patch.json>   the coordinator's reply to a NEEDS-COORDINATOR packet (lib/escalate.mjs); goes through the gates
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
@@ -22,11 +10,25 @@ import { loadState } from '../lib/state.mjs';
 import { emit } from '../../job/lib/events.mjs';
 
 const HERE = fileURLToPath(import.meta.url);
+const USAGE = [
+  "endoforge conduct <job.json>            start the job's Conductor as a systemd user service (heavy.slice, restarts on",
+  "                                       failure, resumes from <jobdir>/conductor/state.json)",
+  "conduct.mjs run <job.json> [--tick S] [--max-ticks N]   the daemon in the foreground (what the service runs)",
+  "conduct.mjs unit <job.json> [--dry-run]",
+  "conduct.mjs status|go|lock|pause|resume|budget|stop <job.json> …   also as `endoforge job <command>`",
+  "  go     --sha <card sha> --by <user> --words \"<their words>\"      the user's go on the staged card",
+  "  lock   <atom> --by <user> --words \"<their words>\"                a taste lock",
+  "  budget [--launches N] [--iterations N] [--by … --words …]        raising it is spend: the user's words",
+  "  stop   [--by <who>] [--why <text>]",
+  "  adopt  <new job.json> --map <adopt-map.json> --legacy <manifest> --loop-state <loop.json> --lanes <dir> --logs <dir> --repo <dir>",
+  "         --notes <NOTES.md> --deadline <ISO> [--atoms A,B] [--checks checks.json] [--slice cmd] [--baseline file]",
+  "  patch  <patch.json>   the coordinator's reply to a NEEDS-COORDINATOR packet (lib/escalate.mjs); goes through the gates",
+].join('\n');
 export async function main(argv) {
   const [cmd, file, ...rest] = argv;
   const flag = (k) => { const i = rest.indexOf(k); return i < 0 ? undefined : rest[i + 1]; };
   const o = { by: flag('--by'), words: flag('--words'), via: flag('--via'), sha: flag('--sha'), why: flag('--why'), launches: flag('--launches'), iterations: flag('--iterations') };
-  if (!file) { console.error(fs.readFileSync(HERE, 'utf8').split('\n').slice(1, 15).join('\n')); return 2; }
+  if (!file) { console.error(USAGE); return 2; }
   const out = (s) => process.stdout.write(s.endsWith('\n') ? s : s + '\n');
   if (cmd === 'adopt') {
     const { adopt } = await import('../lib/adopt.mjs');

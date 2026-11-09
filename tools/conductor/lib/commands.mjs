@@ -1,6 +1,3 @@
-// The user's and the coordinator's handles on a running job: status | go | lock | pause | resume | budget | stop.
-// Each command changes the durable state under its lock; the daemon reads it every tick. Authority commands (go,
-// lock, a budget raise) need the user's own words, directly; a relayed one is refused (I1, I11).
 import fs from 'node:fs';
 import { loadState, updateState, transition, PHASES } from './state.mjs';
 import { emit, canFire, readEvents, renderStatus } from '../../job/lib/events.mjs';
@@ -25,7 +22,6 @@ export function status(job, file) {
   return L.join('\n') + '\n\n' + renderStatus(job, readEvents(job, file));
 }
 
-/** The user's go on the staged card: records the confirmation, then moves staged → go. */
 export function go(job, file, o) {
   direct(o);
   const full = cardHash(job);
@@ -38,7 +34,6 @@ export function go(job, file, o) {
   return updateState(job, file, (s) => { s.awaitingGo = null; if (s.phase === 'staged') transition(s, job, 'go', `go from ${o.by}: ${o.words}`); });
 }
 
-/** A human taste lock on one atom: it is settled and never relaunched. */
 export function lock(job, file, atom, o) {
   direct(o);
   const s = updateState(job, file, (st) => {
@@ -52,7 +47,6 @@ export function lock(job, file, atom, o) {
 export const pause = (job, file, why = 'paused') => updateState(job, file, (s) => { s.paused = { at: new Date().toISOString(), why }; });
 export const resume = (job, file) => updateState(job, file, (s) => { s.paused = false; });
 
-/** View or change the budget. Raising it is spend, so it needs the user's words; lowering it does not. */
 export function budget(job, file, o = {}) {
   return updateState(job, file, (s) => {
     for (const [k, key] of [['launches', 'maxLaunches'], ['iterations', 'maxIterations']]) {
@@ -65,7 +59,6 @@ export function budget(job, file, o = {}) {
   });
 }
 
-/** Stop the job: the daemon stops its lanes and ends in done. */
 export function stop(job, file, o = {}) {
   const s = updateState(job, file, (st) => { st.stopped = { by: o.by ?? 'unknown', why: o.why ?? 'stopped', at: new Date().toISOString() }; });
   return s;

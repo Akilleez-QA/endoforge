@@ -1,9 +1,3 @@
-// The collect gate (P-B: check each change the moment it lands, before anything builds on it). One writer on the
-// integration branch (an exclusive lock around the whole apply-gate-commit, from any caller). Per atom:
-//   diff its OWN files from its lane base (new files included) → apply → run its gate → commit,
-//   or revert ONLY this atom and write the exact error to gates/<atom>-i<iter>.gate.json for its next prompt.
-// The gate is the atom's `gate` (or conductor.gate), run in the integration repo with ${atom} expanded; a busy gate
-// (75) waits, 78 stops the job.
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { withLock, writeJSONAtomic } from '../../lib/lock.mjs';
@@ -49,14 +43,12 @@ export function collectAtom(job, file, st, id, { waitMs = 600_000 } = {}) {
 
 function record(gf, g) { writeJSONAtomic(gf, { ...g, at: new Date().toISOString() }); return { status: g.ok ? 'applied' : 'reverted', ...g }; }
 
-/** Undo ONLY this atom's files in the integration repo: restore tracked ones, delete ones it created. */
 function revert(job, files, head) {
   git(job.repo, 'reset', '-q', head, '--', ...files);
   for (const f of files) if (git(job.repo, 'ls-files', '--error-unmatch', '--', f).status === 0) git(job.repo, 'checkout', head, '--', f);
   git(job.repo, 'clean', '-fdq', '--', ...files);                 // files and folders this atom created
 }
 
-/** The feedback a reverted atom carries into its next prompt. */
 export function gateFeedback(g) {
   if (!g || g.ok) return null;
   return `Your last change was reverted at the collect gate (${g.stage}${g.command ? `: ${g.command}` : ''}). Fix this error first:\n${g.error.trim()}`;

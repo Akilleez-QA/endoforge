@@ -1,7 +1,3 @@
-// Phase handlers: the mechanism the daemon runs: go (the gates to Orchestrate), smoke, fired (compiled prompts on
-// every login, under the dial and the budget) and streaming. Streaming has no barrier: each landed atom runs its own
-// collect gate → slice command → checks → freeze or relaunch as a task, several at once (conductor.checkConcurrency),
-// while the daemon keeps launching and collecting the others. A daemon restart resumes atoms mid-check.
 import { spawnSync } from 'node:child_process';
 import { validate } from '../../job/lib/validate.mjs';
 import { health } from '../../job/lib/load.mjs';
@@ -17,11 +13,8 @@ import { checkAtom as sliceCheck } from './checks.mjs';
 
 const promptFor = (job, id, st, note) => compileAtom(job, id, { lessons: retrieveLessons(job), round: st.iter + 1, note: note ?? st.feedback ?? '' });
 
-/** The images an atom's worker is given: the thumbnails of the references that govern it. */
 const imagesFor = (job, id) => { const a = job.atoms.find((x) => x.id === id); return (job.references ?? []).filter((r) => (a.references ?? []).includes(r.id)).flatMap((r) => r.thumbnails ?? []); };
 
-/** Start pending and relaunch-ready atoms while slots and budget allow. The plan is made under the state lock; the
- *  slow part (worktree, spawn) runs outside it, and each launch is recorded under the lock as it happens. */
 function launchPending(ctx) {
   const { job, file } = ctx, started = [];
   const plan = ctx.update((s) => assignLogins(job, s));
@@ -38,7 +31,6 @@ function launchPending(ctx) {
   return started;
 }
 
-/** One atom has landed: run the collect gate, then its checks (stage 3), then freeze it or relaunch it. */
 export async function settleAtom(ctx, id, checkAtom = sliceCheck) {
   const { job, file } = ctx, st = ctx.update(() => {}).atoms[id], exit = laneExit(st);
   if (exit !== 0) return relaunchOrEscalate(ctx, id, exit === LOST ? `the worker ended with no recorded exit code; see ${st.lane.log}` : `the worker exited ${exit}; see ${st.lane.log}`, { stage: 'worker', exit });
@@ -49,8 +41,6 @@ export async function settleAtom(ctx, id, checkAtom = sliceCheck) {
   return judge(ctx, id, checkAtom);
 }
 
-/** Run the atom's checks and act on the verdict. Also resumes an atom that was mid-check when the daemon stopped. */
-/** The current commit of each atom this one depends on (U4: a check runs against the current upstream). */
 const upstream = (job, s, id) => Object.fromEntries(((job.atoms ?? []).find((a) => a.id === id)?.dependsOn ?? []).map((d) => [d, s.atoms[d]?.sha ?? null]));
 
 export async function judge(ctx, id, checkAtom = sliceCheck) {
@@ -68,7 +58,6 @@ export async function judge(ctx, id, checkAtom = sliceCheck) {
     emit(job, file, { kind: 'GATE', summary: `${id} frozen at iteration ${st.iter}: ${verdict.why}`, data: { atom: id, iter: st.iter, pass: true } });
     return;
   }
-  // U6: a change that regresses passing items and improves none is rejected; its commit is reverted.
   let feedback = verdict.feedback;
   if (verdict.regressed?.length && !verdict.improved?.length && g.sha) {
     const r = withLock(collectLock(job), () => spawnSync('git', ['-C', job.repo, 'revert', '--no-edit', g.sha], { encoding: 'utf8' }));
@@ -78,7 +67,6 @@ export async function judge(ctx, id, checkAtom = sliceCheck) {
   return relaunchOrEscalate(ctx, id, feedback, { stage: 'check', findings: verdict.findings, failing: failingSignature(verdict) });
 }
 
-/** What failed, independent of wording that changes run to run: check ids and failing item names. */
 const failingSignature = (v) => (v.findings ?? []).map((f) => `${f.id}:${Object.entries(f.items ?? {}).filter(([, p]) => !p).map(([n]) => n).sort().join('|')}`).sort().join(';');
 
 function relaunchOrEscalate(ctx, id, feedback, evidence) {
@@ -93,7 +81,6 @@ function relaunchOrEscalate(ctx, id, feedback, evidence) {
     escalate(job, file, { to: 'coordinator', key: `atom:${id}:i${a.iter}`, atom: id, why: a.repeated ? `failed the same way twice (${sig}): ${a.last}` : `still failing after ${a.iter} iterations: ${a.last}`, packet: { atom: id, iter: a.iter, history: a.history, feedback } });
 }
 
-/** Atoms being collected or checked by this daemon process (in memory; a restart resumes them from their status). */
 const inFlight = new Map();
 function start(ctx, id, task) {
   inFlight.set(id, task().catch((e) => {
@@ -128,7 +115,6 @@ export const handlers = {
       if (st.status === 'launched' && laneExit(st) != null) start(ctx, id, () => settleAtom(ctx, id));
       else if (st.status === 'checking' || (st.status === 'landed' && (st.unscored ?? 0) < (ctx.job.conductor?.maxUnscored ?? 3))) start(ctx, id, () => judge(ctx, id));
       else if (st.status === 'frozen' && st.checkedAgainst && JSON.stringify(upstream(ctx.job, ctx.state, id)) !== JSON.stringify(st.checkedAgainst)) {
-        // U4: an upstream atom has a newer candidate: re-check this one against it
         ctx.update((s) => { s.atoms[id].status = 'checking'; s.atoms[id].last = `re-check: upstream changed (${Object.keys(st.checkedAgainst).join(', ')})`; });
         start(ctx, id, () => judge(ctx, id));
       }
