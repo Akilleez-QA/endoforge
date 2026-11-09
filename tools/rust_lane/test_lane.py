@@ -1,6 +1,7 @@
 import json
 import os
 from pathlib import Path
+import shutil
 import struct
 import subprocess
 import sys
@@ -9,7 +10,7 @@ import unittest
 from unittest.mock import patch
 
 from tools.kernel.contract import validate_artifact
-from tools.rust_lane.build import ROOT, build, cargo_home, prefer_checkout_wasm_tools, run, rust_tool
+from tools.rust_lane.build import ROOT, build, cargo_home, fetch_locked, prefer_checkout_wasm_tools, run, rust_tool
 
 WORKCELL_PROBE = """
 import json, sys
@@ -22,6 +23,21 @@ for event, inputs in json.loads(sys.argv[2]):
     rows.append([r["state"].hex(), r["effects"], r["buffer_bytes_read"]])
 print(json.dumps(rows))
 """
+
+
+def node_tool(name, package, *, env_name):
+    configured = os.environ.get(env_name)
+    if configured:
+        return configured
+    local = package / "node_modules/.bin" / name
+    if local.exists():
+        return str(local)
+    found = shutil.which(name)
+    if found:
+        return found
+    subprocess.run(["npm", "ci", "--ignore-scripts", "--no-audit", "--no-fund", "--prefix", str(package)],
+                   check=True, capture_output=True, text=True, timeout=300)
+    return str(local)
 
 
 class ToolDiscoveryTests(unittest.TestCase):
@@ -61,6 +77,65 @@ class ToolDiscoveryTests(unittest.TestCase):
                 with patch.dict(os.environ, {"WASM_TOOLS": "/synthetic/wasm-tools"}):
                     prefer_checkout_wasm_tools()
                     self.assertEqual(os.environ["WASM_TOOLS"], "/synthetic/wasm-tools")
+
+
+class NodeToolTests(unittest.TestCase):
+    def setUp(self):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        self.package = Path(directory.name)
+        self.local = self.package / "node_modules/.bin/jco"
+        self.environment = {k: v for k, v in os.environ.items() if k != "JCO"}
+
+    def resolve(self, *, which=None):
+        with patch.dict(os.environ, self.environment, clear=True), \
+                patch("tools.rust_lane.test_lane.shutil.which", return_value=which), \
+                patch("tools.rust_lane.test_lane.subprocess.run") as ran:
+            return node_tool("jco", self.package, env_name="JCO"), ran
+
+    def test_explicit_path_wins(self):
+        self.environment["JCO"] = "/synthetic/jco"
+        found, ran = self.resolve(which="/synthetic/path/jco")
+        self.assertEqual(found, "/synthetic/jco")
+        ran.assert_not_called()
+
+    def test_checkout_install_beats_path(self):
+        self.local.parent.mkdir(parents=True)
+        self.local.touch()
+        found, ran = self.resolve(which="/synthetic/path/jco")
+        self.assertEqual(found, str(self.local))
+        ran.assert_not_called()
+
+    def test_path_used_before_any_install(self):
+        found, ran = self.resolve(which="/synthetic/path/jco")
+        self.assertEqual(found, "/synthetic/path/jco")
+        ran.assert_not_called()
+
+    def test_missing_tool_installed_from_the_lockfile_without_scripts(self):
+        found, ran = self.resolve()
+        self.assertEqual(found, str(self.local))
+        self.assertEqual(ran.call_args.args[0][:3], ["npm", "ci", "--ignore-scripts"])
+        self.assertEqual(ran.call_args.args[0][-1], str(self.package))
+
+
+class CrateFetchTests(unittest.TestCase):
+    def test_primed_cache_stays_offline(self):
+        with patch("tools.rust_lane.build.run", return_value=b"") as ran:
+            fetch_locked("/synthetic/cargo", {}, "/synthetic/crate")
+        self.assertEqual([call.args[0] for call in ran.call_args_list],
+                         [["/synthetic/cargo", "fetch", "--frozen"]])
+
+    def test_empty_cache_fetches_only_what_the_lock_pins(self):
+        with patch("tools.rust_lane.build.run", side_effect=[ValueError("offline"), b""]) as ran:
+            fetch_locked("/synthetic/cargo", {}, "/synthetic/crate")
+        self.assertEqual([call.args[0] for call in ran.call_args_list],
+                         [["/synthetic/cargo", "fetch", "--frozen"],
+                          ["/synthetic/cargo", "fetch", "--locked"]])
+
+    def test_failed_fetch_is_reported(self):
+        with patch("tools.rust_lane.build.run", side_effect=[ValueError("offline"), ValueError("no route")]):
+            with self.assertRaisesRegex(ValueError, "no route"):
+                fetch_locked("/synthetic/cargo", {}, "/synthetic/crate")
 
 
 class RustLaneTests(unittest.TestCase):
@@ -107,7 +182,8 @@ class RustLaneTests(unittest.TestCase):
         def tool(command):
             return subprocess.run(command, check=True, capture_output=True, text=True, timeout=600)
 
-        jco, asc = os.environ.get("JCO", "jco"), os.environ.get("ASC", "asc")
+        jco = node_tool("jco", ROOT, env_name="JCO")
+        asc = node_tool("asc", ROOT, env_name="ASC")
         self.assertEqual(tool([jco, "--version"]).stdout.strip(), "1.16.1")
         self.assertEqual(tool([asc, "--version"]).stdout.strip(), "Version 0.28.9")
         probe = ROOT.parents[1] / "experiments/P-06-bounded-equivalence"

@@ -20,7 +20,8 @@ pointers.
 
 The build key covers the source, the Cargo manifest and lock, the WIT, the target, the flags, the complete compiler
 version, the compiler, Cargo and `wasm-tools` binary hashes, and the recipe. Every build runs in a fresh directory with
-a clean environment, offline and locked, with one Cargo job and CPU, one build-dependency codegen unit, 4 GiB
+a clean environment. Crates come from the Cargo cache; only if some are missing does the build download them, limited
+to the versions and checksums `Cargo.lock` pins. The compile itself is offline and locked, with one Cargo job and CPU, one build-dependency codegen unit, 4 GiB
 address-space and 120 CPU-second per-process limits, and a 180-second process-group timeout. The result is packaged
 with `wasm-tools` 1.262.0 and admitted only through the kernel contract's exact interface validator. The record binds
 the component identity and says `qualification: required`; no earlier qualification carries over.
@@ -32,10 +33,13 @@ tests jco 1.16.1 and AssemblyScript 0.28.9.
 
 ```sh
 make tools                                                        # pinned wasm-tools in .tools/
-cargo fetch --locked --manifest-path tools/rust_lane/Cargo.toml   # the only step that uses the network
 python3 -B -m tools.rust_lane.build NEW_DIRECTORY
-make rust-lane-test                                               # also needs jco and asc, on PATH or in JCO and ASC
+make rust-lane-test
 ```
+
+The tests take `jco` and `asc` from `JCO` and `ASC`, then `tools/rust_lane/node_modules`, then `PATH`, and otherwise
+run `npm ci` without install scripts from this lane's lockfile. The lane locks AssemblyScript 0.28.9, the version P-06
+froze, separately from the newer compiler in `tools/asc`.
 
 The build asks rustup for the real binaries of the pinned toolchain, uses `.tools/bin/wasm-tools` when present, and
 caches crates in `~/.cargo`. Set `RUSTC`, `CARGO`, `WASM_TOOLS` or `CARGO_HOME` to override any of these; `RUSTC` and

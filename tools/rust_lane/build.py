@@ -67,6 +67,13 @@ def prefer_checkout_wasm_tools():
         os.environ["WASM_TOOLS"] = str(local)
 
 
+def fetch_locked(cargo, env, cwd):
+    try:
+        run([str(cargo), "fetch", "--frozen"], env=env, cwd=cwd)
+    except ValueError:
+        run([str(cargo), "fetch", "--locked"], env=env, cwd=cwd)
+
+
 def build(destination):
     destination = Path(destination).resolve()
     prefer_checkout_wasm_tools()
@@ -98,6 +105,7 @@ def build(destination):
     wit.write_bytes(WIT)
     env["RUSTFLAGS"] = FLAGS.format(root=destination)
     env["CARGO_TARGET_DIR"] = str(destination / "target")
+    fetch_locked(cargo, env, crate)
     run([str(cargo), "build", "--frozen", "--release", "--target", TARGET, "--jobs", "1"],
         env=env, cwd=crate)
     core = (destination / "target" / TARGET / "release" / "ef24_kernel.wasm").read_bytes()
