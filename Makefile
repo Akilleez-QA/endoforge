@@ -155,6 +155,7 @@ gap-tools-test:
 lint:
 	$(RUFF) --version
 	$(RUFF) check --output-format=concise .
+	$(PYTHON) -I tools/check_comments.py
 	find . \( -name node_modules -o -name .git -o -name .tools -o -name .test-work \) -prune -o -type f \( -name '*.mjs' -o -name '*.js' -o -name '*.cjs' \) -print0 | xargs -0 -n1 -P4 node --check
 
 define TRACE_RUNNER
