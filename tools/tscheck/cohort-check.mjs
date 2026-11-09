@@ -1,5 +1,3 @@
-// What a contained cohort needs to type check and emit in its own Workers: the preparer sources, each
-// checked against its pin here, and the path and digest of the compiler module the cohort reads once.
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';

@@ -65,15 +65,12 @@ if (isMainThread) {
   };
   const message = error => String(error && error.message || error).slice(0, 512);
   let prepare = null;
-  // A preparer (the type check) runs in this Worker's own realm before the guest's context exists. Its failure
-  // is the attempt's failure but not a verdict on the candidate: it comes back as `failure`, never as a refusal.
   const check = payload => {
     const started = now();
     let out;
     try { out = prepare(payload); } catch (error) { return { failure: { reason: 'checker_error', detail: message(error) }, checkMs: now() - started }; }
     return { out, checkMs: now() - started };
   };
-  // Each run's text goes back as soon as it exists, so a death in a later run doesn't lose an earlier one.
   const runAll = (job, modules) => {
     const started = now();
     for (let index = 0; index < (job.repeat || 1); index++) {
@@ -104,8 +101,6 @@ if (isMainThread) {
     }
     done({ type: 'result', runMs: runAll(job, modules) });
   });
-  // The preparer's sources arrive as text, already checked against their pins by the supervisor, and are imported
-  // in order before the realm is hardened. Each gets the two globals tsrs's WASI shim reads bound at import time.
   const load = async spec => {
     const modules = {};
     for (const { name, text } of spec.sources) {

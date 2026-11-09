@@ -44,7 +44,7 @@ def _run_attempt(root, attempt, job, frozen_input, input_sha, expected_sha, scri
     attempts = root / 'attempts'
     attempts.mkdir(parents=True, exist_ok=True)
     dest = attempts / attempt
-    dest.mkdir()  # exclusive; do not mutate an existing attempt
+    dest.mkdir()
     token = uuid.uuid4().hex
     name = 'endoforge-v1-' + token
     commands = []
@@ -82,13 +82,12 @@ def _run_attempt(root, attempt, job, frozen_input, input_sha, expected_sha, scri
         if sha(frozen_input) != input_sha:
             result['outcome'] = 'input_rejected'
         else:
-            # Copy validated input: no TOCTOU exposure of the caller's mutable file.
             snapshot = dest / 'input.txt'
             if import_regular(frozen_input,snapshot) != input_sha:
                 raise ValueError('input changed while snapshotting')
             snapshot.chmod(0o444)
             result['inputSha256'] = input_sha
-            owned = True  # cleanup by unique name even if create is interrupted
+            owned = True
             created = cmd(['create', '--name', name, '--label', 'endoforge.runtime=v1',
                 '--label', 'endoforge.owner=' + token, '--pull=never', '--network=none', '--read-only', '--user', f'{os.getuid()}:{os.getgid()}',
                 '--cap-drop=ALL', '--security-opt=no-new-privileges', '--cpus=1',
@@ -117,7 +116,6 @@ def _run_attempt(root, attempt, job, frozen_input, input_sha, expected_sha, scri
     except Exception as exc:
         result['error'] = repr(exc)
     finally:
-        # Catchable signals only set a flag; no asynchronous exception can skip cleanup.
         try:
             if owned:
                 probe = cmd(['inspect', name], check=False)
@@ -136,8 +134,6 @@ def _run_attempt(root, attempt, job, frozen_input, input_sha, expected_sha, scri
                     logs = cmd(['logs', name], check=False)
                     (dest / 'stdout.log').write_text(logs.stdout)
                     (dest / 'stderr.log').write_text(logs.stderr)
-                    # tmpfs disappears on stop; export via docker cp is unavailable then.
-                    # The trusted artifact channel is stdout, bounded by log rotation.
                     if result['outcome'] == 'validation_pending':
                         payload = logs.stdout.encode()
                         if not payload:
@@ -181,7 +177,6 @@ def _run_attempt(root, attempt, job, frozen_input, input_sha, expected_sha, scri
                     result['outcome'] = 'duplicate_publication'
         except Exception as exc:
             result.update(outcome='cleanup_failed', cleanupError=repr(exc), cleanupVerified=False)
-            # Last-resort deletion limited to unique owned name.
             if owned:
                 fallback = cmd(['inspect', name], check=False)
                 if fallback.returncode == 0 and json.loads(fallback.stdout)[0].get('Config', {}).get('Labels', {}).get('endoforge.owner') == token:

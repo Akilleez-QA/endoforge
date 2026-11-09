@@ -35,7 +35,6 @@ export async function createProvider(env) {
   return new SpawnClaudeTransport({ configDir: env.ENDOFORGE_SYNTH_CONFIG_DIR, model: env.ENDOFORGE_SYNTH_MODEL || 'sonnet', base: env });
 }
 const isNumber = x => typeof x === 'number' && Number.isFinite(x);
-// M1: closed shape, exports and arities equal the frozen tests' functions.
 function shapeProblems(entry, arity) {
   const problems = [];
   if (!entry || typeof entry.name !== 'string' || !Array.isArray(entry.params) || typeof entry.result !== 'object' || !entry.result) return ['malformed export'];
@@ -49,7 +48,6 @@ function shapeProblems(entry, arity) {
   }
   return problems;
 }
-// Turns one binding into frozen vectors and a qualification receipt. No model, no candidate.
 export async function compileMember(binding, tests) {
   const hash = sha(JSON.stringify(binding)), arities = {};
   for (const t of tests) if (!(t.fn in arities) && Array.isArray(t.args)) arities[t.fn] = t.args.length;
@@ -108,7 +106,6 @@ function declarationOf(entry) {
   const codes = c => (c && typeof c === 'object' && !Array.isArray(c) && Object.keys(c).length ? Object.fromEntries(Object.entries(c).map(([k, v]) => [k, String(v)])) : null);
   return { args: entry.params.map(p => unit(p?.unit)), result: { unit: unit(entry.result.unit), decimals: Number.isInteger(entry.result.decimals) ? entry.result.decimals : null, codes: entry.result.kind === 'code' ? codes(entry.result.codes) : null } };
 }
-// Width 1: one member's qualified checks. Width 2: only what both members agree on.
 export async function combine(members) {
   const checks = { vectors: [], ranges: [], codes: [], monotone: [], glue: [] };
   const [a, b] = members, fns = Object.keys(a.exports);
@@ -179,7 +176,6 @@ export function residualText(evaluator) {
   for (const m of evaluator.checks.monotone) lines.push(`${m.fn}: result ${m.direction === 'increasing' ? 'rises' : 'falls'} with argument ${m.param + 1}.`);
   return lines.join('\n');
 }
-// Starts the need-alone step immediately; finish() binds, compiles, confirms and writes the frozen file.
 export function begin({ need, env = process.env, provider: given = null, confirm = null, suspect = null, cell: cellOptions = {} }) {
   const width = env.ENDOFORGE_SYNTH_WIDTH === '2' ? 2 : 1, timings = { needMs: null, bindMs: null, compileMs: null, evaluateMs: null }, usage = { tokens: 0 };
   const providerReady = given ? Promise.resolve(given) : createProvider(env);

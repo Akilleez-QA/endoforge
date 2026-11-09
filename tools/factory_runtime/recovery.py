@@ -87,7 +87,6 @@ def _reconcile(root, attempt, fence):
             (dest/'stderr.log').write_text(logs.stderr)
             cmd(['rm',name])
         else:
-            # Distinguish absence from daemon failure; never call either cleanup success blindly.
             if cmd(['ps','-aq','--filter','name=^/'+name+'$']).stdout.strip():
                 raise RuntimeError('inspect failed but container exists')
         if cmd(['ps','-aq','--filter','name=^/'+name+'$']).stdout.strip():
@@ -100,7 +99,6 @@ def _reconcile(root, attempt, fence):
             if digest!=j['expectedSha256']: raise ValueError('published digest mismatch')
             result.update(outcome='publication_recovered',published=True,artifactSha256=digest)
         else:
-            # Never promote logs/staging after an uncertain crash.
             result['outcome']='interrupted_reconciled'
     except Exception as exc:
         result['error']=repr(exc)

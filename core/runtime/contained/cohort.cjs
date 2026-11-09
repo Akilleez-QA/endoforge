@@ -5,8 +5,6 @@ let config, cellSource, wasm = null, stopping = false, shedUntil = 0, holdTimer 
 const idle = [], live = new Set(), pending = [];
 const checkers = { idle: [], live: new Set(), queue: [] };
 const refusalText = (reason, detail) => JSON.stringify({ state: 'refused', reason, ...(detail ? { detail } : {}) });
-// A job marked `attempt` is one candidate: type check and emit, then run `repeat` times. Its pieces stay here so
-// the supervisor gets one result for it, and a Worker lost part-way costs that attempt alone.
 const layout = () => config.prepare ? config.prepare.layout : null;
 const boot = (role = 'guest') => {
   const flag = new SharedArrayBuffer(4), channel = new MessageChannel();
@@ -169,7 +167,6 @@ const onExit = cell => {
       clear(cell);
       cell.job = null;
       job.texts.push(text);
-      // The attempt's remaining runs go to another Worker, as its second run job did when the supervisor sent two.
       if (job.texts.length < job.runs) { job.repeat = job.runs - job.texts.length; pending.unshift(job); } else finishAttempt(null, job);
     }
   }
@@ -195,7 +192,6 @@ const pump = () => {
     if (cell.ready) deliver(cell);
   }
 };
-// Sibling layout: checker Workers in this process type check and emit; the guest Workers above run the result.
 const onChecker = (cell, message) => {
   if (message.held) cell.held = message.held;
   if (message.type === 'shed') {
@@ -242,8 +238,6 @@ const pumpChecks = () => {
     cell.worker.postMessage({ prepare: job.prepare });
   }
 };
-// The compiler module is read once, from the one path this process may read, checked against its pin and
-// compiled here; every Worker that checks gets the same compiled module.
 const loadWasm = specs => {
   const { readFileSync } = require('node:fs'), { createHash } = require('node:crypto');
   const modules = {};

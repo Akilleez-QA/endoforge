@@ -105,4 +105,4 @@ if __name__ == '__main__':
         sys.exit(main(sys.argv[1:]))
     except Exception as exc:
         print(f'WARNING: job-locks failed ({exc}); locked decisions of active jobs may be missing.')
-        sys.exit(0)                                        # a hook must never break session start
+        sys.exit(0)

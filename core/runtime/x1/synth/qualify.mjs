@@ -1,12 +1,10 @@
 import { createHash } from 'node:crypto';
 import { alike, relative, same } from './invariants.mjs';
 import { laidOut, layoutOf } from './layout.mjs';
-// Fixed meta-gates for a synthesized evaluator. None of them sees a candidate.
 export const discrimination = 0.8;
 const swaps = [[/^<=$/, '<'], [/^<$/, '<='], [/^>=$/, '>'], [/^>$/, '>='], [/^\+$/, '-'], [/^-$/, '+'], [/^\*$/, '/'], [/^\/$/, '*'], [/^&&$/, '||'], [/^\|\|$/, '&&'],
   [/^Math\.round$/, 'Math.floor'], [/^Math\.floor$/, 'Math.ceil'], [/^Math\.ceil$/, 'Math.floor'], [/^Math\.min$/, 'Math.max'], [/^Math\.max$/, 'Math.min'], [/^Math\.trunc$/, 'Math.round']];
 const lexer = /("(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`(?:[^`\\]|\\.)*`|\/\/[^\n]*|\/\*[\s\S]*?\*\/|Math\.[a-z]+|\d+(?:\.\d+)?(?:e[-+]?\d+)?|<=|>=|&&|\|\||[-+*/<>]|[A-Za-z_$][\w$]*|\s+|.)/g;
-// Seeded faults in the reference: constant shift, comparison flip, operator swap, rounding swap, argument swap.
 export function mutants(source, cap = 40) {
   const parts = source.match(lexer) ?? [], out = [];
   parts.forEach((part, i) => {
@@ -21,7 +19,6 @@ export function mutants(source, cap = 40) {
   return order.slice(0, cap).map(([, m]) => m);
 }
 const outcome = r => ('value' in r ? { value: r.value } : { throws: true });
-// M3: the reference reproduces every frozen test of this export.
 export function anchorProblems(tests, results, layout = null) {
   const problems = [];
   tests.forEach((test, i) => {
@@ -42,7 +39,6 @@ export function anchorProblems(tests, results, layout = null) {
   });
   return problems;
 }
-// M4: keep only declarations the reference itself satisfies.
 export function selfConsistent(entry, calls, results, sweeps) {
   const kept = { range: null, monotone: [], codes: null }, dropped = [];
   const values = results.map((r, i) => [calls[i], r]).filter(([, r]) => 'value' in r);
@@ -67,7 +63,6 @@ export function selfConsistent(entry, calls, results, sweeps) {
   if (outside >= 0) dropped.push(`domain: reference returns outside the declared domain at (${calls[outside].args})`);
   return { kept, dropped };
 }
-// M5: of the reference's seeded faults that a denser sample can tell apart, the frozen vectors must reject at least 80%.
 export function discriminationScore(reference, mutantRuns, frozenCount) {
   let distinguishable = 0, rejected = 0;
   for (const run of mutantRuns) {

@@ -1,5 +1,3 @@
-// The check itself, with no file system or package access, so the same code runs on the supervisor
-// (checker.mjs) and inside a contained cohort Worker (cohort-check.mjs), where it is imported from text.
 import { createHash } from 'node:crypto';
 
 const now = performance.now.bind(performance);

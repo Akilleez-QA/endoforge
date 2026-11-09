@@ -1,6 +1,4 @@
 import { execFile } from 'node:child_process';
-// Runs model-written reference functions in a permission-restricted child with no
-// file, network or child-process access. Each variant gets a fresh context.
 const runner = `const input = JSON.parse(require('node:fs').readFileSync(0, 'utf8'));
 const vm = require('node:vm');
 const out = input.variants.map(code => {

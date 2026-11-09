@@ -68,11 +68,8 @@ class Handler(socketserver.BaseRequestHandler):
    if host not in self.server.allow or port!='443':raise ValueError('destination denied')
    addresses=socket.getaddrinfo(host,443,type=socket.SOCK_STREAM)
    if not addresses or any(not ipaddress.ip_address(row[4][0]).is_global for row in addresses):raise ValueError('non-public DNS answer')
-   # IPv4-only upstream avoids translation/tunneling address ranges. Direct
-   # IPv6 in the worker is unroutable; IPv6 CONNECT literals are not allowlisted.
    addresses=[row for row in addresses if row[0]==socket.AF_INET]
    if not addresses:raise ValueError('no public IPv4 upstream')
-   # Connect using the already checked numeric result, never resolve a second time.
    fam,typ,proto,_,addr=addresses[0];up=socket.socket(fam,typ,proto);up.settimeout(15);up.connect(addr)
    self.server.record({'host':host,'decision':'allowed','ip':addr[0]})
    self.request.sendall(b'HTTP/1.1 200 Connection Established\r\n\r\n')
@@ -119,8 +116,6 @@ def worker_command(home,work,proxy_socket,command,readonly=None,tools=('node','c
   validate_mount_tree(source)
   b+=['--ro-bind',str(source),target]
  for key,value in {'HOME':'/home/worker','PATH':':'.join(map(str,[tool.parent for tool in resolved]+['/usr/bin','/bin'])),'LANG':'C.UTF-8','HTTPS_PROXY':'http://127.0.0.1:18080','HTTP_PROXY':'http://127.0.0.1:18080','ALL_PROXY':'http://127.0.0.1:18080','NO_PROXY':''}.items():b+=['--setenv',key,value]
- # Unshare leaves loopback down. Raising only loopback needs namespaced cap_net_admin;
- # bwrap drops caps, so unshare net wrapper raises it before inner bwrap.
  b.remove('--unshare-net');b.remove('--unshare-user');b+=['--remount-ro','/']
  import shlex
  inner='set -e; python /bridge.py & bridge_pid=$!; i=0; while ! test -f /tmp/bridge-ready; do kill -0 "$bridge_pid"; i=$((i+1)); test "$i" -lt 200; sleep .01; done; exec '+shlex.join(command)
@@ -144,7 +139,6 @@ def run_bounded(command,timeout=180,output_limit=1048576,preexec_fn=None):
   try:os.killpg(p.pid,signal.SIGKILL)
   except ProcessLookupError:pass
  p.wait(timeout=10);sel.close();p.stdout.close();p.stderr.close()
- # Keep at most the declared receipt payload bytes.
  left=output_limit;out={}
  for key in ['stdout','stderr']:
   out[key]=bytes(data[key][:left]).decode(errors='replace');left-=len(data[key][:left])

@@ -14,7 +14,6 @@ const compareRuns = async (runner, job) => {
   return { ...first, comparedRuns: 2 };
 };
 
-// `readPaths` are the only files the cohort may read: the pinned modules a preparer compiles once.
 export function cohortArguments({ cohortSource = source('./cohort.cjs'), readPaths = [] } = {}) {
   return ['--permission', '--allow-worker', ...readPaths.map(path => `--allow-fs-read=${path}`), '--no-addons', '--disallow-code-generation-from-strings', '--no-warnings', '--no-experimental-websocket', '--max-old-space-size=64', '-e', cohortSource];
 }
@@ -65,7 +64,6 @@ export function createContainedRunner({ width = 1, maxWidth = width, affinity = 
     if (cohort === target) { cohort = null; starting = null; }
     const fatal = target.tail.split('\n').find(line => /FATAL|Fatal/.test(line))?.slice(0, 160);
     const attributed = maxWidth === 1 ? { status: 'refused', reason: fatal && /memory/i.test(fatal) ? 'heap' : reason === 'cohort_rss' ? 'memory' : reason === 'deadline_stuck' || reason === 'watchdog' ? 'deadline' : 'process_exit' } : { status: 'outcome_unknown', reason };
-    // A checked attempt may have been checking rather than running when the cohort died, so it is never attributed.
     for (const entry of [...inflight.values()]) if (entry.owner === target) settle(entry, { ...(entry.attempt ? { status: 'outcome_unknown', reason } : attributed), detail: fatal || `cohort lost: ${reason}` });
     if (!closed) { start().catch(() => {}); pump(); }
   };
@@ -185,9 +183,6 @@ export function createContainedRunner({ width = 1, maxWidth = width, affinity = 
       });
     },
     runTwice(job) { return compareRuns(this, job); },
-    // One attempt, one handoff in and one result out: the cohort's preparer checks and emits from `prepare`, then
-    // the emitted modules plus `modules` run `runs` times in fresh guest contexts. Resolves to status `checked` with
-    // the preparer's report and each run's result, or `outcome_unknown` when the check itself failed or was lost.
     runChecked({ prepare: payload, modules = {}, entry, exportName = 'main', input = null, contract, deadlineMs: jobDeadline = deadlineMs, runs = 2, ports }) {
       if (closed) return Promise.reject(new Error('runner closed'));
       if (!preparer) return Promise.reject(new Error('runner has no preparer'));
@@ -229,8 +224,6 @@ function dumpOptions(options) {
   if (![merged.floor + 1, merged.holdMs, merged.intervalMs, merged.settleMs].every(positive)) throw new TypeError('dump list floor, holdMs, intervalMs and settleMs must be non-negative and positive integers');
   return merged;
 }
-// A preparer runs in the cohort before the guest: `fused` in the guest's own Worker, `sibling` in `count` checker
-// Workers of the same process. `memoryMb` is what one preparation may hold outside the V8 heap.
 function preparerConfig({ layout = 'sibling', count, resourceLimits, checkDeadlineMs = 10000, memoryMb = 1024, sources, entry, wasm = [], config = {} }, width) {
   if (!['fused', 'sibling'].includes(layout)) throw new TypeError(`unknown preparer layout ${layout}`);
   if (!Array.isArray(sources) || !sources.every(item => typeof item?.name === 'string' && typeof item.text === 'string') || !sources.some(item => item.name === entry)) throw new TypeError('preparer needs sources including its entry');

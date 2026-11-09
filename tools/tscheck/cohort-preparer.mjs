@@ -1,6 +1,3 @@
-// Runs inside a contained cohort Worker. The cohort imports this, check-core.mjs and the pinned tsrs core.js
-// from text, passes the compiler module it compiled once from the pinned bytes, and calls the returned
-// function with each attempt's project before running what it emits. Nothing here reads a file.
 export const DIAGNOSTICS_KEPT = 5;
 
 export function createPreparer({ modules, wasm, config }) {

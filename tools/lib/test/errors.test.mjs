@@ -1,5 +1,3 @@
-// The shared error taxonomy: 75 waits and retries with backoff, 78 stops at once, other failures pass through,
-// and a gate that could not run is "unscored". Also the fan-out evals runner, retrofitted.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -13,7 +11,6 @@ const HERE = path.dirname(fileURLToPath(import.meta.url)), RUN = path.join(HERE,
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'errors-test-'));
 let fails = 0;
 const test = (name, fn) => { try { fn(); console.log(`PASS ${name}`); } catch (e) { fails++; console.log(`FAIL ${name}: ${e.message}`); } };
-// A command that is busy (75) for its first N calls, then runs `then`.
 const busy = (name, n, then) => { const c = path.join(tmp, `${name}.count`), p = path.join(tmp, `${name}.sh`);
   fs.writeFileSync(p, `#!/bin/sh\nn=$(cat ${c} 2>/dev/null || echo 0); n=$((n+1)); echo $n > ${c}\n[ $n -le ${n} ] && exit 75\n${then}\n`, { mode: 0o755 }); return p; };
 

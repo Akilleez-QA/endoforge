@@ -221,7 +221,6 @@ class ModelJournal:
         self.check();row=self.read(attempt)
         if alive(row['controller']):raise RuntimeError('controller live; reconciliation forbidden')
         if row['state']not in {'planned','running','unknown','passed','failed','timeout','cancelled'}:raise RuntimeError('invalid attempt state')
-        # Preserve a durably observed terminal result, but infer no success from files.
         if row['state']in {'planned','running','unknown'}:row['state']='unknown'
         else:row['observedTerminalOutcome']=row['state']
         row['recoveryOutcome']='cleanup-only-no-promotion-no-retry';row['reconciledBy']={'generation':self.generation,'controller':self.who}
