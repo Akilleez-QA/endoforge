@@ -1,7 +1,8 @@
 # Getting started
 
 In this tutorial you clone EndoForge, ask it for an integer addition kernel, and watch it get promoted. Then you give it
-a wrong kernel and watch it get refused. It takes about five minutes.
+a wrong kernel and watch it get refused. It takes about five minutes. The need is deliberately tiny so that every step of
+the loop fits on screen; the same loop runs on every kernel a coding model proposes.
 
 The model in this tutorial is a script that replays fixed answers, so you need no model account and no network after
 setup. Everything else is the real code: the freeze, the pinned compiler, the V8 isolate, gates G1 to G9 and the
