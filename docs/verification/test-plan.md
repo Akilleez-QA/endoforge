@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-STP |
-| Version | 1.1 |
+| Version | 1.3 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -36,14 +36,17 @@ N/A; the owner's merge is the sign-off. How-to detail: [run local checks](../gui
 | Integration (retry) | `pipeline-retry-test` | `pipeline-fallback*`, `pipeline-retry*` tests |
 | System (candidate loop, crash) | `loop-test` | `npm ci` in `tools/asc`, then `core/runtime/test/loop*.test.mjs` |
 | Integration (TypeScript checker) | `tscheck-test` | `npm ci` in `tools/tscheck`, then `tools/tscheck/test/*.test.mjs` |
-| Tools | `atomizer-test`, `harness-test`, `hardware-test`, `runtime-test`, `lib-test`, `library-test`, `portability-test`, `factory-state-test`, `seeded-fault-test`, `escape-test`, `compatibility-test` | The test files under each tool |
+| Tools | `atomizer-test`, `harness-test`, `hardware-test`, `runtime-test`, `lib-test`, `library-test`, `portability-test`, `factory-state-test`, `seeded-fault-test`, `escape-test`, `compatibility-test`, `gate-test` | The test files under each tool |
+| Tools (round 4) | `gap-tools-test` | `tools/factory_runtime/test_runtime_gaps.py`, `tools/test_approved_atoms.py`, `tools/test_gen_release_docs.py`, `tools/project-scheduler/test/scheduler.test.mjs` |
 | Kernel host | `kernel-test` | Version check of `.tools/`, then `tools/kernel/test_*.py` |
 | Experiment receipt | `receipt-test` | `experiments/P-19-need-to-candidate/verify.py` |
 | Regression | CI `test` job | `make -k test` and `make -k test-optimized` on Node 22 and 26 |
 | Rust lane | CI `rust-lane` job | `make tools`, then `make rust-lane-test` on Rust 1.98.1 |
+| Static analysis | `lint`; CI `lint` job | ruff 0.17.0 with `ruff.toml`, and `node --check` on every `.mjs`, `.js` and `.cjs` file |
+| Coverage | `coverage` | Node suites under `--experimental-test-coverage`; Python under coverage.py, else trace counts |
 
 Outside `make test`: `make rust-lane-test` (needs the pinned Rust toolchain, TP-6; CI runs it in its own job),
-`make tscheck-requalify` (TP-7) and the P-51 controls (TP-8). The glue gate CLI test runs in `make test` through
+`make lint` (CI runs it in its own job), `make coverage`, `make tscheck-requalify` (TP-7) and the P-51 controls (TP-8). The glue gate CLI test runs in `make test` through
 `make gate-test`.
 
 ## 3. Test environment
@@ -62,15 +65,21 @@ Outside `make test`: `make rust-lane-test` (needs the pinned Rust toolchain, TP-
 
 - `make check`, `make test` and `make test-optimized` exit 0 on Node 26 and on Node 22.
 - Zero failed tests. Skips are allowed only where a test states a missing prerequisite (for example the delegated
-  cgroup case in `isolate-offheap.test.mjs`); the STR lists skip counts.
+  cgroup cases in `isolate-offheap.test.mjs` and `gaps4-runtime.test.mjs`, the real-Wasmtime case in
+  `test_runtime_gaps.py`, and the transfer cases without `age` or `bwrap`); the STR lists skip counts.
+- `make lint` exits 0.
 - Trace check: zero problems.
 - A run killed or timed out by host load may be rerun once for that single file; the STR or PR records the rerun.
 
 ## 5. Coverage
 
-No coverage tool is configured for the Node or Python suites, so coverage is not measured and no target is set. The
-trace check gives file-level coverage of requirements instead: every discovered test file traces to a requirement or is
-listed as supporting. MC/DC: N/A (not safety-critical, SWE-219).
+`make coverage` measures line, branch and function coverage of the Node suites with Node's built-in coverage, and
+Python coverage with coverage.py when it is installed (else `python3 -m trace` line counts, which give no percentage).
+No coverage target is set, and coverage is not a pass criterion. The first run, on the round-4 worker's tree before
+integration, reported 822 Node tests passing, 1 skipped, with 90.74% of lines covered across all files, and 230
+Python tests OK under trace counts; a recorded STR has not yet included a coverage run. The trace check gives
+file-level coverage of requirements as well: every discovered test file traces to a requirement or is listed as
+supporting. MC/DC: N/A (not safety-critical, SWE-219).
 
 ## 6. Test data and fixtures
 
@@ -140,7 +149,8 @@ Automated tests: the code is the procedure. Run one Node file with `node --test 
 - Steps: `make rust-lane-test` (runs `make rust-lane-setup` first). CI runs the same target in the `rust-lane` job
   from 2026-11-09.
 - Expected result: exit 0.
-- Last run: not run in this baseline; the CI job's first run is pending.
+- Last run: CI, PR #139, run 42600069278, job `rust-lane` at `def5f24`: 15 tests OK, exit 0. Not run locally in this
+  baseline.
 
 ### TP-7 — TypeScript checker requalification (manual)
 
@@ -163,8 +173,10 @@ Live model runs (experiments) follow each experiment's `PRECOMMIT.md`; they are 
 - Test doubles stand in for model clients; compatibility with a live client is not established by the suite.
 - Timing assertions can be disturbed by host load; `core/runtime/test/fixtures/timing.mjs` lets a run report them as
   skipped under load only when opted in.
-- Delegated cgroup enforcement needs a delegated scope and is untested locally and in CI (GAP-EF-001).
-- Ten behaviours have no test; see [SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps).
+- Delegated cgroup enforcement (REQ-ISO-018) is checked only where a delegated user scope exists; it ran on the
+  development host on 2026-11-09, and whether it runs or skips on the GitHub runner is not recorded.
+- Two behaviours have no test (GAP-EF-002 and GAP-EF-006, both narrowed in round 4); see
+  [SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps).
 
 ## 9. Traceability
 
@@ -177,3 +189,4 @@ See the [verification matrix](verification-matrix.md).
 | 1.0 | 2026-11-08 | `4d692a4` | Initial baseline | this PR |
 | 1.1 | 2026-11-09 | round 2 | TP-6 runs in CI; gap count 10 | this commit |
 | 1.2 | 2026-11-09 | round 3 | The glue gate CLI test runs in `make test` through `make gate-test` | this commit |
+| 1.3 | 2026-11-09 | round 4 | `gap-tools-test`, `lint` and `coverage` targets; coverage section; TP-6 records its first CI run; gap count 2 | this commit |

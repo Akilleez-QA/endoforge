@@ -150,7 +150,9 @@ refuses if that is missing, so set `resources.health` (the demo uses `["true"]`)
 ## Tests
 
 `make lib-test` runs `test/failopen.test.mjs` (a torn or unreadable event log never reads as "not staged") and
-`test/references.test.mjs` (the job, conductor, atomizer and hillclimb sources cite only repository files that exist). The
+`test/references.test.mjs` (the job, conductor, atomizer and hillclimb sources cite only repository files that exist) and
+`test/kinds-compile-sources.test.mjs` (every kind file and its rules, `ENDOFORGE_JOB_KINDS`, prompt compilation and
+hashing, interfaces, the card hash and its confirmation, and loading a job with its proofs file). The
 conductor tests in the same target drive `stage` and `go`.
 
-Engineering record: component C-23, requirement REQ-JOB-001.
+Engineering record: component C-23, requirements REQ-JOB-001 to REQ-JOB-003.

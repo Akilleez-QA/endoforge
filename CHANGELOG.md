@@ -52,6 +52,22 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 - Requirements REQ-LIB-009, REQ-X1-011, REQ-LOOP-010, REQ-GEN-010, REQ-SYNTH-005 and REQ-SYNTH-006, traced to
   `core/runtime/test/gaps3-generator.test.mjs`, `core/runtime/test/gaps3-meter.test.mjs` and
   `tools/test_x1_revise_structured.py`.
+- Evaluator synthesis generates vectors for exports over records, lists and text: inputs for a structured parameter
+  come from the layout the binding declares for it (empty, full and seeded random values), the frozen tests' values
+  and reference results that fit the layout; they are qualified under M1 to M5, kept by `combine` at width 1, and at
+  width 2 only where both references give the same whole value. The binding prompt asks for parameter layouts.
+- `runNeed({ synthCell })`: the synthesis judging cell's deadline and heap limits, passed to `begin` on every path and
+  to the commit's `judgeInCell` on `isolate` and `agent`.
+- `make lint` (ruff 0.17.0 with a repository `ruff.toml`, and `node --check` on every JavaScript module) and a CI job
+  `lint`; `make coverage` (Node built-in coverage; coverage.py, else trace counts, for Python); `make gap-tools-test`
+  in `make test`.
+- Tests for the factory runtime, approved atoms, campaign repair, Wasmtime qualification, stage resume and an
+  emulated campaign transfer, the project scheduler, the atomizer commands `atomize`, `direct`, `fanout`, `report` and
+  `cutover`, hillclimb fan-out, plan and scoreboard, job kinds and prompt compilation, the release-record generator,
+  the stub pool, and delegated cgroup enforcement inside a `systemd-run --user --scope`.
+- Requirements REQ-ISO-018, REQ-STUB-001, REQ-SYNTH-007, REQ-SYNTH-008, REQ-ATOM-005, REQ-JOB-003, REQ-HILL-003,
+  REQ-SCHED-001, REQ-FACTORY-003 to 005, REQ-REPO-008 and REQ-REPO-009; GAP-EF-001, 004, 005, 007 to 010 and 014
+  closed, GAP-EF-002 and 006 narrowed to the parts still untested.
 
 - `examples/first-loop.mjs` and `examples/show-gates.py`: the README and getting-started example (a scripted model
   promotes an addition kernel and refuses a subtracting one), tested by `core/runtime/test/loop-example.test.mjs`.
@@ -146,6 +162,10 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
   passes `conductor.claudeTools` to workers, and the default list allows `make`, `npm` and `python3`.
 - The Conductor runs an atom's criteria checks when no `conductor.checks` entry names it.
 - The Rust lane installs its pinned `jco` and AssemblyScript itself and fetches missing crates under `Cargo.lock`.
+- Synthesis failure messages print structured arguments and expected values as JSON, so a scalar failure now reads
+  `add([10,3]) gives 14, expected 13`.
+- `fanout` exits 1 when a request fails verification; an extra job kind file with an unknown rule key stops the job
+  tool loading; the release-record generator reads its lint and coverage lines from the Makefile, CI and the logs.
 
 - README rewritten for first-time readers: what EndoForge is, why, a diagram of the loop, the gate table, a real
   example run and a quickstart; the engineering records moved to one section at the end. The docs index now leads with
@@ -176,7 +196,7 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 - `make isolate-test` installs the compiler and checker it needs (`loop-setup`, `tscheck-setup`) first, so `make test`
   works on a fresh clone; the heap-breach test allows 240 s.
 - `tools/gate` judges with the core `runGates` and the core glue schema, so a kernel on disk gets the nine gates and
-  structured state; tested by `tools/test_gate_structured.mjs`, which no `make` target runs yet.
+  structured state; tested by `tools/test_gate_structured.mjs` in `make gate-test`.
 - `WarmClaudeTransport` honours a caller-supplied usage governor (per transport or per instance).
 - A relative `ENDOFORGE_CODEX_CMD` resolves against the caller's working directory.
 - The Conductor's collect lock works when the repository is a git worktree.
@@ -186,6 +206,27 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
   directory.
 - The Rust lane's component runs in the `tools/kernel` Wasmtime workcell.
 - Three tool tests that used bare `assert` use `unittest` assertions, so `make test-optimized` checks them.
+- Factory runtime: `durable()` writes a temporary file and swaps it in, so a failed write no longer corrupts
+  `scheduler.json` or the fence record; the scheduler checks the saved version on reload and no longer crashes on a run
+  with no outcome; `run_attempt` restores its signal handlers when the journal already exists; `run_bounded` closes
+  its pipes; `wasm.run` refuses instead of crashing when Wasmtime is missing.
+- Approved atoms: a write reported as failed is rolled back instead of taking effect on the next replay; replay
+  refuses a consumer row for an atom that was never approved.
+- Campaign repair patches a previous round's output, refuses an empty frozen-path list, and removes its file when a
+  frozen path changes. `qualify_wasmtime.py` no longer checks with `assert`, which passed anything under `python -O`.
+  `campaign_transfer.py` sends `checkpoint.py` and the bundle, creates the remote staging directory and removes it on
+  failure. `resume_stage.py` refuses a symlinked directory out of the checkpoint and files missing from the inventory.
+- The stub pool logs `pid=` so the atomizer scheduler attributes its account, and forwards `SIGTERM` to its child;
+  `releaseCgroup` retries a busy `rmdir` instead of leaking the cell group.
+- The project scheduler refuses a GPU step without a queue before any step runs, lets two projects name the same
+  relative path, and handles a `null` project or job.
+- Atomizer `cutover` no longer crashes without arguments, on an unknown arm or with no matching case; `fanout` no
+  longer crashes when the scheduler refuses a graph; `schedule` and `atomize` no longer crash when the subscription
+  guard refuses a model call.
+- Hillclimb `waveSize(0, ...)` gives zero slots instead of one; the job tool refuses a kind named `toString` and a
+  kind file with a misspelled rule key.
+- The release-record generator refuses a run without `--log` or a log without a label.
+- Unused imports and the remaining ruff findings are fixed, so `make lint` passes on the whole tree.
 
 - A missing exit code or a torn state is no longer read as success, and ledgers and locked decisions survive a
   failed read (#99, #100).

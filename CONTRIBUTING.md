@@ -16,7 +16,8 @@ find the part you want to change.
    findings and the outcome. The owner merges.
 
 CI runs the same commands on every pull request: `make tools`, `make -k test` and `make -k test-optimized`, on Node 22
-and 26 with Python 3.12 ([workflow](.github/workflows/ci.yml)).
+and 26 with Python 3.12, and in separate jobs `make lint`, `make rust-lane-test` on Rust 1.98.1 and a Gitleaks secret
+scan ([workflow](.github/workflows/ci.yml)). Run `make lint` before you push; `make coverage` reports test coverage.
 
 ## Conventions
 

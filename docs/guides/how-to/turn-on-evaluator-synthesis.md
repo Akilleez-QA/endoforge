@@ -19,10 +19,12 @@ Two model stages, each blind to the candidate:
 
 EndoForge then compiles each binding into checks without a model and qualifies them: the binding has the right shape,
 the reference gives the same answers twice, agrees with the frozen tests, is consistent with itself, and tells
-mutants of itself apart. It generates input vectors from the declared ranges and writes the qualified checks to
+mutants of itself apart. It generates input vectors from the declared ranges, and for a record, list or text
+parameter from its declared layout, the frozen tests' values and the reference's own results, and writes the qualified checks to
 `synth/evaluator.json`, whose hash is fixed in the ledger freeze before code. After the gates run, the candidate runs
 those vectors under the fuel meter and is compared with the reference: on the current path in a separate worker
-thread with its own memory limits and a 30 s deadline, on the `isolate` and `agent` paths at commit. A refusal blocks
+thread, on the `isolate` and `agent` paths in the same kind of thread at commit, by default with its own memory limits
+and a 30 s deadline (`runNeed({ synthCell })` changes them on every path). A refusal blocks
 promotion; on the current and `isolate` paths the verdict is written to `<directory>/synthesis.json`.
 
 With `ENDOFORGE_SYNTH_WIDTH=2`, two independent members are written, and only the checks both agree on are kept. When
@@ -30,7 +32,8 @@ both references agree with each other against a frozen test, that test is report
 implementation turn, in `synth/suspect.json` and in the evaluator's `suspects`. The ledger then freezes a corrected
 `tests.json` as a revision, and the implementation turn on every path reads the corrected file. Where the contract
 returns a record, list or text, the binding declares its layout and the references return plain values, so a
-structured test can be corrected too.
+structured test can be corrected too, and structured vectors are kept at width 2 only where both references give the
+same whole value.
 
 ## Turn it on
 
@@ -63,7 +66,7 @@ node examples/evaluator-synthesis.mjs
 
 ```text
 {"kernel":"correct","promoted":true,"frozenVectors":75,"synthesis":"pass","firstFailure":null}
-{"kernel":"wrong-above-5","promoted":false,"frozenVectors":75,"synthesis":"refuse","firstFailure":"value.reference: add(10,3) gives 14, expected 13"}
+{"kernel":"wrong-above-5","promoted":false,"frozenVectors":75,"synthesis":"refuse","firstFailure":"value.reference: add([10,3]) gives 14, expected 13"}
 ```
 
 Both kernels passed gates G1 to G9. The synthesized evaluator caught the second one on a generated input.

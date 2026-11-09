@@ -153,6 +153,6 @@ other `test/*.test.mjs` files, with stubs instead of models. `test/tools-gaps.te
 atoms, and that `testcheck.mjs` prints its usage when arguments are missing. `test/commands.test.mjs` drives `atomize`
 (with `--fixture`), `direct`, `fanout`, `report` and `cutover` end to end on script-worker fixtures
 ([test/fixtures/synthetic-pair.json](test/fixtures/synthetic-pair.json)); model arms run with no login, so the
-subscription guard refuses them and the test checks the recorded refusal (GAP-EF-008).
+subscription guard refuses them and the test checks the recorded refusal (REQ-ATOM-005).
 
-Engineering record: component C-22, requirements REQ-ATOM-001 to REQ-ATOM-003.
+Engineering record: component C-22, requirements REQ-ATOM-001 to REQ-ATOM-005.

@@ -81,6 +81,6 @@ join [{"piece":"a","result":{"code":0}},{"piece":"b","result":{"code":0}}]
   model runner) must enforce it.
 - `files` is checked for overlap but not enforced: commands run as ordinary processes with no sandbox.
 
-Tests: [test/scheduler.test.mjs](test/scheduler.test.mjs) (`node --test tools/project-scheduler/test/scheduler.test.mjs`).
+Tests: [test/scheduler.test.mjs](test/scheduler.test.mjs), run by `make gap-tools-test`.
 
-Engineering record: component C-30, GAP-EF-004.
+Engineering record: component C-30, requirement REQ-SCHED-001.

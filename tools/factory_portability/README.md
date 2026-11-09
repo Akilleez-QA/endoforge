@@ -61,9 +61,9 @@ The test packs and unpacks a real `age`-encrypted checkpoint and confirms each r
 
 ## Tests
 
-`make portability-test` runs `test_checkpoint.py` and `test_transfer_qualify_resume.py` (GAP-EF-006): qualification
+`make portability-test` runs `test_checkpoint.py` and `test_transfer_qualify_resume.py` (REQ-FACTORY-005): qualification
 (also under `python -O`), stage resume with one publication, idempotent reuse, failing and refused stages, path and
 inventory refusals, and an emulated second-host transfer with remote cleanup on failure. The transfer cases skip,
 with the reason, where `age` or an unprivileged `bwrap` sandbox is unavailable.
 
-Engineering record: component C-25, requirement REQ-FACTORY-002.
+Engineering record: component C-25, requirements REQ-FACTORY-002 and REQ-FACTORY-005; a real second host is GAP-EF-006.

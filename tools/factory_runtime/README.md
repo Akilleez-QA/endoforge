@@ -90,7 +90,7 @@ With no image configured it refuses after taking only the controller fence.
 
 ## Tests
 
-`python3 -B -m unittest tools.factory_runtime.test_runtime_gaps` (GAP-EF-002) checks job specs and records against
+`make gap-tools-test` runs `tools.factory_runtime.test_runtime_gaps` (REQ-FACTORY-003), which checks job specs and records against
 the schema files, durable writes, fencing, the scheduler (FIFO, backoff, persistence, interrupted jobs, version
 refusal), full runner attempts and crash reconciliation, the egress proxy refusals and TLS SNI check, `run_bounded`,
 worker command assembly and role authority, the local provider gateway policy, and `wasm.run`. The Docker CLI is
@@ -100,6 +100,7 @@ replaced by [fixtures/fake_docker.py](fixtures/fake_docker.py), which runs each 
 
 - No real Docker daemon, systemd scope or Wasmtime binary is used by the tests. `wasm.run` runs through a stand-in
   `systemd-run` and Wasmtime; the real-binary case runs only when `ENDOFORGE_WASMTIME` and
-  `ENDOFORGE_WASMTIME_SHA256` are set. `local_provider.call_protected` is tested only for its refusals.
+  `ENDOFORGE_WASMTIME_SHA256` are set. `local_provider.call_protected` is tested only for its refusals, and the worker
+  command from `egress.worker_command` is checked as assembled but never run with the `bridge.py` relay (GAP-EF-002).
 
-Engineering record: component C-29, GAP-EF-002.
+Engineering record: component C-29, requirement REQ-FACTORY-003, GAP-EF-002.

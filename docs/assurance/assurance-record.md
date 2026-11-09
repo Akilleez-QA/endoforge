@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SAR |
-| Version | 1.1 |
+| Version | 1.3 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -37,13 +37,16 @@ Findings:
   check; the 45 existing statements were kept, with secondary "shall" clauses reworded so each has one.
 - F15 (#130) changed the formula oracle during this pass. The trace check caught the renamed test, and REQ-ORACLE-001
   was updated to branch-by-branch evaluation of piecewise rules.
-- Ten behaviours have no test and are registered as GAP-EF-001 to GAP-EF-014 (003, 011, 012 and 013 closed) in
-  [SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps), not as requirements.
+- Behaviours with no test are registered as GAP-EF-001 to GAP-EF-014 in
+  [SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps), not as requirements. After round
+  4 two remain open, each narrowed to the part still untested: GAP-EF-002 (the factory runtime's sandboxed worker
+  launch and a completed protected provider call) and GAP-EF-006 (campaign transfer to a real second host).
 - Trace check after the update (`python3 -I tools/check_trace.py`): 95 requirements, 95 traced, 14 gaps, 0 TBD; 97
   discovered test files, 92 traced and 5 supporting; 0 problems. After the round-2 records pass on 2026-11-09: 127
   requirements, 127 traced, 10 gaps; 111 discovered test files, 105 traced and 6 supporting; 0 problems. After the
   round-3 records pass: 133 requirements, 133 traced, 10 gaps; 114 discovered test files, 108 traced and 6
-  supporting; 0 problems.
+  supporting; 0 problems. After the round-4 records pass: 146 requirements, 146 traced, 2 gaps; 125 discovered test
+  files, 119 traced and 6 supporting; 0 problems.
 
 ### Design analysis
 
@@ -51,7 +54,8 @@ Technique: comparison of the design's component table with `git ls-files` and th
 
 Findings: the previous table had no requirement column and omitted the kernel host, escape measurement, step harness,
 hardware record, atomizer, conductor, hillclimb, factory tools, Rust lane and repository checks. All are now components
-C-01 to C-31; each lists its requirements or names its gap (C-28, the release-record generator, and C-29 to C-31).
+C-01 to C-31; each lists its requirements. After round 4 every component has a tested requirement, and C-25 and C-29
+also name the part still untested (GAP-EF-006, GAP-EF-002).
 
 ### Testing analysis
 
@@ -63,19 +67,30 @@ Findings:
 
 - D-01: three tool tests checked only with `assert` statements, which `make test-optimized` strips (`python3 -O`);
   closed on 2026-11-09.
-- No coverage tool is configured, so coverage is not measured.
-- Delegated cgroup enforcement is skipped without a delegated scope (GAP-EF-001). The Rust lane runs in its own CI
-  job from 2026-11-09 (GAP-EF-013 closed; first run pending).
+- `make coverage` measures coverage (Node built-in coverage; coverage.py or trace counts for Python). Its first run,
+  on the round-4 worker's tree before integration, reported 90.74% of Node lines; no recorded STR includes a coverage
+  run yet, and no coverage target is set.
+- Delegated cgroup enforcement is tested inside a delegated user scope (REQ-ISO-018, GAP-EF-001 closed) and skips
+  with its reason elsewhere; it ran on the development host on 2026-11-09, and the GitHub runner result is not
+  recorded. The Rust lane runs in its own CI job and passed in PR #139 (run 42600069278).
+- Round 4 added eleven test files: ten for formerly untested parts and one for structured synthesis. Run against the
+  code before the fixes, they exposed defects, since fixed, in the factory runtime (non-atomic `durable()` writes, scheduler reload, leaked signal handlers,
+  unclosed pipes, a crash without Wasmtime), the approved-atoms registry (a failed write took effect on replay),
+  repair, `qualify_wasmtime.py` (checked with `assert`, so it passed anything under `python -O`),
+  `campaign_transfer.py` (never sent the checkpoint tool or bundle), `resume_stage.py` (symlink escape), the stub pool
+  (no `pid=` in its log; SIGTERM not forwarded), `releaseCgroup` (leaked a group when `rmdir` failed), the project
+  scheduler, atomizer commands, hillclimb `waveSize`, job kinds and the release-record generator. The
+  [CHANGELOG](../../CHANGELOG.md) lists each fix.
 - `tools/test_gate_structured.mjs` (REQ-GATECLI-001) is run by `make gate-test`, part of `make test`.
 
 ### Source code quality
 
 | Tool | Command | Findings |
 |---|---|---|
-| ruff 0.17.0, rules E9 and F (not in CI) | `ruff check --no-cache --isolated --select E9,F $(git ls-files '*.py')` | 9 F401 unused imports in 105 tracked Python files: `tools/factory_runtime/wasm.py` ×3, `runner.py` ×2, `egress.py`, `local_provider.py`, `recovery.py`, `tools/factory_portability/campaign_transfer.py` (D-02) |
+| ruff 0.17.0, rules E4, E7, E9 and F with the `ruff.toml` ignores (CI job `lint`) | `make lint` | 0 findings at `b71eebf` on 2026-11-09 ("All checks passed!"). On 2026-11-08 it found 9 F401 unused imports (D-02, now closed) |
 | Gitleaks 8.30.1 | `gitleaks git --no-banner --redact --log-opts=HEAD .` | 1 `generic-api-key` match in `experiments/P-51-escape-rate/controls.test.mjs:21`: the synthetic kernel key `synthetic/run/k`, a false positive |
 | Privacy lint | `python3 -I tools/check-privacy.py` | 0 failures |
-| JavaScript lint | none configured | not run |
+| JavaScript syntax | `node --check` on every `.mjs`, `.js` and `.cjs` (in `make lint`) | 0 failures at `b71eebf`; a syntax check only, no style or semantic lint |
 
 ### Configuration audit
 
@@ -100,18 +115,18 @@ No issues were filed for these findings; they are reported to the maintainer thr
 | ID | Severity | Finding | Location | Status |
 |---|---|---|---|---|
 | D-01 | S3 | Tests that check only with `assert` statements pass vacuously under `make test-optimized`, which runs them with `python3 -O` | `tools/factory_campaign/test_state.py`, `tools/factory_campaign/test_model_journal.py`, `tools/factory_portability/test_checkpoint.py` (its refusal checks raise `AssertionError` explicitly and still run) | Closed 2026-11-09: `unittest` assertions |
-| D-02 | S4 | 9 unused imports (ruff F401) | see Source code quality | Open |
+| D-02 | S4 | 9 unused imports (ruff F401) | see Source code quality | Closed 2026-11-09: `make lint` reports none |
 | D-03 | S3 | Until 2026-11-09 `WarmClaudeTransport` replaced a caller-supplied `governor` with the default per-login one: the constructor passed `governor === null ? null : undefined` to `governed()`. The defect was which governor was used, not whether one was: both transports call the governor's `admit()` before every turn and its `observe()` on every `rate_limit_event` (`transports.mjs` lines 95, 105, 156 and 277). Now an `instances` entry's `governor`, else the caller's, else the default is used | `core/runtime/x1/transports.mjs:216` | Closed 2026-11-09: REQ-TRANSPORT-002 |
 | D-04 | S4 | Referenced inputs missing: `bench.mjs` defaults to `tools/atomizer/examples/C-005/atoms.json`; `lib/ledger.mjs` names a `LEDGER.md` schema; `conduct adopt` points to `tools/conductor/examples`. None exist | `tools/atomizer/`, `tools/conductor/` | Closed 2026-11-09: REQ-ATOM-004, REQ-COND-004 |
 | D-05 | S3 | SECURITY.md directs reporters to GitHub private vulnerability reporting, which is disabled for the repository (`gh api repos/Akilleez-QA/endoforge/private-vulnerability-reporting` returns `enabled: false`). SECURITY.md now gives the fallback; enabling it is a repository setting for the owner | `SECURITY.md`, repository settings | Open |
 | D-06 | S4 | `main` has no branch protection; CI has no secret-scanning job | repository settings, `.github/workflows/ci.yml` | Secret scan added to CI 2026-11-09; branch protection still open (risk R-6) |
-| D-07 | S4 | Code comments exist despite the no-comments rule, for example `tools/conductor/lib/adopt.mjs:5`, `tools/atomizer/lib/ledger.mjs:2`, `tools/atomizer/test/run.mjs:1` | several files | Open |
+| D-07 | S4 | Code comments exist despite the no-comments rule, for example `tools/conductor/lib/adopt.mjs:5`, `tools/atomizer/lib/ledger.mjs:2`, `tools/atomizer/test/run.mjs:1`, `tools/job/lib/kinds.mjs` (top block) | several files | Open |
 | D-08 | S4 | Stale documentation (verification matrix baseline, oracle wording, missing control documents) | `docs/` | Closed in this PR |
 
 ### Overall assessment
 
 Every requirement traces to tests that exist, and every discovered test file traces to a requirement or is classified.
-Ten behaviours remain untested (GAP-EF-003, GAP-EF-011, GAP-EF-012 and GAP-EF-013 were closed on 2026-11-09). Assurance is author-side only; no independent review has been performed.
+Two behaviours remain untested, both narrowed in round 4 (GAP-EF-002 and GAP-EF-006); the other twelve gaps are closed. Assurance is author-side only; no independent review has been performed.
 
 ## Change history
 
@@ -120,3 +135,4 @@ Ten behaviours remain untested (GAP-EF-003, GAP-EF-011, GAP-EF-012 and GAP-EF-01
 | 1.0 | 2026-11-08 | `4d692a4` | First entry | this PR |
 | 1.1 | 2026-11-09 | round 2 | D-03 restated: the transports always called the governor's `admit()` and `observe()`; the defect was replacing the caller's governor. Gap count 10; the unrun gate CLI test noted | this commit |
 | 1.2 | 2026-11-09 | round 3 | Round-3 trace counts; the gate CLI test now runs under `make gate-test` | this commit |
+| 1.3 | 2026-11-09 | round 4 | Round-4 trace counts; lint and coverage now exist (D-02 closed); the Rust lane's first CI run passed; two gaps open | this commit |

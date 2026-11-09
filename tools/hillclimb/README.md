@@ -131,8 +131,8 @@ Binds stay read-only; any other bind (such as `references.binds`) must still be 
 
 ## Limits
 
-- The round stages that launch model atoms (`review`, `fix`, `judge`, `round`) are exercised by use; the tests cover
-  planning, the runner contract and the patch helper with no model.
+- The round stages that launch model atoms (`review`, `fix`, `judge`, `round`) are run with a model only by use. The
+  tests check the atoms they build, the runner contract, planning, scoring and the patch helper, with no model.
 - A campaign's own `runner` is not given the stage policy, so from outside the atomizer's `bindRoots` it must apply
   its own.
 
@@ -140,8 +140,10 @@ Binds stay read-only; any other bind (such as `references.binds`) must still be 
 
 `make lib-test` runs `test/lessons.test.mjs` and `test/runner.test.mjs` (the default runner is in the repository and
 maps onto the scheduler, `plan-review` works from an unrelated directory, `scripts/hc-patch.sh` prints its usage
-without arguments and still produces a repo-relative patch). The fan-out library (`lib/fanout.mjs`: logins, lanes, worker commands,
+without arguments and still produces a repo-relative patch) and `test/fanout-plan-scoreboard.test.mjs` (ownership
+overlaps, lane assignment, wave sizing by the capacity dial, review, fix and judge atoms, the ratchet, re-atomizing,
+round scoring and the stop rule, all without a model). The fan-out library (`lib/fanout.mjs`: logins, lanes, worker commands,
 the capacity dial) is also used by [job](../job/README.md), the [conductor](../conductor/README.md) and the
 [project scheduler](../project-scheduler/README.md).
 
-Engineering record: component C-24, requirement REQ-HILL-001.
+Engineering record: component C-24, requirements REQ-HILL-001 to REQ-HILL-003.

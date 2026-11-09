@@ -57,8 +57,10 @@ contract order with units, bounds and openness, integer flags and code tables; t
 decimals, codes and range; monotone relations the contract makes certain; and `reference`, one plain JavaScript source
 computing every export in double precision with only `Math` and `Number`, throwing where the contract traps. Where
 the contract returns a record, list or text, the binding declares the result's full layout (`fields`, `items` and
-`max`, `maxBytes`, the same keys as the glue's) and the reference returns a plain object, array or string. The
-model never sees `tests.json`, `kernel.ts`, `glue.json` or any candidate output.
+`max`, `maxBytes`, the same keys as the glue's) and the reference returns a plain object, array or string. Where a
+parameter takes a record, list or text, the binding declares that parameter's layout the same way (`kind` plus
+`fields`, `items` and `max`, or `maxBytes`) and the reference takes a plain value there; inputs for it are generated
+from that layout (step 3). The model never sees `tests.json`, `kernel.ts`, `glue.json` or any candidate output.
 
 The binding has to wait for the contract because the contract fixes the export names; one model turn is therefore on
 the critical path.
@@ -73,8 +75,19 @@ edge, one step inside and outside it, a point well outside, and non-round interi
 parameter, every code and one past each end); then 48 seeded random points inside the domain. A denser set of 192
 random points is kept aside for M5.
 
-A parameter whose frozen base argument is a record, list or text is held at that value; only the numeric parameters
-beside it are swept.
+A parameter that takes a record, list or text gets a pool of inputs instead of numeric sweeps
+([vectors.mjs](../../core/runtime/x1/synth/vectors.mjs) `inputPools`, `withResults`):
+
+- from its declared layout: an empty value (empty text, an empty list, each field at its lower bound), a full value
+  (text of `maxBytes` bytes, a list of `max` items but at most 64, each field at its upper bound) and 14 seeded random
+  values, 40 for the M5 sample (random lists have at most 8 items; random text mixes letters, a digit, a space, a
+  hyphen, `é` and `☕` within `maxBytes`);
+- every value the frozen tests pass for that parameter, even without a declared layout;
+- one round of record and list results from the reference that fit the layout, so a reducer's own output states come
+  back as inputs: the reference runs once over seeded calls drawn from the pools, and up to 16 fitting results (48 for
+  the M5 sample) are added, ordered by their digest.
+
+The base call sweeps each such parameter over its pool, and the 48 random calls draw from it.
 
 **The reference** runs in [sandbox.mjs](../../core/runtime/x1/synth/sandbox.mjs): a separate Node process under the
 permission model, with an empty environment, where each variant gets a fresh `vm` context holding only `Math`,
@@ -94,7 +107,7 @@ unqualified and contributes no value check; a declaration failing M4 is dropped.
 | M1 shape | The export exists in the binding with as many parameters as the frozen tests pass, numeric bounds, and a reference source |
 | M2 deterministic and bounded | Two runs of the reference give identical results, within the time budget, and every result fits the declared layout |
 | M3 anchor | The reference reproduces every frozen value test of the export (within its `tol`, or 1e-9 relative; a structured value field by field, exactly unless the test sets `tol`) and throws on its `expectError` tests |
-| M4 self-consistency | Each declared range, code table and monotone relation holds on the reference's own outputs, and the reference doesn't return outside its declared domain |
+| M4 self-consistency | Each declared range, code table and monotone relation holds on the reference's own outputs, and the reference doesn't return outside its declared domain. A monotone relation over a record, list or text parameter is dropped |
 | M5 discrimination | Of the reference's seeded faults (constant shift, comparison flip, operator swap, rounding swap, argument swap; at most 40) that the denser sample can tell apart, the frozen vectors reject at least 80% |
 
 Only vectors whose reference result is finite, a value of the declared layout, or a throw are kept.
@@ -105,10 +118,11 @@ Only vectors whose reference result is finite, a value of the declared layout, o
 members agree on: a vector counts only when the other member's reference gives the same outcome on it; a monotone
 relation only when both declared it; a glue unit only when both state the same unit; decimals only when equal; code
 labels only when both tables have the same codes and no label is swapped. Ranges take the wider bound, and code sets
-the union. Width 1 keeps one member's qualified checks. An export that takes or returns a record, list or text contributes
-only its glue checks to the combined set, at either width; its outcomes are checked by the frozen tests and, through
-suspects, by the references (see [Limits](#limits)). In P-56 the agreed set refused exactly the same kernel faults
-as one member alone.
+the union. Width 1 keeps one member's qualified checks. An export that takes or returns a record, list or text is
+combined like a numeric one: at width 1 its qualified vectors are kept, and at width 2 the other member's reference
+result is read through the declared layout and a vector is kept only when the whole value agrees (a result that is
+missing or misfits the layout drops the vector). An export one reference misreads therefore keeps no vectors. In P-56
+the agreed set refused exactly the same kernel faults as one member alone; P-56 had no structured exports.
 
 ### 4a. Suspect frozen tests (width 2, no model)
 
@@ -205,7 +219,7 @@ runs depends on the path:
   the candidate; it never passes. The verdict records the cell's thread id.
 - **`isolate` and `agent`.** At commit, after the [independent re-run](gates.md#commit-re-runs-the-gates) agrees,
   `checkAtCommit` reads `synth/evaluator.json` from the ledger's verified frozen bundle and judges in the same bounded
-  worker thread (`judgeInCell`, with its default limits and deadline), so the verdict carries a thread id that is not
+  worker thread (`judgeInCell`, under the caller's `synthCell` limits, else the defaults above), so the verdict carries a thread id that is not
   the controller's. A refusal, a cell failure, or an exception marks the receipt `rejected` with
   "synthesized evaluator refused the candidate", so the ledger refuses the promotion. The result carries the verdict
   as `synthesis`, with the evaluator's hash.
@@ -238,9 +252,11 @@ A `refuse` means no promotion: on `current` `runNeed` returns `promoted: false` 
 | `ENDOFORGE_SYNTH_CONFIG_DIR` | unset | Claude configuration directory for that transport |
 | `ENDOFORGE_SYNTH_PROVIDER` | unset | A module exporting `createProvider(env)`, for replay and tests |
 
-`runNeed({ synthProvider, confirm, suspect })` passes a provider object, the confirmation callback and a suspect hook
-on every path. Called directly, `begin({ need, env, provider, confirm, suspect, cell })` also takes the judging cell's
-limits.
+`runNeed({ synthProvider, synthCell, confirm, suspect })` passes a provider object, the judging cell's limits
+(`{ deadlineMs, resourceLimits }`), the confirmation callback and a suspect hook on every path. `synthCell` goes to
+`begin({ cell })`, so `evaluate` uses it on `current`; on `isolate` and `agent` it also goes through the commit to
+`judgeInCell`. A 1 ms deadline refuses with `cell_timeout` on both in-cell paths
+(`core/runtime/test/gaps4-synth.test.mjs`).
 
 ## The invariant library
 
@@ -262,14 +278,17 @@ code. The model only selects and parameterizes them: `value.reference`, `boundar
 ## Cost
 
 P-56 ran 702 `claude -p` calls on Sonnet: four calls and about 14.4k tokens per task at width 2, 6.1 s mean per call.
-Offline, compile, qualify and judge took 495 ms at p50; judging alone 0.6 ms.
+Offline, compile, qualify and judge took 495 ms at p50; judging alone 0.6 ms. Those figures predate structured
+vectors, which add one reference run per binding with a structured parameter; that cost is not measured.
+
+On a to-do reducer over records and lists, the frozen structured vectors pass the correct reducer and refuse two
+kernels the frozen tests pass: a `toggle` that always sets `done` to 1, and an `openHours` that sums only the first two
+items (`core/runtime/test/gaps4-synth.test.mjs`).
 
 ## Limits
 
-- `combine` keeps no value vectors, ranges, codes or monotone relations for an export that takes or returns a record,
-  list or text, at width 1 or 2, so the frozen evaluator holds no synthesized vectors for such an export and `judge`
-  checks only its glue. `judge` can run structured vectors (the to-do reducer test feeds it some directly), but synthesis
-  produces none. Structured outcomes still reach the evaluator through M3 and suspect corrections.
-- The `begin` cell limits apply on `current` only; at commit on `isolate` and `agent` the judging cell uses the
-  defaults.
+- Structured inputs depend on the binding declaring the parameter's layout. Without one, a record, list or text
+  parameter is varied only over the values the frozen tests pass for it; no layout samples and no reference results
+  are added.
+- On the `current` path, `synthCell` reaching `begin` is read from the code; the test drives `isolate` and `agent`.
 - The [formula oracle](agent-loop.md#formula-oracle) is the agent path's other check of frozen expectations.

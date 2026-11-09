@@ -50,7 +50,7 @@ The journal test passed 31 checks; the state test crashed the writer at two boun
 ## Tests
 
 `make factory-state-test` runs `test_model_journal`, `test_repair` and `test_state`. The journal and state tests
-write receipts under `ENDOFORGE_TEST_OUTPUT` (the Makefile sets `.test-work`); `test_repair` (GAP-EF-006) covers
+write receipts under `ENDOFORGE_TEST_OUTPUT` (the Makefile sets `.test-work`); `test_repair` (REQ-FACTORY-005) covers
 chained rounds, every refusal and frozen-path mutation.
 
-Engineering record: component C-25, requirement REQ-FACTORY-001.
+Engineering record: component C-25, requirements REQ-FACTORY-001 and REQ-FACTORY-005.

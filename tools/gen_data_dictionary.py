@@ -127,8 +127,9 @@ def hardware_section():
 
 
 def factory_section():
-    lines = ["## 5. Factory runtime schemas (generated)", "", "Sources: `tools/factory_runtime/schemas/v1/`. The factory "
-             "runtime has no tests at the baseline (GAP-EF-002); these are its declared shapes.", ""]
+    lines = ["## 5. Factory runtime schemas (generated)", "", "Sources: `tools/factory_runtime/schemas/v1/`. "
+             "`tools/factory_runtime/test_runtime_gaps.py` checks that these files match the runtime's validators "
+             "(REQ-FACTORY-003).", ""]
     for relative in FACTORY:
         schema = json.loads((ROOT / relative).read_text())
         lines += object_table(Path(relative).name, schema, schema.get("$defs", {}))
