@@ -1,0 +1,16 @@
+target-version = "py311"
+extend-exclude = [".tools", ".test-work", "TODELETE"]
+
+[lint]
+select = ["E4", "E7", "E9", "F"]
+ignore = ["E401", "E402", "E701", "E702", "E731"]
+
+[lint.per-file-ignores]
+"tools/factory_portability/campaign_transfer.py" = ["F401"]
+"tools/factory_runtime/egress.py" = ["F401"]
+"tools/factory_runtime/local_provider.py" = ["F401"]
+"tools/factory_runtime/recovery.py" = ["F401"]
+"tools/factory_runtime/runner.py" = ["F401"]
+"tools/factory_runtime/wasm.py" = ["F401"]
+"tools/gen_data_dictionary.py" = ["F541"]
+"tools/gen_release_docs.py" = ["E741"]
