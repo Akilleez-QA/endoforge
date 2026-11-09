@@ -13,7 +13,8 @@ declarative description of its arguments, results and refusals.
 ## How it works
 
 `freeze` hashes `CONTRACT.md` and `tests.json` into `frozen.sha256`, and refuses if `kernel.ts` already exists, so the
-tests are fixed before any code. `run` compiles `kernel.ts` with the core compiler's flags (`asc --runtime stub -O3
+tests are fixed before any code. It does not check the contract's ```capability block (GAP-EF-015); `run` refuses a
+contract without one at G7. `run` compiles `kernel.ts` with the core compiler's flags (`asc --runtime stub -O3
 --noAssert --maximumMemory 1024`, plus `--textFile kernel.wat`), then runs the nine core gates on `CONTRACT.md`,
 `tests.json`, `frozen.sha256`, `kernel.ts`, `glue.json` and the compiled module, stopping at the first gate that cannot
 continue:
@@ -26,7 +27,7 @@ continue:
 | `G4_tests` | Each test's `expect` (numbers within `tol`, booleans, strings, and records and lists compared field by field) or `expectError` (a trap) holds |
 | `G6_bounded` | No call runs out of fuel or stack |
 | `G5_deterministic` | A second fresh instance, called in the same order, gives the same outputs |
-| `G7_glue` | `glue.json` matches the closed [glue.schema.json](glue.schema.json), its `id` is the folder name, and it describes exactly the module's exports, arities, buffer pointers, result codes and traps |
+| `G7_glue` | `glue.json` matches the closed [glue.schema.json](glue.schema.json), its `id` is the folder name, and it describes exactly the module's exports, arities, buffer pointers, result codes and traps; `CONTRACT.md` ends with a ```capability block, and the glue agrees with it on exports, argument kinds, units, ranges and codes, result precision and traps |
 | `G9_units` | Units in the glue agree with the kernel and the test outputs |
 | `G8_nonfinite` | Non-finite probes of number arguments and number fields give what the contract says |
 
@@ -56,19 +57,24 @@ With no arguments it prints `usage: gate.mjs freeze|run <dir>` and exits 2. It c
 ## Example
 
 A shipping-price kernel: 500 cents plus 2 cents a gram in zone 1 or 4 in zone 2, refusing negative weights and other
-zones. In a new directory named `shipping`:
+zones. The contract ends with its capability block, the same exports, kinds, units, codes and traps that `glue.json`
+declares later. In a new directory named `shipping`:
 
-```console
+````console
 $ cat CONTRACT.md
 shippingCents(grams, zone): 500 cents base plus 2 cents per gram in zone 1, 4 cents per gram in zone 2.
 Refuse negative weights and any other zone.
+
+```capability
+{"exports":[{"name":"shippingCents","args":[{"name":"grams","kind":"integer","unit":"g"},{"name":"zone","kind":"code","unit":"code","codes":{"1":"domestic","2":"international"}}],"result":{"kind":"integer","unit":"cents"}}],"traps":["shippingCents"]}
+```
 $ cat tests.json
 [{"name":"1 kg, zone 1","fn":"shippingCents","args":[1000,1],"expect":2500},
  {"name":"1 kg, zone 2","fn":"shippingCents","args":[1000,2],"expect":4500},
  {"name":"zone 3 is refused","fn":"shippingCents","args":[1000,3],"expectError":true},
  {"name":"negative weight is refused","fn":"shippingCents","args":[-1,1],"expectError":true}]
 $ node $REPO/tools/gate/gate.mjs freeze .
-frozen contract 245471e52b7f389d… tests a00009a2a6ee74be…
+frozen contract 64578df5af7b45a5… tests a00009a2a6ee74be…
 $ cat kernel.ts
 export function shippingCents(grams: i32, zone: i32): i32 {
   if (grams < 0 || (zone != 1 && zone != 2)) unreachable();
@@ -85,19 +91,21 @@ $ node $REPO/tools/gate/gate.mjs run .
  "promotable": true,
  "gates": {
   "G1_frozen": { "ok": true },
-  "G2_compiles": { "ok": true, "wasmBytes": 103, "wasmSha256": "1b6a1f43…" },
+  "G2_compiles": { "ok": true, "wasmBytes": 105, "wasmSha256": "c4179aa0…" },
   "G3_exports": { "ok": true, "exports": [ "shippingCents" ] },
   "G4_tests": { "ok": true, "passed": 4, "total": 4 },
-  "G6_bounded": { "ok": true, "maxMs": 0.108772, "fuelUsed": 104 },
+  "G6_bounded": { "ok": true, "maxMs": 0.073215, "fuelUsed": 116 },
   "G5_deterministic": { "ok": true },
   "G7_glue": { "ok": true },
   "G9_units": { "ok": true, "checks": { … } },
   "G8_nonfinite": { "ok": true, "probes": 0 }
  }
 }
-```
+````
 
-(The JSON is compacted here; the tool prints one key per line.) Change the zone 2 rate to 3 and `run` reports
+(The JSON is compacted here; the tool prints one key per line.) Leave the capability block out of `CONTRACT.md` and
+`freeze` still succeeds, but `run` reports `` "G7_glue": { "ok": false, "why": "CONTRACT.md has no ```capability block" } ``.
+Change the zone 2 rate to 3 and `run` reports
 `"G4_tests": { "ok": false, "passed": 3, "total": 4 }` and `promotable: false`. Edit `tests.json` to make the tests
 pass instead, and it stops at the first gate:
 
@@ -125,9 +133,11 @@ The atomizer finds this tool through `toolchain.gate` in [policy.json](../atomiz
 ## Limits
 
 - G5 repeats the same call order.
+- `freeze` freezes a contract that has no capability block; the loop's freeze refuses one (REQ-GEN-011). The missing
+  block is caught only at G7 by `run` (GAP-EF-015).
 - `glue.schema.json` is a copy of the core schema, kept because the atomizer puts it in worker prompts;
   [test_gate_structured.mjs](../test_gate_structured.mjs) fails if the two differ.
 - That test runs the CLI end to end. When the pinned `asc` is not installed it uses a fixture compiler that returns
   prebuilt modules for its kernels. `make gate-test`, part of `make test`, runs it.
 
-Engineering record: component C-30, REQ-GATECLI-001.
+Engineering record: component C-30, REQ-GATECLI-001; open gap GAP-EF-015.

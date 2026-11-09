@@ -75,7 +75,7 @@ def call_protected(root,stage,prompt,port,max_tokens=3072,timeout=180,role='eval
   out=temporary/'out';out.mkdir();proxy=serve(temporary/'proxy.sock',port)
   payload={'model':'qwen-local','messages':[{'role':'user','content':prompt}],'temperature':0,'stream':False,'max_tokens':max_tokens}
   client=dest/'request-client.py';client.write_text('import urllib.request\nr=urllib.request.Request('+repr('http://'+ALIAS+'/v1/chat/completions')+',data='+repr(json.dumps(payload).encode())+',headers={"Content-Type":"application/json"})\nwith urllib.request.urlopen(r,timeout=180) as response:print(response.read().decode())\n')
-  argv=egress.role_worker_command(role,home,out,temporary/'proxy.sock',['python','/in/request'],{'request':client},freeze=freeze)
+  argv=egress.role_worker_command(role,home,out,temporary/'proxy.sock',['python','/in/request'],{'request':client},freeze=freeze,tools=())
   if journal is not None:
    unit=row['scope'];description=journal.scope_description(row['attempt']);argv[argv.index('--unit')+1]=unit.removesuffix('.scope')
   else:

@@ -96,25 +96,29 @@ class Handler(socketserver.BaseRequestHandler):
 def serve(path,allow=None):
  proxy=Proxy(path,allow);threading.Thread(target=proxy.serve_forever,daemon=True).start();return proxy
 
-def worker_command(home,work,proxy_socket,command,readonly=None):
+def worker_command(home,work,proxy_socket,command,readonly=None,tools=('node','codex')):
  """Isolated home/out, no peer/repo/docker socket; ONLY declared code mounts."""
  from pathlib import Path
  import shutil
- node=Path(shutil.which('node')).resolve();codex=Path(shutil.which('codex')).resolve()
+ resolved=[]
+ for name in tools:
+  found=shutil.which(name)
+  if not found:raise ValueError(name+' is not on PATH; this worker needs it')
+  resolved.append(Path(found).resolve())
  b=['bwrap','--unshare-user','--unshare-net','--unshare-pid','--unshare-uts','--unshare-ipc','--cap-drop','ALL','--die-with-parent','--new-session','--clearenv']
  for path in ['/usr','/lib','/lib64','/bin','/sbin','/etc/ssl','/etc/ca-certificates','/etc/passwd','/etc/group']:
   if Path(path).exists():b+=['--ro-bind',path,path]
- for path in sorted(set([node.parent.parent,codex.parent.parent])):b+=['--ro-bind',str(path),str(path)]
+ for path in sorted(set(tool.parent.parent for tool in resolved)):b+=['--ro-bind',str(path),str(path)]
  b+=['--ro-bind',str(Path(__file__).with_name('bridge.py')),'/bridge.py']
  b+=['--size','67108864','--tmpfs','/home/worker','--size','8388608','--tmpfs','/out','--ro-bind',str(proxy_socket),'/proxy.sock','--proc','/proc','--dev','/dev','--remount-ro','/dev','--size','67108864','--tmpfs','/tmp','--chdir','/out']
- for rel in ['.codex/auth.json']:
+ for rel in ['.codex/auth.json'] if 'codex' in tools else []:
   source=Path(home)/rel
   if source.exists():b+=['--ro-bind',str(source),'/home/worker/'+rel]
  for source,target in readonly or []:
   from .core import validate_mount_tree
   validate_mount_tree(source)
   b+=['--ro-bind',str(source),target]
- for key,value in {'HOME':'/home/worker','PATH':':'.join(map(str,[node.parent,codex.parent,'/usr/bin','/bin'])),'LANG':'C.UTF-8','HTTPS_PROXY':'http://127.0.0.1:18080','HTTP_PROXY':'http://127.0.0.1:18080','ALL_PROXY':'http://127.0.0.1:18080','NO_PROXY':''}.items():b+=['--setenv',key,value]
+ for key,value in {'HOME':'/home/worker','PATH':':'.join(map(str,[tool.parent for tool in resolved]+['/usr/bin','/bin'])),'LANG':'C.UTF-8','HTTPS_PROXY':'http://127.0.0.1:18080','HTTP_PROXY':'http://127.0.0.1:18080','ALL_PROXY':'http://127.0.0.1:18080','NO_PROXY':''}.items():b+=['--setenv',key,value]
  # Unshare leaves loopback down. Raising only loopback needs namespaced cap_net_admin;
  # bwrap drops caps, so unshare net wrapper raises it before inner bwrap.
  b.remove('--unshare-net');b.remove('--unshare-user');b+=['--remount-ro','/']
@@ -146,7 +150,7 @@ def run_bounded(command,timeout=180,output_limit=1048576,preexec_fn=None):
   out[key]=bytes(data[key][:left]).decode(errors='replace');left-=len(data[key][:left])
  return dict(out,version=1,exit=p.returncode,outcome=reason or ('passed' if p.returncode==0 else 'worker_failed'),wallMs=(time.monotonic()-started)*1000,outputLimit=output_limit)
 
-def role_worker_command(role,home,work,proxy_socket,command,inputs,freeze=None):
+def role_worker_command(role,home,work,proxy_socket,command,inputs,freeze=None,tools=('node','codex')):
  """Host assembles a least-authority role view; evaluator never sees candidates.
 
  Named resources map to individual /in/<name> mounts. Generator/repairer cannot
@@ -157,4 +161,4 @@ def role_worker_command(role,home,work,proxy_socket,command,inputs,freeze=None):
  if role not in ['eval_writer','generator','repairer','consumer']:raise ValueError('not a model-worker role')
  if not isinstance(inputs,dict) or not set(inputs).issubset(ROLES[role]['read']):raise ValueError('role input authority violation')
  if role in ['generator','repairer'] and (not isinstance(freeze,dict) or freeze.get('version')!=1 or freeze.get('frozen') is not True or not re.fullmatch('[a-f0-9]{64}',freeze.get('suiteSha256',''))):raise ValueError('evals must freeze before generation/repair')
- return worker_command(home,work,proxy_socket,command,[(path,'/in/'+key) for key,path in inputs.items()])
+ return worker_command(home,work,proxy_socket,command,[(path,'/in/'+key) for key,path in inputs.items()],tools=tools)

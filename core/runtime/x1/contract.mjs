@@ -121,3 +121,55 @@ export function glueFindings(glue, { source, contract }) {
   }
   return { problems, advisory };
 }
+export function capabilityBlock(contract) {
+  const match = String(contract ?? '').match(/```capability\s*\n([\s\S]*?)```/);
+  if (!match) return { block: null, error: 'CONTRACT.md has no ```capability block' };
+  try { return { block: JSON.parse(match[1]) }; } catch { return { block: null, error: 'the ```capability block is not JSON' }; }
+}
+const NUMERAL = '-?(?:\\d+\\.?\\d*|\\.\\d+)(?:[eE][-+]?\\d+)?';
+const unitAliases = new Map(Object.entries({ '': 'dimensionless', 1: 'dimensionless', none: 'dimensionless', unitless: 'dimensionless', dimensionless: 'dimensionless',
+  f: 'degF', '°f': 'degF', degf: 'degF', 'deg f': 'degF', fahrenheit: 'degF', c: 'degC', '°c': 'degC', degc: 'degC', 'deg c': 'degC', celsius: 'degC' }));
+const spaced = text => String(text).trim().replace(/\s+/g, ' ');
+const lowered = text => spaced(text).toLowerCase();
+const sameUnit = text => unitAliases.get(lowered(text ?? '')) ?? spaced(text);
+const rangeNote = text => lowered(text).replace(/\bfinite\b/g, '').replace(/^[\s,;.]+|[\s,;.]+$/g, '');
+function sameRange(text) {
+  if (text === undefined || text === null) return null;
+  const value = spaced(text);
+  let match = value.match(new RegExp(`^(${NUMERAL})\\s*\\.\\.\\s*(${NUMERAL})(.*)$`));
+  if (match) return { low: Number(match[1]), high: Number(match[2]), lowOpen: false, highOpen: false, note: rangeNote(match[3]) };
+  match = value.match(new RegExp(`^([\\[(])\\s*(${NUMERAL})\\s*,\\s*(${NUMERAL})\\s*([\\])])(.*)$`));
+  if (match) return { low: Number(match[2]), high: Number(match[3]), lowOpen: match[1] === '(', highOpen: match[4] === ')', note: rangeNote(match[5]) };
+  return { text: lowered(value) };
+}
+const labelTable = codes => codes && typeof codes === 'object' ? Object.fromEntries(Object.entries(codes).map(([code, label]) => [code, lowered(label)]).sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) : undefined;
+const shownPart = value => (value === undefined ? 'nothing' : JSON.stringify(value));
+function partDifferences(where, block, glue, keys) {
+  const out = [];
+  for (const [key, normal] of keys) {
+    const want = normal(block?.[key]), have = normal(glue?.[key]);
+    if (JSON.stringify(want) !== JSON.stringify(have)) out.push(`${where} ${key}: the capability block says ${shownPart(block?.[key])}, glue.json says ${shownPart(glue?.[key])}`);
+  }
+  return out;
+}
+const same = value => value;
+const argumentKeys = [['kind', same], ['unit', sameUnit], ['range', sameRange], ['codes', labelTable]];
+const resultKeys = [['kind', same], ['unit', sameUnit], ['precision', same], ['rounding', same], ['codes', labelTable], ['labels', labelTable]];
+export function capabilityAgreement(block, glue) {
+  if (!block || typeof block !== 'object' || !Array.isArray(block.exports)) return ['the frozen ```capability block has no exports array'];
+  const problems = [], declared = new Map(block.exports.map(item => [item?.name, item])), described = new Map((glue?.exports ?? []).map(entry => [entry.name, entry]));
+  for (const name of declared.keys()) if (!described.has(name)) problems.push(`the capability block exports ${name}, which glue.json does not describe`);
+  for (const name of described.keys()) if (!declared.has(name)) problems.push(`glue.json describes ${name}, which the capability block does not export`);
+  for (const [name, item] of declared) {
+    const entry = described.get(name);
+    if (!entry) continue;
+    const want = Array.isArray(item.args) ? item.args : [], have = Array.isArray(entry.args) ? entry.args : [];
+    if (want.length !== have.length) problems.push(`${name}: the capability block declares ${want.length} arguments, glue.json ${have.length}`);
+    else want.forEach((arg, index) => problems.push(...partDifferences(`${name} argument ${index + 1} (${arg?.name ?? have[index]?.name})`, arg, have[index], argumentKeys)));
+    problems.push(...partDifferences(`${name} result`, item.result, entry.result, resultKeys));
+  }
+  const blockTraps = new Set(Array.isArray(block.traps) ? block.traps : []), glueTraps = new Set((glue?.traps ?? []).map(trap => trap.fn));
+  for (const name of blockTraps) if (!glueTraps.has(name)) problems.push(`the capability block lists ${name} as trapping, and glue.json has no trap for it`);
+  for (const name of glueTraps) if (!blockTraps.has(name)) problems.push(`glue.json has a trap for ${name}, which the capability block does not list as trapping`);
+  return problems;
+}

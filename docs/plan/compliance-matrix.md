@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-RMM |
-| Version | 1.1 |
+| Version | 1.2 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-08 |
@@ -52,7 +52,7 @@ documentation set. Rows marked A–E are the requirements Class E invokes; the r
 | 065 / 066 / 068 / 071 | Test plan, testing, evaluate results, update | A–D | Applies | [Test plan](../verification/test-plan.md), [test reports](../verification/reports/README.md) |
 | 187 | CM before test | A–C | Applies | CI runs on committed code |
 | 073 | Target platform validation | A–C | Tailored | CI: `ubuntu-latest`, Python 3.12, Node 22 and 26; local runs record their versions in the STR |
-| 189 / 190 | Code coverage | A–D / A–C | Tailored | `make coverage` measures Node and Python coverage; no target is set and it is not in CI ([test plan §5](../verification/test-plan.md#5-coverage)) |
+| 189 / 190 | Code coverage | A–D / A–C | Tailored | `make coverage` measures Node and Python coverage; no target is set. The CI job `coverage` exists but has not run on GitHub, and `make coverage` failing on a test failure is not verified (GAP-EF-016) ([test plan §5](../verification/test-plan.md#5-coverage)) |
 | 191 | Regression testing | A–C | Applies | Full suite in both modes on every push and PR ([ci.yml](../../.github/workflows/ci.yml)) |
 | 192 / 193 | Hazard tests, uplinked data | A–D / A–B | N/A | No hazards; no uplink |
 | 211 | Test reused components | A–C | Tailored | Pinned compilers are checked by digest before use; tsrs parity by requalification |
@@ -71,3 +71,4 @@ documentation set. Rows marked A–E are the requirements Class E invokes; the r
 |---|---|---|---|---|
 | 1.0 | 2026-11-08 | `4d692a4` | Initial baseline | this PR |
 | 1.1 | 2026-11-09 | round 4 | SWE-060/061, 135 and 189/190 now name `make lint` and `make coverage` | this commit |
+| 1.2 | 2026-11-09 | round 6 | SWE-189/190: the CI `coverage` job exists but has not run; GAP-EF-016 | this commit |

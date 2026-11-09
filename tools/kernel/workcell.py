@@ -8,6 +8,7 @@ from wasmtime.component import Component, Linker, ResourceHost, ResourceType
 
 from tools.kernel.contract import CONTRACT_VERSION, validate_component
 from tools.kernel.broker import Broker, DECLARED_IMPORTS, MAX_HOST_CALLS
+from tools.kernel.effects import EffectDenied, check, declaration
 
 
 RUNTIME_VERSION = "49.0.0"
@@ -17,18 +18,24 @@ MAX_TABLES = 2
 
 
 class Workcell:
-    def __init__(self, component, schemas, *, declared_imports=DECLARED_IMPORTS):
+    def __init__(self, component, schemas, *, declared_imports=DECLARED_IMPORTS, effects=None, journal=None):
         if version("wasmtime") != RUNTIME_VERSION:
             raise ValueError(f"wasmtime {RUNTIME_VERSION} required")
         if len(schemas) != 3 or any(type(s) is not str or not s for s in schemas):
             raise ValueError("three frozen schema identities required")
         self._schemas = (CONTRACT_VERSION, *schemas)
+        self.effects = declaration({"id": schemas[2], "effects": []} if effects is None else effects)
+        if self.effects["id"] != schemas[2]:
+            raise ValueError("effect declaration differs from the frozen effect schema")
+        if journal is not None and not callable(getattr(journal, "append", None)):
+            raise ValueError("denial journal must provide append")
+        self._journal = journal
         self.artifact = validate_component(component)
         if tuple(declared_imports) != DECLARED_IMPORTS:
             raise ValueError("kernel imports differ from candidate declaration")
         self.runtime = f"wasmtime-py/{RUNTIME_VERSION}/cranelift/fuel"
         self.cache_key = hashlib.sha256(
-            (self.artifact["id"] + self.runtime).encode("ascii")
+            (self.artifact["id"] + self.runtime + self.effects["sha256"]).encode("ascii")
         ).hexdigest()
         config = Config()
         config.wasm_component_model = True
@@ -52,7 +59,8 @@ class Workcell:
             raise ValueError("fuel must be between 1 and 10000000")
         if type(memory_bytes) is not int or not 65536 <= memory_bytes <= 16 * MAX_INPUT:
             raise ValueError("memory_bytes must be between 65536 and 16777216")
-        broker = Broker(snapshots, MAX_INPUT, authorize, max_host_calls)
+        broker = Broker(snapshots, MAX_INPUT, authorize, max_host_calls,
+                        None if self._journal is None else lambda entry: self._deny("broker", entry))
         with self._lock, Store(self._engine) as store, Linker(self._engine) as linker:
             store.set_limits(memory_size=memory_bytes, memories=1, instances=16,
                              tables=MAX_TABLES, table_elements=1024)
@@ -92,13 +100,25 @@ class Workcell:
                 finally:
                     for handle in handles:
                         handle.close()
+            effects = [{"capability": e.capability, "operation": e.operation,
+                        "payload": e.payload} for e in transition.effects]
+            denials = check(self.effects, effects)
+            if denials:
+                for entry in denials:
+                    self._deny("effect", entry)
+                raise EffectDenied(denials)
             return {
                 "state": transition.state,
-                "effects": [{"capability": e.capability, "operation": e.operation,
-                             "payload": e.payload} for e in transition.effects],
+                "effects": effects,
+                "effect_declaration_sha256": self.effects["sha256"],
                 "artifact_id": self.artifact["id"], "cache_key": self.cache_key,
                 "instantiate_ns": instantiate_ns, "run_ns": perf_counter_ns() - started,
                 "fuel_consumed": fuel - store.get_fuel(),
                 "buffer_bytes_read": broker.report()["buffer_bytes_read"],
                 "broker": broker.report(),
             }
+
+    def _deny(self, kind, entry):
+        if self._journal is not None:
+            self._journal.append({"kind": kind, "artifact_id": self.artifact["id"],
+                                  "effect_schema": self._schemas[3], **entry})

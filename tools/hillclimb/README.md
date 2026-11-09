@@ -121,25 +121,26 @@ at least 20 characters each, and an engine of `codex` or `claude` where one is n
 The runner gets `ENDOFORGE_WORKER` set to `native`, or to the stage's worker when `campaign.mix` is `false`.
 
 The default `campaign.runner` is [bin/run-atoms.mjs](bin/run-atoms.mjs), which runs
-`<atoms.json> --out <dir> --concurrency N --timeout S` on the atomizer scheduler (`schedule.mjs run`, run directory
-`<dir>/run`). A campaign's own `runner` gets the same arguments.
+`<atoms.json> --out <dir> --concurrency N --timeout S --policy <stage>.policy.json` on the atomizer scheduler
+(`schedule.mjs run`, run directory `<dir>/run`). A campaign's own `runner` gets the same arguments, `--policy`
+included.
 
 Each atom stage writes `<stage>.policy.json` next to `<stage>.atoms.json`: the atomizer policy with the campaign's
 `workdir`, this tool and the campaign `repo` added to `bindRoots`. The stage validates its atoms against that policy
-and the default runner passes it to the scheduler, so `plan-review` and the other stages work from any directory.
-Binds stay read-only; any other bind (such as `references.binds`) must still be under the atomizer's own `bindRoots`.
+and passes it to the runner (default or the campaign's own) with `--policy`, so `plan-review` and the other stages
+work from any directory. Binds stay read-only; any other bind (such as `references.binds`) must still be under the
+atomizer's own `bindRoots`.
 
 ## Limits
 
 - The round stages that launch model atoms (`review`, `fix`, `judge`, `round`) are run with a model only by use. The
   tests check the atoms they build, the runner contract, planning, scoring and the patch helper, with no model.
-- A campaign's own `runner` is not given the stage policy, so from outside the atomizer's `bindRoots` it must apply
-  its own.
 
 ## Tests
 
 `make lib-test` runs `test/lessons.test.mjs` and `test/runner.test.mjs` (the default runner is in the repository and
-maps onto the scheduler, `plan-review` works from an unrelated directory, `scripts/hc-patch.sh` prints its usage
+maps onto the scheduler, `plan-review` works from an unrelated directory, `review` hands a campaign's own runner the
+stage policy, `scripts/hc-patch.sh` prints its usage
 without arguments and still produces a repo-relative patch) and `test/fanout-plan-scoreboard.test.mjs` (ownership
 overlaps, lane assignment, wave sizing by the capacity dial, review, fix and judge atoms, the ratchet, re-atomizing,
 round scoring and the stop rule, all without a model). The fan-out library (`lib/fanout.mjs`: logins, lanes, worker commands,

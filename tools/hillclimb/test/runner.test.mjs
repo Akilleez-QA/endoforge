@@ -60,9 +60,9 @@ await test('the default runner maps the runner contract onto the atomizer schedu
   assert.match(r.stderr, /usage: run-atoms\.mjs/);
 });
 
-await test('a custom campaign runner keeps the documented contract; the default one also gets the campaign policy', async () => {
+await test('a custom campaign runner and the default one both get the campaign policy', async () => {
   const { runnerArgv, RUNNER } = await import('../lib/runner.mjs');
-  assert.deepEqual(runnerArgv({ runner: ['my-run'] }, 'a.json', '/o', '/p.json'), ['my-run', 'a.json', '--out', '/o', '--concurrency', '3', '--timeout', '14400']);
+  assert.deepEqual(runnerArgv({ runner: ['my-run'] }, 'a.json', '/o', '/p.json'), ['my-run', 'a.json', '--out', '/o', '--concurrency', '3', '--timeout', '14400', '--policy', '/p.json']);
   assert.deepEqual(runnerArgv({ concurrency: 2 }, 'a.json', '/o', '/p.json'), [process.execPath, RUNNER, 'a.json', '--out', '/o', '--concurrency', '2', '--timeout', '14400', '--policy', '/p.json']);
 });
 
@@ -85,6 +85,39 @@ await test('plan-review works from a directory that contains neither the round n
   const shared = JSON.parse(fs.readFileSync(path.join(REPO, 'tools/atomizer/policy.json'), 'utf8'));
   assert.ok(validate(JSON.parse(fs.readFileSync(atomsFile, 'utf8')), policy).ok);
   assert.deepEqual(policy.bindRoots.slice(0, shared.bindRoots.length), shared.bindRoots);
+});
+
+await test('review hands a campaign\'s own runner the stage policy file, with the workdir and this tool in bindRoots', () => {
+  const work = path.join(tmp, 'custom'), elsewhere = path.join(tmp, 'custom-elsewhere');
+  fs.mkdirSync(path.join(work, 'rounds/r01'), { recursive: true }); fs.mkdirSync(elsewhere);
+  const seen = path.join(tmp, 'custom-seen.json'), script = path.join(tmp, 'custom-runner.mjs');
+  fs.writeFileSync(script, `import fs from 'node:fs';
+import path from 'node:path';
+const argv = process.argv.slice(2);
+const at = name => argv[argv.indexOf(name) + 1];
+const policy = argv.includes('--policy') ? JSON.parse(fs.readFileSync(at('--policy'), 'utf8')) : null;
+fs.writeFileSync(${JSON.stringify(seen)}, JSON.stringify({ argv, policy }));
+const atoms = path.join(at('--out'), 'run', 'atoms');
+const put = (atom, file, text) => { fs.mkdirSync(path.join(atoms, atom, 'out'), { recursive: true }); fs.writeFileSync(path.join(atoms, atom, 'out', file), text); };
+put('consult', 'references.json', '[]'); put('consult', 'consult.md', 'none');
+put('critique', 'fixlist.json', '{"items":[]}');
+put('compose', 'FIXLIST.md', 'nothing to fix'); put('compose', 'score.json', JSON.stringify({ round: 1, score: 1 }));
+`);
+  const campaign = {
+    schema: 'endoforge/hillclimb/1', id: 'custom-runner-test', goal: 'stills read more clearly at a glance than last round',
+    workdir: work, render: [{ id: 'still', command: ['true'] }], owners: { A: { describe: 'lighting', scope: ['scene'] } },
+    critique: { count: 3 }, stop: { maxRounds: 1 }, runner: [process.execPath, script],
+  };
+  const f = path.join(work, 'campaign.json'); fs.writeFileSync(f, JSON.stringify(campaign));
+  const r = spawnSync(process.execPath, [HILLCLIMB, 'review', f], { cwd: elsewhere, encoding: 'utf8' });
+  assert.equal(r.status, 0, r.stderr);
+  const { argv, policy } = JSON.parse(fs.readFileSync(seen, 'utf8'));
+  assert.ok(policy, 'the custom runner got no --policy');
+  assert.equal(argv[argv.indexOf('--policy') + 1], path.join(work, 'rounds/r01/review.policy.json'));
+  assert.ok(policy.bindRoots.includes(path.resolve(work)));
+  assert.ok(policy.bindRoots.includes(TOOL));
+  assert.deepEqual(policy, JSON.parse(fs.readFileSync(path.join(work, 'rounds/r01/review.policy.json'), 'utf8')));
+  assert.equal(fs.readFileSync(path.join(work, 'rounds/r01/FIXLIST.md'), 'utf8'), 'nothing to fix');
 });
 
 fs.rmSync(tmp, { recursive: true, force: true });

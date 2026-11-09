@@ -5,10 +5,11 @@ it byte for byte, and hosts them in Wasmtime with fuel, memory and call limits. 
 candidate: a pure function from state and an event to the next state plus effects, where effects are requests
 returned as data that the kernel can never carry out itself.
 
-It is a standalone conformance lane. The candidate loop in [core/runtime](../../core/runtime/README.md) runs in V8
-isolates and imports nothing from here; this is where the portable, language-neutral form of the kernel contract is
-pinned and tested, with Wasmtime as the reference host. [compatibility](../compatibility/README.md) binds the same
-contract to TypeScript and [rust_lane](../rust_lane/README.md) builds a Rust component against it.
+The candidate loop in [core/runtime](../../core/runtime/README.md) runs in V8 isolates and imports nothing from here;
+this is where the portable, language-neutral form of the kernel contract is pinned and tested, with Wasmtime as the
+reference host. [compatibility](../compatibility/README.md) binds the same contract to TypeScript.
+[rust_lane](../rust_lane/README.md) builds Rust kernel crates against it and admits them only through this host:
+its admission runs each component's frozen task cases through `tools.kernel.conformance`.
 
 ## The contract
 
@@ -65,7 +66,23 @@ records; there is no carry-forward.
   reads and typed read errors. Results carry a `broker` report; at most 64 denial records are kept, never source bytes.
 - `declared_imports` (default `("endoforge:kernel/buffers@1.0.0",)`) must match the fixed import list exactly;
   declaring an extra capability cannot grant it.
-- `tools.kernel.limits.run_candidate(component, schemas, state, event, inputs, limits=Limits(...))` runs one candidate
+- `effects=declaration` checks every returned effect before the transition is released. A declaration is
+  `{"id", "max_effects", "effects": [{"capability", "operation", "payload": {"encoding", "min_bytes", "max_bytes",
+  "schema"}}]}`; its `id` must equal the frozen effect-schema identity the kernel's `describe` returns. Encodings are
+  `bytes`, `utf8` and `json`; a `json` payload may carry a schema (the ledger's schema subset, no `$ref`) and rejects
+  non-finite constants. Without a declaration no effect is permitted. Any undeclared effect, out-of-bounds payload,
+  bad encoding, schema mismatch or excess count rejects the whole transition with `EffectDenied`. The declaration's
+  SHA-256 is part of the cache key and every result.
+- `journal=DenialJournal(path)` makes denials durable: every broker denial (authority, host-call limit, stale handle,
+  typed read error) and every effect denial is appended, with the artifact id and effect schema, to an append-only
+  SQLite journal hash-chained with the ledger's `event_hash` and `encode`. Reopening verifies the whole chain;
+  update and delete are refused by triggers. Entry kinds are `broker`, `effect` and `admission`.
+- `tools.kernel.conformance.check(component, task, journal)` runs a frozen task (`id`, the three schemas, the effect
+  declaration and up to 256 hex-encoded cases with expected state and effects) through a `Workcell` and reports each
+  case as `passed`, `wrong`, `denied`, `trapped` or `refused`. `python -m tools.kernel.conformance` reads
+  `{"component", "task", "journal"}` on stdin so callers without Wasmtime can use it in a separate process.
+- `tools.kernel.limits.run_candidate(component, schemas, state, event, inputs, limits=Limits(...), effects=None)`
+  checks effects the same way and reports `denied` with the denials. It runs one candidate
   in a new host process watched from outside Wasmtime, including compilation, and kills the process group on timeout
   or output overflow. `Limits`: fuel 1–10,000,000 (default 100,000), memory 64 KiB–16 MiB (default 16 MiB), combined
   output 1 byte–1 MiB (default 1 MiB), wall time 0.01–60 s (default 5). Receipts give `wall_ns`, `time_to_stop_ns` and
@@ -109,8 +126,9 @@ executable. `make test` runs `make kernel-test` and never downloads.
 
 ## Limits
 
-- Validation is static: it does not run a reference kernel, check semantic conformance or admit artifacts into the
-  ledger. Effect payloads are not validated and denials have no durable record yet.
+- `validate_component` is static. Semantic conformance comes from `conformance.check` against a frozen task's cases;
+  the denial journal is separate from the ledger and nothing here writes ledger records. Effects are validated as
+  data; this host never dispatches them.
 - The in-process `Workcell` bounds guest instructions (fuel) and linear memory only. `run_candidate` adds a
   process-group watchdog on Linux; it does not claim cgroup or hostile native-code containment, OS sandboxing or
   calibrated timings.
@@ -118,8 +136,10 @@ executable. `make test` runs `make kernel-test` and never downloads.
 
 ## Tests
 
-`make kernel-test` runs `test_contract.py`, `test_workcell.py`, `test_broker.py` and `test_limits.py`. They compile
+`make kernel-test` runs `test_contract.py`, `test_workcell.py`, `test_broker.py`, `test_limits.py`,
+`test_effects.py` (declarations, payload checks, the denial journal and its chain, denials from the workcell and
+`run_candidate`) and `test_conformance.py` (frozen task cases in process and through the host-process entry). They compile
 fresh dummy components from the WIT as positive and negative controls (their functions trap), and build test
 components in temporary directories without changing fixtures.
 
-Engineering record: component C-17, requirements REQ-KERNEL-001 to REQ-KERNEL-004 and REQ-TOOLS-001.
+Engineering record: component C-17, requirements REQ-KERNEL-001 to REQ-KERNEL-005 and REQ-TOOLS-001.

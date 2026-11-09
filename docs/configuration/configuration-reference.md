@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-CFG |
-| Version | 3.5 |
+| Version | 3.6 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -178,11 +178,11 @@ trampoline.
 | Variable | Default | Effect | Read in |
 |---|---|---|---|
 | `WASM_TOOLS` | `wasm-tools` on `PATH` | Binary for component checks; `make tools` installs the pinned 1.262.0 in `.tools/bin`. | `tools/kernel/contract.py`, `tools/kernel/install_tools.py` |
-| `ENDOFORGE_WASMTIME` | `wasmtime` | Wasmtime binary for factory-runtime runs. | `tools/factory_runtime/wasm.py` |
-| `ENDOFORGE_WASMTIME_SHA256` | none; required | Must equal that binary's SHA-256. | `wasm.py` |
-| `ENDOFORGE_WORKER_IMAGE` | empty; required by the runner | Qualified container image digest for the factory runner. | `tools/factory_runtime/runner.py` |
+| `ENDOFORGE_WASMTIME` | empty | A Wasmtime CLI binary for factory-runtime runs. Empty uses the hash-pinned Wasmtime 49.0.0 wheel that `make tools` installs in `.tools/venv`. | `tools/factory_runtime/wasm.py` |
+| `ENDOFORGE_WASMTIME_SHA256` | none; required with `ENDOFORGE_WASMTIME` | Must equal that CLI binary's SHA-256; `wasm.run` refuses a CLI without it. | `wasm.py` |
+| `ENDOFORGE_WORKER_IMAGE` | empty; required by the runner | Qualified container image digest for the factory runner. The `RealDocker` test uses it, or else an image already on the host; it never pulls. | `tools/factory_runtime/runner.py` |
 | `RUSTC`, `CARGO` | `rustc`, `cargo` on `PATH` | Rust lane toolchain. | `tools/rust_lane/build.py` |
-| `CARGO_HOME` | none; required | Cargo cache for the Rust lane. The build sets `CARGO_TARGET_DIR` and `RUSTFLAGS` itself. | `build.py` |
+| `CARGO_HOME` | `~/.cargo` | Cargo cache for the Rust lane. The build sets `CARGO_TARGET_DIR` and `RUSTFLAGS` itself. | `build.py` |
 | `XDG_CONFIG_HOME` | `~/.config` | The job-locks registry is `<config>/job-locks/active.json`. Also copied into transport children. | `tools/job-locks/job-locks.py` |
 
 ### Set for children only
@@ -479,3 +479,4 @@ else `python3 -m trace` counts into `$(COVERAGE_DIR)/trace`). `make gap-tools-te
 | 3.3 | 2026-11-09 | round 3 | Library `gate` covers structured exports through the declared layout; no new option or environment variable | this commit |
 | 3.4 | 2026-11-09 | round 4 | `runNeed` `synthCell`; Makefile `RUFF_VERSION`, `RUFF`, `COVERAGE_DIR`, `GAP_PY_TESTS`, `GAP_NODE_TESTS` and the targets `lint`, `coverage` and `gap-tools-test` | this commit |
 | 3.5 | 2026-11-09 | round 5 | `ENDOFORGE_ASC` default is now the `tools/asc` pin; `ENDOFORGE_SECOND_HOST` (test-only) added | this commit |
+| 3.6 | 2026-11-09 | round 6 | `ENDOFORGE_WASMTIME` default is now empty (the pinned wheel); `ENDOFORGE_WASMTIME_SHA256` applies only to a CLI; `ENDOFORGE_WORKER_IMAGE` also feeds the `RealDocker` test; `CARGO_HOME` defaults to `~/.cargo` (corrected) | this commit |

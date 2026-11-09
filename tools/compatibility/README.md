@@ -34,13 +34,20 @@ event, snapshots, limits}`, where `source` is self-contained TypeScript or JavaS
 
 The host strips types and sends plain JavaScript, because Node's type stripper is WebAssembly with uncapped memory and
 the cell's WebAssembly limit refuses it. `port.mjs` loads the contract and the reducer in the cell and runs the same
-`probeTrustedReducer`. A reducer that hangs, exits or exhausts the heap gets a refused receipt whose reason names the
+`probeTrustedReducer`.
+
+Snapshots never travel with the job. They stay in the host, and the pool is created with `syncHostCalls:
+serveHostBuffer`, the synchronous host-call path of `IsolatePool` (a shared-memory channel in a thread cell, a pair of
+blocking pipes in a process cell). In the cell, `connectSyncHostCall` turns each borrowed buffer's `size` and `read`
+into a blocking call that `serveHostBuffer` answers from the host copy, so the WIT `read` stays synchronous. The
+contract still applies the read budget and bounds checks in the cell, and the host checks bounds again. Snapshot
+lists that are not arrays of at most 1,024 unshared byte arrays are refused before dispatch. A reducer that hangs, exits or exhausts the heap gets a refused receipt whose reason names the
 stop (`workcell: deadline`, `workcell: worker_exit`, `workcell: heap`), and the pool replaces the cell. Shared memory
 and a WIT file that differs from the pin are refused before dispatch.
 
 A workcell receipt adds `identities` (SHA-256 of the reducer source, the WIT and the evaluator; the Node version; the
-type stripper version) and `workcell` (cell id, isolation, cgroup state and limits, or `null` when refused before
-dispatch).
+type stripper version), `workcell` (cell id, isolation, cgroup state and limits, or `null` when refused before
+dispatch) and `hostBuffers` (`calls` and `bytesRead` that the host served for the job).
 
 ## Example
 
@@ -81,16 +88,19 @@ State 1 plus event 2 plus buffer byte 3 gives 6, with one `notify` effect. A red
   (`process`, `node:fs`). The lane stays for trusted reducers and does not safely run an untrusted candidate.
 - A pass does not certify determinism, authorize an effect, admit an artifact or create a ledger record. Do not
   mistake a compatibility receipt for a component-validation record.
-- Snapshot copying is a bounded conformance model, not production host-buffer calls: the WIT `read` is synchronous and
-  `IsolatePool` host calls are asynchronous, so snapshots are copied into the cell with the job.
+- Host-buffer reads cross a process or thread boundary per call, so a reducer that reads many small slices pays one
+  round trip each, and the pool caps a job at 4,096 host calls.
 
 The type checker for TypeScript is [tscheck](../tscheck/README.md); this lane holds none.
 
 ## Tests
 
-`make compatibility-test` runs `contract.test.mjs` (18 tests). Eleven call the probe directly: the WIT pin, the
-reference reducer, refusals of extra, missing, wrongly typed and asynchronous exports, budgets and borrowed-buffer
-revocation. Seven run real workcells: the reference reducer in process and thread mode with its identities, refusals
-from inside the cell, a hanging, exiting and heap-exhausting reducer, WIT drift and shared memory. It installs nothing.
+`make compatibility-test` runs `contract.test.mjs` (22 tests). Twelve call the probe directly: the WIT pin, the
+reference reducer, refusals of extra, missing, wrongly typed and asynchronous exports, budgets, borrowed-buffer
+revocation and host-backed buffers. Ten run real workcells: the reference reducer in process and thread mode with its
+identities, host-buffer reads in both modes, refusals from inside the cell, a hanging, exiting and heap-exhausting
+reducer, WIT drift, shared memory and malformed snapshot lists. `core/runtime/test/gaps6-hostcall.test.mjs` tests the
+pool's synchronous host-call path itself. It installs nothing.
 
-Engineering record: component C-18, requirement REQ-COMPAT-001.
+Engineering record: component C-18, requirement REQ-COMPAT-001; the pool's synchronous host-call path is REQ-ISO-019
+(component C-06).

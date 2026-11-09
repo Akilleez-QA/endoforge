@@ -9,8 +9,10 @@ import { wasm } from './fixtures/x1/wasm.mjs';
 const passThrough = { name: 'scale', params: ['f64'], results: ['f64'], body: [0x20, 0] };
 const guarded = { name: 'scale', params: ['f64'], results: ['f64'], body: [0x20, 0, 0x20, 0, 0x62, 0x04, 0x40, 0x00, 0x0b, 0x20, 0, 0x44, 0, 0, 0, 0, 0, 0, 0xf0, 0x7f, 0x61, 0x04, 0x40, 0x00, 0x0b, 0x20, 0, 0x44, 0, 0, 0, 0, 0, 0, 0xf0, 0xff, 0x61, 0x04, 0x40, 0x00, 0x0b, 0x20, 0] };
 const toZero = { name: 'scale', params: ['f64'], results: ['f64'], body: [0x44, 0, 0, 0, 0, 0, 0, 0, 0] };
-const kernel = (fn, contract) => {
-  const c = candidate();
+const scaleBlock = (unit = '1', name = 'x') => ({ exports: [{ name: 'scale', args: [{ name, kind: 'number', unit }], result: { kind: 'number', unit: '1', precision: 2 } }], traps: [] });
+const fenced = (text, block) => `${text}\n\n\`\`\`capability\n${JSON.stringify(block)}\n\`\`\`\n`;
+const kernel = (fn, text, block = scaleBlock()) => {
+  const c = candidate(), contract = fenced(text, block);
   c.files['CONTRACT.md'] = contract;
   c.files['kernel.ts'] = 'export function scale(x: f64): f64 { return x }';
   c.files['tests.json'] = JSON.stringify([{ name: 'one', fn: 'scale', args: [fn === toZero ? 0 : 1], expect: fn === toZero ? 0 : 1 }]);
@@ -73,7 +75,7 @@ test('a unit that disagrees with a name is recorded by the glue gate and refused
   const glue = glueFor([arg('massLb', '°F'), arg('tempF', 'lb')]);
   assert.match(unitDisagreements(glue).join(), /disagrees with the name/);
   assert.deepEqual(glueProblems(glue, { source, contract: '' }), []);
-  const c = kernel(toZero, 'Results are finite numbers.');
+  const c = kernel(toZero, 'Results are finite numbers.', scaleBlock('lb', 'valueF'));
   c.files['kernel.ts'] = 'export function scale(valueF: f64): f64 { return 0 }';
   c.compiled.source = hash(c.files['kernel.ts']);
   c.files['glue.json'] = JSON.stringify({ ...JSON.parse(c.files['glue.json']), exports: [{ name: 'scale', label: 'Scale a value', args: [{ name: 'valueF', kind: 'number', unit: 'lb' }], result: { kind: 'number', unit: '1', precision: 2 } }] });

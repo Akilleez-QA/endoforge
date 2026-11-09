@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SAR |
-| Version | 1.4 |
+| Version | 1.5 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -43,7 +43,9 @@ Findings:
   launch and a completed protected provider call) and GAP-EF-006 (campaign transfer to a real second host). Round 5
   closed both: the sandboxed-worker tests ran and passed on the development host, and the real second-host test
   passed against ds9, a separate machine, on 2026-11-09 (it skips in CI, where `ENDOFORGE_SECOND_HOST` is unset).
-  No gap is open.
+  Round 6 opened two: GAP-EF-015 (`tools/gate/gate.mjs freeze` does not require a capability block, while the loop's
+  freeze does and `gate run` refuses its absence at G7) and GAP-EF-016 (`make coverage` failing on a test failure and
+  the CI `coverage` job, round-6 item M2, not finished).
 - Trace check after the update (`python3 -I tools/check_trace.py`): 95 requirements, 95 traced, 14 gaps, 0 TBD; 97
   discovered test files, 92 traced and 5 supporting; 0 problems. After the round-2 records pass on 2026-11-09: 127
   requirements, 127 traced, 10 gaps; 111 discovered test files, 105 traced and 6 supporting; 0 problems. After the
@@ -51,7 +53,9 @@ Findings:
   supporting; 0 problems. After the round-4 records pass: 146 requirements, 146 traced, 2 gaps; 125 discovered test
   files, 119 traced and 6 supporting; 0 problems. After the round-5 records pass: 147 requirement IDs, of which
   REQ-STEP-001 is deleted and traces to its retirement check, 147 traced, 0 gaps; 127 discovered test files, 120
-  traced and 7 supporting (one more: the archived step harness tests); 0 problems.
+  traced and 7 supporting (one more: the archived step harness tests); 0 problems. After the round-6 records pass: 150
+  requirement IDs (one deleted), 150 traced, 2 gaps; 135 discovered test files, 128 traced and 7 supporting; 0
+  problems.
 
 ### Design analysis
 
@@ -61,7 +65,8 @@ Findings: the previous table had no requirement column and omitted the kernel ho
 hardware record, atomizer, conductor, hillclimb, factory tools, Rust lane and repository checks. All are now components
 C-01 to C-31; each lists its requirements. After round 5 every live component has a tested requirement; C-20, the
 step harness, is retired to `TODELETE/` with REQ-STEP-001 deleted, because nothing here called it and it needs a POODO
-decision core this repository does not have.
+decision core this repository does not have. Round 6 gave C-17, the kernel host, its first caller outside its own
+tests: C-26's admission. C-27 and C-30 name the round-6 gaps (GAP-EF-016, GAP-EF-015).
 
 ### Testing analysis
 
@@ -80,7 +85,10 @@ Findings:
   `tools/factory_runtime/test_runtime_gaps.py` `Egress.test_run_bounded_outcomes` passes alone but fails when it
   shares one process with the other coverage modules (leaked sqlite connections raise `ResourceWarning`s inside its
   window), so the Python half of the job is expected to fail; and without coverage.py the Makefile's trace fallback
-  exits 0 even when a unittest fails.
+  exits 0 even when a unittest fails. Round 6 fixed the first cause in the test (REQ-FACTORY-003:
+  `Egress.test_run_bounded_outcomes` now ignores garbage other modules leave, with a regression test). Making
+  `make coverage` fail on any test failure and getting the CI job to pass (item M2) is not finished; it is registered
+  as GAP-EF-016 and the job has still not run on GitHub.
 - Delegated cgroup enforcement is tested inside a delegated user scope (REQ-ISO-018, GAP-EF-001 closed) and skips
   with its reason elsewhere; it ran on the development host on 2026-11-09, and the GitHub runner result is not
   recorded. The Rust lane runs in its own CI job and passed in PR #139 (run 42600069278).
@@ -93,6 +101,21 @@ Findings:
   scheduler, atomizer commands, hillclimb `waveSize`, job kinds and the release-record generator. The
   [CHANGELOG](../../CHANGELOG.md) lists each fix.
 - `tools/test_gate_structured.mjs` (REQ-GATECLI-001) is run by `make gate-test`, part of `make test`.
+- Round 6 added eight test files (`gaps6-capability`, `gaps6-hostcall` and `gaps6-synthcell` under
+  `core/runtime/test/`, `tools/kernel/test_effects.py` and `test_conformance.py`, and `tools/lib/test/lock`,
+  `headroom` and `exitfile`) and extended five more. Requiring the capability block at the freeze showed that 25
+  existing tests and two examples froze contracts without one; in `loop-review.test.mjs` the weak-test cases had been
+  refused at the freeze for that reason instead of the fault they name, so they passed without testing it. They now
+  carry agreeing blocks. The new `current`-path `synthCell` test found that a synthesized-evaluator refusal there had
+  no `problem` field (fixed). The new `gaps6-hostcall` cases failed against the round-5 pool first; the `tools/lib`
+  tests found no defect. Each atom's conductor check passed on 2026-11-09; none of these files is in a recorded STR
+  yet, and no CI run of them is recorded.
+- The factory runtime's `RealDocker` cases have not run: the Docker socket on the development host needs `sudo`, and
+  the tests never escalate, so they skip with that reason. The runner is shown working only against a stand-in Docker
+  CLI.
+- `examples/library-reuse.mjs` and its how-to were written to show a third need that misses with `no_capability`.
+  Since round 6 the test double's default contract carries a block, so the third need is served from the library; the
+  how-to now shows that output, and the example no longer demonstrates a miss.
 
 ### Source code quality
 
@@ -137,7 +160,8 @@ No issues were filed for these findings; they are reported to the maintainer thr
 ### Overall assessment
 
 Every requirement traces to tests that exist, and every discovered test file traces to a requirement or is classified.
-No behaviour is registered as untested: GAP-EF-002 and GAP-EF-006 were closed in round 5, after the other twelve.
+Two behaviours are registered as untested, both opened in round 6: GAP-EF-015 (the gate CLI's freeze) and GAP-EF-016
+(the coverage target and CI job). The other fourteen gaps are closed.
 The real second-host case and the sandboxed-worker cases skip where their host prerequisites are missing, including in CI for the second host. Assurance is author-side only; no independent review has been performed.
 
 ## Change history
@@ -149,3 +173,4 @@ The real second-host case and the sandboxed-worker cases skip where their host p
 | 1.2 | 2026-11-09 | round 3 | Round-3 trace counts; the gate CLI test now runs under `make gate-test` | this commit |
 | 1.3 | 2026-11-09 | round 4 | Round-4 trace counts; lint and coverage now exist (D-02 closed); the Rust lane's first CI run passed; two gaps open | this commit |
 | 1.4 | 2026-11-09 | round 5 | Round-5 trace counts; GAP-EF-002 and GAP-EF-006 closed (no gap open); C-20 retired; the CI coverage job and its expected Python failure recorded | this commit |
+| 1.5 | 2026-11-09 | round 6 | Round-6 trace counts; GAP-EF-015 and GAP-EF-016 opened; the round-6 test files and the defects they exposed; the unrun `RealDocker` cases; C-17 gains a caller | this commit |

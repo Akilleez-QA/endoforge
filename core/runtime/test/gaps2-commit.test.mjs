@@ -105,6 +105,13 @@ const todoContract = [
   'reduce(state, event) applies one event and returns the next state: type 0 adds an open item with the next id, type 1 toggles the item with the event id, type 2 removes it and closes the gap.',
   'reduce traps on non-finite or negative hours, an unknown id, a full list or an unknown event type.',
   'openHours(state) returns the total hours of the open items as a finite number shown with two decimal places.',
+  '',
+  '```capability',
+  JSON.stringify({ exports: [
+    { name: 'reduce', args: [{ name: 'state', kind: 'record' }, { name: 'event', kind: 'record' }], result: { kind: 'record' } },
+    { name: 'openHours', args: [{ name: 'state', kind: 'record' }], result: { kind: 'number', unit: 'h', precision: 2 } },
+  ], traps: ['reduce'] }),
+  '```',
 ].join('\n');
 const item = { kind: 'record', fields: [
   { name: 'id', kind: 'integer', unit: '1' },

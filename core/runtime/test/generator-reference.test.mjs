@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { generate, referenceRule } from '../x1/generator.mjs';
 import { fillExpected } from '../x1/reference.mjs';
+import { capabilityFor } from './fixtures/x1/candidate.mjs';
 const fake = new URL('./fixtures/x1/fake-codex.mjs', import.meta.url).pathname;
 test('reference evaluator fills expected values and tolerances from the formula', async () => {
   const code = 'function f(x) { if (x < 0) throw Error("neg"); return Math.sqrt(x); } function g(x) { return x * 2; } function h(x) { return x > 1; }';
@@ -24,7 +25,8 @@ test('reference mode freezes evaluator-computed expectations, not model numbers'
   t.after(() => rm(root, { recursive: true, force: true }));
   const record = join(root, 'record');
   const env = { ...process.env, ENDOFORGE_CODEX_CMD: JSON.stringify([process.execPath, fake]), CODEX_HOME: join(root, 'none'),
-    ENDOFORGE_CODEX_TEST_DOUBLE: '1', ENDOFORGE_CODEX_TERSE: 'reference', FAKE_CODEX_MODE: 'reference', FAKE_CODEX_RECORD: record };
+    ENDOFORGE_CODEX_TEST_DOUBLE: '1', ENDOFORGE_CODEX_TERSE: 'reference', FAKE_CODEX_MODE: 'reference', FAKE_CODEX_RECORD: record,
+    FAKE_CODEX_CONTRACT: `Integer addition on [-10,10]; inputs above 10 trap.\n\n${capabilityFor([['add', ['a', 'b']]], ['add'])}` };
   const out = await generate({ need: 'integer add(a,b)', directory: join(root, 'x'), env });
   assert.deepEqual(JSON.parse(out.candidate.files['tests.json']), [{ name: 'add', fn: 'add', args: [2, 3], expect: 5 }, { name: 'high', fn: 'add', args: [11, 0], expectError: true }]);
   assert.equal(await readFile(join(out.reference.root, 'tests.json'), 'utf8'), out.candidate.files['tests.json']);

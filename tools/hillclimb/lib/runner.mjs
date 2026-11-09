@@ -13,7 +13,7 @@ export function campaignPolicy(policy, c) {
 
 export function runnerArgv(c, atomsFile, outDir, policyFile) {
   const tail = [atomsFile, '--out', outDir, '--concurrency', String(c.concurrency ?? 3), '--timeout', String(c.runTimeoutSec ?? 14400)];
-  return c.runner ? [...c.runner, ...tail] : [...defaultRunner(), ...tail, '--policy', policyFile];
+  return [...(c.runner ?? defaultRunner()), ...tail, '--policy', policyFile];
 }
 
 export function scheduleArgv(argv, scheduler) {

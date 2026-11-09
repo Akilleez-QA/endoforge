@@ -1,0 +1,109 @@
+{
+  "id": "tally-v1",
+  "schemas": {
+    "state": "tally-total-u64le-v1",
+    "event": "tally-amounts-u32le-v1",
+    "effect": "tally-effects-v1"
+  },
+  "effects": {
+    "id": "tally-effects-v1",
+    "max_effects": 1,
+    "effects": [
+      {
+        "capability": "notify",
+        "operation": "threshold",
+        "payload": {
+          "encoding": "json",
+          "max_bytes": 32,
+          "schema": {
+            "type": "object",
+            "required": [
+              "total"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "total": {
+                "type": "integer"
+              }
+            }
+          }
+        }
+      },
+      {
+        "capability": "audit",
+        "operation": "malformed",
+        "payload": {
+          "encoding": "bytes",
+          "min_bytes": 4,
+          "max_bytes": 4
+        }
+      }
+    ]
+  },
+  "cases": [
+    {
+      "name": "first-amount",
+      "state": "",
+      "event": "0a000000",
+      "inputs": [],
+      "expect": {
+        "state": "0a00000000000000",
+        "effects": []
+      }
+    },
+    {
+      "name": "batch-from-buffer",
+      "state": "0a00000000000000",
+      "event": "",
+      "inputs": [
+        "0500000007000000"
+      ],
+      "expect": {
+        "state": "1600000000000000",
+        "effects": []
+      }
+    },
+    {
+      "name": "threshold-crossed",
+      "state": "de03000000000000",
+      "event": "14000000",
+      "inputs": [],
+      "expect": {
+        "state": "f203000000000000",
+        "effects": [
+          {
+            "capability": "notify",
+            "operation": "threshold",
+            "payload": "7b22746f74616c223a313031307d"
+          }
+        ]
+      }
+    },
+    {
+      "name": "above-threshold",
+      "state": "f203000000000000",
+      "event": "01000000",
+      "inputs": [],
+      "expect": {
+        "state": "f303000000000000",
+        "effects": []
+      }
+    },
+    {
+      "name": "malformed-event",
+      "state": "0700000000000000",
+      "event": "010203",
+      "inputs": [],
+      "expect": {
+        "state": "0700000000000000",
+        "effects": [
+          {
+            "capability": "audit",
+            "operation": "malformed",
+            "payload": "03000000"
+          }
+        ]
+      }
+    }
+  ]
+}

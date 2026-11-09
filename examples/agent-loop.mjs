@@ -12,6 +12,10 @@ next(state, event) returns the next state.
 - state: 0 locked, 1 unlocked. event: 0 coin, 1 push.
 - A coin always leaves the turnstile unlocked. A push always leaves it locked.
 - Any state or event outside 0..1 traps.
+
+\`\`\`capability
+{"exports":[{"name":"next","args":[{"name":"state","kind":"code","unit":"1","codes":{"0":"locked","1":"unlocked"}},{"name":"event","kind":"code","unit":"1","codes":{"0":"coin","1":"push"}}],"result":{"kind":"code","unit":"1","codes":{"0":"locked","1":"unlocked"}}}],"traps":["next"]}
+\`\`\`
 `;
 const tests = [
   { name: 'coin unlocks', fn: 'next', args: [0, 0], expect: 1 },

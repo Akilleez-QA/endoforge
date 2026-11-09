@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import path from 'node:path';
 import { readFileSync } from 'node:fs';
-import { glueFindings, hasNonFinite, nonFiniteExpectation, probeProblem, unitDisagreements } from './contract.mjs';
+import { capabilityAgreement, capabilityBlock, glueFindings, hasNonFinite, nonFiniteExpectation, probeProblem, unitDisagreements } from './contract.mjs';
 import { unitFindings } from './dimensions.mjs';
 import { LayoutError, bufferArity, callKernel, freshKernel, invoke, isBuffer, kernelFuel, layoutOf, parseBufferEntries, probeCalls, scalarKinds } from './measure.mjs';
 import { loadKernel } from './meter.mjs';
@@ -244,6 +244,8 @@ result.gates.G5_deterministic = { ok: same };
         const findings = glueFindings(glue, { source: fs.readFileSync(f('kernel.ts'), 'utf8'), contract: fs.readFileSync(f('CONTRACT.md'), 'utf8') });
         problems.push(...findings.problems);
         codeAdvisory.push(...findings.advisory);
+        const capability = capabilityBlock(fs.readFileSync(f('CONTRACT.md'), 'utf8'));
+        problems.push(...(capability.error ? [capability.error] : capabilityAgreement(capability.block, glue)));
       }
     }
   }

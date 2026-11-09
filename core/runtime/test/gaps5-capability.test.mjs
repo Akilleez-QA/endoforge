@@ -101,9 +101,13 @@ test('P1: a generated need hits a promoted capability through library lookup on 
   const pool = new IsolatePool({ hostPort: host, size: 1, isolation: 'thread' });
   t.after(() => pool.close());
   const missed = watched(library);
-  const before = await runNeed({ need: 'integer add(a,b)', directory: join(root, 'without'), pool, env: codexEnv(root), library: missed });
+  const blockless = 'Sum of two integers, each on [-10,10].';
+  assert.match(capabilityProblems(blockless, tests).join(), /no .*capability block/);
+  const before = await runNeed({ need: 'integer add(a,b)', directory: join(root, 'without'), pool, env: codexEnv(root, { FAKE_CODEX_CONTRACT: blockless }), library: missed });
+  assert.equal(before.promoted, false, JSON.stringify(before));
   assert.equal(before.reused, undefined);
-  assert.equal(missed.outcomes.at(-1).outcome.reason, 'no_capability');
+  assert.deepEqual(missed.outcomes, []);
+  assert.throws(() => readFileSync(join(root, 'without', 'candidate', 'frozen.sha256')));
   const served = watched(library), record = join(root, 'hit');
   const hit = await runNeed({ need: 'integer add(a,b)', directory: join(root, 'with'), pool, env: codexEnv(root, { FAKE_CODEX_CONTRACT: withBlock(declared), FAKE_CODEX_RECORD: record }), library: served });
   assert.equal(served.outcomes.length, 1);
@@ -128,8 +132,10 @@ test('P1: a generated need hits a promoted capability through library lookup on 
     return { result, served, stages };
   };
   const before = await run('without', 'Sum of two integers, each on [-10,10].');
+  assert.equal(before.result.promoted, false, JSON.stringify(before.result));
   assert.equal(before.result.reused, undefined);
-  assert.equal(before.served.outcomes.at(-1).outcome.reason, 'no_capability');
+  assert.deepEqual(before.served.outcomes, []);
+  assert.ok(before.stages.every(stage => stage === 'specification'), JSON.stringify(before.stages));
   const after = await run('with', withBlock(declared));
   assert.equal(after.served.outcomes.length, 1);
   const { need, outcome } = after.served.outcomes[0];

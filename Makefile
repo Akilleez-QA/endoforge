@@ -157,6 +157,25 @@ lint:
 	$(RUFF) check --output-format=concise .
 	find . \( -name node_modules -o -name .git -o -name .tools -o -name .test-work \) -prune -o -type f \( -name '*.mjs' -o -name '*.js' -o -name '*.cjs' \) -print0 | xargs -0 -n1 -P4 node --check
 
+define TRACE_RUNNER
+import os, sys, trace, unittest
+sys.path[0] = os.getcwd()
+tracer = trace.Trace(count=1, trace=0, ignoredirs=[sys.base_prefix])
+scope = {"unittest": unittest, "argv": ["unittest", *sys.argv[2:]], "__name__": "__trace_runner__"}
+passed = False
+try:
+    tracer.runctx("outcome = unittest.main(module=None, argv=argv, exit=False).result", scope, scope)
+    passed = scope["outcome"].testsRun > 0 and scope["outcome"].wasSuccessful()
+except SystemExit as stop:
+    print(f"test run stopped early with SystemExit({stop.code!r})", file=sys.stderr)
+finally:
+    results = tracer.results()
+    results.counts = {key: count for key, count in results.counts.items() if os.path.exists(key[0])}
+    results.write_results(show_missing=True, summary=True, coverdir=sys.argv[1])
+sys.exit(0 if passed else 1)
+endef
+export TRACE_RUNNER
+
 coverage: coverage-node coverage-python
 
 coverage-node: tscheck-setup loop-setup
@@ -169,5 +188,5 @@ coverage-python:
 		$(firstword $(PYTHON)) -B -m coverage report --data-file=$(COVERAGE_DIR)/python; \
 	else \
 		echo 'coverage.py is not installed; reporting trace counts'; \
-		$(firstword $(PYTHON)) -B -m trace --count --summary --missing --coverdir=$(COVERAGE_DIR)/trace --ignore-dir="$$($(firstword $(PYTHON)) -c 'import sys; print(sys.base_prefix)')" --module unittest $(filter-out tests.test_check_trace,$(PY_COVERAGE_TESTS)); \
+		$(firstword $(PYTHON)) -B -c "$$TRACE_RUNNER" $(COVERAGE_DIR)/trace $(PY_COVERAGE_TESTS); \
 	fi

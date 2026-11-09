@@ -97,6 +97,11 @@ const glue = {
   ],
   traps: [{ fn: 'reduce', when: 'the event names a missing item, the list is full or hours are invalid', message: 'This event cannot be applied to the list.' }],
 };
+const declared = value => Object.fromEntries(['name', 'kind', 'unit', 'range', 'precision', 'codes', 'labels'].filter(key => value[key] !== undefined).map(key => [key, value[key]]));
+const capable = (text, glueValue) => `${text}\n\n\`\`\`capability\n${JSON.stringify({
+  exports: glueValue.exports.map(entry => ({ name: entry.name, args: entry.args.map(declared), result: declared(entry.result) })),
+  traps: [...new Set(glueValue.traps.map(trap => trap.fn))],
+})}\n\`\`\`\n`;
 const milk = { id: 1, done: false, hours: 0.5, title: 'buy milk' };
 const bike = { id: 2, done: false, hours: 2.25, title: 'fix the bike ☕' };
 const event = (type, id, hours = 0, title = '') => ({ type, id, hours, title });
@@ -164,7 +169,7 @@ chmodSync(fixtureAsc, 0o755);
 const realCompiler = existsSync(asc);
 const compiler = realCompiler ? asc : fixtureAsc;
 const gateCli = (args, env = {}) => spawnSync(process.execPath, [gate, ...args], { encoding: 'utf8', timeout: 300_000, env: { ...process.env, ENDOFORGE_ASC: compiler, ...env } });
-function kernelDir({ id = 'todo', contractText = contract, tests = todoTests, source = kernel, glueValue = glue } = {}) {
+function kernelDir({ id = 'todo', contractText = capable(contract, glue), tests = todoTests, source = kernel, glueValue = glue } = {}) {
   const root = mkdtempSync(path.join(tmpdir(), 'ef-gate-'));
   roots.push(root);
   const dir = path.join(root, id);
@@ -253,7 +258,7 @@ test('H9: glue for structured state is checked against the module and the declar
 });
 
 test('H9: a scalar kernel still passes, now under the same nine gates as the loop', () => {
-  const { outcome, result } = run(kernelDir({ id: 'shipping', contractText: shippingContract, tests: shippingTests, source: shippingKernel, glueValue: shippingGlue }));
+  const { outcome, result } = run(kernelDir({ id: 'shipping', contractText: capable(shippingContract, shippingGlue), tests: shippingTests, source: shippingKernel, glueValue: shippingGlue }));
   assert.deepEqual(failing(result), []);
   assert.equal(outcome.status, 0);
   assert.equal(result.promotable, true);
@@ -261,7 +266,7 @@ test('H9: a scalar kernel still passes, now under the same nine gates as the loo
 });
 
 test('H9: tests that assert nothing are refused at the frozen gate, as in the loop', () => {
-  const { result } = run(kernelDir({ id: 'shipping', contractText: shippingContract, tests: [], source: shippingKernel, glueValue: shippingGlue }));
+  const { result } = run(kernelDir({ id: 'shipping', contractText: capable(shippingContract, shippingGlue), tests: [], source: shippingKernel, glueValue: shippingGlue }));
   assert.equal(result.gates.G1_frozen.ok, false);
   assert.match(result.gates.G1_frozen.why, /nonempty/);
   assert.equal(result.promotable, false);

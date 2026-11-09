@@ -70,7 +70,7 @@ thread cells on the agent path (116 against 124 ms p50).
 | `jobDeadlineMs` | unset | Total time from dispatch, host calls included |
 | `warmTimeoutMs` | 60,000 | A cell still warming is terminated and counts as a start failure |
 | `retireAfterJobs` | 256 | A cell is replaced after that many jobs |
-| Host calls | 4,096 per job, 1 MiB each | `hostCalls` channel |
+| Host calls | 4,096 per job, 1 MiB each, asynchronous and synchronous together; a synchronous reply up to 17 MiB | `hostCalls` and `syncHostCalls` channels |
 
 `createLoopPool` ([loop.mjs](../../core/runtime/x1/loop.mjs)) builds a pool for the loop: process cells by default,
 `jobTimeoutMs` 60 s, `jobDeadlineMs` 900 s, the `WORKCELL` limits of [tools/asc/pin.mjs](../../tools/asc/pin.mjs)
@@ -130,12 +130,13 @@ interrupted until the call returns; use process cells where a deadline must hold
 
 ## Talking to the host
 
-A cell has three channels to its supervisor, and no other route out:
+A cell has up to four channels to its supervisor, and no other route out:
 
 | Channel | Used by | Rules |
 |---|---|---|
 | `hostCall(request)` | Ports that need the supervisor's `hostCalls` function | At most 4,096 per job and 1 MiB each; the supervisor decides what a request means |
 | `host(call)` | The loop port's `model` and `admit` calls, answered by the pool's `hostCall` handler | The handler maps a call to its job from the host's own job data, so a cell cannot name another job. While a call is out, the cell answers liveness pings |
+| `syncHostCall(request)` | Ports whose interface is synchronous, when the pool has `syncHostCalls`; the port gets the channel as `portOptions.syncHostCall` and opens it with `connectSyncHostCall` | The call blocks the cell until the supervisor's `syncHostCalls` function answers: a growable `SharedArrayBuffer` with `Atomics.wait` in a thread cell, length-prefixed frames on file descriptors 4 and 5 in a process cell. Same per-job count and request size as `hostCall`. `jobTimeoutMs` pauses while the host answers; `jobDeadlineMs` does not. Without `syncHostCalls` no channel is passed. The [compatibility workcell](../../tools/compatibility/README.md) reads snapshots this way |
 | `verifyFrozen` | `frozenThroughLedger: true` | The evaluator's frozen checks go to the bridge instead of a new `python3` per check |
 
 ## The ledger bridge

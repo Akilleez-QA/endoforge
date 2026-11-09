@@ -10,8 +10,9 @@ import { scriptedProvider } from '../x1/transports.mjs';
 import { analyzeSpecification, applyChanges, formulaReference, freezeSpecification, parseExpression, rangeRules, referenceFunctions } from '../x1/oracle.mjs';
 import { specificationProblems } from '../x1/agent.mjs';
 import { idOf, reply, stageOf } from './fixtures/x1/scripted-model.mjs';
+import { withCapability } from './fixtures/x1/candidate.mjs';
 
-const contract = ['# kW to horsepower', '', '`kwToHp(kw: f64): f64`', '', 'hp = kw * 1000 / 745.699872', '', 'Show 3 decimal places.', '', '## Valid input', '- 0 <= kw <= 10000', '', 'Any other input traps.'].join('\n');
+const prose = ['# kW to horsepower', '', '`kwToHp(kw: f64): f64`', '', 'hp = kw * 1000 / 745.699872', '', 'Show 3 decimal places.', '', '## Valid input', '- 0 <= kw <= 10000', '', 'Any other input traps.'].join('\n');
 const reference = 'function kwToHp(kw) { if (!(kw >= 0 && kw <= 10000)) throw Error("range"); return kw * 1000 / 745.699872; }';
 const tests = expect => JSON.stringify([{ name: 'request', fn: 'kwToHp', args: [6.2], expect, tol: 0.0001 }, { name: 'one', fn: 'kwToHp', args: [1], expect: 1.341022089595028, tol: 1e-9 },
   { name: 'zero', fn: 'kwToHp', args: [0], expect: 0 }, { name: 'negative', fn: 'kwToHp', args: [-1], expectError: true }]);
@@ -19,6 +20,7 @@ const kernel = 'export function kwToHp(kw: f64): f64 { if (!(kw >= 0.0 && kw <= 
 const glue = id => JSON.stringify({ id, assumption: 'Power is real power in kilowatts.', question: 'How many horsepower is this many kilowatts?',
   exports: [{ name: 'kwToHp', label: 'Horsepower', args: [{ name: 'kw', kind: 'number', unit: 'kW', range: '0..10000' }], result: { kind: 'number', unit: 'hp', precision: 3 } }],
   traps: [{ fn: 'kwToHp', when: 'kw is outside 0..10000', message: 'Power is outside the supported range.' }] });
+const contract = withCapability(prose, glue('kw'));
 const files = expect => ({ 'CONTRACT.md': contract, 'tests.json': tests(expect), 'reference.js': reference });
 const specReply = (expect, withReference = true) => reply({ calls: [{ name: 'edit_file', path: 'CONTRACT.md', content: contract }, { name: 'edit_file', path: 'tests.json', content: tests(expect) },
   ...(withReference ? [{ name: 'edit_file', path: 'reference.js', content: reference }] : []), { name: 'done' }] });
