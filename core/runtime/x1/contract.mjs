@@ -1,3 +1,4 @@
+import { isBuffer, scalarLeaves } from './measure.mjs';
 const nonFinite = /\b(?:non-?finite|nan|infinit(?:e|y|ies))\b/i;
 const statedFinite = /\bmust be finite\b|\bfinite and\b/i;
 const trapVerb = /\b(?:traps?|trapping|rejects?|rejecting|aborts?|throws?)\b/i;
@@ -34,9 +35,15 @@ export function nonFiniteExpectation(contract, names) {
     return [name, 'silent'];
   }));
 }
+export function hasNonFinite(value) {
+  if (typeof value === 'number') return !Number.isFinite(value);
+  if (Array.isArray(value)) return value.some(hasNonFinite);
+  return value !== null && typeof value === 'object' && Object.values(value).some(hasNonFinite);
+}
 export function probeProblem(expectation, outcome) {
+  if (outcome.problem) return outcome.problem;
   if (expectation === 'trap' && !outcome.trap) return 'returned where the contract requires a trap';
-  if (expectation === 'finite' && !outcome.trap && typeof outcome.value === 'number' && !Number.isFinite(outcome.value)) return 'returned a non-finite result the contract rules out';
+  if (expectation === 'finite' && !outcome.trap && hasNonFinite(outcome.value)) return 'returned a non-finite result the contract rules out';
   return null;
 }
 export function kernelParameters(source) {
@@ -69,7 +76,9 @@ const overlap = (a, b) => [...tokens(a)].filter(word => tokens(b).has(word)).len
 export function unitDisagreements(glue) {
   const found = [];
   for (const entry of glue.exports) {
-    for (const [label, unit] of [...entry.args.map(arg => [arg.name, arg.unit]), [entry.name, entry.result.unit]]) {
+    const leaves = [...entry.args.flatMap(arg => scalarLeaves(arg, arg.name, arg.name)), ...scalarLeaves(entry.result, entry.name, entry.name)];
+    for (const { name: label, type: { unit } } of leaves) {
+      if (typeof unit !== 'string') continue;
       const fromName = nameFamily(label), fromUnit = unitFamily(unit);
       if (fromName && fromUnit && fromName !== fromUnit) found.push(`${label}: glue unit ${unit} disagrees with the name, which says ${fromName}`);
     }
@@ -94,7 +103,8 @@ export function glueFindings(glue, { source, contract }) {
   const { blocks, shared } = exportBlocks(contract, names);
   for (const entry of glue.exports) {
     const declared = parameters.get(entry.name), glueNames = entry.args.map(arg => arg.name);
-    if (declared && glueNames.join() !== declared.join()) problems.push(`${entry.name}: glue argument names ${glueNames.join(', ')} differ from kernel parameters ${declared.join(', ')}`);
+    const compared = declared && isBuffer(entry.result) ? declared.slice(0, -1) : declared;
+    if (declared && glueNames.join() !== compared.join()) problems.push(`${entry.name}: glue argument names ${glueNames.join(', ')} differ from kernel parameters ${declared.join(', ')}`);
     const block = blocks[entry.name] ?? [], stated = lines => [...new Set([...lines.join('\n').matchAll(decimals)].map(match => words[match[1].toLowerCase()] ?? Number(match[1])))];
     const own = stated(block), expected = own.length ? own : stated([...shared, ...Object.values(blocks).flat()]);
     if (expected.length === 1 && Number.isInteger(entry.result.precision) && entry.result.precision !== expected[0]) problems.push(`${entry.name}: glue precision ${entry.result.precision}, contract states ${expected[0]} decimal places`);
