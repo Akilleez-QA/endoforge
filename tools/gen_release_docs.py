@@ -69,6 +69,9 @@ def parse_log(label, path):
             if line not in failures:
                 failures.append(line)
     header = dict(re.findall(r"^# ([a-z-]+): (.+)$", text, flags=re.M))
+    node_cov = [tuple(float(n) for n in m) for m in re.findall(
+        r"^(?:ℹ|#) all files\s*\|\s*([\d.]+)\s*\|\s*([\d.]+)\s*\|\s*([\d.]+)", text, flags=re.M)]
+    py_cov = [float(n) for n in re.findall(r"^TOTAL(?:\s+\d+)+\s+(\d+(?:\.\d+)?)%\s*$", text, flags=re.M)]
     exit_code = re.findall(r"^make-exit=(\d+)$", text, flags=re.M)
     return {
         "label": label,
@@ -79,6 +82,7 @@ def parse_log(label, path):
         "totals": totals,
         "failures": failures,
         "unittest_runs": len(ran),
+        "coverage": {"node": node_cov, "python": py_cov},
     }
 
 
@@ -114,12 +118,52 @@ def gitleaks(binary):
             "exit": result.returncode, "summary": "; ".join(re.sub(r"^\S+\s+\S+\s+", "", s).strip() for s in summary)}
 
 
+def tooling():
+    makefile = ROOT / "Makefile"
+    make = makefile.read_text(encoding="utf-8") if makefile.is_file() else ""
+    workflows = ROOT / ".github/workflows"
+    ci = "\n".join(p.read_text(encoding="utf-8") for p in sorted(workflows.glob("*.y*ml"))) if workflows.is_dir() else ""
+    targets = {m.group(1): m.group(2).split() for m in re.finditer(r"^([A-Za-z][\w-]*):(?!=)(.*)$", make, flags=re.M)}
+    ci_targets = {t for line in re.findall(r"\bmake\b([^\n]*)", ci) for t in line.split() if not t.startswith("-")}
+    lint = "lint" in targets
+    return {
+        "lint": lint,
+        "lint_ci": lint and ("lint" in ci_targets or any("lint" in targets.get(t, []) for t in ci_targets)),
+        "coverage": "coverage" in targets,
+    }
+
+
+def coverage_rows(d):
+    rows = []
+    for r in d["runs"]:
+        cov = r.get("coverage") or {}
+        parts = [f"Node all files: line {a:.2f}%, branch {b:.2f}%, funcs {c:.2f}%" for a, b, c in cov.get("node", [])]
+        parts += [f"Python total: {p:g}%" for p in cov.get("python", [])]
+        if parts:
+            rows.append(f"| Code coverage ({r['label']}) | {'; '.join(parts)} | log `{r['file']}` |")
+    if rows:
+        return rows
+    if d["tooling"]["coverage"]:
+        return ["| Code coverage | not measured in the recorded runs; `make coverage` produces it | — |"]
+    return ["| Code coverage | not measured: no coverage target is configured | — |"]
+
+
+def static_analysis(d):
+    t = d["tooling"]
+    if not t["lint"]:
+        return "- Static analysis: no linter is configured."
+    if not t["lint_ci"]:
+        return "- Static analysis: `make lint` is configured but CI does not run it."
+    return "- Static analysis: `make lint` is configured and CI runs it."
+
+
 def collect(args):
     if git("status", "--porcelain", "--untracked-files=no"):
         raise SystemExit("Working tree has uncommitted changes; commit before generating release records.")
     problems, summary = check_trace.check(ROOT)
     records, gap_rows = check_trace.requirements(ROOT)
     commit = git("rev-parse", "HEAD")
+    runs = [parse_log(label, path) for label, path in args.log]
     archive = subprocess.run(["git", "archive", "--format=tar", "HEAD"], cwd=ROOT, capture_output=True, check=True).stdout
     return {
         "commit": commit,
@@ -130,9 +174,9 @@ def collect(args):
         "reservations": len([t for t in git("tag", "--list").split() if t.startswith("experiment-id/")]),
         "since": git("log", "--format=%h %cs %s", "--merges", f"{args.since}..HEAD").splitlines() if args.since else [],
         "commit_count": int(git("rev-list", "--count", "HEAD")),
-        "runs": [parse_log(*item.split("=", 1)) for item in args.log],
+        "runs": runs,
         "run_drift": {c: git("diff", "--name-only", c, "HEAD").splitlines()
-                      for c in {parse_log(*item.split("=", 1))["header"].get("commit") for item in args.log} if c and c != commit},
+                      for c in {r["header"].get("commit") for r in runs} if c and c != commit},
         "trace_problems": problems,
         "trace": summary,
         "gaps": gap_rows,
@@ -143,6 +187,7 @@ def collect(args):
         "archive": {"sha256": sha256(archive), "bytes": len(archive), "files": len(git("ls-files").splitlines())},
         "lines": line_counts(),
         "gitleaks": gitleaks(args.gitleaks),
+        "tooling": tooling(),
         "privacy": subprocess.run([sys.executable, "-I", "tools/check-privacy.py"], cwd=ROOT, capture_output=True,
                                   text=True).stdout.strip().splitlines()[-1:],
     }
@@ -171,7 +216,7 @@ def severity(issues, state):
     for issue in issues or []:
         if issue["state"] != state:
             continue
-        labels = [l["name"] for l in issue["labels"] if re.fullmatch(r"S[1-4]", l["name"])]
+        labels = [label["name"] for label in issue["labels"] if re.fullmatch(r"S[1-4]", label["name"])]
         counts[labels[0] if labels else "unlabelled"] = counts.get(labels[0] if labels else "unlabelled", 0) + 1
     return counts
 
@@ -232,7 +277,7 @@ def str_report(d, name, pr):
               f"| Secret scan | {g['summary'] + ' (exit ' + str(g['exit']) + ', ' + g['version'] + ')' if g else 'not run'} | `{g['command'] if g else 'gitleaks not supplied'}` |",
               f"| Commits reachable from the record commit | {d['commit_count']} | `git rev-list --count HEAD` |",
               f"| Tracked lines, largest file types | {'; '.join(f'{k} {v[0]} files {v[1]} lines' for k, v in d['lines'])} | `git ls-files` |",
-              "| Code coverage | not measured: no coverage tool is configured for the Node or Python suites | — |",
+              *coverage_rows(d),
               "", "## 6. Rationale for decisions", "",
               "No failure was accepted. Results apply only to the commit and environments above. Author tests with synthetic inputs and test doubles are not independent acceptance and do not qualify live model services.",
               "", history(d, pr)]
@@ -259,7 +304,7 @@ def vdd_report(d, name, str_name, pr):
               f"| `git archive --format=tar {d['commit'][:7]}` | `{a['sha256']}` | {a['bytes']} bytes, {a['files']} tracked files |"]
     lines += [f"| `{p}` | `{h}` | pinned or controlled input |" for p, h in d["pinned"]]
     lines += ["", "## 5. Changes", "", "No previous tag exists. CHANGELOG `[Unreleased]` section at this commit:", "",
-              *["> " + l if l else ">" for l in unreleased.splitlines()], ""]
+              *["> " + line if line else ">" for line in unreleased.splitlines()], ""]
     if d["since"]:
         lines += [f"Merges since the previous documentation baseline ({len(d['since'])}):", "", "```text", *d["since"], "```", ""]
     lines += ["## 6. Open problems and workarounds", ""]
@@ -268,7 +313,7 @@ def vdd_report(d, name, str_name, pr):
         lines.append("GitHub issues were not queried.")
     elif open_issues:
         lines += ["| Issue | Labels | Title |", "|---|---|---|"]
-        lines += [f"| #{i['number']} | {', '.join(l['name'] for l in i['labels']) or 'unlabelled'} | {i['title']} |" for i in open_issues]
+        lines += [f"| #{i['number']} | {', '.join(label['name'] for label in i['labels']) or 'unlabelled'} | {i['title']} |" for i in open_issues]
     lines += ["", "Known defects found by documentation review are in the [assurance record](../assurance/assurance-record.md); untested behaviour is in [SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps).",
               "", "## 7. Documentation baseline", "",
               f"Control documents in `docs/` were checked against main at `4d692a41853045c4e013405d8e674528745a38b9` and are contained in commit `{d['commit'][:7]}`. See the [documentation index](../README.md).",
@@ -276,7 +321,7 @@ def vdd_report(d, name, str_name, pr):
               f"- Test report: [{str_name}](../verification/reports/{str_name}.md) (same commit).",
               f"- Privacy lint: {' '.join(d['privacy'])}.",
               f"- Secret scan: {g['summary'] + ' (' + g['version'] + ')' if g else 'not run'}. CI has no secret-scanning job.",
-              "- Static analysis: no linter is configured in CI; see the [assurance record](../assurance/assurance-record.md).",
+              static_analysis(d) + " Findings are in the [assurance record](../assurance/assurance-record.md).",
               "", history(d, pr)]
     return "\n".join(lines).replace("](../../plan/software-management-plan.md", "](../plan/software-management-plan.md")
 
@@ -284,15 +329,23 @@ def vdd_report(d, name, str_name, pr):
 def index(path, name, d):
     row = f"| [{name}]({name}.md) | `{d['commit'][:7]}` | {d['commit_date']} |"
     text = path.read_text(encoding="utf-8")
-    kept = [l for l in text.splitlines() if not l.startswith(f"| [{name}]")]
+    kept = [line for line in text.splitlines() if not line.startswith(f"| [{name}]")]
     path.write_text("\n".join(kept + [row]) + "\n", encoding="utf-8")
+
+
+def labelled_log(value):
+    label, sep, path = value.partition("=")
+    if not sep or not label or not path:
+        raise argparse.ArgumentTypeError(f"expected LABEL=PATH, got {value!r}")
+    return label, path
 
 
 def main(argv=None):
     parser = argparse.ArgumentParser(description="Generate the test report (STR) and version description (VDD) from recorded make runs.")
     parser.add_argument("--name", required=True, help="record suffix, for example main-20261108")
     parser.add_argument("--pr", required=True, help="pull request that reviews the records")
-    parser.add_argument("--log", action="append", default=[], help="LABEL=PATH of a recorded make run; repeatable")
+    parser.add_argument("--log", action="append", required=True, type=labelled_log,
+                        help="LABEL=PATH of a recorded make run; repeatable, at least one")
     parser.add_argument("--since", help="previous documentation baseline commit, for the merge list")
     parser.add_argument("--repo", default="Akilleez-QA/endoforge")
     parser.add_argument("--gitleaks", default=shutil.which("gitleaks"))

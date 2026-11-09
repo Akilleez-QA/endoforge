@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SRS |
-| Version | 2.2 |
+| Version | 2.4 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -252,12 +252,22 @@ The library shall record qualification per environment (Node, V8, platform, arch
 
 ### REQ-LIB-008 — Composition across separate memories
 
-`library.compose` shall link parts that each use linear memory or a table, giving each part its own bounds-checked region of the composed module's memory and its own table, copy structured values between parts only through layout-checked wrappers, and refuse a plan whose parts do not fit the 64 MiB workcell memory, whose stage layouts disagree, or that passes a buffer address as a scalar.
+`library.compose` shall link parts that each use linear memory or a table, giving each part its own WebAssembly memory (after memory 0, which holds the host's buffers), bounds-checked to the part's own size, and its own table, copy structured values between parts only as layout-checked copies between memories made by the linked wrapper, and refuse a plan whose parts do not fit the 64 MiB workcell memory, whose stage layouts disagree, or that passes a buffer address as a scalar.
 
 - Rationale: Kernels with state live in linear memory; composition must not be limited to at most one such part.
-- Derivation: `core/library/link.mjs`, `core/library/compose.mjs`, `core/library/mutants.mjs`
+- Derivation: `core/library/link.mjs`, `core/library/compose.mjs`, `core/library/mutants.mjs`, `core/runtime/x1/meter.mjs`
 - Allocated to: SDD §4 C-05 Library
 - Verification: T — `make library-test`
+- Status: Baselined
+
+### REQ-LIB-009 — Structured mutation check
+
+For an export that takes or returns a `record`, `list` or `text`, the library's discrimination check shall build its probe grid from the declared layout, call the kernel and each mutant through the host buffers of a fuel-metered instance, compare results field by field, and apply its result wrappers to every `number` leaf.
+
+- Rationale: A kernel over records or lists must get a real mutation check under `gate: 'full'`; scalar-only probing reports every mutant killed without exercising it.
+- Derivation: `core/library/discriminate.mjs`, `core/library/mutants.mjs`, `core/library/cell.mjs`
+- Allocated to: SDD §4 C-05 Library
+- Verification: T — `make isolate-test`, `make library-test`
 - Status: Baselined
 
 ## 5. Workcell runtime
@@ -329,7 +339,7 @@ Workcells shall enforce `wasmMemoryMaxMb` (default 64 MiB, integer 1–4096) on 
 - Rationale: Contain fatal V8 exits without requiring OS delegation.
 - Derivation: `core/runtime/isolate-workcell.mjs`, `core/runtime/isolate-cgroup.mjs`
 - Allocated to: SDD §4 C-06 Isolate pool
-- Verification: T — `make isolate-test`; I — `core/runtime/isolate-cgroup.mjs` (delegated enforcement is unmeasured locally, GAP-EF-001)
+- Verification: T — `make isolate-test` (delegated enforcement: REQ-ISO-018)
 - Status: Baselined
 
 ### REQ-ISO-008 — Supervisor-only trusted WASM caps
@@ -389,7 +399,7 @@ Heap limits shall be documented as not bounding off-heap memory: thread mode sta
 - Rationale: A stated limit replaces an assumed bound (P-44).
 - Derivation: `core/runtime/isolate-cgroup.mjs`, `core/runtime/README.md`
 - Allocated to: SDD §4 C-06 Isolate pool
-- Verification: T — `make isolate-test` (the cgroup case needs a delegated scope and skips without one, GAP-EF-001)
+- Verification: T — `make isolate-test` (the delegated cases need a delegated scope and skip without one; REQ-ISO-018)
 - Status: Baselined
 
 ### REQ-ISO-014 — Shared WASM modules
@@ -429,6 +439,26 @@ A port shall reach the supervisor only through the configured `hostCall`/`hostCa
 - Rationale: The supervisor decides what a cell may ask for.
 - Derivation: `core/runtime/isolate-pool.mjs`, `core/runtime/isolate-workcell.mjs`
 - Allocated to: SDD §4 C-06 Isolate pool
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-ISO-018 — Delegated cgroup enforcement
+
+In a delegated cgroup v2 scope, process mode shall have its limits enforced, not only written: `prepareCgroup` moves the supervisor into its own leaf and enables the `memory`, `cpu` and `pids` controllers; `attachCgroup` writes the stated `memory.max`, `memory.oom.group=1`, `cpu.max`, `pids.max` and, where the file exists, `memory.swap.max=0`, and moves the process in; a process past `memory.max` is killed, process creation past `pids.max` is refused and a process past `cpu.max` is throttled; and a process-mode pool ends a cell killed by its limit with an inconclusive receipt, keeps serving, and removes every cell group on release.
+
+- Rationale: Process mode's off-heap bound (REQ-ISO-013) holds only if the delegated limits are enforced, not only written (formerly GAP-EF-001).
+- Derivation: `core/runtime/isolate-cgroup.mjs`, `core/runtime/isolate-pool.mjs`
+- Allocated to: SDD §4 C-06 Isolate pool
+- Verification: T — `make isolate-test` (the case runs itself inside `systemd-run --user --scope` and skips with the reason where no delegated scope with those controllers exists)
+- Status: Baselined
+
+### REQ-STUB-001 — Stub pool replay
+
+`core/runtime/stub-pool.mjs` shall copy the recorded outputs of the atom named by the launch spec's `/out` bind from `ENDOFORGE_STUB_REPLAY/atoms/<id>/out` into that bind after `ENDOFORGE_STUB_LATENCY_MS`, log a stub account line with `pid=` in the form the atomizer scheduler attributes, run `CODEX_POOL_BIN` with `SIGTERM` and `SIGINT` forwarded, return its exit status (failure when it dies on a signal), and fail with a message when the replay has no outputs for the atom, the spec has no `/out` bind or cannot be read, or the next pool cannot start.
+
+- Rationale: Atomizer replays need a stand-in pool that behaves like the real one at its boundary (formerly GAP-EF-007).
+- Derivation: `core/runtime/stub-pool.mjs`
+- Allocated to: SDD §4 C-31 Stub pool and approved atoms
 - Verification: T — `make isolate-test`
 - Status: Baselined
 
@@ -534,6 +564,16 @@ The X1 commit tools shall name, in the bridge's drift check (`IMPLEMENTATION_FIL
 - Verification: T — `make isolate-test`
 - Status: Baselined
 
+### REQ-X1-011 — Every memory metered
+
+The meter shall read every memory a module declares or imports, export each unexported one, meter loads and stores that name a memory index, and count measured memory as the sum of all memories.
+
+- Rationale: A composed library module has one memory per part; reading only the first would leave the others unmeasured.
+- Derivation: `core/runtime/x1/meter.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
 ### REQ-LOOP-001 — Agent loop in the cell
 
 The agent loop shall run model turns and checks in one job, return a failed check to the next turn, stop at turn, token and deadline limits as a recorded failure without promotion, keep the model out of the frozen files and outside the overlay, and pass only reply text and usage into the cell and its records.
@@ -622,6 +662,16 @@ Every loop path shall pass the `principal` given to `runNeed` to `library.serve`
 - Derivation: `core/runtime/x1/loop.mjs`, `core/runtime/x1/pipeline.mjs`
 - Allocated to: SDD §4 C-07 X1 candidate loop
 - Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-LOOP-010 — Structured specification correction
+
+`revise` shall correct a suspect test to a record, list or text value only when the suspect carries a valid declared layout, both reference values fit it and agree under the structured comparison of REQ-X1-009 with the test's `tol`, freezing the value in declared field order, and refuse otherwise without appending to the ledger.
+
+- Rationale: A kernel over structured state can have a wrong frozen test too; without a declared layout a structure cannot be compared or frozen soundly.
+- Derivation: `tools/x1_loop.py`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make ledger-test`
 - Status: Baselined
 
 ### REQ-GEN-001 — Two-stage generation with freeze
@@ -714,6 +764,16 @@ The generator shall resolve a relative `ENDOFORGE_CODEX_CMD` path, or a `./` or 
 - Verification: T — `make isolate-test`
 - Status: Baselined
 
+### REQ-GEN-010 — Implementation turn reads corrected tests
+
+After the freeze, `generate` shall re-read `tests.json` and `frozen.sha256` from the oracle root and, when a specification correction changed them, refuse them unless they match the frozen digest and every test can fail, then give the corrected files to the workspace, the implementation prompt, the library lookup and the returned candidate.
+
+- Rationale: On the Codex paths the implementation turn must write code against the same tests every check uses.
+- Derivation: `core/runtime/x1/generator.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
 ### REQ-PROMOTE-001 — Local promotion
 
 Local promotion shall issue a persisted qualification decision only for the exact candidate, frozen oracle, verified receipt hash and chain with two complete passing pool rounds and all nine X1 gates (G1–G9) present and passing, and refuse on any mismatch.
@@ -772,6 +832,46 @@ On the `isolate` and `agent` paths, the commit shall judge the candidate against
 - Derivation: `core/runtime/x1/loop.mjs`, `core/runtime/x1/synth/cell-host.mjs`
 - Allocated to: SDD §4 C-08 Evaluator synthesis
 - Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-SYNTH-005 — Structured references and suspects
+
+Evaluator synthesis shall accept references that return records, lists or text for an export whose binding declares a valid layout, fail M2 for a value that misfits it, compare structured anchors field by field, and attach the declared layout to every structured suspect.
+
+- Rationale: Suspect correction (REQ-LOOP-010) needs agreeing structured reference values and their declared layout before any glue exists.
+- Derivation: `core/runtime/x1/synth/sandbox.mjs`, `core/runtime/x1/synth/layout.mjs`, `core/runtime/x1/synth/stage.mjs`, `core/runtime/x1/synth/qualify.mjs`, `core/runtime/x1/synth/invariants.mjs`, `core/runtime/x1/synth/vectors.mjs`
+- Allocated to: SDD §4 C-08 Evaluator synthesis
+- Verification: T — `make ledger-test`
+- Status: Baselined
+
+### REQ-SYNTH-006 — Judging structured exports
+
+`judge` shall call an export whose glue entry takes or returns a record, list or text through the declared layout and the host buffers, compare the whole decoded value with the vector's expected value, and refuse on a difference or a boundary problem.
+
+- Rationale: Synthesized checks of a kernel over structured state must run against the kernel, not be skipped.
+- Derivation: `core/runtime/x1/synth/judge.mjs`, `core/runtime/x1/measure.mjs`
+- Allocated to: SDD §4 C-08 Evaluator synthesis
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-SYNTH-007 — Structured synthesized vectors
+
+Evaluator synthesis shall generate inputs for a record, list or text parameter from the layout the binding declares for it (an empty value, a full value and seeded random values), from the frozen tests' values, and from reference results that fit that layout; qualify the resulting vectors under M1 to M5 like numeric ones; keep them in `combine` at width 1, and at width 2 only where the other member's reference gives the same value through the declared layout; and keep ranges and codes for such exports while keeping a monotone relation only over a numeric parameter.
+
+- Rationale: Synthesized checks must reach kernels over structured state, which `judge` already runs (REQ-SYNTH-006); before round 4 `combine` dropped them.
+- Derivation: `core/runtime/x1/synth/vectors.mjs`, `core/runtime/x1/synth/stage.mjs`, `core/runtime/x1/synth/qualify.mjs`
+- Allocated to: SDD §4 C-08 Evaluator synthesis
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-SYNTH-008 — Caller's judging-cell limits on every path
+
+`runNeed({ synthCell })` shall pass `synthCell` to `begin({ cell })` on every loop path, and on the `isolate` and `agent` paths on through the commit to `judgeInCell`, so the judging cell runs under the caller's deadline and heap limits.
+
+- Rationale: A caller that tightens or widens the judging cell must get the same limits whichever path runs.
+- Derivation: `core/runtime/x1/loop.mjs`, `core/runtime/x1/pipeline.mjs`
+- Allocated to: SDD §4 C-08 Evaluator synthesis
+- Verification: T — `make isolate-test` (the `isolate` and `agent` paths); I — `core/runtime/x1/pipeline.mjs` (`attemptCurrent` passes `synthCell` to `begin`; no test drives the `current` path through `runNeed` with `synthCell`)
 - Status: Baselined
 
 ### REQ-ORACLE-001 — Formula oracle
@@ -1090,6 +1190,16 @@ The atomizer shall ship `LEDGER.md` listing exactly the events its code emits, d
 - Verification: T — `make atomizer-test`
 - Status: Baselined
 
+### REQ-ATOM-005 — Atomizer commands
+
+The atomizer commands `atomize`, `direct`, `fanout`, `report` and `cutover` shall each behave as follows on script workers: every command prints its usage and exits 2 without its required arguments; `atomize --fixture` validates, plan and record a valid graph without a model, and refuses an invalid graph or output that is not JSON without writing `atoms.json`; `direct` writes a valid one-atom graph named after the request; `fanout` runs several script graphs as one pool, verifies and reports each, records a graph the scheduler refuses and keeps running the others, and exits 1 when a request fails verification; `report` renders the timeline, waves and verification of a run directory; and `cutover` pairs the arms per case, records a model arm the subscription guard refuses, writes a ledger event for every case, refuses an unknown arm, and finishes cleanly when no case matches.
+
+- Rationale: The commands other than `schedule`, `verify` and `bench` had no test and crashed on several of these inputs (formerly GAP-EF-008).
+- Derivation: `tools/atomizer/bin/atomize.mjs`, `tools/atomizer/bin/direct.mjs`, `tools/atomizer/bin/fanout.mjs`, `tools/atomizer/bin/report.mjs`, `tools/atomizer/bin/cutover.mjs`
+- Allocated to: SDD §4 C-22 Atomizer
+- Verification: T — `make atomizer-test` (script workers and fixtures; model arms are checked only as refused without a subscription login)
+- Status: Baselined
+
 ### REQ-COND-001 — Conductor fails closed on unknown state
 
 The conductor shall treat an empty or garbage exit file, a vanished process or a failing `systemctl` as unknown, never as exit 0, stop on an unreadable state file without rewriting it, exit 78 on torn state without restart, and write state atomically with a sync before rename.
@@ -1150,6 +1260,16 @@ The job, conductor, atomizer and hillclimb sources shall cite only repository fi
 - Verification: T — `make test` (`lib-test`)
 - Status: Baselined
 
+### REQ-JOB-003 — Job kinds, card and prompt compilation
+
+The job tool shall load every bundled kind file by its id with only known rule keys, refuse an unknown kind (including names inherited from `Object`) and a kind file with an unknown rule key, add kinds from `ENDOFORGE_JOB_KINDS`, apply each kind's check rules (`code`, `video`, `model3d`, `campus`; none for `doc` and `generic`), compile each atom's prompt with the goal verbatim, its brief, governing inputs, checks, files, declared and imported interfaces and return form, hash each prompt and the set, and compute the card hash over exactly what the user confirms, accepting only a direct confirmation of that card.
+
+- Rationale: Kind rules, prompts and the confirmed card decide what workers are told and what the user agreed to; they had only indirect coverage (formerly GAP-EF-010).
+- Derivation: `tools/job/lib/kinds.mjs`, `tools/job/kinds/`, `tools/job/lib/compile.mjs`, `tools/job/lib/card.mjs`
+- Allocated to: SDD §4 C-23 Conductor and job intake
+- Verification: T — `make test` (`lib-test`)
+- Status: Baselined
+
 ### REQ-LOCK-001 — Job locks registry
 
 `job-locks.py` shall add, render and remove locks, treat a missing registry as no jobs, name torn or missing manifests, warn on and never overwrite a torn or wrong-shaped registry, and leave no temporary file after a failed write.
@@ -1190,6 +1310,16 @@ Hillclimb shall default its campaign runner to `bin/run-atoms.mjs` in this repos
 - Verification: T — `make test` (`lib-test`)
 - Status: Baselined
 
+### REQ-HILL-003 — Hillclimb fan-out, plan and scoreboard
+
+Hillclimb shall treat a directory, its glob and its children as one ownership tree and refuse an unsound decomposition by name, assign lanes across logged-in accounts honouring engine and account pins, size waves by the capacity dial (zero slots at a dial of zero, nothing under `DRAIN`), build review, fix and judge atoms the atomizer accepts, keep a non-worsening round and refuse a worse one naming the regressed pieces, re-atomize by freezing clean pieces and splitting outliers, score rounds by severity, and stop on the target, the round limit or a plateau.
+
+- Rationale: Fan-out, planning and scoring decide which agent edits which file and when a campaign stops; only the lessons ledger was tested (formerly GAP-EF-009).
+- Derivation: `tools/hillclimb/lib/fanout.mjs`, `tools/hillclimb/lib/plan.mjs`, `tools/hillclimb/lib/scoreboard.mjs`
+- Allocated to: SDD §4 C-24 Hillclimb
+- Verification: T — `make test` (`lib-test`)
+- Status: Baselined
+
 ### REQ-GATECLI-001 — Glue gate CLI uses the core gates
 
 `tools/gate/gate.mjs run` shall compile `kernel.ts` with the core compiler flags and judge the kernel with the core `runGates`, so a kernel on disk gets the same nine gates and structured state as the loop, with a `glue.schema.json` equal to the core schema.
@@ -1197,7 +1327,17 @@ Hillclimb shall default its campaign runner to `bin/run-atoms.mjs` in this repos
 - Rationale: Two gate implementations drift; the atomizer's stand-alone check must agree with the loop.
 - Derivation: `tools/gate/gate.mjs`, `tools/gate/glue.schema.json`
 - Allocated to: SDD §4 C-30 Glue gate CLI and project scheduler
-- Verification: T — `node --test tools/test_gate_structured.mjs` (no `make` target runs it yet; `tests/test_reachability.py` reports it)
+- Verification: T — `make gate-test`
+- Status: Baselined
+
+### REQ-SCHED-001 — Project scheduler
+
+The project scheduler shall refuse a malformed batch, overlapping files within one project, a token reservation over a project's budget and a GPU step without a queue before any command runs; run pieces under the concurrency, the capacity dial and machine headroom, rotating across jobs; route only GPU steps through the queue; never retry a piece; fail a job whose piece or recombine fails while other jobs continue; and hand each command its identity, budget and, for the recombine step, the ordered results.
+
+- Rationale: Cross-project work must not overspend or let one job take every slot (formerly GAP-EF-004).
+- Derivation: `tools/project-scheduler/scheduler.mjs`
+- Allocated to: SDD §4 C-30 Glue gate CLI and project scheduler
+- Verification: T — `make test` (`gap-tools-test`)
 - Status: Baselined
 
 ### REQ-CONSTRAINT-001 — Constraint records
@@ -1238,6 +1378,36 @@ The checkpoint tool shall round-trip a campaign through an `age`-encrypted archi
 - Derivation: `tools/factory_portability/checkpoint.py`
 - Allocated to: SDD §4 C-25 Factory campaign and portability
 - Verification: T — `make test` (`portability-test`); see finding D-01 in the [assurance record](../assurance/assurance-record.md)
+- Status: Baselined
+
+### REQ-FACTORY-003 — Factory runtime
+
+The factory runtime shall validate job specs and records against its schema files, write state durably (a failed write keeps the previous content), fence a second controller, schedule FIFO within capacity with subscription-limit backoff and persisted queues (an interrupted job becomes unknown; an unknown saved version is refused on reload), publish a passed attempt once with a valid receipt, never create a container on an input-hash mismatch and never remove a container another owner labelled, reconcile a crashed attempt from its journal, deny egress outside the allowlist and a TLS hello that does not name the CONNECT authority, forward only exact allowed requests through the local provider, and refuse a WebAssembly run without a pinned, present Wasmtime.
+
+- Rationale: A worker attempt must leave checked, single publications and recoverable state (formerly GAP-EF-002).
+- Derivation: `tools/factory_runtime/core.py`, `tools/factory_runtime/scheduler.py`, `tools/factory_runtime/runner.py`, `tools/factory_runtime/recovery.py`, `tools/factory_runtime/egress.py`, `tools/factory_runtime/local_provider.py`, `tools/factory_runtime/wasm.py`
+- Allocated to: SDD §4 C-29 Factory runtime
+- Verification: T — `make test` (`gap-tools-test`; a stand-in Docker CLI and Wasmtime; the real-Wasmtime case skips unless `ENDOFORGE_WASMTIME` and `ENDOFORGE_WASMTIME_SHA256` are set)
+- Status: Baselined
+
+### REQ-FACTORY-004 — Approved atoms registry
+
+`tools/approved_atoms.py` shall register, approve, resolve and retire atoms in an append-only JSONL store with content pinned by digest, refuse invalid transitions, registrations and resolutions, resolve a batch all or nothing, replay incrementally for a second writer, refuse a tampered store, roll back a write it reports as failed, and refuse a consumer row for an atom that was never approved.
+
+- Rationale: Approved values are reused by later work; a reported failure must not take effect (formerly GAP-EF-005).
+- Derivation: `tools/approved_atoms.py`
+- Allocated to: SDD §4 C-31 Stub pool and approved atoms
+- Verification: T — `make test` (`gap-tools-test`)
+- Status: Baselined
+
+### REQ-FACTORY-005 — Campaign repair, Wasmtime qualification, stage resume and transfer
+
+The factory campaign and portability tools shall keep frozen evidence unchanged while they repair, qualify, resume and transfer: repair writes a bounded implementation-only patch to a new `.repair-N` file, chains rounds up to the limit, refuses contract and eval disputes, links, ambiguous text, a changed candidate and a missing frozen-path list, never overwrites a repair, and discards one when a frozen path changes; `qualify_wasmtime.py` fails an unqualified runtime under `python -O` too; `resume_stage.py` publishes a resumed stage once, records a failing stage without publishing, and refuses a conflicting publication, a symlinked escape and files missing from the inventory; and `campaign_transfer.py` sends the checkpoint tool and bundle, resumes on the destination, and removes its remote staging on failure.
+
+- Rationale: A campaign moved to another machine must resume without changing frozen evidence (formerly part of GAP-EF-006).
+- Derivation: `tools/factory_campaign/repair.py`, `tools/factory_portability/qualify_wasmtime.py`, `tools/factory_portability/resume_stage.py`, `tools/factory_portability/campaign_transfer.py`
+- Allocated to: SDD §4 C-25 Factory campaign and portability
+- Verification: T — `make test` (`factory-state-test`, `portability-test`; the transfer cases skip with the reason where `age` or an unprivileged `bwrap` sandbox is missing)
 - Status: Baselined
 
 ### REQ-RUST-001 — Rust lane
@@ -1332,6 +1502,26 @@ CI shall run a Gitleaks scan of the full history with a checksum-verified binary
 - Verification: T — `make isolate-test`; I — `.github/workflows/ci.yml` job `rust-lane`
 - Status: Baselined
 
+### REQ-REPO-008 — Release-record generator
+
+`tools/gen_release_docs.py` shall parse Node spec and TAP summaries, `unittest` summaries and script `PASS`/`FAIL` lines with the last make exit winning, count severities, list failed runs and trace problems, name files changed between a run and the record commit, report lint and coverage from the Makefile, CI and the logs, write the test report and version description with links that resolve from where they are written, replace an index row of the same name, exit 1 on a failed run or a trace problem, and refuse a log without a label, a record without logs and a dirty tree.
+
+- Rationale: Release records are generated so their numbers are never typed by hand (formerly GAP-EF-014).
+- Derivation: `tools/gen_release_docs.py`
+- Allocated to: SDD §4 C-28 Release records
+- Verification: T — `make test` (`gap-tools-test`)
+- Status: Baselined
+
+### REQ-REPO-009 — Lint and coverage
+
+`make lint` shall fail on any finding of ruff 0.17.0 (with the repository's `ruff.toml`) over the tree or of `node --check` over every `.mjs`, `.js` and `.cjs` file, with CI running it in the job `lint`, and `make coverage` running the Node suites under `--experimental-test-coverage` with a summary and the Python suites under coverage.py when installed, else with trace counts.
+
+- Rationale: Static analysis and coverage are measured rather than stated as missing (NPR SWE-135, SWE-189).
+- Derivation: `Makefile`, `ruff.toml`, `.github/workflows/ci.yml`
+- Allocated to: SDD §4 C-27 Repository checks
+- Verification: I — `Makefile` targets `lint` and `coverage`, `.github/workflows/ci.yml` job `lint`
+- Status: Baselined
+
 ## 11. Untested behaviour (requirement gaps)
 
 These behaviours exist in the code at the baseline but no test in `make test` checks them. They are not
@@ -1339,25 +1529,39 @@ requirements until a test exists. Numbering: `GAP-EF-NNN`, never reused.
 
 | ID | Behaviour | Location | Why untested / note |
 |---|---|---|---|
-| GAP-EF-001 | Delegated cgroup v2 enforcement (`memory.max`, `memory.swap.max=0`, `cpu.max`, `pids.max`) in process mode | `core/runtime/isolate-cgroup.mjs` | The test needs a delegated systemd scope and skips without one; not measured locally or in CI |
-| GAP-EF-002 | Factory runtime: job specs, scheduler, recovery, egress and WebAssembly runner | `tools/factory_runtime/` | No test file exists |
-| GAP-EF-004 | Project scheduler | `tools/project-scheduler/scheduler.mjs` | No test file exists |
-| GAP-EF-005 | Approved-atoms helper | `tools/approved_atoms.py` | No test file or caller found |
-| GAP-EF-006 | Campaign repair and transfer, Wasmtime qualification and stage resume | `tools/factory_campaign/repair.py`, `tools/factory_portability/campaign_transfer.py`, `tools/factory_portability/qualify_wasmtime.py`, `tools/factory_portability/resume_stage.py` | No test file exists |
-| GAP-EF-007 | Stub pool replay | `core/runtime/stub-pool.mjs` | No test imports it |
-| GAP-EF-008 | Atomizer commands other than schedule, verify and bench (for example `atomize`, `fanout`, `direct`, `report`, `cutover`) | `tools/atomizer/bin/` | No test runs them |
-| GAP-EF-009 | Hillclimb fan-out, plan and scoreboard | `tools/hillclimb/lib/fanout.mjs`, `tools/hillclimb/lib/plan.mjs`, `tools/hillclimb/lib/scoreboard.mjs` | Only the lessons ledger is tested |
-| GAP-EF-010 | Job kinds, card compilation and source loading | `tools/job/kinds/`, `tools/job/lib/compile.mjs`, `tools/job/lib/card.mjs` | Exercised only indirectly through conductor fixtures; no direct assertions |
-| GAP-EF-014 | Release-record generator (log parsing, STR and VDD rendering) | `tools/gen_release_docs.py` | No automated test; exercised by test plan TP-5 at each recorded state |
+| GAP-EF-002 | Factory runtime worker launch and protected provider call: a worker started through `egress.worker_command` (bubblewrap with the `bridge.py` relay) and a successful `local_provider.call_protected` | `tools/factory_runtime/egress.py`, `tools/factory_runtime/bridge.py`, `tools/factory_runtime/local_provider.py` | The tests check the assembled worker command and the call's refusals; no test runs a worker in the sandbox or completes a protected call. The rest of the factory runtime is REQ-FACTORY-003 |
+| GAP-EF-006 | Campaign transfer to a real second host | `tools/factory_portability/campaign_transfer.py` | The test emulates the host with stand-in `ssh` and `scp` that run the remote side locally in a `bwrap` sandbox, so the destination machine identity is faked. The rest is REQ-FACTORY-005 |
 
 Closed gaps (their IDs are not reused):
 
 - GAP-EF-011, `WarmClaudeTransport` with a custom usage governor: fixed and tested on 2026-11-09; now REQ-TRANSPORT-002.
 - GAP-EF-012, atomizer `bench` default example and `conduct adopt` example paths: fixed and tested on 2026-11-09; now
   REQ-ATOM-004 and REQ-COND-004.
-- GAP-EF-003, glue gate CLI: tested on 2026-11-09 by `tools/test_gate_structured.mjs`; now REQ-GATECLI-001. No `make`
-  target runs that file yet.
-- GAP-EF-013, Rust lane in CI: CI job `rust-lane` added on 2026-11-09; now REQ-REPO-007. Its first CI run is pending.
+- GAP-EF-003, glue gate CLI: tested on 2026-11-09 by `tools/test_gate_structured.mjs`; now REQ-GATECLI-001, run by
+  `make gate-test`.
+- GAP-EF-013, Rust lane in CI: CI job `rust-lane` added on 2026-11-09; now REQ-REPO-007. It ran and passed on GitHub
+  in PR #139 (run 42600069278, job `rust-lane`: 15 tests OK).
+- GAP-EF-001, delegated cgroup v2 enforcement: tested in round 4 by `core/runtime/test/gaps4-runtime.test.mjs`; now
+  REQ-ISO-018. The case runs only inside a delegated user scope and skips with its reason elsewhere; it ran (not
+  skipped) on the development host on 2026-11-09. Whether it runs or skips on the GitHub runner is not recorded.
+  `memory.swap.max=0` is checked only where that file exists.
+- GAP-EF-007, stub pool replay: tested in round 4 by `core/runtime/test/gaps4-runtime.test.mjs`; now REQ-STUB-001.
+- GAP-EF-002, factory runtime: narrowed in round 4. Job specs, scheduler, runner, recovery, egress proxy, local
+  provider policy and WebAssembly runner are tested by `tools/factory_runtime/test_runtime_gaps.py` (REQ-FACTORY-003);
+  the sandboxed worker launch and a completed protected call remain open above.
+- GAP-EF-004, project scheduler: tested in round 4 by `tools/project-scheduler/test/scheduler.test.mjs`; now
+  REQ-SCHED-001.
+- GAP-EF-005, approved-atoms helper: tested in round 4 by `tools/test_approved_atoms.py`; now REQ-FACTORY-004.
+- GAP-EF-006, campaign repair and transfer, Wasmtime qualification and stage resume: narrowed in round 4. Repair,
+  qualification, resume and the emulated transfer are tested by `tools/factory_campaign/test_repair.py` and
+  `tools/factory_portability/test_transfer_qualify_resume.py` (REQ-FACTORY-005); a real second host remains open above.
+- GAP-EF-008, atomizer `atomize`, `fanout`, `direct`, `report` and `cutover`: tested in round 4 by
+  `tools/atomizer/test/commands.test.mjs`; now REQ-ATOM-005.
+- GAP-EF-009, hillclimb fan-out, plan and scoreboard: tested in round 4 by
+  `tools/hillclimb/test/fanout-plan-scoreboard.test.mjs`; now REQ-HILL-003.
+- GAP-EF-010, job kinds, card compilation and source loading: tested in round 4 by
+  `tools/job/test/kinds-compile-sources.test.mjs`; now REQ-JOB-003.
+- GAP-EF-014, release-record generator: tested in round 4 by `tools/test_gen_release_docs.py`; now REQ-REPO-008.
 
 ## 12. Not-applicable requirement categories
 
@@ -1376,3 +1580,5 @@ Closed gaps (their IDs are not reused):
 | 2.0 | 2026-11-08 | `4d692a4` | Per-requirement fields; 45 existing requirements kept and 50 added for tested areas, gap register, N/A categories | this PR |
 | 2.1 | 2026-11-09 | gap closure | 23 requirements added for the gap-closure work (structured state, commit re-run, library composition, scopes, reclaim, counterexamples and per-environment qualification, synthesis and library on every path, compatibility-lane promotion, transport defaults, nine-gate labels, tool fixes, CI secret scan); GAP-EF-011 and GAP-EF-012 closed | `dc6ba4c` |
 | 2.2 | 2026-11-09 | round 2 | 9 requirements for the round-2 work: structured comparison at commit (REQ-X1-009), Python drift list and receipt label (REQ-X1-010), suspect tests as a specification correction (REQ-LOOP-007), compatibility promotion in `runNeed` (REQ-LOOP-008), caller principal (REQ-LOOP-009), judging in a cell at commit (REQ-SYNTH-004), composition across separate memories (REQ-LIB-008), make setup dependencies and the Rust lane in CI (REQ-REPO-007), glue gate CLI parity (REQ-GATECLI-001); GAP-EF-003 and GAP-EF-013 closed | this commit |
+| 2.3 | 2026-11-09 | round 3 | 6 requirements for the round-3 work: structured mutation check (REQ-LIB-009), every memory metered (REQ-X1-011), structured specification correction (REQ-LOOP-010), implementation turn reads corrected tests (REQ-GEN-010), structured references and suspects (REQ-SYNTH-005), judging structured exports (REQ-SYNTH-006); REQ-LIB-008 now gives each part its own memory | this commit |
+| 2.4 | 2026-11-09 | round 4 | 13 requirements for the round-4 work: delegated cgroup enforcement (REQ-ISO-018), stub pool replay (REQ-STUB-001), structured synthesized vectors (REQ-SYNTH-007), the caller's judging-cell limits on every path (REQ-SYNTH-008), atomizer commands (REQ-ATOM-005), job kinds and compilation (REQ-JOB-003), hillclimb fan-out, plan and scoreboard (REQ-HILL-003), project scheduler (REQ-SCHED-001), factory runtime (REQ-FACTORY-003), approved atoms (REQ-FACTORY-004), repair, qualification, resume and transfer (REQ-FACTORY-005), release-record generator (REQ-REPO-008), lint and coverage (REQ-REPO-009); GAP-EF-001, 004, 005, 007 to 010 and 014 closed; GAP-EF-002 and 006 narrowed | this commit |

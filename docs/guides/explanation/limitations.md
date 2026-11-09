@@ -19,8 +19,10 @@ for every input.
 - **The independent checks are opt-in.** Evaluator synthesis (a check written by a model that has seen no candidate)
   and the formula oracle add evidence the coding agent did not produce. Both are off by default. Synthesis runs on every loop path
   when turned on and judges in a bounded worker thread; when two of its references agree against a frozen test, the
-  test is corrected as a ledger revision before any code. On the Codex-driven `current` and `isolate` paths the
-  implementation turn still reads the uncorrected test file, though every check uses the corrected one. The oracle missed its adoption bars in
+  test is corrected as a ledger revision before any code, and the implementation turn reads the corrected tests on
+  every path. Synthesized vectors also cover exports over records, lists and text, with inputs generated from the
+  layout the binding declares for each structured parameter; where the binding declares none, such a parameter is
+  varied only over the frozen tests' values. The oracle missed its adoption bars in
   [P-71](../../../experiments/P-71-oracle-round2/RESULT.md).
 - **A promotion is not an approval.** It is not an engineering, safety or regulatory sign-off. Before you rely on
   promoted code for such a decision, check it against an authoritative source. EndoForge is not safety-critical
@@ -51,7 +53,8 @@ sandbox.
   memories). Use process isolation with a delegated cgroup for that (REQ-ISO-013).
 - `terminate` cannot interrupt a thread workcell stuck in a blocking native call
   (`core/runtime/test/isolate-deadline.test.mjs`).
-- Delegated cgroup enforcement is not tested locally or in CI (GAP-EF-001).
+- Delegated cgroup enforcement is tested only where a delegated user scope exists (REQ-ISO-018); the test skips with
+  its reason elsewhere, and its result on the GitHub runner is not recorded.
 - Process cells, cgroups and bubblewrap assume Linux. The capacity probe also reads macOS counters, but CI runs the
   suite only on Linux.
 

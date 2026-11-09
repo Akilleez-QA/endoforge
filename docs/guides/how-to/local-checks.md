@@ -53,18 +53,36 @@ Each test area has its own target, which is faster while you work:
 |---|---|
 | `make loop-test` | The agent loop and the `isolate` loop (`core/runtime/test/loop*.test.mjs`), including `examples/first-loop.mjs` |
 | `make pipeline-test` | `runNeed` on the current path, the generator, promotion and evaluator synthesis |
-| `make isolate-test` | The rest of `core/runtime/test`: the workcell pool and its limits, the ledger writer, the subscription guard, the usage governor, the formula oracle, the contained JavaScript lane and the gap-closure tests (`gaps-*`, `gaps2-commit`); it runs `loop-setup` and `tscheck-setup` first |
+| `make isolate-test` | The rest of `core/runtime/test`: the workcell pool and its limits, the ledger writer, the subscription guard, the usage governor, the formula oracle, the contained JavaScript lane, the stub pool and the gap-closure tests (`gaps-*`, `gaps2-commit`, `gaps3-*`, `gaps4-*`, including delegated cgroup enforcement, which skips with its reason without a delegated scope); it runs `loop-setup` and `tscheck-setup` first |
 | `make library-test` | The library (`core/library/test`) |
-| `make atomizer-test` | The atomizer's scheduler, isolation, validation and routing |
-| `make lib-test` | The job tool, the Conductor, hillclimb and shared tool libraries |
+| `make atomizer-test` | The atomizer's scheduler, isolation, validation, routing and its `atomize`, `direct`, `fanout`, `report` and `cutover` commands |
+| `make lib-test` | The job tool (kinds, prompt compilation, the card), the Conductor, hillclimb (lessons, runner, fan-out, plan, scoreboard) and shared tool libraries |
+| `make gap-tools-test` | The factory runtime, the approved-atoms registry, the release-record generator and the project scheduler |
+| `make factory-state-test`, `make portability-test` | Factory campaign state, journal and repair; checkpoints, Wasmtime qualification, stage resume and the emulated transfer |
 | `make kernel-test` | The kernel contract tools, with the pinned wasmtime and wasm-tools |
 | `make engine-test`, `make core-test`, `make ledger-test` | The engine, the repository-level tests and the ledger |
 | `make rust-lane-test` | The Rust lane, after `make rust-lane-setup`; needs the pinned Rust toolchain, outside `make test`, run by the CI job `rust-lane` |
 
 The [Makefile](../../../Makefile) lists the rest. Tests are found by glob, and `tests/test_reachability.py` fails if a
-test file is not run by any target, so a new test file is picked up as long as it matches a target's pattern. As of
-2026-11-09 one file matches none: `tools/test_gate_structured.mjs` (the glue gate CLI), so that check fails until a
-target runs it; run it by hand with `node --test tools/test_gate_structured.mjs`.
+test file is not run by any target, so a new test file is picked up as long as it matches a target's pattern. The
+glue gate CLI test, `tools/test_gate_structured.mjs`, has its own target, `make gate-test`.
+
+## Lint and coverage
+
+`make lint` runs ruff 0.17.0 over the tree (through `uvx` when it is installed, else the `ruff` on `PATH`) and
+`node --check` on every JavaScript module. CI runs it in the `lint` job. It is not part of `make test`.
+
+```sh
+make lint
+```
+
+At `b71eebf` this printed `ruff 0.17.0` and `All checks passed!` and exited 0.
+
+`make coverage` runs the Node suites with `--experimental-test-coverage` and prints a per-file table with an
+all-files line, then the Python suites under coverage.py, or with `python3 -m trace` counts when coverage.py is not
+installed. It runs the suites, so it takes as long as `make test`; it is not part of `make test` or CI. The
+[configuration reference](../../configuration/configuration-reference.md#makefile-variables) lists what each target
+includes.
 
 ## Run on both Node versions
 

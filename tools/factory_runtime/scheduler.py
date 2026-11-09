@@ -7,12 +7,7 @@ class Scheduler:
  def __init__(self,capacity=1,max_retries=2,backoff_seconds=60,root=None):
   if not 1<=capacity<=8:raise ValueError('capacity')
   self.capacity=capacity;self.max_retries=max_retries;self.backoff=backoff_seconds;self.jobs=[];self.path=Path(root)/"scheduler.json" if root else None
-  if self.path and self.path.exists():
-   saved=json.loads(self.path.read_text())
-   if saved.get("version")!=1:raise ValueError("unknown scheduler version")
-   self.jobs=saved["jobs"]
-   for j in self.jobs:
-    if j["state"]=="running":j.update(state="unknown",result={"outcome":"unknown","error":"controller interrupted; reconcile before retry"})
+  self._reload()
  def _submit(self,job):
   if any(j['job']==job for j in self.jobs):raise ValueError('duplicate job')
   self.jobs.append({'job':job,'state':'queued','retries':0,'eligible':0});self.save()
@@ -23,6 +18,7 @@ class Scheduler:
    j['state']='running';self.save()
    try:r=run(j['job'])
    except Exception as e:r={'outcome':'failed','error':str(e)}
+   if not isinstance(r,dict) or not isinstance(r.get('outcome'),str):r={'outcome':'failed','error':'malformed run result'}
    if r['outcome']=='subscription_limit' and j['retries']<self.max_retries:
     j['retries']+=1;j.update(state='blocked',eligible=now+self.backoff*2**(j['retries']-1))
    else:j.update(state='passed' if r['outcome']=='passed' else 'failed',result=r)
@@ -33,7 +29,9 @@ class Scheduler:
 
  def _reload(self):
   if self.path and self.path.exists():
-   self.jobs=json.loads(self.path.read_text())['jobs']
+   saved=json.loads(self.path.read_text())
+   if not isinstance(saved,dict) or saved.get('version')!=1 or not isinstance(saved.get('jobs'),list):raise ValueError('unknown scheduler version')
+   self.jobs=saved['jobs']
    for j in self.jobs:
     if j['state']=='running':j.update(state='unknown',result={'outcome':'unknown','error':'controller interrupted; reconcile before retry'})
  def submit(self,job):

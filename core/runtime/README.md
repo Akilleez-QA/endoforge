@@ -182,7 +182,12 @@ unchanged.
 
 [stub-pool.mjs](stub-pool.mjs) stands in for the agent pool in atomizer replays. It reads the bubblewrap arguments
 from `ENDOFORGE_ISOLATE_SPEC`, copies the recorded outputs for that atom from `ENDOFORGE_STUB_REPLAY/atoms/<id>/out`
-into the atom's `/out` bind after `ENDOFORGE_STUB_LATENCY_MS`, logs a stub account, and runs `CODEX_POOL_BIN`.
+into the atom's `/out` bind after `ENDOFORGE_STUB_LATENCY_MS`, logs a stub account line with `pid=` (the form the
+atomizer scheduler attributes), and runs `CODEX_POOL_BIN`, forwarding `SIGTERM` and `SIGINT` and returning its exit
+status. A missing replay, a spec without an `/out` bind or an unreadable spec fails with a message.
+`test/gaps4-runtime.test.mjs` tests it (REQ-STUB-001) in `make isolate-test`, together with delegated cgroup
+enforcement inside a `systemd-run --user --scope` (REQ-ISO-018), which skips with its reason where no delegated scope
+exists.
 
 ## Contained JavaScript
 
@@ -239,5 +244,7 @@ compatibility route uses it when no width is given; `IsolatePool` defaults to `a
 `make loop-test` runs the loop's tests, including kills of the cell, the supervisor and the bridge at each stage;
 `make pipeline-test` runs the `current` path's. The gap-closure tests `test/gaps-*.test.mjs` and `test/gaps2-commit.test.mjs` (structured state and its comparison at
 commit, commit re-run, library and synthesis on the in-cell paths, judging cell, suspect tests and specification
-correction, transports, compatibility promotion, caller principal) run in `make isolate-test`, which first runs
+correction, transports, compatibility promotion, caller principal), `test/gaps3-*.test.mjs` and
+`test/gaps4-synth.test.mjs` (structured synthesized vectors at width 1 and 2, and the caller's `synthCell` limits at
+commit) run in `make isolate-test`, which first runs
 `make loop-setup` (the pinned compiler) and `make tscheck-setup` (the checker), so it works on a fresh clone.

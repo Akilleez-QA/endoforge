@@ -196,7 +196,7 @@ Source: `tools/hardware_record/schema.json` (schema `endoforge/hardware-record/1
 
 ## 5. Factory runtime schemas (generated)
 
-Sources: `tools/factory_runtime/schemas/v1/`. The factory runtime has no tests at the baseline (GAP-EF-002); these are its declared shapes.
+Sources: `tools/factory_runtime/schemas/v1/`. `tools/factory_runtime/test_runtime_gaps.py` checks that these files match the runtime's validators (REQ-FACTORY-003).
 
 #### `attempt.json`
 

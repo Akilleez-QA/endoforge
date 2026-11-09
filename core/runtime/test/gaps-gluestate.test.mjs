@@ -8,6 +8,7 @@ import { runGates, testProblems } from '../x1/gates.mjs';
 import { hash } from '../x1/host.mjs';
 import { layoutOf, layoutTable, measuredPort, probeCalls } from '../x1/measure.mjs';
 import { candidate as additionCandidate } from './fixtures/x1/candidate.mjs';
+import { judge } from '../x1/synth/judge.mjs';
 
 const asc = fileURLToPath(new URL('../../../tools/asc/node_modules/.bin/asc', import.meta.url));
 const source = `const ITEM: usize = 40;
@@ -246,4 +247,16 @@ test('G28: the embedded to-do modules are what the pinned compiler builds from t
     assert.equal(compiled.error, undefined);
     assert.equal(compiled.wasm, wasm[name], name);
   }
+});
+
+test('synthesized vectors judge a structured kernel: the to-do reducer passes, a wrong expected state refuses', () => {
+  const vectors = todoTests.map(test => ({ fn: test.fn, args: test.args, ...(test.expectError ? { throws: true } : { value: test.expect }) }));
+  const evaluator = { confirmation: { approved: true }, checks: { vectors, ranges: [], codes: [], monotone: [], glue: [] } };
+  const pass = judge(evaluator, todoCandidate());
+  assert.equal(pass.decision, 'pass', JSON.stringify(pass.failures));
+  assert.equal(pass.skipped, 0);
+  const wrong = { ...evaluator, checks: { ...evaluator.checks, vectors: vectors.map((v, i) => (i === 1 ? { ...v, value: one } : v)) } };
+  const refused = judge(wrong, todoCandidate());
+  assert.equal(refused.decision, 'refuse');
+  assert.match(refused.failures.join(' '), /value\.reference: reduce/);
 });

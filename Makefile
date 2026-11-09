@@ -16,6 +16,14 @@ ISOLATE_TESTS := $(filter-out $(LOOP_TESTS) $(PIPELINE_TESTS) $(PIPELINE_RETRY_T
 ATOMIZER_INDIRECT := $(addprefix tools/atomizer/test/,lessons.test.mjs routing.test.mjs)
 ATOMIZER_TESTS := $(filter-out $(ATOMIZER_INDIRECT),$(wildcard tools/atomizer/test/*.test.mjs))
 LIB_NODE_TESTS := $(wildcard $(addsuffix /test/*.test.mjs,tools/lib tools/conductor tools/hillclimb tools/job))
+GAP_PY_TESTS := tools/factory_runtime/test_runtime_gaps.py tools/test_approved_atoms.py tools/test_gen_release_docs.py
+GAP_NODE_TESTS := tools/project-scheduler/test/scheduler.test.mjs
+LEDGER_TESTS := $(filter-out $(GAP_PY_TESTS),$(wildcard core/ledger/test_*.py tools/test_*.py))
+RUFF_VERSION := 0.17.0
+RUFF ?= $(if $(shell command -v uvx),uvx ruff@$(RUFF_VERSION),ruff)
+COVERAGE_DIR := .test-work/coverage
+NODE_COVERAGE_TESTS := $(RUNTIME_TESTS) $(wildcard core/engine/*.test.mjs core/library/test/*.test.mjs tools/tscheck/test/*.test.mjs tools/compatibility/*.test.mjs) tools/test_gate_structured.mjs $(ATOMIZER_TESTS) $(LIB_NODE_TESTS) $(wildcard $(GAP_NODE_TESTS))
+PY_COVERAGE_TESTS := $(call pymods,$(wildcard tests/test_*.py core/ledger/test_*.py tools/test_*.py tools/factory_runtime/test_*.py tools/step_harness/test_*.py tools/hardware_record/test_*.py tools/seeded_faults/test_*.py tools/escape_harness/test_*.py))
 
 .PHONY: test test-optimized check index sums core-test ledger-test engine-test isolate-test tscheck-setup tscheck-test tscheck-requalify atomizer-test harness-test hardware-test runtime-test lib-test library-test portability-test factory-state-test seeded-fault-test escape-test compatibility-test gate-test
 
@@ -50,7 +58,7 @@ core-test:
 	$(PYTHON) -B -m unittest discover -s tests -v
 
 ledger-test:
-	$(PYTHON) -B -m unittest $(call pymods,$(wildcard core/ledger/test_*.py tools/test_*.py)) -v
+	$(PYTHON) -B -m unittest $(call pymods,$(LEDGER_TESTS)) -v
 
 engine-test:
 	node --test core/engine/*.test.mjs
@@ -136,3 +144,30 @@ gate-test:
 
 compatibility-test:
 	node --test tools/compatibility/*.test.mjs
+
+.PHONY: gap-tools-test lint coverage coverage-node coverage-python
+test: gap-tools-test
+
+gap-tools-test:
+	$(PYTHON) -B -m unittest $(call pymods,$(GAP_PY_TESTS)) -v
+	node --test $(GAP_NODE_TESTS)
+
+lint:
+	$(RUFF) --version
+	$(RUFF) check --output-format=concise .
+	find . \( -name node_modules -o -name .git -o -name .tools -o -name .test-work \) -prune -o -type f \( -name '*.mjs' -o -name '*.js' -o -name '*.cjs' \) -print0 | xargs -0 -n1 -P4 node --check
+
+coverage: coverage-node coverage-python
+
+coverage-node: tscheck-setup loop-setup
+	node --test --experimental-test-coverage --test-coverage-exclude='**/test/**' --test-coverage-exclude='**/*.test.mjs' --test-skip-pattern='the counter sees writes on an open file' --test-reporter=spec $(NODE_COVERAGE_TESTS)
+
+coverage-python:
+	@mkdir -p $(COVERAGE_DIR)
+	@if $(firstword $(PYTHON)) -c 'import coverage' 2>/dev/null; then \
+		$(firstword $(PYTHON)) -B -m coverage run --data-file=$(COVERAGE_DIR)/python --source=core,tools -m unittest $(PY_COVERAGE_TESTS) && \
+		$(firstword $(PYTHON)) -B -m coverage report --data-file=$(COVERAGE_DIR)/python; \
+	else \
+		echo 'coverage.py is not installed; reporting trace counts'; \
+		$(firstword $(PYTHON)) -B -m trace --count --summary --missing --coverdir=$(COVERAGE_DIR)/trace --ignore-dir="$$($(firstword $(PYTHON)) -c 'import sys; print(sys.base_prefix)')" --module unittest $(filter-out tests.test_check_trace,$(PY_COVERAGE_TESTS)); \
+	fi

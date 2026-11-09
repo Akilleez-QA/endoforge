@@ -24,7 +24,7 @@ Pass the same object to `runNeed({ ..., library })`: every loop path consults it
 | [compose.mjs](compose.mjs), [link.mjs](link.mjs) | Turn a composition plan into one module, glue and manifest source: union, output-to-input pipelines, argument adapters |
 | [scope.mjs](scope.mjs) | Tenant and lineage access check |
 | [cells.mjs](cells.mjs), [cell.mjs](cell.mjs) | Warm worker threads with the pool's heap limits and WASM guard; run `runGates`, discrimination and fingerprints |
-| [discriminate.mjs](discriminate.mjs), [mutants.mjs](mutants.mjs) | Module mutants (up to 1,000 sites), result wrappers and a probe grid (up to 512 rows per export) |
+| [discriminate.mjs](discriminate.mjs), [mutants.mjs](mutants.mjs) | Module mutants (up to 1,000 sites), result wrappers and a probe grid (up to 512 rows per export). For an export that takes or returns a `record`, `list` or `text`, the grid is built from the declared layout (each scalar leaf varied, codes and booleans enumerated, lists shortened, extended and reordered, text varied within `maxBytes`), calls go through the host buffers of a metered instance, results are compared field by field, and wrappers act on every `number` leaf |
 | [journal.mjs](journal.mjs) | Hash-chained JSON lines; one `fsync` per record; verified on open |
 
 `openLibrary` options: `journal` (path, or `null` for memory only), `cells` (1), `deadlineMs` per cell job (5,000),
@@ -38,10 +38,13 @@ Composition: `library.compose(need, plan)` takes `{ exports: [{ name, entry, fn 
 An argument is `{ input }`, `{ previous: true }` or `{ const }`, with optional `scale`, `offset` and `narrow` (`trunc` or
 `nearest`; lossy conversions are refused without it). The result is linked into one module and must pass the need's
 frozen tests and the discrimination check, like a single entry. `serve` builds a union by itself when no single entry
-holds the capability. Parts that use linear memory keep their state apart: each gets its own bounds-checked region
-inside the module's one linear memory, and structured values cross between parts only through copies made by the
-linked wrapper. Each part keeps its own table. A plan misses with `memory_conflict` when the parts cannot all fit the
-64 MiB workcell budget, or a part declares or addresses more than one memory.
+holds the capability. Parts that use linear memory keep their state apart: the composed module has one WebAssembly
+memory per part (multi-memory), after memory 0, which holds the buffers the host passes in. Each part's loads, stores,
+data segments and bulk operations address only its own memory, still bounds-checked to the part's own size, and
+structured values cross between parts only through copies the linked wrapper makes between memories. The meter
+(`core/runtime/x1/meter.mjs`) reads, exports and counts every memory. Each part keeps its own table. A plan misses with
+`memory_conflict` when the parts' memories together cannot fit the 64 MiB workcell budget, or a part declares or
+addresses more than one memory.
 
 Scopes: an entry's `scope` comes from the admit row or the principal. Another tenant's entry is invisible, a lineage
 outside the entry's path misses with `permission_denied`, and `grant` opens an entry to a named tenant or lineage. The

@@ -87,11 +87,11 @@ turns and ledger writes leave it.
 |---|---|---|
 | [job](job/README.md) | Checks a job manifest against six intake gates and fifteen invariants, renders the card the user confirms by its SHA-256, compiles every atom's prompt | Active; tested by `make lib-test` |
 | [conductor](conductor/README.md) | Resumable daemon: launches Codex and Claude Code workers in git worktrees, gates each landed change, runs its checks, freezes or relaunches it, escalates what it cannot decide | Active; tested by `make lib-test` with a stub worker, including the adopt example, criteria-derived checks and the collect lock in a git worktree |
-| [atomizer](atomizer/README.md) | Validates and runs a DAG of atoms in bubblewrap sandboxes, verifies outputs against receipts, writes an append-only ledger | Active; tested by `make atomizer-test` |
-| [hillclimb](hillclimb/README.md) | Round-based improvement campaigns (render, critique, fix, apply, score) with a lessons ledger | Active; the lessons ledger, the default runner (`bin/run-atoms.mjs`, on the atomizer scheduler), `plan-review` and `scripts/hc-patch.sh` have tests |
+| [atomizer](atomizer/README.md) | Validates and runs a DAG of atoms in bubblewrap sandboxes, verifies outputs against receipts, writes an append-only ledger | Active; tested by `make atomizer-test`, including `atomize`, `direct`, `fanout`, `report` and `cutover` |
+| [hillclimb](hillclimb/README.md) | Round-based improvement campaigns (render, critique, fix, apply, score) with a lessons ledger | Active; the lessons ledger, the default runner (`bin/run-atoms.mjs`, on the atomizer scheduler), `plan-review`, `scripts/hc-patch.sh`, fan-out, planning and the scoreboard have tests (`make lib-test`) |
 | [lib](lib/README.md) | Shared exit codes (75 busy, 78 stop), typed retry, file locks, headroom, exit files | Active; `errors.mjs` tested |
 | [job-locks](job-locks/README.md) | Prints the locked decisions of active jobs for a session-start hook | Active; tested by `make lib-test` |
-| [project-scheduler](project-scheduler/README.md) | Runs one cross-project batch of pieces plus a recombine step under token reservations | Works; no tests (GAP-EF-004) |
+| [project-scheduler](project-scheduler/README.md) | Runs one cross-project batch of pieces plus a recombine step under token reservations | Works; tested by `make gap-tools-test` (REQ-SCHED-001) |
 
 ## Checking: what decides whether code is accepted
 
@@ -99,7 +99,7 @@ turns and ledger writes leave it.
 |---|---|---|
 | [asc](asc/README.md) | Pins the AssemblyScript compiler (0.28.20) that workcells load, with file digests and workcell limits | Active; used by every `isolate` and `agent` loop run |
 | [tscheck](tscheck/README.md) | Type checks TypeScript inside workcells with `tsrs`, a WebAssembly build of the TypeScript 7 compiler | Active, opt-in route; `make tscheck-test` |
-| [gate](gate/README.md) | Stand-alone freeze-then-check runner for one kernel directory; compiles `kernel.ts` and runs the core gates G1 to G9, structured state included | Used inside atomizer compose atoms; tested by `tools/test_gate_structured.mjs` (REQ-GATECLI-001), which no `make` target runs yet |
+| [gate](gate/README.md) | Stand-alone freeze-then-check runner for one kernel directory; compiles `kernel.ts` and runs the core gates G1 to G9, structured state included | Used inside atomizer compose atoms; tested by `tools/test_gate_structured.mjs` (REQ-GATECLI-001) in `make gate-test` |
 | [kernel](kernel/README.md) | The WIT kernel contract, its exact-interface validator and a Wasmtime host with limits and a per-call broker | Standalone conformance lane; nothing in the loop imports it; `make kernel-test` |
 | [compatibility](compatibility/README.md) | TypeScript binding of the kernel contract and a probe for trusted reference reducers | Standalone slice; `make compatibility-test` |
 | [rust_lane](rust_lane/README.md) | Reproducible Rust build of one reference kernel as a WIT component | Standalone slice; `make rust-lane-test`, not in `make test` |
@@ -121,9 +121,9 @@ READMEs; say "carried over" rather than "current design" when you cite them.
 
 | Tool | What it does | Status |
 |---|---|---|
-| [factory_campaign](factory_campaign/README.md) | Hash-chained stage state, a fenced model-ownership journal, bounded text repair | Tested by `make factory-state-test`; nothing outside its own tests imports it |
-| [factory_portability](factory_portability/README.md) | Encrypted campaign checkpoints and offline WebAssembly stage resume on another machine | Tested by `make portability-test`; `campaign_transfer.py` never run |
-| [factory_runtime](factory_runtime/README.md) | One worker attempt in a locked-down Docker container with checked publication | No tests (GAP-EF-002); needs a qualified image |
+| [factory_campaign](factory_campaign/README.md) | Hash-chained stage state, a fenced model-ownership journal, bounded text repair | Tested by `make factory-state-test`, including bounded repair; nothing outside its own tests imports it |
+| [factory_portability](factory_portability/README.md) | Encrypted campaign checkpoints and offline WebAssembly stage resume on another machine | Tested by `make portability-test`; `campaign_transfer.py` is tested against an emulated second host only (GAP-EF-006) |
+| [factory_runtime](factory_runtime/README.md) | One worker attempt in a locked-down Docker container with checked publication | Tested by `make gap-tools-test` against a stand-in Docker CLI (REQ-FACTORY-003); a sandboxed worker launch is untested (GAP-EF-002); needs a qualified image to run |
 
 ## Repository scripts
 
@@ -138,7 +138,7 @@ Run these from the repository root. `make check` runs the first seven.
 | [experiments_index.py](experiments_index.py) | Builds the index in `experiments/README.md` from each probe's `INDEX.md` | `python3 -I tools/experiments_index.py [--check]` (`make index`) | `make check`; `make core-test` |
 | [source_sums.py](source_sums.py) | Regenerates or checks `sources/SHA256SUMS` | `python3 -I tools/source_sums.py [--check] [--add PATH ...] [--remove PATH ...]` (`make sums`) | `make check`; `make core-test` |
 | [gen_data_dictionary.py](gen_data_dictionary.py) | Regenerates or checks `docs/data/data-dictionary.md` from the schemas | `python3 -I tools/gen_data_dictionary.py [--check]` | `make check` |
-| [gen_release_docs.py](gen_release_docs.py) | Writes the test report and version description from recorded runs | `python3 -I tools/gen_release_docs.py --name <suffix> --pr <n> --log LABEL=PATH ...` | None (GAP-EF-014) |
+| [gen_release_docs.py](gen_release_docs.py) | Writes the test report and version description from recorded runs | `python3 -I tools/gen_release_docs.py --name <suffix> --pr <n> --log LABEL=PATH ...` | `make gap-tools-test` (`tools/test_gen_release_docs.py`, REQ-REPO-008) |
 | [x1_loop.py](x1_loop.py) | Ledger-bridge extension that admits, parks and commits promotion decisions for the candidate loop | loaded by `core/runtime/x1/loop.mjs` as `tools.x1_loop` | `make loop-test`, `make pipeline-test` |
 | [x1_ledger.py](x1_ledger.py) | Freezes the evaluator, registers candidates and decides promotions, JSON on stdin | `python3 -B -m tools.x1_ledger freeze\|register\|promote`; usage and exit 2 otherwise | `make pipeline-test`, `make loop-test` |
 | [compat_policy.py](compat_policy.py) | The compatibility lane's promotion rule (`COMPAT-TS-CHECK-RUN2-TESTS/v1`): freezes tests and compiler, records receipts, re-scores the route's output and decides | `python3 -B -m tools.compat_policy freeze\|register\|receipt\|promote` (JSON on stdin; usage and exit 2 otherwise) | `make isolate-test` (`core/runtime/test/gaps-compat.test.mjs`) |
@@ -146,7 +146,7 @@ Run these from the repository root. `make check` runs the first seven.
 | [dump_list.py](dump_list.py) | Registers a process's sheddable memory in the memguard dump list and sheds it on `SIGUSR2`; reads `ENDOFORGE_DUMP_LIST` and `XDG_STATE_HOME` | `register(name, priority, measure, shed)` | `make ledger-test` |
 | [constraint_store.py](constraint_store.py) | Hash-chained JSONL store for constraint records | `JsonlStore(path)` | `make core-test` |
 | [library_verify_promotion.py](library_verify_promotion.py) | Verifies promotion decisions against their ledger, one JSON result per row read from stdin | `python3 -B -m tools.library_verify_promotion` | `make library-test` |
-| [approved_atoms.py](approved_atoms.py) | Append-only JSONL registry of approved atoms with approval, retirement and consumers | `python3 -I tools/approved_atoms.py --store <file> add\|get\|consumers\|approve\|retire ...` | None (GAP-EF-005) |
+| [approved_atoms.py](approved_atoms.py) | Append-only JSONL registry of approved atoms with approval, retirement and consumers | `python3 -I tools/approved_atoms.py --store <file> add\|get\|consumers\|approve\|retire ...` | `make gap-tools-test` (`tools/test_approved_atoms.py`, REQ-FACTORY-004) |
 | [stage-rates.mjs](stage-rates.mjs) | Prints a stage-rates snapshot, once or every second | `node tools/stage-rates.mjs <snapshot.json> [--watch] [--json]` | `make isolate-test` |
 | [privacy-allowlist.json](privacy-allowlist.json) | Hash-pinned exceptions for `check-privacy.py` | data | `make check` |
 

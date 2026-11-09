@@ -50,7 +50,7 @@ def pack(source, archive, recipient, age='age'):
     archive.parent.mkdir(parents=True,exist_ok=True)
     fd,tmp=tempfile.mkstemp(dir=archive.parent,prefix='.checkpoint-'); os.close(fd)
     try:
-        cp=subprocess.run([age,'--encrypt','--recipient',recipient],input=buf.getvalue(),stdout=open(tmp,'wb'),stderr=subprocess.PIPE,timeout=120)
+        with open(tmp,'wb') as sink:cp=subprocess.run([age,'--encrypt','--recipient',recipient],input=buf.getvalue(),stdout=sink,stderr=subprocess.PIPE,timeout=120)
         if cp.returncode: raise ValueError('age encryption failed: '+cp.stderr.decode())
         os.link(tmp,archive)
     finally: os.unlink(tmp)

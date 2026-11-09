@@ -92,12 +92,19 @@ limits and WASM guard as a pool cell:
    operator swaps), wraps its result (negated, scaled by 1.001, or rounded, floored or ceiled to 0, 2 or the declared decimals) and probes a grid of up to 512 rows per
    export. A variant the need's tests accept but the grid shows to behave differently is a survivor. A trapping
    export's declared bound that no test probes from outside is also counted.
+   For an export that takes or returns a `record`, `list` or `text`, the grid is built from the declared layout: it
+   starts from the need's test arguments (or a filled and an empty sample), varies each scalar leaf over its domain,
+   tries every code (and one past each end) and both booleans, shortens, extends and reverses lists, varies text
+   within `maxBytes`, and changes one item of a list at a time. Calls go through the host buffers of a fuel-metered
+   instance (10,000,000 units per call), results are compared field by field with the gates' matcher, and the result
+   wrappers act on every `number` leaf. A value that misfits its layout counts as a boundary problem, not a trap.
 3. Any survivor refuses the reuse (`evaluator_cannot_discriminate`): the need's tests can't tell this kernel from a
    wrong one, so passing them proves too little.
 
 A pass journals a `library_reuse` receipt naming the source promotion, the need's frozen hashes, the binding, the
 host digests, the environment and the principal, and returns the candidate. A refusal journals `library_refused` with
-its reason, its counterexamples (the need's tests the entry failed, for `evaluator_failed`) and up to 16 surviving
+its reason, its counterexamples (the need's tests the entry failed, for `evaluator_failed`, with a structured result
+recorded as its decoded value) and up to 16 surviving
 mutant witnesses. A cell timeout, a guard breach or a crash is a refusal, never a pass. A miss before any cell runs
 writes nothing.
 
@@ -131,16 +138,18 @@ plan lists the need's exports:
 link safely. Any number of parts may use linear memory or a table:
 
 - **Memory.** When one part uses memory, the module keeps that part's memory as it is. When two or more do, the
-  composed module has one linear memory holding a region per part, sized to the part's initial pages or, if it grows
-  memory, up to its maximum or its share, with 64 pages (4 MiB) of headroom above for the buffers the host passes in;
-  everything must fit in 1024 pages (64 MiB, the workcell budget). Then every load, store, `memory.size`, `memory.grow`, data
-  segment and bulk memory operation of a part is rewritten to its region and bounds-checked, so a part cannot read or
-  write another part's state; an access outside the region traps.
+  composed module has one WebAssembly memory per part (multi-memory). Memory 0 belongs to the host: it starts empty,
+  may grow to 64 pages (4 MiB), and holds the buffers the host passes in. Memory 1, 2, ... each belong to one part,
+  sized to the part's initial pages or, if it grows memory, up to its maximum or its share, plus its exchange window;
+  all of them together must fit in 1024 pages (64 MiB, the workcell budget). Every load, store, `memory.size`,
+  `memory.grow`, data segment and bulk memory operation of a part is rewritten to name the part's own memory and is
+  still bounds-checked to the part's own size, so a part cannot read or write another part's state; an access outside
+  it traps. The [meter](gates.md#fuel-and-stack-g6) reads, exports and counts every memory.
 - **Tables.** Each part keeps its own table, and `call_indirect` dispatches through it.
 - **Structured values.** A part whose export takes or returns a `record`, `list` or `text` gets an exchange window
-  after its region. The linked wrapper copies each structured argument from the host buffer (or from the previous
-  stage's result) into that window and the result back out, so structured state crosses between parts only as a
-  copy. The plan's layouts must match: a stage whose argument layout differs from what it is given, or a final stage
+  in its own memory, after the part's state. The linked wrapper copies each structured argument with `memory.copy`
+  from the host's memory 0 (or from the previous stage's window, in that part's memory) into the window, and copies
+  the final result back into memory 0, so structured state crosses between parts only as a copy between memories. The plan's layouts must match: a stage whose argument layout differs from what it is given, or a final stage
   that does not produce the declared layout, is refused. A plan cannot pass a buffer address, or the hidden result
   pointer, into a scalar parameter.
 
@@ -229,12 +238,8 @@ that class needs a stronger evaluator, which is why reuse stays opt-in.
 
 Composition inherits these limits from its parts. Two more apply to it:
 
-- The parts share one WebAssembly memory with bounds-checked regions, not one memory each, because the meter
-  ([meter.mjs](../../core/runtime/x1/meter.mjs)) reads only memory 0. The parts' combined memory is limited to the
-  64 MiB budget.
-- The discrimination check ([discriminate.mjs](../../core/library/discriminate.mjs)) calls exports with scalar
-  arguments only, so a kernel with structured arguments, composed or not, gets no real mutation check under
-  `gate: 'full'`.
+- The parts' memories together, with the host's memory 0, are limited to the 64 MiB budget.
+- A part that declares or addresses more than one memory of its own is refused (`memory_conflict`).
 
 ## Boundary with the engine
 

@@ -59,7 +59,7 @@ export function assignLanes(c, logins, { skip = [] } = {}) {
   for (const w of order) {
     const used = lanes.filter((l) => l.piece === w.piece).map((l) => l.engine + l.account);
     const fits = slots.filter((s) => (!w.engine || s.engine === w.engine) && (!w.account || s.account === w.account));
-    if (!fits.length) throw new Error(`piece ${w.piece}: no ${w.engine ?? ''} login ${w.account ?? ''} available`);
+    if (!fits.length) throw new Error(`piece ${w.piece}: no ${[w.engine, 'login', w.account].filter(Boolean).join(' ')} available`);
     const s = fits.sort((a, b) => used.includes(a.engine + a.account) - used.includes(b.engine + b.account) || a.n - b.n)[0];
     s.n++;
     lanes.push({ piece: w.piece, variant: w.variant, engine: s.engine, account: s.account, ...(s.dir ? { configDir: s.dir } : {}) });
@@ -150,4 +150,4 @@ export function workerCapacity(env = process.env) {
   if (fs.existsSync(path.join(stateDir, 'DRAIN'))) return 0;
   try { const n = parseInt(fs.readFileSync(path.join(stateDir, 'CAPACITY'), 'utf8'), 10); return Number.isFinite(n) ? Math.max(0, Math.min(100, n)) : 100; } catch { return 100; }
 }
-export const waveSize = (total, pct) => (pct <= 0 ? 0 : Math.max(1, Math.floor((total * pct) / 100)));
+export const waveSize = (total, pct) => (!(pct > 0) || !(total > 0) ? 0 : Math.max(1, Math.floor((total * pct) / 100)));

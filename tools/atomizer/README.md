@@ -53,15 +53,15 @@ assembles the parts, freezes `CONTRACT.md` and `tests.json` before any code, and
 
 | Script | What it does | Calls a model |
 |---|---|---|
-| `bin/schedule.mjs run <atoms.json> --run-dir <dir>` | Validates, plans and runs every atom. Options: `--concurrency` (8; 3 with the Codex backend), `--retries` (1), `--timeout-ms` (900000), `--policy`, `--force`, `--no-augment`. | Only model atoms |
+| `bin/schedule.mjs run <atoms.json> --run-dir <dir>` | Validates, plans and runs every atom. Options: `--concurrency` (8; 3 with the Codex backend), `--retries` (1), `--timeout-ms` (900000), `--policy`, `--force`, `--no-augment`. A model atom refused by the subscription guard fails with exit 78 and its reason, without a retry, and the run still writes its receipts. | Only model atoms |
 | `bin/verify.mjs <run-dir> [--policy file]` | Checks a finished run against its receipts and acceptance commands. | No |
 | `bin/report.mjs <run-dir>` | Markdown timeline, tokens and realized speedup. | No |
 | `bin/speed.mjs <run-dir or fanout-dir>... [--out SPEED.md] [--json speed.json]` | Wall time broken down by stage. | No |
-| `bin/fanout.mjs <atoms.json...> --out-dir <dir>` | Several DAGs as one pool, then verify and report on each. | Only model atoms |
-| `bin/atomize.mjs <need.md> --out <dir> [--model sonnet\|opus\|codex] [--fixture atoms.json]` | A model writes `atoms.json`; the script validates, repairs once and plans. `--fixture` skips the model. | Yes, unless `--fixture` |
+| `bin/fanout.mjs <atoms.json...> --out-dir <dir>` | Several DAGs as one pool, then verify and report on each. A graph the scheduler refuses is recorded in `fanout.json` and the others still run; exit 1 when any request fails verification. | Only model atoms |
+| `bin/atomize.mjs <need.md> --out <dir> [--model sonnet\|opus\|codex] [--fixture atoms.json]` | A model writes `atoms.json`; the script validates, repairs once and plans. `--fixture` skips the model. A model call the subscription guard refuses ends the attempt loop with `valid: false`. | Yes, unless `--fixture` |
 | `bin/plan-template.mjs <need.md> --out <dir>` | One model call writes the interface; the fixed kernel template is expanded around it. | Yes |
 | `bin/direct.mjs <need.md> --out <atoms.json>` | Writes a one-atom `direct` DAG (one worker does everything). | No (running it does) |
-| `bin/cutover.mjs <ladder.json> --out-dir <dir>` | Paired direct and atomized arms on the same gates. | Yes |
+| `bin/cutover.mjs <ladder.json> --out-dir <dir> [--arms direct,atomized,templated] [--cases id,id]` | Paired arms (default direct and atomized) on the same gates. Exits 2 on missing arguments or an unknown arm. | Yes |
 | `bin/compose-kernel.mjs --id <need> --in /in --out /out --work /work --gate <gate.mjs>` | Merges kernel parts, freezes, runs the gates. Runs inside a compose atom. | No |
 | `bin/testcheck.mjs strip <tests> <cases>` or `merge <tests> <computed> <out> <report>`, `bin/repair-noop.mjs`, `bin/isolate-exec.mjs` | Helpers used inside atoms. `testcheck.mjs` prints its usage and exits 2 when the arguments are missing. | No |
 | `bin/ledger-export.mjs [--out dir]` | Flattens the ledger ([LEDGER.md](LEDGER.md)) into CSV tables. | No |
@@ -150,6 +150,9 @@ subscription guard first.
 `make atomizer-test` runs `test/run.mjs` (scheduler, isolation, cycles, forbidden edges, routing and lessons) and the
 other `test/*.test.mjs` files, with stubs instead of models. `test/tools-gaps.test.mjs` checks that
 [LEDGER.md](LEDGER.md) lists exactly the events the code emits, that a bare `bench.mjs` run completes on its default
-atoms, and that `testcheck.mjs` prints its usage when arguments are missing.
+atoms, and that `testcheck.mjs` prints its usage when arguments are missing. `test/commands.test.mjs` drives `atomize`
+(with `--fixture`), `direct`, `fanout`, `report` and `cutover` end to end on script-worker fixtures
+([test/fixtures/synthetic-pair.json](test/fixtures/synthetic-pair.json)); model arms run with no login, so the
+subscription guard refuses them and the test checks the recorded refusal (REQ-ATOM-005).
 
-Engineering record: component C-22, requirements REQ-ATOM-001 to REQ-ATOM-003.
+Engineering record: component C-22, requirements REQ-ATOM-001 to REQ-ATOM-005.

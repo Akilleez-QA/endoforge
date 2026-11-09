@@ -6,7 +6,7 @@ const engine = { Module: WebAssembly.Module, Instance: WebAssembly.Instance };
 const limit = installWasmLimit(64, error => { parentPort.postMessage({ job: null, breach: error }); process.exit(18); });
 const summary = result => ({ promotable: result.promotable === true, gates: Object.fromEntries(Object.entries(result.gates).map(([name, gate]) => [name, gate.ok])),
   wasmSha256: result.gates.G2_compiles?.wasmSha256 ?? null, failed: (result.tests ?? []).filter(t => !t.pass).map(t => t.name).slice(0, 5),
-  failing: (result.tests ?? []).filter(t => !t.pass && (t.trap || typeof t.got === 'number' || typeof t.got === 'boolean')).map(t => t.trap ? { fn: t.fn, args: t.args, trap: true } : { fn: t.fn, args: t.args, got: t.got }).slice(0, 16) });
+  failing: (result.tests ?? []).filter(t => !t.pass && (t.trap || typeof t.got === 'number' || typeof t.got === 'boolean' || (t.got !== null && typeof t.got === 'object'))).map(t => t.trap ? { fn: t.fn, args: t.args, trap: true } : { fn: t.fn, args: t.args, got: t.got }).slice(0, 16) });
 const operations = {
   qualify({ candidate, capability, numbers, gate }) {
     limit.begin();

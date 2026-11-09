@@ -14,7 +14,14 @@ const out = input.variants.map(code => {
     try {
       context.__args = t.args;
       const v = vm.runInContext(t.fn + '(...__args)', context, { timeout: 200 });
-      return typeof v === 'number' || typeof v === 'boolean' ? { value: Number(v) } : { error: 'not a number' };
+      if (typeof v === 'number' || typeof v === 'boolean') return { value: Number(v) };
+      if (typeof v === 'string') return { value: v };
+      if (typeof v !== 'object' || v === null) return { error: 'not a value', invalid: true };
+      try {
+        context.__value = v;
+        const value = JSON.parse(vm.runInContext('JSON.stringify(__value)', context, { timeout: 200 }));
+        return value && typeof value === 'object' ? { value } : { error: 'not a value', invalid: true };
+      } catch (e) { return { error: String(e && e.message || e).slice(0, 200), invalid: true }; }
     } catch (e) { return { error: String(e && e.message || e).slice(0, 200) }; }
   }) };
 });

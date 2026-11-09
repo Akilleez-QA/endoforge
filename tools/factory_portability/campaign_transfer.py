@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Encrypt and resume a real explicitly staged pending offline campaign stage."""
-import argparse,hashlib,importlib.util,json,os,shlex,subprocess,time,uuid
+import argparse,hashlib,importlib.util,json,shlex,subprocess,time,uuid
 from pathlib import Path
 
 def module(name):
@@ -19,6 +19,7 @@ def execute_transfer(source,bundle,receipt,identity,host,remote):
     if not remote.startswith('/tmp/endoforge-transfer-')or len(remote.split('/'))!=3:raise ValueError('remote must be exact owned staging root')
     receipt.mkdir();rows=[];summary={'schema':'endoforge.actual-cross-host-resume.v1','state':'started','host':host,'remote':remote,'identityCustody':str(identity),'modelAuthentication':'not required: only pending offline stage resumes'};q=shlex.quote
     before={str(p.relative_to(source)):C.sha(p.read_bytes())for p in source.rglob('*')if p.is_file()}
+    staged=False
     try:
         if not identity.exists():
             identity.parent.mkdir(mode=0o700,parents=True,exist_ok=True)
@@ -34,8 +35,11 @@ def execute_transfer(source,bundle,receipt,identity,host,remote):
         if source_hash==destination_hash:raise ValueError('second host identity equals source')
         summary.update(sourceMachineSha256=source_hash,destinationMachineSha256=destination_hash)
         suffix=uuid.uuid4().hex;archive_remote=remote+'/campaign-'+suffix+'.age';dest='/work/checkpoint-'+suffix;output='/work/resume-'+suffix
+        execute(['ssh','-o','BatchMode=yes',host,'mkdir -m 700 -- '+q(remote)],rows);staged=True
         execute(['scp','-q',archive,host+':'+archive_remote],rows)
-        execute(['scp','-q',Path(__file__).with_name('resume_stage.py'),host+':'+remote+'/resume_stage.py'],rows)
+        for name in ['checkpoint.py','resume_stage.py']:
+            execute(['scp','-q',Path(__file__).with_name(name),host+':'+remote+'/'+name],rows)
+        execute(['scp','-q','-r',bundle,host+':'+remote+'/bundle'],rows)
         ns=['bwrap','--ro-bind','/usr','/usr','--ro-bind','/lib','/lib','--ro-bind','/lib64','/lib64','--ro-bind','/bin','/bin','--bind',remote,'/work','--unshare-all','--new-session','--die-with-parent','--proc','/proc','--dev','/dev','--tmpfs','/tmp','--setenv','PATH','/work:/usr/bin:/bin','--chdir','/work','--']
         # The ephemeral stdin stream is never appended to logs or written remotely.
         decrypt=ns+['/usr/bin/python3','/work/checkpoint.py','unpack','/work/'+Path(archive_remote).name,dest,'--identity','-']
@@ -51,6 +55,12 @@ def execute_transfer(source,bundle,receipt,identity,host,remote):
         summary.update(state='passed',passed=True,sourceImmutable=True,checkpointArchiveSha256=C.sha(archive.read_bytes()),matchingPublicationSha256=first['publicationSha256'],matchingModuleSha256=first['moduleSha256'],onePublication=True,secondResumeIdempotent=True,remoteOwnedStagingRemoved=True,completedStagesPreserved=first['completedStagesPreserved'],resumedState=first['resumedState'])
     except Exception as e:
         summary.update(state='failed',passed=False,error=str(e),remoteOwnedStagingRemoved=False)
+        if staged:
+            try:
+                execute(['ssh','-o','BatchMode=yes',host,'rm -rf -- '+q(remote)+' && test ! -e '+q(remote)],rows)
+                summary['remoteOwnedStagingRemoved']=True
+            except (RuntimeError,OSError,subprocess.TimeoutExpired) as cleanup:
+                summary['remoteCleanupError']=str(cleanup)
         raise
     finally:
         save(receipt/'commands.json',rows);save(receipt/'summary.json',summary)

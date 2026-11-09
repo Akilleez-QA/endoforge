@@ -76,6 +76,16 @@ function invoke(directory, prompt, env, timeout, { resume = null, effort = null,
     child.stdin.end(JSON.stringify(promptFor(prompt, env)));
   });
 }
+export const correctionNotice = 'The supervisor corrected suspect cases in tests.json after freeze, from agreeing independent references; frozen.tests.json in this message is the corrected frozen tests.json and replaces any earlier version you remember. Implement against it.';
+async function correctedTests(root, files) {
+  const tests = await read(root, 'tests.json'), sealed = await read(root, 'frozen.sha256');
+  if (tests === files['tests.json'] && sealed === files['frozen.sha256']) return null;
+  const digest = JSON.parse(sealed);
+  if (digest?.contract !== hash(files['CONTRACT.md']) || digest?.tests !== hash(tests)) throw Error('corrected tests do not match the frozen digest');
+  const parsed = JSON.parse(tests);
+  if (!Array.isArray(parsed) || !parsed.length || testProblems(parsed).length) throw Error('corrected frozen tests must each assert something a kernel can fail');
+  return { 'tests.json': tests, 'frozen.sha256': sealed };
+}
 export async function generate({ need, directory, env = process.env, timeout = 600000, check = null, deadline = Infinity, library = null, freeze = null, implementation = [] }) {
   const left = () => { const ms = Math.min(timeout, Math.floor(deadline - Date.now())); if (ms <= 0) throw Error('request deadline reached'); return ms; };
   if (typeof need !== 'string' || !need.trim()) throw Error('nonempty need required');
@@ -122,12 +132,14 @@ export async function generate({ need, directory, env = process.env, timeout = 6
   for (const name of [...implementationFiles, ...implementation]) await writeFile(join(root, name), await readFile(new URL(name, import.meta.url)));
   const frozen = await (freeze ? freeze({ reference, need, configuration }) : ledger('freeze', { reference, need, configuration }));
   reference.identity = frozen.identity;
+  const corrected = await correctedTests(root, files);
+  if (corrected) for (const name of ['tests.json', 'frozen.sha256']) { files[name] = corrected[name]; await writeFile(join(workspace, name), corrected[name]); }
   const freezeMs = performance.now() - freezeStart;
   const reused = library ? await library.serve({ id, files }) : null;
   if (reused?.verdict === 'pass') return { reused, reference, digest: frozen.digest, testDouble: env.ENDOFORGE_CODEX_TEST_DOUBLE === '1', modelMs, timings: { generate: generatedSpecMs, freeze: freezeMs } };
   const codeStart = performance.now();
-  await client(workspace, { stage: 'implementation', need, id, ...(packed ? { frozen: { 'CONTRACT.md': files['CONTRACT.md'], 'tests.json': files['tests.json'] } } : {}), glueSchema: schema, glueRules, glueTemplate, instructions:
-    'You already wrote the frozen CONTRACT.md and tests.json; read them only if not in context. Do not run compilers, tests or other commands; the supervisor compiles and gates. Write kernel.ts and glue.json only. Do not change CONTRACT.md, tests.json or frozen.sha256. Use AssemblyScript 0.28.20, runtime stub, no imports except env.abort, explicit bounded memory. The compiler runs with --noAssert, which deletes assert() calls, so never use assert; make every expectError case trap with an explicit if (condition) abort() or throw. Implement all frozen tests and the closed glue schema; glue.id must equal id. glue.json must satisfy every rule in glueRules; glueTemplate shows the shape. No compiler or other output files.' }, env, left(), { effort, resume: warm ? thread : null });
+  await client(workspace, { stage: 'implementation', need, id, ...(packed || corrected ? { frozen: { 'CONTRACT.md': files['CONTRACT.md'], 'tests.json': files['tests.json'] } } : {}), glueSchema: schema, glueRules, glueTemplate, instructions:
+    (corrected ? `${correctionNotice} ` : '') + 'You already wrote the frozen CONTRACT.md and tests.json; read them only if not in context. Do not run compilers, tests or other commands; the supervisor compiles and gates. Write kernel.ts and glue.json only. Do not change CONTRACT.md, tests.json or frozen.sha256. Use AssemblyScript 0.28.20, runtime stub, no imports except env.abort, explicit bounded memory. The compiler runs with --noAssert, which deletes assert() calls, so never use assert; make every expectError case trap with an explicit if (condition) abort() or throw. Implement all frozen tests and the closed glue schema; glue.id must equal id. glue.json must satisfy every rule in glueRules; glueTemplate shows the shape. No compiler or other output files.' }, env, left(), { effort, resume: warm ? thread : null });
   for (const [name, text] of Object.entries(files)) if (await read(workspace, name) !== text) throw Error('frozen specification changed during generation');
   if (JSON.stringify((await readdir(workspace)).sort()) !== JSON.stringify([...Object.keys(files), 'kernel.ts', 'glue.json'].sort())) throw Error('unexpected implementation files');
   for (const name of ['kernel.ts', 'glue.json']) files[name] = await read(workspace, name);

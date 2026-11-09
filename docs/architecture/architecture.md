@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SDD |
-| Version | 3.1 |
+| Version | 3.3 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -80,8 +80,8 @@ in a contained V8 process ([`core/runtime/contained/`](../../core/runtime/README
 
 ## 4. Components
 
-Each component lists the requirements it satisfies. A component marked with a gap ID has behaviour but no tested
-requirement; see [SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps).
+Each component lists the requirements it satisfies. A gap ID in a row names behaviour of that component that no test
+checks yet; see [SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps).
 
 | ID | Component | Paths | Responsibility | Requirements |
 |---|---|---|---|---|
@@ -89,10 +89,10 @@ requirement; see [SRS §11](../requirements/requirements.md#11-untested-behaviou
 | C-02 | Ledger | `core/ledger/` | The SQLite record: schema validation, durable references, hash chaining, provenance, the frozen evaluator | REQ-LEDGER-001, REQ-LEDGER-003, REQ-LEDGER-004 |
 | C-03 | Engine evaluator and gates | `core/engine/`, `tools/factory_quality/` | Five ordered gates, caller invariants, fresh finalists, Pareto selection | REQ-DOMAIN-001, REQ-ENGINE-001, REQ-ENGINE-002 |
 | C-04 | Constraint records | `core/constraints/`, `tools/constraint_store.py` | Constraints kept word for word outside transcript compaction; laundering refused | REQ-CONSTRAINT-001, REQ-CONSTRAINT-002 |
-| C-05 | Library | `core/library/`, `tools/library_verify_promotion.py` | Reuse of promoted capabilities behind a canonical contract key and a discrimination gate | REQ-LIB-001, REQ-LIB-002, REQ-LIB-003, REQ-LIB-004, REQ-LIB-005, REQ-LIB-006, REQ-LIB-007, REQ-LIB-008 |
-| C-06 | Isolate pool | `core/runtime/isolate-pool.mjs`, `isolate-workcell.mjs`, `isolate-wasm.mjs`, `isolate-wasm-compile.mjs`, `isolate-cgroup.mjs`, `isolate-ledger.mjs` | Thread or process workcells, heap, stack and WebAssembly limits, cgroups, deadlines, warm start, host calls, the persistent ledger bridge | REQ-ISO-001, REQ-ISO-002, REQ-ISO-003, REQ-ISO-004, REQ-ISO-005, REQ-ISO-006, REQ-ISO-007, REQ-ISO-008, REQ-ISO-009, REQ-ISO-010, REQ-ISO-011, REQ-ISO-012, REQ-ISO-013, REQ-ISO-014, REQ-ISO-015, REQ-ISO-016, REQ-ISO-017 |
-| C-07 | X1 candidate loop | `core/runtime/x1/` (except `synth/` and `transports.mjs`), `tools/x1_loop.py`, `tools/x1_ledger.py`, `tools/asc/` | The three loop paths, generator, compiler, gates G1–G9, the in-cell agent loop, formula oracle, commit and promotion rule | REQ-X1-001, REQ-X1-002, REQ-X1-003, REQ-X1-004, REQ-LOOP-001, REQ-LOOP-002, REQ-LOOP-003, REQ-LOOP-004, REQ-GEN-001, REQ-GEN-002, REQ-GEN-003, REQ-GEN-004, REQ-GEN-005, REQ-GEN-006, REQ-GEN-007, REQ-GEN-008, REQ-PROMOTE-001, REQ-UNITS-001, REQ-ORACLE-001, REQ-X1-005, REQ-X1-006, REQ-X1-007, REQ-X1-008, REQ-LOOP-005, REQ-LOOP-006, REQ-GEN-009, REQ-X1-009, REQ-X1-010, REQ-LOOP-007, REQ-LOOP-008, REQ-LOOP-009 |
-| C-08 | Evaluator synthesis | `core/runtime/x1/synth/` | A candidate-blind evaluator, meta-gates M1–M5, frozen before code | REQ-SYNTH-001, REQ-SYNTH-002, REQ-SYNTH-003, REQ-SYNTH-004 |
+| C-05 | Library | `core/library/`, `tools/library_verify_promotion.py` | Reuse of promoted capabilities behind a canonical contract key and a discrimination gate | REQ-LIB-001, REQ-LIB-002, REQ-LIB-003, REQ-LIB-004, REQ-LIB-005, REQ-LIB-006, REQ-LIB-007, REQ-LIB-008, REQ-LIB-009 |
+| C-06 | Isolate pool | `core/runtime/isolate-pool.mjs`, `isolate-workcell.mjs`, `isolate-wasm.mjs`, `isolate-wasm-compile.mjs`, `isolate-cgroup.mjs`, `isolate-ledger.mjs` | Thread or process workcells, heap, stack and WebAssembly limits, cgroups, deadlines, warm start, host calls, the persistent ledger bridge | REQ-ISO-001, REQ-ISO-002, REQ-ISO-003, REQ-ISO-004, REQ-ISO-005, REQ-ISO-006, REQ-ISO-007, REQ-ISO-008, REQ-ISO-009, REQ-ISO-010, REQ-ISO-011, REQ-ISO-012, REQ-ISO-013, REQ-ISO-014, REQ-ISO-015, REQ-ISO-016, REQ-ISO-017, REQ-ISO-018 |
+| C-07 | X1 candidate loop | `core/runtime/x1/` (except `synth/` and `transports.mjs`), `tools/x1_loop.py`, `tools/x1_ledger.py`, `tools/asc/` | The three loop paths, generator, compiler, gates G1–G9, the in-cell agent loop, formula oracle, commit and promotion rule | REQ-X1-001, REQ-X1-002, REQ-X1-003, REQ-X1-004, REQ-LOOP-001, REQ-LOOP-002, REQ-LOOP-003, REQ-LOOP-004, REQ-GEN-001, REQ-GEN-002, REQ-GEN-003, REQ-GEN-004, REQ-GEN-005, REQ-GEN-006, REQ-GEN-007, REQ-GEN-008, REQ-PROMOTE-001, REQ-UNITS-001, REQ-ORACLE-001, REQ-X1-005, REQ-X1-006, REQ-X1-007, REQ-X1-008, REQ-LOOP-005, REQ-LOOP-006, REQ-GEN-009, REQ-X1-009, REQ-X1-010, REQ-LOOP-007, REQ-LOOP-008, REQ-LOOP-009, REQ-X1-011, REQ-LOOP-010, REQ-GEN-010 |
+| C-08 | Evaluator synthesis | `core/runtime/x1/synth/` | A candidate-blind evaluator, meta-gates M1–M5, frozen before code | REQ-SYNTH-001, REQ-SYNTH-002, REQ-SYNTH-003, REQ-SYNTH-004, REQ-SYNTH-005, REQ-SYNTH-006, REQ-SYNTH-007, REQ-SYNTH-008 |
 | C-09 | Model access | `core/runtime/x1/transports.mjs`, `core/runtime/subscription-guard.mjs`, `core/runtime/usage-governor.mjs` | Claude Code transports, subscription proof, weekly usage parking | REQ-SUB-001, REQ-GOV-001, REQ-TRANSPORT-001, REQ-TRANSPORT-002 |
 | C-10 | Contained JavaScript | `core/runtime/contained/`, `tools/compat_policy.py` | A supervised V8 cohort that runs emitted JavaScript, and the compatibility lane's promotion rule | REQ-CONTAINED-001, REQ-CONTAINED-002 |
 | C-11 | Capacity planner | `core/runtime/capacity/` | Width, placement and split fitted from a machine probe (Mjölnir) | REQ-CAP-001 |
@@ -106,16 +106,16 @@ requirement; see [SRS §11](../requirements/requirements.md#11-untested-behaviou
 | C-19 | Escape measurement | `tools/seeded_faults/`, `tools/escape_harness/` | Seeded faults and escape-rate statistics | REQ-FAULT-001, REQ-ESCAPE-001 |
 | C-20 | Step harness | `tools/step_harness/` | Bounded agent step loop with evidence per step | REQ-STEP-001 |
 | C-21 | Hardware record | `tools/hardware_record/` | Machine record for measurements | REQ-HW-001 |
-| C-22 | Atomizer | `tools/atomizer/` | Plan validation, parallel fan-out, routing, failover, trace, receipts | REQ-ATOM-001, REQ-ATOM-002, REQ-ATOM-003, REQ-ATOM-004 |
-| C-23 | Conductor and job intake | `tools/conductor/`, `tools/job/`, `tools/job-locks/`, `tools/lib/` | Lane supervision, job event log, lock registry, typed exit codes | REQ-COND-001, REQ-COND-002, REQ-JOB-001, REQ-LOCK-001, REQ-ERR-001, REQ-COND-003, REQ-COND-004, REQ-JOB-002 |
-| C-24 | Hillclimb | `tools/hillclimb/` | Lessons ledger across rounds | REQ-HILL-001, REQ-HILL-002 |
-| C-25 | Factory campaign and portability | `tools/factory_campaign/`, `tools/factory_portability/` | Campaign state recovery, model journal, encrypted checkpoints | REQ-FACTORY-001, REQ-FACTORY-002 |
+| C-22 | Atomizer | `tools/atomizer/` | Plan validation, parallel fan-out, routing, failover, trace, receipts | REQ-ATOM-001, REQ-ATOM-002, REQ-ATOM-003, REQ-ATOM-004, REQ-ATOM-005 |
+| C-23 | Conductor and job intake | `tools/conductor/`, `tools/job/`, `tools/job-locks/`, `tools/lib/` | Lane supervision, job event log, lock registry, typed exit codes | REQ-COND-001, REQ-COND-002, REQ-JOB-001, REQ-LOCK-001, REQ-ERR-001, REQ-COND-003, REQ-COND-004, REQ-JOB-002, REQ-JOB-003 |
+| C-24 | Hillclimb | `tools/hillclimb/` | Lessons ledger across rounds, fan-out planning, round scoring | REQ-HILL-001, REQ-HILL-002, REQ-HILL-003 |
+| C-25 | Factory campaign and portability | `tools/factory_campaign/`, `tools/factory_portability/` | Campaign state recovery, model journal, bounded repair, encrypted checkpoints, Wasmtime qualification, stage resume and transfer (a real second host is untested, GAP-EF-006) | REQ-FACTORY-001, REQ-FACTORY-002, REQ-FACTORY-005 |
 | C-26 | Rust lane | `tools/rust_lane/` | Reproducible Rust build under the same acceptance | REQ-RUST-001 |
-| C-27 | Repository checks | `tools/check-docs.py`, `tools/check-privacy.py`, `tools/check_trace.py`, `tools/gen_data_dictionary.py`, `tools/experiments_index.py`, `tools/source_sums.py`, `tools/experiment_id.py`, `tests/test_reachability.py` | Links, digests, privacy, index, allocation, reachability, trace and data-dictionary checks | REQ-DOCS-001, REQ-REPO-001, REQ-REPO-002, REQ-REPO-003, REQ-REPO-004, REQ-REPO-005, REQ-REPO-006, REQ-REPO-007 |
-| C-28 | Release records | `tools/gen_release_docs.py` | Generates the test report and version description from recorded runs | infrastructure; untested, GAP-EF-014 |
-| C-29 | Factory runtime | `tools/factory_runtime/` | Job specs, scheduler, recovery, egress and WebAssembly runner | GAP-EF-002 |
-| C-30 | Glue gate CLI and project scheduler | `tools/gate/`, `tools/project-scheduler/` | Stand-alone glue check through the core gates; project scheduling (untested, GAP-EF-004) | REQ-GATECLI-001 |
-| C-31 | Stub pool and approved atoms | `core/runtime/stub-pool.mjs`, `tools/approved_atoms.py` | Replay stub outputs; approved-atom helper | GAP-EF-005, GAP-EF-007 |
+| C-27 | Repository checks | `tools/check-docs.py`, `tools/check-privacy.py`, `tools/check_trace.py`, `tools/gen_data_dictionary.py`, `tools/experiments_index.py`, `tools/source_sums.py`, `tools/experiment_id.py`, `tests/test_reachability.py`, `ruff.toml` | Links, digests, privacy, index, allocation, reachability, trace and data-dictionary checks; lint and coverage targets | REQ-DOCS-001, REQ-REPO-001, REQ-REPO-002, REQ-REPO-003, REQ-REPO-004, REQ-REPO-005, REQ-REPO-006, REQ-REPO-007, REQ-REPO-009 |
+| C-28 | Release records | `tools/gen_release_docs.py` | Generates the test report and version description from recorded runs | REQ-REPO-008 |
+| C-29 | Factory runtime | `tools/factory_runtime/` | Job specs, scheduler, recovery, egress and WebAssembly runner (the sandboxed worker launch and a completed protected provider call are untested, GAP-EF-002) | REQ-FACTORY-003 |
+| C-30 | Glue gate CLI and project scheduler | `tools/gate/`, `tools/project-scheduler/` | Stand-alone glue check through the core gates; cross-project scheduling under token reservations | REQ-GATECLI-001, REQ-SCHED-001 |
+| C-31 | Stub pool and approved atoms | `core/runtime/stub-pool.mjs`, `tools/approved_atoms.py` | Replay stub outputs; approved-atom registry | REQ-STUB-001, REQ-FACTORY-004 |
 
 ## 5. Execution concept
 
@@ -271,3 +271,5 @@ synthetic identity invariant, including failure propagation.
 | 2.0 | 2026-11-08 | `4d692a4` | Metadata header; component table with requirement IDs; execution concept, resource use, interfaces and quality attributes | PR #131 |
 | 3.0 | 2026-11-08 | `63e95c7` | Rewritten as the system overview: two products on one substrate, the five-stage production cycle mapped to code, the three loop paths and why the agent path runs in the isolate; component IDs and requirement allocation unchanged | this PR |
 | 3.1 | 2026-11-09 | round 2 | Round-2 requirements allocated to C-05, C-07, C-08, C-27 and C-30; C-30's glue gate now delegates to the core gates (GAP-EF-003 closed) | this commit |
+| 3.2 | 2026-11-09 | round 3 | Round-3 requirements allocated to C-05, C-07 and C-08 | this commit |
+| 3.3 | 2026-11-09 | round 4 | Round-4 requirements allocated to C-06, C-08, C-22 to C-25 and C-27 to C-31; C-28, C-30 and C-31 now tested; C-29 and C-25 name their remaining gaps (GAP-EF-002, GAP-EF-006) | this commit |

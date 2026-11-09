@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-CFG |
-| Version | 3.2 |
+| Version | 3.4 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -226,6 +226,7 @@ Fixed limits in `core/runtime/x1/agent.mjs`: 64 KiB per file, four times that pe
 | `library` | all | none | A library from `openLibrary`, consulted once the specification is frozen; a pass skips implementation. See [below](#openlibraryoptions-corelibrarylibrarymjs). |
 | `principal` | all | the library's own (`openLibrary({ principal })`) | `{ tenant, lineage }` passed to every `library.serve`, so the library's scopes apply to this caller. |
 | `synthProvider`, `confirm` | all | `createProvider(env)`, none | Evaluator synthesis provider and confirmation callback (with `ENDOFORGE_SYNTH=1`). |
+| `synthCell` | all | `{}` (the `begin` defaults below) | `{ deadlineMs, resourceLimits }` for the synthesis judging cell. Passed to `begin({ cell })` on every path, and on `isolate` and `agent` also to the commit's `judgeInCell`. |
 | `suspect` | all | none | Called with the `suspect_frozen_tests` report when synthesis finds suspect frozen tests. The pipeline also freezes a [specification correction](../architecture/evaluator-synthesis.md#4b-acting-on-suspects-a-specification-correction) from it whether or not this is given; the result then carries `revision` and `suspects`. |
 | `containedRoute` | all | none | A compatibility-lane route. With only `check`, its report after the kernel decision is returned as `contained`. With `freeze` and `promote` (`createContainedRoute()`), its tests are frozen into `<directory>/compatibility.sqlite` before any candidate, and `route.promote` decides the candidate's TypeScript (decision file `<directory>/compatibility-promotion.json`), returned as `compatibility`. Never changes `promoted`. |
 
@@ -310,7 +311,7 @@ the login draws on usage credits. `UsageParked` has `code: 'USAGE_PARKED'`, exit
 | `cells` | `1` | Worker threads that run qualification. |
 | `deadlineMs` | `5000` | Per-run deadline in a cell; a timeout is a refusal. |
 | `keyMode` | `contract` | Lookup key: `contract` (exports plus contract numerals), `interface` (exports only) or `prose` (exports plus contract text). |
-| `gate` | `full` | Discrimination gate: `full` refuses surviving mutants, wrappers and untested bounds; `none` skips it; any other value checks mutants only. |
+| `gate` | `full` | Discrimination gate: `full` refuses surviving mutants, wrappers and untested bounds; `none` skips it; any other value checks mutants only. Exports over records, lists or text are mutated and probed through their declared layout. |
 | `retrieval` | `key` | `semantic` ranks entries by contract-text similarity first and lets a need with no capability block adopt the capability of an entry scoring at least 0.4. |
 | `principal` | `null` | Default `{ tenant, lineage }` for admission, lookup, serving and composition; each call can pass its own. |
 | `environment` | the running Node, V8, platform and architecture | Replaces the environment that qualifications are recorded under (for tests). |
@@ -321,13 +322,13 @@ The [reuse how-to](../guides/how-to/reuse-with-the-library.md) shows `admit`, `s
 
 ### Evaluator synthesis `begin` (`core/runtime/x1/synth/stage.mjs`)
 
-`begin({ need, env, provider, confirm, suspect, cell })`. `runNeed` passes `need`, `env`, `synthProvider`, `confirm`
-and a `suspect` hook of its own that records the report and then calls the caller's `suspect`.
+`begin({ need, env, provider, confirm, suspect, cell })`. `runNeed` passes `need`, `env`, `synthProvider`, `confirm`,
+`synthCell` as `cell`, and a `suspect` hook of its own that records the report and then calls the caller's `suspect`.
 
 | Option | Default | Effect |
 |---|---|---|
 | `suspect` | none | Called with the `suspect_frozen_tests` report before `finish` returns, when width 2 finds suspect frozen tests. |
-| `cell.deadlineMs` | `30000` (`cellDeadlineMs`) | Deadline of the judging worker thread used by `evaluate`. |
+| `cell.deadlineMs` | `30000` (`cellDeadlineMs`) | Deadline of the judging worker thread used by `evaluate` (and, through `runNeed({ synthCell })`, at commit on `isolate` and `agent`). |
 | `cell.resourceLimits` | `{ maxOldGenerationSizeMb: 128, maxYoungGenerationSizeMb: 16, stackSizeMb: 4 }` (`cellLimits`) | Its heap and stack limits. |
 
 ### Compatibility route promotion (`tools/tscheck/contained-route.mjs`)
@@ -441,11 +442,24 @@ own `runner` gets `<atoms.json> --out <dir> --concurrency N --timeout S`, withou
 | `ENDOFORGE_USAGE_STATE` | `$(CURDIR)/.test-work/usage-governor.json` (exported) | Keeps test governors off the shared state file. Same override rule. |
 | `TOOLS_DIR` | `$(CURDIR)/.tools` | Where `make tools` installs the kernel test tools; `kernel-test` uses `$(TOOLS_DIR)/venv/bin/python` and puts `$(TOOLS_DIR)/bin` first on `PATH` when they exist. |
 | `WORK`, `TSC` | empty | Required by `make tscheck-requalify` (`--work DIR --tsc PATH`). |
+| `RUFF_VERSION` | `0.17.0` | The ruff version `make lint` uses. |
+| `RUFF` | `uvx ruff@$(RUFF_VERSION)` when `uvx` is on `PATH`, else `ruff` (`?=`) | The ruff command `make lint` runs; CI installs `ruff==0.17.0` with pip. |
+| `COVERAGE_DIR` | `.test-work/coverage` | Where `make coverage-python` writes coverage.py data or the trace counts. |
+| `GAP_PY_TESTS`, `GAP_NODE_TESTS` | the round-4 test files named in the `Makefile` | Run by `make gap-tools-test`; the Python ones are kept out of `ledger-test` so they run once. |
 
 Setup targets run `npm ci --ignore-scripts` from a lockfile: `loop-setup` (`tools/asc`), `tscheck-setup`
 (`tools/tscheck`) and `rust-lane-setup` (`tools/rust_lane`). `isolate-test` depends on `loop-setup` and
 `tscheck-setup`, `loop-test` on `loop-setup`, `tscheck-test` on `tscheck-setup`, and `rust-lane-test` on
 `rust-lane-setup`.
+
+Quality targets outside `make test`: `make lint` runs `$(RUFF) check` over the tree with [ruff.toml](../../ruff.toml)
+(rules E4, E7, E9 and F, with E401, E402, E701, E702 and E731 ignored; `.tools`, `.test-work` and `TODELETE` excluded)
+and `node --check` on every `.mjs`, `.js` and `.cjs` file outside `node_modules`, `.git`, `.tools` and `.test-work`.
+`make coverage` runs `coverage-node` (after `tscheck-setup` and `loop-setup`: the Node suites under
+`--experimental-test-coverage`, excluding test files from the report and skipping `loop-review.test.mjs` test 14, whose write counter
+sees coverage's own writes; `make test` still runs it) and `coverage-python` (coverage.py over `core` and `tools` when it is installed,
+else `python3 -m trace` counts into `$(COVERAGE_DIR)/trace`). `make gap-tools-test`, part of `make test`, runs
+`GAP_PY_TESTS` and `GAP_NODE_TESTS`.
 
 ## Change history
 
@@ -456,3 +470,5 @@ Setup targets run `npm ci --ignore-scripts` from a lockfile: `loop-setup` (`tool
 | 3.0 | 2026-11-08 | `63e95c7` | Rewritten and re-verified against the code: common-settings table, `runNeed`, `openLibrary`, dump-list, job and atomizer settings added; `HC_WORK`, `XDG_RUNTIME_DIR`, `XDG_STATE_HOME` listed | this PR |
 | 3.1 | 2026-11-09 | gap closure | Library `retrieval`, `principal`, `environment`; synthesis `begin` options; compatibility route `freeze`/`promote`; transport `model` default, `testDouble` and per-instance `governor`; per-stage `maxTokens`; relative `ENDOFORGE_CODEX_CMD`; Conductor `claudeTools` and criteria checks; hillclimb default runner | `dc6ba4c` |
 | 3.2 | 2026-11-09 | round 2 | `runNeed` `principal` and `suspect`; `containedRoute` on every path with promotion; `revise` ledger action; `rust-lane-setup` and the `isolate-test` setup dependencies | this commit |
+| 3.3 | 2026-11-09 | round 3 | Library `gate` covers structured exports through the declared layout; no new option or environment variable | this commit |
+| 3.4 | 2026-11-09 | round 4 | `runNeed` `synthCell`; Makefile `RUFF_VERSION`, `RUFF`, `COVERAGE_DIR`, `GAP_PY_TESTS`, `GAP_NODE_TESTS` and the targets `lint`, `coverage` and `gap-tools-test` | this commit |

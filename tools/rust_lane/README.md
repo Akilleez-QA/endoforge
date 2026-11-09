@@ -65,8 +65,8 @@ contract pins.
 - The bounded equivalence runs in Node through jco's Component Model polyfill. In Wasmtime, the built component is
   checked only on four cases through the [tools/kernel](../kernel/README.md) `Workcell`.
 - The lane is not part of `make test`. CI runs it in its own job, `rust-lane`, which installs Rust 1.98.1 with the
-  `wasm32-unknown-unknown` target, runs `make tools`, then `make rust-lane-test` (REQ-REPO-007). That job has not yet
-  run on GitHub.
+  `wasm32-unknown-unknown` target, runs `make tools`, then `make rust-lane-test` (REQ-REPO-007). It ran and passed on
+  GitHub in PR #139 (run 42600069278, job `rust-lane`, 15 tests OK at `def5f24`).
 
 ## Tests
 

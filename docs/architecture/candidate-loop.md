@@ -116,11 +116,14 @@ per task.
 2. It writes `frozen.sha256`, copies the specification and the gate implementation files into the oracle root, and
    asks the ledger to `freeze`. If evaluator synthesis reported suspect frozen tests, the ledger then freezes a
    [specification correction](evaluator-synthesis.md#4b-acting-on-suspects-a-specification-correction)
-   (`python3 -B -m tools.x1_loop revise`), and every later check uses the corrected tests.
+   (`python3 -B -m tools.x1_loop revise`). `generate` re-reads the oracle's `tests.json` and `frozen.sha256`, checks a
+   changed pair against the frozen digest, and copies it into the workspace, so the library lookup, the implementation
+   session and every later check use the corrected tests.
 3. With a library, `library.serve` may answer the need here (with the caller's `principal`), and no implementation
    session runs.
 4. The implementation session resumes the same Codex thread by default (`ENDOFORGE_CODEX_SESSION=resume`). It may
-   write only `kernel.ts` and `glue.json`; any change to a frozen file refuses the attempt. With
+   write only `kernel.ts` and `glue.json`; any change to a frozen file refuses the attempt. After a correction its
+   prompt carries the corrected `tests.json` and says that it replaces the version the resumed session remembers. With
    `ENDOFORGE_SELF_CHECK=1` one repair session runs on gate failures.
 5. The supervisor compiles, `register`s the candidate, runs the pool job, then calls `promote`, which writes and
    fsyncs `promotion.json`.

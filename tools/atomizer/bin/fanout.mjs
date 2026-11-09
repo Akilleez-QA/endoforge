@@ -18,6 +18,7 @@ const runOne = (file) => new Promise((resolve) => {
   const sched = spawn(process.execPath, [path.join(HERE, 'schedule.mjs'), 'run', file, '--run-dir', runDir, '--concurrency', String(CONC), '--pool-id', POOL_ID], { stdio: ['ignore', 'pipe', 'pipe'] });
   let out = '', err = ''; sched.stdout.on('data', (d) => { out += d; }); sched.stderr.on('data', (d) => { err += d; });
   sched.on('close', (code) => {
+    fs.mkdirSync(runDir, { recursive: true });
     fs.writeFileSync(path.join(runDir, 'schedule.log'), out + '\n' + err);
     const ver = spawn(process.execPath, [path.join(HERE, 'verify.mjs'), runDir], { stdio: ['ignore', 'pipe', 'pipe'] });
     let vout = ''; ver.stdout.on('data', (d) => { vout += d; }); ver.stderr.on('data', (d) => { vout += d; });
@@ -42,3 +43,4 @@ summary.poolId = POOL_ID;
 fs.writeFileSync(path.join(OUT, 'fanout.json'), JSON.stringify(summary, null, 1));
 emit('pool.end', { poolId: POOL_ID, wallMs, sumAtomWallMs: sumAtom, pooledSpeedup: summary.pooledSpeedup, promotable: summary.promotable, verified: summary.verified, tokens, perRequest: results.map((r) => ({ need: r.id, wallMs: r.wallMs, allDone: r.allDone, promotable: r.promotable, verifyExit: r.verifyExit, realizedSpeedup: r.realizedSpeedup })), load: load() });
 console.log(JSON.stringify({ requests: summary.requests, wallMs, sumAtomWallMs: sumAtom, pooledSpeedup: summary.pooledSpeedup, promotable: summary.promotable, verified: summary.verified, tokens }));
+process.exitCode = summary.verified === summary.requests ? 0 : 1;

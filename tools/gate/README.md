@@ -129,8 +129,6 @@ The atomizer finds this tool through `toolchain.gate` in [policy.json](../atomiz
 - `glue.schema.json` is a copy of the core schema, kept because the atomizer puts it in worker prompts;
   [test_gate_structured.mjs](../test_gate_structured.mjs) fails if the two differ.
 - That test runs the CLI end to end. When the pinned `asc` is not installed it uses a fixture compiler that returns
-  prebuilt modules for its kernels. No `make` target runs it yet: run `node --test tools/test_gate_structured.mjs`.
-- The atomizer's compose prompts in [policy.json](../atomizer/policy.json) still say the gate runs "G1-G7"; it runs
-  the nine core gates.
+  prebuilt modules for its kernels. `make gate-test`, part of `make test`, runs it.
 
 Engineering record: component C-30, REQ-GATECLI-001.

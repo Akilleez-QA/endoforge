@@ -36,8 +36,8 @@ function scan(bytes) {
         else if (op === 0x0e) { for (let n = uint() + 1; n; n--) leb(); }
         else if (op === 0x11) { leb(); leb(); }
         else if (op === 0x1c) { for (let n = uint(); n; n--) p++; }
-        else if (op >= 0x28 && op <= 0x3e) { leb(); leb(); }
-        else if (op === 0x3f) p++;
+        else if (op >= 0x28 && op <= 0x3e) { if (uint() & 0x40) leb(); leb(); }
+        else if (op === 0x3f) leb();
         else if (op === 0x40) throw unsupported('memory.grow');
         else if (op === 0x41) {
           const start = p, width = leb();

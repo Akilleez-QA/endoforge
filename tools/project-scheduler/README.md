@@ -15,8 +15,9 @@ and never retries a piece (a retried model call is a second bill).
 ## How it works
 
 1. **Validate** the whole batch: schema, unique ids, a known project for every job, at least two pieces per job,
-   relative file paths with no `.` or `..`, disjoint file ownership, and token reservations within each project's
-   budget.
+   relative file paths with no `.` or `..`, disjoint file ownership within each project (paths are relative to their
+   project, so two projects may name the same path; `contracts` apply to every project), token reservations within
+   each project's budget, and a GPU queue for every step that asks for one.
 2. **Run** pieces while there are free slots (the batch's `concurrency` scaled by the capacity dial) and machine
    headroom ([lib/headroom.mjs](../lib/headroom.mjs)), taking the next piece from the next job in turn.
 3. **Recombine** each job once all its pieces have finished, passing their results as JSON in `ENDOFORGE_RESULTS`.
@@ -25,9 +26,9 @@ A failed piece marks its job `failed`; other jobs continue.
 
 ## Use it
 
-`node tools/project-scheduler/scheduler.mjs <batch.json> [--check]`. `--check` validates only and prints the token
-reservation per project. Without it, the batch runs and a JSON report is printed. Exit 1 when a job fails or the batch
-is invalid. The module also exports `validate`, `commandFor`, `execute` and `schedule`.
+`node tools/project-scheduler/scheduler.mjs <batch.json> [--check]`. `--check` runs the same preflight as a run
+and prints the token reservation per project. Without it, the batch runs and a JSON report is printed. Exit 1 when a job fails or the batch
+is invalid. The module also exports `validate`, `preflight`, `commandFor`, `execute` and `schedule`.
 
 Each command gets `ENDOFORGE_PROJECT`, `ENDOFORGE_JOB`, `ENDOFORGE_PIECE`, `ENDOFORGE_TOKEN_BUDGET` (that piece's
 `maxTokens`) and, for the recombine step, `ENDOFORGE_RESULTS`. A piece or recombine step with `"gpu": true` runs
@@ -70,7 +71,7 @@ join [{"piece":"a","result":{"code":0}},{"piece":"b","result":{"code":0}}]
 
 | Variable | Default | Effect |
 |---|---|---|
-| `ENDOFORGE_GPU_QUEUE` | unset | Path of the GPU queue script. A GPU piece fails without it. |
+| `ENDOFORGE_GPU_QUEUE` | unset | Path of the GPU queue script. A batch with a GPU step is refused before anything runs without it. |
 | `WORKER_STATE_DIR` | `$XDG_STATE_HOME/workers`, else `.local/state/workers` | Capacity dial state, read through the hillclimb fan-out library. |
 | `ENDOFORGE_MAX_LOAD`, `ENDOFORGE_RESERVE_GB`, `ENDOFORGE_THROTTLE` | see [lib](../lib/README.md) | Headroom limits. |
 
@@ -79,6 +80,7 @@ join [{"piece":"a","result":{"code":0}},{"piece":"b","result":{"code":0}}]
 - Token budgets are reservations, not metering. The scheduler hands each command its `maxTokens`; the command (a
   model runner) must enforce it.
 - `files` is checked for overlap but not enforced: commands run as ordinary processes with no sandbox.
-- No `make` target tests this tool (GAP-EF-004).
 
-Engineering record: component C-30, GAP-EF-004.
+Tests: [test/scheduler.test.mjs](test/scheduler.test.mjs), run by `make gap-tools-test`.
+
+Engineering record: component C-30, requirement REQ-SCHED-001.

@@ -572,3 +572,17 @@ test('H7 a plan cannot pass a host buffer address as a scalar', async t => {
   const mixed = await library.compose({ capability: stepCap('write'), files: frozen('Write a balance.', writeTests) }, { exports: [{ name: 'write', stages: [{ entry: 'poker', fn: 'poke', args: [{ input: 0 }] }] }] });
   assert.equal(mixed.reason, 'plan_mismatch', JSON.stringify(mixed));
 });
+test('K3 K4 a structured composition with one memory per part gets a real mutation check under the full gate', async t => {
+  const root = await scratch(t);
+  const library = await seed(join(root, 'l.jsonl'), [{ id: 'incer', bytes: inc, cap: stepCap('inc'), contract: 'Adds one to the balance.' }, { id: 'doubler', bytes: dbl, cap: stepCap('dbl'), contract: 'Doubles the balance.' }], { gate: 'full' });
+  t.after(() => library.close());
+  const plan = { exports: [{ name: 'step', stages: [{ entry: 'incer', fn: 'inc' }, { entry: 'doubler', fn: 'dbl' }] }] };
+  const strong = JSON.stringify([{ name: 'a', fn: 'step', args: [{ total: 3 }], expect: { total: 8 } }, { name: 'b', fn: 'step', args: [{ total: 1.37 }], expect: { total: 4.74 }, tol: 1e-9 },
+    { name: 'c', fn: 'step', args: [{ total: -2.5 }], expect: { total: -3 } }, { name: 'd', fn: 'step', args: [{ total: 0 }], expect: { total: 2 } }]);
+  const served = await library.compose({ id: 'strong', capability: stepCap('step'), files: frozen('Add one then double the balance.', strong) }, plan);
+  assert.equal(served.verdict, 'pass', JSON.stringify(served));
+  const weak = JSON.stringify([{ name: 'a', fn: 'step', args: [{ total: 0 }], expect: { total: 2 } }]);
+  const refused = await library.compose({ id: 'weak', capability: stepCap('step'), files: frozen('Add one then double the balance.', weak) }, plan);
+  assert.equal(refused.reason, 'evaluator_cannot_discriminate', JSON.stringify(refused));
+  assert(refused.witnesses.some(w => typeof w.args?.[0]?.total === 'number'), JSON.stringify(refused.witnesses));
+});

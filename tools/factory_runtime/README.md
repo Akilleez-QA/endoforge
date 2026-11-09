@@ -3,7 +3,7 @@
 The trusted host side of a version 1 worker runtime (`VERSION = 1` in `__init__.py`): it runs one worker attempt at a
 time in a locked-down Docker container, checks the output against a hash the caller supplies, and publishes the result
 once. It comes from the earlier factory design, where each attempt got a container; the current design runs candidates
-in V8 isolate workcells instead. It is a library, not wired into the candidate loop, and it has no tests.
+in V8 isolate workcells instead. It is a library, not wired into the candidate loop.
 
 ## What a run does
 
@@ -70,7 +70,8 @@ With no image configured it refuses after taking only the controller fence.
   under `<root>/reconciliations/` and never removes containers by a global name or label.
 - `scheduler.py`: `Scheduler(capacity=1..8, max_retries=2, backoff_seconds=60, root=None)`, a FIFO queue that retries
   only a `subscription_limit` outcome, with exponential backoff, and marks jobs running when a controller died as
-  `unknown`.
+  `unknown`. A run that raises or returns no `outcome` fails that job only; a saved queue of another version is
+  refused.
 - `egress.py`: a CONNECT proxy on a Unix socket that allows only port 443 to a fixed provider host list and checks TLS
   SNI; `worker_command` and `role_worker_command` build a `systemd-run --user --scope` plus `bwrap` command for a model
   worker; `run_bounded` caps combined output and kills the process group on excess.
@@ -87,10 +88,19 @@ With no image configured it refuses after taking only the controller fence.
 - `ENDOFORGE_WASMTIME`: Wasmtime binary for `wasm.py`. Default `wasmtime`.
 - `ENDOFORGE_WASMTIME_SHA256`: required SHA-256 of that binary; `wasm.run` refuses without it.
 
+## Tests
+
+`make gap-tools-test` runs `tools.factory_runtime.test_runtime_gaps` (REQ-FACTORY-003), which checks job specs and records against
+the schema files, durable writes, fencing, the scheduler (FIFO, backoff, persistence, interrupted jobs, version
+refusal), full runner attempts and crash reconciliation, the egress proxy refusals and TLS SNI check, `run_bounded`,
+worker command assembly and role authority, the local provider gateway policy, and `wasm.run`. The Docker CLI is
+replaced by [fixtures/fake_docker.py](fixtures/fake_docker.py), which runs each container script as a local process.
+
 ## Limits
 
-- No `make` target tests this package (GAP-EF-002). The container path, the model-worker paths (`egress.py`,
-  `local_provider.py`) and `wasm.py` have not been run here.
-- Several modules have unused imports (D-02 in the assurance record).
+- No real Docker daemon, systemd scope or Wasmtime binary is used by the tests. `wasm.run` runs through a stand-in
+  `systemd-run` and Wasmtime; the real-binary case runs only when `ENDOFORGE_WASMTIME` and
+  `ENDOFORGE_WASMTIME_SHA256` are set. `local_provider.call_protected` is tested only for its refusals, and the worker
+  command from `egress.worker_command` is checked as assembled but never run with the `bridge.py` relay (GAP-EF-002).
 
-Engineering record: component C-29, GAP-EF-002.
+Engineering record: component C-29, requirement REQ-FACTORY-003, GAP-EF-002.

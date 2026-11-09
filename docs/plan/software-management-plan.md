@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SMP |
-| Version | 1.0 |
+| Version | 1.1 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-08 |
@@ -98,7 +98,7 @@ separation of method only; agent review is not independent review.
 | Trace check | `tools/check_trace.py` | Untraced requirement; missing test; unclassified test file; unallocated component; undocumented environment variable; dead link or anchor | CI log; STR metrics |
 | Reachability | `tests/test_reachability.py` | A test file no make target runs | CI log |
 | Secret scan | CI job `secret-scan` (Gitleaks 8.28.0, checksum verified, full history); the release-record generator also runs Gitleaks when installed | Any finding fails CI | CI log; STR; SAR |
-| Static analysis | No linter is configured | — | SAR notes the gap |
+| Static analysis | `make lint` (CI job `lint`): ruff 0.17.0 with `ruff.toml`, and `node --check` on every JavaScript module | Any ruff finding or syntax error | CI log; SAR |
 | Peer review | Pull request with template | Owner does not merge | PR; SAR summary |
 
 ## 7. Security, privacy and secure coding
@@ -165,7 +165,7 @@ Reviewed at each recorded state. Likelihood (L) and consequence (C) on 1–5.
 
 | ID | Risk | L | C | Mitigation | Status | Issue |
 |---|---|---|---|---|---|---|
-| R-1 | Model-written code escapes a workcell or exhausts the host (off-heap memory in thread mode, blocking native calls) | 2 | 4 | Process mode with cgroups; stated limits REQ-ISO-013; deadlines from outside; delegated cgroup enforcement is untested (GAP-EF-001) | Open | — |
+| R-1 | Model-written code escapes a workcell or exhausts the host (off-heap memory in thread mode, blocking native calls) | 2 | 4 | Process mode with cgroups; stated limits REQ-ISO-013; deadlines from outside; delegated cgroup enforcement tested inside a delegated scope (REQ-ISO-018), not recorded on the CI runner | Open | — |
 | R-2 | A model launch bills an API key or usage credits | 2 | 4 | Subscription guard (exit 78) and usage governor (exit 75): both Claude transports admit every turn through it and feed it every rate-limit event; `WarmClaudeTransport` uses a caller's governor (D-03 closed 2026-11-09) | Open | — |
 | R-3 | A promotion is read as engineering approval | 2 | 3 | README Status, [limitations](../guides/explanation/limitations.md) | Open | — |
 | R-4 | Documentation drifts from code under parallel agent lanes | 4 | 2 | `tools/check_trace.py` in `make check`; PR template asks for SRS and matrix updates | Open | — |
@@ -177,8 +177,9 @@ Reviewed at each recorded state. Likelihood (L) and consequence (C) on 1–5.
 
 Each test report carries a generated metrics block: tests run, passed, failed and skipped per recorded run;
 requirement, trace and gap counts; issue and PR counts from `gh`; privacy lint and Gitleaks results; commit and line
-counts. Produced by `python3 -I tools/gen_release_docs.py`. Numbers are never typed by hand. No coverage tool is
-configured.
+counts. Produced by `python3 -I tools/gen_release_docs.py`. Numbers are never typed by hand. Code coverage comes from
+`make coverage`; the generator reports it from a recorded coverage log, and says it was not measured when no recorded
+run includes one.
 
 ## 14. Training
 
@@ -194,3 +195,4 @@ The [documentation index](../README.md) lists every control document and guide.
 | Version | Date | Commit | Change | Reviewed in |
 |---|---|---|---|---|
 | 1.0 | 2026-11-08 | `4d692a4` | Initial baseline | this PR |
+| 1.1 | 2026-11-09 | round 4 | Static analysis gate is `make lint` in CI; coverage from `make coverage`; R-1 mitigation tested (REQ-ISO-018) | this commit |
