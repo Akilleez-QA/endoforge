@@ -242,6 +242,7 @@ def str_report(d, name, pr):
 def vdd_report(d, name, str_name, pr):
     changelog = (ROOT / "CHANGELOG.md").read_text(encoding="utf-8")
     unreleased = changelog.split("## [Unreleased]", 1)[1].split("\n## ", 1)[0].strip() if "## [Unreleased]" in changelog else "No Unreleased section."
+    unreleased = re.sub(r"\]\((?![a-z]+:|#|/)([^)]+)\)", r"](../../\1)", unreleased)
     a = d["archive"]
     g = d["gitleaks"]
     lines = [header(f"version description {name}", f"ENDOFORGE-{name}", d, pr)]
