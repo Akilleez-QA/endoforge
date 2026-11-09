@@ -169,7 +169,9 @@ try:
 except SystemExit as stop:
     print(f"test run stopped early with SystemExit({stop.code!r})", file=sys.stderr)
 finally:
-    tracer.results().write_results(show_missing=True, summary=True, coverdir=sys.argv[1])
+    results = tracer.results()
+    results.counts = {key: count for key, count in results.counts.items() if os.path.exists(key[0])}
+    results.write_results(show_missing=True, summary=True, coverdir=sys.argv[1])
 sys.exit(0 if passed else 1)
 endef
 export TRACE_RUNNER
