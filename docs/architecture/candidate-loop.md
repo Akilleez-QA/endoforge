@@ -9,14 +9,13 @@ follow the [getting-started tutorial](../guides/tutorials/getting-started.md). S
 
 ```mermaid
 flowchart LR
-  need["Need"] --> spec["Specification<br/>CONTRACT.md + tests.json"]
-  spec --> freeze["Freeze<br/>ledger record"]
-  freeze --> impl["Implementation<br/>kernel.ts + glue.json"]
-  impl --> compile["Compile<br/>pinned asc"]
-  compile --> gates["Gates G1–G9<br/>in a V8 workcell"]
-  gates -- "failures: repair turn" --> impl
-  gates -- "pass, or turn limit" --> commit["Commit<br/>candidate + receipt"]
-  commit --> decision{"promote, refuse<br/>or inconclusive"}
+  spec["1 Specification<br/>CONTRACT.md<br/>tests.json"] --> freeze["2 Freeze<br/>ledger<br/>record"]
+  freeze --> impl["3 Implementation<br/>kernel.ts<br/>glue.json"]
+  impl --> compile["4 Compile<br/>pinned<br/>asc"]
+  compile --> gates["5 Gates<br/>G1–G9 in<br/>a workcell"]
+  gates -- "failures:<br/>repair turn" --> impl
+  gates -- "pass, or<br/>turn limit" --> commit["6 Commit<br/>candidate<br/>and receipt"]
+  commit --> decision["7 Decision<br/>promote, refuse<br/>or inconclusive"]
 ```
 
 1. **Specification.** A model writes `CONTRACT.md` (what the kernel computes) and `tests.json` (frozen expectations).
