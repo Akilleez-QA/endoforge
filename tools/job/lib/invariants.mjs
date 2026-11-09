@@ -1,5 +1,4 @@
-// Every validator rule cites one; the job card shows which hold. The breaches behind each are in
-// ./docs/PLAYBOOK-deadline-fanout.md. Kind plugins (lib/kinds.mjs) only add kind-specific checks.
+// Every validator rule cites one; the job card shows which hold. Kind plugins (lib/kinds.mjs) only add kind-specific checks.
 export const INVARIANTS = [
   ['I1', 'Intent fidelity', 'the goal is the user\'s words plus the primary sources, never a summary; the brief is shown back before any spend'],
   ['I2', 'Reference primacy', 'every defining reference is named, says what it governs, sits on durable disk and reaches every atom it governs'],

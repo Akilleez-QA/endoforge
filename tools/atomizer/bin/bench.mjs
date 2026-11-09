@@ -7,8 +7,9 @@ import { spawnSync } from 'node:child_process';
 import { nowEpoch, readTrace, analyzeTrace, p } from '../lib/trace.mjs';
 const HERE = path.dirname(fileURLToPath(import.meta.url)), REPO = path.resolve(HERE, '../../..');
 const A = {}; for (let i = 2; i < process.argv.length; i++) { const k = process.argv[i].replace(/^--/, ''); A[k] = process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[++i] : true; }
-const atoms = path.resolve(A.atoms ?? path.join(REPO, 'tools/atomizer/examples/C-005/atoms.json')), n = Number(A.n ?? 3), concurrency = A.concurrency == null ? undefined : Number(A.concurrency), mode = A.stub ? 'stub' : 'real', replay = A.replay ? path.resolve(A.replay) : null, stubLatency = String(A['stub-latency'] ?? '0'), scale = Number(A['stub-scale'] ?? 1);
+const atoms = path.resolve(A.atoms ?? path.join(REPO, 'tools/atomizer/examples/example.json')), n = Number(A.n ?? 3), concurrency = A.concurrency == null ? undefined : Number(A.concurrency), mode = A.stub ? 'stub' : 'real', replay = A.replay ? path.resolve(A.replay) : null, stubLatency = String(A['stub-latency'] ?? '0'), scale = Number(A['stub-scale'] ?? 1);
 if (!Number.isInteger(n) || n < 1 || (concurrency != null && (!Number.isInteger(concurrency) || concurrency < 1)) || !Number.isFinite(scale) || scale < 0 || (stubLatency !== 'recorded' && (!Number.isFinite(Number(stubLatency)) || Number(stubLatency) < 0)) || (A.stub && !replay)) { console.error('bench: use --n N [--concurrency N]; --stub requires --replay; latency and scale must be nonnegative'); process.exit(2); }
+if (!fs.existsSync(atoms)) { console.error(`bench: atoms file ${atoms} does not exist; pass --atoms <atoms.json>`); process.exit(2); }
 const out = path.resolve(A['out-dir'] ?? path.join(os.homedir(), '.cache/endoforge-bench', A.label ?? 'bench'));
 fs.mkdirSync(out, { recursive: true });
 const root = fs.mkdtempSync(path.join(out, new Date().toISOString().replace(/[:.]/g, '-') + '-')), stub = path.join(root, 'stub'), env = { ...process.env };

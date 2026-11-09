@@ -1,0 +1,18 @@
+{
+ "layout": {
+  "unit": "fanout-{round}-{atom}",
+  "worktree": "{lanes}/{round}/{atom}",
+  "base": "{lanes}/{round}/{atom}.json#base",
+  "prompt": "{lanes}/{round}/{atom}.prompt.md",
+  "log": "{logs}/{round}-{atom}.log",
+  "collected": "{lanes}/{round}/{atom}.collected"
+ },
+ "atoms": [
+  { "when": { "files": "^docs/" }, "aspects": ["request"], "capabilities": ["edit"] },
+  { "when": { "field": "tests" }, "aspects": ["request", "framing"], "capabilities": ["edit", "test"] },
+  { "aspects": ["request", "framing"], "capabilities": ["edit"] }
+ ],
+ "primarySource": "request",
+ "criticalPath": "A1",
+ "by": "the user"
+}

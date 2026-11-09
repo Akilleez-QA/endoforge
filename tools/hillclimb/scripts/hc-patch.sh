@@ -4,6 +4,8 @@
 #   hc-patch.sh diff <repo> <out.diff>   writes the patch (text files only; binaries are rebuilt by the host's postApply)
 set -eu
 W=${HC_WORK:-/work}
+usage() { echo "usage: hc-patch.sh init <repo> <scope>... | hc-patch.sh diff <repo> <out.diff>" >&2; exit 2; }
+[ $# -ge 3 ] || usage
 cmd=$1; repo=$2; shift 2
 trim() { s=${1%/\*\*}; printf '%s' "${s%/}"; }
 case $cmd in
@@ -25,5 +27,5 @@ case $cmd in
     # base/<p> or edit/<p> (a new file has edit/ on both sides) -> repo-relative a/<p> b/<p>
     sed -i -E -e 's#^diff --git a/(base|edit)/(.*) b/(base|edit)/#diff --git a/\2 b/#' -e 's#^--- a/(base|edit)/#--- a/#' -e 's#^\+\+\+ b/(base|edit)/#+++ b/#' "$out"
     echo "hc-patch: $(grep -c '^diff --git' "$out" || true) files in $out" ;;
-  *) echo "usage: hc-patch.sh init|diff <repo> ..." >&2; exit 2 ;;
+  *) usage ;;
 esac

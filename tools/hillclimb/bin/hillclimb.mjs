@@ -24,6 +24,7 @@ import { validateFixlist, toMarkdown } from '../lib/fixlist.mjs';
 import { scoreRound, decide } from '../lib/scoreboard.mjs';
 import { competeLessons, lessonsCommand } from '../lib/lessons.mjs';
 import { reviewAtoms, fixAtoms, judgeAtoms, laneOf, patchPaths, inScope } from '../lib/plan.mjs';
+import { campaignPolicy, runnerArgv } from '../lib/runner.mjs';
 // Host stages validate atoms with the atomizer; inside an atom only this tool is mounted (at /hc-tool), so the compose
 // commands that run there must not need it.
 let validate = null;
@@ -85,16 +86,18 @@ function cmdRender() {
 }
 const sheets = (c, stills, outDir) => run(['python3', '-I', path.join(HERE, '../scripts/sheets.py'), stills, outDir, ...(c.sheets?.brighten ? ['--brighten', c.sheets.brighten.join(',')] : [])]);
 
-function writeAtoms(kind, docv, dir) {
+const policyFileFor = (atomsFile) => atomsFile.replace(/\.atoms\.json$/, '.policy.json');
+
+function writeAtoms(kind, docv, dir, c) {
   if (!validate || !POLICY) throw new Error('atom validation needs ./tools/atomizer next to this tool');
-  const v = validate(docv, POLICY);
+  const policy = campaignPolicy(POLICY, c);
+  const v = validate(docv, policy);
   if (!v.ok) throw new Error(`${kind} atoms invalid: ${v.errors.join('; ')}`);
-  const f = path.join(dir, `${kind}.atoms.json`); writeJSON(f, docv); return f;
+  const f = path.join(dir, `${kind}.atoms.json`); writeJSON(f, docv); writeJSON(policyFileFor(f), policy); return f;
 }
 
 function runAtoms(c, f, outDir, stage) {
-  const runner = c.runner ?? [path.join(process.env.HOME, '.local/bin/endoforge'), 'run'];
-  run([...runner, f, '--out', outDir, '--concurrency', String(c.concurrency ?? 3), '--timeout', String(c.runTimeoutSec ?? 14400)],
+  run(runnerArgv(c, f, outDir, policyFileFor(f)),
     // mixing (default): the run stays native and each atom's own model decides (codex atoms go through codex-pool);
     // with mix off, one backend per stage from campaign.workers / campaign.worker
     { env: { ...process.env, ENDOFORGE_WORKER: c.mix === false ? (c.workers?.[stage] ?? c.worker ?? 'native') : 'native' } });
@@ -103,7 +106,7 @@ function runAtoms(c, f, outDir, stage) {
 
 function cmdPlanReview(go) {
   const { c, n, dir } = campaignAndRound();
-  const f = writeAtoms('review', reviewAtoms(c, n, { hasPrevious: fs.existsSync(path.join(dir, 'previous.fixlist.json')) }), dir);
+  const f = writeAtoms('review', reviewAtoms(c, n, { hasPrevious: fs.existsSync(path.join(dir, 'previous.fixlist.json')) }), dir, c);
   if (!go) return out(f);
   const atoms = runAtoms(c, f, path.join(dir, 'review-run'), 'review');
   for (const [a, files] of [['consult', ['references.json', 'consult.md']], ['critique', ['fixlist.json']], ['compose', ['FIXLIST.md', 'score.json']]])
@@ -160,7 +163,7 @@ function cmdPlanFix(go) {
   let fl = readJSON(path.join(dir, 'fixlist.json'));
   const only = flag('--owners');                       // e.g. --owners G,Y when other lanes already own A and BC
   if (only) fl = { ...fl, items: fl.items.filter((i) => String(only).split(',').includes(i.owner)) };
-  const f = writeAtoms('fix', fixAtoms(c, n, fl), dir);
+  const f = writeAtoms('fix', fixAtoms(c, n, fl), dir, c);
   if (!go) return out(f);
   const atoms = runAtoms(c, f, path.join(dir, 'fix-run'), 'fix');
   for (const a of fs.readdirSync(atoms).filter((x) => x.startsWith('fix-'))) {
@@ -234,7 +237,7 @@ function cmdJudge() {
     (lanes[r.owner] ??= []).push(r.variant);
   }
   writeJSON(path.join(dir, 'judge', 'lanes.json'), lanes);
-  const f = writeAtoms('judge', judgeAtoms(c, n, lanes), dir);
+  const f = writeAtoms('judge', judgeAtoms(c, n, lanes), dir, c);
   const atoms = runAtoms(c, f, path.join(dir, 'judge-run'), 'judge');
   fs.copyFileSync(path.join(atoms, 'compose', 'out', 'winners.json'), path.join(dir, 'winners.json'));
   out(path.join(dir, 'winners.json'));

@@ -68,7 +68,7 @@ job. A check that cannot run is "not scored", never a pass or a fail.
 | `budget [--launches N] [--iterations N] [--by ... --words ...]` | Shows or raises the budget. Raising it needs the user's words. |
 | `stop [--by who] [--why text]` | Stops the lanes and ends the job. |
 | `patch <patch.json>` | The coordinator's reply to an escalation, applied through the same gates. A patch that changes the confirmed card holds launches until the user's new go. |
-| `adopt <new job.json> --map <map.json> ...` | Converts a job running on older scripts into a manifest and state. |
+| `adopt <new job.json> --map <map.json> ...` | Converts a job running on older scripts into a manifest and state. The old layout is data in the map; [examples/](examples/README.md) has a map with a matching old manifest and loop state. |
 
 `run` and `unit` launch real workers. The `conductor` block of the manifest sets `launcher` (`systemd` by default, or
 `local` for a detached child), `maxIterations` (3), `maxLaunches` (200), `atomTimeoutSec` (2400), `gate`, `checks`,
@@ -145,12 +145,12 @@ The job tool's event variables (`ENDOFORGE_NOTIFY` and the hook lists) apply too
   Decide gate refuses uncalibrated proxy checks, but not a weak command.
 - Workers run as ordinary processes (a systemd unit or a detached child). The worktree separates their files; it is
   not a security sandbox.
-- `adopt` tells you to see `tools/conductor/examples` for a map file; that directory does not exist.
 - The default model for Claude Code lanes is `opus` unless `conductor.claudeModel` says otherwise.
 
 ## Tests
 
 `make lib-test` runs `test/failopen.test.mjs`, `test/principles.test.mjs` and `test/stream.test.mjs`, which use a
-stub worker and fake logins like the demo.
+stub worker and fake logins like the demo, and `test/adopt-example.test.mjs`, which adopts the example old job with
+the example map.
 
 Engineering record: component C-23, requirements REQ-COND-001 and REQ-COND-002.

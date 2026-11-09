@@ -63,9 +63,9 @@ assembles the parts, freezes `CONTRACT.md` and `tests.json` before any code, and
 | `bin/direct.mjs <need.md> --out <atoms.json>` | Writes a one-atom `direct` DAG (one worker does everything). | No (running it does) |
 | `bin/cutover.mjs <ladder.json> --out-dir <dir>` | Paired direct and atomized arms on the same gates. | Yes |
 | `bin/compose-kernel.mjs --id <need> --in /in --out /out --work /work --gate <gate.mjs>` | Merges kernel parts, freezes, runs the gates. Runs inside a compose atom. | No |
-| `bin/testcheck.mjs strip\|merge ...`, `bin/repair-noop.mjs`, `bin/isolate-exec.mjs` | Helpers used inside atoms. | No |
-| `bin/ledger-export.mjs [--out dir]` | Flattens the ledger into CSV tables. | No |
-| `bin/backfill.mjs`, `bin/bench.mjs` | One-time ledger backfill, and a scheduler benchmark (`--stub --replay <run>` uses a stub Codex). | `bench` without `--stub` does |
+| `bin/testcheck.mjs strip <tests> <cases>` or `merge <tests> <computed> <out> <report>`, `bin/repair-noop.mjs`, `bin/isolate-exec.mjs` | Helpers used inside atoms. `testcheck.mjs` prints its usage and exits 2 when the arguments are missing. | No |
+| `bin/ledger-export.mjs [--out dir]` | Flattens the ledger ([LEDGER.md](LEDGER.md)) into CSV tables. | No |
+| `bin/backfill.mjs`, `bin/bench.mjs [--atoms f] [--n N]` | One-time ledger backfill, and a scheduler benchmark. `--atoms` defaults to [examples/example.json](examples/example.json); a missing file is refused with exit 2. `--stub --replay <run>` uses a stub Codex. | Only for model atoms |
 
 ## Example
 
@@ -125,7 +125,7 @@ The main rules `lib/validate.mjs` applies:
 
 | Variable | Default | Effect |
 |---|---|---|
-| `ATOMIZER_LEDGER_DIR` | `tools/atomizer/ledger` | Ledger directory (`events.jsonl`, `archive/`). Set it outside the source tree. |
+| `ATOMIZER_LEDGER_DIR` | `tools/atomizer/ledger` | Ledger directory (`events.jsonl`, `archive/`; schema in [LEDGER.md](LEDGER.md)). Set it outside the source tree. |
 | `ENDOFORGE_WORKER` | `policy.workerBackend`, else `native` | `codex` turns every model atom into a Codex atom. |
 | `ENDOFORGE_CODEX_CONCURRENCY` | 3 | Default concurrency with the Codex backend. |
 | `ENDOFORGE_CODEX_POOL` | `core/runtime/agent-pool.mjs` | Codex pool launcher. |
@@ -144,13 +144,12 @@ subscription guard first.
   hardened security boundary.
 - The fixed procedures in [policy.json](policy.json) are written for WebAssembly kernels plus glue; other kinds of work
   use `other`, `data` or `asset` atoms with prompts you write.
-- `lib/ledger.mjs` names a `LEDGER.md` schema that does not exist.
-- `bin/bench.mjs` defaults to `examples/C-005/atoms.json`, which does not exist; a bare run records `ok=0`.
-- `bin/testcheck.mjs` with no arguments crashes with `ERR_INVALID_ARG_TYPE` instead of printing its usage.
 
 ## Tests
 
 `make atomizer-test` runs `test/run.mjs` (scheduler, isolation, cycles, forbidden edges, routing and lessons) and the
-other `test/*.test.mjs` files, with stubs instead of models.
+other `test/*.test.mjs` files, with stubs instead of models. `test/tools-gaps.test.mjs` checks that
+[LEDGER.md](LEDGER.md) lists exactly the events the code emits, that a bare `bench.mjs` run completes on its default
+atoms, and that `testcheck.mjs` prints its usage when arguments are missing.
 
 Engineering record: component C-22, requirements REQ-ATOM-001 to REQ-ATOM-003.
