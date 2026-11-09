@@ -102,7 +102,7 @@ ENDOFORGE_CODEX_CMD=codex CODEX_HOME=~/.codex node examples/codex-loop.mjs "<nee
 ```
 
 [`examples/codex-loop.mjs`](../../../examples/codex-loop.mjs) calls `runNeed` with
-`{ ...process.env, ENDOFORGE_LOOP: 'isolate' }`. Set `ENDOFORGE_CODEX_CMD` to `["node","core/runtime/agent-pool.mjs"]`
+`{ ...process.env, ENDOFORGE_LOOP: 'isolate' }`. Set `ENDOFORGE_CODEX_CMD` to `["node","<absolute path>/core/runtime/agent-pool.mjs"]`
 to rotate over several Codex logins. We ran it here with the `fake-codex.mjs` test fixture as `ENDOFORGE_CODEX_CMD`,
 directly and through the account pool. The `ENDOFORGE_CODEX_*` variables in the
 [configuration reference](../../configuration/configuration-reference.md#x1-loop-and-generation) tune the prompts,

@@ -31,7 +31,7 @@ How to read the tables:
 | Run the agent loop in a workcell | `runNeed({ env: { ENDOFORGE_LOOP: 'agent' } })` with `createLoopPool({ provider })` |
 | Use Claude Code as the agent | `new WarmClaudeTransport({ model, effort, instances })` as the provider; a claude.ai subscription login |
 | Use Codex as the generator | `ENDOFORGE_LOOP=isolate`, `ENDOFORGE_CODEX_CMD=codex`, `CODEX_HOME=~/.codex` |
-| Rotate over several Codex logins | `ENDOFORGE_CODEX_CMD='["node","core/runtime/agent-pool.mjs"]'`, logins under `~/.codex-accounts` |
+| Rotate over several Codex logins | `ENDOFORGE_CODEX_CMD` set to `["node","<absolute path>/core/runtime/agent-pool.mjs"]`, logins under `~/.codex-accounts` |
 | Give the agent more room | `runNeed({ limits: { maxTurns, maxTokens } })` |
 | Run more needs at once | `createLoopPool({ size })` |
 | Add a second, independent evaluator | `ENDOFORGE_SYNTH=1` (current path) |
@@ -45,7 +45,7 @@ How to read the tables:
 | Variable | Default | Values | Effect | Read in |
 |---|---|---|---|---|
 | `ENDOFORGE_LOOP` | unset: the current path | `agent`, `isolate` | Which loop `runNeed` drives. `agent`: the whole agent loop in a workcell. `isolate`: Codex generates on the host, checks and commit run in a workcell. Unset: Codex generates and the compiler runs on the host, gates run in a workcell. | `core/runtime/x1/pipeline.mjs` |
-| `ENDOFORGE_CODEX_CMD` | none; required on the `isolate` and current paths | A command, or a JSON argv array when it starts with `[` | The Codex CLI the generator runs as `<cmd> exec --json --skip-git-repo-check --sandbox workspace-write -`. | `core/runtime/x1/generator.mjs` |
+| `ENDOFORGE_CODEX_CMD` | none; required on the `isolate` and current paths | A command, or a JSON argv array when it starts with `[` | The Codex CLI the generator runs as `<cmd> exec --json --skip-git-repo-check --sandbox workspace-write -`, in the need's `candidate/` directory, so a path in it must be absolute. | `core/runtime/x1/generator.mjs` |
 | `CODEX_HOME` | none; required with `ENDOFORGE_CODEX_CMD` | Directory | Passed to the Codex child, which reads its login there. EndoForge never reads the auth file. | `generator.mjs` |
 | `ENDOFORGE_CODEX_TERSE` | `exact` | `exact`, `scalar`, `reference`, `review`, `1`, `fallback`; any other value adds no rule | Extra prompt rules. `exact` asks for one edit and derived expectations; `scalar` also limits exports to finite numbers; `reference` has the model write `reference.js`, from which expectations are filled; `review` asks for a silent self-check; `1` asks for one edit. `fallback` (read by `runNeed`) runs once with `1`, then once more with `0` in `<directory>-retry` if not promoted. | `generator.mjs`, `pipeline.mjs` |
 | `ENDOFORGE_RETRY_BUDGET_MS` | `Infinity` | Positive milliseconds | Wall budget across both attempts under `fallback`. | `pipeline.mjs` |

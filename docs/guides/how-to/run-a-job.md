@@ -140,6 +140,9 @@ Greeting (code): 5 events
 03:51:08  * FIRED     Greeting fired: 1 atoms; 1 codex across 1 logins
 03:51:09  * GATE      GREETING frozen at iteration 1: collect gate passed (no slice checks)
 03:51:10  * DONE      Greeting done
+
+state: DONE; 1 atoms fired at 03:51:08
+(* = pushed to phone hooks)
 ```
 
 The Conductor smoke-tested the Codex lane, launched the atom in its own worktree, collected its diff through the

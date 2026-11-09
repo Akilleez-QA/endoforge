@@ -243,8 +243,10 @@ work over several Codex logins, set `ENDOFORGE_CODEX_CMD` to the account pool, w
 login and cools a login down when it hits a rate limit:
 
 ```sh
-ENDOFORGE_CODEX_CMD='["node","core/runtime/agent-pool.mjs"]' CODEX_HOME=~/.codex node examples/codex-loop.mjs "Convert kilowatts to mechanical horsepower for 0 to 10000 kW."
+ENDOFORGE_CODEX_CMD="[\"node\",\"$PWD/core/runtime/agent-pool.mjs\"]" CODEX_HOME=~/.codex node examples/codex-loop.mjs "Convert kilowatts to mechanical horsepower for 0 to 10000 kW."
 ```
+
+The path must be absolute, because the command runs inside the need's own working directory.
 
 The pool reads `~/.codex/auth.json` and `~/.codex-accounts/<name>/auth.json`; the
 [configuration reference](../../configuration/configuration-reference.md#codex-account-pool) lists its settings.
