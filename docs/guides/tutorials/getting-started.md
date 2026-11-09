@@ -22,8 +22,9 @@ cd endoforge
 make check
 ```
 
-`make check` takes under a second. It checks Markdown links, the experiments index, source digests, experiment
-number allocation and the privacy lint. The last line reads `0 failure(s) over N records`.
+`make check` takes about a second. It checks Markdown links, the experiments index, source digests, experiment
+number allocation, the privacy lint (`0 failure(s) over N records`), requirement traceability (a JSON summary with
+`"problems": 0`) and the data dictionary. The last line reads `data dictionary current`.
 
 ## 3. Run a few test targets
 

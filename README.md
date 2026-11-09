@@ -14,6 +14,10 @@ runs nine gates inside V8 workcells. A candidate is promoted only when every gat
 cell or a parked model call is an unknown outcome, never a pass. Defaults change only after a precommitted
 measurement in [experiments](experiments/README.md). Interfaces may change.
 
+Version: unreleased; only the latest `main` is supported. Classification: self-assessed Class E analog, not
+safety-critical; the documentation follows the Cstack family standard organized after NASA NPR 7150.2D. This is not a
+NASA compliance determination ([software management plan](docs/plan/software-management-plan.md)).
+
 ## Quickstart
 
 Requirements: Git, GNU Make, Python 3.11+ and Node.js 22.8+ (CI runs Node 22 and 26). The full suite also needs
@@ -47,13 +51,30 @@ outside the source tree: `make test ENDOFORGE_TEST_OUTPUT="$(mktemp -d)"`.
 ## Documentation
 
 Start with the [documentation index](docs/README.md). It links the tutorial, the
-[configuration reference](docs/configuration/configuration-reference.md), the architecture, interface documents and
-[local checks](docs/guides/how-to/local-checks.md).
+[configuration reference](docs/configuration/configuration-reference.md), the architecture, interface documents,
+[local checks](docs/guides/how-to/local-checks.md) and the control documents (plan, requirements, verification matrix,
+test plan and reports, configuration management, version descriptions and assurance record).
+
+## Limitations
+
+- A promotion means the frozen, model-written tests and the gates passed for the exact bytes. It is not proof of
+  correctness for every input, and not an engineering or safety approval.
+- Repository tests use synthetic inputs and test doubles; they do not qualify live model services.
+- Thread workcells do not bound off-heap memory; use process isolation with a delegated cgroup for that.
+- Model calls must use a claude.ai subscription login.
+
+Details: [limitations and safe use](docs/guides/explanation/limitations.md).
 
 ## Related projects
 
-[Cstack](https://github.com/Akilleez-QA/cstack) (code name Mjölnir) vendors part of EndoForge; the
-[Cstack ICD](docs/icd/icd-cstack.md) lists what. [poodo](https://github.com/Akilleez-QA/poodo) is a related project.
+EndoForge belongs to the Cstack family (code name Mjölnir):
+
+| Repository | Role |
+|---|---|
+| [cstack](https://github.com/Akilleez-QA/cstack) | Host. Vendors part of EndoForge at a pinned commit; the [Cstack ICD](docs/icd/icd-cstack.md) lists what |
+| endoforge | Engine (this repository) |
+| [poodo](https://github.com/Akilleez-QA/poodo) | Reasoning skill |
+| [foundation-engine](https://github.com/Akilleez-QA/foundation-engine), [foundation-math](https://github.com/Akilleez-QA/foundation-math), [foundation-film](https://github.com/Akilleez-QA/foundation-film), [foundation-refrigeration](https://github.com/Akilleez-QA/foundation-refrigeration), [foundation-robotics](https://github.com/Akilleez-QA/foundation-robotics), [foundation-template](https://github.com/Akilleez-QA/foundation-template) | Foundations |
 
 ## Layout
 

@@ -167,5 +167,25 @@ class CheckTraceTest(unittest.TestCase):
         )
 
 
+class DataDictionaryTest(unittest.TestCase):
+    def load(self):
+        spec = importlib.util.spec_from_file_location("gen_data_dictionary", ROOT / "tools/gen_data_dictionary.py")
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def test_data_dictionary_is_current(self):
+        self.assertEqual(self.load().main(["--check"]), 0)
+
+    def test_stale_data_dictionary_is_reported(self):
+        module = self.load()
+        with tempfile.TemporaryDirectory() as folder:
+            module.TARGET = Path(folder) / "data-dictionary.md"
+            module.TARGET.write_text(module.render().replace("`evidence_sha256`", "`evidence`"))
+            self.assertEqual(module.main(["--check"]), 1)
+            module.main([])
+            self.assertEqual(module.main(["--check"]), 0)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -7,7 +7,7 @@
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-08 |
-| Baseline commit | 0476635f53384e9db6f5743520a4d499c4d24cf5 |
+| Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
 | Applies to | endoforge main at baseline commit, plus the trace and release-record tooling added in this re-baseline |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
 
@@ -108,7 +108,7 @@ Automated tests: the code is the procedure. Run one Node file with `node --test 
 - Expected result: `make check` exits 0; `first-loop.mjs` prints `"promoted": true` with ledger kinds `task`,
   `admitted_input`, `frozen_evaluator`, `candidate`, `receipt`; `first-loop.mjs wrong` prints `"promoted": false` with
   `exit` `max_turns`.
-- Last run: 2026-11-08 at `0476635` in a fresh clone, Node 26.13.0: as expected (see the assurance record).
+- Last run: 2026-11-08 at `4d692a4` in a fresh clone, Node 26.13.0: as expected (see the assurance record).
 
 ### TP-4 — Secret scan
 
@@ -161,7 +161,7 @@ Live model runs (experiments) follow each experiment's `PRECOMMIT.md`; they are 
 - Timing assertions can be disturbed by host load; `core/runtime/test/fixtures/timing.mjs` lets a run report them as
   skipped under load only when opted in.
 - Delegated cgroup enforcement needs a delegated scope and is untested locally and in CI (GAP-EF-001).
-- Thirteen behaviours have no test; see [SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps).
+- Fourteen behaviours have no test; see [SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps).
 
 ## 9. Traceability
 
@@ -171,4 +171,4 @@ See the [verification matrix](verification-matrix.md).
 
 | Version | Date | Commit | Change | Reviewed in |
 |---|---|---|---|---|
-| 1.0 | 2026-11-08 | `0476635` | Initial baseline | this PR |
+| 1.0 | 2026-11-08 | `4d692a4` | Initial baseline | this PR |

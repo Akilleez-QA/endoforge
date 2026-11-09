@@ -7,7 +7,7 @@
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-08 |
-| Baseline commit | 0476635f53384e9db6f5743520a4d499c4d24cf5 |
+| Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
 | Applies to | endoforge main at baseline commit |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
 
@@ -57,7 +57,7 @@ not define the runtime installed on a local machine. Capture actual runtime iden
 ### 2.2 Digest identities
 
 `sources/SHA256SUMS` lists the SHA-256 of controlled sources (91 entries at the baseline, `wc -l sources/SHA256SUMS`
-at `0476635`); `make check` verifies it and `make sums` regenerates it. Each version description records the SHA-256
+at `4d692a4`); `make check` verifies it and `make sums` regenerates it. Each version description records the SHA-256
 of `sources/SHA256SUMS`, the compiler pin files and lock files, the kernel tool pins, the ledger schema and the kernel
 WIT, plus the `git archive` of the commit. Those generated tables are the digest record for a recorded state.
 
@@ -160,4 +160,4 @@ The Git commit containing this section identifies this extraction baseline.
 | Version | Date | Commit | Change | Reviewed in |
 |---|---|---|---|---|
 | 1.0 | 2026-11-08 | `d4d7efa` | Baseline, controlled inputs and release guidance (accuracy pass) | PR #129 |
-| 2.0 | 2026-11-08 | `0476635` | Metadata header; organization, change control, status accounting, generated outputs, audits | this PR |
+| 2.0 | 2026-11-08 | `4d692a4` | Metadata header; organization, change control, status accounting, generated outputs, audits | this PR |

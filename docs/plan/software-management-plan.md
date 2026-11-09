@@ -7,7 +7,7 @@
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-08 |
-| Baseline commit | 0476635f53384e9db6f5743520a4d499c4d24cf5 |
+| Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
 | Applies to | endoforge main at baseline commit |
 | Classification | Self-assessed Class E analog; not safety-critical (see §1) |
 
@@ -36,7 +36,7 @@ This plan follows the Cstack family documentation standard. Its canonical copy i
 - Re-evaluation triggers: commanding physical hardware; use in a regulated, safety or production decision path;
   handling personal or secret data beyond local configuration; external deployment as a shared service.
 - Assessed by / date / baseline commit: Akilleez-QA maintainer (prepared by an agent documentation lane) / 2026-11-08 /
-  `0476635f53384e9db6f5743520a4d499c4d24cf5`.
+  `4d692a41853045c4e013405d8e674528745a38b9`.
 
 ## 2. Purpose, scope and organization
 
@@ -193,4 +193,4 @@ The [documentation index](../README.md) lists every control document and guide.
 
 | Version | Date | Commit | Change | Reviewed in |
 |---|---|---|---|---|
-| 1.0 | 2026-11-08 | `0476635` | Initial baseline | this PR |
+| 1.0 | 2026-11-08 | `4d692a4` | Initial baseline | this PR |

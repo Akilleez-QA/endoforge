@@ -5,8 +5,10 @@ Start with [README.md](README.md), [CONTRIBUTING.md](CONTRIBUTING.md), and
 EndoForge is research software; interfaces may change. As stated in
 [SECURITY.md](SECURITY.md), only the latest `main` is supported.
 
-Use [Issues](https://github.com/Akilleez-QA/endoforge/issues) for reproducible bugs,
-feature proposals, or usage questions. For a question, open a blank issue and
+Use [Issues](https://github.com/Akilleez-QA/endoforge/issues) for reproducible bugs (the bug report form is the
+problem report), feature proposals (the feature request form is the change request), or usage questions. Severity
+levels S1 to S4 are defined in the
+[software management plan](docs/plan/software-management-plan.md#9-problem-reporting-and-severity). For a question, open a blank issue and
 include your goal, the documentation you followed, and what you tried.
 For bugs, include the commit, operating system, Python and Node.js versions,
 exact commands, expected and actual behavior, and relevant output.

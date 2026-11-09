@@ -21,7 +21,10 @@ Follow [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) and
 - `sources/SHA256SUMS` and the index in `experiments/README.md` are generated: run `make sums` and `make index` after
   changing a listed file or an experiment's `INDEX.md`. Reserve a new P-number with `python3 -I tools/experiment_id.py
   reserve <slug>`.
-- `docs/` is indexed by [docs/README.md](docs/README.md). Add new docs there.
+- `docs/` is indexed by [docs/README.md](docs/README.md). Add new docs there. A change to behaviour updates the
+  requirement in `docs/requirements/requirements.md` and its row in `docs/verification/verification-matrix.md` in the
+  same pull request; a new test file needs a matrix row or a supporting entry, and a new environment variable a row in
+  the configuration reference. `make check` fails otherwise.
 
 Keep changes focused. Open an issue before larger work, as CONTRIBUTING requires.
 Use synthetic identifiers and local paths in examples. Keep generated evidence
@@ -43,8 +46,8 @@ make test
 make test-optimized
 ```
 
-`make check` checks Markdown links, source digests, the experiments index, experiment number allocation and the
-privacy lint. `make test` includes that check and the test targets in [Makefile](Makefile); `make test-optimized`
+`make check` checks Markdown links, source digests, the experiments index, experiment number allocation, the
+privacy lint, requirement traceability (`tools/check_trace.py`) and the generated data dictionary. `make test` includes that check and the test targets in [Makefile](Makefile); `make test-optimized`
 repeats the suite with Python optimization enabled. Report commands and actual results,
 including failures or unavailable prerequisites. Do not claim unrun checks passed.
 

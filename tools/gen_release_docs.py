@@ -265,7 +265,7 @@ def vdd_report(d, name, str_name, pr):
         lines += [f"| #{i['number']} | {', '.join(l['name'] for l in i['labels']) or 'unlabelled'} | {i['title']} |" for i in open_issues]
     lines += ["", "Known defects found by documentation review are in the [assurance record](../assurance/assurance-record.md); untested behaviour is in [SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps).",
               "", "## 7. Documentation baseline", "",
-              f"Control documents in `docs/` were checked against main at `0476635f53384e9db6f5743520a4d499c4d24cf5` and are contained in commit `{d['commit'][:7]}`. See the [documentation index](../README.md).",
+              f"Control documents in `docs/` were checked against main at `4d692a41853045c4e013405d8e674528745a38b9` and are contained in commit `{d['commit'][:7]}`. See the [documentation index](../README.md).",
               "", "## 8. Verification and scans", "",
               f"- Test report: [{str_name}](../verification/reports/{str_name}.md) (same commit).",
               f"- Privacy lint: {' '.join(d['privacy'])}.",

@@ -1,7 +1,20 @@
 # Configuration reference
 
+| Field | Value |
+|---|---|
+| Document ID | ENDOFORGE-CFG |
+| Version | 2.0 |
+| Status | Baselined |
+| Owner | Akilleez-QA maintainer |
+| Date | 2026-11-08 |
+| Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
+| Applies to | endoforge main at baseline commit |
+| Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
+
+> Organized after [NPR 7150.2D](https://nodis3.gsfc.nasa.gov/displayAll.cfm?Internal_ID=N_PR_7150_002D_&page_name=all), [NASA-STD-8739.8B](https://standards.nasa.gov/standard/nasa/nasa-std-87398) and the [NASA Software Engineering Handbook](https://swehb.nasa.gov/display/SWEHBVD/7.18+-+Documentation+Guidance) documentation guidance. This is not a NASA compliance determination or certification. The software classification is a self-assessed analog (Class E, not safety-critical); no NASA authority, independent verification and validation, or hazard analysis is asserted. The document describes the implementation inspected at the baseline commit.
+
 Every environment variable, `limits` key and main options object that EndoForge reads, with the default the code
-computes. Checked against `main` at `d4d7efa` (2026-11-08). Where this page and the code disagree, the code is right;
+computes. Checked against `main` at `d4d7efa` and re-checked at `4d692a4` (2026-11-08). Where this page and the code disagree, the code is right;
 please fix this page.
 
 Conventions:
@@ -162,7 +175,7 @@ Passed as `attemptAgent({ limits })` or `runNeed({ limits })` on the agent path.
 |---|---|---|
 | `maxTurns` | `6` | Turns per agent stage (specification, then implementation) before exit `max_turns`. The host refuses any model call after `2 × maxTurns` calls. |
 | `maxTokens` | `64000` | Token budget for the whole job. The remainder is passed to the provider; reaching it ends with `max_tokens`. |
-| `oracle` | off | When truthy, the specification stage may write `reference.js`, and `tests.json` is checked against the contract's formula, ranges and the reference before the freeze. Each test becomes `verified`, `corrected`, `flagged`, `unverified` or `abstained`; flagged tests go back to the model, corrected values are frozen, and the result carries an `oracle` report. P-69 and P-70 left it off by default; it may change. |
+| `oracle` | off | When truthy, the specification stage may write `reference.js`, and `tests.json` is checked against the contract's formula, ranges and the reference before the freeze. Each test becomes `verified`, `corrected`, `flagged`, `unverified` or `abstained`; flagged tests go back to the model, corrected values are frozen, and the result carries an `oracle` report. P-69, P-70 and P-71 left it off by default; it may change. |
 
 Fixed: 64 KiB per file, four times that per reply, 16 calls per reply (`core/runtime/x1/agent.mjs`).
 
@@ -270,3 +283,10 @@ Wasmtime 49.0.0 and wasm-tools 1.262.0.
 | `ENDOFORGE_USAGE_STATE` | `.test-work/usage-governor.json` | Keeps test governors off the shared state file. Same override rule. |
 | `TOOLS_DIR` | `.tools` | Where `make tools` installs the kernel test tools. |
 | `WORK`, `TSC` | empty | Required by `make tscheck-requalify`. |
+
+## Change history
+
+| Version | Date | Commit | Change | Reviewed in |
+|---|---|---|---|---|
+| 1.0 | before 2026-11-08 | — | Written in PR #129 at `d4d7efa` | earlier PRs |
+| 2.0 | 2026-11-08 | `4d692a4` | Metadata header and change history added; content re-baselined | this PR |

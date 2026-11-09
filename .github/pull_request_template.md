@@ -15,7 +15,16 @@ Use synthetic examples and redact private data from evidence.
 
 ## Requirements touched
 
-Identify affected requirements or contracts, or explain why none apply.
+List affected requirement IDs (`docs/requirements/requirements.md`) and confirm the verification matrix rows were
+updated in this pull request, or explain why none apply. `make check` runs the trace check.
+
+## Peer review record
+
+- Reviewers and roles (human or agent; agent review is not independent):
+- Findings raised and how each was resolved:
+- Outcome (merged, changes requested, re-review):
+- Documentation checklist, for documentation changes: the Cstack family checklist in the
+  [Cstack standards folder](https://github.com/Akilleez-QA/cstack/tree/main/docs/standards).
 
 ## AI checklist
 

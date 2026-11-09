@@ -7,7 +7,7 @@
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-08 |
-| Baseline commit | 0476635f53384e9db6f5743520a4d499c4d24cf5 |
+| Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
 | Applies to | endoforge main at baseline commit |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
 
@@ -555,9 +555,9 @@ With `ENDOFORGE_SYNTH=1` (default off), the X1 path shall synthesize an evaluato
 
 ### REQ-ORACLE-001 — Formula oracle
 
-With `limits.oracle` set (default off), the agent loop shall recompute frozen expectations from the contract's formula, ranges and `reference.js` before the freeze, replace a literal when the formula and the reference agree on another value, return flagged tests to the model, and abstain on conditional, piecewise or conflicting rules.
+With `limits.oracle` set (default off), the agent loop shall recompute frozen expectations from the contract's formula, ranges and `reference.js` before the freeze, replace a literal when the formula and the reference agree on another value, return flagged tests to the model, evaluate a piecewise or conditional rule only inside its own condition, and abstain on a branch it cannot read or on conflicting definitions.
 
-- Rationale: Catch wrong frozen expectations before implementation (P-69, P-70). Lane F15 may extend this module after the baseline.
+- Rationale: Catch wrong frozen expectations before implementation (P-69, P-70, P-71; still off by default).
 - Derivation: `core/runtime/x1/oracle.mjs`
 - Allocated to: SDD §4 C-07 X1 candidate loop
 - Verification: T — `make isolate-test`
@@ -1001,6 +1001,16 @@ Repository checks shall validate local Markdown link targets and source digests.
 - Verification: T — `make core-test`
 - Status: Baselined
 
+### REQ-REPO-005 — Generated data dictionary
+
+`make check` shall fail when the generated sections of `docs/data/data-dictionary.md` differ from the ledger, hardware-record and factory-runtime schema files.
+
+- Rationale: The dictionary is generated from the schemas so it cannot drift (SWEHB 5.07).
+- Derivation: `tools/gen_data_dictionary.py`, `core/ledger/record.schema.json`, `tools/hardware_record/schema.json`
+- Allocated to: SDD §4 C-27 Repository checks
+- Verification: T — `make core-test`
+- Status: Baselined
+
 ## 11. Untested behaviour (requirement gaps)
 
 These behaviours exist in the code at the baseline but no test in `make test` checks them. They are not
@@ -1021,6 +1031,7 @@ requirements until a test exists. Numbering: `GAP-EF-NNN`, never reused.
 | GAP-EF-011 | `WarmClaudeTransport` with a custom usage governor | `core/runtime/x1/transports.mjs` | Defect D-03 in the assurance record: the option is ignored, and no test covers it |
 | GAP-EF-012 | Atomizer `bench` default example and `conduct adopt` example paths | `tools/atomizer/bin/bench.mjs`, `tools/conductor/bin/conduct.mjs` | Defect D-04: the default inputs are missing; the bench test passes explicit inputs |
 | GAP-EF-013 | Rust lane in CI | `tools/rust_lane/` | REQ-RUST-001 is tested only by `make rust-lane-test`, which CI does not run |
+| GAP-EF-014 | Release-record generator (log parsing, STR and VDD rendering) | `tools/gen_release_docs.py` | No automated test; exercised by test plan TP-5 at each recorded state |
 
 ## 12. Not-applicable requirement categories
 
@@ -1036,4 +1047,4 @@ requirements until a test exists. Numbering: `GAP-EF-NNN`, never reused.
 | Version | Date | Commit | Change | Reviewed in |
 |---|---|---|---|---|
 | 1.0 | 2026-10-30 | `3083a5a` | Table of implemented requirements | earlier PRs |
-| 2.0 | 2026-11-08 | `0476635` | Per-requirement fields; 45 existing requirements kept and 49 added for tested areas, gap register, N/A categories | this PR |
+| 2.0 | 2026-11-08 | `4d692a4` | Per-requirement fields; 45 existing requirements kept and 50 added for tested areas, gap register, N/A categories | this PR |

@@ -1,5 +1,18 @@
 # The candidate loop
 
+| Field | Value |
+|---|---|
+| Document ID | ENDOFORGE-SDD-LOOP |
+| Version | 2.0 |
+| Status | Baselined |
+| Owner | Akilleez-QA maintainer |
+| Date | 2026-11-08 |
+| Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
+| Applies to | endoforge main at baseline commit |
+| Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
+
+> Organized after [NPR 7150.2D](https://nodis3.gsfc.nasa.gov/displayAll.cfm?Internal_ID=N_PR_7150_002D_&page_name=all), [NASA-STD-8739.8B](https://standards.nasa.gov/standard/nasa/nasa-std-87398) and the [NASA Software Engineering Handbook](https://swehb.nasa.gov/display/SWEHBVD/7.18+-+Documentation+Guidance) documentation guidance. This is not a NASA compliance determination or certification. The software classification is a self-assessed analog (Class E, not safety-critical); no NASA authority, independent verification and validation, or hazard analysis is asserted. The document describes the implementation inspected at the baseline commit.
+
 This page explains how EndoForge turns a need (a short request for a numeric kernel) into a promoted candidate, and
 where each part lives. The [getting-started tutorial](../guides/tutorials/getting-started.md) runs it end to end. Settings
 are in the [configuration reference](../configuration/configuration-reference.md).
@@ -68,7 +81,7 @@ These parts are optional or sit outside the cell. Each is off by default unless 
 | Part | What it does | Default | Code |
 |---|---|---|---|
 | Library | A need that a promoted kernel already satisfies skips implementation | Off; pass `library` from `openLibrary` | [core/library](../../core/library/README.md) |
-| Formula oracle | Recomputes frozen expectations from the contract's formula, ranges and a model-written `reference.js` before the freeze; corrects or flags wrong values, and abstains on conditional or piecewise rules | Off; `limits.oracle` | [oracle.mjs](../../core/runtime/x1/oracle.mjs) |
+| Formula oracle | Recomputes frozen expectations from the contract's formula, ranges and a model-written `reference.js` before the freeze; corrects or flags wrong values, evaluates a piecewise rule branch by branch, and abstains on what it cannot read | Off; `limits.oracle` | [oracle.mjs](../../core/runtime/x1/oracle.mjs) |
 | Evaluator synthesis | A candidate-blind evaluator is built from the need, qualified, and can refuse a candidate after the gates | Off; `ENDOFORGE_SYNTH=1`, current path only | [design](evaluator-synthesis.md) |
 | Scalar filter and terse prompts | Generator prompt rules; `ENDOFORGE_CODEX_TERSE=exact` is the default | `exact` | [generator.mjs](../../core/runtime/x1/generator.mjs) |
 | Contained route | Type checks, emits and runs the candidate's TypeScript in a supervised V8 cohort; reported under `contained`, never changes the decision | Off; pass `containedRoute` | [contained-route.mjs](../../tools/tscheck/contained-route.mjs) |
@@ -95,3 +108,10 @@ cell never receives the ledger path or the frozen root. Thread-mode cells cannot
 with a delegated cgroup can. The hash chain detects changes; it is not a signature or an external witness. The
 lifecycle model ([core/lifecycle.py](../../core/lifecycle.py)) validates decision references; it grants no authority
 and activates nothing in a host.
+
+## Change history
+
+| Version | Date | Commit | Change | Reviewed in |
+|---|---|---|---|---|
+| 1.0 | before 2026-11-08 | — | Written in PR #129 at `d4d7efa` | earlier PRs |
+| 2.0 | 2026-11-08 | `4d692a4` | Metadata header and change history added; content re-baselined | this PR |

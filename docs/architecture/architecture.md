@@ -7,7 +7,7 @@
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-08 |
-| Baseline commit | 0476635f53384e9db6f5743520a4d499c4d24cf5 |
+| Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
 | Applies to | endoforge main at baseline commit |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
 
@@ -99,8 +99,8 @@ requirement; see [SRS §11](../requirements/requirements.md#11-untested-behaviou
 | C-24 | Hillclimb | `tools/hillclimb/` | Lessons ledger across rounds | REQ-HILL-001 |
 | C-25 | Factory campaign and portability | `tools/factory_campaign/`, `tools/factory_portability/` | Campaign state recovery, model journal, encrypted checkpoints | REQ-FACTORY-001, REQ-FACTORY-002 |
 | C-26 | Rust lane | `tools/rust_lane/` | Reproducible Rust build under the same acceptance | REQ-RUST-001 |
-| C-27 | Repository checks | `tools/check-docs.py`, `tools/check-privacy.py`, `tools/check_trace.py`, `tools/experiments_index.py`, `tools/source_sums.py`, `tools/experiment_id.py`, `tests/test_reachability.py` | Links, digests, privacy, index, allocation, reachability and trace checks | REQ-DOCS-001, REQ-REPO-001, REQ-REPO-002, REQ-REPO-003, REQ-REPO-004 |
-| C-28 | Release records | `tools/gen_release_docs.py` | Generates the test report and version description from recorded runs | infrastructure |
+| C-27 | Repository checks | `tools/check-docs.py`, `tools/check-privacy.py`, `tools/check_trace.py`, `tools/gen_data_dictionary.py`, `tools/experiments_index.py`, `tools/source_sums.py`, `tools/experiment_id.py`, `tests/test_reachability.py` | Links, digests, privacy, index, allocation, reachability, trace and data-dictionary checks | REQ-DOCS-001, REQ-REPO-001, REQ-REPO-002, REQ-REPO-003, REQ-REPO-004, REQ-REPO-005 |
+| C-28 | Release records | `tools/gen_release_docs.py` | Generates the test report and version description from recorded runs | infrastructure; untested, GAP-EF-014 |
 | C-29 | Factory runtime | `tools/factory_runtime/` | Job specs, scheduler, recovery, egress and WebAssembly runner | GAP-EF-002 |
 | C-30 | Glue gate CLI and project scheduler | `tools/gate/`, `tools/project-scheduler/` | Stand-alone glue check; project scheduling | GAP-EF-003, GAP-EF-004 |
 | C-31 | Stub pool and approved atoms | `core/runtime/stub-pool.mjs`, `tools/approved_atoms.py` | Replay stub outputs; approved-atom helper | GAP-EF-005, GAP-EF-007 |
@@ -203,4 +203,4 @@ engine tests use a synthetic identity invariant, including failure propagation.
 | Version | Date | Commit | Change | Reviewed in |
 |---|---|---|---|---|
 | 1.0 | 2026-11-08 | `d4d7efa` | Components, data flow and boundaries (accuracy pass) | PR #129 |
-| 2.0 | 2026-11-08 | `0476635` | Metadata header; component table with requirement IDs; execution concept, resource use, interfaces and quality attributes | this PR |
+| 2.0 | 2026-11-08 | `4d692a4` | Metadata header; component table with requirement IDs; execution concept, resource use, interfaces and quality attributes | this PR |

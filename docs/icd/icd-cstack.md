@@ -1,5 +1,18 @@
 # Interface control: Cstack
 
+| Field | Value |
+|---|---|
+| Document ID | ENDOFORGE-ICD-CSTACK |
+| Version | 2.0 |
+| Status | Baselined |
+| Owner | Akilleez-QA maintainer |
+| Date | 2026-11-08 |
+| Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
+| Applies to | endoforge main at baseline commit |
+| Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
+
+> Organized after [NPR 7150.2D](https://nodis3.gsfc.nasa.gov/displayAll.cfm?Internal_ID=N_PR_7150_002D_&page_name=all), [NASA-STD-8739.8B](https://standards.nasa.gov/standard/nasa/nasa-std-87398) and the [NASA Software Engineering Handbook](https://swehb.nasa.gov/display/SWEHBVD/7.18+-+Documentation+Guidance) documentation guidance. This is not a NASA compliance determination or certification. The software classification is a self-assessed analog (Class E, not safety-critical); no NASA authority, independent verification and validation, or hazard analysis is asserted. The document describes the implementation inspected at the baseline commit.
+
 ## Sides
 
 | Side | Repository | Role |
@@ -55,3 +68,14 @@ Record it in [CHANGELOG.md](../../CHANGELOG.md); Cstack moves its pin in a separ
 
 - The X1 loop (`core/runtime/x1/`), transports, the agent pool, the contained runner, the library and experiments are not vendored.
 - Other agent runners, caching and receipts in `tools/` are not part of this interface.
+
+## Requirements addressed
+
+REQ-CORE-001, REQ-LIFE-001 to REQ-LIFE-005, REQ-LEDGER-001, REQ-LEDGER-002, REQ-LEDGER-003, REQ-DOMAIN-001, REQ-ENGINE-001, REQ-ENGINE-002, REQ-ISO-001 to REQ-ISO-017 (vendored code); REQ-CAP-001 (vendored, not called). Compatibility is checked on the Cstack side by its pin manifest and by running `tests/test_endoforge_core_boundary.py`.
+
+## Change history
+
+| Version | Date | Commit | Change | Reviewed in |
+|---|---|---|---|---|
+| 1.0 | before 2026-11-08 | — | Content checked by PR #129 at `49f388f`; Cstack pin re-checked 2026-11-08 (still `6dffea9`) | earlier PRs |
+| 2.0 | 2026-11-08 | `4d692a4` | Metadata header, requirements addressed and change history added; content re-baselined | this PR |

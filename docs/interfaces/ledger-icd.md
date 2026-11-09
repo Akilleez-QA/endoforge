@@ -1,5 +1,18 @@
 # Ledger interface control document
 
+| Field | Value |
+|---|---|
+| Document ID | ENDOFORGE-ICD-LEDGER |
+| Version | 2.0 |
+| Status | Baselined |
+| Owner | Akilleez-QA maintainer |
+| Date | 2026-11-08 |
+| Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
+| Applies to | endoforge main at baseline commit |
+| Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
+
+> Organized after [NPR 7150.2D](https://nodis3.gsfc.nasa.gov/displayAll.cfm?Internal_ID=N_PR_7150_002D_&page_name=all), [NASA-STD-8739.8B](https://standards.nasa.gov/standard/nasa/nasa-std-87398) and the [NASA Software Engineering Handbook](https://swehb.nasa.gov/display/SWEHBVD/7.18+-+Documentation+Guidance) documentation guidance. This is not a NASA compliance determination or certification. The software classification is a self-assessed analog (Class E, not safety-critical); no NASA authority, independent verification and validation, or hazard analysis is asserted. The document describes the implementation inspected at the baseline commit.
+
 ## Scope and ownership
 
 The engine core owns [the ledger package](../../core/ledger/__init__.py),
@@ -214,3 +227,14 @@ signature. POODO has no callable approval API today; neither sibling repo change
 result delivery, including FIFO wait/startup and frozen verification. Ledger sums
 preflight and append including serialization wait. Timing metadata is returned
 outside the persisted observation and does not change verdicts or receipt schemas.
+
+## Requirements addressed
+
+REQ-LEDGER-001 to REQ-LEDGER-004, REQ-DOMAIN-001, REQ-ISO-004, REQ-ISO-010, REQ-X1-001, REQ-X1-002, REQ-GEN-001, REQ-PROMOTE-001, REQ-LOOP-002, REQ-LOOP-003. Field tables for the record schema are generated in the [data dictionary](../data/data-dictionary.md#3-ledger-records-generated).
+
+## Change history
+
+| Version | Date | Commit | Change | Reviewed in |
+|---|---|---|---|---|
+| 1.0 | before 2026-11-08 | — | Accuracy pass in PR #129 | earlier PRs |
+| 2.0 | 2026-11-08 | `4d692a4` | Metadata header, requirements addressed and change history added; content re-baselined | this PR |

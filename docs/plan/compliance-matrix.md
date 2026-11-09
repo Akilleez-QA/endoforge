@@ -7,7 +7,7 @@
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-08 |
-| Baseline commit | 0476635f53384e9db6f5743520a4d499c4d24cf5 |
+| Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
 | Applies to | endoforge main at baseline commit |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](software-management-plan.md#1-software-classification-self-assessed)) |
 
@@ -69,4 +69,4 @@ documentation set. Rows marked A–E are the requirements Class E invokes; the r
 
 | Version | Date | Commit | Change | Reviewed in |
 |---|---|---|---|---|
-| 1.0 | 2026-11-08 | `0476635` | Initial baseline | this PR |
+| 1.0 | 2026-11-08 | `4d692a4` | Initial baseline | this PR |
