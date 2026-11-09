@@ -33,15 +33,15 @@ integer code with named meanings, and each carries a unit. There are no arrays o
 ## How it works
 
 ```mermaid
-flowchart LR
-  need["Need<br/>integer add(a,b)"] --> spec["Model writes the contract<br/>CONTRACT.md + tests.json"]
-  spec --> freeze["Freeze<br/>hashes stored in the ledger"]
-  freeze --> impl["Model writes the code<br/>kernel.ts + glue.json"]
-  impl --> compile["Compile to WebAssembly<br/>pinned AssemblyScript"]
-  compile --> gates["Run gates G1–G9<br/>in a V8 isolate"]
-  gates -- "a gate fails, turns left:<br/>failures go back to the model" --> impl
-  gates -- "all pass, or out of turns" --> commit["Commit candidate and receipt<br/>hash-chained SQLite ledger"]
-  commit --> decision{"promote, refuse<br/>or inconclusive"}
+flowchart TD
+  need["Need: integer add(a,b)"] --> spec["Model writes the contract: CONTRACT.md + tests.json"]
+  spec --> freeze["Freeze: their hashes go into the ledger"]
+  freeze --> impl["Model writes the code: kernel.ts + glue.json"]
+  impl --> compile["Compile to WebAssembly with a pinned AssemblyScript compiler"]
+  compile --> gates["Run gates G1–G9 in a V8 isolate"]
+  gates -- "a gate fails and turns are left: the failures go back to the model" --> impl
+  gates -- "all gates pass, or the turns run out" --> commit["Commit candidate and receipt to the hash-chained SQLite ledger"]
+  commit --> decision{"promote, refuse or inconclusive"}
 ```
 
 1. A model turns the need into `CONTRACT.md` (what the function computes) and `tests.json` (inputs and expected
