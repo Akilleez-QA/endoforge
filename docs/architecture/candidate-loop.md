@@ -1,9 +1,9 @@
 # The candidate loop
 
 The candidate loop is how EndoForge turns a coding model's proposal into code it can trust: the checks are frozen
-first, the code is written and repaired against them in a workcell, and the ledger records the verdict. Today the loop
-promotes one form of code, a kernel: a pure numeric function compiled to WebAssembly. This page explains how a need
-(a request such as `integer add(a,b)`) becomes a promoted kernel, what each gate checks, and where each part lives in
+first, the code is written and repaired against them in a workcell, and the ledger records the verdict. Its default
+candidate form is a kernel: a pure function compiled to WebAssembly. This page follows a test need (`integer add(a,b)`)
+to a promoted kernel, what each gate checks, and where each part lives in
 the code. To see it run,
 follow the [getting-started tutorial](../guides/tutorials/getting-started.md). Settings are in the
 [configuration reference](../configuration/configuration-reference.md).

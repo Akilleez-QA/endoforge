@@ -1,22 +1,22 @@
 # EndoForge
 
-EndoForge turns code that AI coding agents propose into trusted, reusable working software. A person or an agent asks
-for a capability; a model writes the code; EndoForge checks, runs and measures it inside V8 isolates against tests that
-were frozen before the code existed, records the verdict in a hash-chained ledger, and keeps what passes so the next
-request runs the code instead of asking a model again.
+EndoForge is a workshop where AI coding agents build software. Real agents (Claude Code through `claude -p`, and
+Codex) work inside RAM-resident V8 isolates and can build whatever they are asked to. EndoForge freezes the checks
+before the code exists, runs and measures every candidate in the isolate, records each verdict in a hash-chained
+ledger, and keeps what passes so the next request reuses working code instead of asking a model again.
 
-Today the loop promotes one form of code: small numeric functions compiled to WebAssembly. TypeScript checking, reuse,
-independent evaluators and tools that run coding agents on whole repositories are built around it. The goal is an
-engine for generated user interfaces and disposable software (code made for one need and dropped when the need is
-gone): applications that grow new features on request. That is not built yet;
-[what it builds today](#what-it-builds-today) separates the two.
+The whole check-and-repair loop stays inside the isolates, so many agents work at once without waiting on process
+spawns or disk round trips. Larger jobs are split into small pieces (atoms) that run as a dependency graph, and the
+conductor runs agents on whole repositories with every change gated and checked. The small numeric functions in the
+example and the [experiments](experiments/README.md) are test workloads used to measure the engine; they are not what
+it builds.
 
 You trust the checks instead of the model. The model cannot change the tests after it sees them fail, and the ledger
-shows exactly which checks the code passed. In today's loop the same model writes the tests and then the code, so a pass
-is only as good as those tests; the opt-in evaluator synthesis adds checks written in a context that never saw the
-code, and [limitations](#limitations) says what a pass does not prove.
+shows exactly which checks the code passed. By default the same model writes the tests and then the code, so a pass is
+only as good as those tests; evaluator synthesis adds checks written in a context that never saw the code, and
+[limitations](#limitations) says what a pass does not prove.
 
-It is research software, for engineers who build coding agents or tools that let agents write and run code.
+It is for engineers who use coding agents to build software, and for people who build those agents.
 
 ## Why
 
@@ -43,7 +43,7 @@ flowchart TD
   need["Need<br/>from a person or agent"] --> spec["Contract + tests<br/>frozen in the ledger"]
   spec --> lib["Library lookup<br/>(opt-in)"]
   lib -- "match" --> reuse["Reuse<br/>after new tests pass"]
-  lib -- "miss" --> gen["Model writes<br/>the code"]
+  lib -- "miss" --> gen["Coding agent<br/>writes the code"]
   gen --> cell["Workcell: V8 isolate<br/>compile, gates G1–G9"]
   cell -- "fail" --> gen
   cell -- "pass" --> synth["Independent evaluator<br/>(opt-in)"]
@@ -51,11 +51,11 @@ flowchart TD
   ledger --> cap["Working capability<br/>kept for reuse"]
 ```
 
-1. A model turns the need into a contract (`CONTRACT.md`: what the code computes) and tests (`tests.json`). EndoForge
+1. A coding agent turns the need into a contract (`CONTRACT.md`: what the code computes) and tests (`tests.json`). EndoForge
    stores their hashes in the ledger. From here on they cannot change.
 2. With a library attached, EndoForge looks for a promoted capability whose contract matches. A match is reused only if
    it passes the new tests in a workcell.
-3. Otherwise the model writes the code: for a kernel, `kernel.ts` plus `glue.json`, which names each argument's kind
+3. Otherwise the coding agent writes the code: for a kernel, `kernel.ts` plus `glue.json`, which names each argument's kind
    and unit. A pinned compiler builds it, and nine gates run it in a workcell (a V8 isolate
    with a fuel meter and a memory cap). A failed gate's report becomes the model's next prompt; by default it gets six
    turns to write and repair the code.
@@ -78,26 +78,21 @@ flowchart TD
 
 The [candidate loop](docs/architecture/candidate-loop.md) page has the details.
 
-## What it builds today
+## How it builds software
 
-The loop above is general; the forms of code it can promote are still few. The kernel loop is where the full
-discipline (frozen checks, nine gates, one ledger) runs today. The repository tools in the fifth row are where coding
-agents build larger software now, under their own checks; bringing that work into the same workcell loop is planned,
-not built.
-
-| Part | State today |
+| Part | What it does |
 |---|---|
-| Numeric kernels: pure functions of numbers with units, written in AssemblyScript (a TypeScript-like language) and compiled to WebAssembly, plus `glue.json` naming each argument's kind and unit (gate G9 catches arithmetic that mixes units, a silent bug in numeric code) | Built and the default. The only form that is promoted. No arrays or strings yet. |
-| TypeScript compatibility lane: the TypeScript compiler (a pinned WebAssembly port, `tsrs`) type checks inside workcells, and the emitted JavaScript runs twice in a contained V8 process | Built and opt-in. Its result is reported but does not decide a promotion, and it currently takes a kernel's TypeScript source. See [tscheck](tools/tscheck/README.md). |
-| Library reuse of promoted kernels | Built and opt-in, on the default loop path. See [library](core/library/README.md). |
-| Evaluator synthesis: a candidate-blind reference and generated tests, built from reusable invariants | Built and opt-in (`ENDOFORGE_SYNTH=1`), on the default loop path. See the [design](docs/architecture/evaluator-synthesis.md). |
-| Larger jobs: the [atomizer](tools/atomizer/README.md) splits a need into small atoms and runs them as a dependency graph; [job](tools/job/README.md) intake checks a job manifest and waits for the user's go; the [conductor](tools/conductor/README.md) launches coding agents in git worktrees, gates each landed change and runs its checks | Built. They run coding agents on whole repositories, in bubblewrap sandboxes and git worktrees rather than V8 workcells, and keep their own append-only ledger. The nine gates apply only where an atomizer job composes a kernel. |
-| Generated user interfaces (views and bindings as declarative glue), other languages (a one-task Rust experiment exists), swapping a live capability for a better one | Not built. |
+| Coding agents: Claude Code (`claude -p`, cold or kept warm) and Codex, on a subscription login | Write the contract, tests and code for each need, and repair it from gate reports. See [transports](core/runtime/x1/transports.mjs). |
+| WebAssembly kernels: compiled from AssemblyScript (a TypeScript-like language), with `glue.json` naming each argument's kind and unit | The fast, sealed candidate form the nine gates check byte for byte; also the test workload in the experiments. |
+| TypeScript compatibility lane: the TypeScript compiler (a pinned WebAssembly port, `tsrs`) type checks inside workcells, and the emitted JavaScript runs twice in a contained V8 process | Opt-in. Fast in-isolate type checking for TypeScript code. See [tscheck](tools/tscheck/README.md). |
+| Library reuse of promoted kernels | Opt-in. A request that an existing promoted capability already satisfies runs that code instead of a model turn. See [library](core/library/README.md). |
+| Evaluator synthesis: a candidate-blind reference and generated tests, built from reusable invariants | Opt-in (`ENDOFORGE_SYNTH=1`). See the [design](docs/architecture/evaluator-synthesis.md). |
+| Larger jobs: the [atomizer](tools/atomizer/README.md) splits a need into small atoms and runs them as a dependency graph; [job](tools/job/README.md) intake checks a job manifest and waits for the user's go; the [conductor](tools/conductor/README.md) launches coding agents in git worktrees, gates each landed change and runs its checks | Coding agents build and change whole repositories, each change gated and checked, with an append-only record. |
 
-## Example: the smallest end-to-end run
+## Example: one need through the loop
 
-This is the whole loop on the smallest possible need, so every step fits on one screen. It is a demonstration of the
-machinery, not the kind of software EndoForge is for.
+This is the whole loop on a deliberately tiny test need, so every step fits on one screen. Real work goes through the
+same steps.
 
 Two scripts ship in [`examples/`](examples/): `first-loop.mjs` sends a need through the loop, and `show-gates.py`
 prints the gate results from the ledger it wrote and saves the promoted kernel. The model here is a test double, a
@@ -260,9 +255,9 @@ The [documentation index](docs/README.md) is sorted by what you want to do:
 
 ## Related projects
 
-EndoForge is the engine of the Cstack family (code name Mjölnir), where it is meant to become the generative-UI and
-disposable-software engine: an application that grows new features on request, with the foundation libraries
-supplying domain knowledge, exact primitives and checks. [Cstack](https://github.com/Akilleez-QA/cstack) is
+EndoForge is the software engine of the Cstack family (code name Mjölnir): generated interfaces and disposable
+software, applications that grow new features on request, with the foundation libraries supplying domain knowledge,
+exact primitives and checks. [Cstack](https://github.com/Akilleez-QA/cstack) is
 the host and vendors part of EndoForge at a pinned commit; the [Cstack ICD](docs/icd/icd-cstack.md) lists what. The
 family also includes [poodo](https://github.com/Akilleez-QA/poodo), a reasoning skill, and the foundation repositories
 ([engine](https://github.com/Akilleez-QA/foundation-engine), [math](https://github.com/Akilleez-QA/foundation-math),
