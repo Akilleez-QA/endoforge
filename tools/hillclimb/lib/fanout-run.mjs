@@ -1,7 +1,3 @@
-// Fan-out mode, host side: the stages of a round as commands (bin/hillclimb.mjs dispatches here).
-//   atomize | prove-split --before A --after B | logins | smoke | evals [--phase pre|post] | status | collect | round
-// One round (barrier version): evals first → re-atomize → smoke one atom per engine → launch every piece under the
-// capacity dial → collect owned diffs, one commit per piece → render + evals → ratchet (revert a regressed piece).
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -29,9 +25,6 @@ const git = (cwd, ...a) => { const r = spawnSync('git', ['-C', cwd, ...a], { enc
 const sec = (t0) => Math.round((Date.now() - t0) / 100) / 10;
 const codexOnPath = () => (process.env.PATH || '').split(':').map((d) => path.join(d, 'codex')).find((p) => { try { fs.accessSync(p, fs.constants.X_OK); return true; } catch { return false; } });
 
-/** Render the campaign's jobs and run its evals into <phase>/; returns the evals and the seconds each took.
- *  Errors are typed (tools/lib/errors.mjs): a busy guard or queue (75) waits and retries with backoff; 78 stops the
- *  job loudly; evals that could not run return { unscored } instead of a number. */
 export function renderAndEval(c, n, phase, repo = c.repo) {
   const wait = { maxWaitMs: (c.fanout?.busyWaitSec ?? 900) * 1000, baseMs: (c.fanout?.busyBaseSec ?? 2) * 1000, log };
   const t0 = Date.now(), stills = path.join(phase, 'stills');
@@ -47,14 +40,12 @@ export function renderAndEval(c, n, phase, repo = c.repo) {
   const argv = expand(c.evals.command, { ...vars(c, n, { out: phase }), stills, repo });
   const r = runTyped(argv, { cwd: repo, stdio: ['ignore', 'inherit', 'inherit'], ...wait });
   if (r.kind === 'stop') throw new StopError('evals exited 78 (stop)');
-  if (!fs.existsSync(file)) return { ...unscored(`evals ${r.kind === 'transient' ? 'still busy' : `exited ${r.status}`} without writing ${file}`), renderSec: Math.round((t1 - t0) / 100) / 10, evalsSec: sec(t1) };   // a HARD-fail exit with a file is fine
+  if (!fs.existsSync(file)) return { ...unscored(`evals ${r.kind === 'transient' ? 'still busy' : `exited ${r.status}`} without writing ${file}`), renderSec: Math.round((t1 - t0) / 100) / 10, evalsSec: sec(t1) };
   const evals = readJSON(file), renderSec = Math.round((t1 - t0) / 100) / 10, evalsSec = sec(t1);
   writeJSON(path.join(phase, 'meta.json'), { commit: git(repo, 'rev-parse', 'HEAD'), renderSec, evalsSec, ...totals(evals, c.evals.key) });
   return { evals, renderSec, evalsSec };
 }
 
-/** Launch one lane detached: a systemd user unit in heavy.slice (default), or a plain child (fanout.launcher "local").
- *  The wrapper writes <lane>.exit when the worker ends, so status never depends on unit garbage collection. */
 function startLane(c, n, dir, lane, argv, env) {
   const id = laneId(lane), prompt = path.join(dir, 'prompts', `${id}.prompt`), logf = path.join(dir, 'logs', `${id}.log`), exitf = path.join(dir, 'logs', `${id}.exit`);
   fs.mkdirSync(path.dirname(logf), { recursive: true }); fs.rmSync(exitf, { force: true });
@@ -77,13 +68,12 @@ function laneEnv(c, lane, extra) {
   const env = { ...extra };
   if (lane.engine === 'codex') {
     const bin = process.env.CODEX_POOL_BIN || codexOnPath();
-    if (bin) env.CODEX_POOL_BIN = bin;                      // older installed pools refuse without it (NOTES #6)
+    if (bin) env.CODEX_POOL_BIN = bin;
     if (c.fanout?.perAccount) env.CODEX_POOL_PER_ACCOUNT = String(c.fanout.perAccount);
   }
   return env;
 }
 
-/** One tiny atom per engine before the wide launch: a broken login, pool or flag fails here, once, not N times. */
 export function smoke(c, lanes, dir) {
   const results = {};
   for (const engine of [...new Set(lanes.map((l) => l.engine))]) {
@@ -103,7 +93,6 @@ const loadSample = () => {
   return { t: new Date().toISOString(), load1: os.loadavg()[0], memAvailGB: mem ? Math.round(Number(mem) / 1048576) : null };
 };
 
-/** Make each lane's worktree from the integration HEAD, write its prompt, and start it, in waves sized by the dial. */
 export async function launchAll(c, n, dir, lanes, { notes = {}, pre, wait = true, beforeStart = null } = {}) {
   const base = git(c.repo, 'rev-parse', 'HEAD'), found = attribute(c, pre.evals).byPiece, stills = path.join(pre.dir, 'stills');
   const wtRoot = expand(c.apply?.worktrees ?? path.join(c.workdir, 'worktrees'), vars(c, n));
@@ -111,16 +100,14 @@ export async function launchAll(c, n, dir, lanes, { notes = {}, pre, wait = true
     lane.worktree = path.join(wtRoot, `${c.id}-r${n}-${laneId(lane)}`); lane.branch = `hillclimb/${c.id}-r${n}-${laneId(lane)}`;
     if (fs.existsSync(lane.worktree)) git(c.repo, 'worktree', 'remove', '--force', lane.worktree);
     git(c.repo, 'worktree', 'add', '-q', '-B', lane.branch, lane.worktree, base);
-    for (const l of c.fanout?.links ?? []) fs.symlinkSync(l.target, path.join(lane.worktree, l.path));   // e.g. node_modules (NOTES #3)
+    for (const l of c.fanout?.links ?? []) fs.symlinkSync(l.target, path.join(lane.worktree, l.path));
     const p = c.pieces[lane.piece], images = pieceStills(p, stills);
-    // A campaign backed by a JOB manifest gets compiled prompts (goal verbatim, governing inputs first, checks,
-    // lessons); hand-written briefs are the fallback for campaigns without one.
     const prompt = c.jobDoc ? compileAtom(c.jobDoc, lane.piece, { lessons: c.jobLessons, outputs: images, found: found[lane.piece], note: notes[lane.piece] ?? '', round: n })
       : piecePrompt(c, lane.piece, { stills: images, found: found[lane.piece], note: notes[lane.piece] ?? '', round: n });
     fs.mkdirSync(path.join(dir, 'prompts'), { recursive: true }); fs.writeFileSync(path.join(dir, 'prompts', `${laneId(lane)}.prompt`), prompt);
     Object.assign(lane, { argv: workerCommand(c, lane, { worktree: lane.worktree, prompt, images }) });
   }
-  beforeStart?.(lanes);                                  // a job-backed round emits FIRED here, before any lane starts
+  beforeStart?.(lanes);
   const meta = { base, lanes, load: [], capacity: [] };
   const exitOf = (l) => readExit(path.join(dir, 'logs', `${laneId(l)}.exit`));
   const poll = (c.fanout?.pollSec ?? 5) * 1000, deadline = Date.now() + (c.fanout?.laneTimeoutSec ?? 2400) * 1000 + 60_000;
@@ -143,8 +130,6 @@ export async function launchAll(c, n, dir, lanes, { notes = {}, pre, wait = true
   return meta;
 }
 
-/** Recombine: each piece's diff restricted to its own files, applied to the integration repo, one commit per piece.
- *  Of a speculating piece's variants, the first to land cleanly (and pass the piece's check) wins. */
 export function collect(c, n, dir, meta) {
   if (spawnSync('git', ['-C', c.repo, 'diff', '--cached', '--quiet']).status !== 0) throw new Error(`${c.repo} has staged changes; commit or unstage them before collecting`);
   const done = [], report = [];
@@ -164,7 +149,7 @@ export function collect(c, n, dir, meta) {
       git(c.repo, 'commit', '-q', '-m', `${c.id} fan-out r${n} ${piece} (${l.engine}:${l.account})`, ...(c.apply?.trailer ? ['-m', c.apply.trailer] : []));
       const sha = git(c.repo, 'rev-parse', 'HEAD');
       report.push({ lane: laneId(l), status: 'applied', sha, stray }); done.push({ piece, sha });
-      break;                                   // one variant per piece
+      break;
     }
   }
   for (const l of meta.lanes.filter((x) => x.exit !== 0)) report.push({ lane: laneId(l), status: l.exit == null ? 'did not finish' : `exit ${l.exit}` });
@@ -173,7 +158,6 @@ export function collect(c, n, dir, meta) {
   return { done, report };
 }
 
-/** The previous round's post-evals if the integration HEAD has not moved since; else render and evaluate now. */
 function preEvals(c, n, dir) {
   const prev = path.join(roundDir(c, n - 1), 'post');
   const head = git(c.repo, 'rev-parse', 'HEAD');
@@ -186,8 +170,6 @@ export async function round(c, n, { notes = {}, smokeOnly = false, noSmoke = fal
   let t = Date.now();
   const own = ownershipMap(c); if (own.errors.length) throw new Error(`atomize: ${own.errors.join('; ')}`);
   if (c.job) {
-    // The job's POODO gates up to Orchestrate (a confirmed card, calibrated checks, the smoke receipt, machine health)
-    // must pass before anything launches; nothing fires on an unconfirmed card (I1, I11).
     c.jobDoc = loadJob(c.job);
     const v = validateJob(c.jobDoc, { gate: 'orchestrate', health: health(c.jobDoc) });
     const may = canFire(c.jobDoc, c.job);
@@ -197,7 +179,7 @@ export async function round(c, n, { notes = {}, smokeOnly = false, noSmoke = fal
     for (const [k, p] of Object.entries(c.pieces)) if (!atoms[k] || JSON.stringify([...atoms[k].files].sort()) !== JSON.stringify([...p.files].sort())) throw new Error(`piece ${k} does not match a job atom with the same files`);
     c.jobLessons = retrieveLessons(c.jobDoc);
   }
-  fs.mkdirSync(dir, { recursive: true });                // a refused round leaves no round directory behind
+  fs.mkdirSync(dir, { recursive: true });
   const histFile = path.join(c.workdir, 'fanout-history.json'), history = readJSON(histFile, []);
   const { frozen, split } = reatomize(c, history);
   T.atomize = sec(t); t = Date.now();
@@ -221,7 +203,6 @@ export async function round(c, n, { notes = {}, smokeOnly = false, noSmoke = fal
   const meta = await launchAll(c, n, dir, lanes, { notes, pre, beforeStart }); T.parallel = sec(t); t = Date.now();
   const { done, report } = collect(c, n, dir, meta); T.collect = sec(t); t = Date.now();
   let post = renderAndEval(c, n, path.join(dir, 'post'));
-  // Unscored post-evals are reported as "not scored": no pass, no number, no revert and no baseline change.
   let r = post.scored === false ? { pass: false, scored: false, why: post.why, score: null, hard: null, scoreDelta: null, hardDelta: null, perPiece: {}, regressed: [], baseline: readJSON(baseFile) }
     : ratchet(c, readJSON(baseFile), pre.evals, post.evals);
   const reverted = [];
@@ -240,7 +221,7 @@ export async function round(c, n, { notes = {}, smokeOnly = false, noSmoke = fal
   else tell({ kind: 'SCORED', summary: `round ${n}: score ${r.score} (${r.scoreDelta >= 0 ? '+' : ''}${r.scoreDelta}), HARD ${r.hard} (${r.hardDelta >= 0 ? '+' : ''}${r.hardDelta})`, data: { round: n, score: r.score, scoreDelta: r.scoreDelta, hard: r.hard, hardDelta: r.hardDelta, perPiece: r.perPiece } });
   if (r.scored !== false) tell({ kind: 'GATE', summary: `round ${n} ratchet ${r.pass ? 'passed' : 'FAILED'}${reverted.length ? `; reverted ${reverted.join(', ')}` : ''}`, data: { gate: 'ratchet', pass: r.pass, reverted } });
   const cp = c.jobDoc?.criticalPath, cpLane = meta.lanes.find((l) => l.piece === cp);
-  if (cp && (reverted.includes(cp) || (cpLane && cpLane.exit !== 0))) tell({ kind: 'NEEDS-YOU', summary: `the critical-path atom ${cp} ${reverted.includes(cp) ? 'regressed and was reverted' : 'did not land'}; decide how to proceed`, data: { atom: cp } });   // rNN/LESSONS.md + <workdir>/lessons.json
+  if (cp && (reverted.includes(cp) || (cpLane && cpLane.exit !== 0))) tell({ kind: 'NEEDS-YOU', summary: `the critical-path atom ${cp} ${reverted.includes(cp) ? 'regressed and was reverted' : 'did not land'}; decide how to proceed`, data: { atom: cp } });
   writeJSON(path.join(dir, 'round.json'), summary);
   if (summary.openLessons.length) log(`open lessons with no tool change yet (${dir}/LESSONS.md): ${summary.openLessons.join(', ')}`);
   writeJSON(histFile, [...history.filter((h) => h.round !== n), { round: n, score: r.score, hard: r.hard, pass: r.pass, perPiece: r.perPiece }]);
@@ -264,6 +245,6 @@ export async function main(cmd, rest) {
   if (cmd === 'evals') { const p = path.join(roundDir(c, n || 1), flag('--phase') ?? 'pre'); const r = renderAndEval(c, n || 1, p); out({ ...totals(r.evals, c.evals.key), renderSec: r.renderSec, evalsSec: r.evalsSec }); return 0; }
   if (cmd === 'status') { const m = readJSON(path.join(roundDir(c, n), 'lanes.json')); for (const l of m.lanes) out(`${laneId(l)}\t${l.engine}:${l.account}\t${l.exit ?? (l.started ? 'running' : 'waiting')}`); return 0; }
   if (cmd === 'collect') { const dir = roundDir(c, n), m = readJSON(path.join(dir, 'lanes.json')); collect(c, n, dir, m); return 0; }
-  if (cmd === 'round') { const s = await round(c, n, { notes, noSmoke: rest.includes('--no-smoke') }); out(s); return s.ratchet.pass ? 0 : 1; }   // StopError → 78 in bin/hillclimb.mjs
+  if (cmd === 'round') { const s = await round(c, n, { notes, noSmoke: rest.includes('--no-smoke') }); out(s); return s.ratchet.pass ? 0 : 1; }
   throw new Error(`unknown fan-out command ${cmd}`);
 }

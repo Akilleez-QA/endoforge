@@ -1,6 +1,3 @@
-// either mode, writes rounds/rNN/LESSONS.md seeded with its own measurements, and keeps a ledger of lessons
-// (<workdir>/lessons.json). A lesson stays open until a tool or PR change is recorded for it
-// (`hillclimb.mjs lessons <campaign> --close <key> --by "PR #123"`); every round's report lists the open ones.
 import fs from 'node:fs';
 import path from 'node:path';
 import { writeJSONAtomic } from '../../lib/lock.mjs';
@@ -13,7 +10,6 @@ function readLedger(f) {
   try { return JSON.parse(raw); } catch (e) { throw new Error(`lessons ledger ${f} is unreadable: ${e.message}`); }
 }
 
-/** Lessons a fan-out round's own measurements imply. Each has a stable key, so a recurrence counts up, not repeats. */
 export function autoLessons(s) {
   const out = [], L = (key, stage, lesson) => out.push({ key, stage, lesson });
   for (const [engine, r] of Object.entries(s.smokes ?? {})) if (!r.ok) L(`smoke-${engine}`, 'parallelize', `the ${engine} smoke launch failed (exit ${r.exit}); fix the engine, login or flags before any wide launch`);
@@ -40,7 +36,6 @@ export function autoLessons(s) {
   return out;
 }
 
-/** Merge a round's lessons into the ledger: new keys open, recurrences count up; a closed lesson that recurs reopens. */
 export function mergeLedger(ledger, lessons, round) {
   const next = { ...ledger };
   for (const l of lessons) {
@@ -53,7 +48,6 @@ export function mergeLedger(ledger, lessons, round) {
 export const openLessons = (ledger) => Object.entries(ledger).filter(([, v]) => !v.tool).map(([key, v]) => ({ key, ...v }));
 
 const fmt = (n) => (n > 0 ? `+${n}` : String(n));
-/** The round's LESSONS.md: measurements first, then this round's lessons, then every open lesson with no tool change. */
 export function lessonsMarkdown({ round, mode, rows = [], perPiece = [], timings = {}, failures = [], lessons = [], open = [] }) {
   const t = (h, r) => [`| ${h.join(' | ')} |`, `|${h.map(() => '---').join('|')}|`, ...r.map((x) => `| ${x.join(' | ')} |`)];
   return [`# Round ${round} lessons (${mode})`, '',
@@ -68,7 +62,6 @@ export function lessonsMarkdown({ round, mode, rows = [], perPiece = [], timings
     '## By hand', '- ', ''].join('\n');
 }
 
-/** Write LESSONS.md and update the ledger; returns the open lessons for the round's report. */
 export function recordLessons(c, dir, page, lessons) {
   const ledgerFile = path.join(c.workdir, 'lessons.json');
   let prior = {}, problem = null;
@@ -81,7 +74,6 @@ export function recordLessons(c, dir, page, lessons) {
   return open;
 }
 
-/** Fan-out: LESSONS.md from the round summary. */
 export function fanoutLessons(c, dir, s) {
   const r = s.ratchet;
   const rows = [['score (delta vs baseline)', r.scored === false ? 'not scored' : `${r.score} (${fmt(r.scoreDelta)})`], ['HARD (delta)', r.scored === false ? 'not scored' : `${r.hard} (${fmt(r.hardDelta)})`], ['ratchet', r.scored === false ? `not scored: ${r.why}` : r.pass ? 'pass' : 'FAIL'],
@@ -96,7 +88,6 @@ export function fanoutLessons(c, dir, s) {
   return recordLessons(c, dir, { round: s.round, mode: 'fanout', rows, perPiece, timings: s.stages, failures }, lessons);
 }
 
-/** Compete: LESSONS.md from the files the round left (score, render, fix summary, apply, Endoforge receipts). */
 export function competeLessons(c, n, dir) {
   const score = readJSON(path.join(dir, 'score.json'), null), render = readJSON(path.join(dir, 'render.json'), {}), fix = readJSON(path.join(dir, 'fix-summary.json'), null);
   const apply = readJSON(path.join(dir, 'apply.json'), []), receipts = ['review', 'fix', 'judge'].map((k) => [k, readJSON(path.join(dir, `${k}-run`, 'run', 'receipt', 'run.json'), null)]).filter(([, v]) => v);
@@ -113,7 +104,6 @@ export function competeLessons(c, n, dir) {
   return recordLessons(c, dir, { round: n, mode: 'compete', rows, perPiece, timings, failures }, lessons);
 }
 
-/** `hillclimb.mjs lessons <campaign> [--close KEY --by "PR #n"] [--add KEY --stage S --text "..."]` */
 export function lessonsCommand(c, flag) {
   const f = path.join(c.workdir, 'lessons.json'); let ledger = readLedger(f);
   if (flag('--close')) { const k = flag('--close'); if (!ledger[k]) throw new Error(`no lesson ${k}`); if (!flag('--by')) throw new Error('--close needs --by "<tool or PR>"'); ledger[k] = { ...ledger[k], tool: flag('--by') }; }

@@ -1,4 +1,3 @@
-// Lessons: seeded from each round's measurements, kept in a ledger, open until a tool or PR change is recorded.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
