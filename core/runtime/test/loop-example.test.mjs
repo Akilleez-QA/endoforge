@@ -34,3 +34,21 @@ test('the README example refuses the subtracting kernel at G4 after seven turns'
   assert.match(printed, /^decision: refuse$/m);
   assert.doesNotMatch(printed, /^kernel:/m);
 });
+
+test('the README counter example promotes the reducer, prints all nine passing gates and writes a kernel that counts', { timeout: 180000 }, t => {
+  const result = JSON.parse(run(process.execPath, ['examples/counter-loop.mjs']));
+  t.after(() => rmSync(dirname(dirname(result.ledger)), { recursive: true, force: true }));
+  assert.deepEqual({ ...result, ledger: undefined }, { need: 'a counter that handles increment, decrement and reset events and never goes below zero',
+    promoted: true, testDouble: true, turns: 2, rounds: ['passed'], ledger: undefined });
+  const printed = gates(result.ledger);
+  assert.match(printed, /^ledger records: task, admitted_input, frozen_evaluator, candidate, receipt$/m);
+  for (const gate of ['G1_frozen', 'G2_compiles', 'G3_exports', 'G4_tests', 'G5_deterministic', 'G6_bounded', 'G7_glue', 'G8_nonfinite', 'G9_units'])
+    assert.match(printed, new RegExp(`^  ${gate} +pass\\b`, 'm'));
+  assert.match(printed, /^  G2_compiles +pass  \{"wasmBytes": 293\}$/m);
+  assert.match(printed, /^  G4_tests +pass  \{"passed": 6, "total": 6\}$/m);
+  assert.match(printed, /^  G9_units +pass  \{"checks": \{"next": "dimensionless"\}\}$/m);
+  assert.match(printed, /^decision: promote$/m);
+  const module = printed.match(/^kernel: (.+) \(293 bytes\)$/m)[1];
+  const host = 'const m = new WebAssembly.Module(require("fs").readFileSync(process.argv[1])); const { next } = new WebAssembly.Instance(m, { env: { abort() { throw Error("abort") } } }).exports; let c = 0; for (const e of [0, 0, 0, 1, 2, 1]) { c = next(c, e); process.stdout.write(c + " ") } console.log()';
+  assert.equal(run(process.execPath, ['-e', host, module]), '1 2 3 2 0 0 \n');
+});
