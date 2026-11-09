@@ -49,11 +49,12 @@ test('a conditional range clause is skipped while an unconditional bound on the 
   assert.deepEqual(rules, [{ name: 'kw', lo: 0, loOpen: false, hi: 10000, hiOpen: false }]);
 });
 
-test('a piecewise list written as "condition: assignment" abstains instead of applying the ramp everywhere', () => {
+test('a piecewise list written as "condition: assignment" applies each branch only inside its own condition, never the ramp everywhere', () => {
   const contract = ['`targetSuperheat(roomC: f64): f64`', '- roomC <= -18: target = 6', '- -18 < roomC < 0: linear, target = 6 + 2*(roomC + 18)/18', '- roomC >= 0: target = 8', 'Returns target.'].join('\n');
-  const files = { 'CONTRACT.md': contract, 'tests.json': JSON.stringify([{ name: 'freezer', fn: 'targetSuperheat', args: [-30], expect: 6, tol: 0.01 }, { name: 'chiller', fn: 'targetSuperheat', args: [5], expect: 8, tol: 0.01 }]) };
+  const files = { 'CONTRACT.md': contract, 'tests.json': JSON.stringify([{ name: 'freezer', fn: 'targetSuperheat', args: [-30], expect: 6, tol: 0.01 }, { name: 'chiller', fn: 'targetSuperheat', args: [5], expect: 8, tol: 0.01 },
+    { name: 'ramp', fn: 'targetSuperheat', args: [-9], expect: 7, tol: 0.01 }, { name: 'ramp applied to the chiller', fn: 'targetSuperheat', args: [5], expect: 8 + 2 * 23 / 18, tol: 0.01 }]) };
   const analysis = analyzeSpecification(files, { reference: false });
-  assert.deepEqual(statuses(analysis), ['abstained', 'abstained']);
+  assert.deepEqual(statuses(analysis), ['verified', 'verified', 'verified', 'flagged']);
 });
 
 test('an equation with a function on its left is not a definition, and its inputs are not mistaken for the result', () => {

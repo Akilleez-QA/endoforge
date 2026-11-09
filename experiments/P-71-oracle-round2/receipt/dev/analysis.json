@@ -1,0 +1,330 @@
+{
+ "summary": {
+  "specs": 191,
+  "pristineTests": 3437,
+  "injected": 827,
+  "excluded": 3,
+  "injectedByClass": {
+   "sign": 183,
+   "scale": 183,
+   "rounding": 183,
+   "swap": 87,
+   "boundary": 191
+  },
+  "before": {
+   "falseFlagSpecs": {
+    "point": 0.015706806282722512,
+    "lo": 0,
+    "hi": 0.02586206896551724,
+    "n": 3437,
+    "clusters": 191
+   },
+   "falseFlagTests": {
+    "point": 0.0017457084666860634,
+    "lo": 0,
+    "hi": 0.004233924318602805,
+    "n": 3437,
+    "clusters": 191
+   },
+   "recall": {
+    "point": 0.37726723095526,
+    "lo": 0.3220747889022919,
+    "hi": 0.4342105263157895,
+    "n": 827,
+    "clusters": 191
+   },
+   "abstainedPristine": {
+    "point": 0.08844922897876055,
+    "lo": 0.05703883495145631,
+    "hi": 0.12247797669792555,
+    "n": 3437,
+    "clusters": 191
+   },
+   "abstainedInjected": {
+    "point": 0.12454655380894801,
+    "lo": 0.0831353919239905,
+    "hi": 0.16786570743405277,
+    "n": 827,
+    "clusters": 191
+   },
+   "verifiedPristine": {
+    "point": 0.25603724178062265,
+    "lo": 0.21760936193925884,
+    "hi": 0.2976785189538642,
+    "n": 3437,
+    "clusters": 191
+   },
+   "recallByClass": {
+    "sign": {
+     "point": 0.45901639344262296,
+     "lo": 0.3879781420765027,
+     "hi": 0.5300546448087432,
+     "n": 183,
+     "clusters": 183
+    },
+    "scale": {
+     "point": 0.44808743169398907,
+     "lo": 0.3770491803278688,
+     "hi": 0.5191256830601093,
+     "n": 183,
+     "clusters": 183
+    },
+    "rounding": {
+     "point": 0.48633879781420764,
+     "lo": 0.41530054644808745,
+     "hi": 0.5573770491803278,
+     "n": 183,
+     "clusters": 183
+    },
+    "swap": {
+     "point": 0.3563218390804598,
+     "lo": 0.25287356321839083,
+     "hi": 0.45977011494252873,
+     "n": 87,
+     "clusters": 87
+    },
+    "boundary": {
+     "point": 0.13612565445026178,
+     "lo": 0.08900523560209424,
+     "hi": 0.18324607329842932,
+     "n": 191,
+     "clusters": 191
+    }
+   },
+   "injectedStatus": {
+    "unverified": 404,
+    "flagged": 312,
+    "abstained": 103,
+    "verified": 8
+   },
+   "pristineStatus": {
+    "unverified": 2247,
+    "verified": 880,
+    "abstained": 304,
+    "flagged": 6
+   }
+  },
+  "after": {
+   "falseFlagSpecs": {
+    "point": 0,
+    "lo": 0,
+    "hi": 0,
+    "n": 3437,
+    "clusters": 191
+   },
+   "falseFlagTests": {
+    "point": 0,
+    "lo": 0,
+    "hi": 0,
+    "n": 3437,
+    "clusters": 191
+   },
+   "recall": {
+    "point": 0.5163240628778718,
+    "lo": 0.4577294685990338,
+    "hi": 0.5756853396901073,
+    "n": 827,
+    "clusters": 191
+   },
+   "abstainedPristine": {
+    "point": 0.06924643584521385,
+    "lo": 0.047239444936522,
+    "hi": 0.09253294289897511,
+    "n": 3437,
+    "clusters": 191
+   },
+   "abstainedInjected": {
+    "point": 0.08827085852478839,
+    "lo": 0.05620608899297424,
+    "hi": 0.1234866828087167,
+    "n": 827,
+    "clusters": 191
+   },
+   "verifiedPristine": {
+    "point": 0.45941227814954905,
+    "lo": 0.41281542387297987,
+    "hi": 0.5068608232987959,
+    "n": 3437,
+    "clusters": 191
+   },
+   "recallByClass": {
+    "sign": {
+     "point": 0.546448087431694,
+     "lo": 0.47540983606557374,
+     "hi": 0.6174863387978142,
+     "n": 183,
+     "clusters": 183
+    },
+    "scale": {
+     "point": 0.546448087431694,
+     "lo": 0.47540983606557374,
+     "hi": 0.6174863387978142,
+     "n": 183,
+     "clusters": 183
+    },
+    "rounding": {
+     "point": 0.6010928961748634,
+     "lo": 0.5300546448087432,
+     "hi": 0.6721311475409836,
+     "n": 183,
+     "clusters": 183
+    },
+    "swap": {
+     "point": 0.47126436781609193,
+     "lo": 0.367816091954023,
+     "hi": 0.5747126436781609,
+     "n": 87,
+     "clusters": 87
+    },
+    "boundary": {
+     "point": 0.39790575916230364,
+     "lo": 0.3298429319371728,
+     "hi": 0.4712041884816754,
+     "n": 191,
+     "clusters": 191
+    }
+   },
+   "injectedStatus": {
+    "flagged": 427,
+    "unverified": 323,
+    "abstained": 73,
+    "verified": 4
+   },
+   "pristineStatus": {
+    "verified": 1579,
+    "unverified": 1620,
+    "abstained": 238
+   }
+  },
+  "difference": {
+   "recall": {
+    "point": 0.1390568319226118,
+    "lo": 0.09665871121718378,
+    "hi": 0.18159806295399522,
+    "n": 827,
+    "clusters": 191
+   },
+   "falseFlagSpecs": {
+    "point": -0.015706806282722512,
+    "lo": -0.02586206896551724,
+    "hi": 0,
+    "n": 3437,
+    "clusters": 191
+   }
+  },
+  "falseFlagsAfter": [],
+  "missedAfter": {
+   "sign": {
+    "unverified": 63,
+    "abstained": 20
+   },
+   "scale": {
+    "unverified": 64,
+    "abstained": 19
+   },
+   "rounding": {
+    "abstained": 18,
+    "unverified": 55
+   },
+   "swap": {
+    "abstained": 12,
+    "unverified": 34
+   },
+   "boundary": {
+    "unverified": 107,
+    "abstained": 4,
+    "verified": 4
+   }
+  }
+ },
+ "byNeed": {
+  "falseFlagSpecs": {
+   "point": 0,
+   "lo": 0,
+   "hi": 0,
+   "clusters": 21
+  },
+  "falseFlagTests": {
+   "point": 0,
+   "lo": 0,
+   "hi": 0,
+   "clusters": 21
+  },
+  "recall": {
+   "point": 0.5163240628778718,
+   "lo": 0.42278481012658226,
+   "hi": 0.608793686583991,
+   "clusters": 21
+  },
+  "abstainedPristine": {
+   "point": 0.06924643584521385,
+   "lo": 0.046291283161884134,
+   "hi": 0.09349074664964901,
+   "clusters": 21
+  },
+  "recallByClass": {
+   "sign": {
+    "point": 0.546448087431694,
+    "lo": 0.43915343915343913,
+    "hi": 0.6557377049180327,
+    "clusters": 21
+   },
+   "scale": {
+    "point": 0.546448087431694,
+    "lo": 0.43646408839779005,
+    "hi": 0.6577540106951871,
+    "clusters": 21
+   },
+   "rounding": {
+    "point": 0.6010928961748634,
+    "lo": 0.48214285714285715,
+    "hi": 0.7098445595854922,
+    "clusters": 21
+   },
+   "swap": {
+    "point": 0.47126436781609193,
+    "lo": 0.32323232323232326,
+    "hi": 0.6153846153846154,
+    "clusters": 13
+   },
+   "boundary": {
+    "point": 0.39790575916230364,
+    "lo": 0.3096446700507614,
+    "hi": 0.48717948717948717,
+    "clusters": 21
+   }
+  }
+ },
+ "verdicts": {
+  "B1_falseFlagSpecs": {
+   "bar": "upper 95% bound <= 2%",
+   "met": true
+  },
+  "B2_recall": {
+   "bar": "point >= 50% and lower 95% bound >= 40%",
+   "met": true
+  },
+  "B3_abstention": {
+   "bar": "abstained pristine tests, upper 95% bound <= 10%",
+   "met": true
+  },
+  "S1_falseFlagTests": {
+   "bar": "upper 95% bound <= 0.5%",
+   "met": true
+  },
+  "S2_valueClasses": {
+   "bar": "sign, scale, rounding and swap recall each >= 50% (point)",
+   "met": false
+  },
+  "S3_boundary": {
+   "bar": "boundary recall >= 30% (point)",
+   "met": true
+  },
+  "byNeed": {
+   "B1": true,
+   "B2": true,
+   "B3": true,
+   "S1": true
+  }
+ }
+}

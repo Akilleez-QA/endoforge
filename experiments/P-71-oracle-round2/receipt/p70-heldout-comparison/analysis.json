@@ -1,0 +1,442 @@
+{
+ "summary": {
+  "specs": 428,
+  "pristineTests": 7574,
+  "injected": 1870,
+  "excluded": 8,
+  "injectedByClass": {
+   "sign": 413,
+   "scale": 413,
+   "rounding": 413,
+   "swap": 205,
+   "boundary": 426
+  },
+  "before": {
+   "falseFlagSpecs": {
+    "point": 0.014018691588785047,
+    "lo": 0.003816793893129771,
+    "hi": 0.02214022140221402,
+    "n": 7574,
+    "clusters": 428
+   },
+   "falseFlagTests": {
+    "point": 0.0019804594665962503,
+    "lo": 0.0005242463958060288,
+    "hi": 0.003812428516965307,
+    "n": 7574,
+    "clusters": 428
+   },
+   "recall": {
+    "point": 0.4176470588235294,
+    "lo": 0.37845010615711255,
+    "hi": 0.45675105485232065,
+    "n": 1870,
+    "clusters": 426
+   },
+   "abstainedPristine": {
+    "point": 0.058885661473461845,
+    "lo": 0.043478260869565216,
+    "hi": 0.07550077041602465,
+    "n": 7574,
+    "clusters": 428
+   },
+   "abstainedInjected": {
+    "point": 0.08502673796791443,
+    "lo": 0.06203605514316013,
+    "hi": 0.1103448275862069,
+    "n": 1870,
+    "clusters": 426
+   },
+   "verifiedPristine": {
+    "point": 0.2768682334301558,
+    "lo": 0.24957907006864397,
+    "hi": 0.305245766212309,
+    "n": 7574,
+    "clusters": 428
+   },
+   "recallByClass": {
+    "sign": {
+     "point": 0.5157384987893463,
+     "lo": 0.46731234866828086,
+     "hi": 0.5641646489104116,
+     "n": 413,
+     "clusters": 413
+    },
+    "scale": {
+     "point": 0.5108958837772397,
+     "lo": 0.46246973365617433,
+     "hi": 0.5569007263922519,
+     "n": 413,
+     "clusters": 413
+    },
+    "rounding": {
+     "point": 0.48426150121065376,
+     "lo": 0.4358353510895884,
+     "hi": 0.5302663438256658,
+     "n": 413,
+     "clusters": 413
+    },
+    "swap": {
+     "point": 0.4585365853658537,
+     "lo": 0.3902439024390244,
+     "hi": 0.526829268292683,
+     "n": 205,
+     "clusters": 205
+    },
+    "boundary": {
+     "point": 0.14788732394366197,
+     "lo": 0.11502347417840375,
+     "hi": 0.1807511737089202,
+     "n": 426,
+     "clusters": 426
+    }
+   },
+   "injectedStatus": {
+    "unverified": 923,
+    "flagged": 781,
+    "abstained": 159,
+    "verified": 7
+   },
+   "pristineStatus": {
+    "unverified": 5016,
+    "verified": 2097,
+    "abstained": 446,
+    "flagged": 15
+   }
+  },
+  "after": {
+   "falseFlagSpecs": {
+    "point": 0.02570093457943925,
+    "lo": 0.014492753623188406,
+    "hi": 0.03676470588235294,
+    "n": 7574,
+    "clusters": 428
+   },
+   "falseFlagTests": {
+    "point": 0.002904673884341167,
+    "lo": 0.0012114685691210123,
+    "hi": 0.004885133350937418,
+    "n": 7574,
+    "clusters": 428
+   },
+   "recall": {
+    "point": 0.5117647058823529,
+    "lo": 0.470960929250264,
+    "hi": 0.5530179445350734,
+    "n": 1870,
+    "clusters": 426
+   },
+   "abstainedPristine": {
+    "point": 0.052020068655928176,
+    "lo": 0.03678221751786187,
+    "hi": 0.06780538302277432,
+    "n": 7574,
+    "clusters": 428
+   },
+   "abstainedInjected": {
+    "point": 0.06470588235294118,
+    "lo": 0.04450402144772118,
+    "hi": 0.08623460096411355,
+    "n": 1870,
+    "clusters": 426
+   },
+   "verifiedPristine": {
+    "point": 0.45352521785054134,
+    "lo": 0.42227677994572943,
+    "hi": 0.486109191430546,
+    "n": 7574,
+    "clusters": 428
+   },
+   "recallByClass": {
+    "sign": {
+     "point": 0.559322033898305,
+     "lo": 0.5108958837772397,
+     "hi": 0.6077481840193705,
+     "n": 413,
+     "clusters": 413
+    },
+    "scale": {
+     "point": 0.5665859564164649,
+     "lo": 0.5181598062953995,
+     "hi": 0.6150121065375302,
+     "n": 413,
+     "clusters": 413
+    },
+    "rounding": {
+     "point": 0.5472154963680388,
+     "lo": 0.49878934624697335,
+     "hi": 0.5932203389830508,
+     "n": 413,
+     "clusters": 413
+    },
+    "swap": {
+     "point": 0.551219512195122,
+     "lo": 0.48292682926829267,
+     "hi": 0.6195121951219512,
+     "n": 205,
+     "clusters": 205
+    },
+    "boundary": {
+     "point": 0.3591549295774648,
+     "lo": 0.31220657276995306,
+     "hi": 0.40375586854460094,
+     "n": 426,
+     "clusters": 426
+    }
+   },
+   "injectedStatus": {
+    "unverified": 784,
+    "flagged": 957,
+    "abstained": 121,
+    "verified": 8
+   },
+   "pristineStatus": {
+    "verified": 3435,
+    "unverified": 3723,
+    "abstained": 394,
+    "flagged": 22
+   }
+  },
+  "difference": {
+   "recall": {
+    "point": 0.09411764705882347,
+    "lo": 0.07104413347685684,
+    "hi": 0.11798636601992657,
+    "n": 1870,
+    "clusters": 426
+   },
+   "falseFlagSpecs": {
+    "point": 0.011682242990654205,
+    "lo": 0,
+    "hi": 0.02247191011235955,
+    "n": 7574,
+    "clusters": 428
+   }
+  },
+  "falseFlagsAfter": [
+   {
+    "hash": "2fb287dd107d89c070932f1ec6a8e377014c230758f92a0e435addd54025324c",
+    "need": "CC-001",
+    "index": 5
+   },
+   {
+    "hash": "2fb287dd107d89c070932f1ec6a8e377014c230758f92a0e435addd54025324c",
+    "need": "CC-001",
+    "index": 6
+   },
+   {
+    "hash": "325521726f2c840f2c5e005f7ebf3fc3334066185fed697363f7ac8ade7596ac",
+    "need": "C-010",
+    "index": 1
+   },
+   {
+    "hash": "325521726f2c840f2c5e005f7ebf3fc3334066185fed697363f7ac8ade7596ac",
+    "need": "C-010",
+    "index": 2
+   },
+   {
+    "hash": "325521726f2c840f2c5e005f7ebf3fc3334066185fed697363f7ac8ade7596ac",
+    "need": "C-010",
+    "index": 3
+   },
+   {
+    "hash": "3a49f7f746df088d78008355cd2fb00d2e39c1a77058f7368e9f1daa30e5e0c8",
+    "need": "C-012",
+    "index": 0
+   },
+   {
+    "hash": "4a663647d092ba45a9ca19e530952a4ccbaae20e28a5b62c67694186cc66f48d",
+    "need": "C-016",
+    "index": 1
+   },
+   {
+    "hash": "5cb89220491f156905cb334ec26dc35880e109d06b8de7ac9a4cd5fe66858669",
+    "need": "CC-001",
+    "index": 9
+   },
+   {
+    "hash": "6c8492485e6485cb2f493b2b953ff3cec614c6474608fcd2d13d8a924a492440",
+    "need": "CC-026",
+    "index": 3
+   },
+   {
+    "hash": "6c8492485e6485cb2f493b2b953ff3cec614c6474608fcd2d13d8a924a492440",
+    "need": "CC-026",
+    "index": 4
+   },
+   {
+    "hash": "6c8492485e6485cb2f493b2b953ff3cec614c6474608fcd2d13d8a924a492440",
+    "need": "CC-026",
+    "index": 5
+   },
+   {
+    "hash": "94190157e470b9beab3e5a48afdabecef6d37d411ef3a4c36f30fb7b23f23e10",
+    "need": "CC-026",
+    "index": 5
+   },
+   {
+    "hash": "aad9cc9349eafcc8c53846cc0681575003fbab0d513b7ed5ff9c573153672120",
+    "need": "C-016",
+    "index": 0
+   },
+   {
+    "hash": "aad9cc9349eafcc8c53846cc0681575003fbab0d513b7ed5ff9c573153672120",
+    "need": "C-016",
+    "index": 1
+   },
+   {
+    "hash": "c5115c6b4a8583c3dec0f8114c4f82917e49aa24b1ebe12fc950ec3b99ee238d",
+    "need": "CC-026",
+    "index": 2
+   },
+   {
+    "hash": "c5115c6b4a8583c3dec0f8114c4f82917e49aa24b1ebe12fc950ec3b99ee238d",
+    "need": "CC-026",
+    "index": 6
+   },
+   {
+    "hash": "c5115c6b4a8583c3dec0f8114c4f82917e49aa24b1ebe12fc950ec3b99ee238d",
+    "need": "CC-026",
+    "index": 7
+   },
+   {
+    "hash": "e8df0c9fe8dae281eda0711f23a44b4eef30b10bb499c6b8d1837368143e8b9e",
+    "need": "C-016",
+    "index": 0
+   },
+   {
+    "hash": "e8df0c9fe8dae281eda0711f23a44b4eef30b10bb499c6b8d1837368143e8b9e",
+    "need": "C-016",
+    "index": 2
+   },
+   {
+    "hash": "e8df0c9fe8dae281eda0711f23a44b4eef30b10bb499c6b8d1837368143e8b9e",
+    "need": "C-016",
+    "index": 4
+   },
+   {
+    "hash": "ef98df69e185cc264578d3c3f860139da2973b8d47aa7ebc79c73fb610f83646",
+    "need": "C-016",
+    "index": 2
+   },
+   {
+    "hash": "ef98df69e185cc264578d3c3f860139da2973b8d47aa7ebc79c73fb610f83646",
+    "need": "C-016",
+    "index": 3
+   }
+  ],
+  "missedAfter": {
+   "sign": {
+    "unverified": 148,
+    "abstained": 34
+   },
+   "scale": {
+    "unverified": 152,
+    "abstained": 27
+   },
+   "rounding": {
+    "unverified": 159,
+    "abstained": 28
+   },
+   "swap": {
+    "unverified": 70,
+    "abstained": 22
+   },
+   "boundary": {
+    "unverified": 255,
+    "abstained": 10,
+    "verified": 8
+   }
+  }
+ },
+ "byNeed": {
+  "falseFlagSpecs": {
+   "point": 0.02570093457943925,
+   "lo": 0.007194244604316547,
+   "hi": 0.041044776119402986,
+   "clusters": 21
+  },
+  "falseFlagTests": {
+   "point": 0.002904673884341167,
+   "lo": 0.0005592841163310962,
+   "hi": 0.005871091257179323,
+   "clusters": 21
+  },
+  "recall": {
+   "point": 0.5117647058823529,
+   "lo": 0.41458222458754657,
+   "hi": 0.6113624937154349,
+   "clusters": 21
+  },
+  "abstainedPristine": {
+   "point": 0.052020068655928176,
+   "lo": 0.025223331581713086,
+   "hi": 0.08580573679674997,
+   "clusters": 21
+  },
+  "recallByClass": {
+   "sign": {
+    "point": 0.559322033898305,
+    "lo": 0.45476190476190476,
+    "hi": 0.6636155606407322,
+    "clusters": 21
+   },
+   "scale": {
+    "point": 0.5665859564164649,
+    "lo": 0.4585365853658537,
+    "hi": 0.6737588652482269,
+    "clusters": 21
+   },
+   "rounding": {
+    "point": 0.5472154963680388,
+    "lo": 0.4423529411764706,
+    "hi": 0.6548463356973995,
+    "clusters": 21
+   },
+   "swap": {
+    "point": 0.551219512195122,
+    "lo": 0.4114285714285714,
+    "hi": 0.6756756756756757,
+    "clusters": 16
+   },
+   "boundary": {
+    "point": 0.3591549295774648,
+    "lo": 0.25653206650831356,
+    "hi": 0.47058823529411764,
+    "clusters": 21
+   }
+  }
+ },
+ "verdicts": {
+  "B1_falseFlagSpecs": {
+   "bar": "upper 95% bound <= 2%",
+   "met": false
+  },
+  "B2_recall": {
+   "bar": "point >= 50% and lower 95% bound >= 40%",
+   "met": true
+  },
+  "B3_abstention": {
+   "bar": "abstained pristine tests, upper 95% bound <= 10%",
+   "met": true
+  },
+  "S1_falseFlagTests": {
+   "bar": "upper 95% bound <= 0.5%",
+   "met": true
+  },
+  "S2_valueClasses": {
+   "bar": "sign, scale, rounding and swap recall each >= 50% (point)",
+   "met": true
+  },
+  "S3_boundary": {
+   "bar": "boundary recall >= 30% (point)",
+   "met": true
+  },
+  "byNeed": {
+   "B1": false,
+   "B2": true,
+   "B3": true,
+   "S1": false
+  }
+ }
+}
