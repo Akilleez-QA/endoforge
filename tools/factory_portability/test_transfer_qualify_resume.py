@@ -387,7 +387,7 @@ class RealSecondHost(Workspace):
         reason = sandbox_reason()
         if reason:
             self.skipTest(reason)
-        probe = ssh(SECOND_HOST, 'command -v age && command -v bwrap && command -v python3 && sha256sum /etc/machine-id')
+        probe = ssh(SECOND_HOST, 'for t in age bwrap python3; do command -v $t >/dev/null || { echo "missing $t"; exit 1; }; done; sha256sum /etc/machine-id')
         self.assertEqual(probe.returncode, 0, 'ENDOFORGE_SECOND_HOST=%s is set but not usable: %s'
                          % (SECOND_HOST, probe.stderr.strip()[:300] or probe.stdout.strip()[:300]))
         self.remote_machine = probe.stdout.split()[-2]
