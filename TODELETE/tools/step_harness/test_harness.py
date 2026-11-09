@@ -1,6 +1,6 @@
 """Step harness tests with a scripted fake model and a fake core. No models or network.
 
-Run from .:  python3 -B -m unittest tools.step_harness.test_harness -v
+Run from .:  python3 -B -m unittest TODELETE.tools.step_harness.test_harness -v
 """
 import unittest
 
@@ -8,8 +8,8 @@ from core.constraints.extract import RuleExtractor
 from core.constraints.port import Message, Origin
 from core.constraints.record import ConstraintRecord
 from core.constraints.store import MemoryStore
-from tools.step_harness.harness import (BLOCKED, DONE, STOP_BUDGET, STOP_CLOCK, STOP_REPEAT,
-                                        STOP_UNCERTAIN, Criterion, Limits, StepHarness)
+from TODELETE.tools.step_harness.harness import (BLOCKED, DONE, STOP_BUDGET, STOP_CLOCK, STOP_REPEAT,
+                                                 STOP_UNCERTAIN, Criterion, Limits, StepHarness)
 
 PRE = {"expected_observation": "a reading", "success_boundary": "one call",
        "failure_meaning": "no accepted observation"}

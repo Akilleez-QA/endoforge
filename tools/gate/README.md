@@ -50,8 +50,8 @@ node tools/gate/gate.mjs freeze <dir>
 node tools/gate/gate.mjs run <dir>
 ```
 
-With no arguments it prints `usage: gate.mjs freeze|run <dir>` and exits 2. It needs the pinned compiler: run
-`make loop-setup` and point `ENDOFORGE_ASC` at `tools/asc/node_modules/.bin/asc`.
+With no arguments it prints `usage: gate.mjs freeze|run <dir>` and exits 2. It compiles with the pinned compiler that
+`make loop-setup` installs under `tools/asc` (`ASC_PATH` in [pin.mjs](../asc/pin.mjs)); `ENDOFORGE_ASC` overrides it.
 
 ## Example
 
@@ -80,7 +80,6 @@ $ cat glue.json
    "args":[{"name":"grams","kind":"integer","unit":"g"},{"name":"zone","kind":"code","unit":"code","codes":{"1":"domestic","2":"international"}}],
    "result":{"kind":"integer","unit":"cents"}}],
  "traps":[{"fn":"shippingCents","when":"negative weight or unknown zone","message":"Give a weight of 0 g or more and zone 1 or 2."}]}
-$ export ENDOFORGE_ASC=$REPO/tools/asc/node_modules/.bin/asc
 $ node $REPO/tools/gate/gate.mjs run .
 {
  "promotable": true,
@@ -118,8 +117,8 @@ $ node $REPO/tools/gate/gate.mjs run .
 
 ## Environment
 
-- `ENDOFORGE_ASC`: path to the `asc` compiler. Default `node_modules/.bin/asc` at the repository root, which `make
-  loop-setup` does not create.
+- `ENDOFORGE_ASC`: path to an executable `asc` compiler. Unset, the gate runs the pinned AssemblyScript 0.28.20
+  (`tools/asc/pin.mjs` `ASC_PATH`) with the current Node.js; run `make loop-setup` first.
 
 The atomizer finds this tool through `toolchain.gate` in [policy.json](../atomizer/policy.json).
 

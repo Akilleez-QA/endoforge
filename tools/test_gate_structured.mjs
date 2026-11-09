@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
+import { ASC_PATH } from './asc/pin.mjs';
 
 const gate = fileURLToPath(new URL('./gate/gate.mjs', import.meta.url));
 const asc = fileURLToPath(new URL('./asc/node_modules/.bin/asc', import.meta.url));
@@ -279,4 +280,35 @@ test('H9: freeze still refuses once kernel.ts exists', () => {
   const again = gateCli(['freeze', dir]);
   assert.equal(again.status, 2);
   assert.match(again.stderr, /refusing to freeze/);
+});
+
+test('P3: with ENDOFORGE_ASC unset the gate compiles with the pinned compiler that make loop-setup installs', () => {
+  assert.ok(existsSync(ASC_PATH), `pinned compiler missing at ${ASC_PATH}; run make loop-setup`);
+  const dir = kernelDir();
+  const env = { ...process.env };
+  delete env.ENDOFORGE_ASC;
+  const outcome = spawnSync(process.execPath, [gate, 'run', dir], { encoding: 'utf8', timeout: 300_000, env });
+  const result = JSON.parse(readFileSync(path.join(dir, 'result.json'), 'utf8'));
+  assert.equal(result.gates.G2_compiles.ok, true, result.gates.G2_compiles.why);
+  assert.deepEqual(failing(result), []);
+  assert.equal(outcome.status, 0, outcome.stderr);
+  assert.ok(existsSync(path.join(dir, 'kernel.wasm')));
+});
+
+test('P3: with ENDOFORGE_ASC unset a kernel that does not compile fails G2 with the pinned compiler diagnostics', () => {
+  const dir = kernelDir({ source: 'export function reduce(): void { nope(); }\n' });
+  const env = { ...process.env };
+  delete env.ENDOFORGE_ASC;
+  const outcome = spawnSync(process.execPath, [gate, 'run', dir], { encoding: 'utf8', timeout: 300_000, env });
+  const result = JSON.parse(readFileSync(path.join(dir, 'result.json'), 'utf8'));
+  assert.deepEqual(Object.keys(result.gates), ['G1_frozen', 'G2_compiles']);
+  assert.equal(result.gates.G2_compiles.ok, false);
+  assert.match(result.gates.G2_compiles.why, /TS2304|nope/);
+  assert.equal(outcome.status, 1);
+});
+
+test('P3: the gate default compiler is the tools/asc pin, not a root node_modules path', () => {
+  const source = readFileSync(gate, 'utf8');
+  assert.doesNotMatch(source, /node_modules\/\.bin\/asc/);
+  assert.match(source, /ASC_PATH/);
 });

@@ -75,7 +75,7 @@ With no image configured it refuses after taking only the controller fence.
 - `egress.py`: a CONNECT proxy on a Unix socket that allows only port 443 to a fixed provider host list and checks TLS
   SNI; `worker_command` and `role_worker_command` build a `systemd-run --user --scope` plus `bwrap` command for a model
   worker; `run_bounded` caps combined output and kills the process group on excess.
-- `bridge.py`: runs inside the worker, relaying `localhost:18080` to `/proxy.sock`.
+- `bridge.py`: runs inside the worker, relaying `127.0.0.1:18080` to `/proxy.sock`.
 - `local_provider.py`: a Unix-socket gateway that forwards only exact, non-streaming, temperature-0 chat requests to
   one loopback port; `call_protected(...)` runs one no-retry local turn, optionally owned by a `ModelJournal` from
   [factory_campaign](../factory_campaign/README.md).
@@ -93,14 +93,19 @@ With no image configured it refuses after taking only the controller fence.
 `make gap-tools-test` runs `tools.factory_runtime.test_runtime_gaps` (REQ-FACTORY-003), which checks job specs and records against
 the schema files, durable writes, fencing, the scheduler (FIFO, backoff, persistence, interrupted jobs, version
 refusal), full runner attempts and crash reconciliation, the egress proxy refusals and TLS SNI check, `run_bounded`,
-worker command assembly and role authority, the local provider gateway policy, and `wasm.run`. The Docker CLI is
+worker command assembly and role authority, the local provider gateway policy, and `wasm.run`. `SandboxedWorker`
+starts real workers: `call_protected` runs one turn through `systemd-run --user --scope`, `unshare`, `bwrap` and the
+`bridge.py` relay to a stub chat provider and checks the reply, metadata, proxy event and scope and temporary
+cleanup; a second worker shows its only route out is the relay. Those cases skip, with the reason, where `bwrap`,
+a systemd user manager, unprivileged namespaces, `node` or `codex` are missing. The Docker CLI is
 replaced by [fixtures/fake_docker.py](fixtures/fake_docker.py), which runs each container script as a local process.
 
 ## Limits
 
-- No real Docker daemon, systemd scope or Wasmtime binary is used by the tests. `wasm.run` runs through a stand-in
-  `systemd-run` and Wasmtime; the real-binary case runs only when `ENDOFORGE_WASMTIME` and
-  `ENDOFORGE_WASMTIME_SHA256` are set. `local_provider.call_protected` is tested only for its refusals, and the worker
-  command from `egress.worker_command` is checked as assembled but never run with the `bridge.py` relay (GAP-EF-002).
+- No real Docker daemon or Wasmtime binary is used by the tests. `wasm.run` runs through a stand-in `systemd-run` and
+  Wasmtime; the real-binary case runs only when `ENDOFORGE_WASMTIME` and `ENDOFORGE_WASMTIME_SHA256` are set.
+- The sandbox mounts no `/etc/hosts`, so `bridge.py` listens on `127.0.0.1:18080` and the worker's proxy variables
+  name that address, not `localhost`.
+- `worker_command` needs `node` and `codex` on `PATH` even for a local-provider turn.
 
-Engineering record: component C-29, requirement REQ-FACTORY-003, GAP-EF-002.
+Engineering record: component C-29, requirement REQ-FACTORY-003 (the sandboxed worker closed GAP-EF-002).

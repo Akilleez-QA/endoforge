@@ -8,7 +8,7 @@ def module(name):
 C=module('checkpoint');R=module('resume_stage')
 def save(p,obj):p.write_text(json.dumps(obj,indent=2)+'\n')
 def execute(argv,rows,stdin=None,check=True,timeout=120):
-    t=time.monotonic();cp=subprocess.run([str(x)for x in argv],input=stdin,capture_output=True,timeout=timeout)
+    t=time.monotonic();cp=subprocess.run([str(x)for x in argv],input=stdin,stdin=None if stdin is not None else subprocess.DEVNULL,capture_output=True,timeout=timeout)
     row={'argv':[str(x)for x in argv],'exit':cp.returncode,'stdout':cp.stdout.decode(),'stderr':cp.stderr.decode(),'wallMs':1000*(time.monotonic()-t)};rows.append(row)
     if check and cp.returncode:raise RuntimeError(row['stderr'])
     return row
@@ -36,11 +36,11 @@ def execute_transfer(source,bundle,receipt,identity,host,remote):
         summary.update(sourceMachineSha256=source_hash,destinationMachineSha256=destination_hash)
         suffix=uuid.uuid4().hex;archive_remote=remote+'/campaign-'+suffix+'.age';dest='/work/checkpoint-'+suffix;output='/work/resume-'+suffix
         execute(['ssh','-o','BatchMode=yes',host,'mkdir -m 700 -- '+q(remote)],rows);staged=True
-        execute(['scp','-q',archive,host+':'+archive_remote],rows)
+        execute(['scp','-o','BatchMode=yes','-q',archive,host+':'+archive_remote],rows)
         for name in ['checkpoint.py','resume_stage.py']:
-            execute(['scp','-q',Path(__file__).with_name(name),host+':'+remote+'/'+name],rows)
-        execute(['scp','-q','-r',bundle,host+':'+remote+'/bundle'],rows)
-        ns=['bwrap','--ro-bind','/usr','/usr','--ro-bind','/lib','/lib','--ro-bind','/lib64','/lib64','--ro-bind','/bin','/bin','--bind',remote,'/work','--unshare-all','--new-session','--die-with-parent','--proc','/proc','--dev','/dev','--tmpfs','/tmp','--setenv','PATH','/work:/usr/bin:/bin','--chdir','/work','--']
+            execute(['scp','-o','BatchMode=yes','-q',Path(__file__).with_name(name),host+':'+remote+'/'+name],rows)
+        execute(['scp','-o','BatchMode=yes','-q','-r',bundle,host+':'+remote+'/bundle'],rows)
+        ns=['bwrap','--ro-bind','/usr','/usr','--ro-bind','/lib','/lib','--ro-bind-try','/lib64','/lib64','--ro-bind','/bin','/bin','--bind',remote,'/work','--unshare-all','--new-session','--die-with-parent','--proc','/proc','--dev','/dev','--tmpfs','/tmp','--setenv','PATH','/work:/usr/bin:/bin','--chdir','/work','--']
         # The ephemeral stdin stream is never appended to logs or written remotely.
         decrypt=ns+['/usr/bin/python3','/work/checkpoint.py','unpack','/work/'+Path(archive_remote).name,dest,'--identity','-']
         remote_restore=execute(['ssh','-o','BatchMode=yes',host,shlex.join(decrypt)],rows,stdin=identity.read_bytes());summary['remoteRestore']=json.loads(remote_restore['stdout'])
@@ -48,7 +48,7 @@ def execute_transfer(source,bundle,receipt,identity,host,remote):
         first=json.loads(execute(command,rows)['stdout']);second=json.loads(execute(command,rows)['stdout']);save(receipt/'remote-first.json',first);save(receipt/'remote-second.json',second)
         if not first['passed']or not first['published']or not second['reused']or second['published']:raise ValueError('remote completion/idempotency failed')
         if first['publicationSha256']!=local['publicationSha256']or first['moduleSha256']!=local['moduleSha256']:raise ValueError('local/remote artifact mismatch')
-        execute(['scp','-q','-r',host+':'+remote+'/'+Path(output).name,str(receipt/'remote-output')],rows)
+        execute(['scp','-o','BatchMode=yes','-q','-r',host+':'+remote+'/'+Path(output).name,str(receipt/'remote-output')],rows)
         after={str(p.relative_to(source)):C.sha(p.read_bytes())for p in source.rglob('*')if p.is_file()}
         if before!=after:raise ValueError('source staging changed')
         execute(['ssh','-o','BatchMode=yes',host,'rm -rf -- '+q(remote)+' && test ! -e '+q(remote)],rows)

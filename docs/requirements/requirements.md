@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SRS |
-| Version | 2.4 |
+| Version | 2.5 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -204,7 +204,7 @@ The library shall key promoted kernels by a canonical contract key that ignores 
 
 With `retrieval: 'semantic'` (default `key`), the library shall rank entries by offline, deterministic similarity of normalized contract text before the key match, and let a need with no capability block adopt the capability of an entry scoring at least 0.4.
 
-- Rationale: Generated needs often carry no capability block; text similarity finds the candidate entry without a model call.
+- Rationale: A contract can still freeze without a capability block; text similarity finds the candidate entry without a model call.
 - Derivation: `core/library/library.mjs`, `core/library/key.mjs`
 - Allocated to: SDD §4 C-05 Library
 - Verification: T — `make library-test`
@@ -774,6 +774,16 @@ After the freeze, `generate` shall re-read `tests.json` and `frozen.sha256` from
 - Verification: T — `make isolate-test`
 - Status: Baselined
 
+### REQ-GEN-011 — Capability block requested and checked at the freeze
+
+Generation shall ask in both specification prompts for a fenced ```capability block in `CONTRACT.md` (exports with ordered arguments, kinds, units, ranges, number precision, code tables and traps), refuse at the freeze a block that is malformed or disagrees with the frozen tests, and let library lookup serve a generated need whose block matches a promoted kernel without an implementation stage on the `current` and `agent` paths.
+
+- Rationale: The library keys entries by the capability that `core/library/key.mjs` `capabilityFromContract` reads from this block; without it every generated need misses with `no_capability`.
+- Derivation: `core/runtime/x1/generator.mjs`, `core/runtime/x1/agent.mjs`, `core/library/key.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
+- Status: Baselined. The block is checked only when the contract contains one; a contract without it still freezes and misses the library with `no_capability`
+
 ### REQ-PROMOTE-001 — Local promotion
 
 Local promotion shall issue a persisted qualification decision only for the exact candidate, frozen oracle, verified receipt hash and chain with two complete passing pool rounds and all nine X1 gates (G1–G9) present and passing, and refuse on any mismatch.
@@ -1102,10 +1112,10 @@ The kernel workcell shall compile a component once and give each attempt fresh s
 
 ### REQ-COMPAT-001 — TypeScript reducer contract
 
-The compatibility contract shall pin the exact EF-18 WIT digest and refuse extra or missing exports, wrong types, asynchronous reducers, contract and schema drift, malformed budgets, transitions and effects, snapshot policy and inputs before reducer code runs, and revoke borrowed handles after a thrown reducer.
+The compatibility contract shall pin the exact EF-18 WIT digest and refuse extra or missing exports, wrong types, asynchronous reducers, contract and schema drift, malformed budgets, transitions and effects, snapshot policy and inputs before reducer code runs, and revoke borrowed handles after a thrown reducer, with `probeInWorkcell` running these checks inside `IsolatePool` workcells, binding source, WIT, evaluator, runtime and compiler identities in the receipt, refusing a reducer that hangs, exits or exhausts the cell heap while the pool keeps serving, and refusing contract drift and shared memory before dispatch.
 
 - Rationale: TypeScript reducers must meet the same contract as kernel components.
-- Derivation: `tools/compatibility/contract.ts`, `tools/compatibility/reference.ts`
+- Derivation: `tools/compatibility/contract.ts`, `tools/compatibility/reference.ts`, `tools/compatibility/workcell.mjs`, `tools/compatibility/port.mjs`
 - Allocated to: SDD §4 C-18 Compatibility contract
 - Verification: T — `make test` (`compatibility-test`)
 - Status: Baselined
@@ -1135,10 +1145,10 @@ The escape harness shall submit non-equivalent faults in seeded random order, co
 The step harness shall accept a done claim only with matching evidence, stop on budget, wall clock and repetition without dispatching the repeated call, keep blocked separate from done, never retry after an unknown outcome or an execute exception, carry constraints and ledger references across one compaction, and refuse reuse.
 
 - Rationale: A bounded agent step loop where every step is evidence.
-- Derivation: `tools/step_harness/harness.py`
-- Allocated to: SDD §4 C-20 Step harness
-- Verification: T — `make harness-test`
-- Status: Baselined
+- Derivation: `TODELETE/tools/step_harness/harness.py`
+- Allocated to: SDD §4 C-20 Step harness (retired)
+- Verification: T — `make harness-test`, which now runs `tools/step_harness/test_retired.py`: the harness is archived, its 12 archived tests still pass, and no code outside `TODELETE/` calls it
+- Status: Deleted 2026-11-09 (round 5, P4). Nothing in EndoForge called the harness, and no caller belongs here: it needs a POODO core with `decide` and `execute`, and none is in this repository; the conductor's workers (`claude -p`, Codex) run their own tool calls, so the host cannot decide each step; the job tool runs no agent loop; and the X1 candidate loop in `core/runtime/x1/` is already EndoForge's host-decided loop. The code and its tests moved to `TODELETE/tools/step_harness/` ([reasoning](../../tools/step_harness/README.md))
 
 ### REQ-HW-001 — Hardware record
 
@@ -1322,10 +1332,10 @@ Hillclimb shall treat a directory, its glob and its children as one ownership tr
 
 ### REQ-GATECLI-001 — Glue gate CLI uses the core gates
 
-`tools/gate/gate.mjs run` shall compile `kernel.ts` with the core compiler flags and judge the kernel with the core `runGates`, so a kernel on disk gets the same nine gates and structured state as the loop, with a `glue.schema.json` equal to the core schema.
+`tools/gate/gate.mjs run` shall compile `kernel.ts` with the core compiler flags and judge the kernel with the core `runGates`, so a kernel on disk gets the same nine gates and structured state as the loop, with a `glue.schema.json` equal to the core schema, compiling with `ENDOFORGE_ASC` unset with the pinned compiler at `ASC_PATH` from `tools/asc/pin.mjs` that `make loop-setup` installs.
 
 - Rationale: Two gate implementations drift; the atomizer's stand-alone check must agree with the loop.
-- Derivation: `tools/gate/gate.mjs`, `tools/gate/glue.schema.json`
+- Derivation: `tools/gate/gate.mjs`, `tools/gate/glue.schema.json`, `tools/asc/pin.mjs`
 - Allocated to: SDD §4 C-30 Glue gate CLI and project scheduler
 - Verification: T — `make gate-test`
 - Status: Baselined
@@ -1382,12 +1392,12 @@ The checkpoint tool shall round-trip a campaign through an `age`-encrypted archi
 
 ### REQ-FACTORY-003 — Factory runtime
 
-The factory runtime shall validate job specs and records against its schema files, write state durably (a failed write keeps the previous content), fence a second controller, schedule FIFO within capacity with subscription-limit backoff and persisted queues (an interrupted job becomes unknown; an unknown saved version is refused on reload), publish a passed attempt once with a valid receipt, never create a container on an input-hash mismatch and never remove a container another owner labelled, reconcile a crashed attempt from its journal, deny egress outside the allowlist and a TLS hello that does not name the CONNECT authority, forward only exact allowed requests through the local provider, and refuse a WebAssembly run without a pinned, present Wasmtime.
+The factory runtime shall validate job specs and records against its schema files, write state durably (a failed write keeps the previous content), fence a second controller, schedule FIFO within capacity with subscription-limit backoff and persisted queues (an interrupted job becomes unknown; an unknown saved version is refused on reload), publish a passed attempt once with a valid receipt, never create a container on an input-hash mismatch and never remove a container another owner labelled, reconcile a crashed attempt from its journal, deny egress outside the allowlist and a TLS hello that does not name the CONNECT authority, forward only exact allowed requests through the local provider, complete `local_provider.call_protected` through a real sandboxed worker whose only route out is the `bridge.py` relay, and refuse a WebAssembly run without a pinned, present Wasmtime.
 
 - Rationale: A worker attempt must leave checked, single publications and recoverable state (formerly GAP-EF-002).
-- Derivation: `tools/factory_runtime/core.py`, `tools/factory_runtime/scheduler.py`, `tools/factory_runtime/runner.py`, `tools/factory_runtime/recovery.py`, `tools/factory_runtime/egress.py`, `tools/factory_runtime/local_provider.py`, `tools/factory_runtime/wasm.py`
+- Derivation: `tools/factory_runtime/core.py`, `tools/factory_runtime/scheduler.py`, `tools/factory_runtime/runner.py`, `tools/factory_runtime/recovery.py`, `tools/factory_runtime/egress.py`, `tools/factory_runtime/bridge.py`, `tools/factory_runtime/local_provider.py`, `tools/factory_runtime/wasm.py`
 - Allocated to: SDD §4 C-29 Factory runtime
-- Verification: T — `make test` (`gap-tools-test`; a stand-in Docker CLI and Wasmtime; the real-Wasmtime case skips unless `ENDOFORGE_WASMTIME` and `ENDOFORGE_WASMTIME_SHA256` are set)
+- Verification: T — `make test` (`gap-tools-test`; a stand-in Docker CLI and Wasmtime; the real-Wasmtime case skips unless `ENDOFORGE_WASMTIME` and `ENDOFORGE_WASMTIME_SHA256` are set; the sandboxed-worker cases start real workers through `systemd-run --user --scope`, `unshare` and `bwrap` and skip with the reason where one of those, `node` or `codex` is missing)
 - Status: Baselined
 
 ### REQ-FACTORY-004 — Approved atoms registry
@@ -1402,12 +1412,12 @@ The factory runtime shall validate job specs and records against its schema file
 
 ### REQ-FACTORY-005 — Campaign repair, Wasmtime qualification, stage resume and transfer
 
-The factory campaign and portability tools shall keep frozen evidence unchanged while they repair, qualify, resume and transfer: repair writes a bounded implementation-only patch to a new `.repair-N` file, chains rounds up to the limit, refuses contract and eval disputes, links, ambiguous text, a changed candidate and a missing frozen-path list, never overwrites a repair, and discards one when a frozen path changes; `qualify_wasmtime.py` fails an unqualified runtime under `python -O` too; `resume_stage.py` publishes a resumed stage once, records a failing stage without publishing, and refuses a conflicting publication, a symlinked escape and files missing from the inventory; and `campaign_transfer.py` sends the checkpoint tool and bundle, resumes on the destination, and removes its remote staging on failure.
+The factory campaign and portability tools shall keep frozen evidence unchanged while they repair, qualify, resume and transfer: repair writes a bounded implementation-only patch to a new `.repair-N` file, chains rounds up to the limit, refuses contract and eval disputes, links, ambiguous text, a changed candidate and a missing frozen-path list, never overwrites a repair, and discards one when a frozen path changes; `qualify_wasmtime.py` fails an unqualified runtime under `python -O` too; `resume_stage.py` publishes a resumed stage once, records a failing stage without publishing, and refuses a conflicting publication, a symlinked escape and files missing from the inventory; and `campaign_transfer.py` sends the checkpoint tool and bundle over `ssh` and `scp` with `BatchMode=yes` and no inherited standard input, resumes on a distinct destination machine, refuses a destination that is the source machine before staging, and removes its remote staging on failure.
 
-- Rationale: A campaign moved to another machine must resume without changing frozen evidence (formerly part of GAP-EF-006).
+- Rationale: A campaign moved to another machine must resume without changing frozen evidence (formerly GAP-EF-006).
 - Derivation: `tools/factory_campaign/repair.py`, `tools/factory_portability/qualify_wasmtime.py`, `tools/factory_portability/resume_stage.py`, `tools/factory_portability/campaign_transfer.py`
 - Allocated to: SDD §4 C-25 Factory campaign and portability
-- Verification: T — `make test` (`factory-state-test`, `portability-test`; the transfer cases skip with the reason where `age` or an unprivileged `bwrap` sandbox is missing)
+- Verification: T — `make test` (`factory-state-test`, `portability-test`; the transfer cases skip with the reason where `age` or an unprivileged `bwrap` sandbox is missing; the real second-host cases skip unless `ENDOFORGE_SECOND_HOST` is set, so they skip in CI)
 - Status: Baselined
 
 ### REQ-RUST-001 — Rust lane
@@ -1514,12 +1524,12 @@ CI shall run a Gitleaks scan of the full history with a checksum-verified binary
 
 ### REQ-REPO-009 — Lint and coverage
 
-`make lint` shall fail on any finding of ruff 0.17.0 (with the repository's `ruff.toml`) over the tree or of `node --check` over every `.mjs`, `.js` and `.cjs` file, with CI running it in the job `lint`, and `make coverage` running the Node suites under `--experimental-test-coverage` with a summary and the Python suites under coverage.py when installed, else with trace counts.
+`make lint` shall fail on any finding of ruff 0.17.0 (with the repository's `ruff.toml`) over the tree or of `node --check` over every `.mjs`, `.js` and `.cjs` file, with CI running it in the job `lint`, and `make coverage` running the Node suites under `--experimental-test-coverage` with a summary and the Python suites under coverage.py when installed, else with trace counts, with CI running `make coverage -k` under coverage.py 7.10.7 in the job `coverage` and uploading `coverage-summary.txt` as the artifact `coverage-summary`.
 
 - Rationale: Static analysis and coverage are measured rather than stated as missing (NPR SWE-135, SWE-189).
 - Derivation: `Makefile`, `ruff.toml`, `.github/workflows/ci.yml`
 - Allocated to: SDD §4 C-27 Repository checks
-- Verification: I — `Makefile` targets `lint` and `coverage`, `.github/workflows/ci.yml` job `lint`
+- Verification: I — `Makefile` targets `lint` and `coverage`, `.github/workflows/ci.yml` jobs `lint` and `coverage`
 - Status: Baselined
 
 ## 11. Untested behaviour (requirement gaps)
@@ -1529,10 +1539,20 @@ requirements until a test exists. Numbering: `GAP-EF-NNN`, never reused.
 
 | ID | Behaviour | Location | Why untested / note |
 |---|---|---|---|
-| GAP-EF-002 | Factory runtime worker launch and protected provider call: a worker started through `egress.worker_command` (bubblewrap with the `bridge.py` relay) and a successful `local_provider.call_protected` | `tools/factory_runtime/egress.py`, `tools/factory_runtime/bridge.py`, `tools/factory_runtime/local_provider.py` | The tests check the assembled worker command and the call's refusals; no test runs a worker in the sandbox or completes a protected call. The rest of the factory runtime is REQ-FACTORY-003 |
-| GAP-EF-006 | Campaign transfer to a real second host | `tools/factory_portability/campaign_transfer.py` | The test emulates the host with stand-in `ssh` and `scp` that run the remote side locally in a `bwrap` sandbox, so the destination machine identity is faked. The rest is REQ-FACTORY-005 |
+| — | None open at version 2.5 | — | — |
 
 Closed gaps (their IDs are not reused):
+
+- GAP-EF-002, factory runtime worker launch and protected provider call: closed in round 5 (P5). The
+  `SandboxedWorker` cases in `tools/factory_runtime/test_runtime_gaps.py` start real workers in their sandbox with the
+  `bridge.py` relay; one completes `call_protected` against a stub provider, the other shows the relay is the worker's
+  only route out. They ran (not skipped) and passed on the development host on 2026-11-09. Now part of REQ-FACTORY-003.
+- GAP-EF-006, campaign transfer to a real second host: closed in round 5 (P6). `RealSecondHost` in
+  `tools/factory_portability/test_transfer_qualify_resume.py` transfers over real `ssh` and `scp` to
+  `ENDOFORGE_SECOND_HOST`. The coordinator ran it against ds9 (a separate Omarchy x86_64 machine, with `age` 1.3.2
+  installed for the run) on 2026-11-09: `test_real_second_host_resume` passed in 5.1 s, and the same-machine refusal
+  case skipped because ds9 is distinct. In CI `ENDOFORGE_SECOND_HOST` is unset, so both cases skip there. Now part of
+  REQ-FACTORY-005.
 
 - GAP-EF-011, `WarmClaudeTransport` with a custom usage governor: fixed and tested on 2026-11-09; now REQ-TRANSPORT-002.
 - GAP-EF-012, atomizer `bench` default example and `conduct adopt` example paths: fixed and tested on 2026-11-09; now
@@ -1582,3 +1602,4 @@ Closed gaps (their IDs are not reused):
 | 2.2 | 2026-11-09 | round 2 | 9 requirements for the round-2 work: structured comparison at commit (REQ-X1-009), Python drift list and receipt label (REQ-X1-010), suspect tests as a specification correction (REQ-LOOP-007), compatibility promotion in `runNeed` (REQ-LOOP-008), caller principal (REQ-LOOP-009), judging in a cell at commit (REQ-SYNTH-004), composition across separate memories (REQ-LIB-008), make setup dependencies and the Rust lane in CI (REQ-REPO-007), glue gate CLI parity (REQ-GATECLI-001); GAP-EF-003 and GAP-EF-013 closed | this commit |
 | 2.3 | 2026-11-09 | round 3 | 6 requirements for the round-3 work: structured mutation check (REQ-LIB-009), every memory metered (REQ-X1-011), structured specification correction (REQ-LOOP-010), implementation turn reads corrected tests (REQ-GEN-010), structured references and suspects (REQ-SYNTH-005), judging structured exports (REQ-SYNTH-006); REQ-LIB-008 now gives each part its own memory | this commit |
 | 2.4 | 2026-11-09 | round 4 | 13 requirements for the round-4 work: delegated cgroup enforcement (REQ-ISO-018), stub pool replay (REQ-STUB-001), structured synthesized vectors (REQ-SYNTH-007), the caller's judging-cell limits on every path (REQ-SYNTH-008), atomizer commands (REQ-ATOM-005), job kinds and compilation (REQ-JOB-003), hillclimb fan-out, plan and scoreboard (REQ-HILL-003), project scheduler (REQ-SCHED-001), factory runtime (REQ-FACTORY-003), approved atoms (REQ-FACTORY-004), repair, qualification, resume and transfer (REQ-FACTORY-005), release-record generator (REQ-REPO-008), lint and coverage (REQ-REPO-009); GAP-EF-001, 004, 005, 007 to 010 and 014 closed; GAP-EF-002 and 006 narrowed | this commit |
+| 2.5 | 2026-11-09 | round 5 | REQ-GEN-011 (capability block in both specification prompts, checked at the freeze, library hit on generated needs) added; REQ-COMPAT-001 (workcell runs), REQ-GATECLI-001 (pinned compiler default), REQ-FACTORY-003 (sandboxed worker and protected call), REQ-FACTORY-005 (real second host) and REQ-REPO-009 (CI coverage job) extended; REQ-STEP-001 deleted with the step harness retired to `TODELETE/`; GAP-EF-002 and GAP-EF-006 closed | this commit |

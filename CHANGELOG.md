@@ -68,6 +68,20 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 - Requirements REQ-ISO-018, REQ-STUB-001, REQ-SYNTH-007, REQ-SYNTH-008, REQ-ATOM-005, REQ-JOB-003, REQ-HILL-003,
   REQ-SCHED-001, REQ-FACTORY-003 to 005, REQ-REPO-008 and REQ-REPO-009; GAP-EF-001, 004, 005, 007 to 010 and 014
   closed, GAP-EF-002 and 006 narrowed to the parts still untested.
+- Both specification prompts (the agent path's `stagePrompts.specification` and the Codex-path prompt in `generate`)
+  ask for a fenced ```capability block in `CONTRACT.md` (exports, kinds, units, ranges, precision, codes, traps). The
+  freeze checks a block that is present (`capabilityProblems` in `core/runtime/x1/generator.mjs`), and the
+  implementation prompts ask glue.json to declare the same capability, so a generated need can hit a promoted kernel
+  through library lookup on the `current` and `agent` paths.
+- `tools/compatibility` checks reducers inside `IsolatePool` workcells (`probeInWorkcell` in
+  `tools/compatibility/workcell.mjs`), with source, WIT, evaluator, runtime and compiler identities in the receipt.
+- Tests that start real sandboxed factory workers through the `bridge.py` relay and complete
+  `local_provider.call_protected` against a stub provider, and a campaign transfer over real `ssh` and `scp` to
+  `ENDOFORGE_SECOND_HOST` (passed against a separate machine on 2026-11-09; skips when the variable is unset).
+- CI job `coverage`: runs `make coverage -k` under coverage.py 7.10.7 and uploads `coverage-summary.txt` as the
+  artifact `coverage-summary`.
+- Requirement REQ-GEN-011; REQ-COMPAT-001, REQ-GATECLI-001, REQ-FACTORY-003, REQ-FACTORY-005 and REQ-REPO-009
+  extended; GAP-EF-002 and GAP-EF-006 closed, so no gap is open.
 
 - `examples/first-loop.mjs` and `examples/show-gates.py`: the README and getting-started example (a scripted model
   promotes an addition kernel and refuses a subtracting one), tested by `core/runtime/test/loop-example.test.mjs`.
@@ -148,6 +162,10 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Changed
 
+- `tools/gate/gate.mjs` compiles with the pinned compiler in `tools/asc` (`ASC_PATH`, run in-process) when
+  `ENDOFORGE_ASC` is unset, instead of `node_modules/.bin/asc` at the repository root, which `make loop-setup` does
+  not create.
+
 - The library and evaluator synthesis work on all three loop paths: `isolate` and `agent` consult a library after the
   freeze or admission and skip implementation on a pass, and freeze `synth/evaluator.json` before code and refuse at
   commit what it refuses.
@@ -183,6 +201,12 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 - Commercial licensing contact added to the README in
   [PR #5](https://github.com/Akilleez-QA/endoforge/pull/5), without changing LICENSE.
   The current README includes that contact in its License section.
+
+### Removed
+
+- The step harness (`tools/step_harness/harness.py` and its tests) moved to `TODELETE/tools/step_harness/`, and
+  REQ-STEP-001 is deleted. Nothing in EndoForge called it and no caller belongs here: it needs a POODO decision core,
+  which this repository does not have. `make harness-test` now runs `tools/step_harness/test_retired.py`.
 
 ### Fixed
 
@@ -227,6 +251,10 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
   kind file with a misspelled rule key.
 - The release-record generator refuses a run without `--log` or a log without a label.
 - Unused imports and the remaining ruff findings are fixed, so `make lint` passes on the whole tree.
+- Inside the worker sandbox, which mounts no `/etc/hosts`, `bridge.py` listens on `127.0.0.1:18080` and the worker's
+  proxy variables name that address, so the relay works. `campaign_transfer.py` runs `ssh` and `scp` with
+  `BatchMode=yes` and no inherited standard input, and no longer fails on a remote host without `/lib64`.
+- The compatibility workcell refuses shared memory before dispatch instead of letting IPC copy it into a pass.
 
 - A missing exit code or a torn state is no longer read as success, and ledgers and locked decisions survive a
   failed read (#99, #100).

@@ -729,6 +729,107 @@ class LocalProvider(Workspace):
         self.assertFalse((self.dir / 'calls').exists())
 
 
+class ChatUpstream(http.server.BaseHTTPRequestHandler):
+    def do_POST(self):
+        body = json.loads(self.rfile.read(int(self.headers['Content-Length'])))
+        self.server.requests.append({'path': self.path, 'body': body})
+        content = 'stub reply to ' + body['messages'][0]['content']
+        payload = json.dumps({'model': 'qwen-local', 'choices': [{'message': {'role': 'assistant', 'content': content}}],
+                              'usage': {'prompt_tokens': 3, 'completion_tokens': 4, 'total_tokens': 7}}).encode()
+        self.send_response(200)
+        self.send_header('Content-Length', str(len(payload)))
+        self.end_headers()
+        self.wfile.write(payload)
+
+    def log_message(self, *args):
+        pass
+
+
+def sandbox_reason():
+    import shutil
+    for tool in ['bwrap', 'systemd-run', 'systemctl', 'unshare', 'ip', 'node', 'codex']:
+        if not shutil.which(tool):
+            return tool + ' is not on PATH; egress.worker_command needs it to start a sandboxed worker'
+    probe = subprocess.run(['systemctl', '--user', 'show-environment'], capture_output=True, text=True, timeout=10)
+    if probe.returncode:
+        return 'no systemd user manager for systemd-run --user --scope: ' + probe.stderr.strip()[:160]
+    probe = subprocess.run(['unshare', '-Urn', '/bin/sh', '-c', 'ip link set lo up && bwrap --ro-bind / / --cap-drop ALL '
+                            '--unshare-pid --die-with-parent --new-session true'], capture_output=True, text=True, timeout=20)
+    if probe.returncode:
+        return 'unprivileged user/network namespaces or bwrap are unavailable: ' + probe.stderr.strip()[:160]
+    return None
+
+
+class SandboxedWorker(Workspace):
+    def setUp(self):
+        super().setUp()
+        reason = sandbox_reason()
+        if reason:
+            self.skipTest(reason)
+        self.upstream = http.server.ThreadingHTTPServer(('127.0.0.1', 0), ChatUpstream)
+        self.upstream.requests = []
+        threading.Thread(target=self.upstream.serve_forever, daemon=True).start()
+        self.addCleanup(self.upstream.server_close)
+        self.addCleanup(self.upstream.shutdown)
+
+    def test_call_protected_runs_a_real_sandboxed_worker_through_the_bridge_relay(self):
+        before = set(Path(tempfile.gettempdir()).glob('ef-local-role-*'))
+        result = local_provider.call_protected(self.dir / 'calls', 'stage-1', 'hello worker',
+                                               self.upstream.server_address[1], max_tokens=16, timeout=60)
+        self.assertEqual(result['text'], 'stub reply to hello worker')
+        self.assertEqual(self.upstream.requests, [{'path': '/v1/chat/completions', 'body': {
+            'model': 'qwen-local', 'messages': [{'role': 'user', 'content': 'hello worker'}], 'temperature': 0,
+            'stream': False, 'max_tokens': 16}}])
+        stage = self.dir / 'calls/stage-1'
+        metadata = json.loads((stage / 'metadata.json').read_text())
+        self.assertEqual(metadata, result['metadata'])
+        self.assertEqual((metadata['outcome'], metadata['tokens'], metadata['paidProvider']), ('passed', 7, False))
+        self.assertEqual(metadata['promptSha256'], sha(b'hello worker'))
+        self.assertEqual([e['decision'] for e in metadata['proxyEvents']], ['allowed'])
+        self.assertEqual(metadata['proxyEvents'][0]['route'], local_provider.ALIAS)
+        self.assertEqual((stage / 'result.txt').read_text(), 'stub reply to hello worker')
+        execution = json.loads((stage / 'execution.json').read_text())
+        self.assertEqual((execution['outcome'], execution['exit']), ('passed', 0), execution)
+        ownership = json.loads((stage / 'ownership.json').read_text())
+        self.assertTrue(ownership['scope'].startswith('endoforge-worker-') and ownership['scope'].endswith('.scope'))
+        self.assertEqual(ownership['description'], 'endoforge-local-role:' + ownership['scope'])
+        scope = subprocess.run(['systemctl', '--user', 'show', ownership['scope'], '--property=ActiveState'],
+                               capture_output=True, text=True, timeout=10)
+        self.assertNotIn('ActiveState=active', scope.stdout)
+        self.assertEqual(len(json.loads((stage / 'scope-cleanup.json').read_text())['actions']), 1)
+        self.assertEqual(json.loads((stage / 'credential-cleanup.json').read_text()),
+                         {'temporaryRemoved': True, 'journalOwnsTemporary': False, 'credentialsCopied': False})
+        self.assertEqual(set(Path(tempfile.gettempdir()).glob('ef-local-role-*')), before)
+
+    def test_worker_has_no_route_but_the_relay(self):
+        home, out = self.dir / 'home', self.dir / 'out'
+        home.mkdir()
+        out.mkdir()
+        proxy = egress.serve(self.dir / 'proxy.sock', allow={'chatgpt.com'})
+        self.addCleanup(proxy.server_close)
+        self.addCleanup(proxy.shutdown)
+        probe = self.dir / 'probe.py'
+        probe.write_text(
+            'import json,socket\n'
+            'def reach(addr):\n'
+            ' try:\n'
+            '  s=socket.create_connection(addr,timeout=2);s.close();return True\n'
+            ' except OSError:return False\n'
+            's=socket.create_connection(("127.0.0.1",18080),timeout=5)\n'
+            's.sendall(b"CONNECT evil.example:443 HTTP/1.1\\r\\n\\r\\n");reply=s.recv(64).decode();s.close()\n'
+            'print(json.dumps({"relay":reply.split("\\r\\n")[0],"direct":reach(("127.0.0.1",%d)),'
+            '"external":reach(("1.1.1.1",443))}))\n' % self.upstream.server_address[1])
+        argv = egress.role_worker_command('eval_writer', home, out, self.dir / 'proxy.sock', ['python', '/in/request'],
+                                          {'request': probe})
+        unit = argv[argv.index('--unit') + 1] + '.scope'
+        self.addCleanup(subprocess.run, ['systemctl', '--user', 'stop', unit], capture_output=True, timeout=15)
+        result = egress.run_bounded(argv, timeout=60)
+        self.assertEqual((result['outcome'], result['exit']), ('passed', 0), result)
+        self.assertEqual(json.loads(result['stdout']),
+                         {'relay': 'HTTP/1.1 403 Forbidden', 'direct': False, 'external': False})
+        self.assertEqual(proxy.events[-1], {'decision': 'denied', 'reason': 'destination denied'})
+
+
 class Wasm(Workspace):
     def fake(self, body):
         tool = self.dir / 'wasmtime'

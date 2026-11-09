@@ -35,8 +35,8 @@ $ node -e "import('./tools/asc/pin.mjs').then(m => console.log(m.ASC_VERSION, m.
 ```
 
 `make loop-setup` needs the npm registry. `make loop-test` runs it, then the `core/runtime/test/loop*.test.mjs`
-tests. The installed compiler is also at `tools/asc/node_modules/.bin/asc`, which [gate](../gate/README.md) can use
-through `ENDOFORGE_ASC`.
+tests. [gate](../gate/README.md) loads this pinned compiler (`ASC_PATH`) in-process when
+`ENDOFORGE_ASC` is unset.
 
 ## Changing the version
 

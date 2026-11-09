@@ -1,7 +1,8 @@
 {
   "indirect": {
     "tools/atomizer/test/lessons.test.mjs": "tools/atomizer/test/run.mjs",
-    "tools/atomizer/test/routing.test.mjs": "tools/atomizer/test/run.mjs"
+    "tools/atomizer/test/routing.test.mjs": "tools/atomizer/test/run.mjs",
+    "TODELETE/tools/step_harness/test_harness.py": "tools/step_harness/test_retired.py"
   },
   "excluded": {
     "experiments/P-51-escape-rate/controls.test.mjs": "P-51's synthetic controls; they need ENDOFORGE_ASC_CMD set to AssemblyScript 0.28.20 and are run by hand as P-51's RESULT.md describes.",

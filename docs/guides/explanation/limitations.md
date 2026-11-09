@@ -43,6 +43,9 @@ emitted JavaScript runs twice in a contained V8 process. That lane has its own c
 The repository tests use synthetic inputs and test doubles in place of model clients. They show how the code behaves.
 They do not qualify a live model service or an external host, and they were written by the code's authors, not by an
 independent reviewer. A run marked `testDouble: true` shows the machinery works and says nothing about a real model.
+Some tests need the host to provide something and skip with their reason when it doesn't. The campaign transfer to a
+real second host runs only when `ENDOFORGE_SECOND_HOST` is set: it passed against a separate machine on 2026-11-09 and
+skips in CI. The sandboxed factory-worker tests need `bwrap` and a systemd user manager.
 
 ## Isolation limits
 

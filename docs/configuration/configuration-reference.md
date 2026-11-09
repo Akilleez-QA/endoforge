@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-CFG |
-| Version | 3.4 |
+| Version | 3.5 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -56,7 +56,7 @@ How to read the tables:
 | `ENDOFORGE_SELF_CHECK` | off | `1` | Compiles and gates the first candidate and sends one repair turn with the failures. | `generator.mjs` |
 | `ENDOFORGE_CODEX_TEST_DOUBLE` | off | `1` | Labels results `testDouble: true`. Changes no behaviour. | `generator.mjs`, `loop.mjs` |
 | `ENDOFORGE_ASC_CMD` | none; required on the current path | Path to `asc` (AssemblyScript 0.28.20) | The compiler on the host. The `isolate` and `agent` paths use the pinned [tools/asc](../../tools/asc/README.md) inside the workcell instead. | `core/runtime/x1/compiler.mjs`, `pipeline.mjs` |
-| `ENDOFORGE_ASC` | `node_modules/.bin/asc` at the repository root | Path to `asc` | The compiler for `tools/gate/gate.mjs`. | `tools/gate/gate.mjs` |
+| `ENDOFORGE_ASC` | unset: the pinned compiler `tools/asc/node_modules/assemblyscript/dist/asc.js` (`ASC_PATH` in `tools/asc/pin.mjs`), run in-process; `make loop-setup` installs it | Path to an `asc` executable | The compiler for `tools/gate/gate.mjs`. When unset and the pin is not installed, G2 fails with a message to run `make loop-setup` or set this variable. | `tools/gate/gate.mjs` |
 | `ENDOFORGE_SYNTH` | off | `1` | Turns on [evaluator synthesis](../guides/how-to/turn-on-evaluator-synthesis.md) on every loop path. | `core/runtime/x1/synth/stage.mjs` |
 | `ENDOFORGE_SYNTH_PROVIDER` | unset: a `SpawnClaudeTransport` | Module specifier that exports `createProvider(env)` | Replaces the synthesis model provider. | `synth/stage.mjs` |
 | `ENDOFORGE_SYNTH_MODEL` | `sonnet` | Model name | Model for the default synthesis transport. | `synth/stage.mjs` |
@@ -193,6 +193,12 @@ Not read as configuration: `ENDOFORGE_JOB`, `ENDOFORGE_PROMPTS`, `ENDOFORGE_PROJ
 
 Test-only names, read by tests and test doubles: `FAKE_CLAUDE_*`, `FAKE_CODEX_*`, `EF_*`, `P22_*`,
 `ENDOFORGE_LOAD_GUARD`, `ENDOFORGE_LOAD_THRESHOLD`, `ENDOFORGE_TEST_OUTPUT`.
+
+### Read by tests
+
+| Variable | Default | Effect | Read in |
+|---|---|---|---|
+| `ENDOFORGE_SECOND_HOST` | unset: the `RealSecondHost` cases skip with that reason | An `ssh` destination reachable with `BatchMode=yes` that has `age`, `bwrap` and `python3`. The test transfers a campaign there over real `ssh` and `scp` and resumes it. If the destination is this machine (same `/etc/machine-id`, such as `localhost`), the test checks that the transfer is refused before anything is staged. If it is set but the host lacks one of the three tools, the test fails and names the missing tool. | `tools/factory_portability/test_transfer_qualify_resume.py` |
 
 ## X1 agent `limits`
 
@@ -472,3 +478,4 @@ else `python3 -m trace` counts into `$(COVERAGE_DIR)/trace`). `make gap-tools-te
 | 3.2 | 2026-11-09 | round 2 | `runNeed` `principal` and `suspect`; `containedRoute` on every path with promotion; `revise` ledger action; `rust-lane-setup` and the `isolate-test` setup dependencies | this commit |
 | 3.3 | 2026-11-09 | round 3 | Library `gate` covers structured exports through the declared layout; no new option or environment variable | this commit |
 | 3.4 | 2026-11-09 | round 4 | `runNeed` `synthCell`; Makefile `RUFF_VERSION`, `RUFF`, `COVERAGE_DIR`, `GAP_PY_TESTS`, `GAP_NODE_TESTS` and the targets `lint`, `coverage` and `gap-tools-test` | this commit |
+| 3.5 | 2026-11-09 | round 5 | `ENDOFORGE_ASC` default is now the `tools/asc` pin; `ENDOFORGE_SECOND_HOST` (test-only) added | this commit |

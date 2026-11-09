@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SAR |
-| Version | 1.3 |
+| Version | 1.4 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -39,14 +39,19 @@ Findings:
   was updated to branch-by-branch evaluation of piecewise rules.
 - Behaviours with no test are registered as GAP-EF-001 to GAP-EF-014 in
   [SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps), not as requirements. After round
-  4 two remain open, each narrowed to the part still untested: GAP-EF-002 (the factory runtime's sandboxed worker
-  launch and a completed protected provider call) and GAP-EF-006 (campaign transfer to a real second host).
+  4 two remained open, each narrowed to the part still untested: GAP-EF-002 (the factory runtime's sandboxed worker
+  launch and a completed protected provider call) and GAP-EF-006 (campaign transfer to a real second host). Round 5
+  closed both: the sandboxed-worker tests ran and passed on the development host, and the real second-host test
+  passed against ds9, a separate machine, on 2026-11-09 (it skips in CI, where `ENDOFORGE_SECOND_HOST` is unset).
+  No gap is open.
 - Trace check after the update (`python3 -I tools/check_trace.py`): 95 requirements, 95 traced, 14 gaps, 0 TBD; 97
   discovered test files, 92 traced and 5 supporting; 0 problems. After the round-2 records pass on 2026-11-09: 127
   requirements, 127 traced, 10 gaps; 111 discovered test files, 105 traced and 6 supporting; 0 problems. After the
   round-3 records pass: 133 requirements, 133 traced, 10 gaps; 114 discovered test files, 108 traced and 6
   supporting; 0 problems. After the round-4 records pass: 146 requirements, 146 traced, 2 gaps; 125 discovered test
-  files, 119 traced and 6 supporting; 0 problems.
+  files, 119 traced and 6 supporting; 0 problems. After the round-5 records pass: 147 requirement IDs, of which
+  REQ-STEP-001 is deleted and traces to its retirement check, 147 traced, 0 gaps; 127 discovered test files, 120
+  traced and 7 supporting (one more: the archived step harness tests); 0 problems.
 
 ### Design analysis
 
@@ -54,8 +59,9 @@ Technique: comparison of the design's component table with `git ls-files` and th
 
 Findings: the previous table had no requirement column and omitted the kernel host, escape measurement, step harness,
 hardware record, atomizer, conductor, hillclimb, factory tools, Rust lane and repository checks. All are now components
-C-01 to C-31; each lists its requirements. After round 4 every component has a tested requirement, and C-25 and C-29
-also name the part still untested (GAP-EF-006, GAP-EF-002).
+C-01 to C-31; each lists its requirements. After round 5 every live component has a tested requirement; C-20, the
+step harness, is retired to `TODELETE/` with REQ-STEP-001 deleted, because nothing here called it and it needs a POODO
+decision core this repository does not have.
 
 ### Testing analysis
 
@@ -69,7 +75,12 @@ Findings:
   closed on 2026-11-09.
 - `make coverage` measures coverage (Node built-in coverage; coverage.py or trace counts for Python). Its first run,
   on the round-4 worker's tree before integration, reported 90.74% of Node lines; no recorded STR includes a coverage
-  run yet, and no coverage target is set.
+  run yet, and no coverage target is set. Round 5 added the CI job `coverage`, which uploads the summary as an
+  artifact; it has not run on GitHub yet. Its worker found that
+  `tools/factory_runtime/test_runtime_gaps.py` `Egress.test_run_bounded_outcomes` passes alone but fails when it
+  shares one process with the other coverage modules (leaked sqlite connections raise `ResourceWarning`s inside its
+  window), so the Python half of the job is expected to fail; and without coverage.py the Makefile's trace fallback
+  exits 0 even when a unittest fails.
 - Delegated cgroup enforcement is tested inside a delegated user scope (REQ-ISO-018, GAP-EF-001 closed) and skips
   with its reason elsewhere; it ran on the development host on 2026-11-09, and the GitHub runner result is not
   recorded. The Rust lane runs in its own CI job and passed in PR #139 (run 42600069278).
@@ -126,7 +137,8 @@ No issues were filed for these findings; they are reported to the maintainer thr
 ### Overall assessment
 
 Every requirement traces to tests that exist, and every discovered test file traces to a requirement or is classified.
-Two behaviours remain untested, both narrowed in round 4 (GAP-EF-002 and GAP-EF-006); the other twelve gaps are closed. Assurance is author-side only; no independent review has been performed.
+No behaviour is registered as untested: GAP-EF-002 and GAP-EF-006 were closed in round 5, after the other twelve.
+The real second-host case and the sandboxed-worker cases skip where their host prerequisites are missing, including in CI for the second host. Assurance is author-side only; no independent review has been performed.
 
 ## Change history
 
@@ -136,3 +148,4 @@ Two behaviours remain untested, both narrowed in round 4 (GAP-EF-002 and GAP-EF-
 | 1.1 | 2026-11-09 | round 2 | D-03 restated: the transports always called the governor's `admit()` and `observe()`; the defect was replacing the caller's governor. Gap count 10; the unrun gate CLI test noted | this commit |
 | 1.2 | 2026-11-09 | round 3 | Round-3 trace counts; the gate CLI test now runs under `make gate-test` | this commit |
 | 1.3 | 2026-11-09 | round 4 | Round-4 trace counts; lint and coverage now exist (D-02 closed); the Rust lane's first CI run passed; two gaps open | this commit |
+| 1.4 | 2026-11-09 | round 5 | Round-5 trace counts; GAP-EF-002 and GAP-EF-006 closed (no gap open); C-20 retired; the CI coverage job and its expected Python failure recorded | this commit |

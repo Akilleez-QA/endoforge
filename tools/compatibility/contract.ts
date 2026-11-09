@@ -73,12 +73,17 @@ function transition(value: unknown, policy: Limits): Transition {
   return { state, effects };
 }
 
+const envelope = { lane: 'compatibility' as const,
+  validation: 'trusted-reducer-conformance-only' as const, witSha256: WIT_SHA256 };
+
+export function refusal(reason: string): Receipt {
+  return { ...envelope, status: 'refused', reason };
+}
+
 export function probeTrustedReducer(
   reducer: Reducer, expected: Metadata, state: Uint8Array, event: Uint8Array,
   snapshots: readonly Uint8Array[], policy: Limits,
 ): Receipt {
-  const envelope = { lane: 'compatibility' as const,
-    validation: 'trusted-reducer-conformance-only' as const, witSha256: WIT_SHA256 };
   let active = true;
   try {
     const bound = limits(policy);
@@ -114,7 +119,7 @@ export function probeTrustedReducer(
     active = false;
     return { ...envelope, status: 'passed', metadata: observed, transition: transition(result, bound) };
   } catch (error) {
-    return { ...envelope, status: 'refused', reason: error instanceof Error ? error.message : 'reducer threw' };
+    return refusal(error instanceof Error ? error.message : 'reducer threw');
   } finally {
     active = false;
   }

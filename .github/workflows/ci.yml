@@ -64,6 +64,42 @@ jobs:
         if: ${{ !cancelled() }}
         run: make -k test-optimized
 
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - name: Install test dependencies
+        run: sudo apt-get update && sudo apt-get install -y age bubblewrap gcc
+      - name: Install kernel test tools
+        run: make tools
+      - name: Install coverage.py
+        run: python -m pip install --disable-pip-version-check coverage==7.10.7
+      - name: Coverage
+        shell: bash
+        run: make coverage -k 2>&1 | tee coverage-output.txt
+      - name: Extract coverage summary
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          {
+            sed -n '/start of coverage report/,/end of coverage report/p' coverage-output.txt
+            sed -n '/^Name .*Stmts .*Miss .*Cover/,$p' coverage-output.txt
+          } > coverage-summary.txt
+          test -s coverage-summary.txt
+      - name: Upload coverage summary
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: coverage-summary
+          path: coverage-summary.txt
+          if-no-files-found: error
+
   rust-lane:
     runs-on: ubuntu-latest
     steps:

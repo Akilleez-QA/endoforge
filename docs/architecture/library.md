@@ -47,8 +47,11 @@ ranges, precision, codes and labels, and which exports trap.
 ## Lookup
 
 A need declares its capability in a fenced `capability` JSON block inside its frozen `CONTRACT.md`, so the hash of the
-declaration is bound at the freeze. The stage prompts don't ask for that block, so with the default `retrieval: 'key'`
-a generated need misses with `no_capability`.
+declaration is bound at the freeze. Both specification prompts ask for that block (`capabilityRule` in
+[generator.mjs](../../core/runtime/x1/generator.mjs)), and the freeze refuses a block that is not JSON, uses an unknown
+kind, leaves out a unit or a number result's precision, or disagrees with the frozen tests on exports, argument counts
+or traps. A contract without the block still freezes; with the default `retrieval: 'key'` that need misses with
+`no_capability`.
 
 With `retrieval: 'semantic'`, lookup first ranks the visible entries by similarity between normalized contract texts
 (`contractVector` in [key.mjs](../../core/library/key.mjs); deterministic, offline, no model). A need with no
