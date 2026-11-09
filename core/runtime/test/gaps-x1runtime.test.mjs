@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -223,5 +224,28 @@ test('G14: the agent token budget applies to each stage, in both wait modes', { 
     const capped = await runNeed({ need, directory: join(root, `capped-${waits}`), pool: repairing, env: { ENDOFORGE_LOOP: 'agent' }, limits: { maxTurns: 3, maxTokens: 15 } });
     assert.equal(capped.promoted, false, waits);
     assert.ok(existsSync(join(root, `capped-${waits}`, 'ledger.sqlite')), waits);
+  }
+});
+
+test('G1, G2, G13: a frozen record tampered at commit still refuses, whatever its residual label reads', { timeout: 60000 }, async t => {
+  const root = scratch(t);
+  for (const waits of ['release', 'hold']) {
+    const pool = createLoopPool({ primes: 1, waits, provider: scriptedProvider(modelFor(input(good))) });
+    t.after(() => pool.close());
+    const directory = join(root, `tamper-${waits}`), ledgerPath = join(directory, 'ledger.sqlite');
+    let changed = null;
+    const result = await runNeed({ need, directory, pool, env: { ENDOFORGE_LOOP: 'agent' }, library: libraryDouble('miss'), observe: stage => {
+      if (stage !== 'committing') return;
+      changed = Number(execFileSync('python3', ['-B', '-c', `
+import sqlite3, sys
+from tools.x1_loop import GATE_LABEL
+with sqlite3.connect(sys.argv[1]) as db:
+    db.execute('DROP TRIGGER no_update')
+    print(db.execute("UPDATE records SET body=replace(body, ?, ?) WHERE seq=3 AND instr(body, ?) > 0", (GATE_LABEL, GATE_LABEL + ' tampered', GATE_LABEL)).rowcount)
+`, ledgerPath], { cwd: here('../../../') }).toString().trim());
+    } });
+    assert.equal(changed, 1, waits);
+    assert.equal(result.promoted, false, waits);
+    assert.equal(result.error, 'pipeline stage failed; inspect local artifacts', waits);
   }
 });
