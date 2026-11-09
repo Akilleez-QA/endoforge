@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { runGates } from './gates.mjs';
 import { allowedEffects, limits, measuredPort, signature, workloads } from './measure.mjs';
-export const implementationFiles = Object.freeze(['host.mjs', 'gates.mjs', 'glue.schema.json', 'measure.mjs', 'meter.mjs', 'contract.mjs']);
+export const implementationFiles = Object.freeze(['host.mjs', 'gates.mjs', 'glue.schema.json', 'measure.mjs', 'meter.mjs', 'contract.mjs', 'dimensions.mjs', 'generator.mjs', 'ledger.mjs', 'reference.mjs', 'scalar.mjs']);
 export const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 export { signature };
 export const configuration = {
