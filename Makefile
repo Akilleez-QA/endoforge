@@ -55,7 +55,7 @@ ledger-test:
 engine-test:
 	node --test core/engine/*.test.mjs
 
-isolate-test:
+isolate-test: tscheck-setup loop-setup
 	node --test $(ISOLATE_TESTS)
 
 tscheck-setup:
@@ -124,8 +124,11 @@ kernel-test:
 	@$(KERNEL_ENV) $(KERNEL_PYTHON) -B -m tools.kernel.install_tools --check
 	$(KERNEL_ENV) $(KERNEL_PYTHON) -B -m unittest $(call pymods,$(wildcard tools/kernel/test_*.py)) -v
 
-.PHONY: rust-lane-test
-rust-lane-test:
+.PHONY: rust-lane-setup rust-lane-test
+rust-lane-setup:
+	npm ci --ignore-scripts --no-audit --no-fund --prefix tools/rust_lane
+
+rust-lane-test: rust-lane-setup
 	$(PYTHON) -B -m unittest $(call pymods,$(wildcard tools/rust_lane/test_*.py)) -v
 
 compatibility-test:

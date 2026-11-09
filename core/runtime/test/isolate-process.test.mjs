@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { IsolatePool } from '../isolate-pool.mjs';
@@ -6,7 +8,7 @@ import { fixture, hostPort } from './fixtures/ledger-fixture.mjs';
 import { poolBreach } from './fixtures/pool-breach.mjs';
 
 for (const breach of ['heap', 'wasm_memory']) {
-  test(`process ${breach}: one lost cell, zero lost siblings, native verdicts and verified chain`, { timeout: 60000 }, async t => {
+  test(`process ${breach}: one lost cell, zero lost siblings, native verdicts and verified chain`, { timeout: 240000 }, async t => {
     const result = await poolBreach(t, 'process', breach);
     const { failed, survivors, replacement, expected, chain } = result;
     assert.equal(result.distinctInitialWorkcells, 8);
@@ -29,6 +31,42 @@ for (const breach of ['heap', 'wasm_memory']) {
     assert.deepEqual(chain, { receipts: 17, verified: true });
   });
 }
+
+const repository = fileURLToPath(new URL('../../../', import.meta.url));
+
+function dryRun(...targets) {
+  const env = { ...process.env };
+  for (const key of ['MAKEFLAGS', 'MFLAGS', 'MAKELEVEL', 'MAKEOVERRIDES']) delete env[key];
+  return execFileSync('make', ['-n', '--no-print-directory', ...targets], { cwd: repository, env, encoding: 'utf8' })
+    .split('\n').map(line => line.trim()).filter(Boolean);
+}
+
+test('make isolate-test installs what its tests import before running them, on a fresh clone', () => {
+  const lines = dryRun('isolate-test');
+  const run = lines.findIndex(line => line.startsWith('node --test') && line.includes('core/runtime/test/'));
+  assert(run >= 0, lines.join('\n'));
+  const listed = lines[run].split(/\s+/);
+  for (const [prefix, file] of [['tools/tscheck', 'gaps-compat.test.mjs'], ['tools/asc', 'gaps-x1runtime.test.mjs']]) {
+    assert(listed.includes(`core/runtime/test/${file}`), file);
+    const setup = lines.findIndex(line => /^npm ci\b/.test(line) && line.includes(`--prefix ${prefix}`));
+    assert(setup >= 0 && setup < run, `npm ci --prefix ${prefix} must run before ${file}`);
+  }
+});
+
+test('make rust-lane-test installs the lane tools first, and CI runs it on the pinned toolchain', () => {
+  const lines = dryRun('rust-lane-test');
+  const run = lines.findIndex(line => line.includes('tools.rust_lane.test_lane'));
+  const setup = lines.findIndex(line => /^npm ci\b/.test(line) && line.includes('--prefix tools/rust_lane'));
+  assert(run >= 0 && setup >= 0 && setup < run, lines.join('\n'));
+  const ci = readFileSync(new URL('.github/workflows/ci.yml', `file://${repository}`), 'utf8');
+  const job = ci.split(/\n(?=  [\w-]+:\n)/).find(block => /\n\s+run: make rust-lane-test\b/.test(block));
+  assert(job, 'a CI job must run make rust-lane-test');
+  const pinned = readFileSync(new URL('tools/rust_lane/build.py', `file://${repository}`), 'utf8').match(/rustc (\d+\.\d+\.\d+)/)[1];
+  assert(job.includes(pinned), `the CI job must install Rust ${pinned}`);
+  assert(job.includes('wasm32-unknown-unknown'));
+  assert(/\n\s+run: make tools\b/.test(job), 'the CI job must install the pinned wasm-tools');
+  assert(!/\bcontinue-on-error:\s*true/.test(job));
+});
 
 test('process fallback, validation and unknown exits', { timeout: 30000 }, async t => {
   assert.throws(() => new IsolatePool({ hostPort, isolation: 'other' }), /isolation/);

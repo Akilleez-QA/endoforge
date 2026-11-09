@@ -48,3 +48,20 @@ jobs:
       - name: Optimized Python tests
         if: ${{ !cancelled() }}
         run: make -k test-optimized
+
+  rust-lane:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+      - name: Install pinned Rust toolchain
+        run: rustup toolchain install 1.98.1 --profile minimal --target wasm32-unknown-unknown
+      - name: Install kernel test tools
+        run: make tools
+      - name: Rust lane tests
+        run: make rust-lane-test
