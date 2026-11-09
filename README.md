@@ -36,7 +36,7 @@ logic can be checked exactly and the side effects stay with the host:
   application can show the function, call it and carry out its effects.
 
 So an application here is kernels plus glue running in a host. The host supplies the screen, storage and network once
-and runs the event loop; each feature is a kernel the agents write and the gates check. A to-do list in this shape is a
+and runs the event loop; each feature is a kernel the agents write and the gates check. As an illustration of the shape (not a recorded run), a to-do list is a
 kernel that takes the list and an "add item" event and returns the new list and a
 "save" effect; the host draws the list and does the saving. The host is whatever code loads the kernel and acts on its
 effects: your own program (a promoted kernel is an ordinary WebAssembly file, as the example shows) or a host
