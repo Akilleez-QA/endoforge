@@ -8,8 +8,12 @@ import { filterScalarTests } from '../x1/scalar.mjs';
 import { runNeed } from '../x1/pipeline.mjs';
 import { hash } from '../x1/host.mjs';
 import { IsolatePool } from '../isolate-pool.mjs';
+import { capabilityFence } from './fixtures/x1/candidate.mjs';
 const fake = new URL('./fixtures/x1/fake-codex.mjs', import.meta.url).pathname;
 const contract = 'export function add(a: i32, b: f64): f64;\nexport function unknown(x): f64;';
+const number = name => ({ name, kind: 'number', unit: '1' }), shown = { kind: 'number', unit: '1', precision: 2 };
+const frozenContract = `${contract}\n\n\`\`\`capability\n${JSON.stringify({ exports: [{ name: 'add', args: [{ name: 'a', kind: 'integer', unit: '1' }, number('b')], result: shown },
+  { name: 'unknown', args: [number('x')], result: shown }], traps: ['add', 'unknown'] })}\n\`\`\`\n`;
 const value = { name: 'value', fn: 'add', args: [2, 3.5], expect: 5.5, tol: 1e-12 };
 const trap = { name: 'range', fn: 'add', args: [-11, 0.5], expectError: true };
 const fractional = { name: 'fractional', fn: 'add', args: [1.5, 0], expectError: true };
@@ -22,7 +26,7 @@ async function setup(t) {
   t.after(() => rm(root, { recursive: true, force: true }));
   const env = { ...process.env, ENDOFORGE_CODEX_CMD: JSON.stringify([process.execPath, fake]), CODEX_HOME: join(root, 'none'),
     ENDOFORGE_CODEX_TEST_DOUBLE: '1', ENDOFORGE_CODEX_TERSE: 'scalar', FAKE_CODEX_RECORD: join(root, 'record'),
-    FAKE_CODEX_CONTRACT: contract, FAKE_CODEX_TESTS: testsText };
+    FAKE_CODEX_CONTRACT: frozenContract, FAKE_CODEX_TESTS: testsText };
   return { root, env };
 }
 test('scalar filters before freeze, preserves retained expectations', async t => {
@@ -89,7 +93,7 @@ test('pipeline returns scalar drop evidence alongside a real gate receipt', asyn
   t.after(() => pool.close());
   const result = await runNeed({ need: 'add', directory: join(root, 'request'), pool, env: { ...env,
     ENDOFORGE_ASC_CMD: new URL('./fixtures/x1/fake-asc.mjs', import.meta.url).pathname,
-    FAKE_CODEX_CONTRACT: 'add(a: i32, b: i32): i32', FAKE_CODEX_TESTS: JSON.stringify([{ ...value, args: [2, 3], expect: 5 }, invalid[0], fractional]) } });
+    FAKE_CODEX_CONTRACT: `add(a: i32, b: i32): i32\n\n${capabilityFence}`, FAKE_CODEX_TESTS: JSON.stringify([{ ...value, args: [2, 3], expect: 5 }, invalid[0], fractional]) } });
   assert.equal(result.promoted, true); assert.ok(result.receipt);
   assert.equal(result.scalarFilter.droppedCount, 2);
 });

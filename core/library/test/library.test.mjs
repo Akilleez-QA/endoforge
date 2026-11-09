@@ -20,7 +20,9 @@ const base = candidate();
 const glue = { ...JSON.parse(base.files['glue.json']) };
 const capability = capabilityFromGlue(glue);
 const frozen = (contract, tests) => ({ 'CONTRACT.md': contract, 'tests.json': tests, 'frozen.sha256': JSON.stringify({ contract: sha256(contract), tests: sha256(tests) }) });
-const need = (over = {}) => ({ id: 'new-need', capability: over.capability ?? capability, files: frozen(over.contract ?? base.files['CONTRACT.md'], over.tests ?? base.files['tests.json']) });
+const blocked = (contract, cap) => (String(contract).includes('```capability') ? contract : `${contract}\n\n\`\`\`capability\n${JSON.stringify(cap)}\n\`\`\`\n`);
+const frozenFor = cap => (contract, tests) => frozen(blocked(contract, cap), tests);
+const need = (over = {}) => ({ id: 'new-need', capability: over.capability ?? capability, files: frozenFor(over.capability ?? capability)(over.contract ?? base.files['CONTRACT.md'], over.tests ?? base.files['tests.json']) });
 async function promoted(root) {
   const env = { ...process.env, CODEX_HOME: join(root, 'home'), ENDOFORGE_CODEX_TEST_DOUBLE: '1', ENDOFORGE_CODEX_CMD: JSON.stringify([process.execPath, fixture('fake-codex.mjs')]), ENDOFORGE_ASC_CMD: fixture('fake-asc.mjs') };
   const pool = new IsolatePool({ hostPort: fixture('../../../x1/host.mjs'), size: 1, isolation: 'thread' });
@@ -176,7 +178,7 @@ test('the pipeline call site reuses on a pass, generates on a miss and is off wi
   const off = await runNeed({ need: 'integer add(a,b)', directory: join(root, 'off', 'addition').replace('off/', 'off-'), pool, env: env('off') });
   assert.equal(off.promoted, true); assert.equal(off.reused, undefined);
   assert.deepEqual((await stages('off')).sort(), ['off.implementation.json', 'off.specification.json']);
-  const plain = { ...env('miss'), FAKE_CODEX_CONTRACT: 'Integer addition on [-10,10].' };
+  const plain = { ...env('miss'), FAKE_CODEX_CONTRACT: block.replace('[-10,10]', '[-20,20]') };
   const miss = await runNeed({ need: 'integer add(a,b)', directory: join(root, 'miss-addition'), pool, env: plain, library });
   assert.equal(miss.promoted, true); assert.equal(miss.reused, undefined);
   assert.deepEqual((await stages('miss')).sort(), ['miss.implementation.json', 'miss.specification.json']);
@@ -231,7 +233,7 @@ test('G5 compose: a pipeline is gated on the need tests, journaled against every
   const contract = 'Add two integers then double the sum.';
   const tests = JSON.stringify([{ name: 'pipe', fn: 'pipe', args: [2, 3], expect: 10 }]);
   const plan = { exports: [{ name: 'pipe', stages: [{ entry: 'adder', fn: 'add' }, { entry: 'doubler', fn: 'f' }] }] };
-  const passed = await library.compose({ id: 'p', capability: pipelineCap, files: frozen(contract, tests) }, plan);
+  const passed = await library.compose({ id: 'p', capability: pipelineCap, files: frozenFor(pipelineCap)(contract, tests) }, plan);
   assert.equal(passed.verdict, 'pass');
   assert.equal(passed.receipt.kind, 'library_compose');
   assert.deepEqual(passed.receipt.sources.map(s => s.candidate).sort(), ['adder', 'doubler']);
@@ -239,12 +241,12 @@ test('G5 compose: a pipeline is gated on the need tests, journaled against every
   assert.equal(passed.candidate.compiled.source, sha256(passed.candidate.files['kernel.ts']));
   assert.equal(library.dependants('doubler').length, 1);
   const wrong = JSON.stringify([{ name: 'pipe', fn: 'pipe', args: [2, 3], expect: 11 }]);
-  const refused = await library.compose({ capability: pipelineCap, files: frozen(contract, wrong) }, plan);
+  const refused = await library.compose({ capability: pipelineCap, files: frozenFor(pipelineCap)(contract, wrong) }, plan);
   assert.equal(refused.verdict, 'refused'); assert.equal(refused.reason, 'evaluator_failed');
-  assert.equal((await library.compose({ capability: pipelineCap, files: frozen(contract, tests) }, { exports: [{ name: 'other', entry: 'adder', fn: 'add' }] })).reason, 'plan_mismatch');
-  assert.equal((await library.compose({ capability: pipelineCap, files: frozen(contract, tests) }, { exports: [{ name: 'pipe', stages: [{ entry: 'ghost', fn: 'add' }] }] })).reason, 'unknown_part');
+  assert.equal((await library.compose({ capability: pipelineCap, files: frozenFor(pipelineCap)(contract, tests) }, { exports: [{ name: 'other', entry: 'adder', fn: 'add' }] })).reason, 'plan_mismatch');
+  assert.equal((await library.compose({ capability: pipelineCap, files: frozenFor(pipelineCap)(contract, tests) }, { exports: [{ name: 'pipe', stages: [{ entry: 'ghost', fn: 'add' }] }] })).reason, 'unknown_part');
   library.revoke('doubler', 'bad');
-  assert.equal((await library.compose({ capability: pipelineCap, files: frozen(contract, tests) }, plan)).reason, 'revoked');
+  assert.equal((await library.compose({ capability: pipelineCap, files: frozenFor(pipelineCap)(contract, tests) }, plan)).reason, 'revoked');
   await library.close();
   library = await openLibrary({ journal: path, gate: 'none' });
   assert.equal(library.dependants('adder').length, 1);
@@ -253,11 +255,11 @@ test('G5 serve composes a union when no single entry holds the whole capability'
   const root = await scratch(t), library = await seeded(join(root, 'library.jsonl'), entryRows, { gate: 'none' });
   t.after(() => library.close());
   const tests = JSON.stringify([{ name: 'sum', fn: 'sum', args: [2, 3], expect: 5 }, { name: 'twice', fn: 'twice', args: [4], expect: 8 }]);
-  const served = await library.serve({ id: 'u', capability: unionCap, files: frozen('Sum and double.', tests) });
+  const served = await library.serve({ id: 'u', capability: unionCap, files: frozenFor(unionCap)('Sum and double.', tests) });
   assert.equal(served.verdict, 'pass');
   assert.equal(served.receipt.kind, 'library_compose');
   const partial = { exports: [unionCap.exports[0], { ...unionCap.exports[1], result: { ...unionCap.exports[1].result, unit: 'kg' } }], traps: [] };
-  assert.equal((await library.serve({ capability: partial, files: frozen('Sum and double.', tests) })).reason, 'no_contract_match');
+  assert.equal((await library.serve({ capability: partial, files: frozenFor(partial)('Sum and double.', tests) })).reason, 'no_contract_match');
 });
 test('G6 retrieval ranks by normalized contract text before the key match and is deterministic and offline', async t => {
   assert(similarity(contractVector('Integer addition on [-10,10].'), contractVector('Addition of integers within [-10,10]!')) > similarity(contractVector('Integer addition on [-10,10].'), contractVector('Converts pressure readings to kilopascals.')));
@@ -285,7 +287,7 @@ test('G7 tenants are isolated, lineages are checked on reuse and grants are jour
   let library = await seeded(path, [{ id: 'adder', bytes: addWasm, cap: addCapability, contract, scope: { tenant: 'acme', lineage: 'acme/payments' } }], { gate: 'none' });
   t.after(() => library.close());
   const tests = JSON.stringify([{ name: 'add', fn: 'add', args: [2, 3], expect: 5 }]);
-  const asked = () => ({ capability: addCapability, files: frozen(contract, tests) });
+  const asked = () => ({ capability: addCapability, files: frozenFor(addCapability)(contract, tests) });
   assert.equal((await library.serve(asked(), { principal: { tenant: 'acme', lineage: 'acme/payments/eu' } })).verdict, 'pass');
   assert.equal((await library.serve(asked(), { principal: { tenant: 'acme', lineage: 'acme/search' } })).reason, 'permission_denied');
   assert.equal((await library.serve(asked(), { principal: { tenant: 'globex' } })).reason, 'no_contract_match');
@@ -300,7 +302,7 @@ test('G7 tenants are isolated, lineages are checked on reuse and grants are jour
   assert.equal(served.verdict, 'pass'); assert.deepEqual(served.receipt.principal, { tenant: 'globex' });
   library.ungrant('adder', { tenant: 'globex' }, { by: { tenant: 'acme', lineage: 'acme/payments' } });
   assert.equal((await library.serve(asked(), { principal: { tenant: 'globex' } })).reason, 'no_contract_match');
-  const denied = await library.compose({ capability: addCapability, files: frozen(contract, tests) }, { exports: [{ name: 'add', entry: 'adder', fn: 'add' }] }, { principal: { tenant: 'globex' } });
+  const denied = await library.compose({ capability: addCapability, files: frozenFor(addCapability)(contract, tests) }, { exports: [{ name: 'add', entry: 'adder', fn: 'add' }] }, { principal: { tenant: 'globex' } });
   assert.equal(denied.reason, 'permission_denied');
 });
 test('G7 entries admitted through a principal carry its scope', async t => {
@@ -326,13 +328,13 @@ test('G8 reclaim keeps one entry per behaviour within a scope and frees the rest
   assert.equal(library.entries.get('second').wasm, null);
   assert((await readFile(path, 'utf8')).length < before);
   library.revoke('other', 'wrong');
-  assert.equal(library.lookup({ capability: addCapability, files: frozen(contract, tests) }).entry.id, 'first');
+  assert.equal(library.lookup({ capability: addCapability, files: frozenFor(addCapability)(contract, tests) }).entry.id, 'first');
   assert.deepEqual(library.reclaim().reclaimed, []);
   await library.close();
   library = await openLibrary({ journal: path, gate: 'none' });
   assert.equal(library.size, 3);
   assert.equal(library.entries.get('second').reclaimedInto, 'first');
-  assert.equal((await library.serve({ capability: addCapability, files: frozen(contract, tests) })).verdict, 'pass');
+  assert.equal((await library.serve({ capability: addCapability, files: frozenFor(addCapability)(contract, tests) })).verdict, 'pass');
   const { covers } = library.revoke('second', 'bad');
   assert.deepEqual(covers.sort(), ['first', 'second']);
 });
@@ -340,7 +342,7 @@ test('G9 a refusal becomes counterexamples that narrow later search, and survive
   const root = await scratch(t), path = join(root, 'library.jsonl'), contract = 'Integer addition of two whole values.';
   let library = await seeded(path, [entryRows[0]], { gate: 'full' });
   t.after(() => library.close());
-  const asked = rows => ({ capability: addCapability, files: frozen(contract, JSON.stringify(rows)) });
+  const asked = rows => ({ capability: addCapability, files: frozenFor(addCapability)(contract, JSON.stringify(rows)) });
   const wrong = [{ name: 'add', fn: 'add', args: [2, 3], expect: 6 }];
   const first = await library.serve(asked(wrong));
   assert.equal(first.reason, 'evaluator_failed');
@@ -366,9 +368,9 @@ test('G9 a refusal becomes counterexamples that narrow later search, and survive
 test('G10 qualification is recorded per environment; a new environment requalifies without losing the old one', async t => {
   const root = await scratch(t), path = join(root, 'library.jsonl'), contract = 'Integer addition of two whole values.';
   const tests = JSON.stringify([{ name: 'add', fn: 'add', args: [2, 3], expect: 5 }]);
-  const asked = () => ({ capability: addCapability, files: frozen(contract, tests) });
+  const asked = () => ({ capability: addCapability, files: frozenFor(addCapability)(contract, tests) });
   const adder = entryRows[0];
-  const seed = await seeded(path, [{ ...adder, contract }], { gate: 'none' });
+  const seed = await seeded(path, [{ ...adder, contract: blocked(contract, addCapability) }], { gate: 'none' });
   t.after(() => seed.close());
   const home = seed.environmentId;
   assert.equal(seed.qualifications('adder')[home].ok, true);
@@ -409,7 +411,7 @@ test('G10 a failing requalification in a new environment does not revoke the ent
   await library.close();
   library = await openLibrary({ journal: path, gate: 'none' });
   assert.equal(library.isRevoked('adder'), false);
-  assert.equal(library.lookup({ capability: addCapability, files: frozen(contract, failing) }).status, 'hit');
+  assert.equal(library.lookup({ capability: addCapability, files: frozenFor(addCapability)(contract, failing) }).status, 'hit');
 });
 const mleb = value => { const out = []; let n = value; do { const part = n % 128; n = Math.floor(n / 128); out.push(part | (n ? 128 : 0)); } while (n); return out; };
 const sec = (id, content) => (content.length ? [id, ...mleb(content.length), ...content] : []);
@@ -513,7 +515,7 @@ test('H7 compose gates a two-memory union through the cell', async t => {
   const capability = { exports: [...cap('a').exports, ...cap('b').exports], traps: [] };
   const tests = JSON.stringify([{ name: 'a', fn: 'a', args: [], expect: 1 }, { name: 'b', fn: 'b', args: [], expect: 10 }]);
   const plan = { exports: [{ name: 'a', entry: 'first', fn: 'a' }, { name: 'b', entry: 'second', fn: 'b' }] };
-  const served = await library.compose({ id: 'u', capability, files: frozen('Two counters.', tests) }, plan);
+  const served = await library.compose({ id: 'u', capability, files: frozenFor(capability)('Two counters.', tests) }, plan);
   assert.equal(served.verdict, 'pass', JSON.stringify(served));
   assert.deepEqual(served.receipt.sources.map(s => s.candidate).sort(), ['first', 'second']);
 });
@@ -524,10 +526,10 @@ test('H7 a structured pipeline copies state between the parts\' memories and pas
   const capability = stepCap('step');
   const tests = JSON.stringify([{ name: 'step', fn: 'step', args: [{ total: 3 }], expect: { total: 8 } }, { name: 'zero', fn: 'step', args: [{ total: 0 }], expect: { total: 2 } }]);
   const plan = { exports: [{ name: 'step', stages: [{ entry: 'incer', fn: 'inc' }, { entry: 'doubler', fn: 'dbl' }] }] };
-  const served = await library.compose({ id: 's', capability, files: frozen('Add one then double the balance.', tests) }, plan);
+  const served = await library.compose({ id: 's', capability, files: frozenFor(capability)('Add one then double the balance.', tests) }, plan);
   assert.equal(served.verdict, 'pass', JSON.stringify(served));
   const wrong = JSON.stringify([{ name: 'step', fn: 'step', args: [{ total: 3 }], expect: { total: 9 } }]);
-  assert.equal((await library.compose({ capability, files: frozen('Add one then double the balance.', wrong) }, plan)).verdict, 'refused');
+  assert.equal((await library.compose({ capability, files: frozenFor(capability)('Add one then double the balance.', wrong) }, plan)).verdict, 'refused');
 });
 test('H7 a structured union export takes the host buffer through the part\'s window', async t => {
   const root = await scratch(t);
@@ -536,7 +538,7 @@ test('H7 a structured union export takes the host buffer through the part\'s win
   const capability = { exports: [...stepCap('inc').exports, ...stepCap('dbl').exports], traps: [] };
   const tests = JSON.stringify([{ name: 'inc', fn: 'inc', args: [{ total: 3 }], expect: { total: 4 } }, { name: 'dbl', fn: 'dbl', args: [{ total: 3 }], expect: { total: 6 } }]);
   const plan = { exports: [{ name: 'inc', entry: 'incer', fn: 'inc' }, { name: 'dbl', entry: 'doubler', fn: 'dbl' }] };
-  const served = await library.compose({ id: 'su', capability, files: frozen('Add one or double.', tests) }, plan);
+  const served = await library.compose({ id: 'su', capability, files: frozenFor(capability)('Add one or double.', tests) }, plan);
   assert.equal(served.verdict, 'pass', JSON.stringify(served));
 });
 test('H7 a pipeline whose stage layouts disagree is refused', async t => {
@@ -546,7 +548,7 @@ test('H7 a pipeline whose stage layouts disagree is refused', async t => {
   t.after(() => library.close());
   const tests = JSON.stringify([{ name: 'step', fn: 'step', args: [{ total: 3 }], expect: { total: 8 } }]);
   const plan = { exports: [{ name: 'step', stages: [{ entry: 'incer', fn: 'inc' }, { entry: 'doubler', fn: 'dbl' }] }] };
-  assert.equal((await library.compose({ capability: stepCap('step'), files: frozen('Add one then double the balance.', tests) }, plan)).reason, 'plan_mismatch');
+  assert.equal((await library.compose({ capability: stepCap('step'), files: frozenFor(stepCap('step'))('Add one then double the balance.', tests) }, plan)).reason, 'plan_mismatch');
 });
 const count = { kind: 'integer', unit: '1', name: 'n', label: 'N' }, whole = { kind: 'integer', unit: '1' };
 test('H7 a plan cannot hand the hidden output pointer to a scalar parameter', async t => {
@@ -556,7 +558,7 @@ test('H7 a plan cannot hand the hidden output pointer to a scalar parameter', as
   t.after(() => library.close());
   const tests = JSON.stringify([{ name: 'step', fn: 'step', args: [1], expect: { total: 0 } }]);
   const plan = { exports: [{ name: 'step', stages: [{ entry: 'poker', fn: 'poke', args: [{ input: 1 }] }] }] };
-  assert.equal((await library.compose({ capability: cap('step'), files: frozen('Write a balance.', tests) }, plan)).reason, 'adapter_arity');
+  assert.equal((await library.compose({ capability: cap('step'), files: frozenFor(cap('step'))('Write a balance.', tests) }, plan)).reason, 'adapter_arity');
 });
 test('H7 a plan cannot pass a host buffer address as a scalar', async t => {
   const root = await scratch(t);
@@ -567,9 +569,9 @@ test('H7 a plan cannot pass a host buffer address as a scalar', async t => {
   const reading = { exports: [{ name: 'read', args: [{ ...balance, name: 'state' }], result: whole }], traps: [] };
   const readTests = JSON.stringify([{ name: 'read', fn: 'read', args: [{ total: 1 }], expect: 0 }]);
   const writeTests = JSON.stringify([{ name: 'write', fn: 'write', args: [{ total: 1 }], expect: { total: 0 } }]);
-  const scalar = await library.compose({ capability: reading, files: frozen('Read a word.', readTests) }, { exports: [{ name: 'read', stages: [{ entry: 'peeker', fn: 'peek', args: [{ input: 0 }] }] }] });
+  const scalar = await library.compose({ capability: reading, files: frozenFor(reading)('Read a word.', readTests) }, { exports: [{ name: 'read', stages: [{ entry: 'peeker', fn: 'peek', args: [{ input: 0 }] }] }] });
   assert.equal(scalar.reason, 'plan_mismatch', JSON.stringify(scalar));
-  const mixed = await library.compose({ capability: stepCap('write'), files: frozen('Write a balance.', writeTests) }, { exports: [{ name: 'write', stages: [{ entry: 'poker', fn: 'poke', args: [{ input: 0 }] }] }] });
+  const mixed = await library.compose({ capability: stepCap('write'), files: frozenFor(stepCap('write'))('Write a balance.', writeTests) }, { exports: [{ name: 'write', stages: [{ entry: 'poker', fn: 'poke', args: [{ input: 0 }] }] }] });
   assert.equal(mixed.reason, 'plan_mismatch', JSON.stringify(mixed));
 });
 test('K3 K4 a structured composition with one memory per part gets a real mutation check under the full gate', async t => {
@@ -579,10 +581,10 @@ test('K3 K4 a structured composition with one memory per part gets a real mutati
   const plan = { exports: [{ name: 'step', stages: [{ entry: 'incer', fn: 'inc' }, { entry: 'doubler', fn: 'dbl' }] }] };
   const strong = JSON.stringify([{ name: 'a', fn: 'step', args: [{ total: 3 }], expect: { total: 8 } }, { name: 'b', fn: 'step', args: [{ total: 1.37 }], expect: { total: 4.74 }, tol: 1e-9 },
     { name: 'c', fn: 'step', args: [{ total: -2.5 }], expect: { total: -3 } }, { name: 'd', fn: 'step', args: [{ total: 0 }], expect: { total: 2 } }]);
-  const served = await library.compose({ id: 'strong', capability: stepCap('step'), files: frozen('Add one then double the balance.', strong) }, plan);
+  const served = await library.compose({ id: 'strong', capability: stepCap('step'), files: frozenFor(stepCap('step'))('Add one then double the balance.', strong) }, plan);
   assert.equal(served.verdict, 'pass', JSON.stringify(served));
   const weak = JSON.stringify([{ name: 'a', fn: 'step', args: [{ total: 0 }], expect: { total: 2 } }]);
-  const refused = await library.compose({ id: 'weak', capability: stepCap('step'), files: frozen('Add one then double the balance.', weak) }, plan);
+  const refused = await library.compose({ id: 'weak', capability: stepCap('step'), files: frozenFor(stepCap('step'))('Add one then double the balance.', weak) }, plan);
   assert.equal(refused.reason, 'evaluator_cannot_discriminate', JSON.stringify(refused));
   assert(refused.witnesses.some(w => typeof w.args?.[0]?.total === 'number'), JSON.stringify(refused.witnesses));
 });
