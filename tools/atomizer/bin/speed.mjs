@@ -1,26 +1,11 @@
 #!/usr/bin/env node
-// Speed decomposition. North star: wall per request (and per pool). Underneath: where every second went, so improvements can be focused.
-// usage: node speed.mjs <run-dir | fanout-dir>... [--out SPEED.md] [--json speed.json]
-//
-// Per atom attempt (from receipts + the CLI's own JSON in stdout-N.txt):
-//   depWaitMs     run start -> all inputs ready            (structure: how deep the atom sits)
-//   queueMs       ready -> started                          (concurrency limit; zero means no queueing)
-//   modelApiMs    Claude duration_api_ms                    (time inside model calls)
-//   toolMs        duration_ms - duration_api_ms             (agent's local tool time: compiles, test runs, file edits)
-//   harnessMs     attempt wall - duration_ms                (bwrap + CLI start + auth + teardown)
-//   codexTurnMs   whole Codex attempt (the JSONL has no timings; reported as one bucket)
-//   scriptMs      whole script attempt
-//   retryMs       wall of failed attempts before the last one
-//   turns         agent turns (Claude num_turns)
-// Per run: wall, the realized critical chain (walk back from the last atom through the input that finished last),
-//   and that chain's time split into the buckets above. Shortening anything off the chain does not move wall.
 import fs from 'node:fs';
 import path from 'node:path';
 function args(argv) { const o = { _: [] }; for (let i = 0; i < argv.length; i++) { const a = argv[i]; if (a.startsWith('--')) o[a.slice(2)] = argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[++i] : true; else o._.push(a); } return o; }
 const A = args(process.argv.slice(2));
 const runDirs = [];
 for (const d of A._) { const p = path.resolve(d); if (fs.existsSync(path.join(p, 'receipt', 'run.json'))) runDirs.push(p); else if (fs.existsSync(path.join(p, 'fanout.json'))) for (const e of fs.readdirSync(p)) if (fs.existsSync(path.join(p, e, 'receipt', 'run.json'))) runDirs.push(path.join(p, e)); }
-if (!runDirs.length) { console.error('usage: speed.mjs <run-dir|fanout-dir>... [--out SPEED.md] [--json speed.json]'); process.exit(2); }
+if (!runDirs.length) { console.error(['usage: speed.mjs <run-dir|fanout-dir>... [--out SPEED.md] [--json speed.json]', 'Speed decomposition. North star: wall per request (and per pool). Underneath: where every second went, so improvements can be focused.', '', "Per atom attempt (from receipts + the CLI's own JSON in stdout-N.txt):", '  depWaitMs     run start -> all inputs ready            (structure: how deep the atom sits)', '  queueMs       ready -> started                          (concurrency limit; zero means no queueing)', '  modelApiMs    Claude duration_api_ms                    (time inside model calls)', "  toolMs        duration_ms - duration_api_ms             (agent's local tool time: compiles, test runs, file edits)", '  harnessMs     attempt wall - duration_ms                (bwrap + CLI start + auth + teardown)', '  codexTurnMs   whole Codex attempt (the JSONL has no timings; reported as one bucket)', '  scriptMs      whole script attempt', '  retryMs       wall of failed attempts before the last one', '  turns         agent turns (Claude num_turns)', 'Per run: wall, the realized critical chain (walk back from the last atom through the input that finished last),', "  and that chain's time split into the buckets above. Shortening anything off the chain does not move wall."].join('\n')); process.exit(2); }
 const deps = (a) => (a.inputs ?? []).filter((i) => i.from && i.from !== 'need').map((i) => i.from);
 const readJson = (p) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return null; } };
 const BUCKETS = ['queueMs', 'modelApiMs', 'toolMs', 'harnessMs', 'codexTurnMs', 'scriptMs', 'retryMs'];
@@ -49,7 +34,6 @@ function analyseRun(dir) {
     atoms.push(x);
   }
   const A2 = Object.fromEntries(atoms.map((x) => [x.id, x]));
-  // realized critical chain: from the atom that finished last, walk back through the input that finished last
   let cur = atoms.reduce((m, x) => (x.end > (m?.end ?? -1) ? x : m), null); const chain = [];
   while (cur) { chain.unshift(cur); const ds = deps(byId[cur.id]).map((d) => A2[d]).filter(Boolean); cur = ds.length ? ds.reduce((m, x) => (x.end > m.end ? x : m)) : null; }
   const chainSplit = Object.fromEntries(BUCKETS.map((b) => [b, chain.reduce((s, x) => s + x[b], 0)]));
@@ -60,7 +44,6 @@ function analyseRun(dir) {
 const runs = runDirs.map(analyseRun);
 const q = (arr, p) => { if (!arr.length) return null; const s = [...arr].sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.floor(p * (s.length - 1) + 0.5))]; };
 const sec = (ms) => (ms == null ? '—' : (ms / 1000).toFixed(1));
-// aggregate on-chain time by kind and bucket: this is where wall actually goes
 const onChain = {}; const allAtoms = runs.flatMap((r) => r.atoms.map((a) => ({ ...a, onChain: r.chain.includes(a.id), run: r.id })));
 for (const r of runs) for (const id of r.chain) { const a = r.atoms.find((x) => x.id === id); const k = a.kind; onChain[k] ??= { n: 0, wall: 0, ...Object.fromEntries(BUCKETS.map((b) => [b, 0])) }; onChain[k].n++; onChain[k].wall += a.wallMs; for (const b of BUCKETS) onChain[k][b] += a[b]; }
 const totalChain = runs.reduce((s, r) => s + r.wallMs, 0);

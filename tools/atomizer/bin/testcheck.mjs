@@ -1,14 +1,9 @@
 #!/usr/bin/env node
-// S-09 blind-test expectation check.
-//   strip <tests.json> <cases.json>              write the test inputs without any expected value (Infinity as 1e999, NaN as "NaN")
-//   merge <tests.json> <computed.json> <out.json> <report.json>
-//        keep a test when the independent computation agrees (within max(tol, 0.2 % of |value|), refusals must match);
-//        drop it when they disagree; keep-and-flag when the checker gave no answer; widen tol when they agree but differ by more than tol.
 import fs from 'node:fs';
 const [mode, ...f] = process.argv.slice(2);
 const ARITY = { strip: 2, merge: 4 };
 if (!(mode in ARITY) || f.length !== ARITY[mode]) {
-  console.error('usage: testcheck.mjs strip <tests.json> <cases.json>\n       testcheck.mjs merge <tests.json> <computed.json> <out.json> <report.json>');
+  console.error(['usage: testcheck.mjs strip <tests.json> <cases.json>', '       testcheck.mjs merge <tests.json> <computed.json> <out.json> <report.json>', 'S-09 blind-test expectation check.', '  strip <tests.json> <cases.json>              write the test inputs without any expected value (Infinity as 1e999, NaN as "NaN")', '  merge <tests.json> <computed.json> <out.json> <report.json>', '       keep a test when the independent computation agrees (within max(tol, 0.2 % of |value|), refusals must match);', '       drop it when they disagree; keep-and-flag when the checker gave no answer; widen tol when they agree but differ by more than tol.'].join('\n'));
   process.exit(2);
 }
 const enc = (v) => (typeof v === 'number' ? (Number.isNaN(v) ? '"NaN"' : v === Infinity ? '1e999' : v === -Infinity ? '-1e999' : JSON.stringify(v)) : JSON.stringify(v));

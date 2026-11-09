@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-// Markdown report for one run directory: timeline per atom, waves, tokens, realized speedup against the sequential equivalent.
 import fs from 'node:fs';
 import path from 'node:path';
 const RUN = path.resolve(process.argv[2] ?? '');

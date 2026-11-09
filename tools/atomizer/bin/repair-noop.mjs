@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-// Preflight for the repair atom: when the draft's failures.json is empty, copy every kernel part to its declared output unchanged and exit 0; otherwise exit 10 so the model repair runs.
-// usage: node repair-noop.mjs --failures /in/<draft>/failures.json --map '<json [{"from":"/in/k/x.ts","to":"/out/x.ts"}]>'
 import fs from 'node:fs';
 import path from 'node:path';
 const arg = (k) => { const i = process.argv.indexOf(`--${k}`); return i > 0 ? process.argv[i + 1] : null; };

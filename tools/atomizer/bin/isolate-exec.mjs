@@ -1,5 +1,4 @@
 #!/usr/bin/env node
-// Host trampoline: only inspect CODEX_HOME itself, never its contents.
 import fs from 'node:fs';
 import os from 'node:os';
 import { spawn } from 'node:child_process';

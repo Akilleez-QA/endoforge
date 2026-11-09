@@ -1,4 +1,3 @@
-// Structural validation of atoms.json against the schema in README.md and policy.json. Zero dependencies.
 import { topo, deps } from './dag.mjs';
 import { atomBinds } from './binds.mjs';
 const KINDS = new Set(['interface', 'contract', 'tests', 'kernel', 'glue', 'data', 'compose', 'compose-draft', 'direct', 'review', 'repair', 'acceptance', 'asset', 'other']);

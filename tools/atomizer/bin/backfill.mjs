@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-// One-time backfill: reconstruct ledger events from run directories and atomization receipts made before the ledger existed.
-// Every event carries backfilled: true and source paths; timings come from receipts and the CLI's own JSON. Idempotent by runId.
 import fs from 'node:fs';
 import path from 'node:path';
 import { emit, archiveRun, shaFile, EVENTS, REPO } from '../lib/ledger.mjs';

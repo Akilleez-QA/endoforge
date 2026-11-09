@@ -1,4 +1,3 @@
-// Run one command inside a bubblewrap isolate with a private home and only the declared mounts .
 import fs from 'node:fs';
 import { nowEpoch } from './trace.mjs';
 import os from 'node:os';
@@ -11,13 +10,6 @@ const HOME = os.homedir();
 export const expand = (p) => (p.startsWith('~/') ? path.join(HOME, p.slice(2)) : p);
 const SYSTEM_RO = ['/usr', '/lib', '/lib64', '/bin', '/sbin', '/etc/ssl', '/etc/ca-certificates', '/etc/resolv.conf', '/etc/hosts', '/etc/passwd', '/etc/group', '/etc/localtime', '/etc/nsswitch.conf', '/etc/fonts', '/etc/ld.so.cache', '/etc/ld.so.conf', '/etc/ld.so.conf.d'];
 const CREDENTIAL_FILES = ['.claude/.credentials.json', '.claude.json'];
-/**
- * Claude subscription logins for native workers: ENDOFORGE_CLAUDE_ACCOUNTS (default ~/.claude-accts) holds one
- * CLAUDE_CONFIG_DIR per login, a folder with .credentials.json (the subscription guard reads its metadata, never its tokens). Each `claude` launch
- * mounts the next one read-write at its own path and sets CLAUDE_CONFIG_DIR, so token refreshes land in the pool
- * folder; a credential copied into a throwaway home can rotate the original's refresh token away. With no pool
- * folder, the home template copies ~/.claude's files as before.
- */
 export function claudeAccounts() {
   const root = expand(process.env.ENDOFORGE_CLAUDE_ACCOUNTS || '~/.claude-accts');
   let names = [];
@@ -26,7 +18,6 @@ export function claudeAccounts() {
 }
 let claudeNext = 0;
 const nextClaudeAccount = () => { const a = claudeAccounts(); return a.length ? a[claudeNext++ % a.length] : null; };
-/** A template home with only the user's own subscription credentials; private (0700); caller deletes it. */
 export function makeHomeTemplate(dir) {
   fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
   if (claudeAccounts().length || !process.env.ENDOFORGE_CREDENTIAL_HOME) return dir;
@@ -45,10 +36,6 @@ export function listFiles(dir) {
   for (const e of fs.readdirSync(dir, { withFileTypes: true, recursive: true })) if (e.isFile()) out.push(path.relative(dir, path.join(e.parentPath ?? e.path, e.name)));
   return out.sort();
 }
-/**
- * spec: { homeTemplate, mounts: [{host, guest, mode:'ro'|'rw'}], toolchain: [{host, guest}], cmd: [...], stdin, cwd, env, timeoutMs, pool?: {bin, env} }
- * Returns { exit, signal, wallMs, stdout, stderr, timedOut, bwrapArgs, poolPid?, claudeAccount? }.
- */
 export async function runIsolated(spec) {
   const claude = isClaudeCommand(spec.cmd?.[0]);
   const claudeAccount = spec.cmd?.[0] === 'claude' && !spec.env?.CLAUDE_CONFIG_DIR ? nextClaudeAccount() : null;
@@ -61,7 +48,6 @@ export async function runIsolated(spec) {
   const args = [];
   for (const p of SYSTEM_RO) if (fs.existsSync(p)) args.push('--ro-bind', p, p);
   args.push('--bind', runHome, HOME);
-  // System paths are already bound read-only; re-binding a toolchain inside them (e.g. /usr/bin/python3, often a symlink) fails.
   const inSystem = (p) => SYSTEM_RO.some((r) => p === r || p.startsWith(r + '/'));
   for (const t of spec.toolchain ?? []) if (fs.existsSync(t.host) && !inSystem(t.guest ?? t.host)) args.push('--ro-bind', t.host, t.guest ?? t.host);
   for (const m of spec.mounts ?? []) args.push(m.mode === 'rw' ? '--bind' : '--ro-bind', m.host, m.guest);
@@ -72,7 +58,6 @@ export async function runIsolated(spec) {
   if (claudeAccount) args.push('--setenv', 'CLAUDE_CONFIG_DIR', claudeAccount);
   for (const [k, v] of Object.entries(claude ? subscriptionEnvironment(spec.env ?? {}) : spec.env ?? {})) args.push('--setenv', k, String(v));
   args.push('--chdir', spec.cwd ?? '/work');
-  // Keep the launch spec outside the writable guest home across pool failovers.
   const specDir = spec.pool ? fs.mkdtempSync(path.join(os.tmpdir(), 'atom-isolate-')) : null;
   let env;
   if (spec.pool) {

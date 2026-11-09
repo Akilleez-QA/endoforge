@@ -1,12 +1,9 @@
-// Read-only binds of large trees (an asset checkout, a reference pack) into an atom's isolate.
-// An atom may only bind paths under policy.bindRoots; binds are always read-only and never shadow /in, /out, /work or system paths.
 import fs from 'node:fs';
 import path from 'node:path';
 import { expand } from './isolate.mjs';
 const RESERVED = ['/in', '/out', '/work', '/tmp', '/proc', '/dev', '/usr', '/lib', '/lib64', '/bin', '/sbin', '/etc'];
 const real = (p) => { try { return fs.realpathSync(p); } catch { return null; } };
 const under = (p, root) => p === root || p.startsWith(root.endsWith('/') ? root : root + '/');
-/** Returns { mounts: [{host, guest, mode:'ro'}], errors: [] } for atom.worker.binds. */
 export function atomBinds(atom, policy) {
   const mounts = [], errors = [];
   const binds = atom.worker?.binds ?? [];
@@ -22,7 +19,6 @@ export function atomBinds(atom, policy) {
   }
   return { mounts, errors };
 }
-/** Per-atom timeout: worker.timeoutSec, capped by policy.maxAtomTimeoutSec; otherwise the run default. */
 export function atomTimeoutMs(atom, policy, fallbackMs) {
   const s = Number(atom.worker?.timeoutSec);
   if (!(s > 0)) return fallbackMs;

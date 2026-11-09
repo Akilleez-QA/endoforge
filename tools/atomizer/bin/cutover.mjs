@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-// Cutover experiment: for each case run the direct arm and the atomized arm (atomize + DAG) concurrently, paired, on the same gates; ledger everything.
-// usage: node cutover.mjs <ladder.json> --out-dir <dir> [--cases id,id] [--rep 1] [--parallel-cases 2] [--dag-concurrency 6]
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';

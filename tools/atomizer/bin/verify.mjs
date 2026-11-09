@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-// Verify a finished run: every atom done, outputs match receipts, interfaces resolve, acceptance commands pass inside an isolate.
-// usage: node verify.mjs <run-dir> [--policy file]
 import fs from 'node:fs';
 import { openTrace, nowEpoch } from '../lib/trace.mjs';
 import os from 'node:os';
@@ -12,7 +10,7 @@ import { emit, context, archiveRun } from '../lib/ledger.mjs';
 const verifyStart = nowEpoch();
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const RUN = path.resolve(process.argv[2] ?? '');
-if (!RUN || !fs.existsSync(path.join(RUN, 'atoms.json'))) { console.error('usage: verify.mjs <run-dir>'); process.exit(2); }
+if (!RUN || !fs.existsSync(path.join(RUN, 'atoms.json'))) { console.error('usage: verify.mjs <run-dir> [--policy file]'); process.exit(2); }
 const doc = JSON.parse(fs.readFileSync(path.join(RUN, 'atoms.json'), 'utf8'));
 const policy = JSON.parse(fs.readFileSync(path.join(HERE, '..', 'policy.json'), 'utf8'));
 const REPO = path.resolve(HERE, '../../..');
