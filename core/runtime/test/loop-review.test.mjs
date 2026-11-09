@@ -12,7 +12,7 @@ import { ledger } from '../x1/ledger.mjs';
 import { createLoopPool } from '../x1/loop.mjs';
 import { runNeed } from '../x1/pipeline.mjs';
 import { scriptedProvider, SpawnClaudeTransport, WarmClaudeTransport } from '../x1/transports.mjs';
-import { candidate } from './fixtures/x1/candidate.mjs';
+import { candidate, withCapability } from './fixtures/x1/candidate.mjs';
 import { forgeries } from './fixtures/x1/forgeries.mjs';
 import { idOf, implementation, inputFor, modelFor, reply, specification, stageOf } from './fixtures/x1/scripted-model.mjs';
 import { good, seeds, weak } from './fixtures/x1/seeds.mjs';
@@ -51,7 +51,7 @@ db = sqlite3.connect(Path(json.load(sys.stdin)['directory']) / 'ledger.sqlite')
 print(json.dumps([json.loads(body)['decision'] for body, in db.execute('SELECT body FROM x1_decisions ORDER BY rowid')]))
 `, { directory });
 const baseEnv = root => ({ ...process.env, CODEX_HOME: join(root, 'h'), ENDOFORGE_CODEX_TEST_DOUBLE: '1', ENDOFORGE_ASC_CMD: asc, ENDOFORGE_CODEX_CMD: JSON.stringify([process.execPath, here('./fixtures/x1/fake-codex.mjs')]) });
-const inputOf = entry => inputFor('Synthetic contract for one kernel.', entry.raw ?? JSON.stringify(entry.tests), entry.kernel, entry.glue);
+const inputOf = entry => inputFor(withCapability('Synthetic contract for one kernel.', entry.glue), entry.raw ?? JSON.stringify(entry.tests), entry.kernel, entry.glue);
 
 for (const [name, entry] of Object.entries(weak)) {
   test(`1, 12: both paths refuse ${name}`, { timeout: 60000 }, async t => {
