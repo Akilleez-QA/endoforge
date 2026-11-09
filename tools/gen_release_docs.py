@@ -216,7 +216,7 @@ def severity(issues, state):
     for issue in issues or []:
         if issue["state"] != state:
             continue
-        labels = [l["name"] for l in issue["labels"] if re.fullmatch(r"S[1-4]", l["name"])]
+        labels = [label["name"] for label in issue["labels"] if re.fullmatch(r"S[1-4]", label["name"])]
         counts[labels[0] if labels else "unlabelled"] = counts.get(labels[0] if labels else "unlabelled", 0) + 1
     return counts
 
@@ -304,7 +304,7 @@ def vdd_report(d, name, str_name, pr):
               f"| `git archive --format=tar {d['commit'][:7]}` | `{a['sha256']}` | {a['bytes']} bytes, {a['files']} tracked files |"]
     lines += [f"| `{p}` | `{h}` | pinned or controlled input |" for p, h in d["pinned"]]
     lines += ["", "## 5. Changes", "", "No previous tag exists. CHANGELOG `[Unreleased]` section at this commit:", "",
-              *["> " + l if l else ">" for l in unreleased.splitlines()], ""]
+              *["> " + line if line else ">" for line in unreleased.splitlines()], ""]
     if d["since"]:
         lines += [f"Merges since the previous documentation baseline ({len(d['since'])}):", "", "```text", *d["since"], "```", ""]
     lines += ["## 6. Open problems and workarounds", ""]
@@ -313,7 +313,7 @@ def vdd_report(d, name, str_name, pr):
         lines.append("GitHub issues were not queried.")
     elif open_issues:
         lines += ["| Issue | Labels | Title |", "|---|---|---|"]
-        lines += [f"| #{i['number']} | {', '.join(l['name'] for l in i['labels']) or 'unlabelled'} | {i['title']} |" for i in open_issues]
+        lines += [f"| #{i['number']} | {', '.join(label['name'] for label in i['labels']) or 'unlabelled'} | {i['title']} |" for i in open_issues]
     lines += ["", "Known defects found by documentation review are in the [assurance record](../assurance/assurance-record.md); untested behaviour is in [SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps).",
               "", "## 7. Documentation baseline", "",
               f"Control documents in `docs/` were checked against main at `4d692a41853045c4e013405d8e674528745a38b9` and are contained in commit `{d['commit'][:7]}`. See the [documentation index](../README.md).",
@@ -329,7 +329,7 @@ def vdd_report(d, name, str_name, pr):
 def index(path, name, d):
     row = f"| [{name}]({name}.md) | `{d['commit'][:7]}` | {d['commit_date']} |"
     text = path.read_text(encoding="utf-8")
-    kept = [l for l in text.splitlines() if not l.startswith(f"| [{name}]")]
+    kept = [line for line in text.splitlines() if not line.startswith(f"| [{name}]")]
     path.write_text("\n".join(kept + [row]) + "\n", encoding="utf-8")
 
 

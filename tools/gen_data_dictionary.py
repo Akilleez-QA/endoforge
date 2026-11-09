@@ -91,7 +91,7 @@ def kind(node, defs):
 
 
 def object_table(name, node, defs):
-    rows = [f"| Field | Type | Required |", "|---|---|---|"]
+    rows = ["| Field | Type | Required |", "|---|---|---|"]
     required = set(node.get("required", []))
     for field, spec in node.get("properties", {}).items():
         rows.append(f"| `{field}` | {kind(spec, defs) if spec is not False else 'absent'} | {'yes' if field in required else 'no'} |")

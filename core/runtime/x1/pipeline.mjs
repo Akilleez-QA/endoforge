@@ -29,11 +29,11 @@ async function attempt(options) {
   const path = (options.env ?? process.env).ENDOFORGE_LOOP;
   return path === 'agent' ? attemptAgent(options) : path === 'isolate' ? attemptInIsolate(options) : attemptCurrent(options);
 }
-async function attemptCurrent({ need, directory, pool, env = process.env, compiler = env.ENDOFORGE_ASC_CMD, deadline = Infinity, library = null, containedRoute, observe, synthProvider, confirm, suspect, principal }) {
+async function attemptCurrent({ need, directory, pool, env = process.env, compiler = env.ENDOFORGE_ASC_CMD, deadline = Infinity, library = null, containedRoute, observe, synthProvider, synthCell = {}, confirm, suspect, principal }) {
   const timings = Object.fromEntries(['generate', 'freeze', 'compile', 'gate', 'ledger', 'promote'].map(k => [k, null]));
   let scalarFilter;
   const found = { suspect: null, revision: null };
-  const synth = synthesis.enabled(env) ? synthesis.begin({ need, env, provider: synthProvider, confirm, suspect: suspectHook(found, suspect) }) : null;
+  const synth = synthesis.enabled(env) ? synthesis.begin({ need, env, provider: synthProvider, confirm, suspect: suspectHook(found, suspect), cell: synthCell }) : null;
   try {
     let corrected = null, lane = null;
     const freeze = async request => {
