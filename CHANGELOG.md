@@ -6,6 +6,8 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Added
 
+- `examples/first-loop.mjs` and `examples/show-gates.py`: the README and getting-started example (a scripted model
+  promotes an addition kernel and refuses a subtracting one), tested by `core/runtime/test/loop-example.test.mjs`.
 - Documentation to the Cstack family standard (NASA-organized, self-assessed Class E analog): software management
   plan, compliance matrix, a requirements specification with per-requirement fields and an untested-gap register, a
   re-baselined verification matrix, test plan, design description, data dictionary, assurance record, user manual map
@@ -83,6 +85,9 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Changed
 
+- README rewritten for first-time readers: what EndoForge is, why, a diagram of the loop, the gate table, a real
+  example run and a quickstart; the engineering records moved to one section at the end. The docs index now leads with
+  learn, do, look up and understand. The candidate-loop page keeps its document control at the end.
 - `IsolatePool`'s default size is `availableParallelism()` again (#124; P-68).
 - A job's budget starts when its cell is warm (#115).
 - Tests not reached by any target now run, and `tests/test_reachability.py` fails on an unreached test (#94).

@@ -1,31 +1,21 @@
 # The candidate loop
 
-| Field | Value |
-|---|---|
-| Document ID | ENDOFORGE-SDD-LOOP |
-| Version | 2.0 |
-| Status | Baselined |
-| Owner | Akilleez-QA maintainer |
-| Date | 2026-11-08 |
-| Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
-| Applies to | endoforge main at baseline commit |
-| Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
-
-> Organized after [NPR 7150.2D](https://nodis3.gsfc.nasa.gov/displayAll.cfm?Internal_ID=N_PR_7150_002D_&page_name=all), [NASA-STD-8739.8B](https://standards.nasa.gov/standard/nasa/nasa-std-87398) and the [NASA Software Engineering Handbook](https://swehb.nasa.gov/display/SWEHBVD/7.18+-+Documentation+Guidance) documentation guidance. This is not a NASA compliance determination or certification. The software classification is a self-assessed analog (Class E, not safety-critical); no NASA authority, independent verification and validation, or hazard analysis is asserted. The document describes the implementation inspected at the baseline commit.
-
-This page explains how EndoForge turns a need (a short request for a numeric kernel) into a promoted candidate, and
-where each part lives. The [getting-started tutorial](../guides/tutorials/getting-started.md) runs it end to end. Settings
-are in the [configuration reference](../configuration/configuration-reference.md).
+This page explains how EndoForge turns a need (a one-line request for a numeric function, such as
+`integer add(a,b)`) into a promoted kernel, what each gate checks, and where each part lives in the code. To see it run,
+follow the [getting-started tutorial](../guides/tutorials/getting-started.md). Settings are in the
+[configuration reference](../configuration/configuration-reference.md).
 
 ## The shape of one attempt
 
-```text
-need ─► specification ─► freeze ─► implementation ─► compile ─► gates G1–G9 ─► commit ─► decision
-        CONTRACT.md      ledger    kernel.ts          pinned     in a V8         receipt +   promote /
-        tests.json       record    glue.json          asc        workcell        candidate   refuse /
-                                                                    │                        inconclusive
-                                       ▲                            │ failures
-                                       └──────── repair turn ◄──────┘
+```mermaid
+flowchart TD
+  spec["1 Specification<br/>CONTRACT.md, tests.json"] --> freeze["2 Freeze<br/>ledger record"]
+  freeze --> impl["3 Implementation<br/>kernel.ts, glue.json"]
+  impl --> compile["4 Compile<br/>pinned asc"]
+  compile --> gates["5 Gates<br/>G1–G9 in a workcell"]
+  gates -- "fail" --> impl
+  gates -- "pass or<br/>turn limit" --> commit["6 Commit<br/>candidate, receipt"]
+  commit --> decision["7 Decision<br/>promote, refuse<br/>or inconclusive"]
 ```
 
 1. **Specification.** A model writes `CONTRACT.md` (what the kernel computes) and `tests.json` (frozen expectations).
@@ -109,9 +99,25 @@ with a delegated cgroup can. The hash chain detects changes; it is not a signatu
 lifecycle model ([core/lifecycle.py](../../core/lifecycle.py)) validates decision references; it grants no authority
 and activates nothing in a host.
 
-## Change history
+## Document control
+
+| Field | Value |
+|---|---|
+| Document ID | ENDOFORGE-SDD-LOOP |
+| Version | 2.1 |
+| Status | Baselined |
+| Owner | Akilleez-QA maintainer |
+| Date | 2026-11-08 |
+| Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
+| Applies to | endoforge main at baseline commit |
+| Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
+
+> Organized after [NPR 7150.2D](https://nodis3.gsfc.nasa.gov/displayAll.cfm?Internal_ID=N_PR_7150_002D_&page_name=all), [NASA-STD-8739.8B](https://standards.nasa.gov/standard/nasa/nasa-std-87398) and the [NASA Software Engineering Handbook](https://swehb.nasa.gov/display/SWEHBVD/7.18+-+Documentation+Guidance) documentation guidance. This is not a NASA compliance determination or certification. The software classification is a self-assessed analog (Class E, not safety-critical); no NASA authority, independent verification and validation, or hazard analysis is asserted. The document describes the implementation inspected at the baseline commit.
+
+### Change history
 
 | Version | Date | Commit | Change | Reviewed in |
 |---|---|---|---|---|
 | 1.0 | before 2026-11-08 | — | Written in PR #129 at `d4d7efa` | earlier PRs |
-| 2.0 | 2026-11-08 | `4d692a4` | Metadata header and change history added; content re-baselined | this PR |
+| 2.0 | 2026-11-08 | `4d692a4` | Metadata header and change history added; content re-baselined | #131 |
+| 2.1 | 2026-11-08 | `ea7b8d6` | Metadata header and NASA notice moved to this section; flow drawn as a diagram; plainer introduction. Content unchanged otherwise | this PR |

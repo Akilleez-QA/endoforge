@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SUM-MAP |
-| Version | 1.0 |
+| Version | 1.1 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-08 |
@@ -19,16 +19,16 @@ a separate `guides/reference/` folder.
 
 | SUM element | Where | Verified how |
 |---|---|---|
-| Application summary and intended users | [README](../../README.md) intro and Status | Read against code at baseline |
-| Inventory (what is in the repository) | [README](../../README.md#what-is-inside) What is inside and Layout; [version descriptions](../releases/README.md) | VDD generated from `git` |
+| Application summary and intended users | [README](../../README.md) intro and Why | Read against code at baseline |
+| Inventory (what is in the repository) | [README](../../README.md#what-is-inside) What is inside; [version descriptions](../releases/README.md) | VDD generated from `git` |
 | Environment and prerequisites | [README](../../README.md#quickstart) Quickstart; [test plan §3](../verification/test-plan.md#3-test-environment) | Quickstart commands run at baseline |
 | Modes and states of operation | [Candidate loop](../architecture/candidate-loop.md) (thread and process isolation, `waits`, opt-in stages); [SDD §5](../architecture/architecture.md#5-execution-concept) | Inspection |
 | Security and privacy | [SECURITY.md](../../SECURITY.md); [SMP §7](../plan/software-management-plan.md#7-security-privacy-and-secure-coding) | Inspection |
 | Assistance and problem reporting | [SUPPORT.md](../../SUPPORT.md); issue forms in `.github/ISSUE_TEMPLATE/` | Inspection |
-| First-time use | [Getting started](tutorials/getting-started.md) | Run end to end at `4d692a4` in a fresh clone (test plan TP-3) |
+| First-time use | [Getting started](tutorials/getting-started.md) | Run end to end at `ea7b8d6` in a fresh clone (test plan TP-3) |
 | Starting and stopping | Each `make` target and the tutorial script run to completion; pools stop with `close()` ([ledger ICD](../interfaces/ledger-icd.md#v8-workcell-pool-interface)) | Inspection; REQ-ISO-005 test |
 | Capabilities and commands reference | [Configuration reference](../configuration/configuration-reference.md); [tools index](../../tools/README.md); [runtime README](../../core/runtime/README.md); ICDs listed in the [docs index](../README.md) | Trace check fails on an environment variable missing from the configuration reference |
-| Conventions (IDs, units, file layout) | [Data dictionary §1](../data/data-dictionary.md#1-conventions); [README layout](../../README.md#layout) | Inspection |
+| Conventions (IDs, units, file layout) | [Data dictionary §1](../data/data-dictionary.md#1-conventions); [README: what is inside](../../README.md#what-is-inside) | Inspection |
 | Processing procedures | [Run local checks](how-to/local-checks.md); [candidate loop](../architecture/candidate-loop.md) | Commands run at baseline |
 | Data backup and recovery from errors | Ledgers are append-only and hash-chained; the writer journal rebuilds lost ledger files ([writer journal](../interfaces/ledger-icd.md#ledger-writer-journal)); tasks resume from the ledger ([candidate loop](../architecture/candidate-loop.md)) | REQ-LEDGER-002, REQ-LOOP-003 tests |
 | Messages, errors and exit codes | [Data dictionary §2](../data/data-dictionary.md#2-configuration-interfaces-and-outcome-codes) exit codes; outcome states in [data dictionary §3](../data/data-dictionary.md#3-ledger-records-generated) | Generated from the schema; exit codes checked against the code |
@@ -40,4 +40,5 @@ a separate `guides/reference/` folder.
 
 | Version | Date | Commit | Change | Reviewed in |
 |---|---|---|---|---|
-| 1.0 | 2026-11-08 | `4d692a4` | Initial map | this PR |
+| 1.0 | 2026-11-08 | `4d692a4` | Initial map | #131 |
+| 1.1 | 2026-11-08 | `ea7b8d6` | README links follow its reader-first sections (Why, What is inside); first-time use re-run at `ea7b8d6` | this PR |
