@@ -1,5 +1,6 @@
 """D-07: tools/check_comments.py keep-rules, comment forms, file set, output and exit codes."""
 import contextlib
+import importlib.util
 import io
 import os
 from pathlib import Path
@@ -8,10 +9,11 @@ import sys
 import tempfile
 import unittest
 
-from tools import check_comments as cc
-
 REPO = Path(__file__).resolve().parents[1]
 SCRIPT = REPO / 'tools' / 'check_comments.py'
+_spec = importlib.util.spec_from_file_location('check_comments', SCRIPT)
+cc = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(cc)
 
 
 def lines(path, text):
