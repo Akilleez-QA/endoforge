@@ -211,7 +211,7 @@ def str_report(d, name, pr):
     problem_rows += [f"| trace check | {p} |" for p in d["trace_problems"]]
     lines += (["| Item | Description |", "|---|---|", *problem_rows] if problem_rows else
               ["None. No recorded run failed and the trace check reported no problems."])
-    lines += ["", "Known deviation: assertions in `tools/factory_campaign/test_state.py`, `tools/factory_campaign/test_model_journal.py` and `tools/factory_portability/test_checkpoint.py` are `assert` statements, which the optimized runs strip (finding D-01 in the [assurance record](../../assurance/assurance-record.md)). Their optimized results are vacuous."]
+    lines += ["", "Known deviation: assertions in `tools/factory_campaign/test_state.py`, `tools/factory_campaign/test_model_journal.py` and `tools/factory_portability/test_checkpoint.py` are `assert` statements, which the optimized runs strip (finding D-01 in the [assurance record](../../assurance/assurance-record.md)). Their optimized results are vacuous.", "", "Secret-scan matches are reviewed in the [assurance record](../../assurance/assurance-record.md); a match listed there as a false positive is not a leak."]
     issues, prs = d["issues"], d["prs"]
     reviewed = sum(1 for p in prs or [] if p["reviews"] or p["comments"])
     g = d["gitleaks"]
@@ -230,7 +230,7 @@ def str_report(d, name, pr):
               f"| PRs merged / with a review or comment | {len(prs) if prs is not None else 'not queried'} / {reviewed if prs is not None else 'not queried'} | `gh pr list --state merged` |",
               f"| Privacy lint | {' '.join(d['privacy'])} | `python3 -I tools/check-privacy.py` |",
               f"| Secret scan | {g['summary'] + ' (exit ' + str(g['exit']) + ', ' + g['version'] + ')' if g else 'not run'} | `{g['command'] if g else 'gitleaks not supplied'}` |",
-              f"| Commits on main | {d['commit_count']} | `git rev-list --count HEAD` |",
+              f"| Commits reachable from the record commit | {d['commit_count']} | `git rev-list --count HEAD` |",
               f"| Tracked lines, largest file types | {'; '.join(f'{k} {v[0]} files {v[1]} lines' for k, v in d['lines'])} | `git ls-files` |",
               "| Code coverage | not measured: no coverage tool is configured for the Node or Python suites | — |",
               "", "## 6. Rationale for decisions", "",
