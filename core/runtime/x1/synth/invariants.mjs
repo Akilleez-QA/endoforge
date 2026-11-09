@@ -14,10 +14,21 @@ export const library = Object.freeze({
   'determinism': 'Two fresh instances, the second calling in reverse order, give identical results.',
 });
 export const relative = 1e-9;
+export const alike = (a, b, tolerance) => {
+  if (typeof a === 'number' && typeof b === 'number') {
+    if (Number.isNaN(a) && Number.isNaN(b)) return true;
+    return Math.abs(a - b) <= (tolerance ?? relative * Math.max(1, Math.abs(b)));
+  }
+  if (Array.isArray(a) || Array.isArray(b)) return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((item, i) => alike(item, b[i], tolerance));
+  if (a && b && typeof a === 'object' && typeof b === 'object') {
+    const names = Object.keys(a);
+    return names.length === Object.keys(b).length && names.every(name => Object.hasOwn(b, name) && alike(a[name], b[name], tolerance));
+  }
+  return a !== undefined && a === b;
+};
 export const same = (a, b) => {
   if (a.throws || b.throws) return Boolean(a.throws) === Boolean(b.throws);
-  if (Number.isNaN(a.value) && Number.isNaN(b.value)) return true;
-  return Math.abs(a.value - b.value) <= relative * Math.max(1, Math.abs(b.value));
+  return alike(a.value, b.value);
 };
 const tokens = text => new Set(String(text).toLowerCase().match(/[a-z0-9]+/g) ?? []);
 const overlap = (a, b) => { const x = tokens(a), y = tokens(b); const both = [...x].filter(t => y.has(t)).length; return both / Math.max(1, new Set([...x, ...y]).size); };

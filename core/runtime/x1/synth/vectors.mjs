@@ -5,6 +5,7 @@ export function random(seed) {
   return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
 const finite = x => typeof x === 'number' && Number.isFinite(x);
+const held = x => typeof x === 'string' || (typeof x === 'object' && x !== null);
 const fractions = [0.1234567, 0.381966, 0.5, 0.7071068, 0.9137];
 // Values for one parameter: edges, beside them, outside them, midpoint, non-round interior.
 export function valuesFor(param, base) {
@@ -35,14 +36,14 @@ function inside(param, rnd, base) {
 // Returns { calls: [{fn,args}], sweeps: [{param, indices}] } for one export.
 export function vectorsFor(entry, base, seed, randomCount = 48) {
   const params = entry.params, calls = [], sweeps = [];
-  const start = params.map((p, i) => (finite(base?.[i]) ? base[i] : valuesFor(p)[0]));
+  const start = params.map((p, i) => (finite(base?.[i]) || held(base?.[i]) ? base[i] : valuesFor(p)[0]));
   const seen = new Set(), push = args => { const key = JSON.stringify(args); if (seen.has(key)) return calls.findIndex(c => JSON.stringify(c.args) === key); seen.add(key); calls.push({ fn: entry.name, args }); return calls.length - 1; };
   push(start);
   params.forEach((p, i) => {
-    const indices = valuesFor(p, start[i]).map(v => push(start.map((s, j) => (j === i ? v : s))));
+    const indices = (held(start[i]) ? [start[i]] : valuesFor(p, start[i])).map(v => push(start.map((s, j) => (j === i ? v : s))));
     sweeps.push({ param: i, indices: [...new Set(indices)] });
   });
   const rnd = random(seed);
-  for (let k = 0; k < randomCount; k++) push(params.map((p, i) => inside(p, rnd, start[i])));
+  for (let k = 0; k < randomCount; k++) push(params.map((p, i) => (held(start[i]) ? start[i] : inside(p, rnd, start[i]))));
   return { calls, sweeps };
 }

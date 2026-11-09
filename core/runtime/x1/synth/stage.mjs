@@ -4,8 +4,9 @@ import { join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { parseReply } from '../agent.mjs';
 import { judgeInCell } from './cell-host.mjs';
-import { library, same, swappedLabels } from './invariants.mjs';
+import { alike, library, same, swappedLabels } from './invariants.mjs';
 import { judge } from './judge.mjs';
+import { layoutOf, shaped, shapeOf, validLayout } from './layout.mjs';
 import { anchorProblems, discrimination, discriminationScore, mutants, selfConsistent } from './qualify.mjs';
 import { runReferences } from './sandbox.mjs';
 import { compareUnits } from './units.mjs';
@@ -15,11 +16,11 @@ const sha = text => createHash('sha256').update(text).digest('hex');
 export const enabled = env => env.ENDOFORGE_SYNTH === '1';
 export const sheetShape = { residual: ['plain-language sentence, at most 8'], quantities: [{ name: 'string', unit: 'string', sign: 'positive|nonnegative|any' }], relations: [{ output: 'string', input: 'string', direction: 'increasing|decreasing' }], invariants: Object.keys(library) };
 export const bindingShape = { exports: [{ name: 'exactExportName', params: [{ name: 'exactParameterName', unit: 'unit as stated, or ""', min: 'number|null', max: 'number|null', minInclusive: true, maxInclusive: true, integer: false, codes: '{"1":"label"} for code parameters only' }],
-  result: { kind: 'number|code|boolean', unit: 'unit as stated, or ""', decimals: 'integer the contract says to display, or null', codes: '{"1":"label"} or null', min: 'number|null', max: 'number|null' }, monotone: [{ param: 'exactParameterName', direction: 'increasing|decreasing' }] }],
+  result: { kind: 'number|code|boolean|integer|record|list|text', unit: 'unit as stated, or ""', decimals: 'integer the contract says to display, or null', codes: '{"1":"label"} or null', min: 'number|null', max: 'number|null, or the largest item count for a list', maxBytes: 'largest UTF-8 byte length for text only', items: 'the layout of each item for a list only', fields: '[{name, kind, ...the same layout keys}] in contract order for a record only' }, monotone: [{ param: 'exactParameterName', direction: 'increasing|decreasing' }] }],
   reference: 'function exactExportName(a, b) { ... }' };
 export const prompts = {
   need: need => ({ stage: 'evaluator-need', need, library, sheetShape, instructions: 'You are writing the acceptance evaluator for this request before any implementation exists, and you will never see one. From the request alone, state what must be checked. Write sheet.json with one edit_file call (its JSON matches sheetShape), then done. Name only quantities and relations the request itself supports; choose invariants from library by id.' }),
-  binding: (sheet, contract) => ({ stage: 'evaluator-binding', sheet, contract, library, bindingShape, instructions: 'You are writing the acceptance evaluator for the frozen contract below, before any implementation exists; you will never see the implementation or its tests. Write binding.json with one edit_file call, then done. List every export the contract defines, parameters in contract order with exact names. Give each unit as the contract states it, or "" when it states none. Give domain bounds only as the contract states them. Give decimals as the contract says to display. List a monotone relation only where the contract makes it certain. reference is one plain JavaScript source defining one function per export with the exact name and parameter order, computing exactly what the contract specifies in double precision with only Math and Number, throwing an Error wherever the contract requires a trap, and rounding only where the contract rounds the returned value.' }),
+  binding: (sheet, contract) => ({ stage: 'evaluator-binding', sheet, contract, library, bindingShape, instructions: 'You are writing the acceptance evaluator for the frozen contract below, before any implementation exists; you will never see the implementation or its tests. Write binding.json with one edit_file call, then done. List every export the contract defines, parameters in contract order with exact names. Give each unit as the contract states it, or "" when it states none. Give domain bounds only as the contract states them. Give decimals as the contract says to display. List a monotone relation only where the contract makes it certain. reference is one plain JavaScript source defining one function per export with the exact name and parameter order, computing exactly what the contract specifies in double precision with only Math and Number, throwing an Error wherever the contract requires a trap, and rounding only where the contract rounds the returned value. Where the contract returns a record, list or text, declare its full layout in result and return a plain object, array or string from reference.' }),
 };
 async function ask(provider, session, prompt, path) {
   const begin = performance.now();
@@ -38,6 +39,7 @@ const isNumber = x => typeof x === 'number' && Number.isFinite(x);
 function shapeProblems(entry, arity) {
   const problems = [];
   if (!entry || typeof entry.name !== 'string' || !Array.isArray(entry.params) || typeof entry.result !== 'object' || !entry.result) return ['malformed export'];
+  if (layoutOf(entry.result) && !validLayout(entry.result)) problems.push('malformed declared layout');
   if (arity === undefined) problems.push('not a function of the frozen tests');
   else if (entry.params.length !== arity) problems.push(`declares ${entry.params.length} parameters, the frozen tests pass ${arity}`);
   for (const p of entry.params) {
@@ -69,22 +71,25 @@ export async function compileMember(binding, tests) {
   catch (error) { for (const p of plan) Object.assign(exports[p.fn], { qualified: false, failures: [`M2 ${error.message}`] }); return { hash, exports }; }
   let offset = 0;
   for (const p of plan) {
-    const slice = (run, from, n) => run.results?.slice(offset + from, offset + from + n);
+    const layout = layoutOf(p.entry.result), shape = r => shaped(r, layout);
+    const slice = (run, from, n) => run.results?.slice(offset + from, offset + from + n).map(shape);
     const nOwn = p.own.length, nFrozen = p.frozen.calls.length, nDense = p.dense.length, record = exports[p.fn];
     const reference = slice(runs[0], 0, nOwn + nFrozen + nDense), again = slice(runs[1], 0, nOwn + nFrozen + nDense);
     offset += nOwn + nFrozen + nDense;
     if (!reference) { Object.assign(record, { qualified: false, failures: [`M2 reference did not load: ${runs[0].load}`] }); continue; }
     if (JSON.stringify(reference) !== JSON.stringify(again)) record.failures.push('M2 two runs differ');
     if (reference.some(r => r.error === 'budget' || /timed out/.test(r.error ?? ''))) record.failures.push('M2 reference exceeded its time budget');
+    if (reference.some(r => r.misfit)) record.failures.push('M2 reference value does not fit the declared layout');
     const anchors = reference.slice(0, nOwn);
-    record.failures.push(...anchorProblems(p.own, anchors).map(x => `M3 ${x}`));
-    record.contested = p.own.flatMap((t, i) => (anchors[i] && !anchors[i].missing && anchorProblems([t], [anchors[i]]).length ? [{ test: t.name ?? String(i), args: t.args, ...(t.expectError ? { expectError: true } : { expect: t.expect }), outcome: 'value' in anchors[i] ? { value: anchors[i].value } : { throws: true } }] : []));
+    record.failures.push(...anchorProblems(p.own, anchors, layout).map(x => `M3 ${x}`));
+    record.contested = p.own.flatMap((t, i) => (anchors[i] && !anchors[i].missing && anchorProblems([t], [anchors[i]], layout).length ? [{ test: t.name ?? String(tests.indexOf(t)), args: t.args, ...(Number.isFinite(t.tol) ? { tol: t.tol } : {}), ...(t.expectError ? { expectError: true } : { expect: t.expect }), outcome: 'value' in anchors[i] ? { value: anchors[i].value } : { throws: true } }] : []));
     const vectorResults = reference.slice(nOwn, nOwn + nFrozen);
-    const { kept, dropped } = selfConsistent(p.entry, p.frozen.calls, vectorResults, p.frozen.sweeps);
-    const score = discriminationScore(reference.slice(nOwn), runs.slice(2).map(run => ({ results: run.results?.slice(offset - nFrozen - nDense, offset) })), nFrozen);
+    const { kept, dropped } = selfConsistent(layout ? { ...p.entry, result: { kind: layout.kind }, monotone: [] } : p.entry, p.frozen.calls, vectorResults, p.frozen.sweeps);
+    const score = discriminationScore(reference.slice(nOwn), runs.slice(2).map(run => ({ results: run.results?.slice(offset - nFrozen - nDense, offset).map(shape) })), nFrozen);
+    Object.assign(record, { layout, structured: Boolean(layout) || p.frozen.calls.some(c => c.args.some(arg => typeof arg !== 'number')) });
     if (score.score < discrimination) record.failures.push(`M5 frozen vectors reject ${score.rejected} of ${score.distinguishable} distinguishable reference faults`);
     Object.assign(record, { qualified: !record.failures.length, dropped: dropped.map(x => `M4 ${x}`), discrimination: score, kept,
-      vectors: p.frozen.calls.map((c, i) => ({ args: c.args, ...('value' in vectorResults[i] ? { value: vectorResults[i].value } : { throws: true }) })).filter(v => v.throws || Number.isFinite(v.value)) });
+      vectors: p.frozen.calls.map((c, i) => ({ args: c.args, ...('value' in vectorResults[i] ? { value: vectorResults[i].value } : { throws: true }) })).filter(v => v.throws || layout || Number.isFinite(v.value)) });
   }
   return { hash, exports, reference: binding.reference };
 }
@@ -99,7 +104,8 @@ export async function combine(members) {
   const [a, b] = members, fns = Object.keys(a.exports);
   let cross = null;
   if (b) {
-    const calls = side => fns.filter(fn => side.exports[fn]?.qualified && (side === a ? b : a).exports[fn]?.qualified).flatMap(fn => side.exports[fn].vectors.map(v => ({ fn, args: v.args })));
+    const usable = e => e?.qualified && !e.structured;
+    const calls = side => fns.filter(fn => usable(side.exports[fn]) && usable((side === a ? b : a).exports[fn])).flatMap(fn => side.exports[fn].vectors.map(v => ({ fn, args: v.args })));
     try { [cross] = [await Promise.all([runReferences([b.reference], calls(a)), runReferences([a.reference], calls(b))])]; } catch { cross = null; }
   }
   const crossAt = [0, 0];
@@ -113,11 +119,11 @@ export async function combine(members) {
           decimals: x.result.decimals === y.result.decimals ? x.result.decimals : null,
           codes: x.result.codes && y.result.codes && JSON.stringify(Object.keys(x.result.codes).sort()) === JSON.stringify(Object.keys(y.result.codes).sort()) && !swappedLabels(x.result.codes, y.result.codes).length ? x.result.codes : null } });
     }
-    if (!sides.every(s => s?.qualified)) continue;
+    if (!sides.every(s => s?.qualified) || sides.some(s => s.structured)) continue;
     const maps = sides.map((side, k) => {
       const map = new Map();
       side.vectors.forEach((v, i) => {
-        if (b) { const other = cross?.[k]?.[0]?.results?.[crossAt[k] + i]; if (!other || !same('value' in other ? { value: other.value } : { throws: true }, v)) return; }
+        if (b) { const other = shaped(cross?.[k]?.[0]?.results?.[crossAt[k] + i], null); if (!other || !same('value' in other ? { value: other.value } : { throws: true }, v)) return; }
         map.set(i, checks.vectors.push({ fn, ...v }) - 1);
       });
       if (b) crossAt[k] += side.vectors.length;
@@ -142,13 +148,15 @@ export async function suspectTests(members) {
     if ([x, y].some(e => e.failures.some(f => !f.startsWith('M3 ')) || e.failures.length !== e.contested.length)) continue;
     const names = side => side.contested.map(c => c.test).sort().join('\n');
     if (names(x) !== names(y)) continue;
-    const agree = x.contested.every(c => same(c.outcome, y.contested.find(d => d.test === c.test).outcome));
+    if (Boolean(x.layout) !== Boolean(y.layout) || (x.layout && JSON.stringify(shapeOf(x.layout)) !== JSON.stringify(shapeOf(y.layout)))) continue;
+    const agreeing = (c, other) => (x.layout && 'value' in c.outcome && 'value' in other ? alike(c.outcome.value, other.value, c.tol ?? 0) : same(c.outcome, other));
+    const agree = x.contested.every(c => agreeing(c, y.contested.find(d => d.test === c.test).outcome));
     if (!agree) continue;
     let cross;
     try { cross = await Promise.all([runReferences([b.reference], x.vectors.map(v => ({ fn, args: v.args }))), runReferences([a.reference], y.vectors.map(v => ({ fn, args: v.args })))]); } catch { continue; }
-    const matches = (side, run) => side.vectors.length > 0 && side.vectors.every((v, i) => run?.[0]?.results?.[i] && same(outcomeOf(run[0].results[i]), v));
+    const matches = (side, run) => side.vectors.length > 0 && side.vectors.every((v, i) => run?.[0]?.results?.[i] && same(outcomeOf(shaped(run[0].results[i], side.layout)), v));
     if (!matches(x, cross[0]) || !matches(y, cross[1])) continue;
-    for (const c of x.contested) suspects.push({ fn, test: c.test, args: c.args, ...('expectError' in c ? { expectError: true } : { expect: c.expect }), references: [c.outcome, y.contested.find(d => d.test === c.test).outcome] });
+    for (const c of x.contested) suspects.push({ fn, test: c.test, args: c.args, ...('expectError' in c ? { expectError: true } : { expect: c.expect }), references: [c.outcome, y.contested.find(d => d.test === c.test).outcome], ...(x.layout ? { layout: x.layout } : {}) });
   }
   return suspects;
 }

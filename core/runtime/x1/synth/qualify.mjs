@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
-import { relative, same } from './invariants.mjs';
+import { alike, relative, same } from './invariants.mjs';
+import { laidOut } from './layout.mjs';
 // Fixed meta-gates for a synthesized evaluator. None of them sees a candidate.
 export const discrimination = 0.8;
 const swaps = [[/^<=$/, '<'], [/^<$/, '<='], [/^>=$/, '>'], [/^>$/, '>='], [/^\+$/, '-'], [/^-$/, '+'], [/^\*$/, '/'], [/^\/$/, '*'], [/^&&$/, '||'], [/^\|\|$/, '&&'],
@@ -21,13 +22,18 @@ export function mutants(source, cap = 40) {
 }
 const outcome = r => ('value' in r ? { value: r.value } : { throws: true });
 // M3: the reference reproduces every frozen test of this export.
-export function anchorProblems(tests, results) {
+export function anchorProblems(tests, results, layout = null) {
   const problems = [];
   tests.forEach((test, i) => {
     const r = results[i];
     if (!r || r.missing) return problems.push(`${test.name ?? i}: no reference function`);
     if (test.expectError) { if (!('error' in r)) problems.push(`${test.name ?? i}: reference returns where the test expects a trap`); return undefined; }
     if ('error' in r) return problems.push(`${test.name ?? i}: reference throws`);
+    if (layout) {
+      const declared = laidOut(test.expect, layout);
+      if (declared === undefined || !alike(declared, r.value, Number.isFinite(test.tol) ? test.tol : undefined)) problems.push(`${test.name ?? i}: reference gives ${JSON.stringify(r.value)}, test expects ${JSON.stringify(test.expect)}`);
+      return undefined;
+    }
     const expect = typeof test.expect === 'boolean' ? Number(test.expect) : Number(test.expect);
     if (!Number.isFinite(expect)) return undefined;
     const tol = Number.isFinite(test.tol) ? test.tol : relative * Math.max(1, Math.abs(expect));

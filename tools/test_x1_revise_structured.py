@@ -203,5 +203,205 @@ class ThroughTheLedger(unittest.TestCase):
         self.assertEqual(len(Ledger(self.ledger).records()), before)
 
 
+DRIVER = """
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { scriptedProvider } from './core/runtime/x1/transports.mjs';
+import { begin } from './core/runtime/x1/synth/stage.mjs';
+const input = JSON.parse(await new Promise(done => { let text = ''; process.stdin.on('data', part => { text += part; }); process.stdin.on('end', () => done(text)); }));
+const reply = (path, value) => ({ text: JSON.stringify({ calls: [{ name: 'edit_file', path, content: JSON.stringify(value) }, { name: 'done' }] }), usage: 1 });
+const sheet = { residual: ['a'], quantities: [], relations: [], invariants: ['value.reference'] };
+const provider = scriptedProvider(({ session }) => (session.startsWith('need') ? reply('sheet.json', sheet) : reply('binding.json', input.bindings[Number(session.split('-')[1])])));
+const root = await mkdtemp(join(tmpdir(), 'structured-'));
+await writeFile(join(root, 'CONTRACT.md'), 'contract');
+await writeFile(join(root, 'tests.json'), JSON.stringify(input.tests));
+const reports = [];
+const stage = begin({ need: 'need', env: { ENDOFORGE_SYNTH_WIDTH: '2' }, provider, suspect: report => reports.push(report) });
+const result = await stage.finish(root);
+const evaluator = JSON.parse(await readFile(join(root, 'synth', 'evaluator.json'), 'utf8'));
+await rm(root, { recursive: true, force: true });
+process.stdout.write(JSON.stringify({ suspects: result.suspects, report: reports[0] ?? null, evaluator }));
+"""
+SANDBOX = """
+import { runReferences } from './core/runtime/x1/synth/sandbox.mjs';
+const input = JSON.parse(await new Promise(done => { let text = ''; process.stdin.on('data', part => { text += part; }); process.stdin.on('end', () => done(text)); }));
+process.stdout.write(JSON.stringify(await runReferences(input.variants, input.calls)));
+"""
+CARD = dict(kind="record", fields=[dict(name="count", kind="integer", unit="1"), dict(name="done", kind="boolean", unit="1"),
+                                   dict(name="label", kind="text", maxBytes=8), dict(name="tags", kind="list", max=3, items=dict(kind="integer", unit="1"))])
+CARD_A = "function step(n) { if (n < 0 || n > 5) throw Error('range'); return { count: n, done: n > 2, label: 'n' + n, tags: [n, n + 1] }; }"
+CARD_B = "function step(k) { if (k < 0) { throw new RangeError('low'); } if (k > 5) { throw new RangeError('high'); } const tags = [k, k + 1]; return { tags, label: `n${k}`, done: k > 2 ? 1 : 0, count: k }; }"
+CARD_ONE = dict(count=1, done=False, label="n1", tags=[1, 2])
+CARD_TWO = dict(count=2, done=False, label="n2", tags=[2, 3])
+WRONG = dict(name="wrong", fn="step", args=[1], expect=dict(count=99, done=False, label="n1", tags=[1, 2]))
+KEPT = dict(name="kept", fn="step", args=[2], expect=CARD_TWO)
+LIST = dict(kind="list", max=3, items=dict(kind="integer", unit="1"))
+TEXT = dict(kind="text", maxBytes=8)
+NUMBER = dict(kind="number", unit="1")
+
+
+def binding(reference, result=CARD, fn="step", params=None):
+    domain = dict(name="n", unit="1", min=0, max=5, integer=True)
+    return dict(exports=[dict(name=fn, params=params or [domain], result=result)], reference=reference)
+
+
+def node(script, request):
+    done = subprocess.run(["node", "--input-type=module", "-e", script], cwd=REPOSITORY, input=json.dumps(request), capture_output=True, text=True, timeout=120)
+    if done.returncode != 0:
+        raise AssertionError(done.stderr)
+    return json.loads(done.stdout)
+
+
+def synthesized(bindings, tests=(WRONG, KEPT)):
+    return node(DRIVER, dict(bindings=bindings, tests=list(tests)))
+
+
+class FromReferences(unittest.TestCase):
+    def only(self, answer):
+        self.assertEqual(len(answer["suspects"]), 1, json.dumps(answer["evaluator"]["members"]))
+        return answer["suspects"][0]
+
+    def test_agreeing_record_references_report_the_declared_layout(self):
+        entry = self.only(synthesized([binding(CARD_A), binding(CARD_B)]))
+        self.assertEqual((entry["fn"], entry["test"], entry["args"]), ("step", "wrong", [1]))
+        self.assertEqual(entry["references"], [valued(CARD_ONE), valued(CARD_ONE)])
+        self.assertEqual(entry["layout"], CARD)
+
+    def test_a_list_result_is_reported(self):
+        first = "function ids(n) { if (n < 0 || n > 3) throw Error('range'); return Array.from({ length: n }, (_, i) => i + 1); }"
+        second = "function ids(m) { if (m < 0 || m > 3) throw new Error('range'); const out = []; for (let i = 1; i <= m; i += 1) out.push(i); return out; }"
+        domain = [dict(name="n", unit="1", min=0, max=3, integer=True)]
+        tests = [dict(name="wrong", fn="ids", args=[2], expect=[9]), dict(name="kept", fn="ids", args=[1], expect=[1])]
+        entry = self.only(synthesized([binding(first, LIST, "ids", domain), binding(second, LIST, "ids", domain)], tests))
+        self.assertEqual(entry["references"], [valued([1, 2]), valued([1, 2])])
+        self.assertEqual(entry["layout"], LIST)
+
+    def test_a_text_result_is_reported(self):
+        first = "function name(n) { if (n < 0 || n > 5) throw Error('range'); return 'x' + n; }"
+        second = "function name(k) { if (k < 0 || k > 5) throw new Error('range'); return `x${k}`; }"
+        tests = [dict(name="wrong", fn="name", args=[3], expect="nope"), dict(name="kept", fn="name", args=[1], expect="x1")]
+        entry = self.only(synthesized([binding(first, TEXT, "name"), binding(second, TEXT, "name")], tests))
+        self.assertEqual(entry["references"], [valued("x3"), valued("x3")])
+
+    def test_a_record_parameter_is_held_at_the_frozen_argument(self):
+        first = "function size(o) { return { total: o.a + o.b }; }"
+        second = "function size(v) { const total = v.b + v.a; return { total }; }"
+        layout = dict(kind="record", fields=[dict(name="total", kind="integer", unit="1")])
+        params = [dict(name="o", unit="", kind="record")]
+        tests = [dict(name="wrong", fn="size", args=[dict(a=1, b=2)], expect=dict(total=9))]
+        entry = self.only(synthesized([binding(first, layout, "size", params), binding(second, layout, "size", params)], tests))
+        self.assertEqual(entry["args"], [dict(a=1, b=2)])
+        self.assertEqual(entry["references"][0], valued(dict(total=3)))
+
+    def test_a_record_parameter_never_becomes_a_number_vector(self):
+        first = "function size(o) { return o.a + o.b; }"
+        second = "function size(v) { return v.b + v.a; }"
+        params = [dict(name="o", unit="")]
+        tests = [dict(name="kept", fn="size", args=[dict(a=1, b=2)], expect=3)]
+        answer = synthesized([binding(first, NUMBER, "size", params), binding(second, NUMBER, "size", params)], tests)
+        self.assertEqual(answer["evaluator"]["checks"]["vectors"], [])
+
+    def test_structured_results_never_become_number_vectors(self):
+        self.assertEqual(synthesized([binding(CARD_A), binding(CARD_B)])["evaluator"]["checks"]["vectors"], [])
+
+    def test_a_matching_frozen_structure_is_not_suspect(self):
+        self.assertEqual(synthesized([binding(CARD_A), binding(CARD_B)], [dict(WRONG, expect=CARD_ONE), KEPT])["suspects"], [])
+
+    def test_references_that_disagree_on_a_leaf_are_not_reported(self):
+        self.assertEqual(synthesized([binding(CARD_A), binding(CARD_B.replace("`n${k}`", "`m${k}`"))])["suspects"], [])
+
+    def test_a_tiny_numeric_difference_is_not_reported_as_agreement(self):
+        layout = dict(kind="record", fields=[dict(name="v", kind="number", unit="1")])
+        first = "function step(n) { return { v: n + 0.5 }; }"
+        second = "function step(n) { return { v: n + 0.5 + (n === 1 ? 1e-12 : 0) }; }"
+        tests = [dict(name="wrong", fn="step", args=[1], expect=dict(v=9)), dict(name="kept", fn="step", args=[2], expect=dict(v=2.5))]
+        self.assertEqual(synthesized([binding(first, layout), binding(second, layout)], tests)["suspects"], [])
+
+    def test_a_reference_that_returns_nothing_is_not_a_throw(self):
+        silent = "function step(n) { if (n < 0 || n > 5) throw Error('range'); }"
+        answer = synthesized([binding(silent), binding(silent)], [dict(WRONG, expect=CARD_ONE), KEPT])
+        self.assertEqual(answer["suspects"], [])
+        self.assertTrue(any(failure.startswith("M2") for failure in answer["evaluator"]["members"][0]["exports"]["step"]["failures"]))
+
+    def test_a_reference_outside_the_layout_is_not_qualified(self):
+        answer = synthesized([binding(CARD_A.replace("[n, n + 1]", "[n, n, n, n]")), binding(CARD_B)])
+        self.assertEqual(answer["suspects"], [])
+        self.assertFalse(answer["evaluator"]["members"][0]["exports"]["step"]["qualified"])
+
+    def test_a_malformed_layout_is_not_qualified(self):
+        answer = synthesized([binding(CARD_A, dict(kind="list", max=2)), binding(CARD_B)])
+        self.assertEqual(answer["suspects"], [])
+        self.assertFalse(answer["evaluator"]["members"][0]["exports"]["step"]["qualified"])
+
+    def test_differing_declared_shapes_are_not_reported(self):
+        other = dict(CARD, fields=[*CARD["fields"][:2], dict(name="label", kind="text", maxBytes=9), CARD["fields"][3]])
+        self.assertEqual(synthesized([binding(CARD_A), binding(CARD_B, other)])["suspects"], [])
+
+    def test_units_may_differ_between_declared_layouts(self):
+        other = dict(CARD, fields=[dict(CARD["fields"][0], unit="items"), *CARD["fields"][1:]])
+        self.only(synthesized([binding(CARD_A), binding(CARD_B, other)]))
+
+    def test_a_scalar_suspect_carries_no_layout(self):
+        first = "function add(a) { return a + 1; }"
+        second = "function add(b) { const c = b + 1; return c; }"
+        tests = [dict(name="wrong", fn="add", args=[1], expect=9), dict(name="kept", fn="add", args=[2], expect=3)]
+        entry = self.only(synthesized([binding(first, NUMBER, "add"), binding(second, NUMBER, "add")], tests))
+        self.assertNotIn("layout", entry)
+        self.assertEqual(entry["references"], [valued(2), valued(2)])
+
+
+class Sandbox(unittest.TestCase):
+    def one(self, code):
+        return node(SANDBOX, dict(variants=[code], calls=[dict(fn="f", args=[1])]))[0]["results"][0]
+
+    def test_records_lists_and_text_come_back_as_plain_values(self):
+        self.assertEqual(self.one("function f() { return { a: 1, b: [true, 'x'] }; }"), valued(dict(a=1, b=[True, "x"])))
+        self.assertEqual(self.one("function f() { return [1, 2]; }"), valued([1, 2]))
+        self.assertEqual(self.one("function f() { return 'héllo'; }"), valued("héllo"))
+
+    def test_numbers_and_booleans_are_unchanged(self):
+        self.assertEqual(self.one("function f() { return 2.5; }"), valued(2.5))
+        self.assertEqual(self.one("function f() { return true; }"), valued(1))
+
+    def test_a_throw_is_an_error(self):
+        self.assertEqual(self.one("function f() { throw Error('no'); }"), dict(error="no"))
+
+    def test_unusable_returns_are_marked_and_are_not_throws(self):
+        for code in ("function f() {}", "function f() { const a = {}; a.a = a; return a; }", "function f() { return () => 1; }"):
+            with self.subTest(code):
+                self.assertTrue(self.one(code).get("invalid"))
+
+    def test_a_reference_cannot_change_the_arguments_of_a_later_call(self):
+        code = "function f(o) { const seen = o.a; o.a = 9; return seen; }"
+        calls = [dict(fn="f", args=[dict(a=1)]), dict(fn="f", args=[dict(a=1)])]
+        self.assertEqual(node(SANDBOX, dict(variants=[code], calls=calls))[0]["results"], [valued(1), valued(1)])
+
+
+class EndToEnd(unittest.TestCase):
+    def test_a_structured_correction_freezes_and_meets_the_commit_comparison(self):
+        with tempfile.TemporaryDirectory() as scratch:
+            directory = Path(scratch)
+            ledger, root = directory / "ledger.sqlite", directory / "evaluator"
+            root.mkdir()
+            (root / "CONTRACT.md").write_text("contract")
+            (root / "tests.json").write_text(json.dumps([WRONG, KEPT]))
+            (root / "frozen.sha256").write_text("{}")
+            Ledger(ledger)
+            request = dict(need="need", configuration=dict(a=1), reference=dict(ledger=str(ledger), root=str(root)))
+            frozen = subprocess.run([sys.executable, "-B", "-m", "tools.x1_ledger", "freeze"], cwd=REPOSITORY, input=json.dumps(request), capture_output=True, text=True, timeout=60)
+            self.assertEqual(frozen.returncode, 0, frozen.stderr)
+            report = synthesized([binding(CARD_A), binding(CARD_B)])["report"]
+            self.assertIsNotNone(report)
+            request = dict(reference=dict(ledger=str(ledger), identity=json.loads(frozen.stdout)["identity"]), report=report)
+            done = subprocess.run([sys.executable, "-B", "-m", "tools.x1_loop", "revise"], cwd=REPOSITORY, input=json.dumps(request), capture_output=True, text=True, timeout=60)
+            self.assertEqual(done.returncode, 0, done.stderr)
+            tests = json.loads(json.loads(done.stdout)["files"]["tests.json"])
+            self.assertEqual(json.dumps(tests[0]["expect"]), json.dumps(CARD_ONE))
+            self.assertEqual(tests[1]["expect"], CARD_TWO)
+            self.assertTrue(x1_loop.value_meets(tests[0], dict(got=CARD_ONE), CARD))
+            self.assertFalse(x1_loop.value_meets(tests[0], dict(got=dict(CARD_ONE, count=2)), CARD))
+
+
 if __name__ == "__main__":
     unittest.main()
