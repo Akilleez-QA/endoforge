@@ -116,12 +116,16 @@ Equivalent contracts written with different numerals miss, which costs a regener
 of 92 seeded faults with an in-range witness when the need's frozen files said exactly what the kernel's own said;
 that class needs a stronger evaluator, which is why reuse stays opt-in.
 
-## Not built
+## Gaps in the current code
 
-Composition is one entry with its export names bound: no union of entries, no pipeline from one output to another
-input, no argument adapters. Retrieval is a key match, not semantic search. Also not built: tenant and lineage scopes,
-reclamation of duplicates (they are flagged), counterexamples that narrow future search, per-environment qualification
-records, permission checks on reuse, and use from the `isolate` and `agent` paths.
+- Composition serves one entry with its export names bound. There is no union of entries yet, no pipeline from one
+  entry's output to another's input, and no argument adapter.
+- Retrieval is a key match; there is no semantic search step yet.
+- There are no tenant or lineage scopes on entries yet, and no permission check on reuse.
+- Duplicates are flagged but not reclaimed.
+- Refusals are journaled, but nothing yet turns them into counterexamples that narrow later search.
+- Qualification records are not yet kept per environment.
+- The `isolate` and `agent` paths don't consult the library yet; only the `current` path does.
 
 ## Boundary with the engine
 

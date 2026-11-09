@@ -159,11 +159,11 @@ code. The model only selects and parameterizes them: `value.reference`, `boundar
 P-56 ran 702 `claude -p` calls on Sonnet: four calls and about 14.4k tokens per task at width 2, 6.1 s mean per call.
 Offline, compile, qualify and judge took 495 ms at p50; judging alone 0.6 ms.
 
-## Not built
+## Gaps in the current code
 
-- The `isolate` and `agent` paths don't call the stage.
-- Judging runs in the controller process under the fuel meter, not in a pool cell.
+- The `isolate` and `agent` paths don't call the stage yet; only the `current` path does.
+- Judging runs in the controller process under the fuel meter, not yet in a pool cell.
 - A frozen test that two qualified, agreeing references both contradict (P-56 found one) only unqualifies that
-  export. Reporting it as a suspect test before the implementation turn, for repair under the ledger's revision rule,
-  is proposed, not built. The [formula oracle](agent-loop.md#formula-oracle) is the agent path's check of frozen
+  export. There is no step yet that reports such a test as suspect before the implementation turn, so it can be
+  repaired under the ledger's revision rule. The [formula oracle](agent-loop.md#formula-oracle) is the agent path's check of frozen
   expectations.

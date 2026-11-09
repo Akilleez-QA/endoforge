@@ -88,5 +88,5 @@ requalification run that compares it with Microsoft's native compiler on every v
 - The cohort is not an OS sandbox and not a Spectre boundary. The permission model doesn't cover signals, and on
   Node 22 it doesn't cover the network. Passing the attack suite doesn't prove no escape exists.
 - Mathematical and Unicode results follow the V8 and ICU of the running Node.
-- The route reports; it does not promote. A compatibility-lane promotion rule is not built.
+- The route reports; it does not promote. There is no promotion rule for the compatibility lane yet.
 - Requires Node 22.8 or later.
