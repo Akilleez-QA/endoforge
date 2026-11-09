@@ -196,8 +196,8 @@ node examples/counter-loop.mjs
 python3 examples/show-gates.py <the "ledger" path it printed>
 ```
 
-The [getting-started tutorial](docs/guides/tutorials/getting-started.md) walks through the same run step by step in
-about five minutes. The full test suite (`make tools`, then `make test`) also needs bubblewrap, `age` and `gcc`; see
+The [getting-started tutorial](docs/guides/tutorials/getting-started.md) walks through the same loop step by step
+with a turnstile kernel, including a failed check, a repair and a refusal, in about ten minutes. The full test suite (`make tools`, then `make test`) also needs bubblewrap, `age` and `gcc`; see
 [run local checks](docs/guides/how-to/local-checks.md).
 
 ### With a real agent

@@ -7,15 +7,21 @@ Read the [project README](../README.md), then the tutorial.
 
 ## Learn
 
-- [Getting started](guides/tutorials/getting-started.md): clone the repository, send a need through the real loop with
-  a scripted model standing in for the agent, read the gate results from the ledger, then watch wrong code get
-  refused. About five minutes, no model account.
+- [Getting started](guides/tutorials/getting-started.md): clone the repository, watch a scripted agent build a
+  turnstile kernel in the agent loop (fail a check, repair, get promoted), read the ledger, then see the commands that
+  put Claude Code or Codex in its place. About ten minutes, no model account.
 
 ## Do
 
+- [Run the agent loop](guides/how-to/run-the-agent-loop.md): Claude Code or Codex in a workcell from your own code;
+  providers, loop paths, waits, limits and resume.
+- [Run a job](guides/how-to/run-a-job.md): a change to a real repository, from job card to a Conductor run where
+  agents' changes land only after their checks pass.
+- [Split work with the atomizer](guides/how-to/split-work-with-the-atomizer.md): a need as a graph of sandboxed atoms.
+- [Reuse with the library](guides/how-to/reuse-with-the-library.md): serve a later need from a promoted kernel.
+- [Turn on evaluator synthesis](guides/how-to/turn-on-evaluator-synthesis.md): a second evaluator written blind to the
+  code.
 - [Run local checks](guides/how-to/local-checks.md): the full test suite, as CI runs it.
-- Use a real agent: set `ENDOFORGE_LOOP` and pass a Claude Code transport, as the
-  [README](../README.md#with-a-real-agent) shows.
 
 ## Look up
 
