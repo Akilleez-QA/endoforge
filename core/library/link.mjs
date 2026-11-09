@@ -2,7 +2,7 @@ import { inspect } from '../runtime/x1/meter.mjs';
 export class LinkError extends Error { constructor(reason, detail) { super(detail ?? reason); this.reason = reason; } }
 const refuse = (reason, detail) => { throw new LinkError(reason, detail); };
 const MAGIC = [0, 97, 115, 109, 1, 0, 0, 0];
-const PAGE = 65536, MEMORY_PAGES = 1024, HOST_PAGES = 64, NO_WINDOW = 2 ** 33;
+const PAGE = 65536, MEMORY_PAGES = 1024, HOST_PAGES = 64, NO_WINDOW = 2 ** 33, HOST_MEMORY = 0;
 const LOAD_WIDTH = [4, 8, 4, 8, 1, 1, 2, 2, 1, 1, 2, 2, 4, 4], STORE_WIDTH = [4, 8, 4, 8, 1, 2, 1, 2, 4];
 const STORE_VALUE = ['i32', 'i64', 'f32', 'f64', 'i32', 'i32', 'i64', 'i64', 'i64'];
 const VALUE = { i32: 0x7f, i64: 0x7e, f32: 0x7d, f64: 0x7c };
@@ -88,7 +88,7 @@ function rewrite(module, body, map, params) {
   const memarg = op => {
     const raw = r.leb(), rawOffset = r.leb(), flags = new Cursor(raw).uint(), offset = new Cursor(rawOffset).uint();
     if (flags & 0x40) refuse('memory_conflict', 'a part addresses more than one memory');
-    return { tail: [op, ...raw, ...rawOffset], offset };
+    return { tail: [op, ...uleb(flags | 0x40), ...uleb(guard.memory), ...rawOffset], offset };
   };
   while (r.at < r.end) {
     const op = r.byte();
@@ -141,10 +141,10 @@ function rewrite(module, body, map, params) {
         continue;
       }
       out.length -= 1 + uleb(sub).length;
-      const size = [...get(temp.i32), 0xad], span = [...size, ...check];
-      if (sub === 8) { const segment = map.data(r.uint()); r.leb(); out.push(...set(temp.i32), ...set(temp.b), ...span, ...get(temp.b), ...get(temp.i32), 0xfc, ...uleb(8), ...uleb(segment), 0); }
-      else if (sub === 10) { r.leb(); r.leb(); out.push(...set(temp.i32), ...set(temp.b), ...span, ...get(temp.b), ...span, ...get(temp.i32), 0xfc, ...uleb(10), 0, 0); }
-      else { r.leb(); out.push(...set(temp.i32), ...set(temp.b), ...span, ...get(temp.b), ...get(temp.i32), 0xfc, ...uleb(11), 0); }
+      const size = [...get(temp.i32), 0xad], span = [...size, ...check], own = uleb(guard.memory);
+      if (sub === 8) { const segment = map.data(r.uint()); r.leb(); out.push(...set(temp.i32), ...set(temp.b), ...span, ...get(temp.b), ...get(temp.i32), 0xfc, ...uleb(8), ...uleb(segment), ...own); }
+      else if (sub === 10) { r.leb(); r.leb(); out.push(...set(temp.i32), ...set(temp.b), ...span, ...get(temp.b), ...span, ...get(temp.i32), 0xfc, ...uleb(10), ...own, ...own); }
+      else { r.leb(); out.push(...set(temp.i32), ...set(temp.b), ...span, ...get(temp.b), ...get(temp.i32), 0xfc, ...uleb(11), ...own); }
     } else if (op > 0xc4 && op !== 0xd1 || (op >= 0x06 && op <= 0x0a) || op === 0x12 || op === 0x13 || op === 0x18 || op === 0x19) refuse('opcode_unsupported', `opcode ${op}`);
   }
   return { code: out, usage };
@@ -206,9 +206,9 @@ function wrapper(spec, parts, resolved, placeOf) {
         if (!Number.isInteger(arg.input) || arg.input < 0 || arg.input >= inputs) refuse('adapter_arity', `input ${arg.input}`);
         code.push(...narrowConst(physical), ...local(arg.input));
       }
-      code.push(...narrowConst(size), 0xfc, 10, 0, 0);
+      code.push(...narrowConst(size), 0xfc, 10, ...uleb(place.memory), ...uleb(arg.previous === true ? previousBuffer.memory : HOST_MEMORY));
     });
-    if (buffers.out !== null) code.push(...narrowConst(place.window + stage.slots.out), ...narrowConst(0), ...narrowConst(buffers.out), 0xfc, 11, 0);
+    if (buffers.out !== null) code.push(...narrowConst(place.window + stage.slots.out), ...narrowConst(0), ...narrowConst(buffers.out), 0xfc, 11, ...uleb(place.memory));
     stage.args.forEach((arg, position) => {
       const wanted = shape.params[position];
       if ((buffers.args[position] ?? null) !== null) code.push(...narrowConst(place.virtual + stage.slots.args[position]));
@@ -226,7 +226,7 @@ function wrapper(spec, parts, resolved, placeOf) {
     if (buffers.out !== null) {
       if (shape.results.length) code.push(0x1a);
       previous = null; previousType = null;
-      previousBuffer = { at: place.window + stage.slots.out, size: buffers.out };
+      previousBuffer = { at: place.window + stage.slots.out, size: buffers.out, memory: place.memory };
       return;
     }
     previous = params + locals.length;
@@ -237,7 +237,7 @@ function wrapper(spec, parts, resolved, placeOf) {
   });
   if (spec.bufferResult !== undefined) {
     if (!previousBuffer || previousBuffer.size !== spec.bufferResult) refuse('adapter_arity', 'the last stage does not produce the declared buffer');
-    code.push(...local(params - 1), ...narrowConst(previousBuffer.at), ...narrowConst(spec.bufferResult), 0xfc, 10, 0, 0, 0x0b);
+    code.push(...local(params - 1), ...narrowConst(previousBuffer.at), ...narrowConst(spec.bufferResult), 0xfc, 10, ...uleb(HOST_MEMORY), ...uleb(previousBuffer.memory), 0x0b);
   } else {
     if (previous === null) refuse('adapter_arity', 'the last stage produces no scalar result');
     code.push(...local(previous), ...adapted(previousType, spec.result, spec.output ?? {}), 0x0b);
@@ -267,16 +267,14 @@ function reserveSlots(wrappers) {
 function planRegions(modules, compiled, members, exchange) {
   const windows = members.map(i => Math.ceil((exchange.get(i) ?? 0) / PAGE));
   const share = Math.floor((MEMORY_PAGES - HOST_PAGES - windows.reduce((sum, pages) => sum + pages, 0)) / members.length);
-  let cursor = 0;
   return new Map(members.map((part, k) => {
     const limits = modules[part].limits;
     if (limits.length > 1) refuse('memory_conflict', 'a part declares more than one memory');
     const initial = limits[0]?.initial ?? 0, grows = compiled[part].some(body => body.usage.grow);
     if (initial > share) refuse('memory_conflict', `a part needs ${initial} pages, its share is ${share}`);
     const reserved = grows ? Math.max(initial, Math.min(limits[0].maximum ?? share, share)) : initial;
-    const base = cursor * PAGE, reservedBytes = reserved * PAGE;
-    cursor += reserved + windows[k];
-    return [part, { base, initial: initial * PAGE, reservedBytes, virtual: reservedBytes, window: base + reservedBytes, exchange: exchange.get(part) ?? 0, end: cursor * PAGE }];
+    const reservedBytes = reserved * PAGE;
+    return [part, { memory: HOST_MEMORY + 1 + k, base: 0, initial: initial * PAGE, reservedBytes, virtual: reservedBytes, window: reservedBytes, exchange: exchange.get(part) ?? 0, pages: reserved + windows[k] }];
   }));
 }
 const regionGlobals = ({ base, initial, reservedBytes, exchange }) => {
@@ -323,7 +321,7 @@ export function link(buffers, { exports = [], wrappers = [] } = {}) {
   const members = separate ? [...new Set([...memoryUsers, ...exchange.keys()])].sort((a, b) => a - b) : [];
   const regions = separate ? planRegions(modules, compiled, members, exchange) : new Map();
   const partFunctions = modules.reduce((sum, module) => sum + module.functions.length, 0);
-  members.forEach((part, k) => { assigned.guard[part] = { check: importedFunctions + partFunctions + 2 * k, grow: importedFunctions + partFunctions + 2 * k + 1, limit: globalBase + 4 * k + 1 }; });
+  members.forEach((part, k) => { assigned.guard[part] = { check: importedFunctions + partFunctions + 2 * k, grow: importedFunctions + partFunctions + 2 * k + 1, limit: globalBase + 4 * k + 1, memory: regions.get(part).memory }; });
   let tablesSoFar = 0, elementsSoFar = 0, dataSoFar = 0;
   for (const part of tableUsers) { assigned.table[part] = tablesSoFar; assigned.element[part] = elementsSoFar; tablesSoFar += modules[part].tables.length; elementsSoFar += modules[part].elements.length; }
   for (const part of members) { assigned.data[part] = dataSoFar; dataSoFar += modules[part].data.length; }
@@ -370,8 +368,7 @@ export function link(buffers, { exports = [], wrappers = [] } = {}) {
   out.push(...section(3, vector(functionTypes.map(uleb))));
   const tables = tableUsers.flatMap(part => modules[part].tables);
   if (tables.length) out.push(...section(4, vector(tables)));
-  const totalPages = Math.ceil([...regions.values()].reduce((end, region) => Math.max(end, region.end), 0) / PAGE);
-  if (separate) out.push(...section(5, vector([[1, ...uleb(totalPages), ...uleb(totalPages + HOST_PAGES)]])));
+  if (separate) out.push(...section(5, vector([[1, 0, ...uleb(HOST_PAGES)], ...members.map(part => { const { pages } = regions.get(part); return [1, ...uleb(pages), ...uleb(pages)]; })])));
   else if (memoryPart !== undefined && modules[memoryPart].memories.length) out.push(...section(5, vector(modules[memoryPart].memories)));
   const globals = [...modules.flatMap(module => module.globals), ...members.flatMap(part => regionGlobals(regions.get(part)))];
   if (globals.length) out.push(...section(6, vector(globals)));
@@ -383,7 +380,7 @@ export function link(buffers, { exports = [], wrappers = [] } = {}) {
     if (segment.at === null) return segment.raw;
     const region = regions.get(part);
     if (segment.at + segment.length > region.initial) refuse('data_unsupported', 'a data segment reaches past its memory');
-    return [0, 0x41, ...sleb(segment.at + region.base), 0x0b, ...uleb(segment.length), ...segment.payload];
+    return [2, ...uleb(region.memory), 0x41, ...sleb(segment.at), 0x0b, ...uleb(segment.length), ...segment.payload];
   });
   const data = separate ? members.flatMap(memberData) : memoryPart !== undefined ? modules[memoryPart].data.map(segment => segment.raw) : [];
   if (separate) { if (members.some(part => modules[part].dataCount !== null)) out.push(...section(12, uleb(data.length))); }

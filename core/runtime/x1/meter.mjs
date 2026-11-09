@@ -1,6 +1,7 @@
 const uleb = value => { const out = []; let n = BigInt(value); do { let byte = Number(n & 127n); n >>= 7n; if (n) byte |= 128; out.push(byte); } while (n); return out; };
 const sleb = value => { const out = []; let n = BigInt(value); for (;;) { const byte = Number(n & 127n); n >>= 7n; if ((n === 0n && !(byte & 64)) || (n === -1n && byte & 64)) { out.push(byte); return out; } out.push(byte | 128); } };
-const fuelExport = '__ef_fuel', memoryExport = '__ef_memory', bulkCost = 65536;
+export const fuelExport = '__ef_fuel';
+const memoryExport = '__ef_memory', bulkCost = 65536;
 const types = { 0x7f: 'i32', 0x7e: 'i64', 0x7d: 'f32', 0x7c: 'f64', 0x70: 'funcref', 0x6f: 'externref' };
 const order = [1, 2, 3, 4, 5, 13, 6, 7, 8, 9, 12, 10, 11];
 class Reader {
@@ -30,7 +31,7 @@ function walk(reader, opcode, stack, frame, onCall) {
   else if (opcode === 0x11 || opcode === 0x13) { onCall(null); skip(2); }
   else if (opcode === 0x0e) { skip(reader.uint() + 1); }
   else if (opcode === 0x1c) skip(reader.uint());
-  else if (opcode >= 0x28 && opcode <= 0x3e) skip(2);
+  else if (opcode >= 0x28 && opcode <= 0x3e) { if (reader.uint() & 0x40) reader.skipLeb(); reader.skipLeb(); }
   else if (opcode === 0x43) reader.offset += 4;
   else if (opcode === 0x44) reader.offset += 8;
   else if ((opcode >= 0x45 && opcode <= 0xc4) || opcode === 0xd1) return;
@@ -63,8 +64,9 @@ function charge(global, cost) {
   return [0x23, ...index, 0x42, ...sleb(cost), 0x7d, 0x24, ...index, 0x23, ...index, 0x42, 0, 0x53, 0x04, 0x40, 0x00, 0x0b];
 }
 export function inspect(bytes) {
-  const signatures = [], imports = [], functionTypes = [], functions = {}, calls = new Set();
-  let memory = null, globals = 0, importedFunctions = 0, memoryName = null, start = false;
+  const signatures = [], imports = [], functionTypes = [], functions = {}, calls = new Set(), memories = [], memoryNames = [];
+  let globals = 0, importedFunctions = 0, start = false;
+  const limits = r => { const flags = r.uint(), initial = r.uint(); return { initial, ...(flags & 1 ? { maximum: r.uint() } : {}) }; };
   const parts = sections(bytes);
   for (const { id, content } of parts) {
     const r = new Reader(content);
@@ -76,17 +78,17 @@ export function inspect(bytes) {
       const module = r.name(), name = r.name(), kind = r.byte(), entry = { module, name, kind };
       if (kind === 0) { entry.signature = signatures[r.uint()]; functionTypes.push(entry.signature); importedFunctions++; }
       else if (kind === 1) { r.byte(); if (r.uint() & 1) r.uint(); r.uint(); }
-      else if (kind === 2) { const flags = r.uint(); r.uint(); if (flags & 1) r.uint(); }
+      else if (kind === 2) memories.push({ ...limits(r), imported: true });
       else if (kind === 3) { r.byte(); r.byte(); globals++; }
       else throw Error('unknown import kind');
       imports.push(entry);
     } else if (id === 3) for (let n = r.uint(); n; n--) functionTypes.push(signatures[r.uint()]);
-    else if (id === 5 && r.uint()) { const flags = r.uint(); memory = { initial: r.uint(), ...(flags & 1 ? { maximum: r.uint() } : {}) }; }
+    else if (id === 5) for (let n = r.uint(); n; n--) memories.push(limits(r));
     else if (id === 6) globals += r.uint();
     else if (id === 7) for (let n = r.uint(); n; n--) {
       const name = r.name(), kind = r.byte(), index = r.uint();
       if (kind === 0) functions[name] = functionTypes[index];
-      else if (kind === 2) memoryName ??= name;
+      else if (kind === 2) memoryNames[index] ??= name;
     } else if (id === 8) start = true;
   }
   const code = parts.find(part => part.id === 10);
@@ -101,7 +103,11 @@ export function inspect(bytes) {
       r.offset = at + size;
     }
   }
-  return { imports, functions, memory, memoryName, start, globals, bodies, calls: [...calls].sort(), parts };
+  const memory = memories[0] ? { initial: memories[0].initial, ...(memories[0].maximum !== undefined ? { maximum: memories[0].maximum } : {}) } : null;
+  return { imports, functions, memory, memories, memoryName: memoryNames[0] ?? null, memoryNames, start, globals, bodies, calls: [...calls].sort(), parts };
+}
+export function memoryExports(shape) {
+  return shape.memories.map((_, index) => shape.memoryNames[index] ?? (index ? `${memoryExport}${index}` : memoryExport));
 }
 export function meter(bytes, fuel) {
   const shape = inspect(bytes), global = shape.globals, parts = shape.parts.map(part => ({ id: part.id, content: part.content }));
@@ -131,7 +137,7 @@ export function meter(bytes, fuel) {
   };
   extend(6, [0x7e, 1, 0x42, ...sleb(fuel), 0x0b]);
   extend(7, entry(fuelExport, 3, global));
-  if (shape.memory && !shape.memoryName) extend(7, entry(memoryExport, 2, 0));
+  memoryExports(shape).forEach((name, index) => { if (!shape.memoryNames[index]) extend(7, entry(name, 2, index)); });
   return Buffer.concat([bytes.subarray(0, 8), ...parts.flatMap(({ id, content }) => [Uint8Array.from([id, ...uleb(content.length)]), content])]);
 }
 let latest = null;
@@ -144,7 +150,7 @@ export function loadKernel(bytes, fuel) {
 }
 function compileKernel(bytes, fuel) {
   const shape = inspect(bytes), module = new WebAssembly.Module(meter(bytes, fuel));
-  const memoryName = shape.memoryName ?? (shape.memory ? memoryExport : null);
+  const names = memoryExports(shape);
   const start = abort => {
     const hosts = {};
     for (const entry of shape.imports) if (entry.kind === 0) (hosts[entry.module] ??= {})[entry.name] = (...args) => {
@@ -153,8 +159,9 @@ function compileKernel(bytes, fuel) {
     };
     const instance = new WebAssembly.Instance(module, hosts);
     const remaining = () => instance.exports[fuelExport].value;
+    const memories = () => names.map(name => instance.exports[name]);
     return { instance, used: () => Number(BigInt(fuel) - remaining()), exhausted: () => remaining() < 0n,
-      memoryBytes: () => (memoryName ? instance.exports[memoryName].buffer.byteLength : 0), memory: () => (memoryName ? instance.exports[memoryName] : null) };
+      memoryBytes: () => memories().reduce((sum, memory) => sum + memory.buffer.byteLength, 0), memory: () => memories()[0] ?? null, memories };
   };
   return { shape, start };
 }
