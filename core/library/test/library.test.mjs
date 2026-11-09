@@ -14,6 +14,7 @@ import { Journal } from '../journal.mjs';
 import { link } from '../link.mjs';
 import { discriminate, uncoveredBounds } from '../discriminate.mjs';
 import { applied, mutantsOf } from '../mutants.mjs';
+import { meter } from '../../runtime/x1/meter.mjs';
 const fixture = name => fileURLToPath(new URL(`../../runtime/test/fixtures/x1/${name}`, import.meta.url));
 const base = candidate();
 const glue = { ...JSON.parse(base.files['glue.json']) };
@@ -218,7 +219,8 @@ test('G5 link: union keeps each export, a pipeline feeds output to input, an ada
   assert.equal(live.bumped(1), 8); assert.equal(live.rounded(2.6, 1), 4);
   assert.throws(() => link([addWasm, doubleWasm], { wrappers: [{ name: 'lossy', params: ['f64'], result: 'i32', stages: [{ part: 0, fn: 'add', args: [{ input: 0 }, { const: 1 }] }] }] }), error => error.reason === 'adapter_narrowing');
   assert.throws(() => link([addWasm], { wrappers: [{ name: 'short', params: ['i32'], result: 'i32', stages: [{ part: 0, fn: 'add', args: [{ input: 0 }] }] }] }), error => error.reason === 'adapter_arity');
-  assert.throws(() => link([memoryWasm, memoryWasm], { exports: [{ name: 'a', part: 0, fn: 'm' }, { name: 'b', part: 1, fn: 'm' }] }), error => error.reason === 'memory_conflict');
+  const both = new WebAssembly.Instance(new WebAssembly.Module(link([memoryWasm, memoryWasm], { exports: [{ name: 'a', part: 0, fn: 'm' }, { name: 'b', part: 1, fn: 'm' }] })), {}).exports;
+  assert.equal(both.a(), 0); assert.equal(both.b(), 0);
   const solo = new WebAssembly.Instance(new WebAssembly.Module(link([memoryWasm, addWasm], { exports: [{ name: 'a', part: 0, fn: 'm' }, { name: 'sum', part: 1, fn: 'add' }] })), {}).exports;
   assert.equal(solo.a(), 0); assert.equal(solo.sum(1, 1), 2);
 });
@@ -408,4 +410,141 @@ test('G10 a failing requalification in a new environment does not revoke the ent
   library = await openLibrary({ journal: path, gate: 'none' });
   assert.equal(library.isRevoked('adder'), false);
   assert.equal(library.lookup({ capability: addCapability, files: frozen(contract, failing) }).status, 'hit');
+});
+const mleb = value => { const out = []; let n = value; do { const part = n % 128; n = Math.floor(n / 128); out.push(part | (n ? 128 : 0)); } while (n); return out; };
+const sec = (id, content) => (content.length ? [id, ...mleb(content.length), ...content] : []);
+const vec = rows => [...mleb(rows.length), ...rows.flat()];
+const str = text => [...mleb(Buffer.byteLength(text)), ...Buffer.from(text)];
+const I32 = 0x7f, F64 = 0x7c;
+const f64 = value => { const out = new Uint8Array(8); new DataView(out.buffer).setFloat64(0, value, true); return [...out]; };
+const assemble = ({ types = [], funcs = [], memory = null, tables = 0, elements = [], data = [], exports = [] }) => Uint8Array.from([
+  0, 97, 115, 109, 1, 0, 0, 0,
+  ...sec(1, vec(types.map(([params, results]) => [0x60, ...vec(params.map(p => [p])), ...vec(results.map(r => [r]))]))),
+  ...sec(3, vec(funcs.map(f => mleb(f.type)))),
+  ...(tables ? sec(4, vec([[0x70, 0, tables]])) : []),
+  ...(memory ? sec(5, vec([memory.max === undefined ? [0, ...mleb(memory.initial)] : [1, ...mleb(memory.initial), ...mleb(memory.max)]])) : []),
+  ...sec(7, vec(exports.map(([name, index]) => [...str(name), 0, index]))),
+  ...(elements.length ? sec(9, vec(elements.map(([at, list]) => [0, 0x41, at, 0x0b, ...vec(list.map(f => [f]))]))) : []),
+  ...sec(10, vec(funcs.map(f => { const body = [0, ...f.code, 0x0b]; return [...mleb(body.length), ...body]; }))),
+  ...(data.length ? sec(11, vec(data.map(([at, bytes]) => [0, 0x41, at, 0x0b, ...vec(bytes.map(b => [b]))]))) : []),
+]);
+const live = bytes => new WebAssembly.Instance(new WebAssembly.Module(bytes), {}).exports;
+const counter = (name, step, extra = {}) => assemble({
+  types: [[[], [I32]]],
+  funcs: [{ type: 0, code: [0x41, 0, 0x41, 0, 0x28, 2, 0, 0x41, step, 0x6a, 0x36, 2, 0, 0x41, 0, 0x28, 2, 0] }],
+  memory: { initial: 1, max: 1 }, exports: [[name, 0]], ...extra });
+const peek = assemble({ types: [[[I32], [I32]]], funcs: [{ type: 0, code: [0x20, 0, 0x28, 2, 0] }], memory: { initial: 1, max: 1 }, exports: [['peek', 0]] });
+const poke = assemble({ types: [[[I32, I32], []]], funcs: [{ type: 0, code: [0x20, 0, 0x20, 1, 0x36, 2, 0] }], memory: { initial: 1, max: 1 }, exports: [['poke', 0]] });
+const growing = assemble({ types: [[[I32], [I32]], [[], [I32]]], funcs: [{ type: 0, code: [0x20, 0, 0x40, 0] }, { type: 1, code: [0x3f, 0] }], memory: { initial: 1, max: 3 }, exports: [['grow', 0], ['size', 1]] });
+const seededData = assemble({ types: [[[], [I32]]], funcs: [{ type: 0, code: [0x41, 16, 0x28, 2, 0] }], memory: { initial: 1, max: 1 }, data: [[16, [42, 0, 0, 0]]], exports: [['seed', 0]] });
+const bulk = assemble({ types: [[[], [I32]]], funcs: [{ type: 0, code: [0x41, 32, 0x41, 7, 0x41, 4, 0xfc, 11, 0, 0x41, 48, 0x41, 32, 0x41, 4, 0xfc, 10, 0, 0, 0x41, 48, 0x28, 2, 0] }], memory: { initial: 1, max: 1 }, exports: [['bulk', 0]] });
+const dispatcher = (name, value) => assemble({
+  types: [[[], [I32]], [[I32], [I32]]],
+  funcs: [{ type: 0, code: [0x41, value] }, { type: 1, code: [0x20, 0, 0x11, 0, 0] }],
+  tables: 1, elements: [[0, [0]]], exports: [[name, 1]] });
+
+const recordStep = (name, delta, scale) => assemble({
+  types: [[[I32, I32], []]],
+  funcs: [{ type: 0, code: [0x20, 1, 0x20, 0, 0x2b, 3, 0, 0x44, ...f64(scale), 0xa2, 0x44, ...f64(delta), 0xa0, 0x39, 3, 0] }],
+  memory: { initial: 1, max: 1 }, exports: [[name, 0]] });
+const inc = recordStep('inc', 1, 1), dbl = recordStep('dbl', 0, 2);
+const balance = { kind: 'record', label: 'Balance', fields: [{ name: 'total', kind: 'number', unit: 'kg', label: 'Total', precision: 2 }] };
+const stepCap = name => ({ exports: [{ name, args: [{ ...balance, name: 'state' }], result: balance }], traps: [] });
+const seed = async (path, rows, options) => {
+  const probe = await openLibrary({ journal: path }), { hostDigest, environment, environmentId } = probe;
+  await probe.close();
+  const journal = new Journal(path);
+  for (const { id, bytes, cap, contract } of rows) {
+    const source = `export const seeded = ${JSON.stringify(id)};`, tests = '[]';
+    journal.append({ kind: 'library_admit', entry: { id, glueId: id, wasm: Buffer.from(bytes).toString('base64'), wasmSha: sha256(bytes), source, sourceSha: sha256(source), glue: glueFor(id, cap), capability: cap, keys: keysOf(cap, contract), fingerprint: id, own: { contract, tests }, promotion: { candidate: id, decision: `decision-${id}` }, qualifiedHost: hostDigest, qualifications: { [environmentId]: { environment, ok: true } } } });
+  }
+  journal.close();
+  return openLibrary({ journal: path, gate: 'none', ...options });
+};
+
+test('H7 two parts that use linear memory link, and each keeps its own state', () => {
+  const { a, b } = live(link([counter('a', 1), counter('b', 10)], { exports: [{ name: 'a', part: 0, fn: 'a' }, { name: 'b', part: 1, fn: 'b' }] }));
+  assert.deepEqual([a(), a(), b(), a(), b()], [1, 2, 10, 3, 20]);
+});
+test('H7 a part cannot read or write outside its own memory', () => {
+  const { peek: read, poke: write } = live(link([peek, poke], { exports: [{ name: 'peek', part: 0, fn: 'peek' }, { name: 'poke', part: 1, fn: 'poke' }] }));
+  write(0, 77);
+  assert.equal(read(0), 0);
+  write(65532, 5);
+  assert.equal(read(65532), 0);
+  assert.throws(() => read(65533), WebAssembly.RuntimeError);
+  assert.throws(() => write(65536, 1), WebAssembly.RuntimeError);
+  assert.throws(() => read(-4), WebAssembly.RuntimeError);
+});
+test('H7 memory.size, memory.grow, data segments and bulk operations stay inside the part', () => {
+  const linked = live(link([growing, seededData, bulk], { exports: [{ name: 'grow', part: 0, fn: 'grow' }, { name: 'size', part: 0, fn: 'size' }, { name: 'seed', part: 1, fn: 'seed' }, { name: 'bulk', part: 2, fn: 'bulk' }] }));
+  assert.equal(linked.size(), 1);
+  assert.equal(linked.grow(1), 1);
+  assert.equal(linked.size(), 2);
+  assert.equal(linked.grow(5), -1);
+  assert.equal(linked.size(), 2);
+  assert.equal(linked.seed(), 42);
+  assert.equal(linked.bulk(), 0x07070707);
+});
+test('H7 parts with tables link, each dispatching through its own table', () => {
+  const { x, y } = live(link([dispatcher('x', 5), dispatcher('y', 9)], { exports: [{ name: 'x', part: 0, fn: 'x' }, { name: 'y', part: 1, fn: 'y' }] }));
+  assert.equal(x(0), 5);
+  assert.equal(y(0), 9);
+  assert.throws(() => x(1), WebAssembly.RuntimeError);
+});
+test('H7 the linked module still meters, and its mutants stay valid', () => {
+  const bytes = link([counter('a', 1), counter('b', 10)], { exports: [{ name: 'a', part: 0, fn: 'a' }, { name: 'b', part: 1, fn: 'b' }] });
+  const metered = live(meter(Buffer.from(bytes), 1_000_000));
+  assert.equal(metered.a(), 1);
+  assert.equal(metered.b(), 10);
+  const { sites } = mutantsOf(bytes);
+  assert(sites.length > 0);
+  for (const site of sites) new WebAssembly.Module(applied(bytes, site));
+});
+test('H7 a plan that cannot fit every part in the memory budget is refused', () => {
+  const big = name => assemble({ types: [[[], [I32]]], funcs: [{ type: 0, code: [0x41, 0, 0x28, 2, 0] }], memory: { initial: 600, max: 600 }, exports: [[name, 0]] });
+  assert.throws(() => link([big('a'), big('b')], { exports: [{ name: 'a', part: 0, fn: 'a' }, { name: 'b', part: 1, fn: 'b' }] }), error => error.reason === 'memory_conflict');
+});
+test('H7 compose gates a two-memory union through the cell', async t => {
+  const root = await scratch(t);
+  const cap = name => ({ exports: [{ name, args: [], result: { kind: 'integer', unit: '1' } }], traps: [] });
+  const library = await seed(join(root, 'l.jsonl'), [{ id: 'first', bytes: counter('a', 1), cap: cap('a'), contract: 'First counter.' }, { id: 'second', bytes: counter('b', 10), cap: cap('b'), contract: 'Second counter.' }]);
+  t.after(() => library.close());
+  const capability = { exports: [...cap('a').exports, ...cap('b').exports], traps: [] };
+  const tests = JSON.stringify([{ name: 'a', fn: 'a', args: [], expect: 1 }, { name: 'b', fn: 'b', args: [], expect: 10 }]);
+  const plan = { exports: [{ name: 'a', entry: 'first', fn: 'a' }, { name: 'b', entry: 'second', fn: 'b' }] };
+  const served = await library.compose({ id: 'u', capability, files: frozen('Two counters.', tests) }, plan);
+  assert.equal(served.verdict, 'pass', JSON.stringify(served));
+  assert.deepEqual(served.receipt.sources.map(s => s.candidate).sort(), ['first', 'second']);
+});
+test('H7 a structured pipeline copies state between the parts\' memories and passes the gates', async t => {
+  const root = await scratch(t);
+  const library = await seed(join(root, 'l.jsonl'), [{ id: 'incer', bytes: inc, cap: stepCap('inc'), contract: 'Adds one to the balance.' }, { id: 'doubler', bytes: dbl, cap: stepCap('dbl'), contract: 'Doubles the balance.' }]);
+  t.after(() => library.close());
+  const capability = stepCap('step');
+  const tests = JSON.stringify([{ name: 'step', fn: 'step', args: [{ total: 3 }], expect: { total: 8 } }, { name: 'zero', fn: 'step', args: [{ total: 0 }], expect: { total: 2 } }]);
+  const plan = { exports: [{ name: 'step', stages: [{ entry: 'incer', fn: 'inc' }, { entry: 'doubler', fn: 'dbl' }] }] };
+  const served = await library.compose({ id: 's', capability, files: frozen('Add one then double the balance.', tests) }, plan);
+  assert.equal(served.verdict, 'pass', JSON.stringify(served));
+  const wrong = JSON.stringify([{ name: 'step', fn: 'step', args: [{ total: 3 }], expect: { total: 9 } }]);
+  assert.equal((await library.compose({ capability, files: frozen('Add one then double the balance.', wrong) }, plan)).verdict, 'refused');
+});
+test('H7 a structured union export takes the host buffer through the part\'s window', async t => {
+  const root = await scratch(t);
+  const library = await seed(join(root, 'l.jsonl'), [{ id: 'incer', bytes: inc, cap: stepCap('inc'), contract: 'Adds one to the balance.' }, { id: 'doubler', bytes: dbl, cap: stepCap('dbl'), contract: 'Doubles the balance.' }]);
+  t.after(() => library.close());
+  const capability = { exports: [...stepCap('inc').exports, ...stepCap('dbl').exports], traps: [] };
+  const tests = JSON.stringify([{ name: 'inc', fn: 'inc', args: [{ total: 3 }], expect: { total: 4 } }, { name: 'dbl', fn: 'dbl', args: [{ total: 3 }], expect: { total: 6 } }]);
+  const plan = { exports: [{ name: 'inc', entry: 'incer', fn: 'inc' }, { name: 'dbl', entry: 'doubler', fn: 'dbl' }] };
+  const served = await library.compose({ id: 'su', capability, files: frozen('Add one or double.', tests) }, plan);
+  assert.equal(served.verdict, 'pass', JSON.stringify(served));
+});
+test('H7 a pipeline whose stage layouts disagree is refused', async t => {
+  const root = await scratch(t);
+  const other = { exports: [{ name: 'dbl', args: [{ kind: 'record', name: 'state', label: 'S', fields: [{ name: 'other', kind: 'number', unit: 'kg', label: 'O', precision: 2 }] }], result: balance }], traps: [] };
+  const library = await seed(join(root, 'l.jsonl'), [{ id: 'incer', bytes: inc, cap: stepCap('inc'), contract: 'Adds one to the balance.' }, { id: 'doubler', bytes: dbl, cap: other, contract: 'Doubles another shape.' }]);
+  t.after(() => library.close());
+  const tests = JSON.stringify([{ name: 'step', fn: 'step', args: [{ total: 3 }], expect: { total: 8 } }]);
+  const plan = { exports: [{ name: 'step', stages: [{ entry: 'incer', fn: 'inc' }, { entry: 'doubler', fn: 'dbl' }] }] };
+  assert.equal((await library.compose({ capability: stepCap('step'), files: frozen('Add one then double the balance.', tests) }, plan)).reason, 'plan_mismatch');
 });
