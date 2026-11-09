@@ -3,10 +3,13 @@ import { plan as planCapacity } from '../../core/runtime/capacity/plan.mjs';
 import { machine } from '../../core/runtime/capacity/probe.mjs';
 import { createCohortSet } from '../../core/runtime/contained/cohort-set.mjs';
 import { createContainedPool, createContainedRunner, LANE } from '../../core/runtime/contained/runner.mjs';
+import { COMPAT_POLICY, compatLedger, promoteChecked } from '../../core/runtime/contained/promotion.mjs';
 import { typecheck } from './checker.mjs';
+import { TSRS_MODULE } from './pin.mjs';
 import { cohortPrepare } from './cohort-check.mjs';
 
 export const ROUTE = 'typescript';
+export { COMPAT_POLICY };
 const ROOT = '/proj';
 const SCALARS = 'declare type i8=number;declare type i16=number;declare type i32=number;declare type i64=number;declare type isize=number;declare type u8=number;declare type u16=number;declare type u32=number;declare type u64=number;declare type usize=number;declare type f32=number;declare type f64=number;declare type bool=boolean;\n';
 const ADAPTER = 'const kernel = require("./kernel");exports.main = I => I.tests.map(t => { try { return { out: kernel[t.fn](...t.args) }; } catch (error) { return { err: String(error && error.message) }; } });';
@@ -58,7 +61,7 @@ export function createContainedRoute({ width, placement, deadlineMs = 1000, layo
     if (result.status !== 'completed') return receipt({ status: result.status, reason: result.reason, detail: result.detail, ...fields });
     const outcomes = JSON.parse(result.output);
     const failed = tests.flatMap((test, index) => passes(test, outcomes[index]) ? [] : [{ name: test.name, got: outcomes[index] }]);
-    return receipt({ status: failed.length ? 'refused' : 'completed', reason: failed.length ? 'tests' : null, passed: tests.length - failed.length, total: tests.length, failed: failed.slice(0, 5), outputSha256: result.outputSha256, ...fields });
+    return receipt({ status: failed.length ? 'refused' : 'completed', reason: failed.length ? 'tests' : null, passed: tests.length - failed.length, total: tests.length, failed: failed.slice(0, 5), output: result.output, outputSha256: result.outputSha256, ...fields });
   };
   const inCohort = async (candidate, contract) => {
     const tests = JSON.parse(candidate.files['tests.json']);
@@ -69,7 +72,7 @@ export function createContainedRoute({ width, placement, deadlineMs = 1000, layo
     const run = compare(result.runs);
     return score(tests, run, { compiler: prepared.compiler, artifact: prepared.artifact, adapter: sha256(ADAPTER), ...timing, runMs: result.runMs, comparedRuns: run.comparedRuns, cohort: result.cohort, contract: result.contract });
   };
-  return {
+  const route = {
     pool,
     placement: check,
     capacity,
@@ -88,5 +91,8 @@ export function createContainedRoute({ width, placement, deadlineMs = 1000, layo
       const result = await pool.runTwice({ modules, entry: `${ROOT}/__adapter.js`, input: { tests }, deadlineMs, contract });
       return score(tests, result, { compiler: report.compiler, artifact: report.artifact.sha256, adapter: sha256(ADAPTER), checkMs, check, runMs: performance.now() - runStarted, comparedRuns: result.comparedRuns ?? 0, cohort: result.cohort, contract: result.contract });
     },
+    freeze: ({ ledger, need, tests }) => compatLedger('freeze', { ledger, need, tests, compiler: TSRS_MODULE.sha256 }),
+    promote: (candidate, { ledger, frozen, decisionPath, contract } = {}) => promoteChecked({ ledger, frozen, candidate, decisionPath, check: item => route.check(item, { contract }) }),
   };
+  return route;
 }
