@@ -17,11 +17,14 @@ EndoForge is preproduction and has no release tags.
 
 ## Security posture
 
-- EndoForge runs model-written code. It runs it in V8 workcells with heap, stack, WebAssembly memory and deadline
-  limits, or in forked processes with optional cgroup limits. Thread workcells do not bound off-heap memory.
-- Cells have no ambient authority; ports reach the supervisor only through bounded host calls.
-- Model clients must use a claude.ai subscription login. API-key and provider configurations are refused, and billing
-  variables are removed from child environments.
+- EndoForge runs code that models write. Workcells are V8 isolates, used for speed and concurrency rather than as an
+  operating-system sandbox. They cap heap, stack, WebAssembly memory and run time; process workcells can add cgroup
+  limits. Thread workcells do not bound memory outside the JavaScript heap.
+- Cells have no ambient authority; they reach the supervisor only through bounded host calls. A kernel may import
+  nothing except an abort hook.
+- Claude Code transports must run on a claude.ai subscription login. API-key and provider configurations are refused,
+  and billing variables are removed from child environments. The Codex pool checks only that each account directory
+  holds a login file.
 - Nothing stores credentials. Tests use synthetic inputs and test doubles.
 - CI has no secret-scanning job; see the [software management plan](docs/plan/software-management-plan.md#7-security-privacy-and-secure-coding)
   and the [assurance record](docs/assurance/assurance-record.md).
