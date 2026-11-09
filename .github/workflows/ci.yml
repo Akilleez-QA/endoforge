@@ -60,7 +60,11 @@ jobs:
         with:
           node-version: "22"
       - name: Install pinned Rust toolchain
-        run: rustup toolchain install 1.98.1 --profile minimal --target wasm32-unknown-unknown
+        run: |
+          rustup toolchain install 1.98.1 --profile minimal
+          rustup target add wasm32-unknown-unknown --toolchain 1.98.1
+          rustup default 1.98.1
+          ls "$(rustc +1.98.1 --print sysroot)/lib/rustlib/"
       - name: Install kernel test tools
         run: make tools
       - name: Rust lane tests

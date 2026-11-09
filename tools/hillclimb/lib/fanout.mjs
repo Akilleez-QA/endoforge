@@ -67,6 +67,9 @@ export function assignLanes(c, logins, { skip = [] } = {}) {
   return lanes.sort((a, b) => a.piece.localeCompare(b.piece) || (a.variant ?? 0) - (b.variant ?? 0));
 }
 export const laneId = (l) => (l.variant ? `${l.piece}-v${l.variant}` : l.piece).toLowerCase();
+export const CLAUDE_TOOLS = 'Read Edit Write Glob Grep Bash(node:*) Bash(npm:*) Bash(make:*) Bash(python3:*) Bash(git diff:*) Bash(git status:*) Bash(ls:*)';
+export const claudeArguments = (f, prompt, dirs = []) => ['-p', prompt, '--model', f.claudeModel ?? 'opus', '--permission-mode', 'acceptEdits',
+  '--allowedTools', f.claudeTools ?? CLAUDE_TOOLS, ...dirs.flatMap((d) => ['--add-dir', d])];
 export function workerCommand(c, lane, { worktree, prompt, images = [] }) {
   const f = c.fanout ?? {};
   if (lane.engine === 'codex') {
@@ -75,8 +78,7 @@ export function workerCommand(c, lane, { worktree, prompt, images = [] }) {
   }
   const dirs = [...new Set(images.map((i) => path.dirname(i)))];
   const env = lane.configDir ? { CLAUDE_CONFIG_DIR: lane.configDir } : {};
-  const args = ['-p', prompt, '--model', f.claudeModel ?? 'opus', '--permission-mode', 'acceptEdits',
-    '--allowedTools', f.claudeTools ?? 'Read Edit Write Glob Grep Bash(node:*) Bash(npm:*) Bash(make:*) Bash(python3:*) Bash(git diff:*) Bash(git status:*) Bash(ls:*)', ...dirs.flatMap((d) => ['--add-dir', d])];
+  const args = claudeArguments(f, prompt, dirs);
   requireSubscription({ env: { ...process.env, ...env }, cwd: worktree, args });
   return { argv: [...unsetArguments(), f.claudeBin ?? 'claude', ...args], env };
 }
