@@ -2,6 +2,7 @@ import { execFile } from 'node:child_process';
 import { readFile, writeFile, mkdir, readdir, lstat } from 'node:fs/promises';
 import { basename, isAbsolute, join, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
+import { capabilityBlock } from './contract.mjs';
 import { testProblems } from './gates.mjs';
 import { configuration, hash, implementationFiles } from './host.mjs';
 import { ledger } from './ledger.mjs';
@@ -27,11 +28,7 @@ export const glueTemplate = {
 export const capabilityKinds = Object.freeze(['integer', 'number', 'boolean', 'code', 'record', 'list', 'text']);
 export const capabilityRule = 'End CONTRACT.md with one fenced block that opens with the line ```capability and closes with ```, holding only JSON {"exports":[{"name":...,"args":[{"name":...,"kind":...,"unit":...,"range":...}],"result":{"kind":...,"unit":...,"precision":...}}],"traps":[...]}: one exports entry per kernel export with its parameters in order; each kind one of integer, number, boolean, code, record, list or text; each unit a unit string, 1 when dimensionless; each range as low..high wherever the contract bounds that value; precision on every number result; codes on every code value; traps listing the name of every export that has an expectError test. The library finds an already promoted kernel by this block, and glue.json must later declare the same exports, kinds, units, ranges, precision and traps.';
 const identifier = /^[A-Za-z_][A-Za-z0-9_]*$/;
-export function capabilityBlock(contract) {
-  const match = String(contract ?? '').match(/```capability\s*\n([\s\S]*?)```/);
-  if (!match) return { block: null, error: 'CONTRACT.md has no ```capability block' };
-  try { return { block: JSON.parse(match[1]) }; } catch { return { block: null, error: 'the ```capability block is not JSON' }; }
-}
+export { capabilityBlock };
 function valueProblems(where, value, field) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return [`${where} must be an object`];
   const problems = [];
@@ -43,8 +40,7 @@ function valueProblems(where, value, field) {
   if (value.kind === 'code' && (!value.codes || typeof value.codes !== 'object' || Object.keys(value.codes).length < 2)) problems.push(`${where} of kind code needs a codes table`);
   return problems;
 }
-export function capabilityProblems(contract, tests, { required = true } = {}) {
-  if (!required && !String(contract ?? '').includes('```capability')) return [];
+export function capabilityProblems(contract, tests) {
   const { block, error } = capabilityBlock(contract);
   if (error) return [error];
   if (!block || typeof block !== 'object' || Array.isArray(block)) return ['the ```capability block must be a JSON object'];
@@ -172,7 +168,7 @@ export async function generate({ need, directory, env = process.env, timeout = 6
   }
   if (!files['CONTRACT.md'].trim() || !Array.isArray(tests) || !tests.length) throw Error('contract and nonempty tests required');
   if (testProblems(tests).length) throw Error('frozen tests must each assert something a kernel can fail');
-  const capability = capabilityProblems(files['CONTRACT.md'], tests, { required: false });
+  const capability = capabilityProblems(files['CONTRACT.md'], tests);
   if (capability.length) throw Object.assign(Error(`capability block refused at the freeze: ${capability.join('; ')}`), { capability });
   const generatedSpecMs = performance.now() - start, freezeStart = performance.now();
   files['frozen.sha256'] = JSON.stringify({ contract: hash(files['CONTRACT.md']), tests: hash(files['tests.json']) });

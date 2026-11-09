@@ -71,7 +71,7 @@ export function specificationProblems(overlay, { oracle = false } = {}) {
   let tests = null;
   try { tests = JSON.parse(overlay['tests.json'] ?? ''); } catch { problems.push('tests.json is not JSON'); }
   if (tests !== null) problems.push(...testProblems(tests));
-  if (tests !== null) problems.push(...capabilityProblems(overlay['CONTRACT.md'], tests, { required: false }));
+  if (tests !== null) problems.push(...capabilityProblems(overlay['CONTRACT.md'], tests));
   if (oracle && !problems.length) problems.push(...oracleProblems(analyzeSpecification(overlay)));
   return problems.length ? { problems } : null;
 }
