@@ -1,27 +1,29 @@
 # Getting help
 
-Start with [README.md](README.md), [CONTRIBUTING.md](CONTRIBUTING.md), and
-[docs/README.md](docs/README.md). Tool-specific READMEs live under `tools/`.
-EndoForge is research software; interfaces may change. As stated in
-[SECURITY.md](SECURITY.md), only the latest `main` is supported.
+Start with the [README](README.md) and the [documentation index](docs/README.md); tools have their own READMEs under
+`tools/`. EndoForge is research software with no releases. Interfaces may change, and only the latest `main` is
+supported ([SECURITY.md](SECURITY.md)).
 
-Use [Issues](https://github.com/Akilleez-QA/endoforge/issues) for reproducible bugs (the bug report form is the
-problem report), feature proposals (the feature request form is the change request), or usage questions. Severity
-levels S1 to S4 are defined in the
-[software management plan](docs/plan/software-management-plan.md#9-problem-reporting-and-severity). For a question, open a blank issue and
-include your goal, the documentation you followed, and what you tried.
-For bugs, include the commit, operating system, Python and Node.js versions,
-exact commands, expected and actual behavior, and relevant output.
-Use synthetic inputs and remove secrets and private data from reports and receipts.
+## Asking a question or reporting a bug
+
+Use [Issues](https://github.com/Akilleez-QA/endoforge/issues):
+
+- **Bug:** use the bug report form (it is the problem report). Include the commit, operating system, Python and Node.js
+  versions, the exact commands, what you expected, what happened, and the relevant output.
+- **Feature:** use the feature request form (it is the change request).
+- **Question:** open a blank issue with your goal, the documentation you followed and what you tried.
+
+Severity levels S1 to S4 are defined in the
+[software management plan](docs/plan/software-management-plan.md#9-problem-reporting-and-severity). Use synthetic
+inputs, and remove secrets and private data from reports and receipts.
 
 ## Sensitive reports
 
-Follow [SECURITY.md](SECURITY.md) for vulnerabilities: use GitHub private
-vulnerability reporting from this repository's Security tab. Do not post
-vulnerability details publicly. If the reporting option is unavailable, open a
-minimal issue asking for a private channel, without describing the vulnerability
-or sharing reproduction steps, and wait for that channel.
+Report vulnerabilities as [SECURITY.md](SECURITY.md) describes, never in a public issue. If GitHub's private reporting
+option is not available, open a minimal issue asking for a private channel, without describing the vulnerability or
+how to reproduce it, and wait for that channel.
 
-Follow [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) for conduct reports.
-The security policy's acknowledgment aim applies to security reports;
-this support guide promises no response time for general questions or requests.
+Report conduct problems as [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) describes.
+
+The security policy's acknowledgment aim applies only to security reports. There is no promised response time for
+general questions or requests.
