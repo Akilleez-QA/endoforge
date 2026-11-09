@@ -6,7 +6,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { atomChecks } from '../lib/checks.mjs';
 import { collectLock } from '../lib/collect.mjs';
-import { workerCommand } from '../../hillclimb/lib/fanout.mjs';
+import { claudeArguments } from '../../hillclimb/lib/fanout.mjs';
 
 test('an atom with no conductor.checks gets the runnable checks of its criteria', () => {
   const job = { atoms: [{ id: 'A', checks: ['C1', 'C2'] }], criteria: [
@@ -28,7 +28,7 @@ test('the collect lock lives in the real git directory of a worktree repo', () =
 });
 
 test('Claude workers may run make and python3, and conductor.claudeTools overrides the list', () => {
-  const run = (tools) => workerCommand({ fanout: { claudeBin: 'true', ...(tools ? { claudeTools: tools } : {}) } }, { engine: 'claude' }, { worktree: os.tmpdir(), prompt: 'p' }).argv.join(' ');
+  const run = (tools) => claudeArguments(tools ? { claudeTools: tools } : {}, 'p').join(' ');
   assert.match(run(), /Bash\(make:\*\)/);
   assert.match(run(), /Bash\(python3:\*\)/);
   assert.match(run('Read'), /--allowedTools Read/);
