@@ -152,6 +152,30 @@ function partDifferences(where, block, glue, keys) {
 const same = value => value;
 const argumentKeys = [['kind', same], ['unit', sameUnit], ['range', sameRange], ['codes', labelTable]];
 const resultKeys = [['kind', same], ['unit', sameUnit], ['precision', same], ['rounding', same], ['codes', labelTable], ['labels', labelTable]];
+const declaredBound = { list: 'max', text: 'maxBytes' };
+const isValue = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+function valueDifferences(where, block, glue, keys) {
+  const out = partDifferences(where, block, glue, keys);
+  if (!isValue(block) || !isValue(glue) || block.kind !== glue.kind) return out;
+  const bound = declaredBound[block.kind];
+  if (bound && Object.hasOwn(block, bound)) out.push(...partDifferences(where, block, glue, [[bound, same]]));
+  if (block.kind === 'list' && Object.hasOwn(block, 'items')) {
+    if (!Object.hasOwn(glue, 'items')) out.push(`${where} items: the capability block declares list items, glue.json does not`);
+    else out.push(...valueDifferences(`${where}[]`, block.items, glue.items, keys));
+  }
+  if (block.kind === 'record' && Object.hasOwn(block, 'fields')) {
+    if (!Array.isArray(glue.fields)) out.push(`${where} fields: the capability block declares record fields, glue.json does not`);
+    else if (!Array.isArray(block.fields)) out.push(`${where} fields: the capability block's fields are not a list`);
+    else {
+      const named = fields => new Map(fields.map(item => [item?.name, item]));
+      const want = named(block.fields), have = named(glue.fields);
+      for (const name of want.keys()) if (!have.has(name)) out.push(`${where}: the capability block declares field ${name}, which glue.json does not`);
+      for (const name of have.keys()) if (!want.has(name)) out.push(`${where}: glue.json declares field ${name}, which the capability block does not`);
+      for (const [name, item] of want) if (have.has(name)) out.push(...valueDifferences(`${where}.${name}`, item, have.get(name), keys));
+    }
+  }
+  return out;
+}
 export function capabilityAgreement(block, glue) {
   if (!block || typeof block !== 'object' || !Array.isArray(block.exports)) return ['the frozen ```capability block has no exports array'];
   const problems = [], declared = new Map(block.exports.map(item => [item?.name, item])), described = new Map((glue?.exports ?? []).map(entry => [entry.name, entry]));
@@ -162,8 +186,8 @@ export function capabilityAgreement(block, glue) {
     if (!entry) continue;
     const want = Array.isArray(item.args) ? item.args : [], have = Array.isArray(entry.args) ? entry.args : [];
     if (want.length !== have.length) problems.push(`${name}: the capability block declares ${want.length} arguments, glue.json ${have.length}`);
-    else want.forEach((arg, index) => problems.push(...partDifferences(`${name} argument ${index + 1} (${arg?.name ?? have[index]?.name})`, arg, have[index], argumentKeys)));
-    problems.push(...partDifferences(`${name} result`, item.result, entry.result, resultKeys));
+    else want.forEach((arg, index) => problems.push(...valueDifferences(`${name} argument ${index + 1} (${arg?.name ?? have[index]?.name})`, arg, have[index], argumentKeys)));
+    problems.push(...valueDifferences(`${name} result`, item.result, entry.result, resultKeys));
   }
   const blockTraps = new Set(Array.isArray(block.traps) ? block.traps : []), glueTraps = new Set((glue?.traps ?? []).map(trap => trap.fn));
   for (const name of blockTraps) if (!glueTraps.has(name)) problems.push(`the capability block lists ${name} as trapping, and glue.json has no trap for it`);
