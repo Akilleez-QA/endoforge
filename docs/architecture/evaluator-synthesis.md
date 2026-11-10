@@ -235,8 +235,10 @@ On every path `judge`:
   a return where it threw, a missing export, or a fuel or stack limit; skips a vector with a fractional argument for
   an integer parameter;
 - refuses a declared range, code set or monotone relation that the outputs break;
-- compares the glue with the declarations: units by dimension and scale (a unit it can't parse is left unknown,
-  never refused), displayed decimals, and code labels.
+- compares the glue with the declarations: units by dimension, scale and, when both units carry one, offset (a unit
+  it can't parse, such as an unknown word, is left unknown, never refused), displayed decimals, and code labels.
+  It parses symbols and compounds such as `g/m`, `kg/s`, `Btu/h` and `W/(m2 K)`, and spelled-out units such as
+  `grams per metre`.
 
 A `refuse` means no promotion: on `current` `runNeed` returns `promoted: false` before `promote`; on `isolate` and
 `agent` the receipt is rejected. `synthesis.json` in the run directory holds the verdict on `current` and `isolate`.

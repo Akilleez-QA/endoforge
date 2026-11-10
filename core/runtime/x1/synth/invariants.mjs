@@ -1,6 +1,4 @@
 import { compareUnits } from './units.mjs';
-// The reusable invariant library. Deterministic, authored offline; the model selects
-// and parameterizes entries, it never writes their code.
 export const library = Object.freeze({
   'value.reference': 'Every result equals an independent reference written from the contract, on generated inputs across the declared domain.',
   'boundary.domain': 'Inputs at, just inside and just outside each declared edge: the kernel traps exactly where the contract excludes the input.',
@@ -32,7 +30,6 @@ export const same = (a, b) => {
 };
 const tokens = text => new Set(String(text).toLowerCase().match(/[a-z0-9]+/g) ?? []);
 const overlap = (a, b) => { const x = tokens(a), y = tokens(b); const both = [...x].filter(t => y.has(t)).length; return both / Math.max(1, new Set([...x, ...y]).size); };
-// A label is swapped when it matches another code's declared label and not its own.
 export function swappedLabels(declared, glue) {
   const swapped = [];
   for (const [code, label] of Object.entries(glue ?? {})) {

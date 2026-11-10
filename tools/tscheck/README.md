@@ -164,7 +164,10 @@ uses a checker pool in the same cohort, and `'supervisor'` checks on the calling
 1.08–1.35× the CPU; they missed their precommitted bars, and the maintainer chose `fused` as the default anyway
 ([P-58](../../experiments/P-58-cohort-typecheck/RESULT.md)). `check-core.mjs` holds the check itself, shared by both
 placements; `cohort-check.mjs` prepares what a cohort needs on the supervisor and checks `core.js` against its pin;
-`cohort-preparer.mjs` runs inside the cohort Worker.
+`cohort-preparer.mjs` runs inside the cohort Worker. The cohort imports it, `check-core.mjs` and the pinned tsrs
+`core.js` from text and passes in the compiler module it compiled once from the pinned bytes, so nothing in the
+preparer reads a file. The check has the candidate's trust and failure budget, so it shares the candidate's cohort:
+both placements are one job in and one result out per attempt.
 
 In the cohort placements each check is also cheaper by default (`checker: { reuse: true, incremental: true }`):
 `tsrs-reuse.mjs` keeps one tsrs instance per Worker and restores its post-instantiation memory image before each

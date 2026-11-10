@@ -1,22 +1,22 @@
 #!/usr/bin/env node
-// Deterministic compose for kernel capabilities: merge the atoms' parts into one artefact directory, freeze, run the fixed gates, copy outputs.
-// usage: node compose-kernel.mjs --id <needId> --in /in --out /out --work /work --gate <gate.mjs>
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { capabilityBlock } from '../../../core/runtime/x1/contract.mjs';
+const USAGE = 'usage: node compose-kernel.mjs --id <needId> --in /in --out /out --work /work --gate <gate.mjs> [--preflight]';
 function args(argv) { const o = {}; for (let i = 0; i < argv.length; i++) if (argv[i].startsWith('--')) o[argv[i].slice(2)] = argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[++i] : true; return o; }
 const A = args(process.argv.slice(2));
-for (const k of ['id', 'in', 'out', 'work', 'gate']) if (!A[k]) { console.error(`missing --${k}`); process.exit(2); }
+for (const k of ['id', 'in', 'out', 'work', 'gate']) if (!A[k]) { console.error(`missing --${k}`); console.error(USAGE); process.exit(2); }
 const dir = path.join(A.work, A.id); fs.rmSync(dir, { recursive: true, force: true }); fs.mkdirSync(dir, { recursive: true });
 const atoms = fs.existsSync(A.in) ? fs.readdirSync(A.in).filter((d) => fs.statSync(path.join(A.in, d)).isDirectory()).sort() : [];
 const files = []; for (const at of atoms) for (const f of fs.readdirSync(path.join(A.in, at))) files.push({ atom: at, name: f, path: path.join(A.in, at, f) });
 const log = { id: A.id, parts: { contract: null, tests: [], kernels: [], glues: [] }, steps: [] };
 const readJson = (p) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch { return undefined; } };
-// 1. contract
 const contracts = files.filter((f) => f.name === 'CONTRACT.md' || /contract/i.test(f.name) && f.name.endsWith('.md'));
 if (!contracts.length) { console.error('no CONTRACT.md among the inputs'); process.exit(3); }
+const capability = capabilityBlock(fs.readFileSync(contracts[0].path, 'utf8'));
+if (capability.error) { console.error(`contract atom ${contracts[0].atom}/${contracts[0].name}: ${capability.error}; the contract atom must end CONTRACT.md with a \`\`\`capability block, so nothing was frozen or compiled`); process.exit(3); }
 fs.copyFileSync(contracts[0].path, path.join(dir, 'CONTRACT.md')); log.parts.contract = `${contracts[0].atom}/${contracts[0].name}`;
-// 2. tests: every JSON array of {fn, args}; merged at the text level so tokens like 1e999 (Infinity) survive (JSON.stringify would turn them into null)
 function splitTopLevel(text) {
   const t = text.trim(); if (!t.startsWith('[')) return null;
   const items = []; let depth = 0, start = -1, inStr = false, esc = false;
@@ -44,14 +44,11 @@ for (const f of files.filter((x) => x.name.endsWith('.json'))) {
 if (!testTexts.length) { console.error('no tests among the inputs'); process.exit(3); }
 fs.writeFileSync(path.join(dir, 'tests.json'), '[\n' + testTexts.join(',\n') + '\n]\n');
 JSON.parse(fs.readFileSync(path.join(dir, 'tests.json'), 'utf8'));
-// 3. freeze before any code
 let r = spawnSync(process.execPath, [A.gate, 'freeze', dir], { encoding: 'utf8' }); log.steps.push({ step: 'freeze', exit: r.status, out: (r.stdout + r.stderr).trim().slice(0, 400) });
 if (r.status !== 0) { console.error(`freeze failed: ${r.stderr}`); process.exit(4); }
-// 4. kernel: concatenate parts in atom order
 const kernels = files.filter((f) => f.name.endsWith('.ts')).sort((x, y) => x.atom.localeCompare(y.atom) || x.name.localeCompare(y.name));
 if (!kernels.length) { console.error('no kernel parts (.ts) among the inputs'); process.exit(3); }
 fs.writeFileSync(path.join(dir, 'kernel.ts'), kernels.map((k) => `// ---- part ${k.atom}/${k.name}\n${fs.readFileSync(k.path, 'utf8').trim()}\n`).join('\n')); log.parts.kernels = kernels.map((k) => `${k.atom}/${k.name}`);
-// 5. glue: union of partial glues
 const glues = files.filter((x) => x.name.endsWith('.json')).map((f) => ({ f, j: readJson(f.path) })).filter((x) => x.j && typeof x.j === 'object' && !Array.isArray(x.j) && Array.isArray(x.j.exports) && ('assumption' in x.j || 'question' in x.j || 'traps' in x.j));
 if (!glues.length) { console.error('no glue among the inputs'); process.exit(3); }
 const glue = { id: A.id, assumption: '', question: '', notes: '', exports: [], traps: [] };
@@ -66,10 +63,8 @@ for (const { f, j } of glues) {
 }
 glue.notes = notes.join(' ').trim(); if (!glue.notes) delete glue.notes;
 fs.writeFileSync(path.join(dir, 'glue.json'), JSON.stringify(glue, null, 1) + '\n');
-// 6. gates
 r = spawnSync(process.execPath, [A.gate, 'run', dir], { encoding: 'utf8', timeout: 600_000 }); log.steps.push({ step: 'run', exit: r.status, out: (r.stdout + r.stderr).trim().slice(0, 1200) });
 const result = readJson(path.join(dir, 'result.json')) ?? { error: 'no result.json', stdout: r.stdout, stderr: r.stderr };
-// 7. outputs
 fs.mkdirSync(A.out, { recursive: true });
 for (const n of ['kernel.wasm', 'kernel.wat', 'CONTRACT.md', 'tests.json', 'glue.json', 'kernel.ts', 'frozen.sha256']) if (fs.existsSync(path.join(dir, n))) fs.copyFileSync(path.join(dir, n), path.join(A.out, n));
 fs.writeFileSync(path.join(A.out, 'gates.json'), JSON.stringify({ ...result, compose: log }, null, 1) + '\n');

@@ -33,9 +33,6 @@ export const LAYOUTS = Object.freeze({
   'process-per-cell': options => createContainedPool({ ...options, reuse: false }),
 });
 
-// Where the type check and emit run. `supervisor`: on this thread, then two run jobs to the cohort. `sibling`: in
-// checker Workers of the cohort process, `fused`: in the Worker that then runs the guest; both are one job in and
-// one result out per attempt. The check has the candidate's trust and failure budget, so it shares its cohort.
 export const CHECKS = Object.freeze(['supervisor', 'sibling', 'fused']);
 
 const compare = runs => {

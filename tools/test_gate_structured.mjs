@@ -287,6 +287,50 @@ test('H9: freeze still refuses once kernel.ts exists', () => {
   assert.match(again.stderr, /refusing to freeze/);
 });
 
+function unfrozen(contractText, tests = shippingTests) {
+  const root = mkdtempSync(path.join(tmpdir(), 'ef-gate-'));
+  roots.push(root);
+  const dir = path.join(root, 'shipping');
+  mkdirSync(dir);
+  writeFileSync(path.join(dir, 'CONTRACT.md'), contractText);
+  writeFileSync(path.join(dir, 'tests.json'), JSON.stringify(tests));
+  return { dir, outcome: gateCli(['freeze', dir]) };
+}
+
+test('GAP-EF-015: freeze refuses a contract with no capability block before any code is written', () => {
+  const { dir, outcome } = unfrozen(shippingContract);
+  assert.equal(outcome.status, 2);
+  assert.match(outcome.stderr, /refusing to freeze: .*CONTRACT\.md has no ```capability block/);
+  assert.equal(existsSync(path.join(dir, 'frozen.sha256')), false);
+});
+
+test('GAP-EF-015: freeze refuses a malformed capability block', () => {
+  const notJson = unfrozen(`${shippingContract}\n\`\`\`capability\n{ exports: shippingCents }\n\`\`\`\n`);
+  assert.equal(notJson.outcome.status, 2);
+  assert.match(notJson.outcome.stderr, /refusing to freeze: .*capability block is not JSON/);
+  assert.equal(existsSync(path.join(notJson.dir, 'frozen.sha256')), false);
+  const noExports = unfrozen(`${shippingContract}\n\`\`\`capability\n{"traps":[]}\n\`\`\`\n`);
+  assert.equal(noExports.outcome.status, 2);
+  assert.match(noExports.outcome.stderr, /refusing to freeze: .*nonempty exports array/);
+  assert.equal(existsSync(path.join(noExports.dir, 'frozen.sha256')), false);
+});
+
+test('GAP-EF-015: freeze refuses a capability block that disagrees with the tests', () => {
+  const untrapped = { ...shippingGlue, traps: [] };
+  const { dir, outcome } = unfrozen(capable(shippingContract, untrapped));
+  assert.equal(outcome.status, 2);
+  assert.match(outcome.stderr, /capability traps must list shippingCents/);
+  assert.equal(existsSync(path.join(dir, 'frozen.sha256')), false);
+});
+
+test('GAP-EF-015: freeze accepts a capability block that agrees with the tests', () => {
+  const { dir, outcome } = unfrozen(capable(shippingContract, shippingGlue));
+  assert.equal(outcome.status, 0, outcome.stderr);
+  assert.match(outcome.stdout, /^frozen contract /);
+  const record = JSON.parse(readFileSync(path.join(dir, 'frozen.sha256'), 'utf8'));
+  assert.equal(record.contract, sha(readFileSync(path.join(dir, 'CONTRACT.md'), 'utf8')));
+});
+
 test('P3: with ENDOFORGE_ASC unset the gate compiles with the pinned compiler that make loop-setup installs', () => {
   assert.ok(existsSync(ASC_PATH), `pinned compiler missing at ${ASC_PATH}; run make loop-setup`);
   const dir = kernelDir();

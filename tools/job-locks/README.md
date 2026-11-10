@@ -7,8 +7,8 @@ session; this keeps "the user already decided this" from being lost when the con
 ## How it works
 
 A small registry lists the manifests of active jobs. On each run the script reads every registered manifest's `locks`
-object and prints one line per lock. It never fails a session start: problems become warnings and the default
-command always exits 0.
+object and prints one line per lock. It never fails a session start, because a failing hook would break the session
+it is meant to inform: problems become warnings and the default command always exits 0.
 
 ## Use it
 

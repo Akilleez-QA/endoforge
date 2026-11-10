@@ -1,10 +1,9 @@
-// Build the Endoforge atoms for a round: review (consult → critique → compose) and fix (one atom per owner → compose).
 import { SCHEMA as FIXLIST_SCHEMA, byOwner } from './fixlist.mjs';
 import { roundName, vars, expand } from './campaign.mjs';
 
-const ROUND = '/hc';          // the round directory, read-only: stills/, sheets/, previous.fixlist.json
-const TOOL = '/hc-tool';      // this tool, read-only (scripts/hc-patch.sh, bin/hillclimb.mjs)
-const REPO = '/repo';         // the campaign repo, read-only (fix atoms copy their scope out of it)
+const ROUND = '/hc';
+const TOOL = '/hc-tool';
+const REPO = '/repo';
 
 function binds(c, n, { repo = false } = {}) {
   const v = vars(c, n);
@@ -14,8 +13,6 @@ function binds(c, n, { repo = false } = {}) {
   return b;
 }
 
-/** Which model runs a slot. With mixing on (the default), models rotate by round and slot, so no model always
- *  works or always judges: what Claude fixes this round, Codex critiques and refixes next round, and the reverse. */
 export const models = (c) => c.models ?? ['opus', 'codex'];
 export function pick(c, n, slot, fallback) {
   if (c.mix === false) return fallback ?? models(c)[0];
@@ -26,7 +23,6 @@ const toolsFor = (model, tools) => model === 'codex' ? tools.filter((t) => !['We
 const ownersText = (c) => Object.entries(c.owners).map(([k, o]) => `- ${k}: ${o.describe}`).join('\n');
 const refsText = (c) => (c.references?.index ?? []).map((p) => `- ${p}`).join('\n') || '- (none declared)';
 
-/** Review round: consult the references for what the stills show, then critique, then a script checks the list. */
 export function reviewAtoms(c, n, { hasPrevious = false } = {}) {
   const model = c.critique?.model ?? 'opus';
   const consultModel = pick(c, n, 0, model);
@@ -51,7 +47,6 @@ export function reviewAtoms(c, n, { hasPrevious = false } = {}) {
       prompt: 'Work in /work, write outputs to /out. Follow the contract exactly.' },
     size: { work: 3, interface: 1 },
   };
-  // Independent critics (one per model when mixing), then a merge that de-duplicates into the round's fix list.
   const criticModels = c.mix === false ? [model] : models(c);
   const critText = (who) => [
       `Campaign ${c.id}: ${c.goal}`,
@@ -103,7 +98,6 @@ export function reviewAtoms(c, n, { hasPrevious = false } = {}) {
     'compose wrote FIXLIST.md and score.json', "test -s /in/compose/FIXLIST.md && test -s /in/compose/score.json");
 }
 
-/** Fix round: one atom per owner with open items; each returns a patch confined to its scope plus a per-item report. */
 export function fixAtoms(c, n, fixlist) {
   const groups = byOwner(fixlist);
   const atoms = [];
@@ -111,7 +105,6 @@ export function fixAtoms(c, n, fixlist) {
   for (const [k, owner] of owners.entries()) {
     const items = groups[owner];
     const o = c.owners[owner];
-    // mixing: lanes alternate models by owner and round; compete: every model fixes the lane and a judge picks
     const lanes = c.fix?.compete ? models(c) : [pick(c, n, k, o.model ?? 'opus')];
     for (const model of lanes) {
     atoms.push({
@@ -155,7 +148,6 @@ function doc(c, n, stage, text, atoms, statement, run) {
     acceptance: [{ id: 'A1', statement, check: { kind: 'command', run } }], atoms };
 }
 
-/** Repo-relative paths a git patch touches (from its diff --git headers). */
 export function patchPaths(diff) {
   const out = new Set();
   for (const m of diff.matchAll(/^diff --git a\/(\S+) b\/(\S+)$/gm)) { out.add(m[1]); out.add(m[2]); }
@@ -163,13 +155,11 @@ export function patchPaths(diff) {
 }
 export const inScope = (p, scope) => scope.some((s) => { const t = s.replace(/\/\*\*$/, '').replace(/\/$/, ''); return p === t || p.startsWith(t + '/'); });
 
-/** fix-<owner> or fix-<owner>--<model> (compete) -> {owner, variant} */
 export function laneOf(id) {
   const [o, variant] = id.replace(/^fix-/, '').split('--');
   return { owner: o.toUpperCase(), variant: variant ?? null };
 }
 
-/** Judge (compete rounds): compare each owner's variants from their fast renders and reports; pick one per owner. */
 export function judgeAtoms(c, n, lanes) {
   const model = pick(c, n, 2, c.critique?.model ?? 'opus');
   const b = binds(c, n);

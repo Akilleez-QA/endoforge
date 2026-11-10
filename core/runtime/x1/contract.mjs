@@ -85,9 +85,6 @@ export function unitDisagreements(glue) {
   }
   return found;
 }
-// A contract can state a result twice: as a code table, and as a computation from the parameters, whose
-// codes the input code tables and the frozen tests then fix. When it gives a computation, the table isn't the
-// only basis for what a code means, and a gate can't tell from text which statement the glue should follow.
 const computation = /\bformula\b[^:\n]*:\s*(.+)$/i;
 export function statesComputation(lines, parameters) {
   return lines.some(line => {

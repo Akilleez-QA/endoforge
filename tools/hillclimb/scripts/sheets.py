@@ -36,7 +36,7 @@ for k in range(0, len(stills), per):
         d.rectangle((0, 0, im.width, 26), fill=(0, 0, 0))
         d.text((6, 2), f'{k + j + 1:02d} {name}', fill=(255, 210, 60), font=font)
         sheet.paste(im, ((j % cols) * W, (j // cols) * H))
-        names.append({'n': k + j + 1, 'still': name, 'file': str(p.relative_to(src))})  # relative: atoms see the stills under /hc/stills
+        names.append({'n': k + j + 1, 'still': name, 'file': str(p.relative_to(src))})
     f = out / f'sheet_{k // per + 1:02d}.jpg'
     sheet.save(f, quality=90)
     index.append({'sheet': f.name, 'stills': names})

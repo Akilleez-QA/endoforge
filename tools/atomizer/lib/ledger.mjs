@@ -1,5 +1,3 @@
-// Append-only ledger for every atomizer process: one JSON object per line in tools/atomizer/ledger/events.jsonl.
-// Never rewritten; corrections are new events that reference the old one. Schema: LEDGER.md.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -17,7 +15,6 @@ const sha = (buf) => crypto.createHash('sha256').update(buf).digest('hex');
 export const shaFile = (p) => { try { return sha(fs.readFileSync(p)); } catch { return null; } };
 const sh = (cmd, args) => { try { return execFileSync(cmd, args, { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], timeout: 5000 }).trim(); } catch { return null; } };
 let CTX = null;
-/** Process context, captured once: code, rules and machine state the measurement depends on. */
 export function context() {
   if (CTX) return CTX;
   const policyPath = path.join(ATOMIZER, 'policy.json');
@@ -38,10 +35,8 @@ export function context() {
   };
   return CTX;
 }
-/** Machine load right now (the desktop is shared; speed numbers need it next to them). */
 export function load() { const [l1, l5, l15] = os.loadavg(); return { load1: +l1.toFixed(2), load5: +l5.toFixed(2), load15: +l15.toFixed(2), memFreeGiB: +(os.freemem() / 2 ** 30).toFixed(1) }; }
 export function newId(prefix) { const t = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+Z$/, 'Z'); return `${prefix}-${t}-${crypto.randomBytes(3).toString('hex')}`; }
-/** Append one event. O_APPEND writes of one line are atomic for lines well under the pipe buffer on Linux; long lines are written whole by appendFileSync. */
 export function emit(event, fields = {}) {
   fs.mkdirSync(LEDGER_DIR, { recursive: true });
   const rec = { v: 1, ts: new Date().toISOString(), event, ...fields };
@@ -50,7 +45,6 @@ export function emit(event, fields = {}) {
 }
 const SECRET = /refresh_token|access_token|sk-ant-|"apiKey"|Bearer [A-Za-z0-9._-]{20,}/;
 let hasZstd;
-/** Compress a credential-scanned run; returns {path, bytes, sha256, files, format} or {refused}. */
 export function archiveRun(runDir, runId) {
   try {
     const files = []; for (const e of fs.readdirSync(runDir, { withFileTypes: true, recursive: true })) if (e.isFile()) files.push(path.join(e.parentPath ?? e.path, e.name));

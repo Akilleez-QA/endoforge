@@ -1,30 +1,4 @@
 #!/usr/bin/env node
-// Endoforge job intake: POODO executed as code (Pontificate → Observe → Orient → Decide → Orchestrate → Loop).
-//
-//   job.mjs validate <job.json> [--gate pontificate|observe|orient|decide|orchestrate|loop] [--offline] [--json]
-//        every rule up to the gate, each citing its invariant (I1–I14); exit 1 when the gate refuses.
-//        At orchestrate it runs the machine health check (resources.health, default ~/.local/bin/system-safety-status).
-//   job.mjs calibrate <job.json> [--criterion ID]
-//        run each proxy check on its known-good and known-bad case (${input}); good must pass, bad must fail.
-//   job.mjs card <job.json> [--out card.md]      retrieve open lessons of earlier jobs of this kind, render the job card
-//        (verbatim goal, brief, what governs what with thumbnails, atoms, checks, gates, invariants) and its sha256
-//   job.mjs confirm <job.json> --sha <card sha> --by <user> --words "<their words>" [--via direct|relayed]
-//        record the user's own confirmation of exactly that card; a relayed one is recorded and refused at Decide
-//   job.mjs lessons <job.json>                       the open lessons, and which atoms each reaches
-//   job.mjs compile <job.json> [--out dir] [--offline]   every atom's prompt from the manifest, plus manifest.json (hashes)
-//   job.mjs stage <job.json>                         Decide minus the go must pass; renders JOB-<id>.md, emits STAGED
-//   job.mjs fire <job.json> [-- <launch command>]    only after the user's go on the staged card: Orchestrate gates,
-//        compiled prompts, FIRED (atoms by engine and login, prompt hash, predictions, gates, ETA, stop), then launch
-//   job.mjs event <job.json> <SMOKE|SCORED|GATE|NEEDS-YOU|DONE> <summary> [--detail md] [--data json]
-//   job.mjs status <job.json>                        the live timeline (with the Conductor's phase and atoms when it runs)
-//   job.mjs go|lock|pause|resume|budget|stop <job.json> …   the Conductor's commands (tools/conductor/bin/conduct.mjs)
-//   job.mjs smoke <job.json>                         one tiny atom per engine on a discovered login; records proofs.smoke
-//   job.mjs prove-split <job.json> --from <path> (--before A --after B [--noise C] | --tests "<cmd>")
-//        writes the split's proof file: a pixel diff within the noise floor measured as A vs C (a second baseline
-//        render), or the tests passing after a code split
-//   job.mjs knowledge <job.json> add --text "<fact>" --source "<where>" [--tags a,b]   a fact found during the run
-//   job.mjs gates | invariants                       the POODO gates and the invariants they hold
-// Proofs the tool makes (calibration, smoke, split) go in <job>.proofs.json beside the manifest, merged on load.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -45,6 +19,33 @@ const flag = (k) => { const i = rest.indexOf(k); return i < 0 ? null : rest[i + 
 const has = (k) => rest.includes(k);
 const out = (s) => process.stdout.write(s + '\n');
 
+export const USAGE = `Endoforge job intake: POODO executed as code (Pontificate → Observe → Orient → Decide → Orchestrate → Loop).
+
+  job.mjs validate <job.json> [--gate pontificate|observe|orient|decide|orchestrate|loop] [--offline] [--json]
+       every rule up to the gate, each citing its invariant (I1–I15); exit 1 when the gate refuses.
+       At orchestrate it runs the machine health check (resources.health, default ~/.local/bin/system-safety-status).
+  job.mjs calibrate <job.json> [--criterion ID]
+       run each proxy check on its known-good and known-bad case (\${input}); good must pass, bad must fail.
+  job.mjs card <job.json> [--out card.md]      retrieve open lessons of earlier jobs of this kind, render the job card
+       (verbatim goal, brief, what governs what with thumbnails, atoms, checks, gates, invariants) and its sha256
+  job.mjs confirm <job.json> --sha <card sha> --by <user> --words "<their words>" [--via direct|relayed]
+       record the user's own confirmation of exactly that card; a relayed one is recorded and refused at Decide
+  job.mjs lessons <job.json>                       the open lessons, and which atoms each reaches
+  job.mjs compile <job.json> [--out dir] [--offline]   every atom's prompt from the manifest, plus manifest.json (hashes)
+  job.mjs stage <job.json>                         Decide minus the go must pass; renders JOB-<id>.md, emits STAGED
+  job.mjs fire <job.json> [-- <launch command>]    only after the user's go on the staged card: Orchestrate gates,
+       compiled prompts, FIRED (atoms by engine and login, prompt hash, predictions, gates, ETA, stop), then launch
+  job.mjs event <job.json> <SMOKE|SCORED|GATE|NEEDS-YOU|DONE> <summary> [--detail md] [--data json]
+  job.mjs status <job.json>                        the live timeline (with the Conductor's phase and atoms when it runs)
+  job.mjs go|lock|pause|resume|budget|stop|patch <job.json> …   the Conductor's commands (tools/conductor/bin/conduct.mjs)
+  job.mjs smoke <job.json>                         one tiny atom per engine on a discovered login; records proofs.smoke
+  job.mjs prove-split <job.json> --from <path> (--before A --after B [--noise C] | --tests "<cmd>")
+       writes the split's proof file: a pixel diff within the noise floor measured as A vs C (a second baseline
+       render), or the tests passing after a code split
+  job.mjs knowledge <job.json> add --text "<fact>" --source "<where>" [--tags a,b]   a fact found during the run
+  job.mjs gates | invariants                       the POODO gates and the invariants they hold
+Proofs the tool makes (calibration, smoke, split) go in <job>.proofs.json beside the manifest, merged on load.`;
+
 function saveProof(f, key, value) {
   const pf = proofsFile(f), p = fs.existsSync(pf) ? JSON.parse(fs.readFileSync(pf, 'utf8')) : {};
   p[key] = key === 'calibration' ? { ...p.calibration, ...value } : value;
@@ -52,7 +53,6 @@ function saveProof(f, key, value) {
   fs.writeFileSync(pf, JSON.stringify(p, null, 1) + '\n');
 }
 
-/** FMEA: a miscalibrated check (detection): the known-good case must pass and the known-bad case must fail. */
 export function calibrate(job, only = null) {
   const res = {};
   for (const c of job.criteria ?? []) {
@@ -73,7 +73,7 @@ function report(v) {
 async function main() {
   if (cmd === 'gates') { for (const g of GATES) out(`${g.name}\t${g.invariants.join(',')}\t${g.what}`); return 0; }
   if (cmd === 'invariants') { for (const i of INVARIANTS) out(`${i.id}\t${i.name}\t${i.rule}`); return 0; }
-  if (!file) { console.error(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 31).join('\n')); return 2; }
+  if (!file) { console.error(USAGE); return 2; }
   const job = loadJob(path.resolve(file));
   if (cmd === 'validate') {
     const gate = flag('--gate') ?? 'orchestrate', offline = has('--offline');
@@ -140,12 +140,11 @@ async function main() {
   }
   const { stateFile } = await import('../../conductor/lib/state.mjs');
   if (['go', 'lock', 'pause', 'resume', 'budget', 'stop', 'patch'].includes(cmd) || (cmd === 'status' && fs.existsSync(stateFile(job, file)))) {
-    const { main: conductor } = await import('../../conductor/bin/conduct.mjs');   // the job's Conductor owns these
+    const { main: conductor } = await import('../../conductor/bin/conduct.mjs');
     return conductor([cmd, file, ...rest]);
   }
   if (cmd === 'status') { process.stdout.write(renderStatus(job, readEvents(job, file))); return 0; }
   if (cmd === 'knowledge') {
-    // Knowledge discovered during a run goes back into the manifest with its source, so later atoms get it (P-A).
     if (rest[0] !== 'add' || !flag('--text') || !flag('--source')) { console.error('usage: job.mjs knowledge <job.json> add --text "<fact>" --source "<where it was established>" [--tags a,b]'); return 2; }
     const { withLock, writeJSONAtomic } = await import('../../lib/lock.mjs');
     const f = path.resolve(file);

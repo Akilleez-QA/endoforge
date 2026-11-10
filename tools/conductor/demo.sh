@@ -7,8 +7,8 @@ export HOME=$D/home ENDOFORGE_NOTIFY=none ENDOFORGE_JOBS=$D/none ENDOFORGE_VOLAT
 mkdir -p home/.codex home/.claude-accts/a1
 : > home/.codex/auth.json
 echo '{"claudeAiOauth":{"accessToken":"synthetic","scopes":["user:inference"],"subscriptionType":"max"}}' > home/.claude-accts/a1/.credentials.json
-cat > worker.sh <<'EOF'
-#!/bin/bash
+printf '#!/bin/bash\n' > worker.sh
+cat >> worker.sh <<'EOF'
 for a in "$@"; do case "$a" in *"You own ONLY"*) brief="$a";; esac; done
 f=$(printf '%s\n' "$brief" | sed -n '/You own ONLY/{n;s/^- //p;q}')
 name=$(basename "$f" .py); op=+; [ "$name" = mul ] && op="*"

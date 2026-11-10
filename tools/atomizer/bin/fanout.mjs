@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-// Fan out: run several atoms.json DAGs as one pool (N schedulers in parallel, each with its own concurrency), verify each, summarize.
-// usage: node fanout.mjs <atoms.json...> --out-dir <dir> [--parallel-runs 4] [--per-run-concurrency 4]
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
@@ -9,7 +7,7 @@ import { emit, context, load, newId } from '../lib/ledger.mjs';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 function args(argv) { const o = { _: [] }; for (let i = 0; i < argv.length; i++) { const a = argv[i]; if (a.startsWith('--')) o[a.slice(2)] = argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[++i] : true; else o._.push(a); } return o; }
 const A = args(process.argv.slice(2));
-if (!A._.length || !A['out-dir']) { console.error('usage: fanout.mjs <atoms.json...> --out-dir <dir> [--parallel-runs N] [--per-run-concurrency N]'); process.exit(2); }
+if (!A._.length || !A['out-dir']) { console.error('usage: fanout.mjs <atoms.json...> --out-dir <dir> [--parallel-runs 4] [--per-run-concurrency 4]'); process.exit(2); }
 const OUT = path.resolve(A['out-dir']); fs.mkdirSync(OUT, { recursive: true });
 const PAR = Number(A['parallel-runs'] ?? 4), CONC = Number(A['per-run-concurrency'] ?? 4);
 const runOne = (file) => new Promise((resolve) => {

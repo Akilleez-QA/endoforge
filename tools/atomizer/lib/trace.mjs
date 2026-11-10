@@ -1,4 +1,3 @@
-// Append-only timing evidence; no prompts, environments or credential contents.
 import fs from 'node:fs';
 import path from 'node:path';
 import { deps, topo } from './dag.mjs';
@@ -39,7 +38,6 @@ export function analyzeTrace(lines, atoms, { concurrency } = {}) {
   }
   const chain = Object.fromEntries(['durMs', 'queueMs', 'gapMs', 'codexMs'].map((k) => [k, realizedChain.reduce((s, x) => s + x[k], 0)]));
   chain.nonCodexMs = chain.durMs - chain.codexMs;
-  // Root queue is already inside lead; its gap cancels that duplicate contribution.
   chain.leadMs = realizedChain.length ? byId[realizedChain[0].id].start : 0;
   chain.tailMs = run.dur - (realizedChain.length ? byId[realizedChain.at(-1).id].end : 0);
   const events = new Map([[run.start, 0], [run.end, 0]]), event = (t, delta) => events.set(t, (events.get(t) ?? 0) + delta);

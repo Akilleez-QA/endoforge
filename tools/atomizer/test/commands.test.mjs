@@ -5,8 +5,13 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { validate } from '../lib/validate.mjs';
+import { resolveToolchainPath, toolchainFor, workerCommand } from '../lib/workers.mjs';
+import { augment } from '../lib/augment.mjs';
+import { makeHomeTemplate, runIsolated } from '../lib/isolate.mjs';
+import { capabilityRule } from '../../../core/runtime/x1/generator.mjs';
 
 const ATOMIZER = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+const REPO = path.resolve(ATOMIZER, '../..');
 const BIN = (name) => path.join(ATOMIZER, 'bin', name);
 const FIX = (name) => path.join(ATOMIZER, 'test', 'fixtures', name);
 const policy = JSON.parse(fs.readFileSync(path.join(ATOMIZER, 'policy.json'), 'utf8'));
@@ -241,6 +246,153 @@ test('cutover refuses an unknown arm and finishes cleanly when no case matches',
   assert.equal(none.status, 0, none.stderr.slice(-400));
   assert.deepEqual(readJson(path.join(tmp, 'cutover-none', 'results-r1.json')), []);
   assert.deepEqual(events().filter((e) => e.experimentId === 'cutover-none').map((e) => e.event), ['cutover.start', 'cutover.end']);
+});
+
+process.env.ENDOFORGE_TOOLCHAIN_CLAUDE = claudeHost;
+const rendered = (doc, atom) => workerCommand(doc, atom, [], policy, REPO, null).prompt;
+const shippingGlue = { id: 'shipping', assumption: 'Weights are whole grams and only zones 1 and 2 ship.', question: 'Do any parcels ship outside zones 1 and 2?',
+  exports: [{ name: 'shippingCents', label: 'Shipping price for one parcel', headline: true,
+    args: [{ name: 'grams', kind: 'integer', unit: 'g' }, { name: 'zone', kind: 'code', unit: 'code', codes: { 1: 'domestic', 2: 'international' } }],
+    result: { kind: 'integer', unit: 'cents' } }],
+  traps: [{ fn: 'shippingCents', when: 'negative weight or unknown zone', message: 'Give a weight of 0 g or more and zone 1 or 2.' }] };
+const shippingText = 'shippingCents(grams, zone): 500 cents base plus 2 cents per gram in zone 1, 4 cents per gram in zone 2.\nRefuse negative weights and any other zone.\n';
+const shippingBlock = { exports: [{ name: 'shippingCents', args: [{ name: 'grams', kind: 'integer', unit: 'g' }, { name: 'zone', kind: 'code', unit: 'code', codes: { 1: 'domestic', 2: 'international' } }], result: { kind: 'integer', unit: 'cents' } }], traps: ['shippingCents'] };
+const shippingParts = (root, contract) => {
+  writeJson(path.join(root, 'in', 'glue', 'glue.json'), shippingGlue);
+  fs.mkdirSync(path.join(root, 'in', 'contract'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'in', 'contract', 'CONTRACT.md'), contract);
+  writeJson(path.join(root, 'in', 't-m1', 'tests-m1.json'), [
+    { name: '1 kg, zone 1', fn: 'shippingCents', args: [1000, 1], expect: 2500 },
+    { name: '1 kg, zone 2', fn: 'shippingCents', args: [1000, 2], expect: 4500 },
+    { name: 'zone 3 is refused', fn: 'shippingCents', args: [1000, 3], expectError: true },
+    { name: 'negative weight is refused', fn: 'shippingCents', args: [-1, 1], expectError: true }]);
+  fs.mkdirSync(path.join(root, 'in', 'k-m1'), { recursive: true });
+  fs.writeFileSync(path.join(root, 'in', 'k-m1', 'm1.ts'), 'export function shippingCents(grams: i32, zone: i32): i32 {\n  if (grams < 0 || (zone != 1 && zone != 2)) unreachable();\n  return 500 + grams * (zone == 1 ? 2 : 4);\n}\n');
+  for (const d of ['out', 'work']) fs.mkdirSync(path.join(root, d), { recursive: true });
+};
+const blocked = `${shippingText}\n\`\`\`capability\n${JSON.stringify(shippingBlock)}\n\`\`\`\n`;
+const composeArgs = (root) => ['--id', 'shipping', '--in', path.join(root, 'in'), '--out', path.join(root, 'out'), '--work', path.join(root, 'work'), '--gate', path.join(REPO, 'tools', 'gate', 'gate.mjs')];
+
+test('atomize asks for the capability block in its rendered prompt and names the gates G1-G9', () => {
+  const out = path.join(tmp, 'atomize-prompt');
+  const r = run('atomize.mjs', [needFile('synthetic-prompt'), '--out', out, '--fixture', FIX('synthetic-pair.json')]);
+  assert.equal(r.status, 0, r.stderr);
+  const prompt = fs.readFileSync(path.join(out, 'receipt', 'turn-1-prompt.md'), 'utf8');
+  assert.ok(prompt.includes(capabilityRule), 'the atomizer prompt carries the pipeline capability rule');
+  assert.match(prompt, /G1-G9/);
+  assert.doesNotMatch(prompt, /G1-G7/);
+  assert.match(prompt, /glue atom[^\n]*CONTRACT\.md/i);
+});
+
+test('a contract atom the atomizer plans gets the capability block in its rendered prompt', () => {
+  const doc = { need: { id: 'synthetic-contract', text: '# Request synthetic-contract\n\nA need.' } };
+  const atom = { id: 'contract', kind: 'contract', title: 'Contract', contract: 'CONTRACT.md for the interface, with the assumption and the question.', inputs: [{ from: 'need' }], outputs: [{ name: 'contract', path: 'CONTRACT.md' }], worker: { model: 'sonnet', tools: [], prompt: 'Write the contract.' } };
+  assert.ok(rendered(doc, atom).includes(capabilityRule));
+  const glue = rendered(doc, { ...atom, id: 'glue', kind: 'glue', outputs: [{ name: 'glue', path: 'glue.json' }] });
+  assert.match(glue, /capability block/);
+});
+
+test('the direct worker prompt asks for the capability block before the freeze and the graph names the gates G1-G9', () => {
+  const out = path.join(tmp, 'direct-prompt', 'atoms.json');
+  const r = run('direct.mjs', [needFile('synthetic-direct-prompt'), '--out', out]);
+  assert.equal(r.status, 0, r.stderr);
+  const doc = readJson(out);
+  const prompt = rendered(doc, doc.atoms[0]);
+  assert.ok(prompt.includes(capabilityRule));
+  assert.ok(prompt.indexOf(capabilityRule) < prompt.indexOf('freeze /work/'), 'the block is asked for before the freeze');
+  assert.match(doc.acceptance[0].statement, /G1-G9/);
+  assert.doesNotMatch(JSON.stringify(doc), /G1-G7/);
+});
+
+test('the templated planner asks its contract atom for the capability block and feeds the contract to glue', () => {
+  const lines = path.join(tmp, 'plan-lines.txt');
+  fs.writeFileSync(lines, 'E shippingCents(grams:i32:g, zone:i32:code) -> integer:i32:cents\nC shippingCents.zone 1=domestic;2=international\nM m1 shippingCents | price table\nA assumption: whole grams\nQ Which zones ship?\nR negative weight; unknown zone\n');
+  const out = path.join(tmp, 'plan-template');
+  const r = run('plan-template.mjs', [needFile('synthetic-plan'), '--out', out, '--fixture', lines, '--reviews', '0']);
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  const doc = readJson(path.join(out, 'atoms.json'));
+  const contract = doc.atoms.find((a) => a.kind === 'contract');
+  assert.match(contract.contract, /```capability block/);
+  assert.ok(rendered(doc, contract).includes(capabilityRule));
+  const glue = doc.atoms.find((a) => a.kind === 'glue');
+  assert.ok(glue.inputs.some((i) => i.from === 'contract'), 'glue reads the contract it must agree with');
+  assert.match(rendered(doc, glue), /capability block/);
+  assert.match(doc.atoms.find((a) => a.kind === 'compose').contract, /G1-G9/);
+  assert.match(doc.acceptance[0].statement, /G1-G9/);
+  assert.doesNotMatch(JSON.stringify(doc), /G1-G7/);
+});
+
+test('compose-kernel refuses a contract atom whose CONTRACT.md has no capability block, before freezing', () => {
+  const root = path.join(tmp, 'compose-blockless');
+  shippingParts(root, shippingText);
+  const r = run('compose-kernel.mjs', composeArgs(root));
+  assert.equal(r.status, 3, r.stdout + r.stderr);
+  assert.match(r.stderr, /contract\/CONTRACT\.md: CONTRACT\.md has no ```capability block/);
+  assert.ok(!fs.existsSync(path.join(root, 'work', 'shipping', 'frozen.sha256')));
+  assert.ok(!fs.existsSync(path.join(root, 'work', 'shipping', 'kernel.ts')));
+  fs.writeFileSync(path.join(root, 'in', 'contract', 'CONTRACT.md'), `${shippingText}\n\`\`\`capability\n{ exports: shippingCents }\n\`\`\`\n`);
+  const bad = run('compose-kernel.mjs', composeArgs(root));
+  assert.equal(bad.status, 3, bad.stdout + bad.stderr);
+  assert.match(bad.stderr, /capability block is not JSON/);
+});
+
+const withNodeEnv = (value, fn) => {
+  const saved = process.env.ENDOFORGE_TOOLCHAIN_NODE;
+  if (value === undefined) delete process.env.ENDOFORGE_TOOLCHAIN_NODE; else process.env.ENDOFORGE_TOOLCHAIN_NODE = value;
+  try { return fn(); } finally { if (saved === undefined) delete process.env.ENDOFORGE_TOOLCHAIN_NODE; else process.env.ENDOFORGE_TOOLCHAIN_NODE = saved; }
+};
+const runningHome = path.dirname(path.dirname(process.execPath));
+
+test('the policy names no fixed node home, so the node toolchain defaults to the Node running the atomizer', () => {
+  assert.equal(policy.toolchain.node, undefined);
+  withNodeEnv(undefined, () => {
+    assert.equal(resolveToolchainPath('node', policy, REPO), runningHome);
+    const [node] = toolchainFor(['node'], policy, REPO);
+    assert.deepEqual(node, { host: runningHome, guest: runningHome, bin: path.join(runningHome, 'bin') });
+    assert.ok(fs.existsSync(path.join(node.bin, 'node')), `${node.bin}/node exists`);
+    assert.equal(fs.realpathSync(path.join(node.bin, 'node')), fs.realpathSync(process.execPath));
+  });
+});
+
+test('ENDOFORGE_TOOLCHAIN_NODE overrides the node home when it holds bin/node', () => {
+  const home = path.join(tmp, 'node-override');
+  fs.mkdirSync(path.join(home, 'bin'), { recursive: true });
+  fs.symlinkSync(process.execPath, path.join(home, 'bin', 'node'));
+  withNodeEnv(home, () => {
+    assert.equal(resolveToolchainPath('node', policy, REPO), home);
+    assert.deepEqual(toolchainFor(['node'], policy, REPO)[0], { host: home, guest: home, bin: path.join(home, 'bin') });
+  });
+});
+
+test('an explicitly configured node home without bin/node is refused before any sandbox starts', () => {
+  const empty = path.join(tmp, 'node-empty');
+  fs.mkdirSync(path.join(empty, 'bin'), { recursive: true });
+  for (const [envValue, pol] of [[empty, policy], [undefined, { ...policy, toolchain: { ...policy.toolchain, node: empty } }], [path.join(tmp, 'node-absent'), policy]]) {
+    withNodeEnv(envValue, () => {
+      assert.throws(() => toolchainFor(['node', 'asc'], pol, REPO), (e) => /toolchain node home .* has no bin\/node/.test(e.message) && /ENDOFORGE_TOOLCHAIN_NODE/.test(e.message) && e.message.includes(runningHome));
+      assert.throws(() => resolveToolchainPath('node', pol, REPO), /has no bin\/node/);
+    });
+  }
+});
+
+const asyncTest = async (name, fn) => { try { await fn(); console.log(`PASS ${name}`); } catch (e) { fails++; console.log(`FAIL ${name}: ${e.message}`); } };
+await asyncTest('the compose helper composes and gates inside the atom isolate with the policy compose toolchain', async () => {
+  const root = path.join(tmp, 'compose-isolated');
+  shippingParts(root, blocked);
+  const doc = augment({ schema: 'endoforge/atoms/1', need: { id: 'shipping', text: 'Shipping price.' }, acceptance: [], atoms: [
+    { id: 'k-m1', kind: 'kernel', contract: 'kernel part', inputs: [], outputs: [{ name: 'kernel', path: 'm1.ts' }], worker: { model: 'sonnet', tools: ['Bash'] }, size: { work: 1, interface: 1 } },
+    { id: 'compose', kind: 'compose', contract: 'compose', inputs: [{ from: 'k-m1', output: 'kernel' }], outputs: [{ name: 'gates', path: 'gates.json' }], worker: { model: 'sonnet', tools: ['Bash'] }, size: { work: 1, interface: 1 } }] }, { ...policy, repairStage: true, scriptFirst: true });
+  const helper = doc.atoms.find((a) => a.id === 'compose').worker.preflight;
+  const cmd = helper.command.map((x) => x.replaceAll('{in}', '/in').replaceAll('{out}', '/out').replaceAll('{work}', '/work').replaceAll('{atomizer}', path.join(REPO, policy.toolchain.atomizer)).replaceAll('{gate}', path.join(REPO, policy.toolchain.gate, 'gate.mjs')));
+  const home = makeHomeTemplate(fs.mkdtempSync(path.join(os.tmpdir(), 'compose-home-')));
+  try {
+    const r = await runIsolated({ homeTemplate: home, toolchain: toolchainFor(helper.toolchain, policy, REPO), cmd, cwd: '/work', timeoutMs: 300_000,
+      mounts: [{ host: path.join(root, 'in'), guest: '/in', mode: 'ro' }, { host: path.join(root, 'out'), guest: '/out', mode: 'rw' }, { host: path.join(root, 'work'), guest: '/work', mode: 'rw' }] });
+    assert.equal(r.exit, 0, (r.stdout + r.stderr).slice(-1500));
+    const gates = readJson(path.join(root, 'out', 'gates.json'));
+    assert.equal(gates.promotable, true, JSON.stringify(gates.gates));
+    assert.equal(gates.gates.G7_glue.ok, true);
+  } finally { fs.rmSync(home, { recursive: true, force: true }); }
 });
 
 fs.rmSync(tmp, { recursive: true, force: true });

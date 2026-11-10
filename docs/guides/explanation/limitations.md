@@ -46,8 +46,8 @@ independent reviewer. A run marked `testDouble: true` shows the machinery works 
 Some tests need the host to provide something and skip with their reason when it doesn't. The campaign transfer to a
 real second host runs only when `ENDOFORGE_SECOND_HOST` is set: it passed against a separate machine on 2026-11-09 and
 skips in CI. The sandboxed factory-worker tests need `bwrap` and a systemd user manager. The factory runner's
-real-Docker cases need a Docker daemon reachable without `sudo` and an image already on the host; they have not run
-anywhere yet, so the runner is shown working only against a stand-in Docker CLI.
+real-Docker cases need a Docker daemon reachable without `sudo` and an image already on the host; they skip on the
+development host and ran and passed on the GitHub runners (first in PR #142).
 
 ## Isolation limits
 

@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SAR |
-| Version | 1.5 |
+| Version | 1.6 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -45,7 +45,15 @@ Findings:
   passed against ds9, a separate machine, on 2026-11-09 (it skips in CI, where `ENDOFORGE_SECOND_HOST` is unset).
   Round 6 opened two: GAP-EF-015 (`tools/gate/gate.mjs freeze` does not require a capability block, while the loop's
   freeze does and `gate run` refuses its absence at G7) and GAP-EF-016 (`make coverage` failing on a test failure and
-  the CI `coverage` job, round-6 item M2, not finished).
+  the CI `coverage` job, round-6 item M2, not finished). Round 7 closed both: `freeze` now runs the loop's capability
+  check, tested by `tools/test_gate_structured.mjs` (REQ-GATECLI-001), and the `coverage` job ran on GitHub in PR
+  #142 (run 42709080153) while a deliberately failing test was shown to fail `make coverage-python` (REQ-REPO-009,
+  by inspection and that recorded run, not by an automated test). No gap is open.
+- Round 7 found a regression from round 6 while closing GAP-EF-015: round 6 made the capability block required at the
+  freeze, but no atomizer prompt asked a model for it, and the compose atom's sandbox could not load the gate's own
+  modules (`core/`, `tools/asc`) while its `asc` toolchain pointed at a directory that does not exist. Every real
+  atomizer run since round 6 would have failed at the freeze or at G7; the atomizer tests use script workers, so they
+  did not show it. REQ-ATOM-006 now covers the prompts and the compose sandbox.
 - Trace check after the update (`python3 -I tools/check_trace.py`): 95 requirements, 95 traced, 14 gaps, 0 TBD; 97
   discovered test files, 92 traced and 5 supporting; 0 problems. After the round-2 records pass on 2026-11-09: 127
   requirements, 127 traced, 10 gaps; 111 discovered test files, 105 traced and 6 supporting; 0 problems. After the
@@ -55,7 +63,8 @@ Findings:
   REQ-STEP-001 is deleted and traces to its retirement check, 147 traced, 0 gaps; 127 discovered test files, 120
   traced and 7 supporting (one more: the archived step harness tests); 0 problems. After the round-6 records pass: 150
   requirement IDs (one deleted), 150 traced, 2 gaps; 135 discovered test files, 128 traced and 7 supporting; 0
-  problems.
+  problems. After the round-7 records pass: 152 requirement IDs (one deleted), 152 traced, 0 gaps; 137 discovered
+  test files, 129 traced and 8 supporting (one more: the library-reuse example test); 0 problems.
 
 ### Design analysis
 
@@ -66,7 +75,8 @@ hardware record, atomizer, conductor, hillclimb, factory tools, Rust lane and re
 C-01 to C-31; each lists its requirements. After round 5 every live component has a tested requirement; C-20, the
 step harness, is retired to `TODELETE/` with REQ-STEP-001 deleted, because nothing here called it and it needs a POODO
 decision core this repository does not have. Round 6 gave C-17, the kernel host, its first caller outside its own
-tests: C-26's admission. C-27 and C-30 name the round-6 gaps (GAP-EF-016, GAP-EF-015).
+tests: C-26's admission. C-27 and C-30 named the round-6 gaps (GAP-EF-016, GAP-EF-015); round 7 closed both and
+allocated REQ-ATOM-006 to C-22 and REQ-REPO-010 (the no-comments check) to C-27.
 
 ### Testing analysis
 
@@ -81,14 +91,17 @@ Findings:
 - `make coverage` measures coverage (Node built-in coverage; coverage.py or trace counts for Python). Its first run,
   on the round-4 worker's tree before integration, reported 90.74% of Node lines; no recorded STR includes a coverage
   run yet, and no coverage target is set. Round 5 added the CI job `coverage`, which uploads the summary as an
-  artifact; it has not run on GitHub yet. Its worker found that
+  artifact; it had not run on GitHub then. Its worker found that
   `tools/factory_runtime/test_runtime_gaps.py` `Egress.test_run_bounded_outcomes` passes alone but fails when it
   shares one process with the other coverage modules (leaked sqlite connections raise `ResourceWarning`s inside its
   window), so the Python half of the job is expected to fail; and without coverage.py the Makefile's trace fallback
   exits 0 even when a unittest fails. Round 6 fixed the first cause in the test (REQ-FACTORY-003:
   `Egress.test_run_bounded_outcomes` now ignores garbage other modules leave, with a regression test). Making
-  `make coverage` fail on any test failure and getting the CI job to pass (item M2) is not finished; it is registered
-  as GAP-EF-016 and the job has still not run on GitHub.
+  `make coverage` fail on any test failure and getting the CI job to pass (item M2) was registered as GAP-EF-016. The
+  job first ran in PR #142 (run 42709080153) and passed: Node 953 tests, 0 failed, 93.29% of lines; Python 333 tests
+  OK (3 skipped) under coverage.py, 84% in total; artifact `coverage-summary` uploaded. On 2026-11-09 a deliberately
+  failing unittest made `make coverage-python` (trace fallback) print `FAILED (failures=1)` and exit 2. GAP-EF-016 is
+  closed; no coverage target is set.
 - Delegated cgroup enforcement is tested inside a delegated user scope (REQ-ISO-018, GAP-EF-001 closed) and skips
   with its reason elsewhere; it ran on the development host on 2026-11-09, and the GitHub runner result is not
   recorded. The Rust lane runs in its own CI job and passed in PR #139 (run 42600069278).
@@ -110,12 +123,22 @@ Findings:
   no `problem` field (fixed). The new `gaps6-hostcall` cases failed against the round-5 pool first; the `tools/lib`
   tests found no defect. Each atom's conductor check passed on 2026-11-09; none of these files is in a recorded STR
   yet, and no CI run of them is recorded.
-- The factory runtime's `RealDocker` cases have not run: the Docker socket on the development host needs `sudo`, and
-  the tests never escalate, so they skip with that reason. The runner is shown working only against a stand-in Docker
-  CLI.
+- The factory runtime's `RealDocker` cases skip on the development host, where the Docker socket needs `sudo` and the
+  tests never escalate. They ran and passed on GitHub in PR #142 (run 42709080153), in jobs `test (22)` and
+  `test (26)`, in both the repository tests and the optimized Python run, so the runner is now shown working against a
+  real Docker daemon.
 - `examples/library-reuse.mjs` and its how-to were written to show a third need that misses with `no_capability`.
-  Since round 6 the test double's default contract carries a block, so the third need is served from the library; the
-  how-to now shows that output, and the example no longer demonstrates a miss.
+  Since round 6 the test double's default contract carries a block, so the third need was served from the library.
+  Round 7 gave the third need a capability block whose argument range disagrees with the promoted kernel's, so it
+  misses with `no_contract_match` and is generated; `core/library/test/library-reuse-example.test.mjs` runs the
+  example and checks its three outcomes so it cannot drift unnoticed again.
+- Round 7 added two test files (`core/library/test/library-reuse-example.test.mjs` and
+  `tools/test_check_comments.py`) and extended `tools/test_gate_structured.mjs` and
+  `tools/atomizer/test/commands.test.mjs`. Written before the fixes, three gate tests and six atomizer tests failed
+  against the round-6 code (worker report); the new sandboxed compose test exposed the missing gate modules and
+  compiler path above.
+  Each atom's conductor check passed on 2026-11-09; none of these files is in a recorded STR, and no CI run of round 7
+  is recorded.
 
 ### Source code quality
 
@@ -125,6 +148,7 @@ Findings:
 | Gitleaks 8.30.1 | `gitleaks git --no-banner --redact --log-opts=HEAD .` | 1 `generic-api-key` match in `experiments/P-51-escape-rate/controls.test.mjs:21`: the synthetic kernel key `synthetic/run/k`, a false positive |
 | Privacy lint | `python3 -I tools/check-privacy.py` | 0 failures |
 | JavaScript syntax | `node --check` on every `.mjs`, `.js` and `.cjs` (in `make lint`) | 0 failures at `b71eebf`; a syntax check only, no style or semantic lint |
+| Comment check (REQ-REPO-010) | `python3 -I tools/check_comments.py` (in `make lint`) | 0 comment lines at `b1b6418` on 2026-11-09, after round 7 removed them (D-07). It counts whole comment lines only in JavaScript, TypeScript, Rust and shell files; 20 end-of-line `//` comments remain (D-09) |
 
 ### Configuration audit
 
@@ -154,14 +178,17 @@ No issues were filed for these findings; they are reported to the maintainer thr
 | D-04 | S4 | Referenced inputs missing: `bench.mjs` defaults to `tools/atomizer/examples/C-005/atoms.json`; `lib/ledger.mjs` names a `LEDGER.md` schema; `conduct adopt` points to `tools/conductor/examples`. None exist | `tools/atomizer/`, `tools/conductor/` | Closed 2026-11-09: REQ-ATOM-004, REQ-COND-004 |
 | D-05 | S3 | SECURITY.md directs reporters to GitHub private vulnerability reporting, which is disabled for the repository (`gh api repos/Akilleez-QA/endoforge/private-vulnerability-reporting` returns `enabled: false`). SECURITY.md now gives the fallback; enabling it is a repository setting for the owner | `SECURITY.md`, repository settings | Open |
 | D-06 | S4 | `main` has no branch protection; CI has no secret-scanning job | repository settings, `.github/workflows/ci.yml` | Secret scan added to CI 2026-11-09; branch protection still open (risk R-6) |
-| D-07 | S4 | Code comments exist despite the no-comments rule, for example `tools/conductor/lib/adopt.mjs:5`, `tools/atomizer/lib/ledger.mjs:2`, `tools/atomizer/test/run.mjs:1`, `tools/job/lib/kinds.mjs` (top block) | several files | Open |
+| D-07 | S4 | Code comments exist despite the no-comments rule, for example `tools/conductor/lib/adopt.mjs:5`, `tools/atomizer/lib/ledger.mjs:2`, `tools/atomizer/test/run.mjs:1`, `tools/job/lib/kinds.mjs` (top block) | several files | Closed 2026-11-09 (round 7): the comment lines were removed, usage blocks moved into the programs' usage output, information the docs lacked moved into the tool READMEs and `docs/`, and `tools/check_comments.py` in `make lint` (REQ-REPO-010) reports 0 |
 | D-08 | S4 | Stale documentation (verification matrix baseline, oracle wording, missing control documents) | `docs/` | Closed in this PR |
+| D-09 | S4 | 20 end-of-line `//` comments remain after code, which `tools/check_comments.py` does not count in JavaScript files (it finds Python end-of-line comments): 15 in `tools/conductor/lib/` (`adopt`, `checks`, `collect`, `daemon`, `handlers`), 5 in `tools/atomizer/` (`bin/backfill.mjs:10`, `bin/speed.mjs:41`, `test/lessons.test.mjs:12`, `test/run.mjs:19` and `:101`) | `tools/conductor/lib/`, `tools/atomizer/` | Open (round 7) |
+| D-10 | S4 | `tools/atomizer/bin/verify.mjs` prints `[--policy file]` in its usage and the README listed it, but the program always loads the `policy.json` next to it and ignores the flag. `ledger-export.mjs` and `repair-noop.mjs` print no usage; a bare `ledger-export.mjs` with no ledger throws `ENOENT` | `tools/atomizer/bin/` | Open (round 7); the README now says the flag is ignored |
 
 ### Overall assessment
 
 Every requirement traces to tests that exist, and every discovered test file traces to a requirement or is classified.
-Two behaviours are registered as untested, both opened in round 6: GAP-EF-015 (the gate CLI's freeze) and GAP-EF-016
-(the coverage target and CI job). The other fourteen gaps are closed.
+No behaviour is registered as untested: GAP-EF-015 (the gate CLI's freeze) and GAP-EF-016 (the coverage target and CI
+job), opened in round 6, were closed in round 7, after the other fourteen. GAP-EF-016's closure rests on inspection,
+the first CI run and one recorded failing-test run, not on an automated test.
 The real second-host case and the sandboxed-worker cases skip where their host prerequisites are missing, including in CI for the second host. Assurance is author-side only; no independent review has been performed.
 
 ## Change history
@@ -174,3 +201,4 @@ The real second-host case and the sandboxed-worker cases skip where their host p
 | 1.3 | 2026-11-09 | round 4 | Round-4 trace counts; lint and coverage now exist (D-02 closed); the Rust lane's first CI run passed; two gaps open | this commit |
 | 1.4 | 2026-11-09 | round 5 | Round-5 trace counts; GAP-EF-002 and GAP-EF-006 closed (no gap open); C-20 retired; the CI coverage job and its expected Python failure recorded | this commit |
 | 1.5 | 2026-11-09 | round 6 | Round-6 trace counts; GAP-EF-015 and GAP-EF-016 opened; the round-6 test files and the defects they exposed; the unrun `RealDocker` cases; C-17 gains a caller | this commit |
+| 1.6 | 2026-11-09 | round 7 | Round-7 trace counts; GAP-EF-015 and GAP-EF-016 closed (no gap open); the round-6 atomizer regression; the `RealDocker` cases and the `coverage` job ran in CI; D-07 closed; D-09 and D-10 opened | this commit |

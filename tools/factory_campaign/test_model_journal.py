@@ -78,9 +78,7 @@ def main():
         record('orphan-worker-survives-before-reconcile',alive(observed['worker']))
         with ModelJournal(root)as journal:
             row=journal.read(attempt)
-            # Old controller identity copied to a still-running PID must not match start time.
             forged=dict(foreign_id,starttime=str(int(foreign_id['starttime'])+1));record('PID-reuse-identity-rejected',not alive(forged)and alive(foreign_id))
-            # Durable event remains authoritative when the snapshot is missing/stale.
             (journal._path(attempt)/'state.json').unlink();recovered=journal.read(attempt)
             record('durable-event-recovers-missing-snapshot',recovered['state']=='running')
             _atomic(journal._path(attempt)/'state.json',{'version':999});record('durable-event-recovers-stale-snapshot',journal.read(attempt)['version']==1)
@@ -102,7 +100,6 @@ def main():
             try:journal.reconcile(live['attempt'],stop_scope=False)
             except RuntimeError:refused=True
             record('live-owner-reconciliation-rejected',refused);journal.finish(live['attempt'],'cancelled');absent=journal.cleanup_owned(live['attempt']);record('actual-not-found-scope-cleanup-safe',any(a.get('absent')and a.get('loadState')=='not-found'for a in absent['cleanup']))
-            # Refuse paths that name foreign data, symlink aliases or mismatched owners.
             protected=out/'foreign-private';protected.mkdir();(protected/'sentinel').write_text('KEEP')
             safe=journal.new_attempt('cleanup-boundary','deterministic-test','0'*64);home=journal.private_home(safe['attempt']);temp=home.parent;kept=temp.with_name(temp.name+'-preserved');temp.rename(kept);temp.symlink_to(protected,target_is_directory=True)
             journal.finish(safe['attempt'],'cancelled');refused=False
@@ -113,7 +110,6 @@ def main():
             try:journal.cleanup_owned(safe['attempt'],stop_scope=False)
             except ValueError:refused=True
             record('foreign-temp-owner-rejected',refused and temp.exists());_atomic(marker,original);journal.cleanup_owned(safe['attempt'],stop_scope=False)
-            # Actual systemd scope ownership and mismatched-description controls.
             scoped=journal.new_attempt('owned-scope','deterministic-test','0'*64)
             unit=scoped['scope'];description=journal.scope_description(scoped['attempt'])
             scope_process=subprocess.Popen(['systemd-run','--user','--scope','--quiet','--unit',unit[:-6],'-p','Description='+description,'/usr/bin/sleep','120'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,start_new_session=True)
@@ -135,7 +131,6 @@ def main():
             except RuntimeError:refused=True
             record('mismatched-scope-description-not-stopped',refused and unrelated_scope.poll()is None)
             subprocess.run(['systemctl','--user','stop',unit],capture_output=True,timeout=10);unrelated_scope.wait(timeout=5)
-            # Stale controller generation cannot write terminal evidence.
             control=root/'model-controller.json';current=json.loads(control.read_text());_atomic(control,{**current,'generation':'e'*32});stale=False
             try:journal.finish(live['attempt'],'passed')
             except RuntimeError:stale=True

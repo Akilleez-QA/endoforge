@@ -144,13 +144,16 @@ no unknown fields, an `id`, an `assumption` and a `question` of at least 20 char
 - every trap names an exported function, and every function with an `expectError` test has a trap entry;
 - when the contract states exactly one number of decimal places for an export, the glue's `precision` matches it;
 - code labels that fit the contract's code table better swapped are refused, unless the contract also states the
-  result as a computation, in which case the finding is advisory only;
+  result as a computation, in which case the finding is advisory only. A contract can state a result twice: as a code
+  table, and as a computation from the parameters whose codes the input tables and the frozen tests then fix. With a
+  computation the table is not the only basis for what a code means, and a gate cannot tell from text which statement
+  the glue should follow;
 - `CONTRACT.md` holds a ```capability block (`capabilityBlock`), and the glue agrees with it (`capabilityAgreement`):
   the same exports, the same number of arguments, and per argument the same kind, unit, range and codes, per result
   the same kind, unit, precision, rounding, codes and labels, and the same set of trapping exports. Units and ranges
   are compared the way library lookup compares them, so `1`, `none` and `dimensionless` are one unit and `0..10` equals
-  `[0, 10]`. The loop's freeze already refuses a contract without the block (REQ-GEN-011); the stand-alone
-  [gate CLI](../../tools/gate/README.md) freezes one, and G7 is then where it is refused (GAP-EF-015).
+  `[0, 10]`. The loop's freeze already refuses a contract without the block (REQ-GEN-011), and since round 7 so
+  does the stand-alone [gate CLI](../../tools/gate/README.md)'s `freeze` (REQ-GATECLI-001).
 
 A unit that disagrees with its argument's name (`unitDisagreements`) is reported as advisory and does not fail G7;
 G9 makes the binding units decision.

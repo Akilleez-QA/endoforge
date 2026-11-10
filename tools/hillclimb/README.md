@@ -47,7 +47,7 @@ and exits 2.
 | `score` | Round history from `scoreboard.json` and the stop decision. |
 | `lessons [--add KEY --stage S --text T] [--close KEY --by "PR #n"]` | Lists, adds or closes lessons. |
 | `round [--pr]` | One full round; stops early when the stop rule says so. |
-| `render [--profile fast\|final]`, `plan-review`, `review`, `refs [--fetch id,id\|all]`, `plan-fix`, `fix`, `apply`, `judge`, `pr` | The stages of a compete round. `plan-*` writes atoms without running them. |
+| `render [--profile fast\|final]`, `plan-review`, `review`, `refs [--fetch id,id\|all]`, `plan-fix [--owners A,B]`, `fix [--owners A,B]`, `apply`, `judge`, `pr` | The stages of a compete round. `plan-*` writes atoms without running them. `render` runs the profile's render jobs (`fast`, real time, by default; `final` for the high-end check). `--owners` limits the fix lanes to those owners, for example when other lanes already own the rest. |
 | `atomize`, `prove-split`, `logins`, `smoke`, `evals [--phase pre\|post]`, `status`, `collect` | Fan-out stages (`lib/fanout-run.mjs`). |
 | `compose-review`, `compose-fix`, `compose-judge` | Run inside atoms. |
 
@@ -100,6 +100,43 @@ $ python3 -I $REPO/tools/hillclimb/scripts/pixel-diff.py before changed
 $ python3 -I $REPO/tools/hillclimb/scripts/pixel-diff.py before changed --tolerance 2
 {"ok": true, "compared": 1, "tolerance": 2, "missing": [], "differ": []}
 ```
+
+## Inside a round
+
+**Who does what.** Models come from `campaign.models` (default `opus` and `codex`). With mixing on (the default,
+`campaign.mix` not `false`) they rotate by round and slot, so no model always fixes or always judges: what one model
+fixes this round, another critiques and fixes next round. Review runs one critic per model and a merge atom that
+removes duplicates into the round's fix list; in `compete` every model fixes each lane and a judge atom picks one
+variant per owner after a fast render of each. With mixing off, every slot uses one backend per stage, from
+`campaign.workers.<stage>` or `campaign.worker`. Fix lanes are named `fix-<owner>`, or `fix-<owner>--<model>` when
+variants compete; `pr` ships only a competing lane's winner.
+
+**What an atom sees.** Review and fix atoms mount the round directory read-only at `/hc` (`stills/`, `sheets/`,
+`previous.fixlist.json`), this tool read-only at `/hc-tool`, and the campaign repository read-only at `/repo`; a fix
+atom copies its owner's scope out with `hc-patch.sh`. Only this tool is mounted inside an atom, so the `compose-*`
+commands that run there do not need the atomizer; the host stages validate the atoms with it.
+
+**Fix lists** (`endoforge/hillclimb-fixlist/1`) hold the critics' numbered problems, each owned by one fix lane. A list
+is refused when it has more than `critique.count` items, an id is not a unique positive integer, an item lacks its
+image (`still`), a problem of at least 12 characters or a known severity, an owner does not exist, or a carried item
+names an id that is not in the previous list.
+
+**Lessons.** Each lesson has a stable key, so a recurrence counts up instead of adding a row, and a closed lesson that
+recurs reopens. A round's `LESSONS.md` lists the measurements first, then this round's lessons, then every open lesson
+that still has no tool change.
+
+**A fan-out round** (`mode: "fanout"`) runs: evals first, re-atomize, smoke one atom per engine (so a broken login,
+pool or flag fails once, not once per lane), then launch every piece. Each lane gets a worktree from the integration
+`HEAD` and starts as a detached systemd user unit in `heavy.slice` (or a plain child with `fanout.launcher: "local"`),
+in waves the capacity dial sizes; a wrapper writes `logs/<lane>.exit` when the worker ends, so the status never
+depends on systemd keeping the unit. A campaign backed by a job manifest gets compiled prompts (goal verbatim,
+governing inputs first, checks, lessons) and must pass the job's gates up to Orchestrate before anything launches,
+so nothing fires on an unconfirmed card (I1, I11); the round then emits `FIRED`. A refused round leaves no round
+directory. Recombine applies each piece's diff restricted to its own files, one commit per piece; of a piece's
+variants, the first to apply cleanly and pass the piece's check wins. Post-evals reuse the previous round's when the
+integration `HEAD` has not moved. Errors are typed ([lib](../lib/README.md)): a busy guard or queue (75) waits and
+retries with backoff, 78 stops the job, and evals that could not run are reported as "not scored": no pass, no number,
+no revert and no baseline change.
 
 ## Campaign rules
 

@@ -1,7 +1,3 @@
-// The Conductor daemon: one per job, long-running and resumable. Every tick it reloads the manifest and the durable
-// state, honours stop and pause, and runs the handler of the current phase. Handlers are mechanism (launch, collect,
-// check, freeze or relaunch); judgment leaves the daemon only as an escalation event:
-//   NEEDS-COORDINATOR to the model (with a context packet), NEEDS-YOU to the human (authority only).
 import fs from 'node:fs';
 import { loadState, updateState, transition, nextPhase, stateFile, allSettled } from './state.mjs';
 import { emit } from '../../job/lib/events.mjs';
@@ -9,7 +5,6 @@ import { writePacket } from './escalate.mjs';
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-/** Raise an escalation once per key; returns true when it was new. */
 export function escalate(job, file, { to, key, atom = null, why, packet = null }) {
   let fresh = false;
   updateState(job, file, (s) => {
@@ -23,7 +18,6 @@ export function escalate(job, file, { to, key, atom = null, why, packet = null }
   return fresh;
 }
 
-/** Phase handlers that need nothing but the state; launch, streaming and checks are added by later modules. */
 export const BASE_HANDLERS = {
   staged: () => null,                                          // waits for `go` (the user's go on the staged card)
   gates: (ctx) => (allSettled(ctx.state) ? { advance: true, why: 'every atom frozen or locked' } : null),

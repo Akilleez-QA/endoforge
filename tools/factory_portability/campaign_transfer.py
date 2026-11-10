@@ -41,7 +41,6 @@ def execute_transfer(source,bundle,receipt,identity,host,remote):
             execute(['scp','-o','BatchMode=yes','-q',Path(__file__).with_name(name),host+':'+remote+'/'+name],rows)
         execute(['scp','-o','BatchMode=yes','-q','-r',bundle,host+':'+remote+'/bundle'],rows)
         ns=['bwrap','--ro-bind','/usr','/usr','--ro-bind','/lib','/lib','--ro-bind-try','/lib64','/lib64','--ro-bind','/bin','/bin','--bind',remote,'/work','--unshare-all','--new-session','--die-with-parent','--proc','/proc','--dev','/dev','--tmpfs','/tmp','--setenv','PATH','/work:/usr/bin:/bin','--chdir','/work','--']
-        # The ephemeral stdin stream is never appended to logs or written remotely.
         decrypt=ns+['/usr/bin/python3','/work/checkpoint.py','unpack','/work/'+Path(archive_remote).name,dest,'--identity','-']
         remote_restore=execute(['ssh','-o','BatchMode=yes',host,shlex.join(decrypt)],rows,stdin=identity.read_bytes());summary['remoteRestore']=json.loads(remote_restore['stdout'])
         command=['ssh','-o','BatchMode=yes',host,shlex.join(ns+['/usr/bin/python3','/work/resume_stage.py',dest,'/work/bundle',output])]

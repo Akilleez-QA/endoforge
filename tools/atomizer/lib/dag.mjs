@@ -1,4 +1,3 @@
-// DAG helpers for atoms.json: topological order, waves (levels), critical path, speedup bound.
 export function deps(atom) {
   return (atom.inputs ?? []).filter((i) => i.from && i.from !== 'need').map((i) => i.from);
 }
@@ -21,7 +20,6 @@ export function topo(atoms) {
   const cycle = order.length === atoms.length ? [] : atoms.map((a) => a.id).filter((id) => !order.includes(id));
   return { order, level, cycle, out };
 }
-/** Work-weighted plan: waves, total work, critical path, Amdahl-style speedup bound (unit cost per work point). */
 export function plan(atoms) {
   const t = topo(atoms);
   if (t.cycle.length) return { cycle: t.cycle };

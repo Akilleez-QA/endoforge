@@ -59,7 +59,6 @@ def pack(source, archive, recipient, age='age'):
 def unpack(archive,destination,identity,age='age'):
     destination=Path(destination)
     if destination.exists(): raise FileExistsError(destination)
-    # age verifies authentication before any extraction; bounded encrypted input and plaintext.
     if Path(archive).stat().st_size>LIMIT+1024*1024: raise ValueError('archive too large')
     cp=subprocess.run([age,'--decrypt','--identity',str(identity),str(archive)],capture_output=True,timeout=120)
     if cp.returncode: raise ValueError('checkpoint decryption/authentication failed')
@@ -81,7 +80,6 @@ def unpack(archive,destination,identity,age='age'):
         for n,data in {**contents,'checkpoint.json':json.dumps(m,indent=2).encode()}.items():
             p=tmp/n; p.parent.mkdir(parents=True,exist_ok=True); p.write_bytes(data)
             p.chmod(0o700 if m['files'].get(n,{}).get('executable') else 0o600)
-        # Directory rename is atomic on the destination filesystem; refuse existing target.
         if destination.exists(): raise FileExistsError(destination)
         libc=ctypes.CDLL(None,use_errno=True)
         if libc.renameat2(-100,os.fsencode(tmp),-100,os.fsencode(destination),1):

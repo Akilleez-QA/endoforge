@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-// Atomize a need: an agent inside an isolate (seeing only the need and the rules) writes atoms.json; the script validates, repairs once, plans.
-// usage: node atomize.mjs <need.md> --out <dir> [--model sonnet|opus|codex] [--repair 1] [--fixture atoms.json]
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -11,6 +9,7 @@ import { plan } from '../lib/dag.mjs';
 import { makeHomeTemplate, runIsolated } from '../lib/isolate.mjs';
 import { toolchainFor, parseUsage, stripFences } from '../lib/workers.mjs';
 import { emit, context, load, newId } from '../lib/ledger.mjs';
+import { capabilityRule } from '../../../core/runtime/x1/generator.mjs';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, '../../..');
 function args(argv) { const o = { _: [] }; for (let i = 0; i < argv.length; i++) { const a = argv[i]; if (a.startsWith('--')) o[a.slice(2)] = argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[++i] : true; else o._.push(a); } return o; }
@@ -24,7 +23,7 @@ const OUT = path.resolve(A.out); fs.mkdirSync(path.join(OUT, 'receipt'), { recur
 const RULES = `You are the task atomizer of a software factory. Decompose the need below into the smallest units of work that can run in parallel, as one JSON document (schema "endoforge/atoms/1"). Output only the JSON: no prose, no code fences.
 
 ## What the factory makes from a technician's request
-A capability: a pure AssemblyScript->WASM kernel (exported numeric functions over f64/i32/bool, no imports, deterministic), CONTRACT.md (what is computed, the assumption taken where the request left a fact open, the one question that resolves it, which inputs are refused), tests.json (executable tests in the fixed gate format: calls with expected values or expected traps), glue.json (labels, units, precision, codes, the assumption, the question, trap messages), then the fixed gates G1-G7 (frozen, compiles, exports, tests, deterministic, bounded, glue) and blind reviews by personas who judge from the request and the artefact's interface.
+A capability: a pure AssemblyScript->WASM kernel (exported numeric functions over f64/i32/bool, no imports, deterministic), CONTRACT.md (what is computed, the assumption taken where the request left a fact open, the one question that resolves it, which inputs are refused, and at its end the capability block described below), tests.json (executable tests in the fixed gate format: calls with expected values or expected traps), glue.json (labels, units, precision, codes, the assumption, the question, trap messages, agreeing with the capability block), then the fixed gates G1-G9 (frozen, compiles, exports, tests, deterministic, bounded, glue, nonfinite, units) and blind reviews by personas who judge from the request and the artefact's interface.
 
 ## Rules of atomization
 1. An atom is the smallest unit that (a) has a contract verifiable from its declared inputs and outputs alone, (b) one worker finishes in one turn with bounded output (size.work <= 3 on a 1-5 scale), (c) fails alone. Split until (a)-(c) hold.
@@ -38,11 +37,12 @@ A capability: a pure AssemblyScript->WASM kernel (exported numeric functions ove
 9. Each atom: "id" (short, letters/digits/-/_), "kind" (interface|contract|tests|kernel|glue|data|compose|review|repair|other), "title", "contract" (precise, at least 20 characters, states what the output must satisfy), "inputs", "outputs" [{"name","path","describe"}], "verify" (how a script checks the output without a model), "worker" {"model","tools","toolchain" (optional),"prompt" (the worker's own instructions)}, "size" {"work","interface"}.
 10. Kernel atoms must prefix every private helper or constant with the atom id so parts concatenate into one module; the scheduler appends a fixed procedure (formats, commands) to kernel, tests, glue, compose and review atoms, so do not restate formats in the worker prompts; say what, not how.
 11. Do not invent facts about the equipment; where the request leaves a fact open, the contract atom records the assumption and the question, and the kernel implements the assumption.
+12. The atom that writes CONTRACT.md must end it with the capability block, and its worker prompt must say so. The capability block: ${capabilityRule} The freeze refuses a CONTRACT.md without a valid block, before any code is written, and gate G7 refuses glue that disagrees with it, so every glue atom takes the contract atom's CONTRACT.md as an input.
 
 ## Fixed formats of the factory (reference real fields in acceptance commands)
 - tests.json: a JSON array of {"name","fn","args":[numbers],"expect":number|boolean,"tol":number (absolute, for non-integers),"expectError":true (the call must refuse)}.
 - glue.json (closed schema; no other top-level keys): {"id","assumption","question","notes" (optional),"exports":[{"name","label","args":[{"name","kind":"number|integer|boolean|code","unit","codes"|"labels"}],"result":{"kind","unit","precision"|"codes"|"labels"}}],"traps":[{"fn","when","message"}]}. Codes live inside the argument or result entries, never at the top level.
-- gates.json (written by compose): {"promotable":boolean,"gates":{"G1_frozen":{"ok"},...,"G7_glue":{"ok"}},"tests":[{"name","fn","args","expect","got","pass"}]}; kernel.wasm has no imports; call exports through new WebAssembly.Instance(new WebAssembly.Module(bytes), {}).
+- gates.json (written by compose): {"promotable":boolean,"gates":{"G1_frozen":{"ok"},...,"G9_units":{"ok"}},"tests":[{"name","fn","args","expect","got","pass"}]}; kernel.wasm has no imports; call exports through new WebAssembly.Instance(new WebAssembly.Module(bytes), {}).
 - compose outputs are fixed by the compose helper: kernel.wasm, kernel.wat, kernel.ts, CONTRACT.md, tests.json, glue.json, gates.json, failures.json, frozen.sha256; declare only these (one output per file, never a directory). Reviews read CONTRACT.md, glue.json, gates.json and tests.json, never kernel.ts.
 - tests.json arguments: 1e999 for +Infinity, -1e999 for -Infinity, the string "NaN" for NaN; never null or bare words.
 - A fixed repair stage is added by the scheduler after compose (draft compose -> one repair round that sees only the failing tests -> final compose); do not add repair atoms yourself.
@@ -57,6 +57,7 @@ const ATOMIZE_ID = newId(`atomize-${needId}`);
 const receipt = { atomizeId: ATOMIZE_ID, needId, model, promptSha256: promptSha, attempts: [], startedAt: new Date().toISOString() };
 emit('atomize.start', { atomizeId: ATOMIZE_ID, need: needId, model, promptSha256: promptSha, promptBytes: Buffer.byteLength(prompt), needSha256: crypto.createHash('sha256').update(needText).digest('hex'), out: OUT, fixture: A.fixture ?? null, context: context(), load: load() });
 async function turn(text, label) {
+  if (A.fixture) fs.writeFileSync(path.join(OUT, 'receipt', `${label}-prompt.md`), text);
   if (A.fixture) return { json: fs.readFileSync(A.fixture, 'utf8'), wallMs: 0, usage: null, fixture: A.fixture };
   const work = fs.mkdtempSync(path.join(os.tmpdir(), 'atomize-work-'));
   let cmd, stdin = null, toolchain;

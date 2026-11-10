@@ -1,4 +1,3 @@
-// Tests for the atomizer scheduler: parallel speedup, enforced input boundary, rejected cycles and forbidden edges.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -18,7 +17,6 @@ check('routing unit tests', !routing.error && routing.status === 0, routing.erro
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'atomizer-test-'));
 process.env.ATOMIZER_LEDGER_DIR = path.join(tmp, 'ledger');
 process.env.ENDOFORGE_CLAUDE_ACCOUNTS = path.join(tmp, 'no-claude-accts');  // hermetic: never mount the host's real logins
-// Toolchain overrides are independent of the host's installed versions.
 const repoRoot = path.resolve(HERE, '../../..');
 const savedCodex = process.env.ENDOFORGE_TOOLCHAIN_CODEX;
 const restoreCodex = () => {
@@ -39,7 +37,6 @@ try {
   try { toolchainFor(['codex'], policy, repoRoot); } catch (e) { message = e.message; }
   check('missing codex reports toolchain, path and override', message.includes('codex') && message.includes(missing) && message.includes('ENDOFORGE_TOOLCHAIN_CODEX'));
 } finally { restoreCodex(); }
-// Force gzip in a fresh process, even on hosts with zstd installed.
 const archivePath = fs.mkdtempSync(path.join(tmp, 'archive-path-'));
 for (const tool of ['tar', 'gzip']) {
   const resolved = spawnSync('/bin/sh', ['-c', `command -v ${tool}`], { encoding: 'utf8' }).stdout.trim();
@@ -51,14 +48,12 @@ const fallback = spawnSync(node, ['--input-type=module', '-e', `
 `, fx('')], { encoding: 'utf8', env: { ...process.env, PATH: archivePath, ATOMIZER_LEDGER_DIR: path.join(tmp, 'fallback-ledger') } });
 const gz = JSON.parse(fallback.stdout.trim() || '{}');
 check('archive falls back to gzip without zstd', fallback.status === 0 && gz.format === 'gzip' && /^[0-9a-f]{64}$/.test(gz.sha256) && fs.existsSync(path.join(tmp, 'fallback-ledger', 'archive', path.basename(gz.path))), fallback.error?.message || fallback.stderr || JSON.stringify(gz));
-// 1. validation
 const vc = validate(JSON.parse(fs.readFileSync(fx('synthetic-cycle.json'), 'utf8')), policy);
 check('cycle rejected', !vc.ok && vc.errors.some((e) => /cycle/.test(e)), vc.errors.join('; '));
 const vf = validate(JSON.parse(fs.readFileSync(fx('synthetic-forbidden.json'), 'utf8')), policy);
 check('forbidden edge tests->kernel rejected', !vf.ok && vf.errors.some((e) => /forbidden/.test(e)), vf.errors.join('; '));
 const vg = validate(JSON.parse(fs.readFileSync(fx('synthetic-fanout.json'), 'utf8')), policy);
 check('fan-out fixture valid', vg.ok, vg.errors.join('; '));
-// 2. parallel run: 10 atoms of ~1 s each; critical path 3 atoms
 const r1 = spawnSync(node, [sched, 'run', fx('synthetic-fanout.json'), '--run-dir', path.join(tmp, 'fanout'), '--concurrency', '9'], { encoding: 'utf8', env: { ...process.env, ENDOFORGE_THROTTLE: '0' } });
 const s1 = JSON.parse(r1.stdout.trim().split('\n').at(-1));
 check('fan-out all done', s1.allDone, r1.stderr.slice(-300));
@@ -68,7 +63,6 @@ const l1 = JSON.parse(fs.readFileSync(path.join(tmp, 'fanout', 'receipt', 'run.j
 check('receipt lessons: no failed launch, a slowest atom, queue waits measured', l1 && !l1.failedLaunches.length && l1.slowestAtom?.wallMs > 0 && Number.isFinite(l1.queueWaits.totalMs), JSON.stringify(l1));
 const v1 = spawnSync(node, [verify, path.join(tmp, 'fanout')], { encoding: 'utf8' });
 check('fan-out verify passes acceptance A1 and A2', v1.status === 0, v1.stdout.trim().slice(0, 300));
-// 3. undeclared read fails inside the isolate and blocks compose
 const r2 = spawnSync(node, [sched, 'run', fx('synthetic-undeclared.json'), '--run-dir', path.join(tmp, 'undeclared'), '--concurrency', '4', '--retries', '0'], { encoding: 'utf8' });
 const s2 = JSON.parse(r2.stdout.trim().split('\n').at(-1));
 check('undeclared input: w9 failed', s2.statuses.w9 === 'failed', JSON.stringify(s2.statuses));
@@ -77,7 +71,6 @@ const l2 = JSON.parse(fs.readFileSync(path.join(tmp, 'undeclared', 'receipt', 'r
 check('receipt lessons name the failed launch', l2?.failedLaunches.some((f) => f.atom === 'w9'), JSON.stringify(l2?.failedLaunches));
 const v2 = spawnSync(node, [verify, path.join(tmp, 'undeclared')], { encoding: 'utf8' });
 check('undeclared run fails verification', v2.status !== 0);
-// 4. ledger
 const ev = fs.readFileSync(path.join(tmp, 'ledger', 'events.jsonl'), 'utf8').trim().split('\n').map((l) => JSON.parse(l));
 const kinds = new Set(ev.map((e) => e.event));
 check('ledger has run, atom, attempt, verify and archive events', ['run.start', 'atom.start', 'attempt.end', 'atom.end', 'run.end', 'verify.end', 'run.archived', 'atom.blocked'].every((k) => kinds.has(k)), [...kinds].join(','));
@@ -85,10 +78,8 @@ const att = ev.filter((e) => e.event === 'attempt.end');
 check('every attempt event carries wall, stage time, output hashes and load', att.length >= 20 && att.every((e) => typeof e.wallMs === 'number' && typeof e.stageMs === 'number' && Array.isArray(e.outputs) && e.load), `${att.length} attempts`);
 const arch = ev.find((e) => e.event === 'run.archived');
 check('run archive written and hashed', arch && /\.tar\.(zst|gz)$/.test(arch.path) && fs.existsSync(path.join(tmp, 'ledger', 'archive', path.basename(arch.path))) && /^[0-9a-f]{64}$/.test(arch.sha256));
-// 5. receipts
 const rec = JSON.parse(fs.readFileSync(path.join(tmp, 'fanout', 'receipt', 'atoms', 'compose.json'), 'utf8'));
 check('compose receipt lists 8 inputs and a hashed output', rec.inputs.length === 8 && /^[0-9a-f]{64}$/.test(rec.outputs['all.txt']));
-// 6. asset atoms: binds and timeouts
 {
   const { validate } = await import('../lib/validate.mjs');
   const { atomBinds, atomTimeoutMs } = await import('../lib/binds.mjs');
@@ -105,7 +96,6 @@ check('compose receipt lists 8 inputs and a hashed output', rec.inputs.length ==
   check('validate surfaces bind errors and accepts kind asset', (() => { const v = validate(doc, P); return !v.ok && v.errors.some((e) => /bindRoots/.test(e)) && !v.errors.some((e) => /kind must be/.test(e)); })());
   fs.rmSync(root, { recursive: true, force: true });
 }
-// 7. native Claude launches take pool logins in turn, mounted read-write as CLAUDE_CONFIG_DIR (no credential copies)
 {
   const { makeHomeTemplate, runIsolated } = await import('../lib/isolate.mjs');
   const root = fs.mkdtempSync(path.join(HERE, 'claude-accts-'));  // outside /tmp: the isolate overlays /tmp

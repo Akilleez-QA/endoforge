@@ -1,6 +1,4 @@
 #!/usr/bin/env node
-// Flatten the ledger into analysis tables (derived, regenerable): attempts.csv, atoms.csv, runs.csv, pools.csv, atomizations.csv, reviews.csv.
-// usage: node ledger-export.mjs [--out tools/atomizer/ledger/tables]
 import fs from 'node:fs';
 import path from 'node:path';
 import { EVENTS, LEDGER_DIR } from '../lib/ledger.mjs';

@@ -1,6 +1,3 @@
-// The measurements every run receipt carries (`receipt/run.json` → `lessons`), so a round's lessons exist without
-// retries and failovers, the slowest atom, and queue waits (ready → started, i.e. concurrency or throttle).
-/** receipts: { [atomId]: { attempts: [{ attempt, exit, signal, timedOut, ok, wallMs, failovers? }], readyAt, startedAt, wallMs } } */
 export function runLessons(receipts, { throttled = 0 } = {}) {
   const recs = Object.entries(receipts);
   const failedLaunches = recs.flatMap(([id, r]) => (r.attempts ?? []).filter((a) => !a.ok)

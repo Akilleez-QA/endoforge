@@ -8,7 +8,6 @@ import { compareUnits } from '../x1/synth/units.mjs';
 import { mutants } from '../x1/synth/qualify.mjs';
 import { begin, compileMember, enabled, judge, prompts } from '../x1/synth/stage.mjs';
 
-// Hand-assembled kernel: f(a, b) traps when a < 0, else returns a <op> b.
 const kernel = op => {
   const body = [0x00, 0x20, 0x00, 0x44, 0, 0, 0, 0, 0, 0, 0, 0, 0x63, 0x04, 0x40, 0x00, 0x0b, 0x20, 0x00, 0x20, 0x01, op, 0x0b];
   const section = (id, bytes) => [id, bytes.length, ...bytes];

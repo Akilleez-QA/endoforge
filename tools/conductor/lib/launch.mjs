@@ -1,7 +1,3 @@
-// Launching atoms: compiled prompts only, every available login, under the capacity dial and the launch budget.
-// Each launch gets its own git worktree of the integration HEAD and runs detached (a systemd user unit in heavy.slice,
-// or a plain child with conductor.launcher "local"); a wrapper writes the exit code, so the daemon can tell a landed
-// atom from a running one after any restart.
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn, spawnSync } from 'node:child_process';
@@ -15,7 +11,6 @@ const git = (cwd, ...a) => { const r = spawnSync('git', ['-C', cwd, ...a], { enc
 const codexOnPath = () => (process.env.PATH || '').split(':').map((d) => path.join(d, 'codex')).find((p) => { try { fs.accessSync(p, fs.constants.X_OK); return true; } catch { return false; } });
 export const unitName = (job, atom, iter) => `endoforge-${job.id}-${atom}-i${iter}`.toLowerCase().replace(/[^a-z0-9-]/g, '-');
 
-/** Logins for every atom, rotated once and kept in the state, so a relaunch stays on its login. */
 export function assignLogins(job, state, logins = discoverLogins()) {
   const need = (job.atoms ?? []).filter((a) => !state.atoms[a.id]?.login && ['codex', 'claude'].includes(a.engine));
   if (!need.length) return;
@@ -23,13 +18,11 @@ export function assignLogins(job, state, logins = discoverLogins()) {
   for (const l of assignLanes({ pieces }, logins)) state.atoms[l.piece].login = { engine: l.engine, account: l.account, ...(l.configDir ? { configDir: l.configDir } : {}) };
 }
 
-/** How many more atoms may start now: the capacity dial's wave less what is already running. */
 export function slotsFree(job, state, env = process.env) {
   const running = Object.values(state.atoms).filter((a) => a.status === 'launched').length;
   return Math.max(0, waveSize(Object.keys(state.atoms).length, workerCapacity(env)) - running);
 }
 
-/** Start one atom's iteration. Mutates state.atoms[id] (status launched, lane) and the budget. */
 export function launchAtom(job, file, state, id, { prompt, images = [] }) {
   const a = (job.atoms ?? []).find((x) => x.id === id), st = state.atoms[id], c = job.conductor ?? {};
   if (state.budget.launches >= state.budget.maxLaunches) return { refused: 'budget' };
@@ -76,7 +69,6 @@ function unitEnded(unit) {
   return { code: code === '' ? 0 : Number(code) };
 }
 
-/** The exit code of an atom's current lane, null while it runs, or LOST when it ended and left no exit code. */
 export function laneExit(st) {
   const lane = st.lane;
   if (lane?.exitFile) {
@@ -91,12 +83,9 @@ export function laneExit(st) {
     return null;
   }
   if (!lane?.unit) return null;
-  // An adopted lane (started by an older tool) has no exit file: ask systemd. A finished transient unit may be gone,
-  // which counts as a clean exit; ENDOFORGE_SYSTEMCTL stubs it in tests.
   return unitEnded(lane.unit)?.code ?? null;
 }
 
-/** Stop every running lane (stop, budget exhaustion): units through systemctl, local children by process group. */
 export function stopLanes(state) {
   for (const st of Object.values(state.atoms)) {
     if (st.status !== 'launched' || !st.lane) continue;

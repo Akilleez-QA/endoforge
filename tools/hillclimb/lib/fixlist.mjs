@@ -1,8 +1,6 @@
-// Fix lists (`endoforge/hillclimb-fixlist/1`): the critic's numbered problems, each owned by one fix lane.
 export const SCHEMA = 'endoforge/hillclimb-fixlist/1';
 export const SEVERITIES = ['blocker', 'major', 'minor'];
 
-/** Check a fix list against the campaign: owners exist, ids are 1..n and unique, carried items name a previous id. */
 export function validateFixlist(fl, { owners, count, previous } = {}) {
   const errors = [];
   const E = (m) => errors.push(m);
@@ -31,7 +29,6 @@ export const byOwner = (fl) => {
   return m;
 };
 
-/** The human view: one table, then counts. */
 export function toMarkdown(fl, campaign) {
   const owners = campaign.owners;
   const rows = fl.items.map((i) => `| ${i.id} | ${i.still} | ${String(i.problem).replace(/\|/g, '/')} | ${i.owner} | ${i.severity}${i.needs_reference ? ' · ref' : ''}${i.carried_from ? ` · was ${i.carried_from}` : ''} |`);

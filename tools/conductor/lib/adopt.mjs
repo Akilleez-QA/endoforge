@@ -1,14 +1,3 @@
-// Adopt a job that is already running on older scripts without losing its progress. The old manifest becomes an
-// endoforge/job/1 manifest, the old loop state becomes the Conductor's state, and the old lanes (units, worktrees) are
-// tracked where they stand, so a lane still running lands into the Conductor. Universal mechanism only: everything
-// about the old layout and how its atoms map to aspects and capabilities is DATA in a map file (see
-// examples/*.adopt-map.json):
-//   layout:  { unit, worktree, base, prompt, log, collected } templates over {round}, {atom} (lower case), {ATOM},
-//            {lanes}, {logs}; `base` may end in #field to read one field of a JSON file
-//   atoms:   [{ when?: { field?: <key present on the old atom>, files?: <regex> }, aspects?, capabilities? }], first match
-//   primarySource, criticalPath, by
-// The adopted job starts at `staged`: its card is new, so it needs one go from the user (a relayed go never counts).
-// What the old manifest cannot say is listed in `missing` for the coordinator; the gates refuse the go until it is there.
 import fs from 'node:fs';
 import path from 'node:path';
 import { validate } from '../../job/lib/validate.mjs';
@@ -25,8 +14,6 @@ function fromTemplate(t, v) {
   return field ? readJSON(p, {})[field] ?? null : p;
 }
 
-/** o: { legacy, loopState?, atoms?: [extra ids], map: {layout, atoms, primarySource?, criticalPath?, by?}, lanesDir, logsDir,
- *       repo, out, kind, notes, deadline, checks: [{ id, statement, run, json?, atoms? }], slice?, baseline? } */
 export function adopt(o) {
   const L = readJSON(o.legacy), loop = o.loopState ? readJSON(o.loopState, {}) : {}, map = o.map ?? {};
   if (!map.layout?.worktree || !map.layout?.base) throw new Error('the adopt map needs layout.worktree and layout.base (where the old lanes and their base commits are)');

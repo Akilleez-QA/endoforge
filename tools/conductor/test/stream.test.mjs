@@ -1,4 +1,3 @@
-// Conductor stage 3: per-atom streaming with pluggable checks (stub workers, a stub slice render, stub critics).
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
@@ -14,7 +13,6 @@ const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'conductor-stream-'));
 let fails = 0; const pending = [];
 const test = (name, fn) => { const done = (e) => { if (e) { fails++; console.log(`FAIL ${name}: ${e.message}`); } else console.log(`PASS ${name}`); };
   pending.push(Promise.resolve().then(fn).then(() => done(), done)); };
-// Each atom writes "meh" first and "good" once its prompt carries the critic's feedback; b3 never gets it right.
 const setup = scratch(tmp, `#!/bin/bash
 for a in "$@"; do case "$a" in *READY*) echo READY; exit 0;; *"You own ONLY"*) brief="$a";; esac; done
 f=$(printf '%s\\n' "$brief" | sed -n '/You own ONLY/{n;s/^- //p;q}')
@@ -36,7 +34,6 @@ test('each atom climbs on its own: slice render → critic → relaunch with the
   assert.match(fs.readFileSync(path.join(d, 'conductor/prompts/B1-i2.prompt'), 'utf8'), /failed its checks. Fix first:\n- fidelity: make it read good/);
   assert(fs.existsSync(path.join(d, 'conductor/slices/B1/i1/verdict.json')));
   const e = readEvents(loadJob(f), f).find((x) => x.kind === 'NEEDS-COORDINATOR'); assert.match(e.summary, /B3: failed the same way twice \(fidelity:reads good\)/);
-  // checks of different atoms overlapped in time: no barrier, several at once
   const spans = fs.readFileSync(log, 'utf8').trim().split('\n').map((l) => l.split(' ')).map(([a, b, e]) => [a, Number(b) / 1e6, Number(e) / 1e6]);
   const overlap = spans.some((x, i) => spans.some((y, j) => j !== i && x[0] !== y[0] && x[1] < y[2] && y[1] < x[2]));
   assert(overlap, `no two atoms' checks overlapped: ${JSON.stringify(spans)}`);

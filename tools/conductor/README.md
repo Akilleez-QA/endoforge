@@ -71,7 +71,7 @@ job. A check that cannot run is "not scored", never a pass or a fail.
 | `budget [--launches N] [--iterations N] [--by ... --words ...]` | Shows or raises the budget. Raising it needs the user's words. |
 | `stop [--by who] [--why text]` | Stops the lanes and ends the job. |
 | `patch <patch.json>` | The coordinator's reply to an escalation, applied through the same gates. A patch that changes the confirmed card holds launches until the user's new go. |
-| `adopt <new job.json> --map <map.json> ...` | Converts a job running on older scripts into a manifest and state. The old layout is data in the map; [examples/](examples/README.md) has a map with a matching old manifest and loop state. |
+| `adopt <new job.json> --map <map.json> --legacy <manifest> --loop-state <loop.json> --lanes <dir> --logs <dir> --repo <dir> --notes <NOTES.md> --deadline <ISO> [--atoms A,B] [--checks checks.json] [--slice cmd] [--baseline file]` | Converts a job running on older scripts into a manifest and state. The old layout is data in the map; [examples/](examples/README.md) has a map with a matching old manifest and loop state. |
 
 `run` and `unit` launch real workers. The `conductor` block of the manifest sets `launcher` (`systemd` by default, or
 `local` for a detached child), `maxIterations` (3), `maxLaunches` (200), `atomTimeoutSec` (2400), `gate`, `checks`,
@@ -133,6 +133,50 @@ def mul(a, b): return a * b
 The whole run takes about 2.5 seconds; times are UTC and commit hashes differ per run. Events marked `*` also go to
 the push hooks (`ENDOFORGE_PUSH_HOOKS`), none here. The directory must not exist yet; the script overrides `HOME` inside itself so
 login discovery sees only its fake logins.
+
+## Rules and formats
+
+**Authority.** `go`, `lock` and a budget raise need `--by` and `--words`, the user's own words given directly; a go
+relayed through someone else is refused (I1, I11). Raising the budget is spend, so it needs the words; lowering it
+does not. An adopted job starts at `staged`: its card is new, so it needs one go from the user. What the old manifest
+cannot say is returned as `missing` for the coordinator, and the gates refuse the go until it is filled in.
+
+**Checks.** Each entry of `conductor.checks` has an `id`, optional `atoms`, and one of three forms:
+
+| Form | Passes when |
+|---|---|
+| `{ run }` | the command exits 0 |
+| `{ run, json: true }` | the result file's `pass` is true. Its `findings` are judged items, `{ name, pass }` or `{ name, score }` (passing at `score >= itemPass`, default 1), and its `fix` text goes into the next prompt |
+| `{ measure, target, tolerance }` | the command prints a number within `tolerance` (default 0) of `target`. Measure the outcome, not the input |
+
+Commands may use `${input}` (the atom's slice directory), `${out}` (the JSON result path), `${atom}`, `${files}`,
+`${repo}` and `${rubric}`. `conductor.slice.command` (a string or argv) produces the slice into `${out}`, with
+`${atom}`, `${repo}` and `${files}`. The collect gate expands `${atom}` too. A check that returns judged items freezes
+its item list on first use in `rubric-<check>.json` and must score exactly those items later; with `noiseRuns: 2` it
+runs twice on the same slice. A changed item list, or two runs that disagree, marks the check unstable: it is not
+acted on, and the coordinator is told. Items that passed before are the atom's keep-list; the verdict names the items
+that regressed and the items that improved.
+
+**Re-checks and repeats.** A frozen atom records the commit of each atom it depends on. When one of them lands a newer
+commit, the atom is checked again against it. "The same failure twice" compares a failure's signature: the failing
+check ids and item names, or the stage and the last line of its error, never wording that changes from run to run.
+
+**Lanes.** A lane's command is wrapped so it writes its exit code to a file ([lib](../lib/README.md) `exitfile.mjs`),
+so the daemon can tell a finished atom from a running one after any restart. A lane whose unit or process has ended
+without writing that file counts as lost, never as exit 0. A lane adopted from an older tool has no exit file: the
+daemon asks systemd for the unit's `ExecMainStatus`, and a transient unit that no longer exists counts as a clean exit
+(`ENDOFORGE_SYSTEMCTL` replaces `systemctl` in tests). Logins are assigned to every atom once and kept in the state, so
+a relaunch stays on its login. The number of atoms that may start is the capacity dial's wave size less the lanes
+already running. The launch plan is made under the state lock, the slow part (worktree, spawn) runs outside it, and
+each launch is recorded under the lock as it happens. `stop` stops units with `systemctl --user stop` and local
+children by process group.
+
+**Escalation.** When the conductor cannot decide, it writes a context packet to
+`conductor/escalations/<key>.json` and emits `NEEDS-COORDINATOR`. The reply, applied with `patch`, is
+`{"key": "<escalation key>", "manifest": {…}, "note": "…", "relaunch": ["B3"], "resetIterations": true}`. `manifest`
+is an RFC 7396 JSON merge patch (arrays are replaced whole), `note` is feedback for the relaunched atoms, and
+`resetIterations` restarts their iteration count. A patch that breaks the manifest's gates is refused and the manifest
+is left as it was.
 
 ## Environment
 

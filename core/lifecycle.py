@@ -54,7 +54,6 @@ class State(str, Enum):
 
 
 _LIVE = (State.PROPOSED, State.GENERATED, State.QUALIFIED, State.PREVIEWED)
-# Target state -> the states it may be entered from. Disposal is legal from every state except disposed itself.
 LEGAL = {
     State.GENERATED: (State.PROPOSED,),
     State.QUALIFIED: (State.GENERATED,),
@@ -64,7 +63,6 @@ LEGAL = {
     State.REJECTED: _LIVE,
     State.DISPOSED: tuple(s for s in State if s is not State.DISPOSED),
 }
-# The only evidence fields each transition carries; anything else (a generator's own claims) is refused.
 _EVIDENCE = {
     State.GENERATED: {"candidate_sha256"},
     State.QUALIFIED: {"receipt"},
@@ -236,7 +234,6 @@ class LifecycleRecord:
             artifact = replace(artifact, candidate_sha256=evidence["candidate_sha256"])
         elif proposal.to_state is State.QUALIFIED:
             artifact = replace(artifact, qualification_receipt_sha256=evidence["receipt"].sha256)
-        # Built without __post_init__: this step was just checked, and replaying here would recurse.
         record = object.__new__(LifecycleRecord)
         for name, value in (("artifact", artifact), ("frozen_oracle_id", self.frozen_oracle_id),
                             ("state", proposal.to_state),

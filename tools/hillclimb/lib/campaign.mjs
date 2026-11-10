@@ -1,4 +1,3 @@
-// Hill-climb campaigns (`endoforge/hillclimb/1`): what to render, what references exist, how to critique, who fixes what.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -7,7 +6,6 @@ import { validateFanout } from './fanout.mjs';
 export const SCHEMA = 'endoforge/hillclimb/1';
 const expandHome = (p) => (typeof p === 'string' && p.startsWith('~/') ? path.join(os.homedir(), p.slice(2)) : p);
 
-/** Replace ${name} placeholders in strings (deep). Unknown names are left as they are. */
 export function expand(value, vars) {
   if (typeof value === 'string') return value.replace(/\$\{(\w+)\}/g, (m, k) => (k in vars ? String(vars[k]) : m));
   if (Array.isArray(value)) return value.map((v) => expand(v, vars));
@@ -25,7 +23,6 @@ export function validateCampaign(c) {
   if (!Array.isArray(c?.render) || !c.render.length) E('render must list at least one job');
   for (const [i, r] of (c?.render ?? []).entries()) {
     if (!r.id || !Array.isArray(r.command)) E(`render[${i}] needs id and command (array)`);
-    // A job wrapped in systemd-run --scope leaves the round's cgroup, so stopping the round leaves it running
     else if (/systemd-run\b[^|;&]*--scope/.test(r.command.join(' '))) E(`render[${i}] must not wrap jobs in systemd-run --scope; use blender-cpu or heavy-run`);
   }
   if (c?.mode != null && !['compete', 'fanout'].includes(c.mode)) E('mode must be fanout or compete (the default)');
@@ -57,7 +54,6 @@ export function loadCampaign(file) {
 export const roundName = (n) => `r${String(n).padStart(2, '0')}`;
 export const roundDir = (c, n) => path.join(c.workdir, 'rounds', roundName(n));
 
-/** The highest round that has a directory (0 when none). */
 export function lastRound(c) {
   const d = path.join(c.workdir, 'rounds');
   if (!fs.existsSync(d)) return 0;

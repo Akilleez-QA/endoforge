@@ -85,6 +85,34 @@ With no image configured it refuses after taking only the controller fence.
 - `wasm_host.py`: runs inside that scope under the `.tools` Python, checks the wheel's version and installed files
   against its own record, and runs one export of an import-free core module.
 
+## Design notes
+
+Why the runner and its helpers work the way they do:
+
+- **The attempt directory is created exclusively.** An attempt id that already has a directory is refused, so an
+  existing attempt is never changed.
+- **The input is copied before it is hashed.** The runner copies the caller's file into the attempt directory, checks
+  the copy's hash and mounts only the copy, read-only. The caller can change its own file at any time without the
+  container seeing a different input from the one that was checked (no time-of-check to time-of-use gap).
+- **Ownership is recorded before the container is created.** The container's name carries a per-attempt token, and the
+  runner marks it as owned before `docker create`, so an interrupted create is still cleaned up by that unique name.
+  The last-resort removal after a failed cleanup removes only a container whose owner label carries the token.
+- **Signals only set a flag.** SIGINT and SIGTERM are caught and recorded (`signals` in the result); no asynchronous
+  exception can skip cleanup. The previous handlers are restored at the end.
+- **Stdout is the artifact channel.** The container's `/tmp` and `/out` are tmpfs mounts, which vanish when it stops,
+  so `docker cp` cannot export from them afterwards. The runner reads the worker's stdout from the logs instead,
+  bounded by log rotation.
+- **Recovery never guesses.** `reconcile` tells a container that is gone from a daemon that failed to answer, and
+  treats neither as successful cleanup. After an uncertain crash it never publishes from logs or staging: the attempt
+  becomes `interrupted_reconciled`, unless the published file already exists and matches `expectedSha256`
+  (`publication_recovered`).
+- **Egress resolves once, to public IPv4 only.** The proxy refuses a host whose DNS answer includes a non-public
+  address, keeps only IPv4 answers (IPv6 is unroutable inside the worker, and IPv6 CONNECT literals are not
+  allowlisted), and connects to the address it already checked, never resolving the name a second time.
+- **Loopback is raised before the inner sandbox.** A new network namespace starts with loopback down, and raising it
+  needs `cap_net_admin` inside the namespace. `bwrap` drops capabilities, so the worker command raises loopback in an
+  `unshare` wrapper first and starts `bwrap` inside it; `bridge.py` then listens on `127.0.0.1:18080`.
+
 ## Environment
 
 - `ENDOFORGE_WORKER_IMAGE`: container image as `sha256:<64 hex>`. Default empty, which refuses every run.
@@ -109,9 +137,9 @@ reason where `make tools` has not run or there is no systemd user manager.
 
 ## Limits
 
-- The `RealDocker` cases have not run against a daemon yet: on the development host the Docker socket needs `sudo`,
-  and the tests never escalate, so they skipped on 2026-11-09. The runner is shown working only against the stand-in
-  Docker CLI.
+- The `RealDocker` cases skip on the development host, where the Docker socket needs `sudo` and the tests never
+  escalate. They ran and passed against the GitHub runner's daemon in PR #142 (run 42709080153), on both Node versions
+  and in the optimized Python run.
 - The Python binding has no trap-on-grow-failure setting, so under the pinned wheel a `memory.grow` past the ceiling
   returns -1, as the WebAssembly specification defines, instead of trapping. The ceiling itself holds.
 - The sandbox mounts no `/etc/hosts`, so `bridge.py` listens on `127.0.0.1:18080` and the worker's proxy variables

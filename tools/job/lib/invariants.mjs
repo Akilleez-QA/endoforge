@@ -1,4 +1,3 @@
-// Every validator rule cites one; the job card shows which hold. Kind plugins (lib/kinds.mjs) only add kind-specific checks.
 export const INVARIANTS = [
   ['I1', 'Intent fidelity', 'the goal is the user\'s words plus the primary sources, never a summary; the brief is shown back before any spend'],
   ['I2', 'Reference primacy', 'every defining reference is named, says what it governs, sits on durable disk and reaches every atom it governs'],
@@ -17,8 +16,6 @@ export const INVARIANTS = [
   ['I15', 'Contract capability', 'each criterion names the atoms that satisfy it, and their contracts can express what it requires '],
 ].map(([id, name, rule]) => ({ id, name, rule }));
 export const INVARIANT = Object.fromEntries(INVARIANTS.map((i) => [i.id, i]));
-// Each stage is a gate; validating a gate runs every rule of that gate and the gates before it. The root cause it
-// answers: Endoforge's loop started at launch, not at understanding.
 export const GATES = [
   { id: 'pontificate', name: 'Pontificate', what: 'the verbatim goal, the primary sources and a decompressed brief', invariants: ['I1'] },
   { id: 'observe', name: 'Observe', what: 'the truth and reference package on durable disk', invariants: ['I2', 'I4', 'I7'] },

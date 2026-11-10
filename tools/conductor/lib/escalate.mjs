@@ -1,11 +1,3 @@
-// Escalation packets and the coordinator's reply (judgment, not supervision). When the Conductor cannot decide, it
-// writes a compact context packet (escalations/<key>.json) and emits NEEDS-COORDINATOR. The model reads the packet and
-// replies with a patch; the patch goes through the same gates as everything else:
-//   { "key": "<escalation key>", "manifest": { …JSON merge patch… }, "note": "feedback for the atoms",
-//     "relaunch": ["B3"], "resetIterations": true }
-// A patch that breaks the manifest's gates is refused and the manifest is left as it was. A patch that changes what the
-// user confirmed (the card hash) is applied but holds every launch until the user's new go (NEEDS-YOU), so authority
-// stays with the user (I1, I11).
 import fs from 'node:fs';
 import path from 'node:path';
 import { withLock, writeJSONAtomic } from '../../lib/lock.mjs';
@@ -15,7 +7,6 @@ import { loadJob } from '../../job/lib/load.mjs';
 import { emit } from '../../job/lib/events.mjs';
 import { stateDir, updateState, loadState } from './state.mjs';
 
-/** The compact context the model needs to judge one escalation, written to disk; returns its path. */
 export function writePacket(job, file, esc) {
   const s = loadState(job, file), a = esc.atom ? (job.atoms ?? []).find((x) => x.id === esc.atom) : null, st = esc.atom ? s.atoms[esc.atom] : null;
   const dir = stateDir(job, file), p = path.join(dir, 'escalations', `${esc.key.replace(/[^\w.-]+/g, '_')}.json`);
@@ -32,7 +23,6 @@ export function writePacket(job, file, esc) {
   return p;
 }
 
-/** RFC 7396 JSON merge patch. Arrays are replaced whole. */
 export function mergePatch(target, patch) {
   if (patch === null || typeof patch !== 'object' || Array.isArray(patch)) return patch;
   const out = target && typeof target === 'object' && !Array.isArray(target) ? { ...target } : {};
@@ -40,7 +30,6 @@ export function mergePatch(target, patch) {
   return out;
 }
 
-/** Apply the coordinator's reply. Returns { ok, why?, holdForGo? }. */
 export function applyPatch(file, reply, { offline = false } = {}) {
   return withLock(file, () => {
     const before = JSON.parse(fs.readFileSync(file, 'utf8')), job0 = loadJob(file);

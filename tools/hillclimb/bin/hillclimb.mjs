@@ -1,19 +1,4 @@
 #!/usr/bin/env node
-// Endoforge hill-climb: render → review (consult references → critique) → fix → apply, round after round, with a scoreboard.
-//
-//   hillclimb.mjs round <campaign.json> [--pr]              one full round (stops early when the stop rule says so)
-//   hillclimb.mjs render <campaign.json> [--round N] [--profile fast|final]   host: start round N, run that profile's render jobs, make sheets
-//   hillclimb.mjs plan-review | review <campaign.json> [--round N]
-//   hillclimb.mjs refs <campaign.json> [--round N] [--fetch id,id|all]   list the consult's new reference candidates; fetch approved ones
-//   hillclimb.mjs plan-fix | fix <campaign.json> [--round N]
-//   hillclimb.mjs apply <campaign.json> [--round N]          host: one branch per lane (per variant when competing), git apply, postApply, gates, commit
-//   hillclimb.mjs judge <campaign.json> [--round N]          compete rounds: fast-render each variant, a judge atom picks one per owner
-//   hillclimb.mjs pr <campaign.json> [--round N]             push and open PRs (competing lanes ship only their winner)
-//   hillclimb.mjs score <campaign.json>                      history and the stop decision
-//   hillclimb.mjs lessons <campaign.json> [--close KEY --by "PR #n"] [--add KEY --stage S --text T]   open lessons (any mode)
-//   fan-out campaigns (mode "fanout"; lib/fanout-run.mjs): round | atomize | prove-split --before A --after B | logins |
-//                                                         smoke | evals [--phase pre|post] | status | collect   [--round N]
-//   (inside atoms) compose-review <campaign.json> <fixlist.json> <out> [--previous f] | compose-fix <campaign.json> <in> <out>
 import fs from 'node:fs';
 import path from 'node:path';
 import crypto from 'node:crypto';
@@ -25,14 +10,29 @@ import { scoreRound, decide } from '../lib/scoreboard.mjs';
 import { competeLessons, lessonsCommand } from '../lib/lessons.mjs';
 import { reviewAtoms, fixAtoms, judgeAtoms, laneOf, patchPaths, inScope } from '../lib/plan.mjs';
 import { campaignPolicy, runnerArgv } from '../lib/runner.mjs';
-// Host stages validate atoms with the atomizer; inside an atom only this tool is mounted (at /hc-tool), so the compose
-// commands that run there must not need it.
 let validate = null;
-try { ({ validate } = await import('../../atomizer/lib/validate.mjs')); } catch { /* inside an atom */ }
+try { ({ validate } = await import('../../atomizer/lib/validate.mjs')); } catch { }
 
+const USAGE = [
+  "Endoforge hill-climb: render → review (consult references → critique) → fix → apply, round after round, with a scoreboard.",
+  "",
+  "  hillclimb.mjs round <campaign.json> [--pr]              one full round (stops early when the stop rule says so)",
+  "  hillclimb.mjs render <campaign.json> [--round N] [--profile fast|final]   host: start round N, run that profile's render jobs, make sheets",
+  "  hillclimb.mjs plan-review | review <campaign.json> [--round N]",
+  "  hillclimb.mjs refs <campaign.json> [--round N] [--fetch id,id|all]   list the consult's new reference candidates; fetch approved ones",
+  "  hillclimb.mjs plan-fix | fix <campaign.json> [--round N]",
+  "  hillclimb.mjs apply <campaign.json> [--round N]          host: one branch per lane (per variant when competing), git apply, postApply, gates, commit",
+  "  hillclimb.mjs judge <campaign.json> [--round N]          compete rounds: fast-render each variant, a judge atom picks one per owner",
+  "  hillclimb.mjs pr <campaign.json> [--round N]             push and open PRs (competing lanes ship only their winner)",
+  "  hillclimb.mjs score <campaign.json>                      history and the stop decision",
+  "  hillclimb.mjs lessons <campaign.json> [--close KEY --by \"PR #n\"] [--add KEY --stage S --text T]   open lessons (any mode)",
+  "  fan-out campaigns (mode \"fanout\"; lib/fanout-run.mjs): round | atomize | prove-split --before A --after B | logins |",
+  "                                                        smoke | evals [--phase pre|post] | status | collect   [--round N]",
+  "  (inside atoms) compose-review <campaign.json> <fixlist.json> <out> [--previous f] | compose-fix <campaign.json> <in> <out>",
+].join('\n');
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const POLICY_FILE = path.join(HERE, '../../atomizer/policy.json');
-const POLICY = fs.existsSync(POLICY_FILE) ? JSON.parse(fs.readFileSync(POLICY_FILE, 'utf8')) : null;   // absent inside an atom
+const POLICY = fs.existsSync(POLICY_FILE) ? JSON.parse(fs.readFileSync(POLICY_FILE, 'utf8')) : null;
 const [cmd, ...rest] = process.argv.slice(2);
 const flag = (name, dflt = null) => { const i = rest.indexOf(name); return i < 0 ? dflt : rest[i + 1] ?? true; };
 const has = (name) => rest.includes(name);
@@ -59,7 +59,6 @@ function previousFixlist(c, n) {
   return null;
 }
 
-/** Render jobs for a profile ('fast' real-time by default, 'final' for the high-end check) into <outRoot>/<job>/. */
 function renderJobs(c, n, outRoot, profile, repo = c.repo) {
   let jobs = c.render.filter((j) => (j.profile ?? 'fast') === profile);
   if (!jobs.length) jobs = c.render;
@@ -98,8 +97,6 @@ function writeAtoms(kind, docv, dir, c) {
 
 function runAtoms(c, f, outDir, stage) {
   run(runnerArgv(c, f, outDir, policyFileFor(f)),
-    // mixing (default): the run stays native and each atom's own model decides (codex atoms go through codex-pool);
-    // with mix off, one backend per stage from campaign.workers / campaign.worker
     { env: { ...process.env, ENDOFORGE_WORKER: c.mix === false ? (c.workers?.[stage] ?? c.worker ?? 'native') : 'native' } });
   return path.join(outDir, 'run', 'atoms');
 }
@@ -161,7 +158,7 @@ function cmdRefs() {
 function cmdPlanFix(go) {
   const { c, n, dir } = campaignAndRound();
   let fl = readJSON(path.join(dir, 'fixlist.json'));
-  const only = flag('--owners');                       // e.g. --owners G,Y when other lanes already own A and BC
+  const only = flag('--owners');
   if (only) fl = { ...fl, items: fl.items.filter((i) => String(only).split(',').includes(i.owner)) };
   const f = writeAtoms('fix', fixAtoms(c, n, fl), dir, c);
   if (!go) return out(f);
@@ -224,7 +221,6 @@ function cmdApply() {
   out(JSON.stringify(results));
 }
 
-/** Compete rounds: render every variant fast from its own worktree, then a judge atom picks one per owner. */
 function cmdJudge() {
   const { c, n, dir } = campaignAndRound();
   const applied = readJSON(path.join(dir, 'apply.json')).filter((r) => r.status === 'committed' && r.variant);
@@ -251,7 +247,6 @@ function cmdComposeJudge() {
   writeJSON(path.join(outDir, 'winners.json'), w);
 }
 
-/** Push and open PRs: every committed lane, except that a competing lane only ships its judged winner. */
 function cmdPr() {
   const { c, n, dir } = campaignAndRound();
   const base = (c.apply?.base ?? 'origin/main').replace(/^origin\//, '');
@@ -293,7 +288,6 @@ function cmdRound() {
     if (c.fix?.compete) cmdJudge();
     if (has('--pr')) cmdPr();
   } finally {
-    // Measure, learn: every round leaves rNN/LESSONS.md and reports the lessons no tool change has closed yet.
     const open = competeLessons(c, n, roundDir(c, n));
     if (open.length) log(`open lessons with no tool change yet (${roundDir(c, n)}/LESSONS.md): ${open.map((l) => l.key).join(', ')}`);
   }
@@ -309,5 +303,5 @@ if (FANOUT.includes(cmd) && rest[0] && fs.existsSync(rest[0]) && readJSON(rest[0
   const { main } = await import('../lib/fanout-run.mjs');
   try { process.exit(await main(cmd, rest)); } catch (e) { log(e.name === 'StopError' ? `STOP: ${e.message}` : e.message); process.exit(e.exitCode ?? 1); }
 }
-if (!table[cmd]) { console.error(fs.readFileSync(fileURLToPath(import.meta.url), 'utf8').split('\n').slice(1, 15).join('\n')); process.exit(2); }
+if (!table[cmd]) { console.error(USAGE); process.exit(2); }
 try { table[cmd](); } catch (e) { log(e.message); process.exit(1); }

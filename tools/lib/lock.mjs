@@ -1,6 +1,3 @@
-// Locks for every shared mutable file (NOTES #34, #35: two collects on one branch; two writers on one manifest).
-// A lock is a directory <path>.lock holding its owner's pid and host; mkdir is atomic, a dead owner's lock is
-// reclaimed by rename (one reclaimer wins), and a waiter gives up with a typed transient error after `waitMs`.
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -30,9 +27,7 @@ export function acquire(target, { waitMs = 60_000, pollMs = 100, owner = process
     sleepSync(pollMs);
   }
 }
-/** Run fn while holding the lock on target; always released. */
 export function withLock(target, fn, opts) { const release = acquire(target, opts); try { return fn(); } finally { release(); } }
-/** Write JSON atomically (temp file + rename), so a reader never sees half a file. */
 export function writeJSONAtomic(file, value) {
   const dir = path.dirname(file), tmp = `${file}.tmp-${process.pid}`;
   fs.mkdirSync(dir, { recursive: true });

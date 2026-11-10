@@ -1,5 +1,3 @@
-// Reusable invariant: units by dimension and scale. A unit that doesn't parse is
-// unknown and never refuses; two that parse must agree in dimension, scale and offset.
 const D = (dims, scale = 1, offset = '') => ({ dims, scale, offset });
 const mass = { M: 1 }, length = { L: 1 }, time = { T: 1 }, temp = { K: 1 }, none = {};
 const energy = { M: 1, L: 2, T: -2 }, power = { M: 1, L: 2, T: -3 }, pressure = { M: 1, L: -1, T: -2 }, volume = { L: 3 };
@@ -36,7 +34,6 @@ function atom(text) {
   if (!unit) return null;
   return { dims: Object.fromEntries(Object.entries(unit.dims).map(([k, v]) => [k, v * power])), scale: unit.scale ** power, offset: unit.offset };
 }
-// Parse 'g/m', 'kg/s', 'Btu/h', 'W/(m2 K)', 'grams per metre'. Returns null when unknown.
 export function parseUnit(text) {
   if (typeof text !== 'string') return null;
   let s = text.trim().replace(/\s+per\s+/gi, '/').replace(/[()]/g, ' ').replace(/[·*]/g, ' ').replace(/\s*\/\s*/g, '/').trim();
@@ -55,7 +52,6 @@ export function parseUnit(text) {
   for (const k of Object.keys(out.dims)) if (!out.dims[k]) delete out.dims[k];
   return out;
 }
-// 'same' | 'different' | 'unknown'
 export function compareUnits(a, b) {
   const x = parseUnit(a), y = parseUnit(b);
   if (!x || !y) return 'unknown';

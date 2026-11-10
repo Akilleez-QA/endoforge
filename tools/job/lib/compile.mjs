@@ -1,8 +1,3 @@
-// Prompt compiler: JOB manifest → one prompt per atom. Atom prompts are never hand-written: a brief written from a
-// summary loses the source and the references. Each prompt carries, in this order:
-// the goal verbatim; the decompressed brief; the inputs that govern this atom, references first, with paths, what
-// they govern and thumbnails to look at; primary-source excerpts read from disk; the truth package; its checks; its
-// files, contracts and seams; this round's findings and outputs; knowledge and lessons that bear on it; the return format.
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { lessonsForAtom } from './lessons.mjs';
@@ -11,8 +6,6 @@ import { interfacesFor, interfaceText } from './sources.mjs';
 const MAX_EXCERPT = 6000;
 const bullets = (xs) => xs.map((x) => `- ${x}`).join('\n');
 
-/** A source's excerpt: `excerpt.lines` "a-b", or `excerpt.match` (a regex, with `context` lines), else the whole
- *  file when it is short. Read from disk at compile time, so the atom gets the source itself, not a summary. */
 export function excerpt(src, { offline = false } = {}) {
   if (offline) return null;
   let text; try { text = fs.readFileSync(src.path, 'utf8'); } catch { return null; }
@@ -27,8 +20,6 @@ export function excerpt(src, { offline = false } = {}) {
   return out.length > MAX_EXCERPT ? `${out.slice(0, MAX_EXCERPT)}\n[… excerpt cut at ${MAX_EXCERPT} characters; read the file for the rest]` : out;
 }
 
-/** Knowledge entries (job.knowledge: [{ id, text, source, tags }]) whose tags name this atom, one of its aspects or
- *  capabilities, or "*". Knowledge is data written during the run (`endoforge job knowledge add`), never tool code. */
 export function knowledgeFor(job, a) {
   const tags = new Set(['*', a.id, ...(a.aspects ?? []), ...(a.capabilities ?? [])].map((t) => String(t).toLowerCase()));
   return (job.knowledge ?? []).filter((k) => (k.tags ?? ['*']).some((t) => tags.has(String(t).toLowerCase())));
@@ -74,7 +65,6 @@ export function compileAtom(job, id, { lessons = [], found = [], outputs = [], r
   return P.join('\n\n');
 }
 
-/** Every atom's prompt, and the hash of the set (FIRED carries it, so a launch can be traced to its exact prompts). */
 export function compileAll(job, opts = {}) {
   const prompts = Object.fromEntries((job.atoms ?? []).map((a) => [a.id, compileAtom(job, a.id, opts)]));
   const atoms = Object.fromEntries(Object.entries(prompts).map(([k, v]) => [k, crypto.createHash('sha256').update(v).digest('hex')]));

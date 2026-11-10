@@ -126,6 +126,64 @@ THE GOAL, in operator's own words (this, not any summary, is what you build):
 
 The `HOME` override points login discovery at the demo's fake logins.
 
+## Manifest details
+
+**Kinds.** A kind file in [kinds/](kinds/) (or a directory in `ENDOFORGE_JOB_KINDS`) is data. The engine reads only
+these rule shapes from it:
+
+| Rule | Meaning |
+|---|---|
+| `proxyCheckKinds` | Check kinds that measure a proxy; they must be labelled and calibrated (I3) |
+| `splitByTests` | A split is proven by tests passing before and after it (I6) |
+| `requireCheckKinds` `[{kind, inv, why}]` | At least one criterion has a check of this kind |
+| `requireAnyCheckKind` `[{kinds, inv, why}]` | At least one criterion has a check of one of these kinds |
+| `measureReferencesGoverning` `{aspects, checkKind, inv, why}` | Each reference that governs one of these aspects needs a check of `checkKind` against it |
+| `requireCheckField` `[{kind, field, inv, why}]` | Some check of this kind sets this field |
+| `requiresTruth` `{inv, pattern?, why}` | There is a truth package, with an entry matching `pattern` if one is given |
+
+Kind rules only add checks; the gates and invariants are the same for every kind.
+
+**Interfaces and facts.** `interfaces: [{id, file, start, end?, what?}]` names an excerpt of a contract file: `start`
+and `end` are line numbers or regular expressions, the excerpt runs from the first line matching `start` to the first
+later line matching `end` (which may be the start line itself), and without `end` it stops at a line that is only `}`
+or at the end of the file. An atom gets the interfaces it lists in `atom.interfaces`, and also any interface whose
+file it reads or imports. Every declared interface must resolve, and an atom whose files import a contract file must
+be given that file's interface (P-C). `facts: [{id, source, select?, values?}]` gives a fact's values inline or
+selects them from a JSON source with a path such as `items[*].start`; the source is the only place the fact lives,
+and a value copied from it into an owned file is a warning: derive it instead (P-A). Each criterion names the atoms
+that satisfy it and what it requires, and each of those atoms declares what its contract can express (I15).
+
+**Prompts.** A source excerpt is set by `excerpt.lines` (`"a-b"`) or by `excerpt.match` (a regular expression, with
+`context` lines around each match, default 3); without either the whole file is used. Any excerpt is cut at 6000
+characters. A `knowledge` entry reaches an atom when one of its tags is the atom's id, one of its aspects or
+capabilities, or `*`. Lessons come from earlier jobs of the same kind under `ENDOFORGE_JOBS` (their `notes` file and
+their rounds' `LESSONS.md`) and from the job's own `lessonsFrom` list (`NOTES.md`, `LESSONS.md` or a hillclimb
+`lessons.json`); an atom's prompt carries the lessons that match it.
+
+**The card and the go.** The card hash leaves out proofs, receipts and gate approvals, because those arrive after the
+user confirms. The user's go must come after the latest `STAGED` event for the current card.
+
+**Events.**
+
+| Kind | Meaning |
+|---|---|
+| `STAGED` | The card is ready for the user's go |
+| `FIRED` | Atoms launched, with who runs what, the prompt hash, predictions, gates, ETA and how to stop |
+| `SMOKE` | The one-atom-per-engine smoke result |
+| `SCORED` | A round's score deltas |
+| `GATE` | A gate passed or failed |
+| `NEEDS-YOU` | A decision that only the user's authority can make blocks the critical path: the card go, taste locks, spend, outward actions |
+| `NEEDS-COORDINATOR` | Judgment the conductor cannot make (an atom still failing after its iterations, a contract that cannot express a criterion, a check at odds with its calibration, a new failure); it goes to the coordinating model |
+| `DONE` | The job finished |
+
+Every event goes to `events.jsonl` and `EVENTS.md` (in `events.dir`, default the manifest's directory), to
+`notify-send` unless `ENDOFORGE_NOTIFY=none`, and to the `events.hooks` commands. `events.push` hooks get only
+`FIRED`, `GATE`, `NEEDS-YOU` and `DONE`, so a phone does not buzz for routine progress; `events.coordinator` hooks get
+only `NEEDS-COORDINATOR`. Each hook gets the event as JSON on standard input.
+
+`loadJob` and the health check live in `lib/` so the conductor and the hillclimb fan-out can import them without the
+command-line tool.
+
 ## Environment
 
 | Variable | Default | Effect |

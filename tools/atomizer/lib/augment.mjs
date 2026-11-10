@@ -1,7 +1,5 @@
-// Fixed repair stage (policy.repairStage): compose-draft -> repair (sees only the failing tests) -> compose (final) -> reviews.
 const CANONICAL = ['kernel.wasm', 'kernel.wat', 'kernel.ts', 'CONTRACT.md', 'tests.json', 'glue.json', 'gates.json', 'failures.json', 'frozen.sha256'];
 const REVIEW_SET = ['CONTRACT.md', 'glue.json', 'gates.json', 'tests.json'];
-/** The compose helper writes a fixed set of files; make the compose atom's declared outputs match it and remap references to anything else. */
 export function normalizeCompose(doc) {
   const atoms = doc.atoms.map((a) => structuredClone(a));
   const compose = atoms.find((a) => a.kind === 'compose');
@@ -48,7 +46,7 @@ export function augment(doc0, policy) {
   for (const o of repairOutputs) if (o.name !== 'notes') final.inputs.push({ from: 'repair', output: o.name });
   for (const a of atoms) if (a.kind === 'review') a.inputs = [...(a.inputs ?? []), { from: 'repair', output: 'notes' }];
   if (policy.scriptFirst) {
-    const helper = (id) => ({ command: ['node', '{atomizer}/bin/compose-kernel.mjs', '--id', doc.need.id, '--in', '{in}', '--out', '{out}', '--work', '{work}', '--gate', '{gate}', '--preflight'], toolchain: ['node', 'asc', 'gate', 'atomizer'], note: 'deterministic compose; the agent runs only if the helper cannot compile the parts' });
+    const helper = (id) => ({ command: ['node', '{atomizer}/bin/compose-kernel.mjs', '--id', doc.need.id, '--in', '{in}', '--out', '{out}', '--work', '{work}', '--gate', '{gate}', '--preflight'], toolchain: policy.kindToolchain?.compose ?? ['node', 'asc', 'gate', 'atomizer'], note: 'deterministic compose; the agent runs only if the helper cannot compile the parts' });
     draft.worker.preflight = helper(draft.id); final.worker.preflight = helper(X);
     const map = []; let oi = 0;
     for (const k of kernels) for (const o of k.outputs) { map.push({ from: `/in/${k.id}/${o.path}`, to: `/out/${repairOutputs[oi].path}` }); oi++; }
