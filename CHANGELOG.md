@@ -304,6 +304,8 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Fixed
 
+- The freeze refuses a structured result whose nested number field has no `precision` or whose nested boolean field has no `labels`. Such a contract used to freeze and then fail G7 whatever the glue declared, so it could never be implemented (Codex review of PR #144).
+
 Round 10 fixes the round-9 findings D-14 and D-15 and the cutover-planning gap (D-16), adds tests for the library's
 union path, and turns two coordinator lessons into tool changes. Each change has a test. The relaunch, trace-event,
 union and invariant tests failed first against the old code; the sandbox and cutover workers could not run theirs
