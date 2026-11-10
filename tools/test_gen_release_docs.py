@@ -103,7 +103,7 @@ def data(runs, **over):
         "lines": [(".mjs", [10, 900]), (".py", [5, 400])],
         "gitleaks": None,
         "privacy": ["privacy: ok"],
-        "tooling": {"lint": False, "lint_ci": False, "coverage": False},
+        "tooling": {"lint": False, "lint_ci": False, "coverage": False, "secret_scan_ci": []},
     }
     d.update(over)
     return d
@@ -202,16 +202,16 @@ class Reports(unittest.TestCase):
         plain = self.run_of("make-exit=0\n", "plain.log", "plain")
         none = gen.str_report(data([plain]), "STR-x", "1")
         self.assertIn("| Code coverage | not measured: no coverage target is configured |", none)
-        configured = gen.str_report(data([plain], tooling={"lint": True, "lint_ci": True, "coverage": True}), "STR-x", "1")
+        configured = gen.str_report(data([plain], tooling={"lint": True, "lint_ci": True, "coverage": True, "secret_scan_ci": []}), "STR-x", "1")
         self.assertIn("| Code coverage | not measured in the recorded runs; `make coverage` produces it |", configured)
-        measured = gen.str_report(data([covered, plain], tooling={"lint": True, "lint_ci": True, "coverage": True}), "STR-x", "1")
+        measured = gen.str_report(data([covered, plain], tooling={"lint": True, "lint_ci": True, "coverage": True, "secret_scan_ci": []}), "STR-x", "1")
         self.assertIn("| Code coverage (coverage) | Node all files: line 85.71%, branch 66.67%, funcs 90.00% | log `cov.log` |", measured)
         self.assertNotIn("no coverage tool is configured", measured)
         vdd_none = self.vdd(data([plain]))
         self.assertIn("- Static analysis: no linter is configured.", vdd_none)
-        vdd_local = self.vdd(data([plain], tooling={"lint": True, "lint_ci": False, "coverage": False}))
+        vdd_local = self.vdd(data([plain], tooling={"lint": True, "lint_ci": False, "coverage": False, "secret_scan_ci": []}))
         self.assertIn("- Static analysis: `make lint` is configured but CI does not run it.", vdd_local)
-        vdd_ci = self.vdd(data([plain], tooling={"lint": True, "lint_ci": True, "coverage": True}))
+        vdd_ci = self.vdd(data([plain], tooling={"lint": True, "lint_ci": True, "coverage": True, "secret_scan_ci": []}))
         self.assertIn("- Static analysis: `make lint` is configured and CI runs it.", vdd_ci)
 
     def vdd(self, d, changelog="# Changelog\n\n## [Unreleased]\n\n- Added [guide](docs/guide.md) and [site](https://example.test).\n\n## [0.1]\n- old\n"):
@@ -319,14 +319,67 @@ class IndexAndMain(unittest.TestCase):
         (root / "Makefile").write_text("test:\n\ttrue\n", encoding="utf-8")
         (root / ".github/workflows/ci.yml").write_text("jobs:\n  t:\n    steps:\n      - run: make -k test\n", encoding="utf-8")
         with mock.patch.object(gen, "ROOT", root):
-            self.assertEqual(gen.tooling(), {"lint": False, "lint_ci": False, "coverage": False})
+            self.assertEqual(gen.tooling(), {"lint": False, "lint_ci": False, "coverage": False, "secret_scan_ci": []})
             (root / "Makefile").write_text("lint:\n\truff check .\ncoverage:\n\tnode --test\ntest:\n\ttrue\n", encoding="utf-8")
-            self.assertEqual(gen.tooling(), {"lint": True, "lint_ci": False, "coverage": True})
+            self.assertEqual(gen.tooling(), {"lint": True, "lint_ci": False, "coverage": True, "secret_scan_ci": []})
             (root / ".github/workflows/ci.yml").write_text("steps:\n  - run: make lint\n", encoding="utf-8")
-            self.assertEqual(gen.tooling(), {"lint": True, "lint_ci": True, "coverage": True})
+            self.assertEqual(gen.tooling(), {"lint": True, "lint_ci": True, "coverage": True, "secret_scan_ci": []})
             (root / ".github/workflows/ci.yml").write_text("steps:\n  - run: make -k test\n", encoding="utf-8")
             (root / "Makefile").write_text("lint:\n\truff check .\ntest: check lint core-test\n\ttrue\n", encoding="utf-8")
-            self.assertEqual(gen.tooling(), {"lint": True, "lint_ci": True, "coverage": False})
+            self.assertEqual(gen.tooling(), {"lint": True, "lint_ci": True, "coverage": False, "secret_scan_ci": []})
+
+    def test_secret_scan_jobs_are_read_from_the_workflows(self):
+        root = self.tmp / "repo"
+        flows = root / ".github/workflows"
+        flows.mkdir(parents=True)
+        (root / "Makefile").write_text("test:\n\ttrue\n", encoding="utf-8")
+        cases = [
+            ("jobs:\n  test:\n    steps:\n      - run: make test\n", []),
+            ("jobs:\n  test:\n    steps:\n      # - run: gitleaks git .\n      - run: make test\n", []),
+            ("jobs:\n  test:\n    steps:\n      - run: echo gitleaks is not run here\n", []),
+            ("jobs:\n  secret-scan:\n    runs-on: ubuntu-latest\n    steps:\n      - run: |\n          tar -xzf gitleaks.tar.gz gitleaks\n          ./gitleaks git --redact --exit-code 1 .\n  lint:\n    steps:\n      - run: make lint\n",
+             ["ci.yml:secret-scan"]),
+            ("on: push\njobs:\n  scan:\n    steps:\n      - uses: gitleaks/gitleaks-action@v2\n", ["ci.yml:scan"]),
+            ("jobs:\n  leaks:\n    steps:\n      - run: trufflehog git file://. --fail\n", ["ci.yml:leaks"]),
+        ]
+        with mock.patch.object(gen, "ROOT", root):
+            for text, expected in cases:
+                (flows / "ci.yml").write_text(text, encoding="utf-8")
+                self.assertEqual(gen.tooling()["secret_scan_ci"], expected, text)
+            (flows / "ci.yml").unlink()
+            self.assertEqual(gen.tooling()["secret_scan_ci"], [])
+
+    def test_the_repository_workflow_secret_scan_is_reported(self):
+        self.assertIn("ci.yml:secret-scan", gen.tooling()["secret_scan_ci"])
+
+
+class SecretScanStatement(unittest.TestCase):
+    def setUp(self):
+        self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(shutil.rmtree, self.tmp)
+
+    def vdd(self, tooling):
+        (self.tmp / "CHANGELOG.md").write_text("## [Unreleased]\n- x\n", encoding="utf-8")
+        with mock.patch.object(gen, "ROOT", self.tmp):
+            return gen.vdd_report(data([], tooling=tooling), "VDD-x", "STR-x", "9")
+
+    def test_vdd_states_the_ci_secret_scan_from_the_workflow(self):
+        base = {"lint": False, "lint_ci": False, "coverage": False}
+        with_scan = self.vdd({**base, "secret_scan_ci": ["ci.yml:secret-scan"]})
+        self.assertNotIn("CI has no secret-scanning job", with_scan)
+        self.assertIn("CI runs a secret scan in job `secret-scan` of `.github/workflows/ci.yml`.", with_scan)
+        without = self.vdd({**base, "secret_scan_ci": []})
+        self.assertIn("CI has no secret-scanning job.", without)
+        two = self.vdd({**base, "secret_scan_ci": ["a.yml:x", "b.yml:y"]})
+        self.assertIn("CI runs a secret scan in jobs `x` of `.github/workflows/a.yml` and `y` of `.github/workflows/b.yml`.", two)
+
+    def test_generated_vdd_for_this_repository_does_not_deny_the_ci_secret_scan(self):
+        (self.tmp / "CHANGELOG.md").write_text("## [Unreleased]\n- x\n", encoding="utf-8")
+        tooling = gen.tooling()
+        with mock.patch.object(gen, "ROOT", self.tmp):
+            text = gen.vdd_report(data([], tooling=tooling), "VDD-x", "STR-x", "9")
+        self.assertNotIn("CI has no secret-scanning job", text)
+        self.assertIn("job `secret-scan` of `.github/workflows/ci.yml`", text)
 
 
 if __name__ == "__main__":
