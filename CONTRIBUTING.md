@@ -16,14 +16,17 @@ find the part you want to change.
    findings and the outcome. The owner merges.
 
 CI runs the same commands on every pull request: `make tools`, `make -k test` and `make -k test-optimized`, on Node 22
-and 26 with Python 3.12, and in separate jobs `make lint`, `make rust-lane-test` on Rust 1.98.1 and a Gitleaks secret
-scan ([workflow](.github/workflows/ci.yml)). Run `make lint` before you push; `make coverage` reports test coverage.
+and 26 with Python 3.12, and in separate jobs `make lint`, `make coverage -k`, `make rust-lane-test` on Rust 1.98.1
+and a Gitleaks secret scan ([workflow](.github/workflows/ci.yml)). Run `make lint` before you push; `make coverage`
+reports test coverage.
 
 ## Conventions
 
 - Add a test for each new behaviour. Tests are found by glob; `tests/test_reachability.py` fails if `make test` does
   not run a test file.
-- Put rationale in documentation, commit messages or the pull request, not in code comments.
+- Put rationale in documentation, commit messages or the pull request, not in code comments. `make lint` fails on a
+  comment line (`tools/check_comments.py`); a line-1 shebang, licence headers and tool directives such as `noqa` are
+  kept.
 - A change to a default needs a measurement. Reserve a P-number with `python3 -I tools/experiment_id.py reserve
   <slug>`, commit `PRECOMMIT.md` before the run, then add `RESULT.md` and an `INDEX.md` row and run `make index`.
 - Run `make sums` after changing a file listed in `sources/SHA256SUMS`.

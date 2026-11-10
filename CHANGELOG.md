@@ -102,6 +102,18 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
   REQ-FACTORY-003 and REQ-HILL-002 changed or extended; REQ-SYNTH-008 tested on every path. GAP-EF-015 (the gate
   CLI's `freeze` does not require a capability block) and GAP-EF-016 (`make coverage` failing on a test failure and
   the CI `coverage` job, not yet verified) opened.
+- `tools/check_comments.py`, run by `make lint` and so by the CI job `lint`: exits 1 and lists `file:line: text` for
+  every code comment line in tracked source files, keeping a line-1 shebang, licence headers and tool directives;
+  docstrings are not comments. Tested by `tools/test_check_comments.py` in `make gap-tools-test`.
+- `tools/atomizer/bin/plan-template.mjs --fixture <interface-lines.txt>` reads the interface from a file instead of a
+  model, and the program prints its usage and exits 2 without `<need.md>` or `--out`.
+- `atomize.mjs --fixture` writes each rendered prompt to `receipt/<label>-prompt.md` (for example `turn-1-prompt.md`).
+- Tests: `tools/gate/gate.mjs freeze` against missing, malformed, disagreeing and agreeing capability blocks; the
+  rendered atomizer prompts; `compose-kernel.mjs` refusing a block-less contract; the compose helper gating to a
+  promotable kernel inside a real atom sandbox; and `core/library/test/library-reuse-example.test.mjs`, which runs
+  `examples/library-reuse.mjs` and checks its three printed outcomes.
+- Requirements REQ-ATOM-006 (capability block on every atomizer contract path) and REQ-REPO-010 (no code comments);
+  REQ-GATECLI-001 and REQ-REPO-009 extended. GAP-EF-015 and GAP-EF-016 closed, so no gap is open.
 
 - `examples/first-loop.mjs` and `examples/show-gates.py`: the README and getting-started example (a scripted model
   promotes an addition kernel and refuses a subtracting one), tested by `core/runtime/test/loop-example.test.mjs`.
@@ -188,6 +200,28 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
   generated need no longer reaches library lookup to miss with `no_capability`. The test fixtures and
   `examples/counter-loop.mjs` and `examples/agent-loop.mjs` carry blocks. `tools/gate/gate.mjs freeze` still freezes a
   contract without one; `gate run` refuses it at G7 (GAP-EF-015).
+- `tools/gate/gate.mjs freeze` refuses, with exit 2 and no `frozen.sha256`, a `CONTRACT.md` whose capability block is
+  missing, malformed or disagrees with the tests, using the loop's own check (`capabilityProblems`). Before, only
+  `gate run` caught a missing block, at G7, after the code was written (GAP-EF-015 closed).
+- Every atomizer path that writes `CONTRACT.md` asks for the capability block in the loop's own words
+  (`capabilityRule`): rule 12 of `atomize.mjs`, a new `contract` kind procedure in `tools/atomizer/policy.json`, the
+  contract atom of `plan-template.mjs` and the `direct` procedure. The `glue` procedure says to match the block, and
+  the templated glue atom now reads the contract. `compose-kernel.mjs` exits 3 before freezing when the contract atom's
+  `CONTRACT.md` has no block or a block that is not JSON. Stale "G1-G7" labels in the atomizer now read G1-G9.
+- The atomizer's compose, compose-draft, repair and direct atoms mount `core/`, `tools/asc` and
+  `experiments/assemblyscript-toolchain.mjs` (toolchains `gate-core`, `gate-asc`, `gate-asc-trust`), and `asc` points
+  at `tools/asc/node_modules`; the compose helper takes its toolchain from `policy.kindToolchain.compose`.
+- `examples/library-reuse.mjs`: the third need's capability block widens the argument range to `-100..100`, so it
+  misses the library with `no_contract_match` and is generated; the example prints each library verdict and the miss
+  reason. The library how-to shows the new output.
+- Code comments are removed across `core/` and `tools/` (D-07). Header usage blocks moved into the programs'
+  own usage output: `tools/job/bin/job.mjs`, `tools/conductor/bin/conduct.mjs` and `tools/hillclimb/bin/hillclimb.mjs`
+  now print a `USAGE` constant instead of reading their own source lines (which also printed import lines);
+  `hillclimb.mjs` now prints its last line, `(inside atoms) compose-review … | compose-fix …`, which it cut before;
+  `job.mjs` says I1–I15 and lists `patch`; `hc-patch.sh`, `speed.mjs`, `testcheck.mjs`, `verify.mjs`, `fanout.mjs`,
+  `direct.mjs` and `compose-kernel.mjs` print their full usage. Information the comments held and the
+  docs lacked is now in the tool READMEs and `docs/`. `tools/conductor/demo.sh` writes the generated worker's `#!`
+  line with `printf`.
 - The compatibility workcell keeps snapshots in the host and serves each borrowed buffer's `size` and `read` through
   synchronous host calls instead of copying snapshots in with the job; receipts carry `hostBuffers`.
 - `tools/factory_runtime/wasm.py` uses the pinned Wasmtime wheel by default; `ENDOFORGE_WASMTIME` now names an
@@ -291,6 +325,10 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 - On the `current` path a refusal by the synthesized evaluator carries the same `problem` text as on the other paths.
 - `Egress.test_run_bounded_outcomes` no longer fails when garbage left by other test modules (leaked sqlite
   connections) raises `ResourceWarning`s inside its window.
+- Round-6 regression in the atomizer: round 6 made the capability block required at the freeze, but no atomizer
+  prompt asked the model for one, and the compose atom's sandbox could not load the gate's modules or find the pinned
+  compiler, so every real atomizer run since round 6 failed at the freeze or at G7. The tests use script workers and
+  did not show it. Fixed in round 7 (see Changed).
 
 - A missing exit code or a torn state is no longer read as success, and ledgers and locked decisions survive a
   failed read (#99, #100).

@@ -44,10 +44,11 @@ need you build yourself and pass to `library.lookup` without the block misses wi
 ## Try it
 
 [`examples/library-reuse.mjs`](../../../examples/library-reuse.mjs) runs three needs through the current path with
-the `fake-codex.mjs` test double as the generator and the pinned compiler. The first is promoted and admitted, the
-second declares its capability block explicitly and is served from the library. The third takes the test double's
-default contract. That contract had no block before round 6 and missed; it now carries the block the freeze requires,
-so the third need is served from the library too:
+the `fake-codex.mjs` test double as the generator and the pinned compiler. The first is generated, promoted and
+admitted. The second has the same contract and capability block and is served from the library. The third widens the
+arguments' range from `-10..10` to `-100..100`, so its capability block disagrees with the promoted kernel's: the
+library misses with `no_contract_match`, and the need is generated and promoted on its own. The example wraps
+`library.serve` to print each verdict:
 
 ```sh
 node examples/library-reuse.mjs
@@ -57,6 +58,7 @@ node examples/library-reuse.mjs
 {
   "first": {
     "promoted": true,
+    "reused": false,
     "modelStages": [
       "implementation",
       "specification"
@@ -68,6 +70,7 @@ node examples/library-reuse.mjs
   },
   "second": {
     "promoted": true,
+    "library": "pass",
     "reusedFrom": "first",
     "modelStages": [
       "specification"
@@ -75,17 +78,22 @@ node examples/library-reuse.mjs
   },
   "third": {
     "promoted": true,
-    "reused": true,
+    "library": "miss",
+    "missReason": "no_contract_match",
+    "reused": false,
     "modelStages": [
+      "implementation",
       "specification"
     ]
   },
-  "journal": "/tmp/ef-library-FSdeDA/library.jsonl"
+  "journal": "/tmp/ef-library-UWAlPj/library.jsonl"
 }
 ```
 
-`modelStages` lists the stages the generator was asked for. The second and third needs never reached implementation.
-The journal holds `library_admit` and a `library_reuse` record for each served need. A miss before any test run writes nothing.
+`modelStages` lists the stages the generator was asked for. The second need never reached implementation; the third
+did, because the library had nothing with its capability. The journal holds `library_admit` and one `library_reuse`
+record; the miss came before any test run and wrote nothing. `core/library/test/library-reuse-example.test.mjs` runs
+the example and checks these three outcomes.
 
 ## Why a lookup misses
 

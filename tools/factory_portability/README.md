@@ -15,7 +15,9 @@ factory design and sits beside the isolate loop, not inside it.
     `size`, `executable`), and refuses symlinks, hard links, paths such as `.env`, `.ssh`, `.aws`, `.claude`, `.codex`,
     `*.pem` and `*.key`, and contents that look like private keys or API tokens. The limit is 512 MiB.
   - `unpack <archive> <destination> --identity <age-identity-file>` decrypts with `age`, which authenticates before
-    anything is extracted, then checks every file against the inventory. It refuses an existing destination.
+    anything is extracted, then checks every file against the inventory. It writes the files into a temporary
+    directory beside the destination and moves it into place with one `renameat2(RENAME_NOREPLACE)`, which is atomic
+    on that file system and refuses an existing destination.
 - `resume_stage.py <checkpoint> <bundle> <output>` resumes one pending deterministic WebAssembly stage named by
   `resume.json` (`endoforge.portable-stage.v1`). It checks the module and the bundle's pinned `bin/wasmtime` hash from
   `toolchain.json`, requires the state and module to be inventoried checkpoint files inside the checkpoint, accepts
@@ -27,7 +29,8 @@ factory design and sits beside the isolate loop, not inside it.
 - `campaign_transfer.py <source> <bundle> <receipt> --identity <file> --host <host> --remote /tmp/endoforge-transfer-<id>`
   packs, creates the remote staging directory, copies the archive, `checkpoint.py`, `resume_stage.py` and the bundle
   with `scp`, unpacks and resumes there under `ssh` in a `bwrap` sandbox, removes the staging directory (also on
-  failure), and writes a receipt directory.
+  failure), and writes a receipt directory. The `age` identity reaches the remote `unpack` only on `ssh`'s standard
+  input; it is never written on the remote host or into the logs.
 - `qualify_wasmtime.py` exits 1 with `"passed": false` on any failed check; its checks do not depend on `assert`.
 
 ## Example

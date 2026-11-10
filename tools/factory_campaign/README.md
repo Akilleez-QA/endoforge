@@ -23,8 +23,9 @@ is fenced out, and an interrupted model stage is recorded as `unknown` instead o
   - `new_attempt(stage, family, prompt_sha256, retry_of=None)` plans an attempt; each attempt owns a systemd user
     scope named `endoforge-worker-<attempt>.scope` (`scope_description(attempt)`).
   - `started(attempt, pid)`, `finish(attempt, outcome)`, `cleanup_owned(attempt)` and `reconcile(attempt)` move it
-    through its states. `reconcile` records `unknown` for an interrupted stage. Cleanup stops a scope only when its
-    Description matches. `promotionAllowed` and `automaticRetry` are always false.
+    through its states. `reconcile` records `unknown` for an interrupted stage; it keeps a terminal outcome that was
+    durably recorded before the interruption as `observedTerminalOutcome`, and never infers success from files.
+    Cleanup stops a scope only when its Description matches. `promotionAllowed` and `automaticRetry` are always false.
 - `repair.py`: `patch(...)` applies one bounded text replacement to a failed `kernel.ts` or `glue.json` candidate and
   writes a new `<name>.repair-<n>` file. Round 0 patches the original; round `n` patches `<name>.repair-<n>`. It
   refuses if the candidate's hash changed, the match is not unique, the round limit is reached, the dispute is not an

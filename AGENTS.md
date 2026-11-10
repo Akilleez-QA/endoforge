@@ -43,7 +43,9 @@ experiment's `INDEX.md`). Reserve a new P-number with `python3 -I tools/experime
 - Tests are discovered by glob in the Makefile. `tests/test_reachability.py` fails when `make test` does not reach a
   test file; wire it into a target or list it with a reason in `tests/test-reachability.json`.
 - Keep changes focused, and open an issue before larger work.
-- Put rationale in documentation, commit messages or the pull request, not in code comments.
+- Put rationale in documentation, commit messages or the pull request, not in code comments. `make lint` fails on a
+  comment line (`tools/check_comments.py`); a line-1 shebang, licence headers and tool directives such as `noqa` are
+  kept.
 - Use synthetic identifiers and local paths in examples, and keep generated evidence outside the source tree. Never
   publish credentials, account directories, home-directory paths, private inputs or sensitive receipts; `make check`
   runs a privacy lint.

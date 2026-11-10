@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SRS |
-| Version | 2.6 |
+| Version | 2.7 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -60,7 +60,9 @@ The Python core shall import only its scoped standard library allowlists and loa
 
 The lifecycle shall refuse transitions outside its legal state graph.
 
-- Rationale: Prevent skipped lifecycle stages.
+- Rationale: Prevent skipped lifecycle stages. The graph (`LEGAL`): proposed, generated, qualified, previewed,
+  activated, each entered only from the one before; failed and rejected from any of the first four; disposed from every
+  state except disposed itself.
 - Derivation: `core/lifecycle.py`
 - Allocated to: SDD §4 C-01 Lifecycle model
 - Verification: T — `make core-test`
@@ -90,7 +92,9 @@ Applying a transition shall require a decision bound to the current proposal dig
 
 Generation shall not confer qualification or activation.
 
-- Rationale: Separate candidate production from acceptance.
+- Rationale: Separate candidate production from acceptance. Each transition carries only its own evidence fields
+  (`candidate_sha256` into generated, `receipt` into qualified, `preview_ref`, `host_approval_ref`, and `reason` into
+  failed, rejected or disposed); anything else, such as a generator's own claims, is refused.
 - Derivation: `core/lifecycle.py`
 - Allocated to: SDD §4 C-01 Lifecycle model
 - Verification: T — `make core-test`
@@ -792,7 +796,7 @@ Generation shall ask in both specification prompts for a fenced ```capability bl
 - Derivation: `core/runtime/x1/generator.mjs`, `core/runtime/x1/agent.mjs`, `core/runtime/x1/contract.mjs`, `core/runtime/x1/gates.mjs`, `core/library/key.mjs`
 - Allocated to: SDD §4 C-07 X1 candidate loop
 - Verification: T — `make isolate-test`
-- Status: Baselined (round 5; changed in round 6, M1: the block is required on every path and G7 checks the glue against it). The stand-alone `tools/gate/gate.mjs freeze` does not require the block; `gate run` refuses its absence at G7 (GAP-EF-015)
+- Status: Baselined (round 5; changed in round 6, M1: the block is required on every path and G7 checks the glue against it). Since round 7 the stand-alone `tools/gate/gate.mjs freeze` runs the same check (REQ-GATECLI-001), and every atomizer path that writes `CONTRACT.md` asks for the block (REQ-ATOM-006)
 
 ### REQ-PROMOTE-001 — Local promotion
 
@@ -1230,6 +1234,16 @@ The atomizer commands `atomize`, `direct`, `fanout`, `report` and `cutover` shal
 - Verification: T — `make atomizer-test` (script workers and fixtures; model arms are checked only as refused without a subscription login)
 - Status: Baselined
 
+### REQ-ATOM-006 — Capability block on every atomizer contract path
+
+Every atomizer path that writes `CONTRACT.md` shall ask for the ```capability block in the candidate loop's own wording (`capabilityRule`): the planning prompt of `atomize.mjs`, the `contract` kind procedure in `policy.json`, the contract atom of `plan-template.mjs` and the `direct` procedure (before its freeze), with the glue procedure and the templated glue atom reading the contract to match the block and every prompt naming the gates G1 to G9; `compose-kernel.mjs` refuses with exit 3, before freezing or compiling, a contract atom's `CONTRACT.md` with no block or a block that is not JSON; and the compose atom's toolchain carries the gate's own modules and the pinned compiler, so the compose helper freezes and gates to a promotable kernel inside the atom sandbox.
+
+- Rationale: Round 6 made the block required at the freeze, but no atomizer prompt asked for it and the compose sandbox could not load the gate's modules, so every real atomizer run failed at the freeze or at G7. The tests use script workers, so they did not show it (round 7, N1).
+- Derivation: `tools/atomizer/bin/atomize.mjs`, `tools/atomizer/bin/plan-template.mjs`, `tools/atomizer/bin/direct.mjs`, `tools/atomizer/bin/compose-kernel.mjs`, `tools/atomizer/policy.json`, `tools/atomizer/lib/workers.mjs`, `tools/atomizer/lib/augment.mjs`
+- Allocated to: SDD §4 C-22 Atomizer
+- Verification: T — `make atomizer-test` (rendered prompts asserted as text; the compose helper runs in a real `bwrap` sandbox)
+- Status: Baselined (round 7)
+
 ### REQ-COND-001 — Conductor fails closed on unknown state
 
 The conductor shall treat an empty or garbage exit file, a vanished process or a failing `systemctl` as unknown, never as exit 0, stop on an unreadable state file without rewriting it, exit 78 on torn state without restart, and write state atomically with a sync before rename.
@@ -1362,13 +1376,13 @@ Hillclimb shall treat a directory, its glob and its children as one ownership tr
 
 ### REQ-GATECLI-001 — Glue gate CLI uses the core gates
 
-`tools/gate/gate.mjs run` shall compile `kernel.ts` with the core compiler flags and judge the kernel with the core `runGates`, so a kernel on disk gets the same nine gates and structured state as the loop, with a `glue.schema.json` equal to the core schema, compiling with `ENDOFORGE_ASC` unset with the pinned compiler at `ASC_PATH` from `tools/asc/pin.mjs` that `make loop-setup` installs.
+`tools/gate/gate.mjs freeze` shall refuse with exit 2, writing no `frozen.sha256`, a `CONTRACT.md` whose ```capability block is missing, malformed or in disagreement with `tests.json`, using the loop's own freeze check (`capabilityProblems`), and freeze a contract whose block agrees; and `tools/gate/gate.mjs run` compiles `kernel.ts` with the core compiler flags and judge the kernel with the core `runGates`, so a kernel on disk gets the same nine gates and structured state as the loop, with a `glue.schema.json` equal to the core schema, compiling with `ENDOFORGE_ASC` unset with the pinned compiler at `ASC_PATH` from `tools/asc/pin.mjs` that `make loop-setup` installs.
 
-- Rationale: Two gate implementations drift; the atomizer's stand-alone check must agree with the loop.
-- Derivation: `tools/gate/gate.mjs`, `tools/gate/glue.schema.json`, `tools/asc/pin.mjs`
+- Rationale: Two gate implementations drift; the atomizer's stand-alone check must agree with the loop. Until round 7 `freeze` hashed a block-less contract and the refusal came only at G7, after the code was written (formerly GAP-EF-015).
+- Derivation: `tools/gate/gate.mjs`, `tools/gate/glue.schema.json`, `tools/asc/pin.mjs`, `core/runtime/x1/generator.mjs`
 - Allocated to: SDD §4 C-30 Glue gate CLI and project scheduler
 - Verification: T — `make gate-test`
-- Status: Baselined
+- Status: Baselined (round 2; changed in round 7, N1: `freeze` checks the capability block)
 
 ### REQ-SCHED-001 — Project scheduler
 
@@ -1428,7 +1442,7 @@ The factory runtime shall validate job specs and records against its schema file
 - Derivation: `tools/factory_runtime/core.py`, `tools/factory_runtime/scheduler.py`, `tools/factory_runtime/runner.py`, `tools/factory_runtime/recovery.py`, `tools/factory_runtime/egress.py`, `tools/factory_runtime/bridge.py`, `tools/factory_runtime/local_provider.py`, `tools/factory_runtime/wasm.py`, `tools/factory_runtime/wasm_host.py`
 - Allocated to: SDD §4 C-29 Factory runtime
 - Verification: T — `make test` (`gap-tools-test`; most runner cases use a stand-in Docker CLI; the sandboxed-worker cases start real workers through `systemd-run --user --scope`, `unshare` and `bwrap` and skip with the reason where one of those is missing; `RealPinnedWasmtime` skips with the reason where `make tools` has not run or there is no systemd user manager; the Wasmtime CLI case skips unless `ENDOFORGE_WASMTIME` and `ENDOFORGE_WASMTIME_SHA256` are set; `RealDocker` runs the runner against a real Docker daemon reached without `sudo` and an image already on the host, and skips with the reason otherwise)
-- Status: Baselined. The `RealDocker` cases have never run: on the development host the Docker socket is not reachable without `sudo`, so they skipped on 2026-11-09, and no CI run has been recorded. Under the wheel, a `memory.grow` past the ceiling returns -1 instead of trapping; the ceiling holds
+- Status: Baselined. The `RealDocker` cases ran and passed on GitHub in PR #142 (run 42709080153, job `test (22)`, and also `test (26)`), in both the repository tests and the optimized Python run; on the development host the Docker socket is not reachable without `sudo`, so they skip there. Under the wheel, a `memory.grow` past the ceiling returns -1 instead of trapping; the ceiling holds
 
 ### REQ-FACTORY-004 — Approved atoms registry
 
@@ -1554,13 +1568,23 @@ CI shall run a Gitleaks scan of the full history with a checksum-verified binary
 
 ### REQ-REPO-009 — Lint and coverage
 
-`make lint` shall fail on any finding of ruff 0.17.0 (with the repository's `ruff.toml`) over the tree or of `node --check` over every `.mjs`, `.js` and `.cjs` file, with CI running it in the job `lint`, and `make coverage` running the Node suites under `--experimental-test-coverage` with a summary and the Python suites under coverage.py when installed, else with trace counts, with CI running `make coverage -k` under coverage.py 7.10.7 in the job `coverage` and uploading `coverage-summary.txt` as the artifact `coverage-summary`.
+`make lint` shall fail on any finding of ruff 0.17.0 (with the repository's `ruff.toml`) over the tree or of `node --check` over every `.mjs`, `.js` and `.cjs` file, with CI running it in the job `lint`, and `make coverage` running the Node suites under `--experimental-test-coverage` with a summary and the Python suites under coverage.py when installed, else with trace counts, failing when any test fails in either mode, with CI running `make coverage -k` under coverage.py 7.10.7 in the job `coverage` (its shell runs with `pipefail`, so a failing `make` fails the step) and uploading `coverage-summary.txt` as the artifact `coverage-summary`.
 
-- Rationale: Static analysis and coverage are measured rather than stated as missing (NPR SWE-135, SWE-189).
+- Rationale: Static analysis and coverage are measured rather than stated as missing (NPR SWE-135, SWE-189). Whether a failing test fails `make coverage`, and whether the CI job completes, was formerly GAP-EF-016.
 - Derivation: `Makefile`, `ruff.toml`, `.github/workflows/ci.yml`
 - Allocated to: SDD §4 C-27 Repository checks
 - Verification: I — `Makefile` targets `lint` and `coverage`, `.github/workflows/ci.yml` jobs `lint` and `coverage`
-- Status: Baselined
+- Status: Baselined (changed in round 7: GAP-EF-016 closed by the first CI run of the `coverage` job and a recorded failing-test run)
+
+### REQ-REPO-010 — No code comments
+
+`make lint`, and so the CI job `lint`, shall run `tools/check_comments.py`, which lists every tracked `.mjs`, `.js`, `.cjs`, `.ts`, `.py`, `.rs`, `.sh` and Makefile file outside `TODELETE/`, `experiments/`, `node_modules` and `vendor/` with `git ls-files`, prints `file:line: text` (text cut at 80 characters) for every comment line and exits 1, exits 0 when there is none, and exits 2 when `git ls-files` fails or a Python file cannot be tokenized; it finds Python comments with `tokenize` (so docstrings are not comments), `#` lines in shell files and Makefiles, and `//`, `/*`, `*` and `*/` lines in the others, and keep a shebang on line 1 and any comment naming a tool directive or licence header (`@ts-`, `eslint`, `noqa`, `type:`, `pragma`, `pylint`, `SPDX`, `-*-`, `fmt:`, `istanbul`, `c8 `).
+
+- Rationale: CONTRIBUTING.md and AGENTS.md put rationale in documentation, commit messages or the pull request, not in code comments; until round 7 the rule was not enforced (finding D-07). Round 7 removed the comment lines and moved what they said that the documentation lacked into the documentation.
+- Derivation: `tools/check_comments.py`, `Makefile`, `.github/workflows/ci.yml`
+- Allocated to: SDD §4 C-27 Repository checks
+- Verification: T — `make test` (`gap-tools-test`); I — `.github/workflows/ci.yml` job `lint`
+- Status: Baselined (round 7). It sees whole comment lines only in JavaScript, TypeScript, Rust and shell files, so a comment after code on the same line passes there (finding D-09)
 
 ## 11. Untested behaviour (requirement gaps)
 
@@ -1569,11 +1593,19 @@ requirements until a test exists. Numbering: `GAP-EF-NNN`, never reused.
 
 | ID | Behaviour | Location | Why untested / note |
 |---|---|---|---|
-| GAP-EF-015 | The stand-alone gate's freeze does not require a capability block: `tools/gate/gate.mjs freeze` hashes a `CONTRACT.md` without a ```capability block, while the loop's freeze refuses one (REQ-GEN-011) | `tools/gate/gate.mjs` | Opened in round 6. `gate run` refuses such a contract at G7 (`` CONTRACT.md has no ```capability block ``), so no kernel is reported promotable from it, but the refusal comes after the code is written instead of at the freeze. No test checks `freeze` against a block-less contract |
-| GAP-EF-016 | `make coverage` failing on any test failure, and the CI `coverage` job running to completion with its artifact uploaded | `Makefile` (`coverage`, `coverage-python`), `.github/workflows/ci.yml` (job `coverage`) | Round-6 item M2, still open. The CI `coverage` job has never run on GitHub, and no test checks that a failing unittest makes `make coverage` fail. The rest of the lint and coverage targets is REQ-REPO-009 |
+| — | None open at version 2.7 | — | — |
 
 Closed gaps (their IDs are not reused):
 
+- GAP-EF-015, the gate CLI's `freeze` and the capability block: closed in round 7 (N1). `tools/gate/gate.mjs freeze`
+  runs the loop's `capabilityProblems` and refuses a missing, malformed or disagreeing block, tested by
+  `tools/test_gate_structured.mjs`; now part of REQ-GATECLI-001.
+- GAP-EF-016, `make coverage` on a failing test and the CI `coverage` job: closed in round 7. The job ran on GitHub in
+  PR #142 (run 42709080153): Node 953 tests passed with 93.29% of lines covered, Python 333 tests OK (3 skipped) under
+  coverage.py with 84% in total, and the artifact `coverage-summary` was uploaded. On 2026-11-09 `make coverage-python`
+  with a deliberately failing unittest (trace fallback, coverage.py absent) printed `FAILED (failures=1)` and make
+  exited 2; under coverage.py the `&&` after `coverage run` stops the recipe the same way. Now part of REQ-REPO-009,
+  verified by inspection; no automated test runs `make coverage` against a failing test.
 - GAP-EF-002, factory runtime worker launch and protected provider call: closed in round 5 (P5). The
   `SandboxedWorker` cases in `tools/factory_runtime/test_runtime_gaps.py` start real workers in their sandbox with the
   `bridge.py` relay; one completes `call_protected` against a stub provider, the other shows the relay is the worker's
@@ -1635,3 +1667,4 @@ Closed gaps (their IDs are not reused):
 | 2.4 | 2026-11-09 | round 4 | 13 requirements for the round-4 work: delegated cgroup enforcement (REQ-ISO-018), stub pool replay (REQ-STUB-001), structured synthesized vectors (REQ-SYNTH-007), the caller's judging-cell limits on every path (REQ-SYNTH-008), atomizer commands (REQ-ATOM-005), job kinds and compilation (REQ-JOB-003), hillclimb fan-out, plan and scoreboard (REQ-HILL-003), project scheduler (REQ-SCHED-001), factory runtime (REQ-FACTORY-003), approved atoms (REQ-FACTORY-004), repair, qualification, resume and transfer (REQ-FACTORY-005), release-record generator (REQ-REPO-008), lint and coverage (REQ-REPO-009); GAP-EF-001, 004, 005, 007 to 010 and 014 closed; GAP-EF-002 and 006 narrowed | this commit |
 | 2.5 | 2026-11-09 | round 5 | REQ-GEN-011 (capability block in both specification prompts, checked at the freeze, library hit on generated needs) added; REQ-COMPAT-001 (workcell runs), REQ-GATECLI-001 (pinned compiler default), REQ-FACTORY-003 (sandboxed worker and protected call), REQ-FACTORY-005 (real second host) and REQ-REPO-009 (CI coverage job) extended; REQ-STEP-001 deleted with the step harness retired to `TODELETE/`; GAP-EF-002 and GAP-EF-006 closed | this commit |
 | 2.6 | 2026-11-09 | round 6 | 3 requirements added: synchronous host calls (REQ-ISO-019), declared effects, durable denials and task conformance in the kernel host (REQ-KERNEL-005), the shared lock, headroom and exit-file modules (REQ-ERR-002); REQ-GEN-011 changed (block required at the freeze on every path, G7 checks glue against it); REQ-COMPAT-001 (host-buffer calls), REQ-RUST-001 (admission of any conforming crate through the kernel host, two tasks), REQ-FACTORY-003 (local turns without agent tools, pinned Wasmtime wheel, real-Docker cases), REQ-HILL-002 (stage policy to a campaign's own runner) extended; REQ-SYNTH-008 now tested on the `current` path; REQ-LIB-003 rationale corrected; GAP-EF-015 and GAP-EF-016 opened | this commit |
+| 2.7 | 2026-11-09 | round 7 | 2 requirements added: capability block on every atomizer contract path (REQ-ATOM-006) and no code comments (REQ-REPO-010); REQ-GATECLI-001 changed (`freeze` checks the capability block); REQ-REPO-009 (a failing test fails `make coverage`; the CI job ran), REQ-GEN-011 and REQ-FACTORY-003 (the `RealDocker` cases ran in CI) updated; REQ-LIFE-001 and REQ-LIFE-004 rationales give the state graph and evidence fields; GAP-EF-015 and GAP-EF-016 closed, so no gap is open | this commit |

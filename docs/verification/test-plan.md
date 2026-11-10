@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-STP |
-| Version | 1.5 |
+| Version | 1.6 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -37,12 +37,12 @@ N/A; the owner's merge is the sign-off. How-to detail: [run local checks](../gui
 | System (candidate loop, crash) | `loop-test` | `npm ci` in `tools/asc`, then `core/runtime/test/loop*.test.mjs` |
 | Integration (TypeScript checker) | `tscheck-test` | `npm ci` in `tools/tscheck`, then `tools/tscheck/test/*.test.mjs` |
 | Tools | `atomizer-test`, `harness-test`, `hardware-test`, `runtime-test`, `lib-test`, `library-test`, `portability-test`, `factory-state-test`, `seeded-fault-test`, `escape-test`, `compatibility-test`, `gate-test` | The test files under each tool |
-| Tools (round 4) | `gap-tools-test` | `tools/factory_runtime/test_runtime_gaps.py`, `tools/test_approved_atoms.py`, `tools/test_gen_release_docs.py`, `tools/project-scheduler/test/scheduler.test.mjs` |
+| Tools (round 4) | `gap-tools-test` | `tools/factory_runtime/test_runtime_gaps.py`, `tools/test_approved_atoms.py`, `tools/test_gen_release_docs.py`, `tools/test_check_comments.py` (round 7), `tools/project-scheduler/test/scheduler.test.mjs` |
 | Kernel host | `kernel-test` | Version check of `.tools/`, then `tools/kernel/test_*.py` |
 | Experiment receipt | `receipt-test` | `experiments/P-19-need-to-candidate/verify.py` |
 | Regression | CI `test` job | `make -k test` and `make -k test-optimized` on Node 22 and 26 |
 | Rust lane | CI `rust-lane` job | `make tools`, then `make rust-lane-test` on Rust 1.98.1 |
-| Static analysis | `lint`; CI `lint` job | ruff 0.17.0 with `ruff.toml`, and `node --check` on every `.mjs`, `.js` and `.cjs` file |
+| Static analysis | `lint`; CI `lint` job | ruff 0.17.0 with `ruff.toml`, `tools/check_comments.py` (no code comment lines, REQ-REPO-010), and `node --check` on every `.mjs`, `.js` and `.cjs` file |
 | Coverage | `coverage`; CI `coverage` job | Node suites under `--experimental-test-coverage`; Python under coverage.py, else trace counts. The CI job installs coverage.py 7.10.7, runs `make coverage -k` and uploads `coverage-summary.txt` as the artifact `coverage-summary` |
 
 Outside `make test`: `make rust-lane-test` (needs the pinned Rust toolchain, TP-6; CI runs it in its own job),
@@ -80,9 +80,12 @@ No coverage target is set, and coverage is not a pass criterion. The first run, 
 integration, reported 822 Node tests passing, 1 skipped, with 90.74% of lines covered across all files, and 230
 Python tests OK under trace counts; a recorded STR has not yet included a coverage run. The trace check gives
 file-level coverage of requirements as well: every discovered test file traces to a requirement or is listed as
-supporting. The CI `coverage` job has not run on GitHub yet. Round 6 made `Egress.test_run_bounded_outcomes` ignore
-the `ResourceWarning`s other modules leak into a shared process (REQ-FACTORY-003); making `make coverage` fail on any
-test failure and the job pass is still open (GAP-EF-016). MC/DC: N/A (not safety-critical, SWE-219).
+supporting. Round 6 made `Egress.test_run_bounded_outcomes` ignore the `ResourceWarning`s other modules leak into a
+shared process (REQ-FACTORY-003). The CI `coverage` job first ran in PR #142 (run 42709080153) and passed: Node 953
+tests, 0 failed, 93.29% of lines; Python 333 tests OK (3 skipped) under coverage.py 7.10.7, 84% in total; the
+`coverage-summary` artifact was uploaded. A failing test fails `make coverage` in either Python mode: on 2026-11-09 a
+deliberately failing unittest made `make coverage-python` print `FAILED (failures=1)` and exit 2 under the trace
+fallback (GAP-EF-016 closed, REQ-REPO-009). MC/DC: N/A (not safety-critical, SWE-219).
 
 ## 6. Test data and fixtures
 
@@ -179,15 +182,19 @@ Live model runs (experiments) follow each experiment's `PRECOMMIT.md`; they are 
   skipped under load only when opted in.
 - Delegated cgroup enforcement (REQ-ISO-018) is checked only where a delegated user scope exists; it ran on the
   development host on 2026-11-09, and whether it runs or skips on the GitHub runner is not recorded.
-- Two behaviours are registered as untested
-  ([SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps)): GAP-EF-015 (the gate CLI's
-  `freeze` does not require a capability block) and GAP-EF-016 (`make coverage` failing on a test failure, and the CI
-  `coverage` job).
-  Some cases skip with their reason where the host lacks a prerequisite: the sandboxed factory workers need `bwrap`,
+- No behaviour is registered as untested
+  ([SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps)); GAP-EF-015 and GAP-EF-016 were
+  closed in round 7. `make coverage` failing on a test failure is checked by inspection and one recorded run, not by an
+  automated test.
+- The atomizer tests use script workers and fixtures. Round 6's regression (no prompt asked for the capability block)
+  passed them all; round 7 added tests that assert on the rendered prompt text and run the compose helper in a real
+  sandbox, but a real model run is still not part of the suite.
+- Some cases skip with their reason where the host lacks a prerequisite: the sandboxed factory workers need `bwrap`,
   a systemd user manager and unprivileged namespaces (a local-provider turn no longer needs `node` or `codex`); the
   real second-host transfer needs `ENDOFORGE_SECOND_HOST` and skips in CI, where it is unset (it passed against a
   separate machine on 2026-11-09); `RealPinnedWasmtime` needs `make tools` and a systemd user manager; `RealDocker`
-  needs a Docker daemon reachable without `sudo` and a local image, and has not run anywhere yet.
+  needs a Docker daemon reachable without `sudo` and a local image: it skips on the development host and ran and
+  passed in CI in PR #142 (run 42709080153).
 
 ## 9. Traceability
 
@@ -203,3 +210,4 @@ See the [verification matrix](verification-matrix.md).
 | 1.3 | 2026-11-09 | round 4 | `gap-tools-test`, `lint` and `coverage` targets; coverage section; TP-6 records its first CI run; gap count 2 | this commit |
 | 1.4 | 2026-11-09 | round 5 | CI `coverage` job; `harness-test` runs the step harness retirement check; no gap open | this commit |
 | 1.5 | 2026-11-09 | round 6 | New skip cases (`RealPinnedWasmtime`, `RealDocker`); TP-6 records the round-6 admission cases; the coverage section and §8 record GAP-EF-015 and GAP-EF-016 | this commit |
+| 1.6 | 2026-11-09 | round 7 | `lint` runs the no-comments check; `gap-tools-test` runs its test; the coverage section records the first CI `coverage` run and a failing-test run (GAP-EF-016 closed); §8 records no open gap, the script-worker limit of the atomizer tests and the first `RealDocker` run | this commit |

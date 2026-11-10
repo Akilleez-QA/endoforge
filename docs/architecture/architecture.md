@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SDD |
-| Version | 3.5 |
+| Version | 3.6 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -106,15 +106,15 @@ checks yet; see [SRS §11](../requirements/requirements.md#11-untested-behaviour
 | C-19 | Escape measurement | `tools/seeded_faults/`, `tools/escape_harness/` | Seeded faults and escape-rate statistics | REQ-FAULT-001, REQ-ESCAPE-001 |
 | C-20 | Step harness (retired 2026-11-09) | `TODELETE/tools/step_harness/`; `tools/step_harness/` keeps only the retirement check | Bounded agent step loop over a POODO decision core; no caller in this repository, so archived with its tests | REQ-STEP-001 (Deleted) |
 | C-21 | Hardware record | `tools/hardware_record/` | Machine record for measurements | REQ-HW-001 |
-| C-22 | Atomizer | `tools/atomizer/` | Plan validation, parallel fan-out, routing, failover, trace, receipts | REQ-ATOM-001, REQ-ATOM-002, REQ-ATOM-003, REQ-ATOM-004, REQ-ATOM-005 |
+| C-22 | Atomizer | `tools/atomizer/` | Plan validation, parallel fan-out, routing, failover, trace, receipts; every path that writes `CONTRACT.md` asks for the capability block, and compose gates inside the atom sandbox | REQ-ATOM-001, REQ-ATOM-002, REQ-ATOM-003, REQ-ATOM-004, REQ-ATOM-005, REQ-ATOM-006 |
 | C-23 | Conductor and job intake | `tools/conductor/`, `tools/job/`, `tools/job-locks/`, `tools/lib/` | Lane supervision, job event log, lock registry, typed exit codes, shared locks, headroom and exit files | REQ-COND-001, REQ-COND-002, REQ-JOB-001, REQ-LOCK-001, REQ-ERR-001, REQ-COND-003, REQ-COND-004, REQ-JOB-002, REQ-JOB-003, REQ-ERR-002 |
 | C-24 | Hillclimb | `tools/hillclimb/` | Lessons ledger across rounds, fan-out planning, round scoring, stage policy passed to the default and a campaign's own runner | REQ-HILL-001, REQ-HILL-002, REQ-HILL-003 |
 | C-25 | Factory campaign and portability | `tools/factory_campaign/`, `tools/factory_portability/` | Campaign state recovery, model journal, bounded repair, encrypted checkpoints, Wasmtime qualification, stage resume and transfer to a second host | REQ-FACTORY-001, REQ-FACTORY-002, REQ-FACTORY-005 |
 | C-26 | Rust lane | `tools/rust_lane/` | Reproducible build of any Rust kernel crate that meets the kernel contract, admitted only through C-17's frozen-task conformance; two frozen tasks (P-06, tally) | REQ-RUST-001 |
-| C-27 | Repository checks | `tools/check-docs.py`, `tools/check-privacy.py`, `tools/check_trace.py`, `tools/gen_data_dictionary.py`, `tools/experiments_index.py`, `tools/source_sums.py`, `tools/experiment_id.py`, `tests/test_reachability.py`, `ruff.toml` | Links, digests, privacy, index, allocation, reachability, trace and data-dictionary checks; lint and coverage targets (`make coverage` failing on a test failure and the CI `coverage` job are untested, GAP-EF-016) | REQ-DOCS-001, REQ-REPO-001, REQ-REPO-002, REQ-REPO-003, REQ-REPO-004, REQ-REPO-005, REQ-REPO-006, REQ-REPO-007, REQ-REPO-009 |
+| C-27 | Repository checks | `tools/check-docs.py`, `tools/check-privacy.py`, `tools/check_trace.py`, `tools/gen_data_dictionary.py`, `tools/experiments_index.py`, `tools/source_sums.py`, `tools/experiment_id.py`, `tests/test_reachability.py`, `ruff.toml`, `tools/check_comments.py` | Links, digests, privacy, index, allocation, reachability, trace and data-dictionary checks; lint (including the no-comments check) and coverage targets | REQ-DOCS-001, REQ-REPO-001, REQ-REPO-002, REQ-REPO-003, REQ-REPO-004, REQ-REPO-005, REQ-REPO-006, REQ-REPO-007, REQ-REPO-009, REQ-REPO-010 |
 | C-28 | Release records | `tools/gen_release_docs.py` | Generates the test report and version description from recorded runs | REQ-REPO-008 |
 | C-29 | Factory runtime | `tools/factory_runtime/` | Job specs, scheduler, recovery, egress, sandboxed worker with the `bridge.py` relay (local-provider turns without `node` or `codex`), protected provider call, WebAssembly runner on the pinned Wasmtime wheel | REQ-FACTORY-003 |
-| C-30 | Glue gate CLI and project scheduler | `tools/gate/`, `tools/project-scheduler/` | Stand-alone glue check through the core gates, compiled with the `tools/asc` pin by default (its `freeze` does not require a capability block, GAP-EF-015); cross-project scheduling under token reservations | REQ-GATECLI-001, REQ-SCHED-001 |
+| C-30 | Glue gate CLI and project scheduler | `tools/gate/`, `tools/project-scheduler/` | Stand-alone glue check through the core gates, compiled with the `tools/asc` pin by default, whose `freeze` refuses a contract without a valid capability block; cross-project scheduling under token reservations | REQ-GATECLI-001, REQ-SCHED-001 |
 | C-31 | Stub pool and approved atoms | `core/runtime/stub-pool.mjs`, `tools/approved_atoms.py` | Replay stub outputs; approved-atom registry | REQ-STUB-001, REQ-FACTORY-004 |
 
 ## 5. Execution concept
@@ -275,3 +275,4 @@ synthetic identity invariant, including failure propagation.
 | 3.3 | 2026-11-09 | round 4 | Round-4 requirements allocated to C-06, C-08, C-22 to C-25 and C-27 to C-31; C-28, C-30 and C-31 now tested; C-29 and C-25 name their remaining gaps (GAP-EF-002, GAP-EF-006) | this commit |
 | 3.4 | 2026-11-09 | round 5 | REQ-GEN-011 allocated to C-07; C-18 runs in workcells; C-20 retired to `TODELETE/` (REQ-STEP-001 deleted); C-25 and C-29 gaps closed (GAP-EF-006, GAP-EF-002); C-30 compiles with the `tools/asc` pin | this commit |
 | 3.5 | 2026-11-09 | round 6 | REQ-ISO-019 allocated to C-06, REQ-KERNEL-005 to C-17, REQ-ERR-002 to C-23; C-07 requires the capability block at the freeze and checks glue against it at G7; C-17 gains a caller in C-26's admission; C-18 reads snapshots through synchronous host calls; C-26 admits any conforming crate; C-29 uses the pinned Wasmtime wheel; C-27 and C-30 name open gaps (GAP-EF-016, GAP-EF-015) | this commit |
+| 3.6 | 2026-11-09 | round 7 | REQ-ATOM-006 allocated to C-22 (capability block on every atomizer contract path), REQ-REPO-010 to C-27 (`tools/check_comments.py`); C-30's `freeze` checks the capability block (GAP-EF-015 closed); C-27's coverage gap closed (GAP-EF-016) | this commit |

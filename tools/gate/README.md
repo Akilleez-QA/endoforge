@@ -13,9 +13,13 @@ declarative description of its arguments, results and refusals.
 ## How it works
 
 `freeze` hashes `CONTRACT.md` and `tests.json` into `frozen.sha256`, and refuses if `kernel.ts` already exists, so the
-tests are fixed before any code. It does not check the contract's ```capability block (GAP-EF-015); `run` refuses a
-contract without one at G7. `run` compiles `kernel.ts` with the core compiler's flags (`asc --runtime stub -O3
---noAssert --maximumMemory 1024`, plus `--textFile kernel.wat`), then runs the nine core gates on `CONTRACT.md`,
+tests are fixed before any code. It also refuses, with exit 2 and no `frozen.sha256`, a `CONTRACT.md` whose
+```capability block is missing, is not JSON, has no exports, or disagrees with the tests (for example, an export with
+an `expectError` test that the block does not list under `traps`). This is the check the loop's own freeze runs
+(`capabilityProblems` in [core/runtime/x1/generator.mjs](../../core/runtime/x1/generator.mjs)).
+
+`run` compiles `kernel.ts` with the core compiler's flags (`asc --runtime stub -O3 --noAssert --maximumMemory 1024`,
+plus `--textFile kernel.wat`), then runs the nine core gates on `CONTRACT.md`,
 `tests.json`, `frozen.sha256`, `kernel.ts`, `glue.json` and the compiled module, stopping at the first gate that cannot
 continue:
 
@@ -94,17 +98,29 @@ $ node $REPO/tools/gate/gate.mjs run .
   "G2_compiles": { "ok": true, "wasmBytes": 105, "wasmSha256": "c4179aa0…" },
   "G3_exports": { "ok": true, "exports": [ "shippingCents" ] },
   "G4_tests": { "ok": true, "passed": 4, "total": 4 },
-  "G6_bounded": { "ok": true, "maxMs": 0.073215, "fuelUsed": 116 },
+  "G6_bounded": { "ok": true, "maxMs": 0.073349, "fuelUsed": 116 },
   "G5_deterministic": { "ok": true },
   "G7_glue": { "ok": true },
-  "G9_units": { "ok": true, "checks": { … } },
+  "G9_units": { "ok": true, "checks": { "shippingCents": "unknown" } },
   "G8_nonfinite": { "ok": true, "probes": 0 }
  }
 }
 ````
 
-(The JSON is compacted here; the tool prints one key per line.) Leave the capability block out of `CONTRACT.md` and
-`freeze` still succeeds, but `run` reports `` "G7_glue": { "ok": false, "why": "CONTRACT.md has no ```capability block" } ``.
+(The JSON is compacted here; the tool prints one key per line.) In a fresh directory holding the same `tests.json` and
+only the first two lines of `CONTRACT.md` (no capability block), `freeze` refuses before any code exists, and it
+refuses a block that is not JSON too:
+
+````console
+$ node $REPO/tools/gate/gate.mjs freeze .
+refusing to freeze: CONTRACT.md has no ```capability block
+$ echo $?
+2
+$ printf 'shippingCents(grams, zone): ...\n\n```capability\n{ exports: shippingCents }\n```\n' > CONTRACT.md
+$ node $REPO/tools/gate/gate.mjs freeze .
+refusing to freeze: the ```capability block is not JSON
+````
+
 Change the zone 2 rate to 3 and `run` reports
 `"G4_tests": { "ok": false, "passed": 3, "total": 4 }` and `promotable: false`. Edit `tests.json` to make the tests
 pass instead, and it stops at the first gate:
@@ -133,11 +149,9 @@ The atomizer finds this tool through `toolchain.gate` in [policy.json](../atomiz
 ## Limits
 
 - G5 repeats the same call order.
-- `freeze` freezes a contract that has no capability block; the loop's freeze refuses one (REQ-GEN-011). The missing
-  block is caught only at G7 by `run` (GAP-EF-015).
 - `glue.schema.json` is a copy of the core schema, kept because the atomizer puts it in worker prompts;
   [test_gate_structured.mjs](../test_gate_structured.mjs) fails if the two differ.
 - That test runs the CLI end to end. When the pinned `asc` is not installed it uses a fixture compiler that returns
   prebuilt modules for its kernels. `make gate-test`, part of `make test`, runs it.
 
-Engineering record: component C-30, REQ-GATECLI-001; open gap GAP-EF-015.
+Engineering record: component C-30, REQ-GATECLI-001 (the capability check at `freeze` closed GAP-EF-015 in round 7).

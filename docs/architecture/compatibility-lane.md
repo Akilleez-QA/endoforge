@@ -45,7 +45,12 @@ flowchart TD
    `noEmitOnError`, plus a declaration file for the scalar types.
 2. The checker type checks and emits it. By default (`check: 'fused'`) this happens inside the cohort, in the Worker
    that then runs the guest; `'sibling'` uses checker Workers in the same cohort process; `'supervisor'` checks on the
-   calling thread. A check with diagnostics is refused with reason `typescript`.
+   calling thread. A check with diagnostics is refused with reason `typescript`. In the cohort placements one attempt
+   is one handoff in and one result out: the preparer checks and emits, then the emitted modules run in fresh guest
+   contexts, and a Worker lost part-way costs only that attempt. The preparer runs in the Worker's own realm before
+   the guest's context exists, so a preparer that fails is not a verdict on the candidate: it comes back as a
+   `failure`, never a refusal, and the attempt resolves to `outcome_unknown`, as it does when the check is lost. An
+   attempt that may still have been checking when the cohort died is never attributed to the candidate.
 3. The emitted JavaScript runs twice through an adapter that calls each frozen test; the two runs must agree in status,
    output and reason.
 4. Each test is scored with the same comparison rules as [G4](gates.md#how-a-test-passes-g4). The report records
@@ -115,7 +120,11 @@ node --permission --allow-worker --no-addons --disallow-code-generation-from-str
 ```
 
 with an environment of only `TZ=UTC` and `LC_ALL=C`, working directory `/`, core dumps off, and no file-system grant
-except the pinned checker module when the cohort prepares checks. Inside it, `width` Worker isolates are kept between
+except the pinned checker module when the cohort prepares checks (`readPaths`, one `--allow-fs-read` each). The cohort
+reads that module once, checks it against its pin and compiles it once; every checking Worker gets the same compiled
+module, and the preparer's own sources arrive as text the supervisor has already checked against their pins. A
+preparer's `memoryMb` (default 1024) is what one preparation may hold outside the V8 heap, and it is added to the
+cohort's RSS limit for each Worker. Inside it, `width` Worker isolates are kept between
 attempts, plus spares; each attempt gets a fresh guest context with a closed allowlist of standard globals.
 
 | Property | Rule |

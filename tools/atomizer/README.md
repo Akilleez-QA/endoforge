@@ -41,31 +41,68 @@ flowchart TD
    needs, then runs the worker under `bwrap` with PID, IPC and UTS namespaces unshared. A failed attempt is retried
    (`--retries`, default 1).
 4. **Record.** `receipt/atoms/<id>.json` records every attempt and the SHA-256 of every output; `trace.jsonl` records
-   timing spans; the ledger records run, atom and attempt events.
+   timing spans (never prompts, environments or credential contents); the ledger records run, atom and attempt events.
+   The run summary carries `lessons`: failed launches, retries (a preflight attempt is not a retry), account
+   failovers, the slowest atom and queue waits (from ready to started, which concurrency or a throttle causes).
 5. **Verify.** `verify.mjs` checks every atom finished, every output still matches its receipt, and runs each
    `command` acceptance check inside a sandbox.
 
 Atom kinds include `contract`, `tests`, `kernel`, `glue`, `compose`, `review`, `repair`, `direct`, `asset` (Blender
 builds on the CPU) and `other`. For kernel work, policy gives each kind a fixed procedure: the `compose` atom
-assembles the parts, freezes `CONTRACT.md` and `tests.json` before any code, and runs [gate](../gate/README.md).
+assembles the parts, freezes `CONTRACT.md` and `tests.json` before any code, and runs [gate](../gate/README.md) G1 to
+G9. A model compose atom's declared outputs are set to the fixed files the compose helper writes, and references to
+anything else are remapped. With `policy.repairStage` on (unless `--no-augment`), the scheduler adds a fixed repair
+stage after compose: a draft compose, one repair atom that sees only the failing tests (its preflight,
+`repair-noop.mjs`, skips the model when none failed), then the final compose, before any review.
+
+### The capability block
+
+The freeze refuses a `CONTRACT.md` that does not end with a valid ```capability block (exports, argument kinds,
+units, ranges, precision, codes and traps; see [gate](../gate/README.md)), and G7 refuses glue that disagrees with it.
+So every path that writes `CONTRACT.md` asks for the block in the same words the candidate loop's specification
+prompts use (`capabilityRule` in [core/runtime/x1/generator.mjs](../../core/runtime/x1/generator.mjs)):
+
+- `atomize.mjs` tells the planning model that the contract atom must end `CONTRACT.md` with the block and its worker
+  prompt must say so;
+- the `contract` kind procedure in [policy.json](policy.json) appends the rule to every contract atom's prompt;
+- `plan-template.mjs`'s contract atom asks for it, and its glue atom reads the contract so it can match the block;
+- the `direct` procedure asks for it before the worker freezes.
+
+The `glue` procedure tells a glue atom that sees `CONTRACT.md` to declare exactly what the block declares.
+`compose-kernel.mjs` checks the contract atom's `CONTRACT.md` before it merges anything: with no block, or a block that
+is not JSON, it exits 3 and names the atom, so nothing is frozen or compiled. A block that is JSON but disagrees with
+the tests is refused by the gate's `freeze` (exit 4 from `compose-kernel.mjs`).
+
+Until round 7 no atomizer prompt asked for the block, so every real atomizer run after round 6 failed at the freeze or
+at G7; the tests did not show it because they use script workers.
+
+### Toolchains
+
+`policy.toolchain` maps a name to a host path, and `policy.kindToolchain` lists the names each kind gets, mounted
+read-only. The atoms that run the gate (`compose`, `compose-draft`, `repair` and `direct`) get `gate` (`tools/gate`),
+`gate-core` (`core`, which the gate imports), `gate-asc` (`tools/asc`, the pinned compiler) and `gate-asc-trust`
+(`experiments/assemblyscript-toolchain.mjs`, which the pin checks against), plus `asc` (`tools/asc/node_modules`).
+Kernel atoms get `node` and `asc`. `ENDOFORGE_TOOLCHAIN_<NAME>` overrides a path.
 
 ## Use it
 
 | Script | What it does | Calls a model |
 |---|---|---|
 | `bin/schedule.mjs run <atoms.json> --run-dir <dir>` | Validates, plans and runs every atom. Options: `--concurrency` (8; 3 with the Codex backend), `--retries` (1), `--timeout-ms` (900000), `--policy`, `--force`, `--no-augment`. A model atom refused by the subscription guard fails with exit 78 and its reason, without a retry, and the run still writes its receipts. | Only model atoms |
-| `bin/verify.mjs <run-dir> [--policy file]` | Checks a finished run against its receipts and acceptance commands. | No |
+| `bin/verify.mjs <run-dir> [--policy file]` | Checks a finished run against its receipts and acceptance commands. Its usage text lists `--policy`, but it always loads the `policy.json` next to the tool and ignores the flag. | No |
 | `bin/report.mjs <run-dir>` | Markdown timeline, tokens and realized speedup. | No |
 | `bin/speed.mjs <run-dir or fanout-dir>... [--out SPEED.md] [--json speed.json]` | Wall time broken down by stage. | No |
-| `bin/fanout.mjs <atoms.json...> --out-dir <dir>` | Several DAGs as one pool, then verify and report on each. A graph the scheduler refuses is recorded in `fanout.json` and the others still run; exit 1 when any request fails verification. | Only model atoms |
+| `bin/fanout.mjs <atoms.json...> --out-dir <dir> [--parallel-runs 4] [--per-run-concurrency 4]` | Several DAGs as one pool, then verify and report on each. A graph the scheduler refuses is recorded in `fanout.json` and the others still run; exit 1 when any request fails verification. | Only model atoms |
 | `bin/atomize.mjs <need.md> --out <dir> [--model sonnet\|opus\|codex] [--fixture atoms.json]` | A model writes `atoms.json`; the script validates, repairs once and plans. `--fixture` skips the model. A model call the subscription guard refuses ends the attempt loop with `valid: false`. | Yes, unless `--fixture` |
-| `bin/plan-template.mjs <need.md> --out <dir>` | One model call writes the interface; the fixed kernel template is expanded around it. | Yes |
-| `bin/direct.mjs <need.md> --out <atoms.json>` | Writes a one-atom `direct` DAG (one worker does everything). | No (running it does) |
-| `bin/cutover.mjs <ladder.json> --out-dir <dir> [--arms direct,atomized,templated] [--cases id,id]` | Paired arms (default direct and atomized) on the same gates. Exits 2 on missing arguments or an unknown arm. | Yes |
-| `bin/compose-kernel.mjs --id <need> --in /in --out /out --work /work --gate <gate.mjs>` | Merges kernel parts, freezes, runs the gates. Runs inside a compose atom. | No |
-| `bin/testcheck.mjs strip <tests> <cases>` or `merge <tests> <computed> <out> <report>`, `bin/repair-noop.mjs`, `bin/isolate-exec.mjs` | Helpers used inside atoms. `testcheck.mjs` prints its usage and exits 2 when the arguments are missing. | No |
-| `bin/ledger-export.mjs [--out dir]` | Flattens the ledger ([LEDGER.md](LEDGER.md)) into CSV tables. | No |
-| `bin/backfill.mjs`, `bin/bench.mjs [--atoms f] [--n N]` | One-time ledger backfill, and a scheduler benchmark. `--atoms` defaults to [examples/example.json](examples/example.json); a missing file is refused with exit 2. `--stub --replay <run>` uses a stub Codex. | Only for model atoms |
+| `bin/plan-template.mjs <need.md> --out <dir> [--model sonnet] [--effort low] [--reviews 2] [--deliberate] [--codex-effort minimal] [--thinking <tokens>] [--no-test-check] [--fixture <interface-lines.txt>]` | One model call writes the interface; the fixed kernel template is expanded around it. `--fixture` reads the interface lines from a file instead of a model. Prints its usage and exits 2 without `<need.md>` or `--out`. | Yes, unless `--fixture` |
+| `bin/direct.mjs <need.md> --out <atoms.json> [--model sonnet\|opus] [--effort low\|medium\|high]` | Writes a one-atom `direct` DAG (one worker does everything). | No (running it does) |
+| `bin/cutover.mjs <ladder.json> --out-dir <dir> [--cases id,id] [--rep 1] [--parallel-cases 2] [--dag-concurrency 6] [--arms direct,atomized,templated]` | Paired arms (default direct and atomized) on the same gates. Exits 2 on missing arguments or an unknown arm. | Yes |
+| `bin/compose-kernel.mjs --id <need> --in /in --out /out --work /work --gate <gate.mjs> [--preflight]` | Merges kernel parts, freezes, runs the gates. Runs inside a compose atom. Exits 2 with its usage when an option is missing, 3 when an input is missing or the contract atom's `CONTRACT.md` has no valid capability block, and 4 when the freeze fails. Test arrays are merged as text, so `1e999` (Infinity) survives. `--preflight` exits 10 unless G2 (compiles) passed. | No |
+| `bin/testcheck.mjs strip <tests> <cases>` or `merge <tests> <computed> <out> <report>` | Blind-test expectation check (S-09), used inside atoms: `strip` writes the test inputs without expected values; `merge` keeps a test the independent computation agrees with (within the larger of `tol` and 0.2% of the value), drops one it disagrees with, keeps and flags one it gave no answer for, and widens `tol` when they agree but differ by more than it. Prints its usage and exits 2 when the arguments are missing. | No |
+| `bin/repair-noop.mjs --failures /in/<draft>/failures.json --map '<json [{"from","to"}]>'` | Preflight of the repair atom: when the draft's `failures.json` is an empty list, copies every kernel part to its declared output unchanged, writes `repair-notes.md` and exits 0; otherwise (or when the file cannot be read) exits 10 so the model repair runs. | No |
+| `bin/isolate-exec.mjs` | Host trampoline for Codex workers: runs the sandbox command from `ENDOFORGE_ISOLATE_SPEC` with `CODEX_HOME` bound at its own path. It checks only that `CODEX_HOME` is a directory, never its contents. | No |
+| `bin/ledger-export.mjs [--out dir]` | Flattens the ledger ([LEDGER.md](LEDGER.md)) into the derived, regenerable tables `attempts.csv`, `atoms.csv`, `runs.csv`, `pools.csv`, `atomizations.csv` and `reviews.csv`. `--out` defaults to `tables/` in the ledger directory. | No |
+| `bin/backfill.mjs`, `bin/bench.mjs [--atoms f] [--n N]` | `backfill.mjs` rebuilds ledger events from run directories and atomization receipts made before the ledger existed; every event it writes carries `backfilled: true` and its source paths, and a run already in the ledger is skipped. `bench.mjs` is a scheduler benchmark: `--atoms` defaults to [examples/example.json](examples/example.json); a missing file is refused with exit 2. `--stub --replay <run>` uses a stub Codex. | Only for model atoms |
 
 ## Example
 
@@ -116,7 +153,10 @@ The main rules `lib/validate.mjs` applies:
   or `-`), a `kind`, a `contract` of at least 20 characters, one or more `outputs` with relative paths, a `verify`
   field and a `worker`.
 - `worker.model` is `sonnet`, `opus`, `codex` or `script`. A script worker needs `command` (an array); a model worker
-  needs `prompt`. `worker.binds` may mount extra read-only trees, only from under `policy.bindRoots`.
+  needs `prompt`. `worker.binds` may mount extra trees (an asset checkout, a reference pack) into the sandbox. Binds
+  are always read-only, the host path must be under `policy.bindRoots`, and the guest path must be absolute and may not
+  sit under `/in`, `/out`, `/work` or a system path. `worker.timeoutSec` sets the atom's own timeout, capped at
+  `policy.maxAtomTimeoutSec`; without it the run's `--timeout-ms` applies.
 - `size.work` and `size.interface` are a 1 to 5 estimate of the atom's work and of how much interface it shares with
   others; `size.work` may not exceed `policy.singleShotMaxWork` (3), so an atom stays small enough for one shot.
 - Inputs name an earlier atom or `need`. Cycles and `policy.forbiddenEdges` are refused.
@@ -132,7 +172,7 @@ The main rules `lib/validate.mjs` applies:
 | `CODEX_POOL_STATE_DIR` | `.codex-pool` in the home directory | Where the scheduler reads the pool log. |
 | `ENDOFORGE_TOOLCHAIN_<NAME>` | `policy.toolchain.<name>` | Host path of a toolchain, for example `ENDOFORGE_TOOLCHAIN_CODEX`. |
 | `ENDOFORGE_TRACE` | on | `0` turns off `trace.jsonl`. |
-| `ENDOFORGE_CLAUDE_ACCOUNTS` | `.claude-accts` in the home directory | One Claude config directory per login, each with `.credentials.json`; each `claude` launch mounts the next one. |
+| `ENDOFORGE_CLAUDE_ACCOUNTS` | `.claude-accts` in the home directory | One Claude config directory per login, each with `.credentials.json`; each `claude` launch mounts the next one read-write at its own path and sets `CLAUDE_CONFIG_DIR` to it, so a token refresh lands in the pool folder. A credential copied into a throwaway home could rotate the original's refresh token away. The subscription guard reads the credential's metadata, never its tokens. |
 | `ENDOFORGE_CREDENTIAL_HOME` | unset | With no logins above, a home template whose credential files are copied into the sandbox home. |
 
 The launcher never copies the current user's credentials implicitly, and every `claude` launch passes the
@@ -153,6 +193,10 @@ other `test/*.test.mjs` files, with stubs instead of models. `test/tools-gaps.te
 atoms, and that `testcheck.mjs` prints its usage when arguments are missing. `test/commands.test.mjs` drives `atomize`
 (with `--fixture`), `direct`, `fanout`, `report` and `cutover` end to end on script-worker fixtures
 ([test/fixtures/synthetic-pair.json](test/fixtures/synthetic-pair.json)); model arms run with no login, so the
-subscription guard refuses them and the test checks the recorded refusal (REQ-ATOM-005).
+subscription guard refuses them and the test checks the recorded refusal (REQ-ATOM-005). The same file checks the
+rendered prompts of `atomize`, a planned contract atom, the `direct` worker and the templated planner for the
+capability rule and the gate labels G1 to G9, checks that `compose-kernel.mjs` refuses a contract without a valid
+block before freezing, and runs the compose helper inside a real sandbox with the policy's compose toolchain until the
+kernel is promotable (REQ-ATOM-006).
 
-Engineering record: component C-22, requirements REQ-ATOM-001 to REQ-ATOM-005.
+Engineering record: component C-22, requirements REQ-ATOM-001 to REQ-ATOM-006.

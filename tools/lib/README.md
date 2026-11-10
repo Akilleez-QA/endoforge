@@ -26,15 +26,19 @@ mistaken for a pass or a zero.
 
 ## Modules
 
-- [errors.mjs](errors.mjs): `EXIT`, `classify(status)` (`'ok'`, `'transient'`, `'stop'` or `'fail'`), `runTyped` and
-  `runTypedAsync` (on 75 they wait and retry with doubling backoff, defaults `baseMs` 2000, `capMs` 60000, `maxWaitMs`
-  600000; on 78 or any other failure they return at once with `{status, kind, attempts, waitedMs, stdout, stderr}`),
+- [errors.mjs](errors.mjs): `EXIT`, `classify(status)` (`'ok'`, `'transient'`, `'stop'` or `'fail'`; a `null`
+  status, from a signal or a spawn error, is `'fail'`), `runTyped` and `runTypedAsync` (on 75 they wait and retry with
+  doubling backoff, defaults `baseMs` 2000, `capMs` 60000, `maxWaitMs` 600000; on 78 or any other failure they return
+  at once with `{status, kind, attempts, waitedMs, stdout, stderr}`; `runTypedAsync` does not block the event loop, so
+  the conductor can run the checks of different atoms at once),
   `StopError` (`exitCode` 78), `unscored(why)` and `isScored(x)`.
-- [lock.mjs](lock.mjs): `acquire(target, {waitMs, pollMs, orphanMs})` creates the directory `<target>.lock` with the
-  owner's pid, host and time. A lock whose owner pid is dead on this host, or an ownerless lock older than `orphanMs`,
-  is reclaimed. After `waitMs` (default 60000) it throws `LockBusy` (`exitCode` 75). `withLock(target, fn, opts)` runs
-  `fn` under the lock and always releases it. `writeJSONAtomic(file, value)` writes a temp file, fsyncs, renames and
-  fsyncs the directory.
+- [lock.mjs](lock.mjs): locks for every shared mutable file, such as a manifest two writers update or a branch two
+  collects commit to. `acquire(target, {waitMs, pollMs, orphanMs})` creates the directory `<target>.lock` with the
+  owner's pid, host and time; `mkdir` is atomic, so only one process gets it. A lock whose owner pid is dead on this
+  host, or an ownerless lock older than `orphanMs`, is reclaimed by renaming it aside first, so of several waiters
+  only one reclaims it. After `waitMs` (default 60000) it throws `LockBusy` (`exitCode` 75). `withLock(target, fn,
+  opts)` runs `fn` under the lock and always releases it. `writeJSONAtomic(file, value)` writes a temp file, fsyncs,
+  renames and fsyncs the directory.
 - [headroom.mjs](headroom.mjs): `headroom(env, sample)` returns `{ok, load1, availGb, maxLoad, reserveGb}`; `ok` is
   true when the one-minute load is below `maxLoad` and available memory is at least `reserveGb`. `limits(env)` and
   `availableGb()` are the parts.
