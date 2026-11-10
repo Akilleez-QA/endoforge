@@ -2,9 +2,20 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { EVENTS, LEDGER_DIR } from '../lib/ledger.mjs';
-const out = path.resolve(process.argv.includes('--out') ? process.argv[process.argv.indexOf('--out') + 1] : path.join(LEDGER_DIR, 'tables'));
+const USAGE = 'usage: ledger-export.mjs [--out dir]  (reads the ledger events file; ATOMIZER_LEDGER_DIR overrides the ledger directory)';
+const refuse = (why) => { console.error(`${why}\n${USAGE}`); process.exit(2); };
+let outArg = null;
+for (let i = 2; i < process.argv.length; i++) {
+  const a = process.argv[i];
+  if (a === '--help' || a === '-h') { console.log(USAGE); process.exit(0); }
+  else if (a === '--out') { outArg = process.argv[++i]; if (!outArg || outArg.startsWith('--')) refuse('--out needs a directory'); }
+  else refuse(`unknown argument ${a}`);
+}
+if (!fs.existsSync(EVENTS) || !fs.statSync(EVENTS).isFile()) refuse(`no ledger events at ${EVENTS}`);
+const ev = [];
+for (const [n, l] of fs.readFileSync(EVENTS, 'utf8').split('\n').entries()) { if (!l.trim()) continue; try { ev.push(JSON.parse(l)); } catch (e) { console.error(`${EVENTS}:${n + 1}: not a JSON event: ${e.message}`); process.exit(1); } }
+const out = path.resolve(outArg ?? path.join(LEDGER_DIR, 'tables'));
 fs.mkdirSync(out, { recursive: true });
-const ev = fs.readFileSync(EVENTS, 'utf8').trim().split('\n').filter(Boolean).map((l) => JSON.parse(l));
 const csv = (rows, cols) => [cols.join(','), ...rows.map((r) => cols.map((c) => { const v = r[c]; if (v == null) return ''; const s = typeof v === 'object' ? JSON.stringify(v) : String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; }).join(','))].join('\n') + '\n';
 const runs = {}; for (const e of ev) if (e.event === 'run.start') runs[e.runId] = { runId: e.runId, poolId: e.poolId, label: e.label ?? null, need: e.need, at: e.at ?? e.ts, backfilled: !!e.backfilled, atoms: e.atoms, concurrency: e.concurrency, planTotal: e.plan?.total, planCritical: e.plan?.critical, speedupBound: e.plan?.speedupBound, width: e.plan?.width, load1Start: e.load?.load1 ?? null, gitHead: e.context?.git?.head ?? null, policySha: e.context?.policySha256?.slice(0, 16) ?? null };
 for (const e of ev) { const r = runs[e.runId]; if (!r) continue;
