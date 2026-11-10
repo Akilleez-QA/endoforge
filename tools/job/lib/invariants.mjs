@@ -14,13 +14,15 @@ export const INVARIANTS = [
   ['I13', 'Constraint focus', 'name the binding constraint; duplicates only there; stream instead of barriers'],
   ['I14', 'Learning loop', 'every mistake logged with its cost; every lesson becomes a tool change or a tracked gap and reaches the next job'],
   ['I15', 'Contract capability', 'each criterion names the atoms that satisfy it, and their contracts can express what it requires '],
+  ['I16', 'Records after freeze', 'no collect gate or atom check runs a records check (trace rows, the matrix); the coordinator writes records after the atoms freeze'],
+  ['I17', 'Calibrated before staging', 'every check runs once on the base tree before staging, its outcome recorded with why; a check broken by an import, module or path error is refused'],
 ].map(([id, name, rule]) => ({ id, name, rule }));
 export const INVARIANT = Object.fromEntries(INVARIANTS.map((i) => [i.id, i]));
 export const GATES = [
   { id: 'pontificate', name: 'Pontificate', what: 'the verbatim goal, the primary sources and a decompressed brief', invariants: ['I1'] },
   { id: 'observe', name: 'Observe', what: 'the truth and reference package on durable disk', invariants: ['I2', 'I4', 'I7'] },
   { id: 'orient', name: 'Orient', what: 'atoms, seams, the critical path, the strongest rival, and contracts able to express the criteria', invariants: ['I5', 'I6', 'I13', 'I15'] },
-  { id: 'decide', name: 'Decide', what: 'precommitted, calibrated checks, the smoke receipt, gates and the user\'s confirmation', invariants: ['I3', 'I9', 'I11'] },
+  { id: 'decide', name: 'Decide', what: 'precommitted, calibrated checks run once on the base tree, no records check before freeze, the smoke receipt, gates and the user\'s confirmation', invariants: ['I3', 'I9', 'I11', 'I16', 'I17'] },
   { id: 'orchestrate', name: 'Orchestrate', what: 'the bounded fan-out: throttle, dial, health', invariants: ['I8'] },
   { id: 'loop', name: 'Loop', what: 'the ratchet, claims bounded by receipts, lessons fed forward', invariants: ['I10', 'I12', 'I14'] },
 ];

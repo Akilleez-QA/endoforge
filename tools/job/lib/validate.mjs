@@ -23,7 +23,91 @@ export function manifestPaths(job) {
   return out;
 }
 
-const readProof = (p, offline) => { try { return !offline && p && fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf8')) : null; } catch { return null; } };
+export const RECORDS_CHECK = /check[_-]trace\w*|test_\w*trace\w*/;
+const MAKE = /^(g?make|\$\(MAKE\)|\$\{MAKE\})$/;
+const WITH_ARG = new Set(['-C', '-f', '-I', '-o', '-W', '--directory', '--file', '--makefile']);
+
+export function makeTargets(cmd) {
+  const out = [];
+  for (const seg of String(cmd).split(/&&|\|\||[;|\n]/)) {
+    const t = seg.trim().split(/\s+/).filter(Boolean);
+    let i = 0; while (i < t.length && /^\w+=/.test(t[i])) i++;
+    if (!MAKE.test(t[i] ?? '')) continue;
+    const goals = [];
+    for (let j = i + 1; j < t.length; j++) {
+      const w = t[j];
+      if (/^\d*[<>]/.test(w)) break;
+      if (WITH_ARG.has(w)) { j++; continue; }
+      if (w.startsWith('-') || w.includes('=') || w.includes('"') || w.includes('\'')) continue;
+      goals.push(w);
+    }
+    out.push(...(goals.length ? goals : [null]));
+  }
+  return out;
+}
+
+export function makeRules(text) {
+  const rules = new Map();
+  let cur = null, first = null;
+  for (const line of String(text).split('\n')) {
+    if (line.startsWith('\t')) { for (const t of cur ?? []) rules.get(t).recipe.push(line.slice(1)); continue; }
+    if (!line.trim() || line.trimStart().startsWith('#')) continue;
+    const m = /^([^\s:=#$][^:=#]*?)\s*::?(?!=)\s*([^;#]*)(?:;(.*))?$/.exec(line);
+    if (!m) { cur = null; continue; }
+    cur = m[1].trim().split(/\s+/);
+    for (const t of cur) {
+      if (!rules.has(t)) rules.set(t, { prereqs: [], recipe: [] });
+      rules.get(t).prereqs.push(...m[2].trim().split(/\s+/).filter(Boolean));
+      if (m[3]) rules.get(t).recipe.push(m[3]);
+      if (!first && !t.startsWith('.') && !t.includes('%')) first = t;
+    }
+  }
+  rules.first = first;
+  return rules;
+}
+
+const readMake = (repo) => { try { return makeRules(fs.readFileSync(path.join(repo, 'Makefile'), 'utf8')); } catch { return null; } };
+
+function targetReaches(goal, rules, seen) {
+  const t = goal ?? rules.first;
+  if (!t || seen.has(t)) return null;
+  seen.add(t);
+  const r = rules.get(t);
+  if (!r) return null;
+  for (const line of r.recipe) { const hit = recordsCheck(line, rules, seen); if (hit) return `${t} → ${hit}`; }
+  for (const p of r.prereqs) { const hit = targetReaches(p, rules, seen); if (hit) return `${t} → ${hit}`; }
+  return null;
+}
+
+export function recordsCheck(cmd, rules = null, seen = new Set()) {
+  const text = Array.isArray(cmd) ? cmd.join(' ') : String(cmd ?? '');
+  const m = RECORDS_CHECK.exec(text);
+  if (m) return m[0];
+  if (!rules) return null;
+  for (const goal of makeTargets(text)) { const hit = targetReaches(goal, rules, seen); if (hit) return `make ${goal ?? ''} (${hit})`.replace('make  (', 'make ('); }
+  return null;
+}
+
+const BROKEN = [
+  [/ModuleNotFoundError[^\n]*|No module named[^\n]*/, 'a Python import fails'],
+  [/ERR_MODULE_NOT_FOUND[^\n]*|Cannot find module[^\n]*/, 'a JavaScript import fails'],
+  [/Could not find[^\n]*/, 'a path the command names does not exist'],
+  [/[^\n]*\bENOENT\b[^\n]*/, 'a path or program the command names does not exist'],
+  [/No rule to make target[^\n]*/, 'make has no such target'],
+  [/can't open file[^\n]*/, 'a script the command names does not exist'],
+];
+
+export function classifyBaseline({ status, signal = null, output = '', timedOut = false, ms = 0 }) {
+  const text = String(output ?? '');
+  if (timedOut) return { status: 'failed', exit: status, why: `timed out after ${ms} ms` };
+  if (status === 0) return { status: 'passed', exit: 0, why: `exited 0 in ${ms} ms` };
+  for (const [re, what] of BROKEN) { const m = re.exec(text); if (m) return { status: 'broken', exit: status, why: `${what}: ${m[0].trim().slice(0, 300)}` }; }
+  if (status === 127 || status === 126) return { status: 'broken', exit: status, why: `the command was not found or cannot run (exit ${status}): ${text.trim().split('\n').at(-1)?.slice(0, 300) ?? ''}` };
+  const tail = text.trim().split('\n').filter(Boolean).at(-1)?.slice(0, 300);
+  return { status: 'failed', exit: status, why: `${signal ? `killed by ${signal}` : `exited ${status}`}${tail ? `: ${tail}` : ''}` };
+}
+
+const readProof =(p, offline) => { try { return !offline && p && fs.existsSync(p) ? JSON.parse(fs.readFileSync(p, 'utf8')) : null; } catch { return null; } };
 
 const RULES = {
   pontificate(job, x) {
@@ -138,6 +222,22 @@ const RULES = {
     const missing = engines.filter((e) => smoke?.engines?.[e] !== true);
     if (missing.length) E('I9', `no smoke receipt for ${missing.join(', ')} (one atom per engine before the wide launch)`);
     if (smoke && Object.values(smoke.engines ?? {}).some(Boolean) && !smoke.receipt) E('I12', 'the smoke proof claims a pass without a receipt path');
+    const after = 'records are written after freeze by the coordinator\'s records pass, so a records check run before then fails every atom; run it in the records pass instead';
+    const gates = [['conductor.gate', job.conductor?.gate], ...atoms.map((a) => [`atom ${a.id}'s gate`, a.gate])];
+    for (const [where, g] of gates) { const hit = g && recordsCheck(g, x.make); if (hit) E('I16', `${where} runs a records check (${hit}); ${after}`); }
+    for (const c of criteria) {
+      const hit = c.check?.run && recordsCheck(c.check.run, x.make);
+      if (!hit) continue;
+      const by = atoms.filter((a) => (a.checks ?? []).includes(c.id)).map((a) => a.id);
+      E('I16', `criterion ${c.id}${by.length ? ` (a check of atom ${by.join(', atom ')})` : ''} runs a records check (${hit}); ${after}`);
+    }
+    for (const c of criteria) {
+      if (c.check?.kind === 'human' || !c.check?.run) continue;
+      const b = job.proofs?.baseline?.checks?.[c.id];
+      if (b && b.run === c.check.run && b.status === 'broken') E('I17', `criterion ${c.id}: its check is broken on the base tree (${b.why}); fix the command (guard a file an atom will create with test -f) and stage again`);
+      else if (x.requireBaseline && !b) E('I17', `criterion ${c.id}: its check has not been calibrated on the base tree (job.mjs stage runs each check once in a throwaway worktree)`);
+      else if (x.requireBaseline && b.run !== c.check.run) E('I17', `criterion ${c.id}: its check changed since it was calibrated on the base tree; stage again`);
+    }
     if (!job.proofs?.lessons?.retrieved) E('I14', 'open lessons from earlier jobs of this kind have not been retrieved into the card (job.mjs card)');
     if (!x.confirmation) E('I1', 'the job card has not been confirmed by the user (job.mjs card, then job.mjs confirm)');
     else if (!x.confirmation.ok) E('I1', x.confirmation.why);
@@ -164,16 +264,16 @@ const RULES = {
 };
 
 export const CITED = { I1: ['pontificate', 'decide'], I2: ['observe', 'orient'], I3: ['decide'], I4: ['observe'], I5: ['orient'], I6: ['orient'],
-  I7: ['observe'], I8: ['orchestrate'], I9: ['decide'], I10: ['decide', 'loop'], I11: ['decide'], I12: ['decide', 'loop'], I13: ['orient'], I14: ['pontificate', 'decide', 'loop'], I15: ['orient'] };
+  I7: ['observe'], I8: ['orchestrate'], I9: ['decide'], I10: ['decide', 'loop'], I11: ['decide'], I12: ['decide', 'loop'], I13: ['orient'], I14: ['pontificate', 'decide', 'loop'], I15: ['orient'], I16: ['decide'], I17: ['decide'] };
 
-export function validate(job, { gate = 'orchestrate', offline = false, volatile = process.env.ENDOFORGE_VOLATILE ? process.env.ENDOFORGE_VOLATILE.split(':') : VOLATILE, confirmation = undefined, health = null } = {}) {
+export function validate(job, { gate = 'orchestrate', offline = false, volatile = process.env.ENDOFORGE_VOLATILE ? process.env.ENDOFORGE_VOLATILE.split(':') : VOLATILE, confirmation = undefined, health = null, requireBaseline = false } = {}) {
   job = job ?? {};
   const upto = gateIndex(gate);
   if (upto < 0) throw new Error(`unknown gate ${gate} (${GATES.map((g) => g.id).join(', ')})`);
   const atoms = job.atoms ?? [], criteria = job.criteria ?? [];
   const x = { kind: KINDS[job.kind], atoms, ids: new Set(atoms.map((a) => a.id)), sources: job.sources ?? [], refs: job.references ?? [], criteria,
     crit: Object.fromEntries(criteria.map((c) => [c.id, c])), gates: Object.fromEntries((job.gates ?? []).map((g) => [g.id, g])), offline, volatile,
-    confirmation: confirmation === undefined ? confirmationOf(job) : confirmation, health };
+    confirmation: confirmation === undefined ? confirmationOf(job) : confirmation, health, requireBaseline, make: !offline && job.repo ? readMake(job.repo) : null };
   const errors = [], warnings = [], gates = {};
   for (const [i, g] of GATES.entries()) {
     if (i > upto) { gates[g.id] = 'not checked'; continue; }
@@ -183,6 +283,12 @@ export function validate(job, { gate = 'orchestrate', offline = false, volatile 
   }
   if (upto >= gateIndex('orchestrate') && (job.resources ?? {}).ownerBound !== true) warnings.push({ gate: 'orchestrate', inv: 'I8', msg: 'atoms are not bound to their owner (playbook gap G4); a stopped driver leaves them running' });
   if (upto >= gateIndex('orient') && !offline) for (const d of duplicatedFacts(job)) warnings.push({ gate: 'orient', inv: 'I5', msg: `fact ${d.fact} is copied into ${d.file} (atom ${d.atom}: ${d.values.join(', ')}${d.count > 5 ? ', …' : ''}); derive it from its source` });
+  if (upto >= gateIndex('decide')) for (const c of criteria) {
+    if (c.check?.kind === 'human' || !c.check?.run) continue;
+    const b = job.proofs?.baseline?.checks?.[c.id];
+    if (!b || b.run !== c.check.run) { if (!requireBaseline) warnings.push({ gate: 'decide', inv: 'I17', msg: `criterion ${c.id}: its check ${b ? 'changed since it was' : 'has not been'} calibrated on the base tree (job.mjs stage)` }); }
+    else if (b.status === 'passed') warnings.push({ gate: 'decide', inv: 'I17', msg: `criterion ${c.id}: its check passes on the base tree before any change; make sure it can fail on the work it measures` });
+  }
   for (const g of job.gates ?? []) if (g.criticalPath) warnings.push({ gate: 'decide', inv: 'I11', msg: `gate ${g.id} sits on the critical path; run it beside the loop if it can` });
   const checked = new Set(GATES.slice(0, upto + 1).map((g) => g.id));
   const status = Object.fromEntries(INVARIANTS.map((i) => [i.id,

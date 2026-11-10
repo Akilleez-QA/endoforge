@@ -4,7 +4,7 @@ import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { validate, isProxyCheck } from '../lib/validate.mjs';
+import { validate, isProxyCheck, classifyBaseline } from '../lib/validate.mjs';
 import { loadJob, health, proofsFile } from '../lib/load.mjs';
 export { loadJob, health };
 import { INVARIANTS, GATES } from '../lib/invariants.mjs';
@@ -22,7 +22,7 @@ const out = (s) => process.stdout.write(s + '\n');
 export const USAGE = `Endoforge job intake: POODO executed as code (Pontificate → Observe → Orient → Decide → Orchestrate → Loop).
 
   job.mjs validate <job.json> [--gate pontificate|observe|orient|decide|orchestrate|loop] [--offline] [--json]
-       every rule up to the gate, each citing its invariant (I1–I15); exit 1 when the gate refuses.
+       every rule up to the gate, each citing its invariant (I1–I17); exit 1 when the gate refuses.
        At orchestrate it runs the machine health check (resources.health, default ~/.local/bin/system-safety-status).
   job.mjs calibrate <job.json> [--criterion ID]
        run each proxy check on its known-good and known-bad case (\${input}); good must pass, bad must fail.
@@ -32,7 +32,9 @@ export const USAGE = `Endoforge job intake: POODO executed as code (Pontificate 
        record the user's own confirmation of exactly that card; a relayed one is recorded and refused at Decide
   job.mjs lessons <job.json>                       the open lessons, and which atoms each reaches
   job.mjs compile <job.json> [--out dir] [--offline]   every atom's prompt from the manifest, plus manifest.json (hashes)
-  job.mjs stage <job.json>                         Decide minus the go must pass; renders JOB-<id>.md, emits STAGED
+  job.mjs stage <job.json>                         Decide minus the go must pass; then runs every criterion check once on
+       the base tree in a throwaway worktree (proofs.baseline: passed, failed or broken, and why) and refuses a broken
+       one (I17); renders JOB-<id>.md, emits STAGED
   job.mjs fire <job.json> [-- <launch command>]    only after the user's go on the staged card: Orchestrate gates,
        compiled prompts, FIRED (atoms by engine and login, prompt hash, predictions, gates, ETA, stop), then launch
   job.mjs event <job.json> <SMOKE|SCORED|GATE|NEEDS-YOU|DONE> <summary> [--detail md] [--data json]
@@ -61,6 +63,38 @@ export function calibrate(job, only = null) {
     res[c.id] = { good: run(c.check.calibration.good), bad: run(c.check.calibration.bad), at: new Date().toISOString() };
   }
   return res;
+}
+
+export function calibrateBase(job, { timeoutMs = (job.stage?.checkTimeoutSec ?? 1800) * 1000, log = () => {} } = {}) {
+  const sh = (cwd, ...args) => {
+    const r = spawnSync('git', ['-C', cwd, ...args], { encoding: 'utf8' });
+    if (r.status !== 0) throw new Error(`git ${args.join(' ')}: ${(r.stderr || r.error?.message || '').trim()}`);
+    return r.stdout.trim();
+  };
+  const base = sh(job.repo, 'rev-parse', job.stage?.base ?? 'HEAD');
+  const wt = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'job-baseline-')), 'tree');
+  const links = (job.conductor?.links ?? []).filter((l) => l.path && l.target);
+  const checks = {};
+  sh(job.repo, 'worktree', 'add', '-q', '--detach', wt, base);
+  try {
+    for (const c of job.criteria ?? []) {
+      if (c.check?.kind === 'human' || !c.check?.run) continue;
+      sh(wt, 'reset', '-q', '--hard', base);
+      sh(wt, 'clean', '-fdq', ...links.flatMap((l) => ['-e', `/${l.path}`]));
+      for (const l of links) if (!fs.existsSync(path.join(wt, l.path))) fs.symlinkSync(l.target, path.join(wt, l.path));
+      const t0 = Date.now();
+      const r = spawnSync('sh', ['-c', c.check.run], { cwd: wt, encoding: 'utf8', timeout: timeoutMs, killSignal: 'SIGKILL', maxBuffer: 64 * 1024 * 1024 });
+      const ms = Date.now() - t0;
+      const res = classifyBaseline({ status: r.status, signal: r.signal, output: `${r.stdout ?? ''}\n${r.stderr ?? ''}\n${r.error?.code === 'ETIMEDOUT' ? '' : r.error?.message ?? ''}`, timedOut: r.error?.code === 'ETIMEDOUT', ms });
+      checks[c.id] = { run: c.check.run, ...res, ms };
+      log(`${c.id}\t${res.status}\t${res.why}`);
+    }
+  } finally {
+    spawnSync('git', ['-C', job.repo, 'worktree', 'remove', '--force', wt], { stdio: 'ignore' });
+    fs.rmSync(path.dirname(wt), { recursive: true, force: true });
+    spawnSync('git', ['-C', job.repo, 'worktree', 'prune'], { stdio: 'ignore' });
+  }
+  return { base, at: new Date().toISOString(), checks };
 }
 
 function report(v) {
@@ -107,7 +141,12 @@ async function main() {
   if (cmd === 'stage') {
     const lessons = retrieveLessons(job);
     saveProof(path.resolve(file), 'lessons', { retrieved: new Date().toISOString(), count: lessons.length, keys: lessons.map((l) => l.key) });
-    const fresh = loadJob(path.resolve(file)), v = validate(fresh, { gate: 'decide', offline: has('--offline'), confirmation: { ok: true } });
+    const first = validate(loadJob(path.resolve(file)), { gate: 'decide', offline: has('--offline'), confirmation: { ok: true } });
+    const before = first.errors.filter((e) => e.inv !== 'I17');
+    if (before.length) { report({ ...first, errors: before }); console.error('stage: refused; fix these before showing the card (no check was run)'); return 1; }
+    const baseline = calibrateBase(loadJob(path.resolve(file)), { log: (s) => console.error(`baseline ${s}`) });
+    saveProof(path.resolve(file), 'baseline', baseline);
+    const fresh = loadJob(path.resolve(file)), v = validate(fresh, { gate: 'decide', offline: has('--offline'), confirmation: { ok: true }, requireBaseline: true });
     if (!v.ok) { report(v); console.error('stage: refused; fix these before showing the card'); return 1; }
     const cardFile = path.join(path.dirname(path.resolve(file)), `JOB-${fresh.id}.md`), sha = cardHash(fresh);
     fs.writeFileSync(cardFile, renderCard(fresh, v, lessons));
@@ -117,7 +156,7 @@ async function main() {
   if (cmd === 'fire') {
     const may = canFire(job, file);
     if (!may.ok) { console.error(`fire: refused (I1, I11): ${may.why}`); return 1; }
-    const v = validate(job, { gate: 'orchestrate', offline: has('--offline'), health: health(job) });
+    const v = validate(job, { gate: 'orchestrate', offline: has('--offline'), health: health(job), requireBaseline: true });
     if (!v.ok) { report(v); emit(job, file, { kind: 'GATE', summary: `refused at ${v.errors[0].gate}: ${v.errors[0].inv} ${v.errors[0].msg}`, data: { errors: v.errors } }); return 1; }
     const compiled = compileAll(job, { lessons: retrieveLessons(job), offline: has('--offline') }), dir = path.join(path.dirname(path.resolve(file)), 'compiled');
     fs.mkdirSync(dir, { recursive: true });
