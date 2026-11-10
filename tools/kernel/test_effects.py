@@ -71,6 +71,45 @@ class DeclarationTests(unittest.TestCase):
             with self.subTest(value=value):
                 self.assertEqual([d["reason"] for d in check(frozen, [value])], [reason] if reason else [])
 
+    def test_frozen_declaration_ignores_later_caller_mutation(self):
+        bounds = {"encoding": "bytes", "max_bytes": 2}
+        schema = {"type": "object", "required": ["total"], "properties": {"total": {"type": "integer"}}}
+        shaped = {"encoding": "json", "max_bytes": 64, "schema": schema}
+        value = declared(("demo", "emit", bounds), ("demo", "json", shaped))
+        frozen = declaration(value)
+        digest = frozen["sha256"]
+        bounds["max_bytes"] = 1024
+        bounds["encoding"] = "utf8"
+        schema["properties"]["total"]["type"] = "string"
+        shaped["schema"] = {}
+        value["effects"].append({"capability": "demo", "operation": "late", "payload": {"encoding": "bytes"}})
+        value["id"] = "other"
+        self.assertEqual(check(frozen, [effect(payload=b"abc")]),
+                         [{"index": 0, "capability": "demo", "operation": "emit", "reason": "payload-too-long"}])
+        self.assertEqual(check(frozen, [effect(operation="json", payload=b'{"total":"x"}')]),
+                         [{"index": 0, "capability": "demo", "operation": "json",
+                           "reason": "payload-schema-mismatch"}])
+        self.assertEqual(check(frozen, [effect(operation="late")])[0]["reason"], "undeclared-effect")
+        self.assertEqual(frozen["sha256"], digest)
+        self.assertEqual(frozen["id"], SCHEMAS[2])
+        self.assertEqual(len(frozen["effects"]), 2)
+        self.assertEqual(frozen["sha256"], declaration(declared(
+            ("demo", "emit", {"encoding": "bytes", "max_bytes": 2}),
+            ("demo", "json", {"encoding": "json", "max_bytes": 64, "schema": {
+                "type": "object", "required": ["total"], "properties": {"total": {"type": "integer"}}}})))["sha256"])
+
+    def test_non_finite_json_numbers_are_refused(self):
+        frozen = declaration(declared(("demo", "json", {"encoding": "json", "max_bytes": 64})))
+        for payload in (b'{"x":1e999}', b'{"x":-1e999}', b"1e400", b"[0, -2E+999]", b"NaN", b"Infinity",
+                        b'{"x":-Infinity}'):
+            with self.subTest(payload=payload):
+                self.assertEqual(check(frozen, [effect(operation="json", payload=payload)]),
+                                 [{"index": 0, "capability": "demo", "operation": "json",
+                                   "reason": "payload-not-json"}])
+        for payload in (b'{"x":1e308}', b"-0.0", b"12345678901234567890123", b'{"x":"1e999"}'):
+            with self.subTest(payload=payload):
+                self.assertEqual(check(frozen, [effect(operation="json", payload=payload)]), [])
+
     def test_effect_count_is_bounded(self):
         frozen = declaration(declared(("demo", "emit", {"encoding": "bytes"}), max_effects=1))
         self.assertEqual(check(frozen, [effect()]), [])

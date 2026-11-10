@@ -1,5 +1,7 @@
+import copy
 import hashlib
 import json
+import math
 
 from core.ledger.ledger import conforms, encode
 
@@ -31,6 +33,7 @@ def _name(value):
 def declaration(value):
     if type(value) is not dict or not value.keys() <= {"id", "max_effects", "effects"}:
         raise ValueError("effect declaration needs id, effects and optional max_effects")
+    value = copy.deepcopy(value)
     if type(value.get("id")) is not str or not 1 <= len(value["id"]) <= 256:
         raise ValueError("effect declaration id must be the frozen effect-schema identity")
     limit = value.get("max_effects", MAX_EFFECTS)
@@ -65,6 +68,13 @@ def _reject_constant(name):
     raise ValueError(f"non-finite JSON constant {name}")
 
 
+def _finite_float(text):
+    number = float(text)
+    if not math.isfinite(number):
+        raise ValueError(f"non-finite JSON number {text}")
+    return number
+
+
 def _payload_reason(spec, payload):
     if type(payload) is not bytes:
         return "payload-not-bytes"
@@ -81,7 +91,7 @@ def _payload_reason(spec, payload):
     if spec["encoding"] == "utf8":
         return None
     try:
-        document = json.loads(text, parse_constant=_reject_constant)
+        document = json.loads(text, parse_constant=_reject_constant, parse_float=_finite_float)
     except ValueError:
         return "payload-not-json"
     if "schema" in spec and not conforms(document, spec["schema"]):
