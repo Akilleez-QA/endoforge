@@ -304,6 +304,9 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Fixed
 
+- Job staging expands the conductor's check placeholders (`${repo}` and the input and output paths) before calibrating a check, so valid checks are no longer classed as broken; I16 inspects the checks the conductor will actually run (`conductor.checks` and the slice command), not only the criterion commands (Codex review of PR #144).
+- The comment check's lexer treats postfix `++`/`--` as ending an expression, so `n++ / d` is division rather than an unterminated regular expression (Codex review of PR #144).
+
 - The freeze refuses a structured result whose nested number field has no `precision` or whose nested boolean field has no `labels`. Such a contract used to freeze and then fail G7 whatever the glue declared, so it could never be implemented (Codex review of PR #144).
 
 Round 10 fixes the round-9 findings D-14 and D-15 and the cutover-planning gap (D-16), adds tests for the library's
