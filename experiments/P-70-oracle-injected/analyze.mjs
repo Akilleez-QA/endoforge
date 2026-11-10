@@ -3,26 +3,35 @@ import { classes } from './mutate.mjs';
 
 export const resamples = 10000;
 const caught = status => status === 'flagged' || status === 'corrected';
-function random(seed) {
+export function random(seed) {
   let a = seed >>> 0;
   return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
 }
 
-function clustered(rows, metric) {
-  const groups = [...Map.groupBy(rows, r => r.hash).values()];
-  const point = metric(rows);
-  if (!groups.length) return { point: null, lo: null, hi: null, n: 0, clusters: 0 };
-  const next = random(70), values = [];
+export function bootstrap(groups, metric, seed) {
+  const next = random(seed), values = [], copies = groups.map(() => []);
+  const copy = (g, k) => copies[g][k] ??= groups[g].map(r => ({ ...r, draw: `${g}:${k}` }));
   for (let r = 0; r < resamples; r++) {
-    const sample = [];
-    for (let i = 0; i < groups.length; i++) sample.push(...groups[Math.floor(next() * groups.length)]);
+    const sample = [], drawn = new Map();
+    for (let i = 0; i < groups.length; i++) {
+      const g = Math.floor(next() * groups.length), k = drawn.get(g) ?? 0;
+      drawn.set(g, k + 1);
+      sample.push(...copy(g, k));
+    }
     values.push(metric(sample));
   }
   values.sort((a, b) => a - b);
-  return { point, lo: values[Math.floor(0.025 * resamples)], hi: values[Math.ceil(0.975 * resamples) - 1], n: rows.length, clusters: groups.length };
+  return { lo: values[Math.floor(0.025 * resamples)], hi: values[Math.ceil(0.975 * resamples) - 1] };
 }
-const share = test => rows => rows.length ? rows.filter(test).length / rows.length : 0;
-const specShare = (field) => rows => { const specs = Map.groupBy(rows, r => r.hash); return specs.size ? [...specs.values()].filter(g => g.some(r => caught(r[field]))).length / specs.size : 0; };
+
+export function clustered(rows, metric) {
+  const groups = [...Map.groupBy(rows, r => r.hash).values()];
+  const point = metric(rows);
+  if (!groups.length) return { point: null, lo: null, hi: null, n: 0, clusters: 0 };
+  return { point, ...bootstrap(groups, metric, 70), n: rows.length, clusters: groups.length };
+}
+export const share = test => rows => rows.length ? rows.filter(test).length / rows.length : 0;
+export const specShare = field => rows => { const specs = Map.groupBy(rows, r => r.draw === undefined ? r.hash : `${r.draw}\0${r.hash}`); return specs.size ? [...specs.values()].filter(g => g.some(r => caught(r[field]))).length / specs.size : 0; };
 
 export function summarize({ pristine, injected, excluded }) {
   const arm = field => ({
