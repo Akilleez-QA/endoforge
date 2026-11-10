@@ -93,6 +93,23 @@ class SlashLexer:
             return value not in ')]'
         return False
 
+    def ends_operand(self, i):
+        j = i - 1
+        while j >= 0 and self.text[j] in ' \t\r':
+            j -= 1
+        if j >= 0 and self.text[j] == '\n':
+            return False
+        kind, value = self.prev
+        if kind in ('value', 'postfix'):
+            return True
+        if kind == 'word':
+            return value not in REGEX_AFTER
+        return kind == 'punct' and value in ')]'
+
+    def increment(self, i, op):
+        self.prev = ('postfix', op) if self.ends_operand(i) else ('punct', op)
+        return i + 2
+
     def block_end(self, i):
         if not self.rust:
             end = self.text.find('*/', i + 2)
@@ -226,6 +243,8 @@ class SlashLexer:
             return self.quoted_end(i, ch)
         if ch == '`' and not self.rust:
             return self.template(i + 1, i)
+        if not self.rust and text.startswith(('++', '--'), i):
+            return self.increment(i, text[i:i + 2])
         if ch == '/' and not self.rust and self.regex_allowed():
             self.prev = ('value', '/')
             return self.regex_end(i)

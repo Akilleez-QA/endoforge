@@ -99,6 +99,24 @@ class LexedNotComments(unittest.TestCase):
         self.assertEqual(cc.comments('a.mjs', 'x = 10 / 2; // n\n'), [(1, '// n')])
         self.assertEqual(cc.comments('a.mjs', "x = 's' / 2; // n\n"), [(1, '// n')])
 
+    def test_division_after_postfix_operators(self):
+        for text in ('let n=4, d=2; const r = n++ / d;\n', 'z = x-- / y;\n', 'z = f(a) / b;\n', 'z = a[0] / c;\n',
+                     'z = a[i]++ / c;\n', 'z = (n)-- / 2 / 3;\n', 'z = n ++ / d / e;\n', 'z = n++/d/e;\n'):
+            with self.subTest(text=text):
+                self.assertEqual(lines('a.mjs', text), [])
+        self.assertEqual(cc.comments('a.mjs', 'const r = n++ / d; // rationale\n'), [(1, '// rationale')])
+        self.assertEqual(cc.comments('a.mjs', 'z = x-- / y; /* q */\n'), [(1, '/* q */')])
+        self.assertEqual(cc.comments('a.mjs', 'z = a) / b; // r\n'), [(1, '// r')])
+        self.assertEqual(cc.comments('a.mjs', 'z = a] / c; // r\n'), [(1, '// r')])
+
+    def test_regex_after_operators_and_prefix_increments(self):
+        for text in ('x = a + /\\/\\//.source;\n', 'x = a || /\\/\\//;\n', 'x = a ? /\\/\\// : 0;\n',
+                     'x = y = /\\/\\//;\n', 'x = ++/\\/\\//.lastIndex;\n', 'f(a, /\\/\\//);\n',
+                     'x = !/\\/\\//.test(s);\n', 'x = a + ++/\\/\\//.lastIndex;\n', 'a\n++/\\/\\//.lastIndex;\n'):
+            with self.subTest(text=text):
+                self.assertEqual(lines('a.mjs', text), [])
+        self.assertEqual(cc.comments('a.mjs', 'x = a + /\\/\\//; // r\n'), [(1, '// r')])
+
     def test_private_names_and_shebang(self):
         self.assertEqual(lines('a.mjs', '#!/usr/bin/env node // x\nclass A { #p = 1; }\n'), [])
 
