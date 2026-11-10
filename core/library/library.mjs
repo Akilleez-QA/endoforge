@@ -114,12 +114,13 @@ export async function openLibrary({ journal: path = null, cells = 1, deadlineMs 
     if (capability.exports.length < 2) return null;
     const allowed = new Set(numerals(contract)), order = rank(contract, principal, excludeRun).map(row => entries.get(row.id));
     const pool = [...order, ...[...entries.values()].filter(entry => !order.includes(entry))].filter(entry => usable(entry, principal) && !(excludeRun && entry.label?.run === excludeRun) && numerals(entry.own.contract).every(value => allowed.has(value)));
-    const planned = [];
-    for (const wanted of signatures(capability)) {
-      const match = pool.map(entry => [entry, signatures(entry.capability).filter(item => item.text === wanted.text)]).find(([, held]) => held.length);
+    const planned = [], wantedAll = signatures(capability);
+    for (const wanted of wantedAll) {
+      const twin = wantedAll.filter(item => item.text === wanted.text).length > 1;
+      const chosen = held => (twin || held.length > 1 ? held.find(item => item.name === wanted.name) : held[0]);
+      const match = pool.map(entry => [entry, chosen(signatures(entry.capability).filter(item => item.text === wanted.text))]).find(([, fn]) => fn);
       if (!match) return null;
-      const [entry, held] = match;
-      planned.push({ name: wanted.name, entry: entry.id, fn: (held.find(item => item.name === wanted.name) ?? held[0]).name });
+      planned.push({ name: wanted.name, entry: match[0].id, fn: match[1].name });
     }
     return new Set(planned.map(item => item.entry)).size > 1 ? { exports: planned } : null;
   };
