@@ -5,7 +5,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { validate } from '../lib/validate.mjs';
-import { toolchainFor, workerCommand } from '../lib/workers.mjs';
+import { resolveToolchainPath, toolchainFor, workerCommand } from '../lib/workers.mjs';
 import { augment } from '../lib/augment.mjs';
 import { makeHomeTemplate, runIsolated } from '../lib/isolate.mjs';
 import { capabilityRule } from '../../../core/runtime/x1/generator.mjs';
@@ -334,6 +334,45 @@ test('compose-kernel refuses a contract atom whose CONTRACT.md has no capability
   const bad = run('compose-kernel.mjs', composeArgs(root));
   assert.equal(bad.status, 3, bad.stdout + bad.stderr);
   assert.match(bad.stderr, /capability block is not JSON/);
+});
+
+const withNodeEnv = (value, fn) => {
+  const saved = process.env.ENDOFORGE_TOOLCHAIN_NODE;
+  if (value === undefined) delete process.env.ENDOFORGE_TOOLCHAIN_NODE; else process.env.ENDOFORGE_TOOLCHAIN_NODE = value;
+  try { return fn(); } finally { if (saved === undefined) delete process.env.ENDOFORGE_TOOLCHAIN_NODE; else process.env.ENDOFORGE_TOOLCHAIN_NODE = saved; }
+};
+const runningHome = path.dirname(path.dirname(process.execPath));
+
+test('the policy names no fixed node home, so the node toolchain defaults to the Node running the atomizer', () => {
+  assert.equal(policy.toolchain.node, undefined);
+  withNodeEnv(undefined, () => {
+    assert.equal(resolveToolchainPath('node', policy, REPO), runningHome);
+    const [node] = toolchainFor(['node'], policy, REPO);
+    assert.deepEqual(node, { host: runningHome, guest: runningHome, bin: path.join(runningHome, 'bin') });
+    assert.ok(fs.existsSync(path.join(node.bin, 'node')), `${node.bin}/node exists`);
+    assert.equal(fs.realpathSync(path.join(node.bin, 'node')), fs.realpathSync(process.execPath));
+  });
+});
+
+test('ENDOFORGE_TOOLCHAIN_NODE overrides the node home when it holds bin/node', () => {
+  const home = path.join(tmp, 'node-override');
+  fs.mkdirSync(path.join(home, 'bin'), { recursive: true });
+  fs.symlinkSync(process.execPath, path.join(home, 'bin', 'node'));
+  withNodeEnv(home, () => {
+    assert.equal(resolveToolchainPath('node', policy, REPO), home);
+    assert.deepEqual(toolchainFor(['node'], policy, REPO)[0], { host: home, guest: home, bin: path.join(home, 'bin') });
+  });
+});
+
+test('an explicitly configured node home without bin/node is refused before any sandbox starts', () => {
+  const empty = path.join(tmp, 'node-empty');
+  fs.mkdirSync(path.join(empty, 'bin'), { recursive: true });
+  for (const [envValue, pol] of [[empty, policy], [undefined, { ...policy, toolchain: { ...policy.toolchain, node: empty } }], [path.join(tmp, 'node-absent'), policy]]) {
+    withNodeEnv(envValue, () => {
+      assert.throws(() => toolchainFor(['node', 'asc'], pol, REPO), (e) => /toolchain node home .* has no bin\/node/.test(e.message) && /ENDOFORGE_TOOLCHAIN_NODE/.test(e.message) && e.message.includes(runningHome));
+      assert.throws(() => resolveToolchainPath('node', pol, REPO), /has no bin\/node/);
+    });
+  }
 });
 
 const asyncTest = async (name, fn) => { try { await fn(); console.log(`PASS ${name}`); } catch (e) { fails++; console.log(`FAIL ${name}: ${e.message}`); } };

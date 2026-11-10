@@ -5,10 +5,16 @@ import { codexArgs } from './routing.mjs';
 import { capabilityRule } from '../../../core/runtime/x1/generator.mjs';
 const INLINE_LIMIT = 60_000;
 const toolchainEnv = (name) => `ENDOFORGE_TOOLCHAIN_${name.toUpperCase().replace(/[^A-Z0-9]/g, '_')}`;
+export const runningNodeHome = () => path.dirname(path.dirname(process.execPath));
 export function resolveToolchainPath(name, policy, repoRoot) {
   const host = process.env[toolchainEnv(name)] ?? policy.toolchain?.[name];
+  if (!host && name === 'node') return runningNodeHome();
   if (!host) throw new Error(`unknown toolchain ${name}`);
-  return host.startsWith('~') ? expand(host) : path.resolve(repoRoot, host);
+  const resolved = host.startsWith('~') ? expand(host) : path.resolve(repoRoot, host);
+  if (name === 'node' && !fs.existsSync(path.join(resolved, 'bin', 'node'))) {
+    throw new Error(`toolchain node home ${resolved} has no bin/node, so an atom sandbox could not start node; set ${toolchainEnv(name)} to a Node install prefix (one containing bin/node), or unset it and remove policy.toolchain.node to use the running Node (${runningNodeHome()})`);
+  }
+  return resolved;
 }
 export function toolchainFor(names, policy, repoRoot) {
   const out = [];
