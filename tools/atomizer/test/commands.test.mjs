@@ -322,6 +322,33 @@ test('the templated planner asks its contract atom for the capability block and 
   assert.doesNotMatch(JSON.stringify(doc), /G1-G7/);
 });
 
+test('S2: every atomizer prompt that asks for the capability block asks for the layout of records, lists and text', () => {
+  for (const word of ['record, list or text', '"fields"', '"items"', '"max"', '"maxBytes"']) assert.ok(capabilityRule.includes(word), word);
+  const out = path.join(tmp, 'atomize-layout');
+  const r = run('atomize.mjs', [needFile('synthetic-layout'), '--out', out, '--fixture', FIX('synthetic-pair.json')]);
+  assert.equal(r.status, 0, r.stderr);
+  assert.ok(fs.readFileSync(path.join(out, 'receipt', 'turn-1-prompt.md'), 'utf8').includes(capabilityRule));
+  const doc = { need: { id: 'synthetic-layout', text: '# Request synthetic-layout\n\nA need.' } };
+  const atom = { id: 'contract', kind: 'contract', title: 'Contract', contract: 'CONTRACT.md for the interface.', inputs: [{ from: 'need' }], outputs: [{ name: 'contract', path: 'CONTRACT.md' }], worker: { model: 'sonnet', tools: [], prompt: 'Write the contract.' } };
+  assert.ok(rendered(doc, atom).includes(capabilityRule));
+  assert.match(rendered(doc, { ...atom, id: 'glue', kind: 'glue', outputs: [{ name: 'glue', path: 'glue.json' }] }), /nested layout \(record fields with their kinds and units, list items and max, text maxBytes\)/);
+  const directOut = path.join(tmp, 'direct-layout', 'atoms.json');
+  assert.equal(run('direct.mjs', [needFile('synthetic-direct-layout'), '--out', directOut]).status, 0);
+  const direct = readJson(directOut);
+  const prompt = rendered(direct, direct.atoms[0]);
+  assert.ok(prompt.includes(capabilityRule));
+  assert.match(prompt, /nested layout and traps of the capability block/);
+  assert.match(direct.atoms[0].contract, /declares the layout of every record, list or text value/);
+  const lines = path.join(tmp, 'plan-layout-lines.txt');
+  fs.writeFileSync(lines, 'E shippingCents(grams:i32:g, zone:i32:code) -> integer:i32:cents\nC shippingCents.zone 1=domestic;2=international\nM m1 shippingCents | price table\nA assumption: whole grams\nQ Which zones ship?\nR negative weight; unknown zone\n');
+  const planned = path.join(tmp, 'plan-layout');
+  const p = run('plan-template.mjs', [needFile('synthetic-plan-layout'), '--out', planned, '--fixture', lines, '--reviews', '0']);
+  assert.equal(p.status, 0, p.stdout + p.stderr);
+  const plan = readJson(path.join(planned, 'atoms.json'));
+  assert.match(plan.atoms.find((a) => a.kind === 'contract').contract, /the layout of every record, list or text value at any depth \(record fields with names, kinds and units; list items and max; text maxBytes\)/);
+  assert.match(plan.atoms.find((a) => a.kind === 'glue').contract, /the nested layout of every record, list or text value/);
+});
+
 test('compose-kernel refuses a contract atom whose CONTRACT.md has no capability block, before freezing', () => {
   const root = path.join(tmp, 'compose-blockless');
   shippingParts(root, shippingText);

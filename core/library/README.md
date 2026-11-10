@@ -20,7 +20,7 @@ Pass the same object to `runNeed({ ..., library })`: every loop path consults it
 | File | Role |
 |---|---|
 | [library.mjs](library.mjs) | `openLibrary`: `admit`, `retrieve`, `lookup`, `serve`, `compose`, `grant`, `ungrant`, `reclaim`, `revoke`, `requalify`, `qualifications`, `counterexamples`, `dependants` |
-| [key.mjs](key.mjs) | Capability from glue or from a fenced `capability` block, keys, export binding, contract text vectors |
+| [key.mjs](key.mjs) | Capability from glue or from a fenced `capability` block, keys, export binding, contract text vectors. Keys and binding include the nested layout of record, list and text values (field names, kinds, units, ranges, precision, codes, `max`, `maxBytes`); record fields compare by name, and a scalar capability keeps the key it had before layout was keyed |
 | [compose.mjs](compose.mjs), [link.mjs](link.mjs) | Turn a composition plan into one module, glue and manifest source: union, output-to-input pipelines, argument adapters |
 | [scope.mjs](scope.mjs) | Tenant and lineage access check |
 | [cells.mjs](cells.mjs), [cell.mjs](cell.mjs) | Warm worker threads with the pool's heap limits and WASM guard; run `runGates`, discrimination and fingerprints |

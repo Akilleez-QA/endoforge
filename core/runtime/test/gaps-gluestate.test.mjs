@@ -72,19 +72,6 @@ const wasm = {
   todo: 'AGFzbQEAAAABGARgBH9/f38AYAF/AX9gA39/fwBgAX8BfAINAQNlbnYFYWJvcnQAAAMEAwECAwUFAQEAgAgHHwMGcmVkdWNlAAIJb3BlbkhvdXJzAAMGbWVtb3J5AgAK0QQDXQICfwF8IAAoAggiAkEESwRAQQBBAEEAQQAQAAsDQCABIAJJBEAgAEEQaiABQShsaisDCCIDIAOhRAAAAAAAAAAAYgRAQQBBAEEAQQAQAAsgAUEBaiEBDAELCyACC68DAgF8An8gABABIQQgAiAAQbAB/AoAACABKAIEIQAgASgCACIFBEAgBUEBRgRAIAIoAgghBEEAIQECQANAIAEgBEkEQCACQRBqIAFBKGxqKAIAIABGDQIgAUEBaiEBDAELC0F/IQELIAFBAEgEQEEAQQBBAEEAEAALIAIgAUEobGoiAEEUaiAAKAIUQQFzNgIABSAFQQJGBEAgAigCCCEFQQAhAQJAA0AgASAFSQRAIAJBEGogAUEobGooAgAgAEYNAiABQQFqIQEMAQsLQX8hAQsgAUEASARAQQBBAEEAQQAQAAsgAUEobCIAIAJBEGpqIAAgAmpBOGogBEEBayIAIAFrQShs/AoAACACIARBKGxqQRhrQQBBKPwLACACIAA2AggFQQBBAEEAQQAQAAsLBSAEQQRPIAErAwgiAyADoUQAAAAAAAAAAGJyIANEAAAAAAAAAABjcgRAQQBBAEEAQQAQAAsgAkEQaiAEQShsaiIAIAIoAgAiBTYCACAAQQA2AgQgACADOQMIIABBEGogAUEQakEU/AoAACACIARBAWo2AgggAiAFQQFqNgIACwtAAgF8A38gABABIQMDQCACIANJBEAgAEEQaiACQShsaiIEKAIERQRAIAEgBCsDCKAhAQsgAkEBaiECDAELCyABCw==',
   mutating: 'AGFzbQEAAAABGARgBH9/f38AYAF/AX9gA39/fwBgAX8BfAINAQNlbnYFYWJvcnQAAAMEAwECAwUFAQEAgAgHHwMGcmVkdWNlAAIJb3BlbkhvdXJzAAMGbWVtb3J5AgAK2QQDXQICfwF8IAAoAggiAkEESwRAQQBBAEEAQQAQAAsDQCABIAJJBEAgAEEQaiABQShsaisDCCIDIAOhRAAAAAAAAAAAYgRAQQBBAEEAQQAQAAsgAUEBaiEBDAELCyACC7cDAgF8An8gABABIQQgAiAAQbAB/AoAACAAQeMANgIAIAEoAgQhACABKAIAIgUEQCAFQQFGBEAgAigCCCEEQQAhAQJAA0AgASAESQRAIAJBEGogAUEobGooAgAgAEYNAiABQQFqIQEMAQsLQX8hAQsgAUEASARAQQBBAEEAQQAQAAsgAiABQShsaiIAQRRqIAAoAhRBAXM2AgAFIAVBAkYEQCACKAIIIQVBACEBAkADQCABIAVJBEAgAkEQaiABQShsaigCACAARg0CIAFBAWohAQwBCwtBfyEBCyABQQBIBEBBAEEAQQBBABAACyABQShsIgAgAkEQamogACACakE4aiAEQQFrIgAgAWtBKGz8CgAAIAIgBEEobGpBGGtBAEEo/AsAIAIgADYCCAVBAEEAQQBBABAACwsFIARBBE8gASsDCCIDIAOhRAAAAAAAAAAAYnIgA0QAAAAAAAAAAGNyBEBBAEEAQQBBABAACyACQRBqIARBKGxqIgAgAigCACIFNgIAIABBADYCBCAAIAM5AwggAEEQaiABQRBqQRT8CgAAIAIgBEEBajYCCCACIAVBAWo2AgALC0ACAXwDfyAAEAEhAwNAIAIgA0kEQCAAQRBqIAJBKGxqIgQoAgRFBEAgASAEKwMIoCEBCyACQQFqIQIMAQsLIAEL',
 };
-const contract = [
-  'A to-do list reducer: the state holds the next id and at most four items, each with an id, a done flag, estimated hours and a title of at most sixteen UTF-8 bytes.',
-  'reduce(state, event) applies one event and returns the next state: type 0 adds an open item with the next id, type 1 toggles the item with the event id, type 2 removes it and closes the gap.',
-  'reduce traps on non-finite or negative hours, an unknown id, a full list or an unknown event type.',
-  'openHours(state) returns the total hours of the open items as a finite number shown with two decimal places.',
-  '',
-  '```capability',
-  JSON.stringify({ exports: [
-    { name: 'reduce', args: [{ name: 'state', kind: 'record' }, { name: 'event', kind: 'record' }], result: { kind: 'record' } },
-    { name: 'openHours', args: [{ name: 'state', kind: 'record' }], result: { kind: 'number', unit: 'h', precision: 2 } },
-  ], traps: ['reduce'] }),
-  '```',
-].join('\n');
 const item = { kind: 'record', fields: [
   { name: 'id', kind: 'integer', unit: '1' },
   { name: 'done', kind: 'boolean', unit: '1', labels: { true: 'Done', false: 'Open' } },
@@ -98,6 +85,19 @@ const eventType = { kind: 'record', label: 'Event', fields: [
   { name: 'hours', kind: 'number', unit: 'h' },
   { name: 'title', kind: 'text', maxBytes: 16 },
 ] };
+const contract = [
+  'A to-do list reducer: the state holds the next id and at most four items, each with an id, a done flag, estimated hours and a title of at most sixteen UTF-8 bytes.',
+  'reduce(state, event) applies one event and returns the next state: type 0 adds an open item with the next id, type 1 toggles the item with the event id, type 2 removes it and closes the gap.',
+  'reduce traps on non-finite or negative hours, an unknown id, a full list or an unknown event type.',
+  'openHours(state) returns the total hours of the open items as a finite number shown with two decimal places.',
+  '',
+  '```capability',
+  JSON.stringify({ exports: [
+    { name: 'reduce', args: [{ name: 'state', ...stateType }, { name: 'event', ...eventType }], result: stateType },
+    { name: 'openHours', args: [{ name: 'state', ...stateType }], result: { kind: 'number', unit: 'h', precision: 2 } },
+  ], traps: ['reduce'] }),
+  '```',
+].join('\n');
 const glue = {
   id: 'todo', assumption: 'The list holds at most four items and every title fits in sixteen UTF-8 bytes.', question: 'Which items are still open, and how many hours do they need?',
   exports: [

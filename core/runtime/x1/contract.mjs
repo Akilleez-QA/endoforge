@@ -176,9 +176,43 @@ function valueDifferences(where, block, glue, keys) {
   }
   return out;
 }
+export const layoutKinds = Object.freeze(['integer', 'number', 'boolean', 'code', 'record', 'list', 'text']);
+const bounded = (value, top) => Number.isInteger(value) && value >= 1 && value <= top;
+function nestedProblems(where, value, named) {
+  if (!isValue(value)) return [`${where} must be an object`];
+  const problems = [];
+  if (named && (typeof value.name !== 'string' || !value.name)) problems.push(`${where} needs a name`);
+  if (!layoutKinds.includes(value.kind)) problems.push(`${where} kind must be one of ${layoutKinds.join(', ')}`);
+  if (['integer', 'number', 'code'].includes(value.kind) && (typeof value.unit !== 'string' || !value.unit)) problems.push(`${where} needs a unit`);
+  if (value.kind === 'code' && (!isValue(value.codes) || Object.keys(value.codes).length < 2)) problems.push(`${where} of kind code needs a codes table`);
+  return [...problems, ...layoutProblems(where, value)];
+}
+export function layoutProblems(where, value) {
+  if (!isValue(value)) return [];
+  const problems = [];
+  if (value.kind === 'text' && !bounded(value.maxBytes, 65536)) problems.push(`${where} of kind text needs maxBytes, an integer from 1 to 65536`);
+  if (value.kind === 'list') {
+    if (!bounded(value.max, 4096)) problems.push(`${where} of kind list needs max, an integer from 1 to 4096`);
+    if (!Object.hasOwn(value, 'items')) problems.push(`${where} of kind list needs items, the layout of one item`);
+    else problems.push(...nestedProblems(`${where}[]`, value.items, false));
+  }
+  if (value.kind === 'record') {
+    if (!Array.isArray(value.fields) || !value.fields.length) problems.push(`${where} of kind record needs fields, a nonempty list of named fields with their kinds`);
+    else {
+      const names = value.fields.map(item => item?.name);
+      for (const name of new Set(names.filter((name, index) => names.indexOf(name) !== index))) problems.push(`${where} declares field ${name} twice`);
+      value.fields.forEach((item, index) => problems.push(...nestedProblems(`${where}.${item?.name ?? index}`, item, true)));
+    }
+  }
+  return problems;
+}
 export function capabilityAgreement(block, glue) {
   if (!block || typeof block !== 'object' || !Array.isArray(block.exports)) return ['the frozen ```capability block has no exports array'];
-  const problems = [], declared = new Map(block.exports.map(item => [item?.name, item])), described = new Map((glue?.exports ?? []).map(entry => [entry.name, entry]));
+  const layout = block.exports.flatMap(item => [
+    ...(Array.isArray(item?.args) ? item.args : []).map((arg, index) => layoutProblems(`${item?.name} argument ${index + 1} (${arg?.name})`, arg)),
+    layoutProblems(`${item?.name} result`, item?.result),
+  ]).flat().map(problem => `the capability block does not declare the layout: ${problem}`);
+  const problems = [...layout], declared = new Map(block.exports.map(item => [item?.name, item])), described = new Map((glue?.exports ?? []).map(entry => [entry.name, entry]));
   for (const name of declared.keys()) if (!described.has(name)) problems.push(`the capability block exports ${name}, which glue.json does not describe`);
   for (const name of described.keys()) if (!declared.has(name)) problems.push(`glue.json describes ${name}, which the capability block does not export`);
   for (const [name, item] of declared) {

@@ -97,7 +97,7 @@ const glue = {
   ],
   traps: [{ fn: 'reduce', when: 'the event names a missing item, the list is full or hours are invalid', message: 'This event cannot be applied to the list.' }],
 };
-const declared = value => Object.fromEntries(['name', 'kind', 'unit', 'range', 'precision', 'codes', 'labels'].filter(key => value[key] !== undefined).map(key => [key, value[key]]));
+const declared = value => Object.fromEntries(['name', 'kind', 'unit', 'range', 'precision', 'codes', 'labels', 'fields', 'items', 'max', 'maxBytes'].filter(key => value[key] !== undefined).map(key => [key, value[key]]));
 const capable = (text, glueValue) => `${text}\n\n\`\`\`capability\n${JSON.stringify({
   exports: glueValue.exports.map(entry => ({ name: entry.name, args: entry.args.map(declared), result: declared(entry.result) })),
   traps: [...new Set(glueValue.traps.map(trap => trap.fn))],
