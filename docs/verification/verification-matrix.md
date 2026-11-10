@@ -207,6 +207,8 @@ Every other discovered test file is listed here with its classification.
 | `tools/conductor/test/helpers.mjs` | Helper imported by the conductor tests; defines no tests |
 | `tools/tscheck/test/global-scope-kernels.mjs` | Kernel list imported by `cohort-check.test.mjs` and `tsrs-reuse.test.mjs`; defines no tests |
 | `core/runtime/test/loop-example.test.mjs` | Documentation example: runs `examples/first-loop.mjs` and `examples/show-gates.py`, the README and getting-started example, and checks the promote and refuse outputs they print (`loop-test`). Keeps the published example from going stale; the behaviour it exercises is traced under the loop and promotion requirements |
+| `core/library/test/library-reuse-example.test.mjs` | Documentation example: runs `examples/library-reuse.mjs` from the library how-to and checks its three printed outcomes (generated and promoted, reused with no model stages, a miss with its reason) |
+| `tools/test_check_comments.py` | Tests `tools/check_comments.py`, the D-07 no-comments check run by `make lint`. Interim entry: the round-7 records pass gives it a requirement |
 | `TODELETE/tools/step_harness/test_harness.py` | Archived tests of the retired step harness (deleted REQ-STEP-001); run by `tools/step_harness/test_retired.py`, listed as indirect in `tests/test-reachability.json` |
 
 ## Change history
