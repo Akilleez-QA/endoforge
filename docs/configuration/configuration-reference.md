@@ -146,7 +146,7 @@ more work.
 | `ENDOFORGE_WORKER` | `policy.workerBackend`, else `native` | `codex` turns every model atom into a Codex atom. |
 | `ENDOFORGE_CODEX_CONCURRENCY` | `3` with the Codex backend (otherwise 8) | Concurrent atoms; `--concurrency` wins. |
 | `ENDOFORGE_CODEX_POOL` | `core/runtime/agent-pool.mjs` | Codex pool launcher for Codex atoms. |
-| `ENDOFORGE_TOOLCHAIN_<NAME>` | `policy.toolchain[<name>]` in `tools/atomizer/policy.json` | Host path of a toolchain mounted into atoms; `<NAME>` is the name upper-cased with non-alphanumerics as `_`, for example `ENDOFORGE_TOOLCHAIN_CODEX`. |
+| `ENDOFORGE_TOOLCHAIN_<NAME>` | `policy.toolchain[<name>]` in `tools/atomizer/policy.json`; for `NODE`, the install prefix of the running Node | Host path of a toolchain mounted into atoms; `<NAME>` is the name upper-cased with non-alphanumerics as `_`, for example `ENDOFORGE_TOOLCHAIN_CODEX`. A `NODE` home without `bin/node` is refused. |
 | `ENDOFORGE_CLAUDE_ACCOUNTS` | `~/.claude-accts` | Directory of Claude logins, one per subdirectory with `.credentials.json`; `claude` atoms rotate through them. Also read by hillclimb and Conductor login discovery. |
 | `ENDOFORGE_CREDENTIAL_HOME` | unset | With no Claude logins, credential files are copied from this approved home template into the atom's home. |
 | `ATOMIZER_LEDGER_DIR` | `tools/atomizer/ledger` | Atomizer ledger. Set it outside the source tree. |

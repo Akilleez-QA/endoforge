@@ -276,6 +276,7 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
   which this repository does not have. `make harness-test` now runs `tools/step_harness/test_retired.py`.
 
 ### Fixed
+- The atomizer's `node` toolchain no longer assumes a system Node at `/usr/bin/node`: it defaults to the running Node's install prefix, and a configured home without `bin/node` is refused. Compose atoms failed with `execvp node` on hosts without a system Node, including GitHub's runners (PR #143's coverage job).
 
 - The commit's evidence re-check compares structured results by structure (records by field name, `tol` on every
   numeric leaf, kinds and limits from the declared glue) instead of by their string form; the to-do reducer now

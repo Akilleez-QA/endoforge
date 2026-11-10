@@ -79,7 +79,9 @@ at G7; the tests did not show it because they use script workers.
 ### Toolchains
 
 `policy.toolchain` maps a name to a host path, and `policy.kindToolchain` lists the names each kind gets, mounted
-read-only. The atoms that run the gate (`compose`, `compose-draft`, `repair` and `direct`) get `gate` (`tools/gate`),
+read-only. `node` has no policy entry: it defaults to the install prefix of the Node running the atomizer, so atoms work on hosts
+without a system Node. `ENDOFORGE_TOOLCHAIN_NODE` overrides it, and a node home with no `bin/node` is refused before any
+sandbox starts. The atoms that run the gate (`compose`, `compose-draft`, `repair` and `direct`) get `gate` (`tools/gate`),
 `gate-core` (`core`, which the gate imports), `gate-asc` (`tools/asc`, the pinned compiler) and `gate-asc-trust`
 (`experiments/assemblyscript-toolchain.mjs`, which the pin checks against), plus `asc` (`tools/asc/node_modules`).
 Kernel atoms get `node` and `asc`. `ENDOFORGE_TOOLCHAIN_<NAME>` overrides a path.
