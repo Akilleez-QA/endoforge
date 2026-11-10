@@ -1,4 +1,4 @@
-import { isBuffer, scalarLeaves } from './measure.mjs';
+import { isBuffer, layoutOf, scalarLeaves } from './measure.mjs';
 const nonFinite = /\b(?:non-?finite|nan|infinit(?:e|y|ies))\b/i;
 const statedFinite = /\bmust be finite\b|\bfinite and\b/i;
 const trapVerb = /\b(?:traps?|trapping|rejects?|rejecting|aborts?|throws?)\b/i;
@@ -178,39 +178,53 @@ function valueDifferences(where, block, glue, keys) {
 }
 export const layoutKinds = Object.freeze(['integer', 'number', 'boolean', 'code', 'record', 'list', 'text']);
 const bounded = (value, top) => Number.isInteger(value) && value >= 1 && value <= top;
-function nestedProblems(where, value, named) {
+const precise = value => Number.isInteger(value) && value >= 0 && value <= 6;
+const labelled = labels => isValue(labels) && typeof labels.true === 'string' && !!labels.true.trim() && typeof labels.false === 'string' && !!labels.false.trim();
+export function resultProblems(where, value) {
+  if (!isValue(value)) return [];
+  if (value.kind === 'number' && !precise(value.precision)) return [`${where} of kind number in a result needs precision, an integer from 0 to 6`];
+  if (value.kind === 'boolean' && !labelled(value.labels)) return [`${where} of kind boolean in a result needs labels, with nonempty true and false strings`];
+  return [];
+}
+function nestedProblems(where, value, named, inResult) {
   if (!isValue(value)) return [`${where} must be an object`];
   const problems = [];
   if (named && (typeof value.name !== 'string' || !value.name)) problems.push(`${where} needs a name`);
   if (!layoutKinds.includes(value.kind)) problems.push(`${where} kind must be one of ${layoutKinds.join(', ')}`);
   if (['integer', 'number', 'code'].includes(value.kind) && (typeof value.unit !== 'string' || !value.unit)) problems.push(`${where} needs a unit`);
   if (value.kind === 'code' && (!isValue(value.codes) || Object.keys(value.codes).length < 2)) problems.push(`${where} of kind code needs a codes table`);
-  return [...problems, ...layoutProblems(where, value)];
+  if (inResult) problems.push(...resultProblems(where, value));
+  return [...problems, ...structureProblems(where, value, inResult)];
 }
-export function layoutProblems(where, value) {
+function structureProblems(where, value, inResult) {
   if (!isValue(value)) return [];
   const problems = [];
   if (value.kind === 'text' && !bounded(value.maxBytes, 65536)) problems.push(`${where} of kind text needs maxBytes, an integer from 1 to 65536`);
   if (value.kind === 'list') {
     if (!bounded(value.max, 4096)) problems.push(`${where} of kind list needs max, an integer from 1 to 4096`);
     if (!Object.hasOwn(value, 'items')) problems.push(`${where} of kind list needs items, the layout of one item`);
-    else problems.push(...nestedProblems(`${where}[]`, value.items, false));
+    else problems.push(...nestedProblems(`${where}[]`, value.items, false, inResult));
   }
   if (value.kind === 'record') {
     if (!Array.isArray(value.fields) || !value.fields.length) problems.push(`${where} of kind record needs fields, a nonempty list of named fields with their kinds`);
     else {
       const names = value.fields.map(item => item?.name);
       for (const name of new Set(names.filter((name, index) => names.indexOf(name) !== index))) problems.push(`${where} declares field ${name} twice`);
-      value.fields.forEach((item, index) => problems.push(...nestedProblems(`${where}.${item?.name ?? index}`, item, true)));
+      value.fields.forEach((item, index) => problems.push(...nestedProblems(`${where}.${item?.name ?? index}`, item, true, inResult)));
     }
   }
   return problems;
+}
+export function layoutProblems(where, value, { result = false } = {}) {
+  const problems = [...(result ? resultProblems(where, value) : []), ...structureProblems(where, value, result)];
+  if (problems.length || !isBuffer(value)) return problems;
+  try { layoutOf(value); return []; } catch (error) { return [`${where} has no buffer layout G7 can place: ${error.message}`]; }
 }
 export function capabilityAgreement(block, glue) {
   if (!block || typeof block !== 'object' || !Array.isArray(block.exports)) return ['the frozen ```capability block has no exports array'];
   const layout = block.exports.flatMap(item => [
     ...(Array.isArray(item?.args) ? item.args : []).map((arg, index) => layoutProblems(`${item?.name} argument ${index + 1} (${arg?.name})`, arg)),
-    layoutProblems(`${item?.name} result`, item?.result),
+    layoutProblems(`${item?.name} result`, item?.result, { result: true }),
   ]).flat().map(problem => `the capability block does not declare the layout: ${problem}`);
   const problems = [...layout], declared = new Map(block.exports.map(item => [item?.name, item])), described = new Map((glue?.exports ?? []).map(entry => [entry.name, entry]));
   for (const name of declared.keys()) if (!described.has(name)) problems.push(`the capability block exports ${name}, which glue.json does not describe`);

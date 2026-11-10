@@ -5,9 +5,9 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { binding, keysOf } from '../../library/key.mjs';
-import { stagePrompts } from '../x1/agent.mjs';
+import { specificationProblems, stagePrompts } from '../x1/agent.mjs';
 import { capabilityAgreement } from '../x1/contract.mjs';
-import { capabilityProblems, capabilityRule, generate } from '../x1/generator.mjs';
+import { capabilityProblems, capabilityRule, generate, glueRules } from '../x1/generator.mjs';
 import { good } from './fixtures/x1/seeds.mjs';
 
 const fixture = name => fileURLToPath(new URL(`./fixtures/x1/${name}`, import.meta.url));
@@ -181,4 +181,64 @@ test('S2: a scalar capability keeps the library key it had before the nested lay
     contract: '48dcd0b37e05772dbed63ae590c04e71aec3b6fa6c14cd31b4ec95dcaba5991b',
     prose: 'b8cbe7cb222f8ffd3db98ef311ed04f0558dfcdfdb59e79f8d15990f239a97c6',
   });
+});
+
+const invoice = { kind: 'record', fields: [{ name: 'amount', kind: 'number', unit: 'USD' }, { name: 'paid', kind: 'boolean', unit: '1' }] };
+const invoiceBlock = result => ({ exports: [{ name: 'bill', args: [{ name: 'order', ...copy(invoice) }], result }], traps: [] });
+const invoiceContract = result => contractWith(invoiceBlock(result));
+const invoiceTests = [{ name: 'bill an order', fn: 'bill', args: [{}], expect: {} }];
+const unlabelled = [
+  ['a record result field of kind number without precision', copy(invoice), /bill result\.amount of kind number in a result needs precision/],
+  ['a record result field of kind boolean without labels', copy(invoice), /bill result\.paid of kind boolean in a result needs labels/],
+  ['a list result item of kind number without precision', { kind: 'list', max: 4, items: { kind: 'number', unit: 'USD' } }, /bill result\[\] of kind number in a result needs precision/],
+  ['a number two levels down in a result without precision', { kind: 'list', max: 4, items: copy(invoice) }, /bill result\[\]\.amount of kind number in a result needs precision/],
+  ['a nested result precision beyond 6', { kind: 'record', fields: [{ name: 'amount', kind: 'number', unit: 'USD', precision: 7 }] }, /result\.amount of kind number in a result needs precision/],
+  ['nested result labels without a false label', { kind: 'record', fields: [{ name: 'paid', kind: 'boolean', unit: '1', labels: { true: 'Paid' } }] }, /result\.paid of kind boolean in a result needs labels/],
+  ['a boolean result without labels', { kind: 'boolean', unit: '1' }, /bill result of kind boolean in a result needs labels/],
+];
+const labelled = { kind: 'record', fields: [{ name: 'amount', kind: 'number', unit: 'USD', precision: 2 }, { name: 'paid', kind: 'boolean', unit: '1', labels: { true: 'Paid', false: 'Unpaid' } }] };
+
+test('S2: the freeze refuses a structured result whose number or boolean leaves lack the precision or labels G7 requires, at every depth', () => {
+  for (const [label, result, why] of unlabelled) {
+    const problems = capabilityProblems(invoiceContract(result), invoiceTests).join('; ');
+    assert.match(problems, why, `${label}: ${problems}`);
+  }
+  assert.deepEqual(capabilityProblems(invoiceContract(labelled), invoiceTests), []);
+});
+
+test('S2: the agent path refuses the same specification, so the model can still repair it before the freeze', () => {
+  for (const [label, result, why] of unlabelled) {
+    const refused = specificationProblems({ 'CONTRACT.md': invoiceContract(result), 'tests.json': JSON.stringify(invoiceTests) });
+    assert.ok(refused, label);
+    assert.match(refused.problems.join('; '), why, label);
+  }
+  assert.equal(specificationProblems({ 'CONTRACT.md': invoiceContract(labelled), 'tests.json': JSON.stringify(invoiceTests) }), null);
+});
+
+test('S2: every prompt that asks for the block or glue asks for precision and labels inside a structured result', () => {
+  for (const word of ['inside a result, precision (0 to 6) when number', '"labels" with true and false strings when boolean']) assert.ok(capabilityRule.includes(word), word);
+  assert.ok(glueRules.some(rule => /every number inside a record or list result at any depth, must include an integer precision/.test(rule)));
+  assert.ok(glueRules.some(rule => /every boolean inside a record or list result at any depth, must include labels/.test(rule)));
+  assert.ok(JSON.parse(stagePrompts.implementation({ id: 'n' })).glueRules.some(rule => /every number inside a record or list result/.test(rule)));
+});
+
+test('S2: an argument needs no precision or labels at any depth', () => {
+  const block = invoiceBlock(labelled);
+  assert.deepEqual(block.exports[0].args[0].fields.map(item => item.precision ?? item.labels ?? null), [null, null]);
+  assert.deepEqual(capabilityProblems(contractWith(block), invoiceTests), []);
+});
+
+test('S2: a frozen block whose nested result leaves lack precision or labels is named as the reason G7 cannot pass', () => {
+  const glued = { exports: [{ name: 'bill', args: [{ name: 'order', ...copy(invoice) }], result: copy(labelled) }], traps: [] };
+  const problems = capabilityAgreement(invoiceBlock(copy(invoice)), glued).join('; ');
+  assert.match(problems, /the capability block does not declare the layout: bill result\.amount of kind number in a result needs precision/);
+  assert.match(problems, /the capability block does not declare the layout: bill result\.paid of kind boolean in a result needs labels/);
+  assert.deepEqual(capabilityAgreement(invoiceBlock(copy(labelled)), glued), []);
+});
+
+test('S2: the freeze refuses a structured value whose buffer layout exceeds what G7 can lay out', () => {
+  const huge = { kind: 'list', max: 4096, items: { kind: 'text', maxBytes: 65536 } };
+  assert.match(capabilityProblems(invoiceContract(huge), invoiceTests).join('; '), /bill result has no buffer layout G7 can place: layout of \d+ bytes exceeds 1048576/);
+  const glued = { exports: [{ name: 'bill', args: [{ name: 'order', ...copy(invoice) }], result: copy(huge) }], traps: [] };
+  assert.match(capabilityAgreement(invoiceBlock(copy(huge)), glued).join('; '), /the capability block does not declare the layout: bill result has no buffer layout G7 can place/);
 });
