@@ -11,9 +11,13 @@ import { toolchainFor, parseUsage, stripFences } from '../lib/workers.mjs';
 import { emit, context, load, newId } from '../lib/ledger.mjs';
 const HERE = path.dirname(fileURLToPath(import.meta.url)); const REPO = path.resolve(HERE, '../../..');
 const argv = process.argv.slice(2); const get = (k, d = null) => { const i = argv.indexOf(`--${k}`); return i >= 0 ? argv[i + 1] : d; };
-if (!argv[0] || argv[0].startsWith('--') || !get('out')) { console.error('usage: node plan-template.mjs <need.md> --out <dir> [--model sonnet] [--effort low] [--reviews 2] [--deliberate] [--codex-effort minimal] [--thinking <tokens>] [--no-test-check] [--fixture <interface-lines.txt>]'); process.exit(2); }
+const USAGE = 'usage: node plan-template.mjs <need.md> --out <dir> [--model sonnet] [--effort low] [--reviews 2] [--deliberate] [--codex-effort minimal] [--thinking <tokens>] [--no-test-check] [--fixture <interface-lines.txt>] [--policy file]';
+if (!argv[0] || argv[0].startsWith('--') || !get('out')) { console.error(USAGE); process.exit(2); }
+if (argv.includes('--policy') && (!get('policy') || get('policy').startsWith('--'))) { console.error('--policy needs a file'); console.error(USAGE); process.exit(2); }
 const needPath = argv[0]; const OUT = path.resolve(get('out')); const model = get('model', 'sonnet'); const effort = get('effort', 'low'); const REVIEWS = Number(get('reviews', 2));
-const policy = JSON.parse(fs.readFileSync(path.join(HERE, '..', 'policy.json'), 'utf8'));
+const POLICY_FILE = get('policy') ? path.resolve(get('policy')) : path.join(HERE, '..', 'policy.json');
+let policy, POLICY;
+try { const text = fs.readFileSync(POLICY_FILE); policy = JSON.parse(text.toString('utf8')); if (!policy || typeof policy !== 'object' || Array.isArray(policy)) throw new Error('not a JSON object'); POLICY = { path: POLICY_FILE, sha256: crypto.createHash('sha256').update(text).digest('hex') }; } catch (e) { console.error(`unreadable policy ${POLICY_FILE}: ${e.message}`); console.error(USAGE); process.exit(2); }
 const needText = fs.readFileSync(needPath, 'utf8'); const needId = (needText.match(/^# Request (\S+)/m) ?? [, path.basename(needPath, '.md')])[1];
 fs.mkdirSync(path.join(OUT, 'receipt'), { recursive: true });
 const PROMPT = `${!argv.includes('--deliberate') ? 'Answer immediately: write the lines directly, without deliberating first; a first reasonable interface is what is wanted.\n\n' : ''}Write the interface of a pure numeric WebAssembly capability for the need below, in this exact line format and nothing else:
@@ -49,22 +53,26 @@ function parseCompact(text) {
   return { exports, modules, assumption, question, refuses };
 }
 const id = newId(`plan-${needId}`);
-emit('plan.start', { planId: id, need: needId, model, effort, promptSha256: crypto.createHash('sha256').update(PROMPT).digest('hex'), promptBytes: Buffer.byteLength(PROMPT), context: context(), load: load() });
+emit('plan.start', { planId: id, need: needId, model, effort, policy: POLICY, promptSha256: crypto.createHash('sha256').update(PROMPT).digest('hex'), promptBytes: Buffer.byteLength(PROMPT), context: context(), load: load() });
 const home = makeHomeTemplate(fs.mkdtempSync(path.join(os.tmpdir(), 'plan-home-'))); const work = fs.mkdtempSync(path.join(os.tmpdir(), 'plan-work-'));
-let iface = null, wallMs = 0, usage = null, error = null;
+let iface = null, wallMs = 0, usage = null, error = null, refused = null;
 try {
-  for (let attempt = 1; attempt <= 2 && !iface; attempt++) {
+  for (let attempt = 1; attempt <= 2 && !iface && !refused; attempt++) {
     if (get('fixture')) { try { iface = parseCompact(stripFences(fs.readFileSync(get('fixture'), 'utf8'))); } catch (e) { error = String(e.message); } emit('plan.attempt', { planId: id, need: needId, attempt, wallMs: 0, ok: !!iface, error: iface ? null : error, cli: null, fixture: get('fixture') }); continue; }
     const isCodex = model === 'codex';
     const cmd = isCodex ? ['codex', ...policy.codexFlags, '-c', `model_reasoning_effort="${get('codex-effort', 'minimal')}"`, '-o', '/work/plan.txt', PROMPT] : ['claude', '-p', ...policy.claudeLeanFlags, '--model', policy.models[model], '--tools', '', '--effort', effort];
-    const r = await runIsolated({ homeTemplate: home, mounts: [{ host: work, guest: '/work', mode: 'rw' }], toolchain: toolchainFor(isCodex ? ['codex'] : ['claude', 'node'], policy, REPO), cmd, stdin: isCodex ? null : PROMPT, cwd: '/work', timeoutMs: 120_000, env: get('thinking') != null ? { MAX_THINKING_TOKENS: get('thinking') } : {} });
+    let r;
+    try { r = await runIsolated({ homeTemplate: home, mounts: [{ host: work, guest: '/work', mode: 'rw' }], toolchain: toolchainFor(isCodex ? ['codex'] : ['claude', 'node'], policy, REPO), cmd, stdin: isCodex ? null : PROMPT, cwd: '/work', timeoutMs: 120_000, env: get('thinking') != null ? { MAX_THINKING_TOKENS: get('thinking') } : {} }); } catch (e) {
+      if (e?.code !== 'EX_CONFIG') throw e;
+      refused = e.message; error = `model call refused: ${refused}`; emit('plan.attempt', { planId: id, need: needId, attempt, wallMs: 0, ok: false, error, cli: null }); continue;
+    }
     wallMs += Math.round(r.wallMs); usage = parseUsage(r.stdout, model);
     fs.writeFileSync(path.join(OUT, 'receipt', `plan-stdout-${attempt}.json`), r.stdout);
     try { const txt = isCodex ? (fs.existsSync(path.join(work, 'plan.txt')) ? fs.readFileSync(path.join(work, 'plan.txt'), 'utf8') : '') : (usage?.result ?? ''); iface = parseCompact(stripFences(txt)); } catch (e) { error = String(e.message); }
     emit('plan.attempt', { planId: id, need: needId, attempt, wallMs: Math.round(r.wallMs), ok: !!iface, error: iface ? null : error, cli: (() => { try { const d = JSON.parse(r.stdout); return { durationMs: d.duration_ms, apiMs: d.duration_api_ms, usage: d.usage }; } catch { return null; } })() });
   }
 } finally { fs.rmSync(home, { recursive: true, force: true }); fs.rmSync(work, { recursive: true, force: true }); }
-if (!iface) { emit('plan.end', { planId: id, need: needId, ok: false, wallMs, error }); console.log(JSON.stringify({ ok: false, wallMs, error })); process.exit(1); }
+if (!iface) { fs.writeFileSync(path.join(OUT, 'receipt', 'atomize.json'), JSON.stringify({ planId: id, needId, model, effort, policy: POLICY, valid: false, errors: [error], attempts: [{ wallMs, usage: null }] }, null, 1)); emit('plan.end', { planId: id, need: needId, ok: false, wallMs, error, policy: POLICY }); console.log(JSON.stringify({ ok: false, wallMs, error })); process.exit(1); }
 const names = iface.exports.map((e) => e.name); const assigned = new Set();
 iface.modules = iface.modules.map((m, i) => ({ id: `m${i + 1}`, logic: m.logic ?? '', exports: (m.exports ?? []).filter((n) => names.includes(n) && !assigned.has(n) && assigned.add(n)) })).filter((m) => m.exports.length);
 const orphans = names.filter((n) => !assigned.has(n)); if (orphans.length) iface.modules.push({ id: `m${iface.modules.length + 1}`, logic: 'remaining exports', exports: orphans });
@@ -96,8 +104,8 @@ const doc = { schema: 'endoforge/atoms/1', need: { id: needId, text: needText.tr
   atoms };
 const v = validate(doc, policy); const P = plan(atoms);
 fs.writeFileSync(path.join(OUT, 'atoms.json'), JSON.stringify(doc, null, 1)); fs.writeFileSync(path.join(OUT, 'interface.json'), ifaceText); fs.writeFileSync(path.join(OUT, 'plan.json'), JSON.stringify(P, null, 1));
-const receipt = { planId: id, needId, model, effort, valid: v.ok, errors: v.errors, attempts: [{ wallMs, usage: usage && { input: usage.input, output: usage.output, thinking: usage.thinking } }], exports: names.length, modules: iface.modules.length };
+const receipt = { planId: id, needId, model, effort, policy: POLICY, valid: v.ok, errors: v.errors, attempts: [{ wallMs, usage: usage && { input: usage.input, output: usage.output, thinking: usage.thinking } }], exports: names.length, modules: iface.modules.length };
 fs.writeFileSync(path.join(OUT, 'receipt', 'atomize.json'), JSON.stringify(receipt, null, 1));
-emit('plan.end', { planId: id, need: needId, ok: v.ok, errors: v.errors, wallMs, exports: names.length, modules: iface.modules.length, atoms: atoms.length, plan: { total: P.total, critical: P.critical, criticalPath: P.criticalPath, width: P.width }, usage: usage && { output: usage.output, thinking: usage.thinking } });
+emit('plan.end', { planId: id, need: needId, ok: v.ok, errors: v.errors, policy: POLICY, wallMs, exports: names.length, modules: iface.modules.length, atoms: atoms.length, plan: { total: P.total, critical: P.critical, criticalPath: P.criticalPath, width: P.width }, usage: usage && { output: usage.output, thinking: usage.thinking } });
 console.log(JSON.stringify({ ok: v.ok, errors: v.errors.slice(0, 3), wallMs, exports: names.length, modules: iface.modules.length, atoms: atoms.length, outTok: usage?.output }));
 process.exit(v.ok ? 0 : 1);
