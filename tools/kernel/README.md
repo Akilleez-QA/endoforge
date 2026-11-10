@@ -69,10 +69,12 @@ records; there is no carry-forward.
 - `effects=declaration` checks every returned effect before the transition is released. A declaration is
   `{"id", "max_effects", "effects": [{"capability", "operation", "payload": {"encoding", "min_bytes", "max_bytes",
   "schema"}}]}`; its `id` must equal the frozen effect-schema identity the kernel's `describe` returns. Encodings are
-  `bytes`, `utf8` and `json`; a `json` payload may carry a schema (the ledger's schema subset, no `$ref`) and rejects
-  non-finite constants. Without a declaration no effect is permitted. Any undeclared effect, out-of-bounds payload,
-  bad encoding, schema mismatch or excess count rejects the whole transition with `EffectDenied`. The declaration's
-  SHA-256 is part of the cache key and every result.
+  `bytes`, `utf8` and `json`; a `json` payload may carry a schema (the ledger's schema subset, no `$ref`) and is
+  refused as `payload-not-json` when any number in it is not finite: the constants `NaN` and `Infinity`, and literals
+  that overflow to infinity such as `1e999`. Without a declaration no effect is permitted. Any undeclared effect, out-of-bounds payload,
+  bad encoding, schema mismatch or excess count rejects the whole transition with `EffectDenied`. The declaration is
+  deep-copied when it is frozen, so changing the dictionary you passed in afterwards changes nothing. Its SHA-256 is
+  part of the cache key and every result.
 - `journal=DenialJournal(path)` makes denials durable: every broker denial (authority, host-call limit, stale handle,
   typed read error) and every effect denial is appended, with the artifact id and effect schema, to an append-only
   SQLite journal hash-chained with the ledger's `event_hash` and `encode`. Reopening verifies the whole chain;
@@ -137,8 +139,8 @@ executable. `make test` runs `make kernel-test` and never downloads.
 ## Tests
 
 `make kernel-test` runs `test_contract.py`, `test_workcell.py`, `test_broker.py`, `test_limits.py`,
-`test_effects.py` (declarations, payload checks, the denial journal and its chain, denials from the workcell and
-`run_candidate`) and `test_conformance.py` (frozen task cases in process and through the host-process entry). They compile
+`test_effects.py` (declarations, the frozen copy, payload checks including non-finite JSON numbers, the denial journal
+and its chain, denials from the workcell and `run_candidate`) and `test_conformance.py` (frozen task cases in process and through the host-process entry). They compile
 fresh dummy components from the WIT as positive and negative controls (their functions trap), and build test
 components in temporary directories without changing fixtures.
 

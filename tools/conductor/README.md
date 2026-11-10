@@ -33,7 +33,8 @@ flowchart TD
 
 Phases run as a state machine: `staged`, `go`, `smoke`, `fired`, `streaming`, `gates`, `locks`, then `finals` and
 `compose` when the job declares them, then `done`. Every tick (5 seconds by default) the daemon reloads the manifest and
-`<jobdir>/conductor/state.json`, honours stop and pause, and runs the handler for the current phase.
+`<jobdir>/conductor/state.json`, honours stop and pause, and runs the handler for the current phase. When the handler
+advances the phase, the next phase runs at once; only a wait uses up a tick, so `--max-ticks` counts waits, not phases.
 
 In `streaming` there is no barrier between atoms. For each atom whose worker has exited:
 

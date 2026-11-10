@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SAR |
-| Version | 1.6 |
+| Version | 1.7 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -54,6 +54,16 @@ Findings:
   modules (`core/`, `tools/asc`) while its `asc` toolchain pointed at a directory that does not exist. Every real
   atomizer run since round 6 would have failed at the freeze or at G7; the atomizer tests use script workers, so they
   did not show it. REQ-ATOM-006 now covers the prompts and the compose sandbox.
+- Round 8 took its work from a backfill review (below) and from D-09 and D-10. The defects it fixed sat inside
+  requirements that already traced to passing tests, because no test reached the failing case: library fingerprints
+  turned text results into numbers and reclaim dropped the released entry's grants (REQ-LIB-005), refusals were not
+  keyed by environment (REQ-LIB-006), G7 compared only the top level of each value (REQ-GEN-011), the kernel host kept
+  references to the caller's effect specs and let `1e999` through (REQ-KERNEL-005), the hillclimb compose atoms could
+  not load `hillclimb.mjs` (REQ-HILL-002), the version description denied the CI secret scan (REQ-REPO-008) and only
+  inspection showed that a failing test fails `make coverage` (REQ-REPO-009). Each requirement was changed to state
+  the corrected behaviour and traced to the new test. Two requirements were added: REQ-ATOM-007 (`verify.mjs --policy`
+  and the helper CLIs' usage and refusals, D-10) and REQ-ATOM-008 (the `node` toolchain defaults to the running Node,
+  from round 7b). REQ-REPO-003 now covers the new `experiments-test` target. No gap was opened.
 - Trace check after the update (`python3 -I tools/check_trace.py`): 95 requirements, 95 traced, 14 gaps, 0 TBD; 97
   discovered test files, 92 traced and 5 supporting; 0 problems. After the round-2 records pass on 2026-11-09: 127
   requirements, 127 traced, 10 gaps; 111 discovered test files, 105 traced and 6 supporting; 0 problems. After the
@@ -64,7 +74,10 @@ Findings:
   traced and 7 supporting (one more: the archived step harness tests); 0 problems. After the round-6 records pass: 150
   requirement IDs (one deleted), 150 traced, 2 gaps; 135 discovered test files, 128 traced and 7 supporting; 0
   problems. After the round-7 records pass: 152 requirement IDs (one deleted), 152 traced, 0 gaps; 137 discovered
-  test files, 129 traced and 8 supporting (one more: the library-reuse example test); 0 problems.
+  test files, 129 traced and 8 supporting (one more: the library-reuse example test); 0 problems. After the round-8
+  records pass: 154 requirement IDs (one deleted), 154 traced, 0 gaps; 145 discovered test files, 133 traced and 12
+  supporting (four more: the P-64, P-65, P-70 and P-71 analysis tests, which support historical experiment records);
+  0 problems.
 
 ### Design analysis
 
@@ -76,7 +89,8 @@ C-01 to C-31; each lists its requirements. After round 5 every live component ha
 step harness, is retired to `TODELETE/` with REQ-STEP-001 deleted, because nothing here called it and it needs a POODO
 decision core this repository does not have. Round 6 gave C-17, the kernel host, its first caller outside its own
 tests: C-26's admission. C-27 and C-30 named the round-6 gaps (GAP-EF-016, GAP-EF-015); round 7 closed both and
-allocated REQ-ATOM-006 to C-22 and REQ-REPO-010 (the no-comments check) to C-27.
+allocated REQ-ATOM-006 to C-22 and REQ-REPO-010 (the no-comments check) to C-27. Round 8 allocated REQ-ATOM-007 and
+REQ-ATOM-008 to C-22.
 
 ### Testing analysis
 
@@ -139,6 +153,19 @@ Findings:
   compiler path above.
   Each atom's conductor check passed on 2026-11-09; none of these files is in a recorded STR, and no CI run of round 7
   is recorded.
+- Round 8 added eight test files (`core/runtime/test/gaps8-capability-nested.test.mjs`,
+  `tools/atomizer/test/cli-usage.test.mjs`, `tools/hillclimb/test/compose-mounts.test.mjs`,
+  `tests/test_coverage_fails.py` and the `analyze.test.mjs` of P-64, P-65, P-70 and P-71) and extended
+  `core/library/test/library.test.mjs`, `tools/kernel/test_effects.py`, `tools/test_gen_release_docs.py` and
+  `tools/test_check_comments.py`. Each worker wrote its tests first and reported them failing against the old code:
+  the library cases with the reported symptoms (`"!"` and `"\""` both fingerprinted `[["NaN"]]`), 16 nested drifts
+  that G7 passed, 5 kernel failures, 7 of 9 CLI cases, the compose atoms' `ERR_MODULE_NOT_FOUND`, 3 failures and 2
+  errors in the release-docs cases, and 14 comment-check failures. The new comment lexer found 20 end-of-line comments,
+  which were removed (D-09). The P-70 and P-71 receipts were regenerated from their hash-checked rows; the spec-level
+  false-flag upper bounds widened and no verdict changed (each experiment's `AMENDMENT.md`). `make test` now runs the
+  experiment analysis tests (`experiments-test`). Each atom's conductor check passed on 2026-11-09; none of these files
+  is in a recorded STR, and no CI run of round 8 is recorded. Two workers first failed the atomizer compose test
+  because `tools/asc/node_modules` was not installed in their worktree; `make loop-setup` installs it.
 
 ### Source code quality
 
@@ -148,7 +175,7 @@ Findings:
 | Gitleaks 8.30.1 | `gitleaks git --no-banner --redact --log-opts=HEAD .` | 1 `generic-api-key` match in `experiments/P-51-escape-rate/controls.test.mjs:21`: the synthetic kernel key `synthetic/run/k`, a false positive |
 | Privacy lint | `python3 -I tools/check-privacy.py` | 0 failures |
 | JavaScript syntax | `node --check` on every `.mjs`, `.js` and `.cjs` (in `make lint`) | 0 failures at `b71eebf`; a syntax check only, no style or semantic lint |
-| Comment check (REQ-REPO-010) | `python3 -I tools/check_comments.py` (in `make lint`) | 0 comment lines at `b1b6418` on 2026-11-09, after round 7 removed them (D-07). It counts whole comment lines only in JavaScript, TypeScript, Rust and shell files; 20 end-of-line `//` comments remain (D-09) |
+| Comment check (REQ-REPO-010) | `python3 -I tools/check_comments.py` (in `make lint`) | 0 comment lines on the round-8 head on 2026-11-09. Round 7 removed the whole comment lines (D-07); round 8 lexes JavaScript, TypeScript and Rust, so it also finds end-of-line and inline comments, and the 20 it found were removed (D-09). In shell files and Makefiles it finds only `#` at the start of a line |
 
 ### Configuration audit
 
@@ -166,6 +193,10 @@ Findings:
 comment. No pull request was open when this entry was written. All merges are by the owner or by agent lanes the owner
 authorized; agent review is not independent.
 
+On 2026-11-09 Codex reviewed, locally, about 60 merged pull requests that had no completed review (the backfill
+review). Its findings became round-8 items R1 to R11 and R14; R12 and R13 are D-09 and D-10. Round 8 fixed all
+fourteen. The backfill review is an agent review and is not independent either.
+
 ### Findings
 
 No issues were filed for these findings; they are reported to the maintainer through this record and the PR.
@@ -180,15 +211,19 @@ No issues were filed for these findings; they are reported to the maintainer thr
 | D-06 | S4 | `main` has no branch protection; CI has no secret-scanning job | repository settings, `.github/workflows/ci.yml` | Secret scan added to CI 2026-11-09; branch protection still open (risk R-6) |
 | D-07 | S4 | Code comments exist despite the no-comments rule, for example `tools/conductor/lib/adopt.mjs:5`, `tools/atomizer/lib/ledger.mjs:2`, `tools/atomizer/test/run.mjs:1`, `tools/job/lib/kinds.mjs` (top block) | several files | Closed 2026-11-09 (round 7): the comment lines were removed, usage blocks moved into the programs' usage output, information the docs lacked moved into the tool READMEs and `docs/`, and `tools/check_comments.py` in `make lint` (REQ-REPO-010) reports 0 |
 | D-08 | S4 | Stale documentation (verification matrix baseline, oracle wording, missing control documents) | `docs/` | Closed in this PR |
-| D-09 | S4 | 20 end-of-line `//` comments remain after code, which `tools/check_comments.py` does not count in JavaScript files (it finds Python end-of-line comments): 15 in `tools/conductor/lib/` (`adopt`, `checks`, `collect`, `daemon`, `handlers`), 5 in `tools/atomizer/` (`bin/backfill.mjs:10`, `bin/speed.mjs:41`, `test/lessons.test.mjs:12`, `test/run.mjs:19` and `:101`) | `tools/conductor/lib/`, `tools/atomizer/` | Open (round 7) |
-| D-10 | S4 | `tools/atomizer/bin/verify.mjs` prints `[--policy file]` in its usage and the README listed it, but the program always loads the `policy.json` next to it and ignores the flag. `ledger-export.mjs` and `repair-noop.mjs` print no usage; a bare `ledger-export.mjs` with no ledger throws `ENOENT` | `tools/atomizer/bin/` | Open (round 7); the README now says the flag is ignored |
+| D-09 | S4 | 20 end-of-line `//` comments remain after code, which `tools/check_comments.py` does not count in JavaScript files (it finds Python end-of-line comments): 15 in `tools/conductor/lib/` (`adopt`, `checks`, `collect`, `daemon`, `handlers`), 5 in `tools/atomizer/` (`bin/backfill.mjs:10`, `bin/speed.mjs:41`, `test/lessons.test.mjs:12`, `test/run.mjs:19` and `:101`) | `tools/conductor/lib/`, `tools/atomizer/` | Closed 2026-11-09 (round 8): `tools/check_comments.py` lexes JavaScript, TypeScript and Rust and finds end-of-line and inline comments (REQ-REPO-010); the 20 were removed |
+| D-10 | S4 | `tools/atomizer/bin/verify.mjs` prints `[--policy file]` in its usage and the README listed it, but the program always loads the `policy.json` next to it and ignores the flag. `ledger-export.mjs` and `repair-noop.mjs` print no usage; a bare `ledger-export.mjs` with no ledger throws `ENOENT` | `tools/atomizer/bin/` | Closed 2026-11-09 (round 8): `verify.mjs` honours `--policy` and records it in `verify.json`; both helpers print usage and refuse bad arguments with exit 2 (REQ-ATOM-007) |
+| D-11 | S4 | G7 and library lookup can still miss nested drift. A capability block that says `kind: record`, `list` or `text` without its fields, items or bounds agrees with any glue layout, and `capabilityRule` and `capabilityProblems` (`core/runtime/x1/generator.mjs`) do not ask for that layout, so for such blocks the round-8 recursive comparison has nothing to compare. Library lookup's `signature` (`core/library/key.mjs`) compares only the top level, so the library could reuse a capability whose nested units differ | `core/runtime/x1/generator.mjs`, `core/library/key.mjs` | Open (round 8) |
+| D-12 | S4 | `fanout.mjs` and `cutover.mjs` call `verify.mjs` without `--policy`, so a run scheduled with another policy is verified against the default `policy.json` | `tools/atomizer/bin/fanout.mjs`, `tools/atomizer/bin/cutover.mjs` | Open (round 8) |
+| D-13 | S4 | `docs/releases/VDD-main-20261108.md` says "CI has no secret-scanning job", which was false when it was generated (the CI job `secret-scan` existed). The generator now reads the workflows (REQ-REPO-008); the record is generated and is not edited by hand | `docs/releases/VDD-main-20261108.md` | Open (round 8): corrected at the next generated release record |
 
 ### Overall assessment
 
 Every requirement traces to tests that exist, and every discovered test file traces to a requirement or is classified.
 No behaviour is registered as untested: GAP-EF-015 (the gate CLI's freeze) and GAP-EF-016 (the coverage target and CI
-job), opened in round 6, were closed in round 7, after the other fourteen. GAP-EF-016's closure rests on inspection,
-the first CI run and one recorded failing-test run, not on an automated test.
+job), opened in round 6, were closed in round 7, after the other fourteen. Since round 8 an automated test
+(`tests/test_coverage_fails.py`) shows a failing test failing `make coverage`, which GAP-EF-016's closure had rested on
+inspection for. Round 8 fixed the backfill review's findings and closed D-09 and D-10; D-11 to D-13 are open.
 The real second-host case and the sandboxed-worker cases skip where their host prerequisites are missing, including in CI for the second host. Assurance is author-side only; no independent review has been performed.
 
 ## Change history
@@ -202,3 +237,4 @@ The real second-host case and the sandboxed-worker cases skip where their host p
 | 1.4 | 2026-11-09 | round 5 | Round-5 trace counts; GAP-EF-002 and GAP-EF-006 closed (no gap open); C-20 retired; the CI coverage job and its expected Python failure recorded | this commit |
 | 1.5 | 2026-11-09 | round 6 | Round-6 trace counts; GAP-EF-015 and GAP-EF-016 opened; the round-6 test files and the defects they exposed; the unrun `RealDocker` cases; C-17 gains a caller | this commit |
 | 1.6 | 2026-11-09 | round 7 | Round-7 trace counts; GAP-EF-015 and GAP-EF-016 closed (no gap open); the round-6 atomizer regression; the `RealDocker` cases and the `coverage` job ran in CI; D-07 closed; D-09 and D-10 opened | this commit |
+| 1.7 | 2026-11-09 | round 8 | Round-8 trace counts (no gap open); the backfill review in the peer review summary; the round-8 defects and test files; the comment check finds end-of-line comments; D-09 and D-10 closed; D-11 (shallow capability blocks, top-level library signature), D-12 (`verify.mjs` not given the run's policy) and D-13 (the 2026-11-08 VDD's secret-scan sentence) opened | this commit |

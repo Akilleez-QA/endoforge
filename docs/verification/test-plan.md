@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-STP |
-| Version | 1.6 |
+| Version | 1.7 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -40,6 +40,7 @@ N/A; the owner's merge is the sign-off. How-to detail: [run local checks](../gui
 | Tools (round 4) | `gap-tools-test` | `tools/factory_runtime/test_runtime_gaps.py`, `tools/test_approved_atoms.py`, `tools/test_gen_release_docs.py`, `tools/test_check_comments.py` (round 7), `tools/project-scheduler/test/scheduler.test.mjs` |
 | Kernel host | `kernel-test` | Version check of `.tools/`, then `tools/kernel/test_*.py` |
 | Experiment receipt | `receipt-test` | `experiments/P-19-need-to-candidate/verify.py` |
+| Experiment analysis (round 8) | `experiments-test` | Every `experiments/*/analyze.test.mjs` except P-51's `controls.test.mjs` (today P-64, P-65, P-70 and P-71) |
 | Regression | CI `test` job | `make -k test` and `make -k test-optimized` on Node 22 and 26 |
 | Rust lane | CI `rust-lane` job | `make tools`, then `make rust-lane-test` on Rust 1.98.1 |
 | Static analysis | `lint`; CI `lint` job | ruff 0.17.0 with `ruff.toml`, `tools/check_comments.py` (no code comment lines, REQ-REPO-010), and `node --check` on every `.mjs`, `.js` and `.cjs` file |
@@ -85,7 +86,11 @@ shared process (REQ-FACTORY-003). The CI `coverage` job first ran in PR #142 (ru
 tests, 0 failed, 93.29% of lines; Python 333 tests OK (3 skipped) under coverage.py 7.10.7, 84% in total; the
 `coverage-summary` artifact was uploaded. A failing test fails `make coverage` in either Python mode: on 2026-11-09 a
 deliberately failing unittest made `make coverage-python` print `FAILED (failures=1)` and exit 2 under the trace
-fallback (GAP-EF-016 closed, REQ-REPO-009). MC/DC: N/A (not safety-critical, SWE-219).
+fallback (GAP-EF-016 closed, REQ-REPO-009). Since round 8 `tests/test_coverage_fails.py`, in `make core-test`, runs
+the real `make coverage-node`, `make coverage-python` (trace fallback and coverage.py branch) and `make coverage`
+against a temporary failing test and its passing twin and checks the exit codes; where coverage.py is not installed
+its branch runs through a stand-in module, which checks the Makefile wiring, not coverage.py itself. MC/DC: N/A (not
+safety-critical, SWE-219).
 
 ## 6. Test data and fixtures
 
@@ -184,8 +189,10 @@ Live model runs (experiments) follow each experiment's `PRECOMMIT.md`; they are 
   development host on 2026-11-09, and whether it runs or skips on the GitHub runner is not recorded.
 - No behaviour is registered as untested
   ([SRS §11](../requirements/requirements.md#11-untested-behaviour-requirement-gaps)); GAP-EF-015 and GAP-EF-016 were
-  closed in round 7. `make coverage` failing on a test failure is checked by inspection and one recorded run, not by an
-  automated test.
+  closed in round 7. Since round 8 an automated test checks that a failing test fails `make coverage`.
+- Round 8's defects (from a backfill review of merged pull requests) all sat inside requirements whose tests passed:
+  no test reached the failing case. The new tests reproduce each reported case; other untested cases of the same kind
+  may remain.
 - The atomizer tests use script workers and fixtures. Round 6's regression (no prompt asked for the capability block)
   passed them all; round 7 added tests that assert on the rendered prompt text and run the compose helper in a real
   sandbox, but a real model run is still not part of the suite.
@@ -194,7 +201,8 @@ Live model runs (experiments) follow each experiment's `PRECOMMIT.md`; they are 
   real second-host transfer needs `ENDOFORGE_SECOND_HOST` and skips in CI, where it is unset (it passed against a
   separate machine on 2026-11-09); `RealPinnedWasmtime` needs `make tools` and a systemd user manager; `RealDocker`
   needs a Docker daemon reachable without `sudo` and a local image: it skips on the development host and ran and
-  passed in CI in PR #142 (run 42709080153).
+  passed in CI in PR #142 (run 42709080153); the two hillclimb compose-mount cases that start `bwrap` skip where it
+  cannot start (they ran on 2026-11-09, 26 of 26 hillclimb tests with none skipped).
 
 ## 9. Traceability
 
@@ -211,3 +219,4 @@ See the [verification matrix](verification-matrix.md).
 | 1.4 | 2026-11-09 | round 5 | CI `coverage` job; `harness-test` runs the step harness retirement check; no gap open | this commit |
 | 1.5 | 2026-11-09 | round 6 | New skip cases (`RealPinnedWasmtime`, `RealDocker`); TP-6 records the round-6 admission cases; the coverage section and §8 record GAP-EF-015 and GAP-EF-016 | this commit |
 | 1.6 | 2026-11-09 | round 7 | `lint` runs the no-comments check; `gap-tools-test` runs its test; the coverage section records the first CI `coverage` run and a failing-test run (GAP-EF-016 closed); §8 records no open gap, the script-worker limit of the atomizer tests and the first `RealDocker` run | this commit |
+| 1.7 | 2026-11-09 | round 8 | `experiments-test` runs the experiment analysis tests in `make test`; the coverage section and §8 record the automated failing-test coverage check and the backfill-review lesson; the hillclimb compose-mount skip case | this commit |

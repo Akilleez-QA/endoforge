@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-CFG |
-| Version | 3.6 |
+| Version | 3.7 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-09 |
@@ -452,6 +452,8 @@ own `runner` gets `<atoms.json> --out <dir> --concurrency N --timeout S`, withou
 | `RUFF` | `uvx ruff@$(RUFF_VERSION)` when `uvx` is on `PATH`, else `ruff` (`?=`) | The ruff command `make lint` runs; CI installs `ruff==0.17.0` with pip. |
 | `COVERAGE_DIR` | `.test-work/coverage` | Where `make coverage-python` writes coverage.py data or the trace counts. |
 | `GAP_PY_TESTS`, `GAP_NODE_TESTS` | the round-4 test files named in the `Makefile` | Run by `make gap-tools-test`; the Python ones are kept out of `ledger-test` so they run once. |
+| `COVERAGE_SETUP` | `tscheck-setup loop-setup` | Prerequisites of `coverage-node`. `tests/test_coverage_fails.py` sets it empty so its probe runs do not run `npm ci`; normal runs leave it alone. |
+| `EXPERIMENT_TESTS` | every `experiments/*/analyze.test.mjs` except P-51's `controls.test.mjs` | Run by `make experiments-test`, part of `make test`; with none it prints `no experiment analysis tests`. |
 
 Setup targets run `npm ci --ignore-scripts` from a lockfile: `loop-setup` (`tools/asc`), `tscheck-setup`
 (`tools/tscheck`) and `rust-lane-setup` (`tools/rust_lane`). `isolate-test` depends on `loop-setup` and
@@ -459,13 +461,15 @@ Setup targets run `npm ci --ignore-scripts` from a lockfile: `loop-setup` (`tool
 `rust-lane-setup`.
 
 Quality targets outside `make test`: `make lint` runs `$(RUFF) check` over the tree with [ruff.toml](../../ruff.toml)
-(rules E4, E7, E9 and F, with E401, E402, E701, E702 and E731 ignored; `.tools`, `.test-work` and `TODELETE` excluded)
-and `node --check` on every `.mjs`, `.js` and `.cjs` file outside `node_modules`, `.git`, `.tools` and `.test-work`.
-`make coverage` runs `coverage-node` (after `tscheck-setup` and `loop-setup`: the Node suites under
+(rules E4, E7, E9 and F, with E401, E402, E701, E702 and E731 ignored; `.tools`, `.test-work` and `TODELETE` excluded),
+`tools/check_comments.py` (no code comments, REQ-REPO-010) and `node --check` on every `.mjs`, `.js` and `.cjs` file
+outside `node_modules`, `.git`, `.tools` and `.test-work`.
+`make coverage` runs `coverage-node` (after `$(COVERAGE_SETUP)`: the Node suites under
 `--experimental-test-coverage`, excluding test files from the report and skipping `loop-review.test.mjs` test 14, whose write counter
 sees coverage's own writes; `make test` still runs it) and `coverage-python` (coverage.py over `core` and `tools` when it is installed,
-else `python3 -m trace` counts into `$(COVERAGE_DIR)/trace`). `make gap-tools-test`, part of `make test`, runs
-`GAP_PY_TESTS` and `GAP_NODE_TESTS`.
+else `python3 -m trace` counts into `$(COVERAGE_DIR)/trace`). Either half fails when a test fails, and so does
+`make coverage`; `tests/test_coverage_fails.py` checks this. `make gap-tools-test`, part of `make test`, runs
+`GAP_PY_TESTS` and `GAP_NODE_TESTS`, and `make experiments-test` runs `EXPERIMENT_TESTS`.
 
 ## Change history
 
@@ -480,3 +484,4 @@ else `python3 -m trace` counts into `$(COVERAGE_DIR)/trace`). `make gap-tools-te
 | 3.4 | 2026-11-09 | round 4 | `runNeed` `synthCell`; Makefile `RUFF_VERSION`, `RUFF`, `COVERAGE_DIR`, `GAP_PY_TESTS`, `GAP_NODE_TESTS` and the targets `lint`, `coverage` and `gap-tools-test` | this commit |
 | 3.5 | 2026-11-09 | round 5 | `ENDOFORGE_ASC` default is now the `tools/asc` pin; `ENDOFORGE_SECOND_HOST` (test-only) added | this commit |
 | 3.6 | 2026-11-09 | round 6 | `ENDOFORGE_WASMTIME` default is now empty (the pinned wheel); `ENDOFORGE_WASMTIME_SHA256` applies only to a CLI; `ENDOFORGE_WORKER_IMAGE` also feeds the `RealDocker` test; `CARGO_HOME` defaults to `~/.cargo` (corrected) | this commit |
+| 3.7 | 2026-11-09 | rounds 7b and 8 | `ENDOFORGE_TOOLCHAIN_NODE` defaults to the running Node's install prefix and a home without `bin/node` is refused (round 7b); Makefile `COVERAGE_SETUP` and `EXPERIMENT_TESTS` and the target `experiments-test`; `make lint` runs the comment check | this commit |

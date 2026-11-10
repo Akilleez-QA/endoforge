@@ -184,7 +184,9 @@ maps onto the scheduler, `plan-review` works from an unrelated directory, `revie
 stage policy, `scripts/hc-patch.sh` prints its usage
 without arguments and still produces a repo-relative patch) and `test/fanout-plan-scoreboard.test.mjs` (ownership
 overlaps, lane assignment, wave sizing by the capacity dial, review, fix and judge atoms, the ratchet, re-atomizing,
-round scoring and the stop rule, all without a model). The fan-out library (`lib/fanout.mjs`: logins, lanes, worker commands,
+round scoring and the stop rule, all without a model) and `test/compose-mounts.test.mjs` (each compose atom binds
+what `hillclimb.mjs` imports, model atoms see only `/hc-tool`, and under `bwrap` the compose commands load and
+compose-review writes `FIXLIST.md` and `score.json`; the two `bwrap` cases skip where it cannot start). The fan-out library (`lib/fanout.mjs`: logins, lanes, worker commands,
 the capacity dial) is also used by [job](../job/README.md), the [conductor](../conductor/README.md) and the
 [project scheduler](../project-scheduler/README.md).
 

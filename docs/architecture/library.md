@@ -37,7 +37,10 @@ need.
 2. The artifact binding must hold: a module present, its `source` hash equal to `kernel.ts`, and `frozen.sha256`
    matching the contract and tests.
 3. The candidate's own tests are run again through `runGates` under today's gates. A failure is not admitted.
-4. A behavioural fingerprint is taken: the module's outputs on a grid derived from its declared capability.
+4. A behavioural fingerprint is taken: the module's outputs on a grid derived from its declared capability. Numbers,
+   non-finite ones included, are printed to 12 significant digits, records and lists as JSON, and text, booleans and
+   missing values exactly as JSON, so two kernels that return different strings get different fingerprints (until
+   round 8 text was turned into a number, and every string printed `NaN`).
 5. The entry is journaled with its capability, its keys, its fingerprint, the source promotion, and the digests of
    the `gates.mjs` and `host.mjs` it was qualified under.
 
@@ -188,7 +191,8 @@ principal. The caller passes a principal (`openLibrary({ principal })` as the de
 | Named by a grant | Allowed |
 
 `grant(id, { tenant, lineage? })` and `ungrant(...)` open or close an entry to another tenant or lineage. Only a
-principal the entry already allows may change its grants. Both are journaled.
+principal the entry already allows may change its grants. Both are journaled. A grant or ungrant that names a
+reclaimed entry applies to the entry it was reclaimed into.
 
 ## Duplicates, counterexamples and environments
 
@@ -196,11 +200,17 @@ principal the entry already allows may change its grants. Both are journaled.
   group, and marks the others as reclaimed into it, releasing their stored module and own files. It then rewrites the
   journal: a first `library_compacted` record names the previous sequence number and tip, and the hash chain restarts
   from it. `reclaim({ compact: false })` skips the rewrite. A plan that names a reclaimed entry is redirected to its
-  survivor.
+  survivor. The survivor takes the union of the reclaimed entries' grants, so a tenant granted only a reclaimed entry
+  is still served and can still compose it; the move is rebuilt when the journal is replayed. Before round 8 the
+  grants were dropped with the duplicate.
 - **Counterexamples.** A refusal records the failing tests as counterexamples on the entry. A later lookup whose tests
   include one of them, with an expectation the recorded output fails, misses with `counterexample` without running a
-  cell, as does an identical need (same entry, tests, contract numerals, gate mode and host). `counterexamples(id)`
-  lists them. They are rebuilt from the journal on open, so they survive a restart.
+  cell, as does an identical need (same entry, tests, contract numerals, gate mode, host and environment).
+  Counterexamples are kept per environment: a refusal in one environment does not refuse the need in another where the
+  entry qualified (before round 8 it did). Refusals journaled before round 8 carry no environment; their
+  counterexamples apply in every environment, and their old identical-need records no longer match.
+  `counterexamples(id)` lists those that apply here. They are rebuilt from the journal on open, so they survive a
+  restart.
 - **Environments.** Qualification is recorded per environment: Node version, V8 version, platform and architecture,
   hashed into an environment id (`openLibrary({ environment })` replaces it, for tests). An entry is served only in an
   environment where it has a passing qualification under the current host digests. `requalify()` runs entries that
@@ -233,6 +243,8 @@ It does not see:
 - an English-only difference that changes no numeral and no declared field ("round down", "exclusive");
 - a wrong unit or label that the gates accept: G7 and G9 refuse some mislabels, not all, so an admitted entry can carry
   a unit it doesn't compute and match a need that declares it;
+- a difference inside a record, list or text value: the key compares each argument and result at the top level only,
+  so two capabilities whose nested fields carry different units share a key (finding D-11);
 - unit spellings outside its small alias table (`F` and `C` are read as temperatures);
 - a fault the mutant set and grid don't reach, including one visible only on NaN or infinity.
 

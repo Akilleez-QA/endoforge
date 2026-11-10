@@ -152,7 +152,12 @@ no unknown fields, an `id`, an `assumption` and a `question` of at least 20 char
   the same exports, the same number of arguments, and per argument the same kind, unit, range and codes, per result
   the same kind, unit, precision, rounding, codes and labels, and the same set of trapping exports. Units and ranges
   are compared the way library lookup compares them, so `1`, `none` and `dimensionless` are one unit and `0..10` equals
-  `[0, 10]`. The loop's freeze already refuses a contract without the block (REQ-GEN-011), and since round 7 so
+  `[0, 10]`. Since round 8 the comparison goes down through structured values: record fields are matched by name
+  (a missing, extra or renamed field is reported; order does not count), a list's `items` and `max` and a text value's
+  `maxBytes` must match, and every nested value is compared on the same keys as the top level, so a nested Celsius
+  result relabelled Fahrenheit in `glue.json` fails G7. A block that names `record`, `list` or `text` without
+  declaring its fields, items or bounds still agrees with any glue layout, and the specification prompts do not ask
+  for that layout, so for such a block nested drift is not caught (finding D-11). The loop's freeze already refuses a contract without the block (REQ-GEN-011), and since round 7 so
   does the stand-alone [gate CLI](../../tools/gate/README.md)'s `freeze` (REQ-GATECLI-001).
 
 A unit that disagrees with its argument's name (`unitDisagreements`) is reported as advisory and does not fail G7;

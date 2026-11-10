@@ -60,4 +60,5 @@ record that object as `run.archived` or `archive.refused`.
 
 ## Reading it
 
-`node tools/atomizer/bin/ledger-export.mjs [--out dir]` flattens the ledger into CSV tables.
+`node tools/atomizer/bin/ledger-export.mjs [--out dir]` flattens the ledger into CSV tables. With no events file (`events.jsonl` in the
+ledger directory, which `ATOMIZER_LEDGER_DIR` sets) it exits 2 with its usage; before round 8 it threw `ENOENT`.

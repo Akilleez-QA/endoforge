@@ -88,7 +88,8 @@ malformed one, or one that disagrees with `tests.json`, to the model as problems
 until they are fixed. The implementation
 prompt sends the frozen files, the closed glue schema, the glue rules and a template, and asks for AssemblyScript
 0.28.20 on the stub runtime with no imports except `env.abort` and no `assert` (the compiler runs with `--noAssert`), and asks
-`glue.json` to declare the same capability as the block; G7 refuses glue that does not.
+`glue.json` to declare the same capability as the block; G7 refuses glue that does not, comparing nested record
+fields, list items and text bounds as well as the top level ([gates](gates.md#glue-g7)).
 Both prompts carry `stateRules`: when the need keeps state, such as a list of items, the kernel is a reducer over
 records, lists and text (state and event in, next state out), with the memory layout and pointer convention described
 in [structured state](gates.md#structured-state), and `tests.json` holds that state as JSON objects and arrays.

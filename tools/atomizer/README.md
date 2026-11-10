@@ -91,7 +91,7 @@ Kernel atoms get `node` and `asc`. `ENDOFORGE_TOOLCHAIN_<NAME>` overrides a path
 | Script | What it does | Calls a model |
 |---|---|---|
 | `bin/schedule.mjs run <atoms.json> --run-dir <dir>` | Validates, plans and runs every atom. Options: `--concurrency` (8; 3 with the Codex backend), `--retries` (1), `--timeout-ms` (900000), `--policy`, `--force`, `--no-augment`. A model atom refused by the subscription guard fails with exit 78 and its reason, without a retry, and the run still writes its receipts. | Only model atoms |
-| `bin/verify.mjs <run-dir> [--policy file]` | Checks a finished run against its receipts and acceptance commands. Its usage text lists `--policy`, but it always loads the `policy.json` next to the tool and ignores the flag. | No |
+| `bin/verify.mjs <run-dir> [--policy file] [--no-archive]` | Checks a finished run against its receipts and acceptance commands, using the `--policy` file (default: the `policy.json` next to the tool) for the toolchain its checks run with, and records that file's `path` and `sha256` as `policy` in `receipt/verify.json`. Options and the run directory may come in any order. Exits 2 with its usage, before checking anything, on a missing, unreadable or non-object policy, no run directory or more than one, a run directory without `atoms.json`, or an unknown option; `--help` prints the usage. Then archives the run unless `--no-archive` (see [LEDGER.md](LEDGER.md)). `fanout.mjs` and `cutover.mjs` call it without `--policy`, so they verify against the default policy. | No |
 | `bin/report.mjs <run-dir>` | Markdown timeline, tokens and realized speedup. | No |
 | `bin/speed.mjs <run-dir or fanout-dir>... [--out SPEED.md] [--json speed.json]` | Wall time broken down by stage. | No |
 | `bin/fanout.mjs <atoms.json...> --out-dir <dir> [--parallel-runs 4] [--per-run-concurrency 4]` | Several DAGs as one pool, then verify and report on each. A graph the scheduler refuses is recorded in `fanout.json` and the others still run; exit 1 when any request fails verification. | Only model atoms |
@@ -101,9 +101,9 @@ Kernel atoms get `node` and `asc`. `ENDOFORGE_TOOLCHAIN_<NAME>` overrides a path
 | `bin/cutover.mjs <ladder.json> --out-dir <dir> [--cases id,id] [--rep 1] [--parallel-cases 2] [--dag-concurrency 6] [--arms direct,atomized,templated]` | Paired arms (default direct and atomized) on the same gates. Exits 2 on missing arguments or an unknown arm. | Yes |
 | `bin/compose-kernel.mjs --id <need> --in /in --out /out --work /work --gate <gate.mjs> [--preflight]` | Merges kernel parts, freezes, runs the gates. Runs inside a compose atom. Exits 2 with its usage when an option is missing, 3 when an input is missing or the contract atom's `CONTRACT.md` has no valid capability block, and 4 when the freeze fails. Test arrays are merged as text, so `1e999` (Infinity) survives. `--preflight` exits 10 unless G2 (compiles) passed. | No |
 | `bin/testcheck.mjs strip <tests> <cases>` or `merge <tests> <computed> <out> <report>` | Blind-test expectation check (S-09), used inside atoms: `strip` writes the test inputs without expected values; `merge` keeps a test the independent computation agrees with (within the larger of `tol` and 0.2% of the value), drops one it disagrees with, keeps and flags one it gave no answer for, and widens `tol` when they agree but differ by more than it. Prints its usage and exits 2 when the arguments are missing. | No |
-| `bin/repair-noop.mjs --failures /in/<draft>/failures.json --map '<json [{"from","to"}]>'` | Preflight of the repair atom: when the draft's `failures.json` is an empty list, copies every kernel part to its declared output unchanged, writes `repair-notes.md` and exits 0; otherwise (or when the file cannot be read) exits 10 so the model repair runs. | No |
+| `bin/repair-noop.mjs --failures /in/<draft>/failures.json --map '<json [{"from","to"}]>'` | Preflight of the repair atom: when the draft's `failures.json` is an empty list, copies every kernel part to its declared output unchanged, writes `repair-notes.md` and exits 0; otherwise (or when the file cannot be read) exits 10 so the model repair runs. Exits 2 with its usage on a missing `--failures` or `--map`, an option without a value, an unknown argument, or a `--map` that is not a JSON list of `from`/`to` paths; `--help` prints the usage. | No |
 | `bin/isolate-exec.mjs` | Host trampoline for Codex workers: runs the sandbox command from `ENDOFORGE_ISOLATE_SPEC` with `CODEX_HOME` bound at its own path. It checks only that `CODEX_HOME` is a directory, never its contents. | No |
-| `bin/ledger-export.mjs [--out dir]` | Flattens the ledger ([LEDGER.md](LEDGER.md)) into the derived, regenerable tables `attempts.csv`, `atoms.csv`, `runs.csv`, `pools.csv`, `atomizations.csv` and `reviews.csv`. `--out` defaults to `tables/` in the ledger directory. | No |
+| `bin/ledger-export.mjs [--out dir]` | Flattens the ledger ([LEDGER.md](LEDGER.md)) into the derived, regenerable tables `attempts.csv`, `atoms.csv`, `runs.csv`, `pools.csv`, `atomizations.csv` and `reviews.csv`. `--out` defaults to `tables/` in the ledger directory. Exits 2 with its usage when the ledger has no events file, `--out` has no value or an argument is unknown, and 1 naming the line when an event is not JSON; `--help` prints the usage. | No |
 | `bin/backfill.mjs`, `bin/bench.mjs [--atoms f] [--n N]` | `backfill.mjs` rebuilds ledger events from run directories and atomization receipts made before the ledger existed; every event it writes carries `backfilled: true` and its source paths, and a run already in the ledger is skipped. `bench.mjs` is a scheduler benchmark: `--atoms` defaults to [examples/example.json](examples/example.json); a missing file is refused with exit 2. `--stub --replay <run>` uses a stub Codex. | Only for model atoms |
 
 ## Example
@@ -172,7 +172,7 @@ The main rules `lib/validate.mjs` applies:
 | `ENDOFORGE_CODEX_CONCURRENCY` | 3 | Default concurrency with the Codex backend. |
 | `ENDOFORGE_CODEX_POOL` | `core/runtime/agent-pool.mjs` | Codex pool launcher. |
 | `CODEX_POOL_STATE_DIR` | `.codex-pool` in the home directory | Where the scheduler reads the pool log. |
-| `ENDOFORGE_TOOLCHAIN_<NAME>` | `policy.toolchain.<name>` | Host path of a toolchain, for example `ENDOFORGE_TOOLCHAIN_CODEX`. |
+| `ENDOFORGE_TOOLCHAIN_<NAME>` | `policy.toolchain.<name>`; for `NODE`, the install prefix of the running Node | Host path of a toolchain, for example `ENDOFORGE_TOOLCHAIN_CODEX`. A `NODE` home without `bin/node` is refused. |
 | `ENDOFORGE_TRACE` | on | `0` turns off `trace.jsonl`. |
 | `ENDOFORGE_CLAUDE_ACCOUNTS` | `.claude-accts` in the home directory | One Claude config directory per login, each with `.credentials.json`; each `claude` launch mounts the next one read-write at its own path and sets `CLAUDE_CONFIG_DIR` to it, so a token refresh lands in the pool folder. A credential copied into a throwaway home could rotate the original's refresh token away. The subscription guard reads the credential's metadata, never its tokens. |
 | `ENDOFORGE_CREDENTIAL_HOME` | unset | With no logins above, a home template whose credential files are copied into the sandbox home. |
@@ -190,7 +190,9 @@ subscription guard first.
 ## Tests
 
 `make atomizer-test` runs `test/run.mjs` (scheduler, isolation, cycles, forbidden edges, routing and lessons) and the
-other `test/*.test.mjs` files, with stubs instead of models. `test/tools-gaps.test.mjs` checks that
+other `test/*.test.mjs` files, with stubs instead of models. `test/run.mjs` points `ENDOFORGE_CLAUDE_ACCOUNTS` at an
+empty directory so no sandbox mounts the host's real logins, and makes its stand-in login directories next to the test
+rather than under `/tmp`, which the sandbox replaces with its own. `test/tools-gaps.test.mjs` checks that
 [LEDGER.md](LEDGER.md) lists exactly the events the code emits, that a bare `bench.mjs` run completes on its default
 atoms, and that `testcheck.mjs` prints its usage when arguments are missing. `test/commands.test.mjs` drives `atomize`
 (with `--fixture`), `direct`, `fanout`, `report` and `cutover` end to end on script-worker fixtures
@@ -199,6 +201,9 @@ subscription guard refuses them and the test checks the recorded refusal (REQ-AT
 rendered prompts of `atomize`, a planned contract atom, the `direct` worker and the templated planner for the
 capability rule and the gate labels G1 to G9, checks that `compose-kernel.mjs` refuses a contract without a valid
 block before freezing, and runs the compose helper inside a real sandbox with the policy's compose toolchain until the
-kernel is promotable (REQ-ATOM-006).
+kernel is promotable (REQ-ATOM-006). It also checks that the `node` toolchain defaults to the running Node, that
+`ENDOFORGE_TOOLCHAIN_NODE` overrides it, and that a home without `bin/node` is refused (REQ-ATOM-008).
+`test/cli-usage.test.mjs` checks `verify.mjs --policy` and the usage and exit-2 refusals of `verify.mjs`,
+`ledger-export.mjs` and `repair-noop.mjs` (REQ-ATOM-007).
 
-Engineering record: component C-22, requirements REQ-ATOM-001 to REQ-ATOM-006.
+Engineering record: component C-22, requirements REQ-ATOM-001 to REQ-ATOM-008.

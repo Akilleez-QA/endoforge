@@ -52,7 +52,8 @@ principal is passed by the caller, never read from the need.
 
 `reclaim()` keeps the oldest entry of each behaviour within a scope, releases the others' bytes and rewrites the journal
 with a `library_compacted` record naming the previous tip. A behaviour is the entry's fingerprint: every export's
-results over a fixed grid, with text, codes, records, lists and non-finite numbers kept exactly. The kept entry takes
+results over a fixed grid, with numbers (non-finite ones included) to 12 significant digits, records and lists as
+JSON, and text kept exactly, so kernels returning different strings are not duplicates. The kept entry takes
 the union of the released entries' grants, and a later `grant`, `ungrant` or composition plan that names a released
 entry resolves to the kept one. A refused need records its counterexamples: a later need whose tests that entry is
 known to fail, or an identical refused need, misses with `counterexample` and no cell runs. Qualifications and
