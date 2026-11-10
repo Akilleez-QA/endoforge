@@ -6,7 +6,7 @@ P-71's need-clustered bootstrap had it too. When a need was drawn twice, the spe
 
 ## Regeneration
 
-**Status: not yet regenerated.** The per-row results are outside git, with hashes in [receipt/outside-git.sha256](receipt/outside-git.sha256), and were not reachable from the session that wrote this fix. Until they are regenerated, read the spec-level intervals in [receipt/heldout](receipt/heldout/analysis.json), [receipt/dev](receipt/dev/analysis.json) and [receipt/p70-heldout-comparison](receipt/p70-heldout-comparison/analysis.json) (`summary.*.falseFlagSpecs`, `summary.difference.falseFlagSpecs`, `byNeed.falseFlagSpecs`) as too narrow. To regenerate, run this; it checks each rows file against its recorded hash and prints old and new figures:
+**Status: regenerated 2026-11-09** by the coordinator with `reanalyze.mjs` from the hash-checked rows. Held-out spec-level false flags after the round-2 parser: upper bound 5.46% → 6.00%; paired difference upper bound 3.15 → 3.70 points; by-need upper bound 6.08% → 7.20%. B1 (upper bound ≤ 2%) was missed and is still missed; B2, B3 and S1 do not use these intervals. The verdicts and `limits.oracle` staying off are unchanged.
 
 ```sh
 node experiments/P-70-oracle-injected/reanalyze.mjs <p71-heldout/rows.json> P-71-oracle-round2/receipt/heldout <p70-dev/rows.json> P-71-oracle-round2/receipt/dev <p70-heldout-comparison/rows.json> P-71-oracle-round2/receipt/p70-heldout-comparison

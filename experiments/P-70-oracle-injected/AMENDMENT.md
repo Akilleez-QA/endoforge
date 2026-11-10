@@ -18,6 +18,6 @@ The per-row results are kept outside git, with their hashes in [receipt/outside-
 node experiments/P-70-oracle-injected/reanalyze.mjs <p70-heldout/rows.json> P-70-oracle-injected/receipt/heldout <p70-dev/rows.json> P-70-oracle-injected/receipt/dev
 ```
 
-**Status: not yet regenerated.** The rows were not reachable from the session that wrote this fix, so [receipt/heldout/analysis.json](receipt/heldout/analysis.json) and [receipt/dev/analysis.json](receipt/dev/analysis.json) still carry the collapsed spec-level intervals. Until they are regenerated, read the spec-level intervals as too narrow. The figures affected are B1's held-out upper bound (2.21% after, 2.82% before) and the paired difference (−0.47 [−1.12, 0.36]).
+**Status: regenerated 2026-11-09** by the coordinator with `reanalyze.mjs` from the hash-checked rows. Held-out spec-level false flags, upper bound: after the fix 2.21% → 2.57%, before 2.82% → 3.27%; paired difference upper bound 0.36 → 0.47 points; dev upper bounds 2.59% → 3.66%. B1 (upper bound ≤ 2%) was missed and is still missed, so the verdict and `limits.oracle` staying off are unchanged. Recall and abstention figures are unchanged.
 
 Only B1 reads a spec-level figure. Every other bar uses row-level figures, which do not change. B1 was already missed at 2.21%. The corrected bound is expected to be wider (the 100-specification case goes from 1.72% to 3.00%), but the regenerated figure is the record.
