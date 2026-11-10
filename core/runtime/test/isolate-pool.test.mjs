@@ -354,14 +354,18 @@ test('bridge death rejects pending runs and all later requests without respawnin
   t.after(() => pool.close());
   const pending = Array.from({ length: 8 }, () => pool.run(job()));
   const settled = Promise.allSettled(pending);
-  const children = readFileSync(`/proc/self/task/${process.pid}/children`, 'utf8').trim().split(/\s+/);
-  const bridges = children.filter(pid => readFileSync(`/proc/${pid}/comm`, 'utf8').trim() === 'python3');
-  assert.equal(bridges.length, 1);
-  process.kill(Number(bridges[0]), 'SIGKILL');
+  for (let tries = 0; pool.ledger.pid === undefined && tries < 1000; tries += 1) await new Promise(resolve => setTimeout(resolve, 5));
+  const bridge = pool.ledger.pid;
+  assert(Number.isInteger(bridge) && bridge > 0);
+  const parent = Number(readFileSync(`/proc/${bridge}/stat`, 'utf8').split(') ').at(-1).split(' ')[1]);
+  assert.equal(parent, process.pid);
+  process.kill(bridge, 'SIGKILL');
   const results = await settled;
   assert(results.every(result => result.status === 'rejected'));
   for (const result of results) assert.match(result.reason.message, /bridge failed/);
   await assert.rejects(pool.run(job()), /bridge failed/);
+  assert.equal(pool.ledger.pid, bridge);
+  assert(pool.ledger.failed);
 });
 
 test('schema-invalid tampering with a recomputed chain invalidates the validation cache', async t => {
