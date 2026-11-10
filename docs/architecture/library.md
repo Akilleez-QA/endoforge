@@ -121,8 +121,12 @@ mutant witnesses. A cell timeout, a guard breach or a crash is a refusal, never 
 writes nothing.
 
 When lookup finds nothing under the key and the need has two or more exports, `serve` tries a union: for each wanted
-export it picks a usable entry whose export has the same signature and whose contract numerals all appear in the
-need's contract, and composes them when more than one entry is involved.
+export it picks a usable entry whose export has the same signature, nested layout included, and whose contract
+numerals all appear in the need's contract, and composes them when more than one entry is involved. When two wanted
+exports share one signature (for example state in and state out over the same record), each binds only to an entry
+export with the same name, so they are not all sent to the first entry that fits (round 10); with no such entry there
+is no union. A member whose nested layout differs from every entry leaves no union, and `serve` misses with
+`no_contract_match`.
 
 ## Composition
 

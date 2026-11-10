@@ -91,8 +91,12 @@ The base call sweeps each such parameter over its pool, and the 48 random calls 
 
 **The reference** runs in [sandbox.mjs](../../core/runtime/x1/synth/sandbox.mjs): a separate Node process under the
 permission model, with an empty environment, where each variant gets a fresh `vm` context holding only `Math`,
-`Number`, `Error`, `RangeError`, `TypeError`, `isFinite` and `isNaN`; 2 s to load, 200 ms per call, 4 s per variant, 30 s
-in all. A reference may return a number, a boolean, a string, or a plain object or array; the sandbox copies an
+`Number`, `Error`, `RangeError`, `TypeError`, `isFinite` and `isNaN`; 2 s to load, 200 ms per call and 4 s per variant
+inside the child. The child itself is killed at a deadline that grows with the work: 30 s of startup plus, for each
+variant, 2 s of load and 400 ms per call up to 4.4 s (an explicit `timeout` replaces it). Until round 10 it was 30 s
+in all, which several full suites running at once could exceed (finding D-14). A failure says whether the child timed
+out (with the time waited and the deadline), exited with a code or a signal, or exceeded its output limit; M2 reports
+it with an `M2 ` prefix. A reference may return a number, a boolean, a string, or a plain object or array; the sandbox copies an
 object or array out as JSON, so a later call cannot see it change. Anything else (`undefined`, a function, a value
 that can't be serialized) is marked unusable, which is a failure, never a throw. For an export with a declared
 layout, [layout.mjs](../../core/runtime/x1/synth/layout.mjs) checks and normalizes each returned value by the same

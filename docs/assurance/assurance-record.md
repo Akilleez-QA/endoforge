@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SAR |
-| Version | 1.8 |
+| Version | 1.9 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-10 |
@@ -72,6 +72,16 @@ Findings:
   the read-only `LedgerBridge.pid` that the bridge-death test now uses. The layout rule tightens a contract: a block
   that froze before round 9 without a layout is now refused, and a library entry admitted before round 9 with a
   structured value is keyed without its layout and is no longer found. No gap was opened.
+- Round 10 took six items: D-14 (T1), D-15 (T2), the cutover-planning gap that round 9 left in D-12's closure (T3,
+  now D-16), tests for the library's union path (T4), and two coordinator lessons turned into tool changes (T5, T6).
+  Four requirements were added: REQ-SYNTH-009 (the reference sandbox's deadline grows with the variants and calls it
+  runs, and its error tells a timeout from an exit; D-14 closed), REQ-COND-005 (a relaunch patch reopens a job past
+  `streaming`, including `done`; D-15 closed), REQ-COND-006 (the `TRACE-NEEDED` event when an atom freezes with new
+  test files) and REQ-JOB-004 (invariants I16, no records check before freeze, and I17, every check calibrated on the
+  base tree at `stage`). REQ-ATOM-007 now has cutover's planning steps take, use and record the policy (D-16 closed),
+  and REQ-LIB-002 has union members match on nested layout and bind by export name when they share a signature. I17
+  tightens staging: a job whose check is broken on the base tree, or whose checks have not been calibrated, no longer
+  stages or fires. No gap was opened.
 - Trace check after the update (`python3 -I tools/check_trace.py`): 95 requirements, 95 traced, 14 gaps, 0 TBD; 97
   discovered test files, 92 traced and 5 supporting; 0 problems. After the round-2 records pass on 2026-11-09: 127
   requirements, 127 traced, 10 gaps; 111 discovered test files, 105 traced and 6 supporting; 0 problems. After the
@@ -87,7 +97,11 @@ Findings:
   supporting (four more: the P-64, P-65, P-70 and P-71 analysis tests, which support historical experiment records);
   0 problems. After the round-9 records pass: 154 requirement IDs (one deleted), 154 traced, 0 gaps; 146 discovered
   test files, 134 traced and 12 supporting (one more traced: `tools/atomizer/test/verify-policy-pass.test.mjs`); 0
-  problems.
+  problems. After the round-10 records pass: 158 requirement IDs (one deleted), 158 traced, 0 gaps; 152 discovered
+  test files, 140 traced and 12 supporting (six more traced: `core/runtime/test/gaps10-sandbox.test.mjs`,
+  `core/library/test/union-layout.test.mjs`, `tools/atomizer/test/cutover-policy.test.mjs`,
+  `tools/conductor/test/relaunch-done.test.mjs`, `tools/conductor/test/trace-needed.test.mjs` and
+  `tools/job/test/invariants-gates.test.mjs`); 0 problems.
 
 ### Design analysis
 
@@ -101,6 +115,8 @@ decision core this repository does not have. Round 6 gave C-17, the kernel host,
 tests: C-26's admission. C-27 and C-30 named the round-6 gaps (GAP-EF-016, GAP-EF-015); round 7 closed both and
 allocated REQ-ATOM-006 to C-22 and REQ-REPO-010 (the no-comments check) to C-27. Round 8 allocated REQ-ATOM-007 and
 REQ-ATOM-008 to C-22. Round 9 allocated nothing new; it changed C-05, C-06, C-07 and C-22 within their requirements.
+Round 10 allocated REQ-SYNTH-009 to C-08 and REQ-COND-005, REQ-COND-006 and REQ-JOB-004 to C-23, and changed C-05 and
+C-22 within REQ-LIB-002 and REQ-ATOM-007.
 
 ### Testing analysis
 
@@ -195,6 +211,23 @@ Findings:
   `core/runtime/test/gaps4-synth.test.mjs`, not in the bridge test: once on `exports.reduce.qualified` in the
   structured-vector synthesis case and once on S1's reference-sandbox timeout (D-14); each passed when run alone. None
   of these files is in a recorded STR, and no CI run of round 9 is recorded.
+- Round 10 added six test files: `core/runtime/test/gaps10-sandbox.test.mjs` (5 cases),
+  `core/library/test/union-layout.test.mjs` (4), `tools/atomizer/test/cutover-policy.test.mjs` (6),
+  `tools/conductor/test/relaunch-done.test.mjs` (6), `tools/conductor/test/trace-needed.test.mjs` (3) and
+  `tools/job/test/invariants-gates.test.mjs` (13). The workers reported failing first against the old code: the relaunch
+  test (the state had no way to reopen a job), the trace-event test, all 13 invariant tests (their exports did not
+  exist), and the first union test, which exposed a defect: union members sharing one signature were all bound to the
+  first entry that fit (fixed in `core/library/library.mjs`). The union worker also removed the layout from the library
+  signature for a moment and saw the nested-layout tests fail. The sandbox and cutover workers could not run their
+  tests against the old files (writing outside their worktree needed approval); the old sandbox module does not export
+  `referenceDeadline`, and the old receipts have no `policy` field, so the new tests cannot pass there. D-14's failure
+  under real load (several full suites at once) was not rerun. Every atom froze at iteration 1, and its conductor check
+  passed on 2026-11-10: C-SYNTHDEADLINE (11 of 11 across `gaps10-sandbox` and `gaps4-synth`), C-CONDRELAUNCH (6 of 6
+  and `make lib-test`), C-TRACEEVENT (3 of 3 and `make lib-test`), C-CUTPOLICY (6 of 6 and `make atomizer-test`, whose
+  first run failed the compose-helper case until `tools/asc` was installed in the worktree), C-UNIONTEST (4 of 4 and
+  `make library-test`, 39 of 39) and C-JOBINV (13 of 13 and `make lib-test`), each with the comment check. The JOBINV
+  worker's `make check` failed only on its new test file's missing trace row, which this records pass adds. None of
+  these files is in a recorded STR, and no CI run of round 10 is recorded.
 
 ### Source code quality
 
@@ -204,7 +237,7 @@ Findings:
 | Gitleaks 8.30.1 | `gitleaks git --no-banner --redact --log-opts=HEAD .` | 1 `generic-api-key` match in `experiments/P-51-escape-rate/controls.test.mjs:21`: the synthetic kernel key `synthetic/run/k`, a false positive |
 | Privacy lint | `python3 -I tools/check-privacy.py` | 0 failures |
 | JavaScript syntax | `node --check` on every `.mjs`, `.js` and `.cjs` (in `make lint`) | 0 failures at `b71eebf`; a syntax check only, no style or semantic lint |
-| Comment check (REQ-REPO-010) | `python3 -I tools/check_comments.py` (in `make lint`) | 0 comment lines on the round-8 head on 2026-11-09 and on the round-9 head on 2026-11-10. Round 7 removed the whole comment lines (D-07); round 8 lexes JavaScript, TypeScript and Rust, so it also finds end-of-line and inline comments, and the 20 it found were removed (D-09). In shell files and Makefiles it finds only `#` at the start of a line |
+| Comment check (REQ-REPO-010) | `python3 -I tools/check_comments.py` (in `make lint`) | 0 comment lines on the round-8 head on 2026-11-09 and on the round-9 and round-10 heads on 2026-11-10. Round 7 removed the whole comment lines (D-07); round 8 lexes JavaScript, TypeScript and Rust, so it also finds end-of-line and inline comments, and the 20 it found were removed (D-09). In shell files and Makefiles it finds only `#` at the start of a line |
 
 ### Configuration audit
 
@@ -245,8 +278,10 @@ No issues were filed for these findings; they are reported to the maintainer thr
 | D-11 | S4 | G7 and library lookup can still miss nested drift. A capability block that says `kind: record`, `list` or `text` without its fields, items or bounds agrees with any glue layout, and `capabilityRule` and `capabilityProblems` (`core/runtime/x1/generator.mjs`) do not ask for that layout, so for such blocks the round-8 recursive comparison has nothing to compare. Library lookup's `signature` (`core/library/key.mjs`) compares only the top level, so the library could reuse a capability whose nested units differ | `core/runtime/x1/generator.mjs`, `core/library/key.mjs` | Closed 2026-11-10 (round 9): a record, list or text value must declare its layout in the block; every prompt that asks for the block asks for it; the freeze and G7 refuse a block without it (REQ-GEN-011, REQ-ATOM-006); the library key and binding include the nested layout (REQ-LIB-001) |
 | D-12 | S4 | `fanout.mjs` and `cutover.mjs` call `verify.mjs` without `--policy`, so a run scheduled with another policy is verified against the default `policy.json` | `tools/atomizer/bin/fanout.mjs`, `tools/atomizer/bin/cutover.mjs` | Closed 2026-11-10 (round 9): both take `--policy`, pass it to `schedule.mjs` and `verify.mjs`, record it, and refuse an unreadable one with exit 2 (REQ-ATOM-007). Cutover's planning steps still read the default policy |
 | D-13 | S4 | `docs/releases/VDD-main-20261108.md` says "CI has no secret-scanning job", which was false when it was generated (the CI job `secret-scan` existed). The generator now reads the workflows (REQ-REPO-008); the record is generated and is not edited by hand | `docs/releases/VDD-main-20261108.md` | Open (round 8): corrected at the next generated release record |
-| D-14 | S4 | `core/runtime/test/gaps4-synth.test.mjs` S1 fails with "M2 reference sandbox failed or timed out" after about 30 s when several full suites run at once (load average 40 to 60). Run alone it passed in 2.8 to 16 s, and it still passed with twice `nproc` CPU spinners running, so plain CPU load does not reproduce it. `runReferences` runs every reference call in one child process under a single 30-second wall-clock `execFile` timeout | `core/runtime/x1/synth/sandbox.mjs` (`runReferences`), `core/runtime/test/gaps4-synth.test.mjs` | Open (round 9) |
-| D-15 | S4 | Conductor: a coordinator patch that sets an atom to `relaunch` after the job's phase is `done` is ignored, because `conduct` returns as soon as it reads phase `done` and no handler runs | `tools/conductor/lib/daemon.mjs` (`conduct`) | Open (round 9) |
+| D-14 | S4 | `core/runtime/test/gaps4-synth.test.mjs` S1 fails with "M2 reference sandbox failed or timed out" after about 30 s when several full suites run at once (load average 40 to 60). Run alone it passed in 2.8 to 16 s, and it still passed with twice `nproc` CPU spinners running, so plain CPU load does not reproduce it. `runReferences` runs every reference call in one child process under a single 30-second wall-clock `execFile` timeout | `core/runtime/x1/synth/sandbox.mjs` (`runReferences`), `core/runtime/test/gaps4-synth.test.mjs` | Closed 2026-11-10 (round 10): the deadline is 30 s of startup plus, per reference variant, 2 s of load time and 400 ms per call up to 4.4 s, and the error tells a timeout (with the time waited and the deadline) from an exit code, a signal or the output limit (REQ-SYNTH-009). The failing run under real load was not repeated; inside the child each variant's calls still share a 4-second budget |
+| D-15 | S4 | Conductor: a coordinator patch that sets an atom to `relaunch` after the job's phase is `done` is ignored, because `conduct` returns as soon as it reads phase `done` and no handler runs | `tools/conductor/lib/daemon.mjs` (`conduct`) | Closed 2026-11-10 (round 10): a relaunch reopens a job past `streaming`, including `done`, with a logged transition and a `GATE` event, is refused on a stopped job, and the daemon does not overwrite a reopen (REQ-COND-005). A reopened `done` job needs its daemon started again |
+| D-16 | S4 | `cutover.mjs` passes `--policy` to `schedule.mjs` and `verify.mjs`, but its planning steps (`atomize.mjs`, `plan-template.mjs`, `direct.mjs`) take no policy and read the default `policy.json`, so the arms plan under the default policy whatever the run's policy is. Noted by the round-9 records pass in D-12's closure and REQ-ATOM-007's status; given an ID in round 10 | `tools/atomizer/bin/cutover.mjs`, `tools/atomizer/bin/atomize.mjs`, `tools/atomizer/bin/plan-template.mjs`, `tools/atomizer/bin/direct.mjs` | Closed 2026-11-10 (round 10): every planning step takes `--policy`, validates its plan against it and records it; cutover records each arm's `planPolicy` and `planPolicyMatches` and does not run an arm whose plan used another policy or breaks it (REQ-ATOM-007) |
+| D-17 | S4 | Conductor: a `conductor.links` entry can be committed by the collect step as a stray file. `collectAtom` leaves link paths out of its `stray` report only. The change it applies is the diff of the atom's own `files`, taken after `git add -N` of the untracked files under them (`git ls-files --others --exclude-standard`); a link that lies inside a path the atom owns is a symlink, which a directory-only ignore rule such as `node_modules/` does not match, so it is diffed, applied and committed. It happened in a Cstack job with a `node_modules` symlink. Round 10 does not exclude links: TRACEEVENT's change to `collect.mjs` only records the files each commit added, and CONDRELAUNCH does not touch the collect step | `tools/conductor/lib/collect.mjs` (`collectAtom`) | Open (round 10) |
 
 ### Overall assessment
 
@@ -254,9 +289,10 @@ Every requirement traces to tests that exist, and every discovered test file tra
 No behaviour is registered as untested: GAP-EF-015 (the gate CLI's freeze) and GAP-EF-016 (the coverage target and CI
 job), opened in round 6, were closed in round 7, after the other fourteen. Since round 8 an automated test
 (`tests/test_coverage_fails.py`) shows a failing test failing `make coverage`, which GAP-EF-016's closure had rested on
-inspection for. Round 8 fixed the backfill review's findings and closed D-09 and D-10. Round 9 closed D-11 and D-12;
-D-13, D-14 (a load-dependent timeout in the reference sandbox) and D-15 (a conductor patch ignored after `done`) are
-open.
+inspection for. Round 8 fixed the backfill review's findings and closed D-09 and D-10. Round 9 closed D-11 and D-12.
+Round 10 closed D-14 (a load-dependent timeout in the reference sandbox), D-15 (a conductor patch ignored after
+`done`) and D-16 (cutover's planning steps ignored the run's policy); D-13 and D-17 (a conductor link committed as a
+stray file) are open.
 The real second-host case and the sandboxed-worker cases skip where their host prerequisites are missing, including in CI for the second host. Assurance is author-side only; no independent review has been performed.
 
 ## Change history
@@ -272,3 +308,4 @@ The real second-host case and the sandboxed-worker cases skip where their host p
 | 1.6 | 2026-11-09 | round 7 | Round-7 trace counts; GAP-EF-015 and GAP-EF-016 closed (no gap open); the round-6 atomizer regression; the `RealDocker` cases and the `coverage` job ran in CI; D-07 closed; D-09 and D-10 opened | this commit |
 | 1.7 | 2026-11-09 | round 8 | Round-8 trace counts (no gap open); the backfill review in the peer review summary; the round-8 defects and test files; the comment check finds end-of-line comments; D-09 and D-10 closed; D-11 (shallow capability blocks, top-level library signature), D-12 (`verify.mjs` not given the run's policy) and D-13 (the 2026-11-08 VDD's secret-scan sentence) opened | this commit |
 | 1.8 | 2026-11-10 | round 9 | Round-9 trace counts (no gap open); the round-9 requirement changes and test files, with the conductor checks that ran only in part; D-11 and D-12 closed; D-14 (the `gaps4-synth` reference-sandbox timeout under load) and D-15 (a conductor `relaunch` patch ignored after `done`) opened | this commit |
+| 1.9 | 2026-11-10 | round 10 | Round-10 trace counts (no gap open); the round-10 requirements and test files, with the workers' failing-first reports and conductor checks; D-14 and D-15 closed; D-16 (cutover's planning steps and the default policy) recorded and closed; D-17 (a conductor link committed by the collect step) opened | this commit |

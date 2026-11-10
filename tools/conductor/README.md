@@ -35,6 +35,8 @@ Phases run as a state machine: `staged`, `go`, `smoke`, `fired`, `streaming`, `g
 `compose` when the job declares them, then `done`. Every tick (5 seconds by default) the daemon reloads the manifest and
 `<jobdir>/conductor/state.json`, honours stop and pause, and runs the handler for the current phase. When the handler
 advances the phase, the next phase runs at once; only a wait uses up a tick, so `--max-ticks` counts waits, not phases.
+The daemon advances only if the phase is still the one its handler ran in, so a coordinator patch that reopens the job
+meanwhile (see Escalation below) is not overwritten.
 
 In `streaming` there is no barrier between atoms. For each atom whose worker has exited:
 
@@ -42,7 +44,8 @@ In `streaming` there is no barrier between atoms. For each atom whose worker has
    directory, from `git rev-parse --absolute-git-dir`, so a repository that is itself a git worktree works), take the
    diff of only the atom's own files from its worktree, apply it, run the collect gate (`conductor.gate` or the atom's `gate`), and commit. If the apply
    or the gate fails, revert only that atom's files and write the error to `conductor/gates/<atom>-i<n>.gate.json`.
-   Edits outside the atom's files are reported as stray and never applied.
+   Edits outside the atom's files are reported as stray and never applied (the `links` paths are left out of that
+   report). A commit's gate file also lists the files it `added`.
 2. **Check.** Run the atom's checks: the `conductor.checks` entries that name it (or name no atoms); if there are none,
    the runnable acceptance checks (`check.run`, not `human`) of the criteria the atom lists, so an atom is never frozen
    with its own checks unrun. A check is judged by exit status, a JSON result with judged items, or a
@@ -51,7 +54,8 @@ In `streaming` there is no barrier between atoms. For each atom whose worker has
    between two runs, is marked unstable and not acted on.
 3. **Decide.** Pass freezes the atom. Fail relaunches it with the findings and a keep-list of items that passed
    before; a change that only regresses passing items is reverted. The same failure twice, or running out of
-   iterations, escalates instead.
+   iterations, escalates instead. When an atom freezes and its collected commits, in any iteration, added test files
+   that are still at `HEAD`, the conductor emits `TRACE-NEEDED` listing them (see Rules and formats).
 
 Exit codes are typed (see [lib](../lib/README.md)): 75 from a gate or check means busy, wait and retry; 78 stops the
 job. A check that cannot run is "not scored", never a pass or a fail.
@@ -94,6 +98,7 @@ its prompt carries the collect gate's error. Everything else is the real conduct
 
 ```console
 $ tools/conductor/demo.sh /tmp/ef-demo/job
+baseline T1	passed	exited 0 in 49 ms
 phase go
 phase done
 conductor: demo — phase done
@@ -117,7 +122,8 @@ state: DONE; 2 atoms fired at 04:07:56
 92fc91b seed
 ```
 
-`SMOKE` only reports the smoke receipt the manifest already holds; the demo writes a placeholder and launches no
+The `baseline` line is `job.mjs stage` running the job's check once on the seed commit before the go (I17 in the
+[job](../job/README.md#invariants) tool). `SMOKE` only reports the smoke receipt the manifest already holds; the demo writes a placeholder and launches no
 engine. Each atom's first change was reverted at the collect gate and never reached the integration branch. The record of
 that, and the error the agent got in its second prompt:
 
@@ -179,6 +185,23 @@ is an RFC 7396 JSON merge patch (arrays are replaced whole), `note` is feedback 
 `resetIterations` restarts their iteration count. A patch that breaks the manifest's gates is refused and the manifest
 is left as it was.
 
+A patch whose `relaunch` names atoms reopens a job that has moved past `streaming` (`gates`, `locks`, `finals`,
+`compose` or `done`): the phase goes back to `streaming`, the state log records the step as
+`{from, to, why, reopened: true}`, a `GATE` event says so, and `patch` returns `reopened: true`. When the phase was
+`done` the daemon has already exited, and the event says to start it again (it names `endoforge conduct <job.json>`;
+in this repository that is `conduct.mjs unit` or `run`). The restarted daemon runs only the relaunched atoms. A
+relaunch on a job the user stopped is refused before anything is written; a patch without `relaunch` leaves a `done`
+job done.
+
+**TRACE-NEEDED.** New test files need trace rows (in the verification matrix) before other atoms' checks run the trace
+check. When an atom freezes, the conductor lists the test files its collected commits added and that still exist at
+`HEAD`, matched by name (`test_*` with a `.py`, `.mjs`, `.cjs`, `.js`, `.ts` or `.sh` suffix, `*_test.py`, and
+`*.test.*` or `*.spec.*` JavaScript and TypeScript files), and emits a `NEEDS-COORDINATOR` event with the summary
+`TRACE-NEEDED <atom>: new test files ...` and `data` `{event: 'TRACE-NEEDED', atom, iter, sha, tests}`. It does not
+escalate or hold the atom, and it names each file once per atom: the atom's state keeps `added` (every file its
+commits added) and `traceNotified` (the files already named). There is no separate event kind, so it goes to the
+`events.coordinator` hooks. Adopted lanes are never collected, so their freezes emit none.
+
 ## Environment
 
 | Variable | Default | Effect |
@@ -196,12 +219,17 @@ The job tool's event variables (`ENDOFORGE_NOTIFY` and the hook lists) apply too
 - Workers run as ordinary processes (a systemd unit or a detached child). The worktree separates their files; it is
   not a security sandbox.
 - The default model for Claude Code lanes is `opus` unless `conductor.claudeModel` says otherwise.
+- A `links` entry is kept out of the stray report, not out of the change. A link that lies inside a path the atom owns
+  (for example a `node_modules` symlink, which a `node_modules/` ignore rule does not match, because that rule matches
+  directories only) is diffed, applied and committed with the atom's change (finding D-17, open).
 
 ## Tests
 
 `make lib-test` runs `test/failopen.test.mjs`, `test/principles.test.mjs` and `test/stream.test.mjs`, which use a
 stub worker and fake logins like the demo, `test/adopt-example.test.mjs`, which adopts the example old job with
-the example map, and `test/conductor-gaps.test.mjs` (checks derived from criteria, the collect lock in a worktree
-repository, the worker tool list).
+the example map, `test/conductor-gaps.test.mjs` (checks derived from criteria, the collect lock in a worktree
+repository, the worker tool list), `test/relaunch-done.test.mjs` (a relaunch reopens a `done` or `gates` job, the
+restarted `conduct.mjs run` runs it, a stopped job is refused, the daemon keeps a reopen) and
+`test/trace-needed.test.mjs` (`TRACE-NEEDED` lists the new test files at freeze, and a freeze with none emits nothing).
 
-Engineering record: component C-23, requirements REQ-COND-001 and REQ-COND-002.
+Engineering record: component C-23, requirements REQ-COND-001 to REQ-COND-006.

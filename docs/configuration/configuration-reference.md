@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-CFG |
-| Version | 3.8 |
+| Version | 3.9 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-10 |
@@ -400,6 +400,15 @@ returns per-stage rates, utilisation, queues and a bottleneck verdict; `publish(
 `fuel` 100000 (1 to 10,000,000), `memory_bytes` 16 MiB (64 KiB to 16 MiB), `output_bytes` 1 MiB (1 byte to 1 MiB),
 `wall_seconds` 5.0 (0.01 to 60). Pinned Wasmtime 49.0.0 and wasm-tools 1.262.0.
 
+### Reference sandbox (`core/runtime/x1/synth/sandbox.mjs`)
+
+`runReferences(variants, calls, { timeout, startupMs, hold = 0 })` runs evaluator synthesis's reference calls in one
+child process. Without `timeout` the child is killed (`SIGKILL`) at `referenceDeadline(variants, calls, { startupMs })`:
+`startupMs` (default 30000) plus, for each variant, `loadMs` 2000 and the smaller of `callMs` 400 times the number of
+calls and `variantMs` 4400 (`referenceLimits`). `timeout` replaces that deadline. `hold` makes the child wait that many
+milliseconds before it starts; it exists for the tests. Inside the child each variant's calls share a 4000 ms budget.
+Since round 10.
+
 ## Job and Conductor manifest settings
 
 The `conductor` block of an `endoforge/job/1` manifest:
@@ -422,6 +431,13 @@ The `conductor` block of an `endoforge/job/1` manifest:
 | `links` | `[]` | `{ path, target }` symlinks made in each worktree. |
 | `checkConcurrency`, `busyBaseSec`, `busyWaitSec` | see the [Conductor README](../../tools/conductor/README.md) | Check parallelism and back-off when logins are busy (2 s base, 900 s cap). |
 
+The `stage` block of the manifest (read by `job.mjs stage`, since round 10):
+
+| Key | Default | Effect |
+|---|---|---|
+| `base` | `HEAD` | The commit on which `stage` runs each criterion check once, in a throwaway worktree, to record `proofs.baseline` (I17). |
+| `checkTimeoutSec` | `1800` | Time limit for one of those check runs; a check that runs out is recorded as failed. |
+
 `conduct run` takes `--tick` (default 5 seconds) and `--max-ticks` (default unlimited). `resources.health` in the
 manifest is the health check; without it the job tool runs `.local/bin/system-safety-status` in the home directory.
 
@@ -431,7 +447,8 @@ manifest is the health check; without it the job tool runs `.local/bin/system-sa
 Codex backend), `--retries` (1), `--timeout-ms` (900000), `--policy` (`tools/atomizer/policy.json`), `--force` and
 `--no-augment`. Policy limits: at most 64 atoms, `size.work` at most 3, atom timeouts capped at 5400 seconds.
 `verify.mjs`, `fanout.mjs` and `cutover.mjs` take `--policy` with the same default; `fanout.mjs` and `cutover.mjs` pass
-their policy on to `schedule.mjs` and `verify.mjs` (since round 9).
+their policy on to `schedule.mjs` and `verify.mjs` (since round 9). `atomize.mjs`, `plan-template.mjs` and `direct.mjs`
+take `--policy` with the same default, and `cutover.mjs` passes its policy to them too (since round 10).
 
 ## Hillclimb campaign defaults
 
@@ -488,3 +505,4 @@ else `python3 -m trace` counts into `$(COVERAGE_DIR)/trace`). Either half fails 
 | 3.6 | 2026-11-09 | round 6 | `ENDOFORGE_WASMTIME` default is now empty (the pinned wheel); `ENDOFORGE_WASMTIME_SHA256` applies only to a CLI; `ENDOFORGE_WORKER_IMAGE` also feeds the `RealDocker` test; `CARGO_HOME` defaults to `~/.cargo` (corrected) | this commit |
 | 3.7 | 2026-11-09 | rounds 7b and 8 | `ENDOFORGE_TOOLCHAIN_NODE` defaults to the running Node's install prefix and a home without `bin/node` is refused (round 7b); Makefile `COVERAGE_SETUP` and `EXPERIMENT_TESTS` and the target `experiments-test`; `make lint` runs the comment check | this commit |
 | 3.8 | 2026-11-10 | round 9 | Atomizer command defaults: `fanout.mjs` and `cutover.mjs` take `--policy` and pass it to `schedule.mjs` and `verify.mjs` | this commit |
+| 3.9 | 2026-11-10 | round 10 | Reference sandbox options (`timeout`, `startupMs`, `hold`) and the derived deadline; the manifest's `stage` block (`base`, `checkTimeoutSec`); `atomize.mjs`, `plan-template.mjs` and `direct.mjs` take `--policy` | this commit |

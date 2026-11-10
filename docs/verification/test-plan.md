@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-STP |
-| Version | 1.8 |
+| Version | 1.9 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-10 |
@@ -195,9 +195,15 @@ Live model runs (experiments) follow each experiment's `PRECOMMIT.md`; they are 
   may remain.
 - Tests that need a timeout or a process to appear can fail under heavy host load. Round 9 made the bridge-death test
   in `core/runtime/test/isolate-pool.test.mjs` wait for the pool's own bridge pid instead of reading the process's
-  children once (it failed in CI on Node 26 under load). `core/runtime/test/gaps4-synth.test.mjs` S1 still fails with
-  "M2 reference sandbox failed or timed out" when several full suites run at once (finding D-14): the reference
-  sandbox has one 30-second wall-clock limit over all its reference calls.
+  children once (it failed in CI on Node 26 under load). `core/runtime/test/gaps4-synth.test.mjs` S1 failed with
+  "M2 reference sandbox failed or timed out" when several full suites ran at once (finding D-14), because the reference
+  sandbox had one 30-second wall-clock limit over all its reference calls. Round 10 derives the deadline from the
+  variants and calls it runs and names a timeout apart from an exit (REQ-SYNTH-009); `gaps10-sandbox.test.mjs` holds the
+  child with a test-only `hold` option to show a slow child finishing and a hung one stopped. The run under real load
+  was not repeated.
+- Some round-10 tests run real git and processes: `cutover-policy.test.mjs` runs the planning commands and cutover,
+  `relaunch-done.test.mjs` and `trace-needed.test.mjs` run the real conductor on fixture repositories, and
+  `invariants-gates.test.mjs` makes temporary git repositories and worktrees and runs `job.mjs stage`.
 - The atomizer tests use script workers and fixtures. Round 6's regression (no prompt asked for the capability block)
   passed them all; round 7 added tests that assert on the rendered prompt text and run the compose helper in a real
   sandbox, but a real model run is still not part of the suite.
@@ -226,3 +232,4 @@ See the [verification matrix](verification-matrix.md).
 | 1.6 | 2026-11-09 | round 7 | `lint` runs the no-comments check; `gap-tools-test` runs its test; the coverage section records the first CI `coverage` run and a failing-test run (GAP-EF-016 closed); §8 records no open gap, the script-worker limit of the atomizer tests and the first `RealDocker` run | this commit |
 | 1.7 | 2026-11-09 | round 8 | `experiments-test` runs the experiment analysis tests in `make test`; the coverage section and §8 record the automated failing-test coverage check and the backfill-review lesson; the hillclimb compose-mount skip case | this commit |
 | 1.8 | 2026-11-10 | round 9 | §8 records the load-sensitive tests: the bridge-death test's pid-based wait (round 9) and the open `gaps4-synth` reference-sandbox timeout (D-14) | this commit |
+| 1.9 | 2026-11-10 | round 10 | §8 records D-14's fix and the round-10 tests that run real git, processes and the conductor | this commit |

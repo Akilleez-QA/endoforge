@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SRS |
-| Version | 2.9 |
+| Version | 2.10 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-10 |
@@ -196,13 +196,13 @@ The library shall key promoted kernels by a canonical contract key that ignores 
 
 ### REQ-LIB-002 — Library composition
 
-`library.compose` shall link a union of entries, output-to-input pipelines and argument adapters into one module, serve it only after the need's frozen tests pass on it and journal it against every part, refuse a wrong composition, and let `serve` build a union when no single entry holds the capability.
+`library.compose` shall link a union of entries, output-to-input pipelines and argument adapters into one module, serve it only after the need's frozen tests pass on it and journal it against every part, refuse a wrong composition, and let `serve` build a union when no single entry holds the capability, matching each member on its whole signature, nested layout included (a member whose nested layout differs from every entry leaves no union plan, so `serve` misses with `no_contract_match`), and binding members that share one signature to the entry export with the same name.
 
-- Rationale: A need that two promoted capabilities cover together should not need a new model turn.
+- Rationale: A need that two promoted capabilities cover together should not need a new model turn. Until round 10 no test covered the union path with nested layouts. Its first test showed that members sharing one signature (state in, state out over the same record) were all sent to the first entry that fit, so the union either never composed or composed the wrong function.
 - Derivation: `core/library/library.mjs`, `core/library/compose.mjs`, `core/library/link.mjs`
 - Allocated to: SDD §4 C-05 Library
 - Verification: T — `make library-test`
-- Status: Baselined
+- Status: Baselined (changed in round 10, T4: union members that share a signature bind by export name, and a nested layout mismatch leaves no union)
 
 ### REQ-LIB-003 — Semantic retrieval
 
@@ -898,6 +898,16 @@ Evaluator synthesis shall generate inputs for a record, list or text parameter f
 - Verification: T — `make isolate-test` (all three paths; the `current` path since round 6, where a refusal by the synthesized evaluator now carries the same `problem` text as on the other paths)
 - Status: Baselined
 
+### REQ-SYNTH-009 — Reference sandbox deadline
+
+`runReferences` shall stop its reference child with `SIGKILL` at a deadline derived from the work it runs (`startupMs`, default 30000 ms, plus for each reference variant 2000 ms of load time and the smaller of 400 ms per call and 4400 ms), or at the caller's explicit `timeout`, and reject with an error that tells the cases apart: `reference sandbox timed out after N ms (deadline D ms)`, `reference sandbox exited with code X`, `reference sandbox exited with signal S`, `reference sandbox exceeded its output limit` or `reference sandbox returned no result`.
+
+- Rationale: Until round 10 every reference call ran in one child under a single 30-second wall-clock limit, and every failure read "reference sandbox failed or timed out". Under heavy load (several full suites at once) `gaps4-synth` S1 failed at that limit, though the run alone took 2.8 to 16 s (finding D-14). M2 reports the error with its `M2 ` prefix, so a timeout is now told apart from a crash.
+- Derivation: `core/runtime/x1/synth/sandbox.mjs`, `core/runtime/x1/synth/stage.mjs`
+- Allocated to: SDD §4 C-08 Evaluator synthesis
+- Verification: T — `make isolate-test`
+- Status: Baselined (round 10, T1). The `hold` option, which makes the child wait before it starts, exists for the tests. Inside the child each variant's calls still share a 4000 ms wall-clock budget (the `budget` result), which this deadline does not change
+
 ### REQ-ORACLE-001 — Formula oracle
 
 With `limits.oracle` set (default off), the agent loop shall recompute frozen expectations from the contract's formula, ranges and `reference.js` before the freeze, replace a literal when the formula and the reference agree on another value, return flagged tests to the model, evaluate a piecewise or conditional rule only inside its own condition, and abstain on a branch it cannot read or on conflicting definitions.
@@ -1246,13 +1256,13 @@ Every atomizer path that writes `CONTRACT.md` shall ask for the ```capability bl
 
 ### REQ-ATOM-007 — Atomizer verify policy and helper usage
 
-`tools/atomizer/bin/verify.mjs` shall load the policy named by `--policy` (default the `policy.json` next to the tool) and take from it the `node` toolchain its acceptance checks run with, taking its options and the run directory in any order, refuse with exit 2 and its usage, before checking anything, a missing, unreadable or non-object policy, a missing or second run directory, a run directory without `atoms.json` and an unknown option, record the policy's path and SHA-256 as `policy` in `receipt/verify.json`, and print its usage with exit 0 for `--help`; `ledger-export.mjs` and `repair-noop.mjs` print their usage with exit 0 for `--help` and refuse with exit 2, a message and no stack trace, missing or bad arguments (no ledger events file, `--out` without a value, an unknown argument, a missing `--failures` or `--map`, a `--map` that is not a JSON list of `from`/`to` paths), while `repair-noop.mjs` keeps exit 10 for a failing or unreadable `failures.json`; `fanout.mjs` and `cutover.mjs` take `--policy <file>` (default the same `policy.json`), refuse with exit 2 before running anything a missing, unreadable or non-object policy or a `--policy` with no file after it, pass that file to `schedule.mjs` and `verify.mjs`, and record its path and SHA-256 as `policy`: `fanout.mjs` in `fanout.json` and the `pool.start` event, `cutover.mjs` in the `cutover.start` event.
+`tools/atomizer/bin/verify.mjs` shall load the policy named by `--policy` (default the `policy.json` next to the tool) and take from it the `node` toolchain its acceptance checks run with, taking its options and the run directory in any order, refuse with exit 2 and its usage, before checking anything, a missing, unreadable or non-object policy, a missing or second run directory, a run directory without `atoms.json` and an unknown option, record the policy's path and SHA-256 as `policy` in `receipt/verify.json`, and print its usage with exit 0 for `--help`; `ledger-export.mjs` and `repair-noop.mjs` print their usage with exit 0 for `--help` and refuse with exit 2, a message and no stack trace, missing or bad arguments (no ledger events file, `--out` without a value, an unknown argument, a missing `--failures` or `--map`, a `--map` that is not a JSON list of `from`/`to` paths), while `repair-noop.mjs` keeps exit 10 for a failing or unreadable `failures.json`; `fanout.mjs` and `cutover.mjs` take `--policy <file>` (default the same `policy.json`), refuse with exit 2 before running anything a missing, unreadable or non-object policy or a `--policy` with no file after it, pass that file to `schedule.mjs` and `verify.mjs`, and record its path and SHA-256 as `policy`: `fanout.mjs` in `fanout.json` and the `pool.start` event, `cutover.mjs` in the `cutover.start` event; `atomize.mjs`, `plan-template.mjs` and `direct.mjs` take `--policy` with the same default and the same exit-2 refusals (with their usage), validate their plan against that policy and record its path and SHA-256 as `policy` in their receipt (`receipt/atomize.json`; `direct-atoms.json`, which also gets `valid` and `errors`) and in their start and end events, `direct.mjs` exiting 1 when its plan breaks the policy and `plan-template.mjs` writing an invalid receipt when the model call is refused; and `cutover.mjs` passes its policy to every planning step and records for each arm `planPolicy` and `planPolicyMatches`, giving an arm whose plan used another policy, or whose plan the policy rejects, `planValid: false` without scheduling it.
 
 - Rationale: Until round 8 `verify.mjs` printed `--policy` in its usage but always loaded the default policy, `ledger-export.mjs` and `repair-noop.mjs` printed no usage, and a bare `ledger-export.mjs` with no ledger threw `ENOENT` (finding D-10, backfill review R13).
-- Derivation: `tools/atomizer/bin/verify.mjs`, `tools/atomizer/bin/ledger-export.mjs`, `tools/atomizer/bin/repair-noop.mjs`, `tools/atomizer/bin/fanout.mjs`, `tools/atomizer/bin/cutover.mjs`
+- Derivation: `tools/atomizer/bin/verify.mjs`, `tools/atomizer/bin/ledger-export.mjs`, `tools/atomizer/bin/repair-noop.mjs`, `tools/atomizer/bin/fanout.mjs`, `tools/atomizer/bin/cutover.mjs`, `tools/atomizer/bin/atomize.mjs`, `tools/atomizer/bin/plan-template.mjs`, `tools/atomizer/bin/direct.mjs`
 - Allocated to: SDD §4 C-22 Atomizer
 - Verification: T — `make atomizer-test`
-- Status: Baselined (round 8; changed in round 9, S3: `fanout.mjs` and `cutover.mjs` pass the policy they ran with to `schedule.mjs` and `verify.mjs`, where they called `verify.mjs` without `--policy` and so verified against the default one; finding D-12, closed). Cutover's planning steps (`atomize.mjs`, `plan-template.mjs`, `direct.mjs`) take no `--policy`, so the atomized and templated arms still plan under the default `policy.json`
+- Status: Baselined (round 8; changed in round 9, S3: `fanout.mjs` and `cutover.mjs` pass the policy they ran with to `schedule.mjs` and `verify.mjs`, where they called `verify.mjs` without `--policy` and so verified against the default one; finding D-12, closed; changed in round 10, T3: cutover's planning steps take, use and record the policy too, where they read the default `policy.json`; finding D-16, closed). `schedule.mjs` honours `--policy` but does not record it in `run.json`; `verify.mjs` records it
 
 ### REQ-ATOM-008 — Node toolchain from the running Node
 
@@ -1304,6 +1314,26 @@ The conductor shall run, for an atom without `conductor.checks`, the runnable ch
 - Verification: T — `make test` (`lib-test`)
 - Status: Baselined
 
+### REQ-COND-005 — A relaunch patch reopens a finished job
+
+`applyPatch` shall, for a coordinator patch whose `relaunch` names atoms, set each of them to `relaunch` and, when the job's phase is past `streaming` (`gates`, `locks`, `finals`, `compose` or `done`), move the phase back to `streaming` with a state-log entry `{from, to, why, reopened: true}` and a `GATE` event (which, when the phase was `done`, says the conductor had ended and must be started again), return `reopened: true`, refuse a relaunch on a job the user stopped before writing anything, and leave a done job done for a patch without `relaunch`, while the daemon advances a phase only if the phase did not change while its handler ran, so a reopen is not overwritten.
+
+- Rationale: Until round 10 a relaunch applied after the phase reached `done` set the atom to `relaunch` and nothing ran it, because `conduct` returns as soon as it reads `done` (finding D-15).
+- Derivation: `tools/conductor/lib/escalate.mjs`, `tools/conductor/lib/state.mjs`, `tools/conductor/lib/daemon.mjs`
+- Allocated to: SDD §4 C-23 Conductor and job intake
+- Verification: T — `make test` (`lib-test`)
+- Status: Baselined (round 10, T2). A reopened `done` job needs its daemon started again (`conduct.mjs run` or `unit`); the event names it `endoforge conduct <job.json>`, the name the conductor's usage text uses for `unit`
+
+### REQ-COND-006 — TRACE-NEEDED when an atom freezes with new tests
+
+When an atom freezes, the conductor shall emit a `NEEDS-COORDINATOR` event with the summary `TRACE-NEEDED <atom>: new test files ...`, `data.event` `TRACE-NEEDED` and `data.tests`, listing each test file (by name: `test_*` with a `.py`, `.mjs`, `.cjs`, `.js`, `.ts` or `.sh` suffix, `*_test.py`, or `*.test.*` and `*.spec.*` JavaScript and TypeScript files) that the atom's collected commits added in any iteration and that still exists at `HEAD`, name each file at most once per atom, and emit nothing when there is none, without escalating or holding the atom.
+
+- Rationale: New test files need trace rows before other atoms' checks run `make check`; in round 9 the coordinator found them only when a later check failed.
+- Derivation: `tools/conductor/lib/collect.mjs`, `tools/conductor/lib/handlers.mjs`
+- Allocated to: SDD §4 C-23 Conductor and job intake
+- Verification: T — `make test` (`lib-test`)
+- Status: Baselined (round 10, T6). `TRACE-NEEDED` is not its own event kind (`tools/job/lib/events.mjs` has none), so it reaches the `events.coordinator` hooks like any `NEEDS-COORDINATOR` event. Adopted lanes are never collected, so their freezes emit none
+
 ### REQ-JOB-001 — Job event log
 
 The job event log shall lose only a torn last line and say the log is incomplete, keep the next event whole, report a log with nothing readable as unknown, and sync an event before reporting it written.
@@ -1333,6 +1363,16 @@ The job tool shall load every bundled kind file by its id with only known rule k
 - Allocated to: SDD §4 C-23 Conductor and job intake
 - Verification: T — `make test` (`lib-test`)
 - Status: Baselined
+
+### REQ-JOB-004 — Records after freeze and calibrated checks (I16, I17)
+
+The job tool shall hold invariants I16 and I17 at Decide: refuse a collect gate (`conductor.gate`, or an atom's `gate` as a string or an argv list) or a criterion check that runs a records check (`check_trace` or `test_*trace*`, also when it is reached through a target of the repository's `Makefile`, so `make check` and `make test` are refused while `make lib-test` and `make sums` are not), saying that records are written after freeze; have `job.mjs stage`, after every other Decide rule passes, run each runnable criterion check once on the base commit (`stage.base`, default `HEAD`) in a throwaway detached worktree, reset and cleaned before each check with the `conductor.links` symlinks added, with a `stage.checkTimeoutSec` limit (default 1800), and record `proofs.baseline` (`base`, `at`, and per check `run`, `status` `passed`, `failed` or `broken`, `exit`, `why` and `ms`); class as broken a check whose output names a missing Python or JavaScript module, `Could not find`, `ENOENT`, `No rule to make target` or `can't open file`, or that exits 126 or 127, and record a timeout as failed, `timed out after N ms`; refuse a broken check at every Decide validation, and a check with no baseline or whose command changed since it was calibrated in `stage` and `fire`, where plain `validate` only warns; and warn about a check that already passes on the base tree.
+
+- Rationale: In round 9 a records check in a collect gate failed every atom, because records are written after the atoms freeze, and checks broken by a missing module or path ran unnoticed until an atom's turn was spent on them. These are the coordinator's round-10 lessons, turned into refusals.
+- Derivation: `tools/job/lib/invariants.mjs`, `tools/job/lib/validate.mjs`, `tools/job/bin/job.mjs`
+- Allocated to: SDD §4 C-23 Conductor and job intake
+- Verification: T — `make test` (`lib-test`)
+- Status: Baselined (round 10, T5). `stage` runs the checks, so it can take as long as they do. The conductor's `go` and `applyPatch` validate without requiring a baseline
 
 ### REQ-LOCK-001 — Job locks registry
 
@@ -1613,7 +1653,7 @@ requirements until a test exists. Numbering: `GAP-EF-NNN`, never reused.
 
 | ID | Behaviour | Location | Why untested / note |
 |---|---|---|---|
-| — | None open at version 2.8 | — | — |
+| — | None open at version 2.10 | — | — |
 
 Closed gaps (their IDs are not reused):
 
@@ -1690,3 +1730,4 @@ Closed gaps (their IDs are not reused):
 | 2.7 | 2026-11-09 | round 7 | 2 requirements added: capability block on every atomizer contract path (REQ-ATOM-006) and no code comments (REQ-REPO-010); REQ-GATECLI-001 changed (`freeze` checks the capability block); REQ-REPO-009 (a failing test fails `make coverage`; the CI job ran), REQ-GEN-011 and REQ-FACTORY-003 (the `RealDocker` cases ran in CI) updated; REQ-LIFE-001 and REQ-LIFE-004 rationales give the state graph and evidence fields; GAP-EF-015 and GAP-EF-016 closed, so no gap is open | this commit |
 | 2.8 | 2026-11-09 | round 8 | 2 requirements added: `verify.mjs --policy` and the helper CLIs' usage and refusals (REQ-ATOM-007, D-10 closed) and the `node` toolchain from the running Node (REQ-ATOM-008, round 7b); changed from the 2026-11-09 backfill review: REQ-LIB-005 (exact text fingerprints, grants kept on reclaim), REQ-LIB-006 (refusals per environment), REQ-GEN-011 (G7 compares nested structure), REQ-KERNEL-005 (deep-copied declaration, non-finite JSON numbers refused), REQ-HILL-002 (compose atoms mount what `hillclimb.mjs` imports), REQ-REPO-003 (`experiments-test`), REQ-REPO-008 (secret-scan statement from the workflows), REQ-REPO-009 (automated failing-test coverage check) and REQ-REPO-010 (end-of-line and inline comments, D-09 closed); no gap open | this commit |
 | 2.9 | 2026-11-10 | round 9 | Changed: REQ-GEN-011 (a record, list or text value must declare its layout in the capability block; the prompts ask for it; the freeze and G7 refuse a block without it), REQ-ATOM-006 (the atomizer prompts ask for the nested layout), REQ-LIB-001 (the library key and binding include the nested layout; D-11 closed), REQ-ATOM-007 (`fanout.mjs` and `cutover.mjs` pass their policy to `verify.mjs`; D-12 closed) and REQ-ISO-010 (`LedgerBridge.pid`; the bridge-death test kills the pool's own bridge); no gap open | this commit |
+| 2.10 | 2026-11-10 | round 10 | 4 requirements added: the reference sandbox deadline and its distinct errors (REQ-SYNTH-009, D-14 closed), a relaunch patch reopens a finished job (REQ-COND-005, D-15 closed), the `TRACE-NEEDED` event (REQ-COND-006) and invariants I16 and I17 (REQ-JOB-004); changed: REQ-ATOM-007 (cutover's planning steps take, use and record `--policy`; D-16 closed) and REQ-LIB-002 (union members match on nested layout and bind by export name when they share a signature); no gap open | this commit |

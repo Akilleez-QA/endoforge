@@ -128,6 +128,19 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
   (fanout in `fanout.json` and `pool.start`, cutover in `cutover.start`). `LedgerBridge` has a read-only `pid`.
 - Round 9 changed REQ-GEN-011, REQ-ATOM-006, REQ-LIB-001, REQ-ATOM-007 and REQ-ISO-010, closed D-11 and D-12, and
   opened D-14 and D-15 in the assurance record.
+- Job invariants I16 and I17. I16 refuses a collect gate or a criterion check that runs a records check
+  (`check_trace`, `test_*trace*`, or a `Makefile` target that reaches one, such as `make check`). I17: `job.mjs stage`
+  runs every criterion check once on the base commit in a throwaway worktree, records `proofs.baseline` (passed,
+  failed or broken, and why), and refuses a check broken by a missing module, file or make target. Manifest keys
+  `stage.base` (default `HEAD`) and `stage.checkTimeoutSec` (default 1800).
+- The conductor emits `TRACE-NEEDED` (a `NEEDS-COORDINATOR` event with `data.event: 'TRACE-NEEDED'`) when an atom
+  freezes with new test files, listing them. The collect step records the files each commit added (`added` in the
+  gate file).
+- `atomize.mjs`, `plan-template.mjs` and `direct.mjs` take `--policy <file>` and record its `path` and `sha256` as
+  `policy` in their receipt and events; `cutover.mjs` records each arm's `planPolicy` and `planPolicyMatches`.
+  `runReferences` takes `startupMs`, and its exported `referenceDeadline` gives the deadline it uses.
+- Round 10 added REQ-SYNTH-009, REQ-COND-005, REQ-COND-006 and REQ-JOB-004, changed REQ-ATOM-007 and REQ-LIB-002,
+  closed D-14, D-15 and D-16, and opened D-17 in the assurance record.
 
 - `examples/first-loop.mjs` and `examples/show-gates.py`: the README and getting-started example (a scripted model
   promotes an addition kernel and refuses a subtracting one), tested by `core/runtime/test/loop-example.test.mjs`.
@@ -290,6 +303,31 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
   which this repository does not have. `make harness-test` now runs `tools/step_harness/test_retired.py`.
 
 ### Fixed
+
+Round 10 fixes the round-9 findings D-14 and D-15 and the cutover-planning gap (D-16), adds tests for the library's
+union path, and turns two coordinator lessons into tool changes. Each change has a test. The relaunch, trace-event,
+union and invariant tests failed first against the old code; the sandbox and cutover workers could not run theirs
+against the old files.
+
+- The reference sandbox (`runReferences`) ran every reference call in one child under a single 30-second wall-clock
+  limit and reported every failure as "failed or timed out", so `gaps4-synth` S1 failed when several full suites ran
+  at once (D-14). The deadline now grows with the work: 30 s of startup plus, per reference variant, 2 s of load time
+  and 400 ms per call up to 4.4 s. An explicit `timeout` still wins. The error says which case happened: timed out
+  after N ms (with the deadline), exited with a code, exited with a signal, or exceeded its output limit.
+- A coordinator patch with `relaunch`, applied after the conductor job reached `done`, left the atom in `relaunch`
+  forever (D-15). The patch now reopens a job past `streaming` back to `streaming`, logs the transition, emits a
+  `GATE` event (from `done` it says to start the conductor again) and returns `reopened: true`; the restarted daemon
+  runs only the relaunched atoms. A relaunch on a job the user stopped is refused. The daemon no longer overwrites a
+  reopen that lands while it advances a phase.
+- `cutover.mjs` passed `--policy` to `schedule.mjs` and `verify.mjs` but not to its planning steps, so the atomized,
+  templated and direct arms planned under the default `policy.json` (D-16). Every planning step now takes, validates
+  against and records the policy; an arm whose plan used another policy, or breaks it, is marked `planValid: false`
+  and not run. `direct.mjs` validates its plan for the first time and exits 1 when it breaks the policy.
+  `plan-template.mjs` writes an invalid receipt when the model call is refused, where it crashed before.
+- The library's union path had no test. The first one showed that members sharing one signature (state in, state out
+  over the same record) were all bound to the first entry that fit, so the union never composed or composed the wrong
+  function. Such members now bind to the entry export with the same name. The new tests also show that a member whose
+  nested layout differs leaves no union.
 
 Round 9 fixes a flaky test from PR #143's CI and the round-8 findings D-11 and D-12. Each fix has a test; five of the seven
 capability-layout cases and the policy cases failed first against the old code.
