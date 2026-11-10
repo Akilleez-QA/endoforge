@@ -14,8 +14,9 @@ declarative description of its arguments, results and refusals.
 
 `freeze` hashes `CONTRACT.md` and `tests.json` into `frozen.sha256`, and refuses if `kernel.ts` already exists, so the
 tests are fixed before any code. It also refuses, with exit 2 and no `frozen.sha256`, a `CONTRACT.md` whose
-```capability block is missing, is not JSON, has no exports, or disagrees with the tests (for example, an export with
-an `expectError` test that the block does not list under `traps`). This is the check the loop's own freeze runs
+```capability block is missing, is not JSON, has no exports, leaves out the layout of a record, list or text value,
+or disagrees with the tests (for example, an export with an `expectError` test that the block does not list under
+`traps`). This is the check the loop's own freeze runs
 (`capabilityProblems` in [core/runtime/x1/generator.mjs](../../core/runtime/x1/generator.mjs)).
 
 `run` compiles `kernel.ts` with the core compiler's flags (`asc --runtime stub -O3 --noAssert --maximumMemory 1024`,
@@ -31,7 +32,7 @@ continue:
 | `G4_tests` | Each test's `expect` (numbers within `tol`, booleans, strings, and records and lists compared field by field) or `expectError` (a trap) holds |
 | `G6_bounded` | No call runs out of fuel or stack |
 | `G5_deterministic` | A second fresh instance, called in the same order, gives the same outputs |
-| `G7_glue` | `glue.json` matches the closed [glue.schema.json](glue.schema.json), its `id` is the folder name, and it describes exactly the module's exports, arities, buffer pointers, result codes and traps; `CONTRACT.md` ends with a ```capability block, and the glue agrees with it on exports, argument kinds, units, ranges and codes, result precision and traps |
+| `G7_glue` | `glue.json` matches the closed [glue.schema.json](glue.schema.json), its `id` is the folder name, and it describes exactly the module's exports, arities, buffer pointers, result codes and traps; `CONTRACT.md` ends with a ```capability block, and the glue agrees with it on exports, argument kinds, units, ranges and codes, result precision and traps, and on the nested layout of record, list and text values, which the block must declare |
 | `G9_units` | Units in the glue agree with the kernel and the test outputs |
 | `G8_nonfinite` | Non-finite probes of number arguments and number fields give what the contract says |
 
@@ -120,6 +121,28 @@ $ printf 'shippingCents(grams, zone): ...\n\n```capability\n{ exports: shippingC
 $ node $REPO/tools/gate/gate.mjs freeze .
 refusing to freeze: the ```capability block is not JSON
 ````
+
+A record, list or text value must declare its layout in the block, at every depth: a record's `fields` (uniquely
+named, each with its kind, a unit when integer, number or code, and codes when code), a list's `items` and `max` (1 to
+4096), a text value's `maxBytes` (1 to 65536). A mean-temperature contract whose argument is a list of readings, with
+the list's layout left out:
+
+````console
+$ cat CONTRACT.md
+meanTemperature(log): the mean temperature of up to 8 readings, to 1 decimal place. Refuse an empty log.
+
+```capability
+{"exports":[{"name":"meanTemperature","args":[{"name":"log","kind":"list"}],"result":{"kind":"number","unit":"C","precision":1}}],"traps":["meanTemperature"]}
+```
+$ cat tests.json
+[{"name":"two readings","fn":"meanTemperature","args":[[{"temperature":2.0},{"temperature":4.0}]],"expect":3.0,"tol":0.01},{"name":"empty log is refused","fn":"meanTemperature","args":[[]],"expectError":true}]
+$ node $REPO/tools/gate/gate.mjs freeze .
+refusing to freeze: capability export meanTemperature argument log of kind list needs max, an integer from 1 to 4096; capability export meanTemperature argument log of kind list needs items, the layout of one item
+````
+
+With the argument declared as
+`{"name":"log","kind":"list","max":8,"items":{"kind":"record","fields":[{"name":"temperature","kind":"number","unit":"C"}]}}`
+the same `freeze` writes `frozen.sha256`. G7 later refuses a `glue.json` whose nested layout differs from the block's.
 
 Change the zone 2 rate to 3 and `run` reports
 `"G4_tests": { "ok": false, "passed": 3, "total": 4 }` and `promotable: false`. Edit `tests.json` to make the tests

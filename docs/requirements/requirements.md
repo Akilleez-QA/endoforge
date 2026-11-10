@@ -3,10 +3,10 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SRS |
-| Version | 2.7 |
+| Version | 2.10 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
-| Date | 2026-11-09 |
+| Date | 2026-11-10 |
 | Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
 | Applies to | endoforge main at baseline commit |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
@@ -186,23 +186,23 @@ The evaluator shall refuse invalid frozen policies and duplicate candidate ident
 
 ### REQ-LIB-001 — Kernel library reuse
 
-The library shall key promoted kernels by a canonical contract key that ignores labels and names, admit a kernel only after a gate that refuses an evaluator unable to discriminate WebAssembly mutants, serve, refuse, revoke and requalify entries across restarts, and let the pipeline reuse a kernel on a pass and generate on a miss.
+The library shall key promoted kernels by a canonical contract key that ignores labels and names, admit a kernel only after a gate that refuses an evaluator unable to discriminate WebAssembly mutants, serve, refuse, revoke and requalify entries across restarts, and let the pipeline reuse a kernel on a pass and generate on a miss, with the key and the export binding including the nested layout of record, list and text values (record fields matched by name, each with its kind, unit, range, precision, rounding, codes and labels; list `items` and `max`; text `maxBytes`), so a need whose nested layout differs from an entry's misses and field order does not count, while a capability with only scalar values keeps the key it had before the layout was keyed.
 
-- Rationale: A need that a promoted kernel already satisfies should skip implementation.
+- Rationale: A need that a promoted kernel already satisfies should skip implementation. Until round 9 the key compared each argument and result at the top level only, so the library could reuse a capability whose nested units differ (finding D-11).
 - Derivation: `core/library/library.mjs`, `core/library/key.mjs`, `core/library/discriminate.mjs`, `core/library/mutants.mjs`, `tools/library_verify_promotion.py`
 - Allocated to: SDD §4 C-05 Library
-- Verification: T — `make library-test`
-- Status: Baselined
+- Verification: T — `make library-test`; the nested-layout key and binding cases run in `make isolate-test`
+- Status: Baselined (changed in round 9, S2: the key and binding include the nested layout). An entry admitted before round 9 with a record, list or text value keeps the key it was journaled with, which left out the layout, so a need with the same capability now misses it with `no_contract_match`; the entry is not refused
 
 ### REQ-LIB-002 — Library composition
 
-`library.compose` shall link a union of entries, output-to-input pipelines and argument adapters into one module, serve it only after the need's frozen tests pass on it and journal it against every part, refuse a wrong composition, and let `serve` build a union when no single entry holds the capability.
+`library.compose` shall link a union of entries, output-to-input pipelines and argument adapters into one module, serve it only after the need's frozen tests pass on it and journal it against every part, refuse a wrong composition, and let `serve` build a union when no single entry holds the capability, matching each member on its whole signature, nested layout included (a member whose nested layout differs from every entry leaves no union plan, so `serve` misses with `no_contract_match`), and binding members that share one signature to the entry export with the same name.
 
-- Rationale: A need that two promoted capabilities cover together should not need a new model turn.
+- Rationale: A need that two promoted capabilities cover together should not need a new model turn. Until round 10 no test covered the union path with nested layouts. Its first test showed that members sharing one signature (state in, state out over the same record) were all sent to the first entry that fit, so the union either never composed or composed the wrong function.
 - Derivation: `core/library/library.mjs`, `core/library/compose.mjs`, `core/library/link.mjs`
 - Allocated to: SDD §4 C-05 Library
 - Verification: T — `make library-test`
-- Status: Baselined
+- Status: Baselined (changed in round 10, T4: union members that share a signature bind by export name, and a nested layout mismatch leaves no union)
 
 ### REQ-LIB-003 — Semantic retrieval
 
@@ -226,23 +226,23 @@ The library shall hide another tenant's entries, miss with `permission_denied` w
 
 ### REQ-LIB-005 — Reclaiming duplicates
 
-`library.reclaim` shall keep one entry per behaviour within a scope, free the others in memory and on disk, and compact the journal behind a `library_compacted` record that names the previous tip.
+`library.reclaim` shall keep one entry per behaviour within a scope, where a behaviour is the entry's fingerprint (every export's results over a fixed grid, with numbers, non-finite numbers included, printed to 12 significant digits, records and lists as JSON, and text, booleans and missing values printed exactly as JSON, so two kernels returning different strings are not duplicates), free the others in memory and on disk, move the grants of each released entry to the entry it keeps (so grant, ungrant, serve and a composition plan naming a released entry resolve against the kept entry, also after the journal is replayed), and compact the journal behind a `library_compacted` record that names the previous tip.
 
-- Rationale: Duplicate entries cost memory and journal size without adding behaviour.
-- Derivation: `core/library/library.mjs`, `core/library/journal.mjs`
+- Rationale: Duplicate entries cost memory and journal size without adding behaviour. Until round 8 the fingerprint turned text results into numbers, so modules returning `"!"` and `"\""` both printed `NaN` and one was discarded as a duplicate, and reclaim released a duplicate without its grants, so a tenant granted only that entry lost access (backfill review R1, R2).
+- Derivation: `core/library/library.mjs`, `core/library/journal.mjs`, `core/library/discriminate.mjs`
 - Allocated to: SDD §4 C-05 Library
 - Verification: T — `make library-test`
-- Status: Baselined
+- Status: Baselined (changed in round 8: exact text fingerprints, grants kept on reclaim)
 
 ### REQ-LIB-006 — Refusals become counterexamples
 
-A refused reuse shall record its counterexamples so that a later lookup whose tests that entry is known to fail, or an identical refused need, misses with `counterexample` before any cell runs, across restarts.
+A refused reuse shall record its counterexamples and its refusal identity under the environment it was refused in, so that a later lookup in that environment whose tests that entry is known to fail, or an identical refused need, misses with `counterexample` before any cell runs, across restarts, while another environment where the entry qualified is not refused by it.
 
-- Rationale: A refusal is evidence; spending a cell on the same refusal again is waste.
+- Rationale: A refusal is evidence; spending a cell on the same refusal again is waste. Until round 8 the refusal identity omitted the environment, so a refusal recorded in one environment was replayed in another after the entry requalified there (backfill review R3). Refusals journaled before round 8 carry no environment: their counterexamples still apply in every environment, and their old refusal identities no longer match.
 - Derivation: `core/library/library.mjs`
 - Allocated to: SDD §4 C-05 Library
 - Verification: T — `make library-test`
-- Status: Baselined
+- Status: Baselined (changed in round 8: refusals kept per environment)
 
 ### REQ-LIB-007 — Per-environment qualification
 
@@ -368,13 +368,13 @@ Only supervisor configuration shall authorize supplying an omitted WASM maximum,
 
 ### REQ-ISO-010 — Persistent batched ledger bridge
 
-The pool shall write receipts through one persistent ledger bridge that batches concurrent requests per ledger path in a single transaction with per-request savepoints, replies only after commit, verifies the full hash chain on every read, invalidates cached rows on any mismatch, and fails closed without respawn when the bridge exits.
+The pool shall write receipts through one persistent ledger bridge that batches concurrent requests per ledger path in a single transaction with per-request savepoints, replies only after commit, verifies the full hash chain on every read, invalidates cached rows on any mismatch, and fails closed without respawn when the bridge exits, with `LedgerBridge` exposing the bridge process's pid read-only as `pid` (`undefined` until the process is spawned, and still the dead process's pid after the bridge fails closed).
 
 - Rationale: Remove per-request process spawn and full re-validation as the throughput limit without weakening chain verification.
 - Derivation: `core/runtime/isolate-ledger.mjs`
 - Allocated to: SDD §4 C-06 Isolate pool
 - Verification: T — `make isolate-test`
-- Status: Baselined
+- Status: Baselined (changed in round 9, S1: the bridge-death test waits for the pool's own bridge through `pool.ledger.pid`, checks that its parent is the test process and kills exactly that pid. Before, it read the test process's children once, right after `pool.run()`, and expected one `python3`: the bridge might not have started yet (seen in CI on Node 26 under load), and a `python3` child it found might not be the pool's bridge)
 
 ### REQ-ISO-011 — Stack size
 
@@ -790,13 +790,13 @@ After the freeze, `generate` shall re-read `tests.json` and `frozen.sha256` from
 
 ### REQ-GEN-011 — Capability block required at the freeze and checked at G7
 
-Generation shall ask in both specification prompts for a fenced ```capability block in `CONTRACT.md` (exports with ordered arguments, kinds, units, ranges, number precision, code tables and traps), refuse at the freeze on the `current`, `isolate` and `agent` paths a contract with no block or with a block that is malformed or disagrees with the frozen tests (the agent path returns the refusal to the model as specification problems and never freezes), fail G7 when `glue.json` disagrees with the frozen block on exports, argument kinds, units, ranges and codes, result kind, unit, precision, rounding, codes and labels, or traps (`capabilityAgreement`, comparing units and ranges as library lookup does), and let library lookup serve a generated need whose block matches a promoted kernel without an implementation stage on the `current` and `agent` paths.
+Generation shall ask in both specification prompts for a fenced ```capability block in `CONTRACT.md` (exports with ordered arguments, kinds, units, ranges, number precision, code tables and traps, and for every record, list or text value, at every depth, its layout: a record's `fields`, a nonempty list of uniquely named fields, each with its kind, a unit when integer, number or code, and codes when code; a list's `items`, the layout of one item, and `max`, 1 to 4096; a text value's `maxBytes`, 1 to 65536), ask in both implementation prompts for `glue.json` to declare the same nested layout, refuse at the freeze on the `current`, `isolate` and `agent` paths a contract with no block or with a block that is malformed, leaves out a structured value's layout, leaves out a number field's `precision` or a boolean field's `labels` anywhere inside a structured result, or disagrees with the frozen tests (the agent path returns the refusal to the model as specification problems and never freezes), fail G7 when the frozen block leaves out a structured value's layout (`the capability block does not declare the layout: ...`, whatever the glue declares) or when `glue.json` disagrees with the frozen block on exports, argument kinds, units, ranges and codes, result kind, unit, precision, rounding, codes and labels, or traps (`capabilityAgreement`, comparing units and ranges as library lookup does, and going down through structured values: record fields matched by name with missing and extra fields reported, list `items` and `max`, text `maxBytes`, and at every level the same kind, unit, range, precision, rounding, codes and labels as at the top), and let library lookup serve a generated need whose block matches a promoted kernel without an implementation stage on the `current` and `agent` paths.
 
 - Rationale: The library keys entries by the capability that `core/library/key.mjs` `capabilityFromContract` reads from this block. A block-less contract could freeze until round 6 and then always missed with `no_capability`; glue that disagrees with the block would describe a different capability from the one the library keys.
 - Derivation: `core/runtime/x1/generator.mjs`, `core/runtime/x1/agent.mjs`, `core/runtime/x1/contract.mjs`, `core/runtime/x1/gates.mjs`, `core/library/key.mjs`
 - Allocated to: SDD §4 C-07 X1 candidate loop
 - Verification: T — `make isolate-test`
-- Status: Baselined (round 5; changed in round 6, M1: the block is required on every path and G7 checks the glue against it). Since round 7 the stand-alone `tools/gate/gate.mjs freeze` runs the same check (REQ-GATECLI-001), and every atomizer path that writes `CONTRACT.md` asks for the block (REQ-ATOM-006)
+- Status: Baselined (round 5; changed in round 6, M1: the block is required on every path and G7 checks the glue against it; changed in round 8, R4: G7 compares nested structure, where it compared only the top level, so a nested Celsius result relabelled Fahrenheit in `glue.json` passed). Since round 7 the stand-alone `tools/gate/gate.mjs freeze` runs the same check (REQ-GATECLI-001), and every atomizer path that writes `CONTRACT.md` asks for the block (REQ-ATOM-006). Changed in round 9, S2: a record, list or text value must declare its layout in the block, every prompt that asks for the block asks for it, and the freeze and G7 refuse a block without it. Until then such a block agreed with any glue layout, so nested drift went uncaught (finding D-11, closed)
 
 ### REQ-PROMOTE-001 — Local promotion
 
@@ -897,6 +897,16 @@ Evaluator synthesis shall generate inputs for a record, list or text parameter f
 - Allocated to: SDD §4 C-08 Evaluator synthesis
 - Verification: T — `make isolate-test` (all three paths; the `current` path since round 6, where a refusal by the synthesized evaluator now carries the same `problem` text as on the other paths)
 - Status: Baselined
+
+### REQ-SYNTH-009 — Reference sandbox deadline
+
+`runReferences` shall stop its reference child with `SIGKILL` at a deadline derived from the work it runs (`startupMs`, default 30000 ms, plus for each reference variant 2000 ms of load time and the smaller of 400 ms per call and 4400 ms), or at the caller's explicit `timeout`, and reject with an error that tells the cases apart: `reference sandbox timed out after N ms (deadline D ms)`, `reference sandbox exited with code X`, `reference sandbox exited with signal S`, `reference sandbox exceeded its output limit` or `reference sandbox returned no result`.
+
+- Rationale: Until round 10 every reference call ran in one child under a single 30-second wall-clock limit, and every failure read "reference sandbox failed or timed out". Under heavy load (several full suites at once) `gaps4-synth` S1 failed at that limit, though the run alone took 2.8 to 16 s (finding D-14). M2 reports the error with its `M2 ` prefix, so a timeout is now told apart from a crash.
+- Derivation: `core/runtime/x1/synth/sandbox.mjs`, `core/runtime/x1/synth/stage.mjs`
+- Allocated to: SDD §4 C-08 Evaluator synthesis
+- Verification: T — `make isolate-test`
+- Status: Baselined (round 10, T1). The `hold` option, which makes the child wait before it starts, exists for the tests. Inside the child each variant's calls still share a 4000 ms wall-clock budget (the `budget` result), which this deadline does not change
 
 ### REQ-ORACLE-001 — Formula oracle
 
@@ -1116,13 +1126,13 @@ The kernel workcell shall compile a component once and give each attempt fresh s
 
 ### REQ-KERNEL-005 — Declared effects, durable denials and task conformance
 
-The kernel host shall release a transition only when every returned effect matches a declaration whose `id` equals the kernel's frozen effect-schema identity (capability, operation, `bytes`, `utf8` or `json` encoding, byte bounds, an optional JSON schema without `$ref`, and `max_effects`), permit no effect without a declaration, reject the whole transition with `EffectDenied` otherwise (reported by `run_candidate` as `denied`), append every effect and broker denial to a `DenialJournal`, an append-only SQLite journal hash-chained with the ledger's encoder that refuses update and delete and verifies its chain on reopening, and let `conformance.check` (also a process entry point reading JSON on stdin) run a frozen task's cases through the workcell and report each as `passed`, `wrong`, `denied`, `trapped` or `refused`.
+The kernel host shall release a transition only when every returned effect matches a declaration whose `id` equals the kernel's frozen effect-schema identity (capability, operation, `bytes`, `utf8` or `json` encoding, byte bounds, an optional JSON schema without `$ref`, and `max_effects`), freeze the declaration as a deep copy before checking and hashing it (so a caller that later changes its own payload specs changes neither enforcement, the declaration's SHA-256 nor the Workcell cache key), refuse a `json` payload holding any non-finite number (`NaN`, `Infinity` or an overflowing literal such as `1e999`) as `payload-not-json`, permit no effect without a declaration, reject the whole transition with `EffectDenied` otherwise (reported by `run_candidate` as `denied`), append every effect and broker denial to a `DenialJournal`, an append-only SQLite journal hash-chained with the ledger's encoder that refuses update and delete and verifies its chain on reopening, and let `conformance.check` (also a process entry point reading JSON on stdin) run a frozen task's cases through the workcell and report each as `passed`, `wrong`, `denied`, `trapped` or `refused`.
 
-- Rationale: Effects were returned unchecked and denials left no record, and nothing outside the kernel tests used the host (round 6, M4); the Rust lane's admission is now its caller (REQ-RUST-001).
+- Rationale: Effects were returned unchecked and denials left no record, and nothing outside the kernel tests used the host (round 6, M4); the Rust lane's admission is now its caller (REQ-RUST-001). Until round 8 the frozen declaration kept references to the caller's payload specs, and `{"x":1e999}` parsed to infinity and passed (backfill review R5, R6).
 - Derivation: `tools/kernel/effects.py`, `tools/kernel/journal.py`, `tools/kernel/conformance.py`, `tools/kernel/workcell.py`, `tools/kernel/broker.py`, `tools/kernel/limits.py`
 - Allocated to: SDD §4 C-17 Kernel host
 - Verification: T — `make kernel-test`
-- Status: Baselined (round 6)
+- Status: Baselined (round 6; changed in round 8: deep-copied declaration, non-finite JSON numbers refused)
 
 ### REQ-TOOLS-001 — Pinned kernel test tools
 
@@ -1236,13 +1246,33 @@ The atomizer commands `atomize`, `direct`, `fanout`, `report` and `cutover` shal
 
 ### REQ-ATOM-006 — Capability block on every atomizer contract path
 
-Every atomizer path that writes `CONTRACT.md` shall ask for the ```capability block in the candidate loop's own wording (`capabilityRule`): the planning prompt of `atomize.mjs`, the `contract` kind procedure in `policy.json`, the contract atom of `plan-template.mjs` and the `direct` procedure (before its freeze), with the glue procedure and the templated glue atom reading the contract to match the block and every prompt naming the gates G1 to G9; `compose-kernel.mjs` refuses with exit 3, before freezing or compiling, a contract atom's `CONTRACT.md` with no block or a block that is not JSON; and the compose atom's toolchain carries the gate's own modules and the pinned compiler, so the compose helper freezes and gates to a promotable kernel inside the atom sandbox.
+Every atomizer path that writes `CONTRACT.md` shall ask for the ```capability block in the candidate loop's own wording (`capabilityRule`, which asks for the layout of every record, list or text value): the planning prompt of `atomize.mjs`, the `contract` kind procedure in `policy.json`, the contract atom of `plan-template.mjs` and the `direct` procedure (before its freeze), with the glue procedure, the `direct` procedure and the templated glue atom asking for the same nested layout in `glue.json`, the glue procedure and the templated glue atom reading the contract to match the block, the `direct` atom's contract and the templated contract atom naming the layout, and every prompt naming the gates G1 to G9; `compose-kernel.mjs` refuses with exit 3, before freezing or compiling, a contract atom's `CONTRACT.md` with no block or a block that is not JSON; and the compose atom's toolchain carries the gate's own modules and the pinned compiler, so the compose helper freezes and gates to a promotable kernel inside the atom sandbox.
 
 - Rationale: Round 6 made the block required at the freeze, but no atomizer prompt asked for it and the compose sandbox could not load the gate's modules, so every real atomizer run failed at the freeze or at G7. The tests use script workers, so they did not show it (round 7, N1).
 - Derivation: `tools/atomizer/bin/atomize.mjs`, `tools/atomizer/bin/plan-template.mjs`, `tools/atomizer/bin/direct.mjs`, `tools/atomizer/bin/compose-kernel.mjs`, `tools/atomizer/policy.json`, `tools/atomizer/lib/workers.mjs`, `tools/atomizer/lib/augment.mjs`
 - Allocated to: SDD §4 C-22 Atomizer
 - Verification: T — `make atomizer-test` (rendered prompts asserted as text; the compose helper runs in a real `bwrap` sandbox)
-- Status: Baselined (round 7)
+- Status: Baselined (round 7; changed in round 9, S2: the prompts ask for the nested layout of records, lists and text)
+
+### REQ-ATOM-007 — Atomizer verify policy and helper usage
+
+`tools/atomizer/bin/verify.mjs` shall load the policy named by `--policy` (default the `policy.json` next to the tool) and take from it the `node` toolchain its acceptance checks run with, taking its options and the run directory in any order, refuse with exit 2 and its usage, before checking anything, a missing, unreadable or non-object policy, a missing or second run directory, a run directory without `atoms.json` and an unknown option, record the policy's path and SHA-256 as `policy` in `receipt/verify.json`, and print its usage with exit 0 for `--help`; `ledger-export.mjs` and `repair-noop.mjs` print their usage with exit 0 for `--help` and refuse with exit 2, a message and no stack trace, missing or bad arguments (no ledger events file, `--out` without a value, an unknown argument, a missing `--failures` or `--map`, a `--map` that is not a JSON list of `from`/`to` paths), while `repair-noop.mjs` keeps exit 10 for a failing or unreadable `failures.json`; `fanout.mjs` and `cutover.mjs` take `--policy <file>` (default the same `policy.json`), refuse with exit 2 before running anything a missing, unreadable or non-object policy or a `--policy` with no file after it, pass that file to `schedule.mjs` and `verify.mjs`, and record its path and SHA-256 as `policy`: `fanout.mjs` in `fanout.json` and the `pool.start` event, `cutover.mjs` in the `cutover.start` event; `atomize.mjs`, `plan-template.mjs` and `direct.mjs` take `--policy` with the same default and the same exit-2 refusals (with their usage), validate their plan against that policy and record its path and SHA-256 as `policy` in their receipt (`receipt/atomize.json`; `direct-atoms.json`, which also gets `valid` and `errors`) and in their start and end events, `direct.mjs` exiting 1 when its plan breaks the policy and `plan-template.mjs` writing an invalid receipt when the model call is refused; and `cutover.mjs` passes its policy to every planning step and records for each arm `planPolicy` and `planPolicyMatches`, giving an arm whose plan used another policy, or whose plan the policy rejects, `planValid: false` without scheduling it.
+
+- Rationale: Until round 8 `verify.mjs` printed `--policy` in its usage but always loaded the default policy, `ledger-export.mjs` and `repair-noop.mjs` printed no usage, and a bare `ledger-export.mjs` with no ledger threw `ENOENT` (finding D-10, backfill review R13).
+- Derivation: `tools/atomizer/bin/verify.mjs`, `tools/atomizer/bin/ledger-export.mjs`, `tools/atomizer/bin/repair-noop.mjs`, `tools/atomizer/bin/fanout.mjs`, `tools/atomizer/bin/cutover.mjs`, `tools/atomizer/bin/atomize.mjs`, `tools/atomizer/bin/plan-template.mjs`, `tools/atomizer/bin/direct.mjs`
+- Allocated to: SDD §4 C-22 Atomizer
+- Verification: T — `make atomizer-test`
+- Status: Baselined (round 8; changed in round 9, S3: `fanout.mjs` and `cutover.mjs` pass the policy they ran with to `schedule.mjs` and `verify.mjs`, where they called `verify.mjs` without `--policy` and so verified against the default one; finding D-12, closed; changed in round 10, T3: cutover's planning steps take, use and record the policy too, where they read the default `policy.json`; finding D-16, closed). `schedule.mjs` honours `--policy` but does not record it in `run.json`; `verify.mjs` records it
+
+### REQ-ATOM-008 — Node toolchain from the running Node
+
+The atomizer shall resolve the `node` toolchain mounted into atoms to `ENDOFORGE_TOOLCHAIN_NODE`, else `policy.toolchain.node`, else the install prefix of the Node running the atomizer (the shipped `policy.json` names none), and refuse, before any sandbox starts and with a message naming the variable and the running Node's prefix, a configured node home that has no `bin/node`.
+
+- Rationale: The policy named `/usr`, so on hosts without a system Node, including GitHub's runners, compose atoms failed with `execvp node` (round 7b, PR #143's coverage job).
+- Derivation: `tools/atomizer/lib/workers.mjs`, `tools/atomizer/policy.json`
+- Allocated to: SDD §4 C-22 Atomizer
+- Verification: T — `make atomizer-test`
+- Status: Baselined (round 7b)
 
 ### REQ-COND-001 — Conductor fails closed on unknown state
 
@@ -1284,6 +1314,26 @@ The conductor shall run, for an atom without `conductor.checks`, the runnable ch
 - Verification: T — `make test` (`lib-test`)
 - Status: Baselined
 
+### REQ-COND-005 — A relaunch patch reopens a finished job
+
+`applyPatch` shall, for a coordinator patch whose `relaunch` names atoms, set each of them to `relaunch` and, when the job's phase is past `streaming` (`gates`, `locks`, `finals`, `compose` or `done`), move the phase back to `streaming` with a state-log entry `{from, to, why, reopened: true}` and a `GATE` event (which, when the phase was `done`, says the conductor had ended and must be started again), return `reopened: true`, refuse a relaunch on a job the user stopped before writing anything, and leave a done job done for a patch without `relaunch`, while the daemon advances a phase only if the phase did not change while its handler ran, so a reopen is not overwritten.
+
+- Rationale: Until round 10 a relaunch applied after the phase reached `done` set the atom to `relaunch` and nothing ran it, because `conduct` returns as soon as it reads `done` (finding D-15).
+- Derivation: `tools/conductor/lib/escalate.mjs`, `tools/conductor/lib/state.mjs`, `tools/conductor/lib/daemon.mjs`
+- Allocated to: SDD §4 C-23 Conductor and job intake
+- Verification: T — `make test` (`lib-test`)
+- Status: Baselined (round 10, T2). A reopened `done` job needs its daemon started again (`conduct.mjs run` or `unit`); the event names it `endoforge conduct <job.json>`, the name the conductor's usage text uses for `unit`
+
+### REQ-COND-006 — TRACE-NEEDED when an atom freezes with new tests
+
+When an atom freezes, the conductor shall emit a `NEEDS-COORDINATOR` event with the summary `TRACE-NEEDED <atom>: new test files ...`, `data.event` `TRACE-NEEDED` and `data.tests`, listing each test file (by name: `test_*` with a `.py`, `.mjs`, `.cjs`, `.js`, `.ts` or `.sh` suffix, `*_test.py`, or `*.test.*` and `*.spec.*` JavaScript and TypeScript files) that the atom's collected commits added in any iteration and that still exists at `HEAD`, name each file at most once per atom, and emit nothing when there is none, without escalating or holding the atom.
+
+- Rationale: New test files need trace rows before other atoms' checks run `make check`; in round 9 the coordinator found them only when a later check failed.
+- Derivation: `tools/conductor/lib/collect.mjs`, `tools/conductor/lib/handlers.mjs`
+- Allocated to: SDD §4 C-23 Conductor and job intake
+- Verification: T — `make test` (`lib-test`)
+- Status: Baselined (round 10, T6). `TRACE-NEEDED` is not its own event kind (`tools/job/lib/events.mjs` has none), so it reaches the `events.coordinator` hooks like any `NEEDS-COORDINATOR` event. Adopted lanes are never collected, so their freezes emit none
+
 ### REQ-JOB-001 — Job event log
 
 The job event log shall lose only a torn last line and say the log is incomplete, keep the next event whole, report a log with nothing readable as unknown, and sync an event before reporting it written.
@@ -1313,6 +1363,16 @@ The job tool shall load every bundled kind file by its id with only known rule k
 - Allocated to: SDD §4 C-23 Conductor and job intake
 - Verification: T — `make test` (`lib-test`)
 - Status: Baselined
+
+### REQ-JOB-004 — Records after freeze and calibrated checks (I16, I17)
+
+The job tool shall hold invariants I16 and I17 at Decide: refuse a collect gate (`conductor.gate`, or an atom's `gate` as a string or an argv list) or a criterion check that runs a records check (`check_trace` or `test_*trace*`, also when it is reached through a target of the repository's `Makefile`, so `make check` and `make test` are refused while `make lib-test` and `make sums` are not), saying that records are written after freeze; have `job.mjs stage`, after every other Decide rule passes, run each runnable criterion check once on the base commit (`stage.base`, default `HEAD`) in a throwaway detached worktree, reset and cleaned before each check with the `conductor.links` symlinks added, with a `stage.checkTimeoutSec` limit (default 1800), and record `proofs.baseline` (`base`, `at`, and per check `run`, `status` `passed`, `failed` or `broken`, `exit`, `why` and `ms`); class as broken a check whose output names a missing Python or JavaScript module, `Could not find`, `ENOENT`, `No rule to make target` or `can't open file`, or that exits 126 or 127, and record a timeout as failed, `timed out after N ms`; refuse a broken check at every Decide validation, and a check with no baseline or whose command changed since it was calibrated in `stage` and `fire`, where plain `validate` only warns; and warn about a check that already passes on the base tree.
+
+- Rationale: In round 9 a records check in a collect gate failed every atom, because records are written after the atoms freeze, and checks broken by a missing module or path ran unnoticed until an atom's turn was spent on them. These are the coordinator's round-10 lessons, turned into refusals.
+- Derivation: `tools/job/lib/invariants.mjs`, `tools/job/lib/validate.mjs`, `tools/job/bin/job.mjs`
+- Allocated to: SDD §4 C-23 Conductor and job intake
+- Verification: T — `make test` (`lib-test`)
+- Status: Baselined (round 10, T5). `stage` runs the checks, so it can take as long as they do. The conductor's `go` and `applyPatch` validate without requiring a baseline
 
 ### REQ-LOCK-001 — Job locks registry
 
@@ -1356,13 +1416,13 @@ Hillclimb shall count lesson recurrences, reopen a closed lesson that recurs, wr
 
 ### REQ-HILL-002 — Hillclimb default runner
 
-Hillclimb shall default its campaign runner to `bin/run-atoms.mjs` in this repository, mapping the runner contract onto the atomizer scheduler with the campaign policy, pass the stage policy as `--policy <stage>.policy.json` to a campaign's own runner as well as to the default one, run `plan-review` from an unrelated directory, and have `hc-patch.sh` print its usage and exit 2 without its arguments.
+Hillclimb shall default its campaign runner to `bin/run-atoms.mjs` in this repository, mapping the runner contract onto the atomizer scheduler with the campaign policy, pass the stage policy as `--policy <stage>.policy.json` to a campaign's own runner as well as to the default one, give the script `compose-review`, `compose-fix` and `compose-judge` atoms the round directory at `/hc` and every file `bin/hillclimb.mjs` statically imports at its repository path under `/hc-src` (adding those files to the stage policy's `bindRoots`) while model atoms still see only this tool at `/hc-tool`, run `plan-review` from an unrelated directory, and have `hc-patch.sh` print its usage and exit 2 without its arguments.
 
-- Rationale: A default must not depend on a launcher outside the repository, and a campaign's own runner outside the atomizer's `bindRoots` needs the same stage policy (round 6, M6).
-- Derivation: `tools/hillclimb/lib/runner.mjs`, `tools/hillclimb/bin/run-atoms.mjs`, `tools/hillclimb/bin/hillclimb.mjs`, `tools/hillclimb/scripts/hc-patch.sh`
+- Rationale: A default must not depend on a launcher outside the repository, and a campaign's own runner outside the atomizer's `bindRoots` needs the same stage policy (round 6, M6). Until round 8 the compose atoms mounted only `/hc-tool`, so `hillclimb.mjs`'s imports of `tools/lib/lock.mjs` and `core/runtime/subscription-guard.mjs` were missing and every compose stage failed at module load after the model atoms finished (backfill review R7).
+- Derivation: `tools/hillclimb/lib/runner.mjs`, `tools/hillclimb/lib/plan.mjs`, `tools/hillclimb/bin/run-atoms.mjs`, `tools/hillclimb/bin/hillclimb.mjs`, `tools/hillclimb/scripts/hc-patch.sh`
 - Allocated to: SDD §4 C-24 Hillclimb
-- Verification: T — `make test` (`lib-test`)
-- Status: Baselined
+- Verification: T — `make test` (`lib-test`; the two compose-mount cases that start `bwrap` skip with the reason where it cannot start)
+- Status: Baselined (changed in round 8: compose atoms mount what `hillclimb.mjs` imports)
 
 ### REQ-HILL-003 — Hillclimb fan-out, plan and scoreboard
 
@@ -1508,13 +1568,13 @@ Repository checks shall validate local Markdown link targets and source digests.
 
 ### REQ-REPO-003 — Every test file is run
 
-`make test` shall fail when a discovered test file is reached by no make target and is not listed with a reason in `tests/test-reachability.json`, and when CI does not run both suites.
+`make test` shall fail when a discovered test file is reached by no make target and is not listed with a reason in `tests/test-reachability.json`, and when CI does not run both suites, and run every `experiments/*/analyze.test.mjs` through the target `experiments-test` (all but P-51's by-hand `controls.test.mjs`), failing when one of them fails.
 
 - Rationale: A test that never runs verifies nothing.
 - Derivation: `tests/test_reachability.py`, `tests/test-reachability.json`
 - Allocated to: SDD §4 C-27 Repository checks
 - Verification: T — `make core-test`
-- Status: Baselined
+- Status: Baselined (changed in round 8: `experiments-test`)
 
 ### REQ-REPO-004 — Traceability check
 
@@ -1558,33 +1618,33 @@ CI shall run a Gitleaks scan of the full history with a checksum-verified binary
 
 ### REQ-REPO-008 — Release-record generator
 
-`tools/gen_release_docs.py` shall parse Node spec and TAP summaries, `unittest` summaries and script `PASS`/`FAIL` lines with the last make exit winning, count severities, list failed runs and trace problems, name files changed between a run and the record commit, report lint and coverage from the Makefile, CI and the logs, write the test report and version description with links that resolve from where they are written, replace an index row of the same name, exit 1 on a failed run or a trace problem, and refuse a log without a label, a record without logs and a dirty tree.
+`tools/gen_release_docs.py` shall parse Node spec and TAP summaries, `unittest` summaries and script `PASS`/`FAIL` lines with the last make exit winning, count severities, list failed runs and trace problems, name files changed between a run and the record commit, report lint and coverage from the Makefile, CI and the logs, state in the version description whether CI runs a secret scan from the workflow files (each job whose steps run `gitleaks`, `trufflehog` or `detect-secrets` as a command or a `uses:` action, ignoring commented lines and mere mentions), write the test report and version description with links that resolve from where they are written, replace an index row of the same name, exit 1 on a failed run or a trace problem, and refuse a log without a label, a record without logs and a dirty tree.
 
-- Rationale: Release records are generated so their numbers are never typed by hand (formerly GAP-EF-014).
+- Rationale: Release records are generated so their numbers are never typed by hand (formerly GAP-EF-014). Until round 8 the sentence "CI has no secret-scanning job" was hard-coded, though the CI job `secret-scan` runs Gitleaks (backfill review R8).
 - Derivation: `tools/gen_release_docs.py`
 - Allocated to: SDD §4 C-28 Release records
 - Verification: T — `make test` (`gap-tools-test`)
-- Status: Baselined
+- Status: Baselined (changed in round 8: the secret-scan statement is read from the workflows). `docs/releases/VDD-main-20261108.md`, generated before the change, still carries the old sentence (finding D-13)
 
 ### REQ-REPO-009 — Lint and coverage
 
 `make lint` shall fail on any finding of ruff 0.17.0 (with the repository's `ruff.toml`) over the tree or of `node --check` over every `.mjs`, `.js` and `.cjs` file, with CI running it in the job `lint`, and `make coverage` running the Node suites under `--experimental-test-coverage` with a summary and the Python suites under coverage.py when installed, else with trace counts, failing when any test fails in either mode, with CI running `make coverage -k` under coverage.py 7.10.7 in the job `coverage` (its shell runs with `pipefail`, so a failing `make` fails the step) and uploading `coverage-summary.txt` as the artifact `coverage-summary`.
 
-- Rationale: Static analysis and coverage are measured rather than stated as missing (NPR SWE-135, SWE-189). Whether a failing test fails `make coverage`, and whether the CI job completes, was formerly GAP-EF-016.
+- Rationale: Static analysis and coverage are measured rather than stated as missing (NPR SWE-135, SWE-189). Whether a failing test fails `make coverage`, and whether the CI job completes, was formerly GAP-EF-016; until round 8 only inspection and one recorded run showed the first (backfill review R14).
 - Derivation: `Makefile`, `ruff.toml`, `.github/workflows/ci.yml`
 - Allocated to: SDD §4 C-27 Repository checks
-- Verification: I — `Makefile` targets `lint` and `coverage`, `.github/workflows/ci.yml` jobs `lint` and `coverage`
-- Status: Baselined (changed in round 7: GAP-EF-016 closed by the first CI run of the `coverage` job and a recorded failing-test run)
+- Verification: T — `make core-test` (`tests/test_coverage_fails.py` runs the real `make coverage-node`, `make coverage-python` in both modes and `make coverage` against a temporary failing test and its passing twin; where coverage.py is not installed its mode is driven through a stand-in module, which checks the Makefile wiring, not coverage.py); I — `Makefile` targets `lint` and `coverage`, `.github/workflows/ci.yml` jobs `lint` and `coverage`
+- Status: Baselined (changed in round 7: GAP-EF-016 closed by the first CI run of the `coverage` job and a recorded failing-test run; round 8 added the automated failing-test check)
 
 ### REQ-REPO-010 — No code comments
 
-`make lint`, and so the CI job `lint`, shall run `tools/check_comments.py`, which lists every tracked `.mjs`, `.js`, `.cjs`, `.ts`, `.py`, `.rs`, `.sh` and Makefile file outside `TODELETE/`, `experiments/`, `node_modules` and `vendor/` with `git ls-files`, prints `file:line: text` (text cut at 80 characters) for every comment line and exits 1, exits 0 when there is none, and exits 2 when `git ls-files` fails or a Python file cannot be tokenized; it finds Python comments with `tokenize` (so docstrings are not comments), `#` lines in shell files and Makefiles, and `//`, `/*`, `*` and `*/` lines in the others, and keep a shebang on line 1 and any comment naming a tool directive or licence header (`@ts-`, `eslint`, `noqa`, `type:`, `pragma`, `pylint`, `SPDX`, `-*-`, `fmt:`, `istanbul`, `c8 `).
+`make lint`, and so the CI job `lint`, shall run `tools/check_comments.py`, which lists every tracked `.mjs`, `.js`, `.cjs`, `.ts`, `.py`, `.rs`, `.sh` and Makefile file outside `TODELETE/`, `experiments/`, `node_modules` and `vendor/` with `git ls-files`, prints `file:line: text` (text cut at 80 characters) for every comment line and exits 1, exits 0 when there is none, and exits 2 when `git ls-files` fails or a Python file cannot be tokenized; it finds Python comments, whole-line and end-of-line, with `tokenize` (so docstrings are not comments), `#` lines in shell files and Makefiles, and in JavaScript, TypeScript and Rust every `//` and `/* */` comment wherever it starts, reporting each line a block comment spans, with a lexer that does not mistake comment-like text inside strings, template literals (with `${}` nesting), regular expression literals (told apart from division), Rust character literals and raw strings for a comment, exits 2 on an unterminated comment, string, template literal or regular expression, and keep a shebang on line 1 and any comment naming a tool directive or licence header (`@ts-`, `eslint`, `noqa`, `type:`, `pragma`, `pylint`, `SPDX`, `-*-`, `fmt:`, `istanbul`, `c8 `).
 
-- Rationale: CONTRIBUTING.md and AGENTS.md put rationale in documentation, commit messages or the pull request, not in code comments; until round 7 the rule was not enforced (finding D-07). Round 7 removed the comment lines and moved what they said that the documentation lacked into the documentation.
+- Rationale: CONTRIBUTING.md and AGENTS.md put rationale in documentation, commit messages or the pull request, not in code comments; until round 7 the rule was not enforced (finding D-07). Round 7 removed the comment lines and moved what they said that the documentation lacked into the documentation. Until round 8 the check read only how each line starts, so a `//` comment after code passed (finding D-09).
 - Derivation: `tools/check_comments.py`, `Makefile`, `.github/workflows/ci.yml`
 - Allocated to: SDD §4 C-27 Repository checks
 - Verification: T — `make test` (`gap-tools-test`); I — `.github/workflows/ci.yml` job `lint`
-- Status: Baselined (round 7). It sees whole comment lines only in JavaScript, TypeScript, Rust and shell files, so a comment after code on the same line passes there (finding D-09)
+- Status: Baselined (round 7; changed in round 8, R12: JavaScript, TypeScript and Rust are lexed, so end-of-line and inline comments are found, and the 20 the check had missed were removed, closing D-09). In shell files and Makefiles only `#` at the start of a line is found, because `$#` and `${#x}` make end-of-line `#` ambiguous
 
 ## 11. Untested behaviour (requirement gaps)
 
@@ -1593,7 +1653,7 @@ requirements until a test exists. Numbering: `GAP-EF-NNN`, never reused.
 
 | ID | Behaviour | Location | Why untested / note |
 |---|---|---|---|
-| — | None open at version 2.7 | — | — |
+| — | None open at version 2.10 | — | — |
 
 Closed gaps (their IDs are not reused):
 
@@ -1668,3 +1728,6 @@ Closed gaps (their IDs are not reused):
 | 2.5 | 2026-11-09 | round 5 | REQ-GEN-011 (capability block in both specification prompts, checked at the freeze, library hit on generated needs) added; REQ-COMPAT-001 (workcell runs), REQ-GATECLI-001 (pinned compiler default), REQ-FACTORY-003 (sandboxed worker and protected call), REQ-FACTORY-005 (real second host) and REQ-REPO-009 (CI coverage job) extended; REQ-STEP-001 deleted with the step harness retired to `TODELETE/`; GAP-EF-002 and GAP-EF-006 closed | this commit |
 | 2.6 | 2026-11-09 | round 6 | 3 requirements added: synchronous host calls (REQ-ISO-019), declared effects, durable denials and task conformance in the kernel host (REQ-KERNEL-005), the shared lock, headroom and exit-file modules (REQ-ERR-002); REQ-GEN-011 changed (block required at the freeze on every path, G7 checks glue against it); REQ-COMPAT-001 (host-buffer calls), REQ-RUST-001 (admission of any conforming crate through the kernel host, two tasks), REQ-FACTORY-003 (local turns without agent tools, pinned Wasmtime wheel, real-Docker cases), REQ-HILL-002 (stage policy to a campaign's own runner) extended; REQ-SYNTH-008 now tested on the `current` path; REQ-LIB-003 rationale corrected; GAP-EF-015 and GAP-EF-016 opened | this commit |
 | 2.7 | 2026-11-09 | round 7 | 2 requirements added: capability block on every atomizer contract path (REQ-ATOM-006) and no code comments (REQ-REPO-010); REQ-GATECLI-001 changed (`freeze` checks the capability block); REQ-REPO-009 (a failing test fails `make coverage`; the CI job ran), REQ-GEN-011 and REQ-FACTORY-003 (the `RealDocker` cases ran in CI) updated; REQ-LIFE-001 and REQ-LIFE-004 rationales give the state graph and evidence fields; GAP-EF-015 and GAP-EF-016 closed, so no gap is open | this commit |
+| 2.8 | 2026-11-09 | round 8 | 2 requirements added: `verify.mjs --policy` and the helper CLIs' usage and refusals (REQ-ATOM-007, D-10 closed) and the `node` toolchain from the running Node (REQ-ATOM-008, round 7b); changed from the 2026-11-09 backfill review: REQ-LIB-005 (exact text fingerprints, grants kept on reclaim), REQ-LIB-006 (refusals per environment), REQ-GEN-011 (G7 compares nested structure), REQ-KERNEL-005 (deep-copied declaration, non-finite JSON numbers refused), REQ-HILL-002 (compose atoms mount what `hillclimb.mjs` imports), REQ-REPO-003 (`experiments-test`), REQ-REPO-008 (secret-scan statement from the workflows), REQ-REPO-009 (automated failing-test coverage check) and REQ-REPO-010 (end-of-line and inline comments, D-09 closed); no gap open | this commit |
+| 2.9 | 2026-11-10 | round 9 | Changed: REQ-GEN-011 (a record, list or text value must declare its layout in the capability block; the prompts ask for it; the freeze and G7 refuse a block without it), REQ-ATOM-006 (the atomizer prompts ask for the nested layout), REQ-LIB-001 (the library key and binding include the nested layout; D-11 closed), REQ-ATOM-007 (`fanout.mjs` and `cutover.mjs` pass their policy to `verify.mjs`; D-12 closed) and REQ-ISO-010 (`LedgerBridge.pid`; the bridge-death test kills the pool's own bridge); no gap open | this commit |
+| 2.10 | 2026-11-10 | round 10 | 4 requirements added: the reference sandbox deadline and its distinct errors (REQ-SYNTH-009, D-14 closed), a relaunch patch reopens a finished job (REQ-COND-005, D-15 closed), the `TRACE-NEEDED` event (REQ-COND-006) and invariants I16 and I17 (REQ-JOB-004); changed: REQ-ATOM-007 (cutover's planning steps take, use and record `--policy`; D-16 closed) and REQ-LIB-002 (union members match on nested layout and bind by export name when they share a signature); no gap open | this commit |

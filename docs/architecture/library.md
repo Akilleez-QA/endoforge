@@ -37,7 +37,10 @@ need.
 2. The artifact binding must hold: a module present, its `source` hash equal to `kernel.ts`, and `frozen.sha256`
    matching the contract and tests.
 3. The candidate's own tests are run again through `runGates` under today's gates. A failure is not admitted.
-4. A behavioural fingerprint is taken: the module's outputs on a grid derived from its declared capability.
+4. A behavioural fingerprint is taken: the module's outputs on a grid derived from its declared capability. Numbers,
+   non-finite ones included, are printed to 12 significant digits, records and lists as JSON, and text, booleans and
+   missing values exactly as JSON, so two kernels that return different strings get different fingerprints (until
+   round 8 text was turned into a number, and every string printed `NaN`).
 5. The entry is journaled with its capability, its keys, its fingerprint, the source promotion, and the digests of
    the `gates.mjs` and `host.mjs` it was qualified under.
 
@@ -49,8 +52,8 @@ ranges, precision, codes and labels, and which exports trap.
 A need declares its capability in a fenced `capability` JSON block inside its frozen `CONTRACT.md`, so the hash of the
 declaration is bound at the freeze. Both specification prompts ask for that block (`capabilityRule` in
 [generator.mjs](../../core/runtime/x1/generator.mjs)), and the freeze refuses a block that is not JSON, uses an unknown
-kind, leaves out a unit or a number result's precision, or disagrees with the frozen tests on exports, argument counts
-or traps. Since round 6 the freeze also refuses a contract with no block on every loop path, so a need the loop
+kind, leaves out a unit, a number result's precision or the layout of a record, list or text value (since round 9),
+or disagrees with the frozen tests on exports, argument counts or traps. Since round 6 the freeze also refuses a contract with no block on every loop path, so a need the loop
 generates always reaches lookup with one. A need handed to the library directly without a block misses with
 `no_capability` under the default `retrieval: 'key'`.
 
@@ -64,7 +67,12 @@ nearest entries.
 The key (`keysOf`, mode `contract` by default) hashes, per export and by position, without export or argument names:
 argument kind, unit, parsed range and its openness, code tables; result kind, unit, precision, declared rounding, code
 tables, labels; whether the export traps; and the set of numerals in the contract outside headings and the capability
-block. The need's prose is not part of the key. The `interface` mode drops the numerals, and `prose` uses the whole
+block. Since round 9 it also hashes the nested layout of record, list and text values: record fields sorted by name,
+each with its kind, unit, range, precision, rounding, codes and labels and its own layout; a list's `items` and `max`;
+a text value's `maxBytes`. Field order does not count, and a capability with only scalar values keeps the key it had
+before. An entry admitted before round 9 with a structured value keeps the key it was journaled with, so a need with
+the same capability misses it with `no_contract_match`. The export binding (`binding`) and the union's per-export
+signature use the same description. The need's prose is not part of the key. The `interface` mode drops the numerals, and `prose` uses the whole
 normalized text.
 
 `lookup` returns a miss, with a reason, unless exactly one behaviour is held under the key:
@@ -113,8 +121,12 @@ mutant witnesses. A cell timeout, a guard breach or a crash is a refusal, never 
 writes nothing.
 
 When lookup finds nothing under the key and the need has two or more exports, `serve` tries a union: for each wanted
-export it picks a usable entry whose export has the same signature and whose contract numerals all appear in the
-need's contract, and composes them when more than one entry is involved.
+export it picks a usable entry whose export has the same signature, nested layout included, and whose contract
+numerals all appear in the need's contract, and composes them when more than one entry is involved. When two wanted
+exports share one signature (for example state in and state out over the same record), each binds only to an entry
+export with the same name, so they are not all sent to the first entry that fits (round 10); with no such entry there
+is no union. A member whose nested layout differs from every entry leaves no union, and `serve` misses with
+`no_contract_match`.
 
 ## Composition
 
@@ -188,7 +200,8 @@ principal. The caller passes a principal (`openLibrary({ principal })` as the de
 | Named by a grant | Allowed |
 
 `grant(id, { tenant, lineage? })` and `ungrant(...)` open or close an entry to another tenant or lineage. Only a
-principal the entry already allows may change its grants. Both are journaled.
+principal the entry already allows may change its grants. Both are journaled. A grant or ungrant that names a
+reclaimed entry applies to the entry it was reclaimed into.
 
 ## Duplicates, counterexamples and environments
 
@@ -196,11 +209,17 @@ principal the entry already allows may change its grants. Both are journaled.
   group, and marks the others as reclaimed into it, releasing their stored module and own files. It then rewrites the
   journal: a first `library_compacted` record names the previous sequence number and tip, and the hash chain restarts
   from it. `reclaim({ compact: false })` skips the rewrite. A plan that names a reclaimed entry is redirected to its
-  survivor.
+  survivor. The survivor takes the union of the reclaimed entries' grants, so a tenant granted only a reclaimed entry
+  is still served and can still compose it; the move is rebuilt when the journal is replayed. Before round 8 the
+  grants were dropped with the duplicate.
 - **Counterexamples.** A refusal records the failing tests as counterexamples on the entry. A later lookup whose tests
   include one of them, with an expectation the recorded output fails, misses with `counterexample` without running a
-  cell, as does an identical need (same entry, tests, contract numerals, gate mode and host). `counterexamples(id)`
-  lists them. They are rebuilt from the journal on open, so they survive a restart.
+  cell, as does an identical need (same entry, tests, contract numerals, gate mode, host and environment).
+  Counterexamples are kept per environment: a refusal in one environment does not refuse the need in another where the
+  entry qualified (before round 8 it did). Refusals journaled before round 8 carry no environment; their
+  counterexamples apply in every environment, and their old identical-need records no longer match.
+  `counterexamples(id)` lists those that apply here. They are rebuilt from the journal on open, so they survive a
+  restart.
 - **Environments.** Qualification is recorded per environment: Node version, V8 version, platform and architecture,
   hashed into an environment id (`openLibrary({ environment })` replaces it, for tests). An entry is served only in an
   environment where it has a passing qualification under the current host digests. `requalify()` runs entries that
@@ -224,6 +243,7 @@ principal the entry already allows may change its grants. Both are journaled.
 | A near-miss that differs in | Caught by |
 |---|---|
 | A declared unit, precision, rounding mode, range bound or its openness | The key |
+| The same inside a record, list or text value, or a field, list bound or text bound | The key (since round 9) |
 | A constant written as a numeral in the contract | The key |
 | Sign, or any behaviour the need's tests see | The tests in the cell |
 | A variant the tests can't see | The discrimination check, when a mutant or wrapper reaches it |

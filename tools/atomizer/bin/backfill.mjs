@@ -7,7 +7,7 @@ const readJson = (p) => { try { return JSON.parse(fs.readFileSync(p, 'utf8')); }
 const label = process.argv.find((a) => a.startsWith('--label='))?.slice(8) ?? null;
 for (const arg of process.argv.slice(2).filter((a) => !a.startsWith('--'))) {
   const p = path.resolve(arg);
-  if (fs.existsSync(path.join(p, 'receipt', 'atomize.json'))) { // atomization example
+  if (fs.existsSync(path.join(p, 'receipt', 'atomize.json'))) {
     const r = readJson(path.join(p, 'receipt', 'atomize.json')); const id = `atomize-${r.needId}-${(r.startedAt ?? '').replace(/[-:.]/g, '')}-backfill`;
     if (already.has(id)) continue;
     const plan = readJson(path.join(p, 'plan.json')); const doc = readJson(path.join(p, 'atoms.json'));

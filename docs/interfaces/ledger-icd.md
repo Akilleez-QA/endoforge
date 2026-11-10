@@ -132,7 +132,10 @@ Built-in actions are `prepare`, `append` and `frozen`. An `extension` module add
 `createLoopPool` passes `tools.x1_loop`, which adds `admit`, `park`, `commit` and `revise`. If the process exits, pending
 requests reject with `error.outcome === 'outcome_unknown'` and are never resent. With `restart: true` and after a
 first ready, it restarts up to three times in a row; otherwise later requests reject. `close()` drains, then ends
-the bridge's input so it retires its journal before exiting.
+the bridge's input so it retires its journal before exiting. `failed` (read-only) is true once the bridge has failed
+closed. `pid` (read-only, since round 9) is the bridge process's pid: `undefined` until `start()` spawns it and while a
+restart is pending, and still the dead process's pid after the bridge fails closed. `IsolatePool` exposes its bridge as
+`pool.ledger`; the bridge-death test uses `pool.ledger.pid` to kill exactly the pool's own bridge.
 
 ### Ledger writer journal
 
@@ -222,10 +225,10 @@ REQ-PROMOTE-001, REQ-LOOP-002, REQ-LOOP-003.
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-ICD-LEDGER |
-| Version | 3.0 |
+| Version | 3.3 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
-| Date | 2026-11-08 |
+| Date | 2026-11-10 |
 | Baseline commit | 63e95c7 |
 | Applies to | endoforge main at baseline commit |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
@@ -241,3 +244,4 @@ REQ-PROMOTE-001, REQ-LOOP-002, REQ-LOOP-003.
 | 3.0 | 2026-11-08 | `63e95c7` | Rewritten from the code: records, writers, bridge protocol, loop actions and decision record; runtime launcher entries moved to the runtime README; metadata moved to this section | this PR |
 | 3.1 | 2026-11-09 | round 2 | `revise` loop action (specification correction) | this commit |
 | 3.2 | 2026-11-09 | round 3 | `revise` takes structured corrections with a declared layout | this commit |
+| 3.3 | 2026-11-10 | round 9 | Ledger bridge: the read-only `failed` and `pid` getters; the version field brought up to the change history | this commit |

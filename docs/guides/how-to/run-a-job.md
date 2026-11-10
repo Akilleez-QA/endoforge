@@ -25,7 +25,7 @@ flowchart TD
 
 The manifest (`endoforge/job/1`) holds your goal in your own words, the primary sources, acceptance criteria with
 checks, and atoms that each own a set of files. The job tool checks it against six gates (Pontificate, Observe,
-Orient, Decide, Orchestrate, Loop) and fifteen invariants, I1 to I15. Each refusal names the invariant it breaks.
+Orient, Decide, Orchestrate, Loop) and seventeen invariants, I1 to I17. Each refusal names the invariant it breaks.
 Nothing launches until you confirm the exact card by its sha256.
 
 ## 1. Make a throwaway repository and a job
@@ -93,15 +93,17 @@ node "$EF/tools/job/bin/job.mjs" validate job.json --gate decide --offline
 Pontificate  passed  (I1)
 Observe      passed  (I2, I4, I7)
 Orient       passed  (I5, I6, I13, I15)
-Decide       refused  (I3, I9, I11)
+Decide       refused  (I3, I9, I11, I16, I17)
 Orchestrate  not checked  (I8)
 Loop         not checked  (I10, I12, I14)
 REFUSED decide I14: open lessons from earlier jobs of this kind have not been retrieved into the card (job.mjs card)
 REFUSED decide I1: the job card has not been confirmed by the user (job.mjs card, then job.mjs confirm)
+warning decide I17: criterion T1: its check has not been calibrated on the base tree (job.mjs stage)
+I1 broken  I2 holds  I3 holds  I4 holds  I5 holds  I6 holds  I7 holds  I8 pending  I9 holds  I10 pending  I11 holds  I12 pending  I13 holds  I14 broken  I15 holds  I16 holds  I17 partial
 ```
 
 It exits 1. Decide needs two things this job does not have yet: a card that carries lessons from earlier jobs of the
-same kind, and your confirmation.
+same kind, and your confirmation. The warning goes away at the next step, when `stage` runs the check once.
 
 ## 3. Render the card and stage it
 
@@ -112,7 +114,11 @@ node "$EF/tools/job/bin/job.mjs" stage job.json
 
 `card` prints `card sha256 <64 hex characters>` and writes `card.md`: the goal, the brief, what governs what, the
 atoms, the acceptance checks and the invariants. Read it; it is what you are about to approve. `stage` checks every
-gate up to Decide except your go, prints the card and records a `STAGED` event.
+gate up to Decide except your go, then runs check T1 once on the repository's current commit in a throwaway worktree
+and records the outcome in `job.proofs.json` (I17). On standard error it prints `baseline T1	failed	exited 1`: the
+seed file still says `TODO`, so the check fails before any work, as a check should. A check that fails because a
+module, file or make target is missing is refused as broken. Then `stage` prints the card and records a `STAGED`
+event.
 
 ## 4. Give the go and run
 
@@ -132,13 +138,13 @@ node "$EF/tools/conductor/bin/conduct.mjs" status job.json
 conductor: Greeting — phase done
 budget: 1/200 launches, 2 iterations per atom
 atoms: 1 frozen
-  GREETING   frozen            iter 1  collect gate passed (no slice checks)
+  GREETING   frozen            iter 1  passed T1
 
 Greeting (code): 5 events
 03:51:01    STAGED    Greeting: card ready for your go (2dd351bee435)
 03:51:08    SMOKE     codex ok
 03:51:08  * FIRED     Greeting fired: 1 atoms; 1 codex across 1 logins
-03:51:09  * GATE      GREETING frozen at iteration 1: collect gate passed (no slice checks)
+03:51:09  * GATE      GREETING frozen at iteration 1: passed T1
 03:51:10  * DONE      Greeting done
 
 state: DONE; 1 atoms fired at 03:51:08

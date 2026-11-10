@@ -1,5 +1,6 @@
 import { SCHEMA as FIXLIST_SCHEMA, byOwner } from './fixlist.mjs';
 import { roundName, vars, expand } from './campaign.mjs';
+import { sourceBinds, SCRIPT_TOOL } from './runner.mjs';
 
 const ROUND = '/hc';
 const TOOL = '/hc-tool';
@@ -12,6 +13,8 @@ function binds(c, n, { repo = false } = {}) {
   for (const r of c.references?.binds ?? []) b.push(expand(r, v));
   return b;
 }
+
+const scriptBinds = (c, n) => [{ host: vars(c, n).roundDir, guest: ROUND }, ...sourceBinds()];
 
 export const models = (c) => c.models ?? ['opus', 'codex'];
 export function pick(c, n, slot, fallback) {
@@ -90,8 +93,8 @@ export function reviewAtoms(c, n, { hasPrevious = false } = {}) {
     inputs: [{ from: 'critique', output: 'fixlist' }, { from: 'consult', output: 'references' }],
     outputs: [{ name: 'fixlist_md', path: 'FIXLIST.md' }, { name: 'score', path: 'score.json' }],
     verify: 'FIXLIST.md and score.json exist',
-    worker: { model: 'script', toolchain: ['node'], binds: b,
-      command: ['node', `${TOOL}/bin/hillclimb.mjs`, 'compose-review', `${ROUND}/campaign.json`, '/in/critique/fixlist.json', '/out', ...(hasPrevious ? ['--previous', `${ROUND}/previous.fixlist.json`] : [])] },
+    worker: { model: 'script', toolchain: ['node'], binds: scriptBinds(c, n),
+      command: ['node', `${SCRIPT_TOOL}/bin/hillclimb.mjs`, 'compose-review', `${ROUND}/campaign.json`, '/in/critique/fixlist.json', '/out', ...(hasPrevious ? ['--previous', `${ROUND}/previous.fixlist.json`] : [])] },
     size: { work: 1, interface: 1 },
   };
   return doc(c, n, 'review', `Round ${n} review of ${c.id}: consult the references, then find up to ${c.critique.count} problems in the stills.`, [consult, ...critics, ...(merge ? [merge] : []), compose],
@@ -136,7 +139,7 @@ export function fixAtoms(c, n, fixlist) {
     inputs: atoms.map((a) => ({ from: a.id })),
     outputs: [{ name: 'summary', path: 'fix-summary.json' }],
     verify: 'fix-summary.json exists and has no scope violations',
-    worker: { model: 'script', toolchain: ['node'], binds: binds(c, n), command: ['node', `${TOOL}/bin/hillclimb.mjs`, 'compose-fix', `${ROUND}/campaign.json`, '/in', '/out'] },
+    worker: { model: 'script', toolchain: ['node'], binds: scriptBinds(c, n), command: ['node', `${SCRIPT_TOOL}/bin/hillclimb.mjs`, 'compose-fix', `${ROUND}/campaign.json`, '/in', '/out'] },
     size: { work: 1, interface: 1 },
   });
   return doc(c, n, 'fix', `Round ${n} fixes for ${c.id}: ${fixlist.items.length} problems across ${Object.keys(groups).length} lanes.`, atoms,
@@ -180,7 +183,7 @@ export function judgeAtoms(c, n, lanes) {
   };
   const compose = { id: 'compose', kind: 'compose', title: 'Check the winners', contract: 'winners.json must name exactly one listed variant per owner.',
     inputs: [{ from: 'judge', output: 'winners' }], outputs: [{ name: 'winners', path: 'winners.json' }], verify: 'winners.json copied after the check',
-    worker: { model: 'script', toolchain: ['node'], binds: b, command: ['node', `${TOOL}/bin/hillclimb.mjs`, 'compose-judge', `${ROUND}/judge/lanes.json`, '/in/judge/winners.json', '/out'] },
+    worker: { model: 'script', toolchain: ['node'], binds: scriptBinds(c, n), command: ['node', `${SCRIPT_TOOL}/bin/hillclimb.mjs`, 'compose-judge', `${ROUND}/judge/lanes.json`, '/in/judge/winners.json', '/out'] },
     size: { work: 1, interface: 1 } };
   return doc(c, n, 'judge', `Round ${n} of ${c.id}: pick the stronger of the competing fixes per lane.`, [judge, compose], 'compose checked winners.json', 'test -s /in/compose/winners.json');
 }

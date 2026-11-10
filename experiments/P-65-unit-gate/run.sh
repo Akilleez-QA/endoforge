@@ -2,13 +2,13 @@
 set -euo pipefail
 here=$(cd "$(dirname "$0")" && pwd); repo=$(cd "$here/../.." && pwd); tree=$P65_OUT/tree
 synth=$repo/experiments/P-56-evaluator-synthesis
-case $1 in
+case ${1:-} in
   tree)
     git -C "$repo" worktree add --detach "$tree" HEAD
     git -C "$repo" archive origin/escape-rate-probe experiments/P-51-escape-rate | tar -x -C "$tree"
     (cd "$tree" && make loop-setup) ;;
-  U1|U2)
-    width=1; arms=control; [ "$1" = U2 ] && { width=2; arms=control,sampled,glue; }
+  U1a|U2a)
+    width=1; arms=control; [ "$1" = U2a ] && { width=2; arms=control,sampled,glue; }
     env P51_CORPUS="$P65_CORPUS" P51_PREP="$P65_PREP" P51_OUTPUT="$P65_OUT/$1" P51_SCRATCH="$P65_OUT/scratch-$1" P51_ARMS=$arms P51_WIDTH=${P65_WIDTH:-14} \
       ENDOFORGE_ASC_CMD="$tree/tools/asc/node_modules/.bin/asc" ENDOFORGE_SYNTH=1 ENDOFORGE_SYNTH_WIDTH=$width \
       ENDOFORGE_SYNTH_PROVIDER="$tree/experiments/P-56-evaluator-synthesis/replay-provider.mjs" P56_RECORDED="$P65_RECORDED" \
@@ -18,4 +18,5 @@ case $1 in
     node "$tree/experiments/P-56-evaluator-synthesis/offline.mjs" "$P65_CORPUS" "$P65_PREP" "$P65_RECORDED" 2 "$P65_OUT/offline-S2.jsonl" > "$P65_OUT/offline-S2.summary.json" ;;
   analyze) node "$here/analyze.mjs" "$tree" "$P65_OUT" "$P65_S2A" ;;
   classify) python3 -I "$here/classify.py" "$P65_S2A/glue.jsonl" "$P65_PREP/mutants.jsonl" "$P65_CORPUS" "$P65_OUT/classification.json" ;;
+  *) echo "usage: run.sh tree|U1a|U2a|offline|analyze|classify" >&2; exit 2 ;;
 esac

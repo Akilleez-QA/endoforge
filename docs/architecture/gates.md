@@ -152,8 +152,17 @@ no unknown fields, an `id`, an `assumption` and a `question` of at least 20 char
   the same exports, the same number of arguments, and per argument the same kind, unit, range and codes, per result
   the same kind, unit, precision, rounding, codes and labels, and the same set of trapping exports. Units and ranges
   are compared the way library lookup compares them, so `1`, `none` and `dimensionless` are one unit and `0..10` equals
-  `[0, 10]`. The loop's freeze already refuses a contract without the block (REQ-GEN-011), and since round 7 so
-  does the stand-alone [gate CLI](../../tools/gate/README.md)'s `freeze` (REQ-GATECLI-001).
+  `[0, 10]`. Since round 8 the comparison goes down through structured values: record fields are matched by name
+  (a missing, extra or renamed field is reported; order does not count), a list's `items` and `max` and a text value's
+  `maxBytes` must match, and every nested value is compared on the same keys as the top level, so a nested Celsius
+  result relabelled Fahrenheit in `glue.json` fails G7. Since round 9 the block must declare the layout of every
+  record, list or text value, at every depth (`layoutProblems`): a record's `fields`, a nonempty list of uniquely
+  named fields, each with its kind, a unit when integer, number or code, and codes when code; a list's `items` and
+  `max` (1 to 4096); a text value's `maxBytes` (1 to 65536). A frozen block that leaves the layout out fails G7 with
+  `the capability block does not declare the layout: ...`, whatever the glue declares; before round 9 such a block
+  agreed with any glue layout (finding D-11). The loop's freeze refuses a contract without the block, or with a block
+  that leaves out a layout (REQ-GEN-011), and since round 7 so does the stand-alone
+  [gate CLI](../../tools/gate/README.md)'s `freeze` (REQ-GATECLI-001).
 
 A unit that disagrees with its argument's name (`unitDisagreements`) is reported as advisory and does not fail G7;
 G9 makes the binding units decision.

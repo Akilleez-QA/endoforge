@@ -25,7 +25,7 @@ reports test coverage.
 - Add a test for each new behaviour. Tests are found by glob; `tests/test_reachability.py` fails if `make test` does
   not run a test file.
 - Put rationale in documentation, commit messages or the pull request, not in code comments. `make lint` fails on a
-  comment line (`tools/check_comments.py`); a line-1 shebang, licence headers and tool directives such as `noqa` are
+  comment, including one after code on the same line (`tools/check_comments.py`); a line-1 shebang, licence headers and tool directives such as `noqa` are
   kept.
 - A change to a default needs a measurement. Reserve a P-number with `python3 -I tools/experiment_id.py reserve
   <slug>`, commit `PRECOMMIT.md` before the run, then add `RESULT.md` and an `INDEX.md` row and run `make index`.

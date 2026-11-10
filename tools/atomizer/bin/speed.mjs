@@ -38,7 +38,7 @@ function analyseRun(dir) {
   while (cur) { chain.unshift(cur); const ds = deps(byId[cur.id]).map((d) => A2[d]).filter(Boolean); cur = ds.length ? ds.reduce((m, x) => (x.end > m.end ? x : m)) : null; }
   const chainSplit = Object.fromEntries(BUCKETS.map((b) => [b, chain.reduce((s, x) => s + x[b], 0)]));
   const wallMs = Math.max(...atoms.map((x) => x.end));
-  chainSplit.gapMs = Math.max(0, wallMs - Object.values(chainSplit).reduce((s, v) => s + v, 0)); // scheduler gaps, staging, receipt writing
+  chainSplit.gapMs = Math.max(0, wallMs - Object.values(chainSplit).reduce((s, v) => s + v, 0));
   return { id: run.need, dir, wallMs, atoms, chain: chain.map((x) => x.id), chainSplit, chainKinds: chain.map((x) => `${x.id}:${x.kind}`) };
 }
 const runs = runDirs.map(analyseRun);

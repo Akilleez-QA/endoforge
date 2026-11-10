@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import { openTrace, nowEpoch } from '../lib/trace.mjs';
 import os from 'node:os';
@@ -9,10 +10,26 @@ import { toolchainFor } from '../lib/workers.mjs';
 import { emit, context, archiveRun } from '../lib/ledger.mjs';
 const verifyStart = nowEpoch();
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const RUN = path.resolve(process.argv[2] ?? '');
-if (!RUN || !fs.existsSync(path.join(RUN, 'atoms.json'))) { console.error('usage: verify.mjs <run-dir> [--policy file]'); process.exit(2); }
+const USAGE = 'usage: verify.mjs <run-dir> [--policy file] [--no-archive]';
+const refuse = (why) => { console.error(`${why ? `${why}\n` : ''}${USAGE}`); process.exit(2); };
+const ARGS = { _: [] };
+for (let i = 2; i < process.argv.length; i++) {
+  const a = process.argv[i];
+  if (a === '--help' || a === '-h') { console.log(USAGE); process.exit(0); }
+  else if (a === '--policy') { const v = process.argv[++i]; if (!v || v.startsWith('--')) refuse('--policy needs a file'); ARGS.policy = v; }
+  else if (a === '--no-archive') ARGS.noArchive = true;
+  else if (a.startsWith('--')) refuse(`unknown option ${a}`);
+  else ARGS._.push(a);
+}
+if (ARGS._.length !== 1) refuse(ARGS._.length ? 'one run directory only' : '');
+const RUN = path.resolve(ARGS._[0]);
+if (!fs.existsSync(path.join(RUN, 'atoms.json'))) refuse(`no atoms.json in ${RUN}`);
+const POLICY_FILE = ARGS.policy ? path.resolve(ARGS.policy) : path.join(HERE, '..', 'policy.json');
+let policyText, policy;
+try { policyText = fs.readFileSync(POLICY_FILE); policy = JSON.parse(policyText.toString('utf8')); } catch (e) { refuse(`unreadable policy ${POLICY_FILE}: ${e.message}`); }
+if (!policy || typeof policy !== 'object' || Array.isArray(policy)) refuse(`policy ${POLICY_FILE} is not a JSON object`);
+const POLICY = { path: POLICY_FILE, sha256: crypto.createHash('sha256').update(policyText).digest('hex') };
 const doc = JSON.parse(fs.readFileSync(path.join(RUN, 'atoms.json'), 'utf8'));
-const policy = JSON.parse(fs.readFileSync(path.join(HERE, '..', 'policy.json'), 'utf8'));
 const REPO = path.resolve(HERE, '../../..');
 const TOOLCHAIN = toolchainFor(['node'], policy, REPO);
 const run = JSON.parse(fs.readFileSync(path.join(RUN, 'receipt', 'run.json'), 'utf8'));
@@ -40,13 +57,13 @@ try {
     if (!ok) fails.push(`acceptance ${acc.id} failed (exit ${r.exit}): ${r.stderr.trim().slice(0, 200) || r.stdout.trim().slice(0, 200)}`);
   }
 } finally { fs.rmSync(homeTemplate, { recursive: true, force: true }); }
-const report = { runDir: RUN, ok: fails.length === 0, fails, notes, acceptance, checkedAt: new Date().toISOString() };
+const report = { runDir: RUN, ok: fails.length === 0, fails, notes, acceptance, policy: POLICY, checkedAt: new Date().toISOString() };
 fs.writeFileSync(path.join(RUN, 'receipt', 'verify.json'), JSON.stringify(report, null, 1));
 const gatesFile = compose ? path.join(RUN, 'atoms', compose.id, 'out', 'gates.json') : null;
 const gates = gatesFile && fs.existsSync(gatesFile) ? JSON.parse(fs.readFileSync(gatesFile, 'utf8')) : null;
 const reviews = doc.atoms.filter((a) => a.kind === 'review').map((a) => { const p = path.join(RUN, 'atoms', a.id, 'out', a.outputs[0].path); let j = null; try { j = JSON.parse(fs.readFileSync(p, 'utf8')); } catch {} return { atom: a.id, model: a.worker.model, persona: j?.persona ?? null, verdict: j?.verdict ?? null, change: j?.change ?? null }; });
 emit('verify.end', { runId: run.runId ?? null, poolId: run.poolId ?? null, need: doc.need.id, ok: report.ok, fails, acceptance: acceptance.map((a) => ({ id: a.id, kind: a.kind, ok: a.ok ?? null, exit: a.exit ?? null })), gates: gates ? { promotable: gates.promotable, byGate: Object.fromEntries(Object.entries(gates.gates ?? {}).map(([k, v]) => [k, v.ok])), testsPassed: gates.gates?.G4_tests?.passed ?? null, testsTotal: gates.gates?.G4_tests?.total ?? null } : null, reviews, context: context() });
-if (!process.argv.includes('--no-archive')) { const archiveStart = nowEpoch(); const ar = archiveRun(RUN, run.runId ?? path.basename(RUN)); emit(ar.refused ? 'archive.refused' : 'run.archived', { runId: run.runId ?? null, poolId: run.poolId ?? null, need: doc.need.id, ...ar }); T.span('archive', archiveStart, nowEpoch()); }
+if (!ARGS.noArchive) { const archiveStart = nowEpoch(); const ar = archiveRun(RUN, run.runId ?? path.basename(RUN)); emit(ar.refused ? 'archive.refused' : 'run.archived', { runId: run.runId ?? null, poolId: run.poolId ?? null, need: doc.need.id, ...ar }); T.span('archive', archiveStart, nowEpoch()); }
 T.span('verify', verifyStart, nowEpoch(), { ok: report.ok, promotable: gates?.promotable ?? null });
 T.close();
 console.log(JSON.stringify({ ok: report.ok, fails, acceptance: acceptance.map((a) => ({ id: a.id, ok: a.ok ?? a.result })) }));

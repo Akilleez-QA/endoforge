@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
@@ -6,11 +7,15 @@ import { fileURLToPath } from 'node:url';
 import { emit, context, load, newId } from '../lib/ledger.mjs';
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const argv = process.argv.slice(2); const get = (k, d = null) => { const i = argv.indexOf(`--${k}`); return i >= 0 ? argv[i + 1] : d; };
-const USAGE = 'usage: cutover.mjs <ladder.json> --out-dir <dir> [--cases id,id] [--rep 1] [--parallel-cases 2] [--dag-concurrency 6] [--arms direct,atomized,templated]';
+const USAGE = 'usage: cutover.mjs <ladder.json> --out-dir <dir> [--cases id,id] [--rep 1] [--parallel-cases 2] [--dag-concurrency 6] [--arms direct,atomized,templated] [--policy file]';
 if (!argv[0] || argv[0].startsWith('--') || !get('out-dir')) { console.error(USAGE); process.exit(2); }
 const ARMS = (get('arms', 'direct,atomized')).split(',');
 const KNOWN_ARMS = ['direct', 'atomized', 'templated'];
 for (const arm of ARMS) if (!KNOWN_ARMS.includes(arm)) { console.error(`unknown arm: ${arm}; expected ${KNOWN_ARMS.join(', ')}`); console.error(USAGE); process.exit(2); }
+if (argv.includes('--policy') && (!get('policy') || get('policy').startsWith('--'))) { console.error('--policy needs a file'); console.error(USAGE); process.exit(2); }
+const POLICY_FILE = get('policy') ? path.resolve(get('policy')) : path.join(HERE, '..', 'policy.json');
+let POLICY;
+try { const text = fs.readFileSync(POLICY_FILE); const parsed = JSON.parse(text.toString('utf8')); if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) throw new Error('not a JSON object'); POLICY = { path: POLICY_FILE, sha256: crypto.createHash('sha256').update(text).digest('hex') }; } catch (e) { console.error(`unreadable policy ${POLICY_FILE}: ${e.message}`); console.error(USAGE); process.exit(2); }
 const ladderPath = path.resolve(argv[0]); const ladder = JSON.parse(fs.readFileSync(ladderPath, 'utf8'));
 const OUT = path.resolve(get('out-dir')); const REP = Number(get('rep', 1)); const PAR = Number(get('parallel-cases', 2)); const DAGC = Number(get('dag-concurrency', 6));
 const only = get('cases') ? new Set(get('cases').split(',')) : null;
@@ -25,31 +30,34 @@ function dagTimes(runDir) {
   const comp = doc.atoms.find((a) => a.kind === 'compose' || a.kind === 'direct'); const g = comp ? readJson(path.join(runDir, 'atoms', comp.id, 'out', 'gates.json')) : null;
   return { dagWallMs: run.wallMs, gatedAtMs: comp && recs[comp.id] ? Date.parse(recs[comp.id].finishedAt) - t0 : null, promotable: g?.promotable ?? false, testsPassed: g?.gates?.G4_tests?.passed ?? null, testsTotal: g?.gates?.G4_tests?.total ?? null, exports: g?.exports?.length ?? null, atoms: doc.atoms.length, calls: run.tokens?.calls, tokOut: run.tokens?.output, tokIn: run.tokens?.input, tokCacheRead: run.tokens?.cacheRead, runId: run.runId, verify: readJson(path.join(runDir, 'receipt', 'verify.json'))?.ok ?? null };
 }
+const planPolicy = (rec) => ({ planPolicy: rec?.policy ?? null, planPolicyMatches: rec?.policy?.sha256 === POLICY.sha256 && rec?.policy?.path === POLICY.path });
 async function armDirect(c, dir) {
-  const atoms = path.join(dir, 'direct-atoms.json'); await node([path.join(HERE, 'direct.mjs'), path.join(path.dirname(ladderPath), `${c.id}.md`), '--out', atoms]);
-  const runDir = path.join(dir, 'direct'); const s = await node([path.join(HERE, 'schedule.mjs'), 'run', atoms, '--run-dir', runDir, '--concurrency', '1', '--retries', '0', '--pool-id', EXP], path.join(dir, 'direct-schedule.log'));
-  await node([path.join(HERE, 'verify.mjs'), runDir], path.join(dir, 'direct-verify.log'));
-  const t = dagTimes(runDir); return { arm: 'direct', planMs: 0, ...t, gatedTotalMs: t.gatedAtMs, endToEndMs: s.wallMs };
+  const atoms = path.join(dir, 'direct-atoms.json'); await node([path.join(HERE, 'direct.mjs'), path.join(path.dirname(ladderPath), `${c.id}.md`), '--out', atoms, '--policy', POLICY_FILE], path.join(dir, 'direct.log'));
+  const planned = readJson(atoms); const pol = planPolicy(planned);
+  if (!planned || !pol.planPolicyMatches || planned.valid === false) return { arm: 'direct', planMs: 0, planValid: false, ...pol, promotable: false, gatedTotalMs: null, endToEndMs: null };
+  const runDir = path.join(dir, 'direct'); const s = await node([path.join(HERE, 'schedule.mjs'), 'run', atoms, '--run-dir', runDir, '--concurrency', '1', '--retries', '0', '--pool-id', EXP, '--policy', POLICY_FILE], path.join(dir, 'direct-schedule.log'));
+  await node([path.join(HERE, 'verify.mjs'), runDir, '--policy', POLICY_FILE], path.join(dir, 'direct-verify.log'));
+  const t = dagTimes(runDir); return { arm: 'direct', planMs: 0, ...pol, ...t, gatedTotalMs: t.gatedAtMs, endToEndMs: s.wallMs };
 }
 async function armAtomized(c, dir) {
-  const ex = path.join(dir, 'atomized-plan'); const a = await node([path.join(HERE, 'atomize.mjs'), path.join(path.dirname(ladderPath), `${c.id}.md`), '--out', ex, '--model', 'sonnet'], path.join(dir, 'atomize.log'));
-  const plan = readJson(path.join(ex, 'receipt', 'atomize.json')); const planMs = (plan?.attempts ?? []).reduce((s, x) => s + (x.wallMs ?? 0), 0);
-  if (!fs.existsSync(path.join(ex, 'atoms.json')) || !plan?.valid) return { arm: 'atomized', planMs, planValid: false, promotable: false, gatedTotalMs: null, endToEndMs: a.wallMs };
-  const runDir = path.join(dir, 'atomized'); const s = await node([path.join(HERE, 'schedule.mjs'), 'run', path.join(ex, 'atoms.json'), '--run-dir', runDir, '--concurrency', String(DAGC), '--pool-id', EXP], path.join(dir, 'atomized-schedule.log'));
-  await node([path.join(HERE, 'verify.mjs'), runDir], path.join(dir, 'atomized-verify.log'));
+  const ex = path.join(dir, 'atomized-plan'); const a = await node([path.join(HERE, 'atomize.mjs'), path.join(path.dirname(ladderPath), `${c.id}.md`), '--out', ex, '--model', 'sonnet', '--policy', POLICY_FILE], path.join(dir, 'atomize.log'));
+  const plan = readJson(path.join(ex, 'receipt', 'atomize.json')); const planMs = (plan?.attempts ?? []).reduce((s, x) => s + (x.wallMs ?? 0), 0); const pol = planPolicy(plan);
+  if (!fs.existsSync(path.join(ex, 'atoms.json')) || !plan?.valid || !pol.planPolicyMatches) return { arm: 'atomized', planMs, planValid: false, ...pol, promotable: false, gatedTotalMs: null, endToEndMs: a.wallMs };
+  const runDir = path.join(dir, 'atomized'); const s = await node([path.join(HERE, 'schedule.mjs'), 'run', path.join(ex, 'atoms.json'), '--run-dir', runDir, '--concurrency', String(DAGC), '--pool-id', EXP, '--policy', POLICY_FILE], path.join(dir, 'atomized-schedule.log'));
+  await node([path.join(HERE, 'verify.mjs'), runDir, '--policy', POLICY_FILE], path.join(dir, 'atomized-verify.log'));
   const t = dagTimes(runDir); const pl = readJson(path.join(ex, 'plan.json'));
-  return { arm: 'atomized', planMs, planValid: true, planAtoms: pl?.order?.length ?? null, planTotal: pl?.total, planCritical: pl?.critical, speedupBound: pl?.speedupBound, ...t, gatedTotalMs: t.gatedAtMs != null ? planMs + t.gatedAtMs : null, endToEndMs: a.wallMs + s.wallMs, planTokOut: (plan?.attempts ?? []).reduce((s2, x) => s2 + (x.usage?.output ?? 0), 0) };
+  return { arm: 'atomized', planMs, planValid: true, ...pol, planAtoms: pl?.order?.length ?? null, planTotal: pl?.total, planCritical: pl?.critical, speedupBound: pl?.speedupBound, ...t, gatedTotalMs: t.gatedAtMs != null ? planMs + t.gatedAtMs : null, endToEndMs: a.wallMs + s.wallMs, planTokOut: (plan?.attempts ?? []).reduce((s2, x) => s2 + (x.usage?.output ?? 0), 0) };
 }
 async function armTemplated(c, dir) {
-  const ex = path.join(dir, 'templated-plan'); const a = await node([path.join(HERE, 'plan-template.mjs'), path.join(path.dirname(ladderPath), `${c.id}.md`), '--out', ex], path.join(dir, 'plan-template.log'));
-  const plan = readJson(path.join(ex, 'receipt', 'atomize.json')); const planMs = plan?.attempts?.[0]?.wallMs ?? a.wallMs;
-  if (!plan?.valid) return { arm: 'templated', planMs, planValid: false, promotable: false, gatedTotalMs: null, endToEndMs: a.wallMs };
-  const runDir = path.join(dir, 'templated'); const s = await node([path.join(HERE, 'schedule.mjs'), 'run', path.join(ex, 'atoms.json'), '--run-dir', runDir, '--concurrency', String(DAGC), '--timeout-ms', String(get('atom-timeout-ms', 240000)), '--pool-id', EXP], path.join(dir, 'templated-schedule.log'));
-  await node([path.join(HERE, 'verify.mjs'), runDir], path.join(dir, 'templated-verify.log'));
+  const ex = path.join(dir, 'templated-plan'); const a = await node([path.join(HERE, 'plan-template.mjs'), path.join(path.dirname(ladderPath), `${c.id}.md`), '--out', ex, '--policy', POLICY_FILE], path.join(dir, 'plan-template.log'));
+  const plan = readJson(path.join(ex, 'receipt', 'atomize.json')); const planMs = plan?.attempts?.[0]?.wallMs ?? a.wallMs; const pol = planPolicy(plan);
+  if (!plan?.valid || !pol.planPolicyMatches) return { arm: 'templated', planMs, planValid: false, ...pol, promotable: false, gatedTotalMs: null, endToEndMs: a.wallMs };
+  const runDir = path.join(dir, 'templated'); const s = await node([path.join(HERE, 'schedule.mjs'), 'run', path.join(ex, 'atoms.json'), '--run-dir', runDir, '--concurrency', String(DAGC), '--timeout-ms', String(get('atom-timeout-ms', 240000)), '--pool-id', EXP, '--policy', POLICY_FILE], path.join(dir, 'templated-schedule.log'));
+  await node([path.join(HERE, 'verify.mjs'), runDir, '--policy', POLICY_FILE], path.join(dir, 'templated-verify.log'));
   const t = dagTimes(runDir);
-  return { arm: 'templated', planMs, planValid: true, exportsPlanned: plan.exports, modules: plan.modules, ...t, gatedTotalMs: t.gatedAtMs != null ? planMs + t.gatedAtMs : null, endToEndMs: a.wallMs + s.wallMs, planTokOut: plan?.attempts?.[0]?.usage?.output ?? null };
+  return { arm: 'templated', planMs, planValid: true, ...pol, exportsPlanned: plan.exports, modules: plan.modules, ...t, gatedTotalMs: t.gatedAtMs != null ? planMs + t.gatedAtMs : null, endToEndMs: a.wallMs + s.wallMs, planTokOut: plan?.attempts?.[0]?.usage?.output ?? null };
 }
-emit('cutover.start', { experimentId: EXP, ladder: path.relative(process.cwd(), ladderPath), cases: cases.map((c) => c.id), rep: REP, parallelCases: PAR, dagConcurrency: DAGC, context: context(), load: load() });
+emit('cutover.start', { experimentId: EXP, ladder: path.relative(process.cwd(), ladderPath), cases: cases.map((c) => c.id), rep: REP, parallelCases: PAR, dagConcurrency: DAGC, policy: POLICY, context: context(), load: load() });
 const results = []; const queue = [...cases]; const active = new Set();
 await new Promise((done) => { if (!queue.length) return done(); const pump = () => { while (active.size < PAR && queue.length) { const c = queue.shift(); const dir = path.join(OUT, `${c.id}-r${REP}`); fs.mkdirSync(dir, { recursive: true }); const l0 = load();
   const fns = { direct: armDirect, atomized: armAtomized, templated: armTemplated };

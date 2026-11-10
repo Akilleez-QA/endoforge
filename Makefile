@@ -23,6 +23,8 @@ RUFF_VERSION := 0.17.0
 RUFF ?= $(if $(shell command -v uvx),uvx ruff@$(RUFF_VERSION),ruff)
 COVERAGE_DIR := .test-work/coverage
 NODE_COVERAGE_TESTS := $(RUNTIME_TESTS) $(wildcard core/engine/*.test.mjs core/library/test/*.test.mjs tools/tscheck/test/*.test.mjs tools/compatibility/*.test.mjs) tools/test_gate_structured.mjs $(ATOMIZER_TESTS) $(LIB_NODE_TESTS) $(wildcard $(GAP_NODE_TESTS))
+COVERAGE_SETUP := tscheck-setup loop-setup
+EXPERIMENT_TESTS := $(filter-out experiments/P-51-escape-rate/controls.test.mjs,$(wildcard experiments/*/analyze.test.mjs))
 PY_COVERAGE_TESTS := $(call pymods,$(wildcard tests/test_*.py core/ledger/test_*.py tools/test_*.py tools/factory_runtime/test_*.py tools/step_harness/test_*.py tools/hardware_record/test_*.py tools/seeded_faults/test_*.py tools/escape_harness/test_*.py))
 
 .PHONY: test test-optimized check index sums core-test ledger-test engine-test isolate-test tscheck-setup tscheck-test tscheck-requalify atomizer-test harness-test hardware-test runtime-test lib-test library-test portability-test factory-state-test seeded-fault-test escape-test compatibility-test gate-test
@@ -146,7 +148,11 @@ compatibility-test:
 	node --test tools/compatibility/*.test.mjs
 
 .PHONY: gap-tools-test lint coverage coverage-node coverage-python
-test: gap-tools-test
+test: gap-tools-test experiments-test
+
+.PHONY: experiments-test
+experiments-test:
+	$(if $(EXPERIMENT_TESTS),node --test $(EXPERIMENT_TESTS),@echo 'no experiment analysis tests')
 
 gap-tools-test:
 	$(PYTHON) -B -m unittest $(call pymods,$(GAP_PY_TESTS)) -v
@@ -179,7 +185,7 @@ export TRACE_RUNNER
 
 coverage: coverage-node coverage-python
 
-coverage-node: tscheck-setup loop-setup
+coverage-node: $(COVERAGE_SETUP)
 	node --test --experimental-test-coverage --test-coverage-exclude='**/test/**' --test-coverage-exclude='**/*.test.mjs' --test-skip-pattern='the counter sees writes on an open file' --test-reporter=spec $(NODE_COVERAGE_TESTS)
 
 coverage-python:

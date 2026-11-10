@@ -20,7 +20,7 @@ Pass the same object to `runNeed({ ..., library })`: every loop path consults it
 | File | Role |
 |---|---|
 | [library.mjs](library.mjs) | `openLibrary`: `admit`, `retrieve`, `lookup`, `serve`, `compose`, `grant`, `ungrant`, `reclaim`, `revoke`, `requalify`, `qualifications`, `counterexamples`, `dependants` |
-| [key.mjs](key.mjs) | Capability from glue or from a fenced `capability` block, keys, export binding, contract text vectors |
+| [key.mjs](key.mjs) | Capability from glue or from a fenced `capability` block, keys, export binding, contract text vectors. Keys and binding include the nested layout of record, list and text values (field names, kinds, units, ranges, precision, codes, `max`, `maxBytes`); record fields compare by name, and a scalar capability keeps the key it had before layout was keyed |
 | [compose.mjs](compose.mjs), [link.mjs](link.mjs) | Turn a composition plan into one module, glue and manifest source: union, output-to-input pipelines, argument adapters |
 | [scope.mjs](scope.mjs) | Tenant and lineage access check |
 | [cells.mjs](cells.mjs), [cell.mjs](cell.mjs) | Warm worker threads with the pool's heap limits and WASM guard; run `runGates`, discrimination and fingerprints |
@@ -51,8 +51,13 @@ outside the entry's path misses with `permission_denied`, and `grant` opens an e
 principal is passed by the caller, never read from the need.
 
 `reclaim()` keeps the oldest entry of each behaviour within a scope, releases the others' bytes and rewrites the journal
-with a `library_compacted` record naming the previous tip. A refused need records its counterexamples: a later need
-whose tests that entry is known to fail, or an identical refused need, misses with `counterexample` and no cell runs.
-Qualifications are kept per environment; a failure in one environment does not revoke the entry elsewhere.
+with a `library_compacted` record naming the previous tip. A behaviour is the entry's fingerprint: every export's
+results over a fixed grid, with numbers (non-finite ones included) to 12 significant digits, records and lists as
+JSON, and text kept exactly, so kernels returning different strings are not duplicates. The kept entry takes
+the union of the released entries' grants, and a later `grant`, `ungrant` or composition plan that names a released
+entry resolves to the kept one. A refused need records its counterexamples: a later need whose tests that entry is
+known to fail, or an identical refused need, misses with `counterexample` and no cell runs. Qualifications and
+refusals are kept per environment; a failure or refusal in one environment does not revoke the entry or refuse the
+need elsewhere.
 
 Run `make library-test`. Measurements: [P-53](../../experiments/P-53-library-v0/RESULT.md).

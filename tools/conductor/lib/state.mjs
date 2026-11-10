@@ -61,4 +61,15 @@ export function transition(s, job, to, why) {
   return s;
 }
 
+export const REOPEN_TO = 'streaming';
+export const reopens = (s) => PHASES.indexOf(s.phase) > PHASES.indexOf(REOPEN_TO);
+
+export function reopen(s, job, why) {
+  if (s.stopped) throw new Error(`cannot reopen: the job was stopped by ${s.stopped.by}`);
+  if (!reopens(s)) throw new Error(`cannot reopen from phase ${s.phase}: only a phase past ${REOPEN_TO} reopens`);
+  s.log.push({ at: new Date().toISOString(), from: s.phase, to: REOPEN_TO, why, reopened: true });
+  s.phase = REOPEN_TO;
+  return s;
+}
+
 export const allSettled = (s) => Object.values(s.atoms).every((a) => SETTLED.includes(a.status));

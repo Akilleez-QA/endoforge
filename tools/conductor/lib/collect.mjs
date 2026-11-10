@@ -24,7 +24,7 @@ export function collectAtom(job, file, st, id, { waitMs = 600_000 } = {}) {
     const before = ok(git(job.repo, 'rev-parse', 'HEAD'), 'rev-parse');
     const ap = spawnSync('git', ['-C', job.repo, 'apply', '--3way', '--index', '-'], { input: diff, encoding: 'utf8' });
     if (ap.status !== 0) { revert(job, files, before); return record(gf, { ok: false, stage: 'apply', error: ap.stderr.slice(-1500), stray }); }
-    if (git(job.repo, 'diff', '--cached', '--quiet').status === 0) { writeJSONAtomic(gf, { ok: true, change: false, already: true, stray }); return { status: 'no-change', already: true, stray }; }   // already collected
+    if (git(job.repo, 'diff', '--cached', '--quiet').status === 0) { writeJSONAtomic(gf, { ok: true, change: false, already: true, stray }); return { status: 'no-change', already: true, stray }; }
     const gate = a.gate ?? job.conductor?.gate;
     if (gate) {
       const argv = Array.isArray(gate) ? gate.map((x) => x.replaceAll('${atom}', id)) : ['sh', '-c', gate.replaceAll('${atom}', id)];
@@ -37,7 +37,8 @@ export function collectAtom(job, file, st, id, { waitMs = 600_000 } = {}) {
     }
     ok(git(job.repo, 'commit', '-q', '-m', `${job.id} ${id} i${st.iter} (${lane.engine}:${lane.account})`, ...(job.conductor?.trailer ? ['-m', job.conductor.trailer] : [])), 'commit');
     const sha = ok(git(job.repo, 'rev-parse', 'HEAD'), 'rev-parse');
-    return record(gf, { ok: true, change: true, sha, stray });
+    const added = ok(git(job.repo, 'diff-tree', '--no-commit-id', '--name-only', '--diff-filter=A', '-r', sha), 'diff-tree').split('\n').filter(Boolean);
+    return record(gf, { ok: true, change: true, sha, added, stray });
   }, { waitMs });
 }
 
@@ -46,7 +47,7 @@ function record(gf, g) { writeJSONAtomic(gf, { ...g, at: new Date().toISOString(
 function revert(job, files, head) {
   git(job.repo, 'reset', '-q', head, '--', ...files);
   for (const f of files) if (git(job.repo, 'ls-files', '--error-unmatch', '--', f).status === 0) git(job.repo, 'checkout', head, '--', f);
-  git(job.repo, 'clean', '-fdq', '--', ...files);                 // files and folders this atom created
+  git(job.repo, 'clean', '-fdq', '--', ...files);
 }
 
 export function gateFeedback(g) {

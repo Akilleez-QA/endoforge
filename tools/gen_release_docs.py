@@ -118,6 +118,64 @@ def gitleaks(binary):
             "exit": result.returncode, "summary": "; ".join(re.sub(r"^\S+\s+\S+\s+", "", s).strip() for s in summary)}
 
 
+SECRET_SCANNERS = ("gitleaks", "trufflehog", "detect-secrets")
+
+
+def workflow_jobs(text):
+    jobs, name, indent, inside = {}, None, None, False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        depth = len(line) - len(line.lstrip(" "))
+        if depth == 0:
+            inside, name = stripped == "jobs:", None
+            continue
+        if not inside:
+            continue
+        if indent is None:
+            indent = depth
+        key = re.fullmatch(r"([\w-]+):", stripped)
+        if depth == indent and key:
+            name = key.group(1)
+            jobs[name] = []
+        elif depth > indent and name:
+            jobs[name].append(stripped)
+    return jobs
+
+
+def runs_secret_scan(steps):
+    for step in steps:
+        uses = re.match(r"(?:-\s*)?uses:\s*['\"]?([^\s'\"@]+)", step)
+        if uses:
+            if any(tool in uses.group(1).lower() for tool in SECRET_SCANNERS):
+                return True
+            continue
+        command = re.sub(r"^(?:-\s*)?(?:run:\s*)?", "", step)
+        for part in re.split(r"&&|\|\||[;|]", command):
+            words = part.split()
+            if words and words[0].rsplit("/", 1)[-1] in SECRET_SCANNERS:
+                return True
+    return False
+
+
+def secret_scan_jobs(workflows):
+    found = []
+    for path in sorted(workflows.glob("*.y*ml")) if workflows.is_dir() else []:
+        for job, steps in workflow_jobs(path.read_text(encoding="utf-8")).items():
+            if runs_secret_scan(steps):
+                found.append(f"{path.name}:{job}")
+    return found
+
+
+def secret_scan_statement(jobs):
+    if not jobs:
+        return "CI has no secret-scanning job."
+    named = [f"`{job}` of `.github/workflows/{name}`" for name, _, job in (j.partition(":") for j in jobs)]
+    listed = named[0] if len(named) == 1 else ", ".join(named[:-1]) + " and " + named[-1]
+    return f"CI runs a secret scan in job{'s' if len(named) > 1 else ''} {listed}."
+
+
 def tooling():
     makefile = ROOT / "Makefile"
     make = makefile.read_text(encoding="utf-8") if makefile.is_file() else ""
@@ -130,6 +188,7 @@ def tooling():
         "lint": lint,
         "lint_ci": lint and ("lint" in ci_targets or any("lint" in targets.get(t, []) for t in ci_targets)),
         "coverage": "coverage" in targets,
+        "secret_scan_ci": secret_scan_jobs(workflows),
     }
 
 
@@ -320,7 +379,7 @@ def vdd_report(d, name, str_name, pr):
               "", "## 8. Verification and scans", "",
               f"- Test report: [{str_name}](../verification/reports/{str_name}.md) (same commit).",
               f"- Privacy lint: {' '.join(d['privacy'])}.",
-              f"- Secret scan: {g['summary'] + ' (' + g['version'] + ')' if g else 'not run'}. CI has no secret-scanning job.",
+              f"- Secret scan: {g['summary'] + ' (' + g['version'] + ')' if g else 'not run'}. {secret_scan_statement(d['tooling']['secret_scan_ci'])}",
               static_analysis(d) + " Findings are in the [assurance record](../assurance/assurance-record.md).",
               "", history(d, pr)]
     return "\n".join(lines).replace("](../../plan/software-management-plan.md", "](../plan/software-management-plan.md")

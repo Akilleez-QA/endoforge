@@ -103,7 +103,8 @@ What happened, in three agent turns and one commit:
 1. **Specification turn.** The workcell sent the need to the agent. The agent wrote `CONTRACT.md` and `tests.json`
    (five tests, including `push locks`: `next(1, 1)` must be `0`, and one test that an unknown event traps).
    EndoForge checked that every test can fail and that `CONTRACT.md` ends with a fenced `capability` block (the
-   exports, kinds, units, codes and traps, as JSON) that agrees with the tests, then froze both files: their hashes
+   exports, kinds, units, codes and traps, as JSON; a record, list or text value would also declare its layout) that
+   agrees with the tests, then froze both files: their hashes
    went into the ledger before any code existed.
 2. **First implementation turn.** The agent wrote `kernel.ts` and `glue.json`. The workcell compiled the kernel and
    ran gates G1 to G9, nine independent checks described in section 5. `G4_tests`, the frozen tests, failed on

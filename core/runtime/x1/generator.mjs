@@ -2,7 +2,7 @@ import { execFile } from 'node:child_process';
 import { readFile, writeFile, mkdir, readdir, lstat } from 'node:fs/promises';
 import { basename, isAbsolute, join, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
-import { capabilityBlock } from './contract.mjs';
+import { capabilityBlock, layoutKinds, layoutProblems } from './contract.mjs';
 import { testProblems } from './gates.mjs';
 import { configuration, hash, implementationFiles } from './host.mjs';
 import { ledger } from './ledger.mjs';
@@ -12,9 +12,9 @@ const schema = JSON.parse(await readFile(new URL('./glue.schema.json', import.me
 export const glueRules = [
   'Every export of kernel.ts has exactly one glue.exports entry, and glue describes no other names.',
   'Each args list has one entry per parameter of the export, in order, named exactly as the kernel.ts parameter.',
-  'A result of kind number must include an integer precision from 0 to 6 (decimal places shown).',
+  'A result of kind number, and every number inside a record or list result at any depth, must include an integer precision from 0 to 6 (decimal places shown).',
   'A result of kind code must include a codes table labelling every code the tests return.',
-  'A result of kind boolean must include labels with true and false strings.',
+  'A result of kind boolean, and every boolean inside a record or list result at any depth, must include labels with true and false strings.',
   'An argument of kind code must include a codes table.',
   'Every function with an expectError test must have a traps entry with fn, when and message.',
 ];
@@ -25,11 +25,11 @@ export const glueTemplate = {
     result: { kind: 'number', unit: 'USD', precision: 2 } }],
   traps: [{ fn: 'exampleKernel', when: 'massLb is outside 0..1000', message: 'Mass is outside the supported range.' }],
 };
-export const capabilityKinds = Object.freeze(['integer', 'number', 'boolean', 'code', 'record', 'list', 'text']);
-export const capabilityRule = 'End CONTRACT.md with one fenced block that opens with the line ```capability and closes with ```, holding only JSON {"exports":[{"name":...,"args":[{"name":...,"kind":...,"unit":...,"range":...}],"result":{"kind":...,"unit":...,"precision":...}}],"traps":[...]}: one exports entry per kernel export with its parameters in order; each kind one of integer, number, boolean, code, record, list or text; each unit a unit string, 1 when dimensionless; each range as low..high wherever the contract bounds that value; precision on every number result; codes on every code value; traps listing the name of every export that has an expectError test. The library finds an already promoted kernel by this block, and glue.json must later declare the same exports, kinds, units, ranges, precision and traps.';
+export const capabilityKinds = layoutKinds;
+export const capabilityRule = 'End CONTRACT.md with one fenced block that opens with the line ```capability and closes with ```, holding only JSON {"exports":[{"name":...,"args":[{"name":...,"kind":...,"unit":...,"range":...}],"result":{"kind":...,"unit":...,"precision":...}}],"traps":[...]}: one exports entry per kernel export with its parameters in order; each kind one of integer, number, boolean, code, record, list or text; each unit a unit string, 1 when dimensionless; each range as low..high wherever the contract bounds that value; precision on every number result; labels {"true":...,"false":...} on every boolean result; codes on every code value; traps listing the name of every export that has an expectError test. A record, list or text value must declare its layout, at every depth: a record has "fields", a nonempty list of uniquely named fields, each with its kind, its unit when integer, number or code, and codes when code, and, inside a result, precision (0 to 6) when number and "labels" with true and false strings when boolean; a list has "items", the layout of one item, and "max", the most items (1 to 4096); a text has "maxBytes", its UTF-8 bound (1 to 65536). For example {"name":"log","kind":"list","max":8,"items":{"kind":"record","fields":[{"name":"temperature","kind":"number","unit":"C","precision":1},{"name":"tag","kind":"text","maxBytes":16}]}}. The library finds an already promoted kernel by this block, including that layout, and glue.json must later declare the same exports, kinds, units, ranges, precision, layout and traps.';
 const identifier = /^[A-Za-z_][A-Za-z0-9_]*$/;
 export { capabilityBlock };
-function valueProblems(where, value, field) {
+function valueProblems(where, value, field, result = false) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return [`${where} must be an object`];
   const problems = [];
   if (field && (typeof value.name !== 'string' || !value.name)) problems.push(`${where} needs a name`);
@@ -38,7 +38,7 @@ function valueProblems(where, value, field) {
   if (['integer', 'number', 'code'].includes(value.kind) && value.unit === undefined) problems.push(`${where} needs a unit`);
   if (value.range !== undefined && typeof value.range !== 'string') problems.push(`${where} range must be a string such as 0..10`);
   if (value.kind === 'code' && (!value.codes || typeof value.codes !== 'object' || Object.keys(value.codes).length < 2)) problems.push(`${where} of kind code needs a codes table`);
-  return problems;
+  return [...problems, ...layoutProblems(where, value, { result })];
 }
 export function capabilityProblems(contract, tests) {
   const { block, error } = capabilityBlock(contract);
@@ -53,8 +53,7 @@ export function capabilityProblems(contract, tests) {
     exports.set(item.name, item);
     if (!Array.isArray(item.args)) problems.push(`${where} needs an args array`);
     else item.args.forEach((arg, index) => problems.push(...valueProblems(`${where} argument ${arg?.name ?? index}`, arg, true)));
-    problems.push(...valueProblems(`${where} result`, item.result, false));
-    if (item.result?.kind === 'number' && !(Number.isInteger(item.result.precision) && item.result.precision >= 0 && item.result.precision <= 6)) problems.push(`${where} number result needs an integer precision from 0 to 6`);
+    problems.push(...valueProblems(`${where} result`, item.result, false, true));
   }
   const traps = block.traps ?? [];
   if (!Array.isArray(traps) || traps.some(name => typeof name !== 'string')) problems.push('capability traps must be an array of export names');
@@ -184,7 +183,7 @@ export async function generate({ need, directory, env = process.env, timeout = 6
   if (reused?.verdict === 'pass') return { reused, reference, digest: frozen.digest, testDouble: env.ENDOFORGE_CODEX_TEST_DOUBLE === '1', modelMs, timings: { generate: generatedSpecMs, freeze: freezeMs } };
   const codeStart = performance.now();
   await client(workspace, { stage: 'implementation', need, id, ...(packed || corrected ? { frozen: { 'CONTRACT.md': files['CONTRACT.md'], 'tests.json': files['tests.json'] } } : {}), glueSchema: schema, glueRules, glueTemplate, instructions:
-    (corrected ? `${correctionNotice} ` : '') + 'You already wrote the frozen CONTRACT.md and tests.json; read them only if not in context. Do not run compilers, tests or other commands; the supervisor compiles and gates. Write kernel.ts and glue.json only. Do not change CONTRACT.md, tests.json or frozen.sha256. Use AssemblyScript 0.28.20, runtime stub, no imports except env.abort, explicit bounded memory. The compiler runs with --noAssert, which deletes assert() calls, so never use assert; make every expectError case trap with an explicit if (condition) abort() or throw. Implement all frozen tests and the closed glue schema; glue.id must equal id. glue.json must satisfy every rule in glueRules and declare the exports, kinds, units, ranges, precision and traps of the capability block in CONTRACT.md; glueTemplate shows the shape. No compiler or other output files.' }, env, left(), { effort, resume: warm ? thread : null });
+    (corrected ? `${correctionNotice} ` : '') + 'You already wrote the frozen CONTRACT.md and tests.json; read them only if not in context. Do not run compilers, tests or other commands; the supervisor compiles and gates. Write kernel.ts and glue.json only. Do not change CONTRACT.md, tests.json or frozen.sha256. Use AssemblyScript 0.28.20, runtime stub, no imports except env.abort, explicit bounded memory. The compiler runs with --noAssert, which deletes assert() calls, so never use assert; make every expectError case trap with an explicit if (condition) abort() or throw. Implement all frozen tests and the closed glue schema; glue.id must equal id. glue.json must satisfy every rule in glueRules and declare the exports, kinds, units, ranges, precision, nested layout (record fields, list items and max, text maxBytes) and traps of the capability block in CONTRACT.md; glueTemplate shows the shape. No compiler or other output files.' }, env, left(), { effort, resume: warm ? thread : null });
   for (const [name, text] of Object.entries(files)) if (await read(workspace, name) !== text) throw Error('frozen specification changed during generation');
   if (JSON.stringify((await readdir(workspace)).sort()) !== JSON.stringify([...Object.keys(files), 'kernel.ts', 'glue.json'].sort())) throw Error('unexpected implementation files');
   for (const name of ['kernel.ts', 'glue.json']) files[name] = await read(workspace, name);

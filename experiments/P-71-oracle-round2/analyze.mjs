@@ -1,27 +1,13 @@
 import { readFileSync, writeFileSync } from 'node:fs';
-import { summarize, verdicts as p70Verdicts } from '../P-70-oracle-injected/analyze.mjs';
+import { bootstrap, share, specShare, summarize, verdicts as p70Verdicts } from '../P-70-oracle-injected/analyze.mjs';
 import { classes } from '../P-70-oracle-injected/mutate.mjs';
 
-export const resamples = 10000;
 const caught = status => status === 'flagged' || status === 'corrected';
-function random(seed) {
-  let a = seed >>> 0;
-  return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
-}
 function byNeed(rows, metric) {
   const groups = [...Map.groupBy(rows, r => r.need).values()];
   if (!groups.length) return { point: null, lo: null, hi: null, clusters: 0 };
-  const next = random(71), values = [];
-  for (let r = 0; r < resamples; r++) {
-    const sample = [];
-    for (let i = 0; i < groups.length; i++) sample.push(...groups[Math.floor(next() * groups.length)]);
-    values.push(metric(sample));
-  }
-  values.sort((a, b) => a - b);
-  return { point: metric(rows), lo: values[Math.floor(0.025 * resamples)], hi: values[Math.ceil(0.975 * resamples) - 1], clusters: groups.length };
+  return { point: metric(rows), ...bootstrap(groups, metric, 71), clusters: groups.length };
 }
-const share = test => rows => rows.length ? rows.filter(test).length / rows.length : 0;
-const specShare = field => rows => { const specs = Map.groupBy(rows, r => r.hash); return specs.size ? [...specs.values()].filter(g => g.some(r => caught(r[field]))).length / specs.size : 0; };
 
 export function needClustered({ pristine, injected }) {
   return {
@@ -42,6 +28,8 @@ export function verdicts(summary, need) {
     },
   };
 }
+
+export { resamples } from '../P-70-oracle-injected/analyze.mjs';
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   const [rowsPath, output] = process.argv.slice(2);

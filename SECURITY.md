@@ -26,5 +26,6 @@ EndoForge is preproduction and has no release tags.
   and billing variables are removed from child environments. The Codex pool checks only that each account directory
   holds a login file.
 - Nothing stores credentials. Tests use synthetic inputs and test doubles.
-- CI has no secret-scanning job; see the [software management plan](docs/plan/software-management-plan.md#7-security-privacy-and-secure-coding)
+- CI runs a secret scan in the job `secret-scan` of `.github/workflows/ci.yml`: a checksum-verified Gitleaks 8.28.0 over
+  the full history, failing on any finding. See the [software management plan](docs/plan/software-management-plan.md#7-security-privacy-and-secure-coding)
   and the [assurance record](docs/assurance/assurance-record.md).

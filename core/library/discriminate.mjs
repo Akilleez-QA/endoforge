@@ -189,7 +189,11 @@ export function discriminate({ bytes, tests, capability, numbers, engine = WebAs
 }
 export function fingerprint({ bytes, capability, numbers, engine = WebAssembly }) {
   const call = loaded(bytes, engine, structuredEntries(capability));
-  const printed = value => (value !== null && typeof value === 'object' ? JSON.stringify(value, (key, item) => (typeof item === 'number' ? item.toPrecision(12) : item)) : Number(value).toPrecision(12));
+  const printed = value => {
+    if (typeof value === 'number') return value.toPrecision(12);
+    if (value !== null && typeof value === 'object') return JSON.stringify(value, (key, item) => (typeof item === 'number' ? item.toPrecision(12) : item));
+    return value === undefined ? 'U' : JSON.stringify(value);
+  };
   const rows = capability.exports.map(item => gridFor(item, [], numbers).map(args => {
     const r = call(item.name, args);
     return r.trap ? 'T' : r.problem !== undefined ? 'P' : printed(r.value);

@@ -5,7 +5,7 @@ import { validate } from '../../job/lib/validate.mjs';
 import { cardHash } from '../../job/lib/card.mjs';
 import { loadJob } from '../../job/lib/load.mjs';
 import { emit } from '../../job/lib/events.mjs';
-import { stateDir, updateState, loadState } from './state.mjs';
+import { stateDir, updateState, loadState, reopen, reopens } from './state.mjs';
 
 export function writePacket(job, file, esc) {
   const s = loadState(job, file), a = esc.atom ? (job.atoms ?? []).find((x) => x.id === esc.atom) : null, st = esc.atom ? s.atoms[esc.atom] : null;
@@ -37,19 +37,24 @@ export function applyPatch(file, reply, { offline = false } = {}) {
     const job1 = { ...next, proofs: job0.proofs };
     const v = validate(job1, { gate: 'decide', offline, confirmation: { ok: true } });
     if (!v.ok) return { ok: false, why: `the patch breaks the gates: ${v.errors.map((e) => `${e.gate} ${e.inv}: ${e.msg}`).join('; ')}` };
+    const relaunch = reply.relaunch ?? [], s0 = loadState(job0, file);
+    if (relaunch.length && s0.stopped) return { ok: false, why: `the job was stopped by ${s0.stopped.by} (${s0.stopped.why}); a relaunch does not reopen it behind the stop` };
     if (reply.manifest) writeJSONAtomic(file, next);
     const changed = cardHash(job1) !== cardHash(job0);
+    let reopened = null;
     updateState(job1, file, (s) => {
       for (const e of s.escalations) if (e.key === reply.key) Object.assign(e, { resolved: true, resolvedAt: new Date().toISOString(), reply: { note: reply.note ?? null, changed } });
-      for (const id of reply.relaunch ?? []) {
+      for (const id of relaunch) {
         if (!s.atoms[id]) s.atoms[id] = { status: 'pending', iter: 0, history: [] };
         Object.assign(s.atoms[id], { status: 'relaunch', feedback: [reply.note, s.atoms[id].feedback].filter(Boolean).join('\n\n') });
         if (reply.resetIterations) s.atoms[id].iterBase = s.atoms[id].iter;
       }
       for (const a of job1.atoms ?? []) if (!s.atoms[a.id]) s.atoms[a.id] = { status: 'pending', iter: 0, history: [] };
+      if (relaunch.length && reopens(s)) { reopened = s.phase; reopen(s, job1, `relaunch of ${relaunch.join(', ')} by the coordinator (${reply.key})`); }
       if (changed) s.awaitingGo = { since: new Date().toISOString(), cardSha256: cardHash(job1), why: `the coordinator changed the card (${reply.key})` };
     });
     if (changed) emit(job1, file, { kind: 'NEEDS-YOU', summary: `the job card changed (${reply.key}): review it and give a new go; launches are held until then`, data: { key: reply.key, cardSha256: cardHash(job1) } });
-    return { ok: true, holdForGo: changed };
+    if (reopened) emit(job1, file, { kind: 'GATE', summary: `${job1.title ?? job1.id} reopened from ${reopened} to streaming to relaunch ${relaunch.join(', ')} (${reply.key})${reopened === 'done' ? `; the conductor had ended: start it again with endoforge conduct ${file}` : ''}`, data: { gate: 'reopen', from: reopened, atoms: relaunch, key: reply.key } });
+    return { ok: true, holdForGo: changed, reopened: Boolean(reopened) };
   });
 }

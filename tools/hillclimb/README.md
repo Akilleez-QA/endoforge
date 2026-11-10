@@ -113,8 +113,12 @@ variants compete; `pr` ships only a competing lane's winner.
 
 **What an atom sees.** Review and fix atoms mount the round directory read-only at `/hc` (`stills/`, `sheets/`,
 `previous.fixlist.json`), this tool read-only at `/hc-tool`, and the campaign repository read-only at `/repo`; a fix
-atom copies its owner's scope out with `hc-patch.sh`. Only this tool is mounted inside an atom, so the `compose-*`
-commands that run there do not need the atomizer; the host stages validate the atoms with it.
+atom copies its owner's scope out with `hc-patch.sh`. The script `compose-*` atoms mount only the round directory at
+`/hc` and the files `bin/hillclimb.mjs` statically imports, at their repository paths under `/hc-src` (this tool at
+`/hc-src/tools/hillclimb`, plus `tools/lib/lock.mjs` and `core/runtime/subscription-guard.mjs`), so its relative
+imports resolve inside the sandbox. `lib/runner.mjs` computes that import closure when it plans the atoms and adds the
+same files to the stage policy's `bindRoots`. The `compose-*` commands do not need the atomizer; the host stages
+validate the atoms with it. `test/compose-mounts.test.mjs` runs each compose command under bubblewrap in that layout.
 
 **Fix lists** (`endoforge/hillclimb-fixlist/1`) hold the critics' numbered problems, each owned by one fix lane. A list
 is refused when it has more than `critique.count` items, an id is not a unique positive integer, an item lacks its
@@ -180,7 +184,9 @@ maps onto the scheduler, `plan-review` works from an unrelated directory, `revie
 stage policy, `scripts/hc-patch.sh` prints its usage
 without arguments and still produces a repo-relative patch) and `test/fanout-plan-scoreboard.test.mjs` (ownership
 overlaps, lane assignment, wave sizing by the capacity dial, review, fix and judge atoms, the ratchet, re-atomizing,
-round scoring and the stop rule, all without a model). The fan-out library (`lib/fanout.mjs`: logins, lanes, worker commands,
+round scoring and the stop rule, all without a model) and `test/compose-mounts.test.mjs` (each compose atom binds
+what `hillclimb.mjs` imports, model atoms see only `/hc-tool`, and under `bwrap` the compose commands load and
+compose-review writes `FIXLIST.md` and `score.json`; the two `bwrap` cases skip where it cannot start). The fan-out library (`lib/fanout.mjs`: logins, lanes, worker commands,
 the capacity dial) is also used by [job](../job/README.md), the [conductor](../conductor/README.md) and the
 [project scheduler](../project-scheduler/README.md).
 

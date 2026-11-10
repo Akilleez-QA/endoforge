@@ -57,7 +57,8 @@ Each test area has its own target, which is faster while you work:
 | `make library-test` | The library (`core/library/test`) |
 | `make atomizer-test` | The atomizer's scheduler, isolation, validation, routing and its `atomize`, `direct`, `fanout`, `report` and `cutover` commands |
 | `make lib-test` | The job tool (kinds, prompt compilation, the card), the Conductor, hillclimb (lessons, runner, fan-out, plan, scoreboard) and shared tool libraries |
-| `make gap-tools-test` | The factory runtime, the approved-atoms registry, the release-record generator and the project scheduler |
+| `make gap-tools-test` | The factory runtime, the approved-atoms registry, the release-record generator, the comment check and the project scheduler |
+| `make experiments-test` | Each experiment's `analyze.test.mjs`, which checks that its analysis and committed receipts agree (P-51's by-hand `controls.test.mjs` is left out) |
 | `make factory-state-test`, `make portability-test` | Factory campaign state, journal and repair; checkpoints, Wasmtime qualification, stage resume and the emulated transfer |
 | `make kernel-test` | The kernel contract tools, with the pinned wasmtime and wasm-tools |
 | `make engine-test`, `make core-test`, `make ledger-test` | The engine, the repository-level tests and the ledger |
@@ -69,7 +70,8 @@ glue gate CLI test, `tools/test_gate_structured.mjs`, has its own target, `make 
 
 ## Lint and coverage
 
-`make lint` runs ruff 0.17.0 over the tree (through `uvx` when it is installed, else the `ruff` on `PATH`) and
+`make lint` runs ruff 0.17.0 over the tree (through `uvx` when it is installed, else the `ruff` on `PATH`),
+`tools/check_comments.py`, which fails on any code comment, including one after code on the same line, and
 `node --check` on every JavaScript module. CI runs it in the `lint` job. It is not part of `make test`.
 
 ```sh
@@ -80,7 +82,10 @@ At `b71eebf` this printed `ruff 0.17.0` and `All checks passed!` and exited 0.
 
 `make coverage` runs the Node suites with `--experimental-test-coverage` and prints a per-file table with an
 all-files line, then the Python suites under coverage.py, or with `python3 -m trace` counts when coverage.py is not
-installed. It runs the suites, so it takes as long as `make test`; it is not part of `make test` or CI. The
+installed. It runs the suites, so it takes as long as `make test`. It is not part of `make test`; CI runs it in the
+`coverage` job and uploads the summary. Any failing test fails `make coverage`, under coverage.py and under the trace
+fallback alike: `tests/test_coverage_fails.py` (in `make core-test`) runs the real targets against a temporary failing
+test and checks that each exits non-zero. The
 [configuration reference](../../configuration/configuration-reference.md#makefile-variables) lists what each target
 includes.
 

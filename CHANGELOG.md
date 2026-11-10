@@ -114,6 +114,33 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
   `examples/library-reuse.mjs` and checks its three printed outcomes.
 - Requirements REQ-ATOM-006 (capability block on every atomizer contract path) and REQ-REPO-010 (no code comments);
   REQ-GATECLI-001 and REQ-REPO-009 extended. GAP-EF-015 and GAP-EF-016 closed, so no gap is open.
+- `make experiments-test`, part of `make test`, runs every `experiments/*/analyze.test.mjs` except P-51's by-hand
+  `controls.test.mjs`; the P-64, P-65, P-70 and P-71 analysis tests are the first.
+- `tests/test_coverage_fails.py` runs the real `make coverage-node`, `make coverage-python` (both modes) and
+  `make coverage` against a temporary failing test and checks each fails (REQ-REPO-009). Makefile variable
+  `COVERAGE_SETUP` names `coverage-node`'s setup targets so the test can skip `npm ci`.
+- `verify.mjs` records the policy it used (`path`, `sha256`) as `policy` in `receipt/verify.json`; `ledger-export.mjs`
+  and `repair-noop.mjs` print their usage for `--help`.
+- Requirements REQ-ATOM-007 (`verify.mjs --policy` and the helper CLIs' refusals) and REQ-ATOM-008 (the `node`
+  toolchain from the running Node); nine requirements changed for the round-8 fixes. D-09 and D-10 closed; D-11 to
+  D-13 opened in the assurance record.
+- `fanout.mjs` and `cutover.mjs` take `--policy <file>` and record the policy's `path` and `sha256` as `policy`
+  (fanout in `fanout.json` and `pool.start`, cutover in `cutover.start`). `LedgerBridge` has a read-only `pid`.
+- Round 9 changed REQ-GEN-011, REQ-ATOM-006, REQ-LIB-001, REQ-ATOM-007 and REQ-ISO-010, closed D-11 and D-12, and
+  opened D-14 and D-15 in the assurance record.
+- Job invariants I16 and I17. I16 refuses a collect gate or a criterion check that runs a records check
+  (`check_trace`, `test_*trace*`, or a `Makefile` target that reaches one, such as `make check`). I17: `job.mjs stage`
+  runs every criterion check once on the base commit in a throwaway worktree, records `proofs.baseline` (passed,
+  failed or broken, and why), and refuses a check broken by a missing module, file or make target. Manifest keys
+  `stage.base` (default `HEAD`) and `stage.checkTimeoutSec` (default 1800).
+- The conductor emits `TRACE-NEEDED` (a `NEEDS-COORDINATOR` event with `data.event: 'TRACE-NEEDED'`) when an atom
+  freezes with new test files, listing them. The collect step records the files each commit added (`added` in the
+  gate file).
+- `atomize.mjs`, `plan-template.mjs` and `direct.mjs` take `--policy <file>` and record its `path` and `sha256` as
+  `policy` in their receipt and events; `cutover.mjs` records each arm's `planPolicy` and `planPolicyMatches`.
+  `runReferences` takes `startupMs`, and its exported `referenceDeadline` gives the deadline it uses.
+- Round 10 added REQ-SYNTH-009, REQ-COND-005, REQ-COND-006 and REQ-JOB-004, changed REQ-ATOM-007 and REQ-LIB-002,
+  closed D-14, D-15 and D-16, and opened D-17 in the assurance record.
 
 - `examples/first-loop.mjs` and `examples/show-gates.py`: the README and getting-started example (a scripted model
   promotes an addition kernel and refuses a subtracting one), tested by `core/runtime/test/loop-example.test.mjs`.
@@ -276,6 +303,101 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
   which this repository does not have. `make harness-test` now runs `tools/step_harness/test_retired.py`.
 
 ### Fixed
+
+- Job staging expands the conductor's check placeholders (`${repo}` and the input and output paths) before calibrating a check, so valid checks are no longer classed as broken; I16 inspects the checks the conductor will actually run (`conductor.checks` and the slice command), not only the criterion commands (Codex review of PR #144).
+- The comment check's lexer treats postfix `++`/`--` as ending an expression, so `n++ / d` is division rather than an unterminated regular expression (Codex review of PR #144).
+
+- The freeze refuses a structured result whose nested number field has no `precision` or whose nested boolean field has no `labels`. Such a contract used to freeze and then fail G7 whatever the glue declared, so it could never be implemented (Codex review of PR #144).
+
+Round 10 fixes the round-9 findings D-14 and D-15 and the cutover-planning gap (D-16), adds tests for the library's
+union path, and turns two coordinator lessons into tool changes. Each change has a test. The relaunch, trace-event,
+union and invariant tests failed first against the old code; the sandbox and cutover workers could not run theirs
+against the old files.
+
+- The reference sandbox (`runReferences`) ran every reference call in one child under a single 30-second wall-clock
+  limit and reported every failure as "failed or timed out", so `gaps4-synth` S1 failed when several full suites ran
+  at once (D-14). The deadline now grows with the work: 30 s of startup plus, per reference variant, 2 s of load time
+  and 400 ms per call up to 4.4 s. An explicit `timeout` still wins. The error says which case happened: timed out
+  after N ms (with the deadline), exited with a code, exited with a signal, or exceeded its output limit.
+- A coordinator patch with `relaunch`, applied after the conductor job reached `done`, left the atom in `relaunch`
+  forever (D-15). The patch now reopens a job past `streaming` back to `streaming`, logs the transition, emits a
+  `GATE` event (from `done` it says to start the conductor again) and returns `reopened: true`; the restarted daemon
+  runs only the relaunched atoms. A relaunch on a job the user stopped is refused. The daemon no longer overwrites a
+  reopen that lands while it advances a phase.
+- `cutover.mjs` passed `--policy` to `schedule.mjs` and `verify.mjs` but not to its planning steps, so the atomized,
+  templated and direct arms planned under the default `policy.json` (D-16). Every planning step now takes, validates
+  against and records the policy; an arm whose plan used another policy, or breaks it, is marked `planValid: false`
+  and not run. `direct.mjs` validates its plan for the first time and exits 1 when it breaks the policy.
+  `plan-template.mjs` writes an invalid receipt when the model call is refused, where it crashed before.
+- The library's union path had no test. The first one showed that members sharing one signature (state in, state out
+  over the same record) were all bound to the first entry that fit, so the union never composed or composed the wrong
+  function. Such members now bind to the entry export with the same name. The new tests also show that a member whose
+  nested layout differs leaves no union.
+
+Round 9 fixes a flaky test from PR #143's CI and the round-8 findings D-11 and D-12. Each fix has a test; five of the seven
+capability-layout cases and the policy cases failed first against the old code.
+
+- The bridge-death test in `core/runtime/test/isolate-pool.test.mjs` read the test process's children once, right
+  after `pool.run()`, and expected exactly one `python3`. The pool spawns its ledger bridge only after its shared
+  modules are ready, so under load there could be none yet (CI on Node 26: 0 found, 1 expected), and a `python3` it
+  found might not be the pool's bridge, so the test could kill the wrong process. It now waits for `pool.ledger.pid`,
+  checks that the test process is that pid's parent, kills exactly that pid, and checks that the bridge was not
+  respawned.
+- A capability block could declare a result or argument of kind `record`, `list` or `text` without its layout, and it
+  then agreed with any glue (D-11); the prompts did not ask for the layout, and the library key compared only the top
+  level, so a need could reuse an entry whose nested units differ. The freeze and G7 now refuse a record, list or text
+  value, at any depth, without its layout (record `fields` with kinds, units and codes; list `items` and `max`; text
+  `maxBytes`). Every prompt that asks for the block asks for the layout, and glue prompts ask for the same layout in
+  `glue.json`. The library key and binding include the nested layout; record fields compare by name, and a capability
+  with only scalar values keeps its old key. A contract with a structured block and no layout no longer freezes, and a
+  library entry admitted earlier with a structured value is keyed without its layout and is no longer found.
+- `fanout.mjs` and `cutover.mjs` called `verify.mjs` without `--policy`, so a run scheduled with another policy was
+  verified against the default `policy.json` (D-12). Both now take `--policy`, pass it to `schedule.mjs` and
+  `verify.mjs`, and refuse a missing, unreadable or non-object policy with exit 2 before running anything. Cutover's
+  planning steps still read the default policy.
+
+Round 8 fixes the findings of the 2026-11-09 backfill review, a local Codex review of about 60 merged pull requests
+that had no completed review, plus D-09 and D-10 from the round-7 records. Each fix has a test that failed first.
+
+- Library fingerprints turned text results into numbers, so two modules returning different strings (`"!"` and
+  `"\""`) both printed `NaN` and `reclaim()` discarded one as a duplicate. Text, booleans and missing values are now
+  printed exactly; number and record output is unchanged, so existing fingerprints stay the same.
+- `reclaim()` released a duplicate without its grants, so a tenant granted only that entry lost access. The kept entry
+  now takes the released entries' grants, and a grant, ungrant or composition plan naming a released entry resolves to
+  the kept one, also after the journal is replayed.
+- A library refusal recorded in one environment was replayed in another after the entry requalified there. Refusals
+  and counterexamples are now kept per environment; older refusals carry none and still apply everywhere.
+- G7 compared only the top level of each capability value, so a nested Celsius result relabelled Fahrenheit in
+  `glue.json` passed. `capabilityAgreement` now compares record fields by name, list items and `max`, text `maxBytes`,
+  and every nested kind, unit, range, precision, rounding, code and label.
+- The kernel host's frozen effect declaration kept references to the caller's payload specs, so changing `max_bytes`
+  afterwards changed enforcement while its SHA-256 and the Workcell cache key stayed the same. The declaration is now
+  deep-copied before it is checked and hashed.
+- A `json` effect payload such as `{"x":1e999}` parsed to infinity and passed. Any non-finite number is now refused as
+  `payload-not-json`.
+- Hillclimb's compose atoms mounted only `/hc-tool`, but `hillclimb.mjs` imports `tools/lib/lock.mjs` and
+  `core/runtime/subscription-guard.mjs`, so every compose stage failed at module load after the model atoms finished.
+  They now mount each file `hillclimb.mjs` imports at its repository path under `/hc-src`.
+- Generated version descriptions said "CI has no secret-scanning job", though the CI job `secret-scan` runs Gitleaks.
+  The sentence is now derived from the workflow files. `docs/releases/VDD-main-20261108.md` still carries the old
+  sentence (D-13); SECURITY.md is corrected.
+- P-70's clustered bootstrap counted a specification drawn twice once, which understated the spec-level interval
+  (100 specifications, 1 flagged: upper bound 1.72% instead of 3.00%); P-71 reused it. Both receipts were regenerated
+  from their hash-checked rows: P-70's held-out upper bound is 2.57% (was 2.21%), P-71's 6.00% (was 5.46%). B1 was
+  missed before and still is.
+- P-65's `run.sh` wrote rows `U1` and `U2` while `analyze.mjs` reads `U1a` and `U2a`. They now agree, and an unknown
+  step exits 2.
+- P-64's streaming tail added two overlapping waits. A turn is now ready at the latest of the final check, the result
+  and the last token. Regenerated from the raw rows: the end-to-end drop on H is 1.16% (was 1.13%), and no verdict
+  changes.
+- `tools/check_comments.py` read only how each line starts, so 20 end-of-line `//` comments passed (D-09). It now lexes
+  JavaScript, TypeScript and Rust, so comments after code are found and comment-like text in strings, template literals
+  and regular expressions is not; unterminated input exits 2. The 20 comments were removed.
+- `verify.mjs` listed `--policy` in its usage but ignored it (D-10). It now loads the named policy and refuses a
+  missing or malformed one with exit 2. `ledger-export.mjs` and `repair-noop.mjs` print usage and refuse missing or bad
+  arguments with exit 2; a bare `ledger-export.mjs` no longer throws `ENOENT`.
+- No automated test showed that a failing test fails `make coverage`; `tests/test_coverage_fails.py` now does.
+
 - The atomizer's `node` toolchain no longer assumes a system Node at `/usr/bin/node`: it defaults to the running Node's install prefix, and a configured home without `bin/node` is refused. Compose atoms failed with `execvp node` on hosts without a system Node, including GitHub's runners (PR #143's coverage job).
 
 - The commit's evidence re-check compares structured results by structure (records by field name, `tol` on every

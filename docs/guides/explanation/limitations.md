@@ -33,7 +33,12 @@ for every input.
 The nine gates check one candidate form: a WebAssembly kernel plus `glue.json`, which declares each input's and
 output's kind and unit. Inputs and outputs are scalars or structured state (records, lists and text in a declared memory
 layout), so a kernel can take state and an event and return the next state. The ledger's evidence re-check at commit
-compares structured values field by field against the declared layout. The stage prompts ask for the kernel in AssemblyScript. Code that does not fit that split goes
+compares structured values field by field against the declared layout. The contract's capability block must declare
+that layout, the freeze and G7 refuse a block that leaves it out, G7 compares the glue's nested structure with it, and
+library lookup keys it, so a nested difference in a declared kind, unit, range, precision, code, field or bound, between
+glue and contract or between a need and a library entry, is caught (round 9; finding D-11 closed). A library entry admitted before round 9 with a structured value is keyed
+without its layout and is no longer found.
+The stage prompts ask for the kernel in AssemblyScript. Code that does not fit that split goes
 through the TypeScript compatibility lane, where a WebAssembly build of the TypeScript 7 checker type checks it and the
 emitted JavaScript runs twice in a contained V8 process. That lane has its own checks
 ([contained JavaScript](../../../core/runtime/README.md#contained-javascript)); the G1–G9 gates do not apply to it.

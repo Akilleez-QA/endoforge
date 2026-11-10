@@ -20,10 +20,22 @@ export function range(text) {
 }
 const note = text => plain(text).replace(/\bfinite\b/g, '').replace(/^[\s,;.]+|[\s,;.]+$/g, '');
 const table = codes => codes ? Object.fromEntries(Object.entries(codes).map(([code, label]) => [code, plain(label)])) : undefined;
+const byName = (a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
+function layout(value) {
+  if (!value || typeof value !== 'object') return {};
+  if (value.kind === 'record') return { fields: Array.isArray(value.fields) ? value.fields.map(item => ({ name: item?.name, ...nested(item) })).sort(byName) : null };
+  if (value.kind === 'list') return { max: value.max ?? null, items: nested(value.items) };
+  if (value.kind === 'text') return { maxBytes: value.maxBytes ?? null };
+  return {};
+}
+function nested(value) {
+  if (!value || typeof value !== 'object') return null;
+  return { kind: value.kind, unit: unit(value.unit), range: range(value.range), precision: value.precision, rounding: value.rounding, codes: table(value.codes), labels: table(value.labels), ...layout(value) };
+}
 function signature(item, trapped) {
   const { result } = item;
-  return { args: item.args.map(a => ({ kind: a.kind, unit: unit(a.unit), range: range(a.range), codes: table(a.codes) })),
-    result: { kind: result.kind, unit: unit(result.unit), precision: result.precision, rounding: result.rounding, codes: table(result.codes), labels: table(result.labels) },
+  return { args: item.args.map(a => ({ kind: a.kind, unit: unit(a.unit), range: range(a.range), codes: table(a.codes), ...layout(a) })),
+    result: { kind: result.kind, unit: unit(result.unit), precision: result.precision, rounding: result.rounding, codes: table(result.codes), labels: table(result.labels), ...layout(result) },
     trap: trapped.has(item.name) };
 }
 export function capabilityFromGlue(glue) {

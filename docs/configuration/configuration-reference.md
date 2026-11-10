@@ -3,10 +3,10 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-CFG |
-| Version | 3.6 |
+| Version | 3.9 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
-| Date | 2026-11-09 |
+| Date | 2026-11-10 |
 | Baseline commit | 63e95c79afb282a7fcae4decd57d2e7ed6cf0d40 |
 | Applies to | endoforge main at baseline commit |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
@@ -400,6 +400,15 @@ returns per-stage rates, utilisation, queues and a bottleneck verdict; `publish(
 `fuel` 100000 (1 to 10,000,000), `memory_bytes` 16 MiB (64 KiB to 16 MiB), `output_bytes` 1 MiB (1 byte to 1 MiB),
 `wall_seconds` 5.0 (0.01 to 60). Pinned Wasmtime 49.0.0 and wasm-tools 1.262.0.
 
+### Reference sandbox (`core/runtime/x1/synth/sandbox.mjs`)
+
+`runReferences(variants, calls, { timeout, startupMs, hold = 0 })` runs evaluator synthesis's reference calls in one
+child process. Without `timeout` the child is killed (`SIGKILL`) at `referenceDeadline(variants, calls, { startupMs })`:
+`startupMs` (default 30000) plus, for each variant, `loadMs` 2000 and the smaller of `callMs` 400 times the number of
+calls and `variantMs` 4400 (`referenceLimits`). `timeout` replaces that deadline. `hold` makes the child wait that many
+milliseconds before it starts; it exists for the tests. Inside the child each variant's calls share a 4000 ms budget.
+Since round 10.
+
 ## Job and Conductor manifest settings
 
 The `conductor` block of an `endoforge/job/1` manifest:
@@ -422,6 +431,13 @@ The `conductor` block of an `endoforge/job/1` manifest:
 | `links` | `[]` | `{ path, target }` symlinks made in each worktree. |
 | `checkConcurrency`, `busyBaseSec`, `busyWaitSec` | see the [Conductor README](../../tools/conductor/README.md) | Check parallelism and back-off when logins are busy (2 s base, 900 s cap). |
 
+The `stage` block of the manifest (read by `job.mjs stage`, since round 10):
+
+| Key | Default | Effect |
+|---|---|---|
+| `base` | `HEAD` | The commit on which `stage` runs each criterion check once, in a throwaway worktree, to record `proofs.baseline` (I17). |
+| `checkTimeoutSec` | `1800` | Time limit for one of those check runs; a check that runs out is recorded as failed. |
+
 `conduct run` takes `--tick` (default 5 seconds) and `--max-ticks` (default unlimited). `resources.health` in the
 manifest is the health check; without it the job tool runs `.local/bin/system-safety-status` in the home directory.
 
@@ -430,6 +446,9 @@ manifest is the health check; without it the job tool runs `.local/bin/system-sa
 `schedule.mjs run <atoms.json> --run-dir <dir>` takes `--concurrency` (8, or `ENDOFORGE_CODEX_CONCURRENCY` with the
 Codex backend), `--retries` (1), `--timeout-ms` (900000), `--policy` (`tools/atomizer/policy.json`), `--force` and
 `--no-augment`. Policy limits: at most 64 atoms, `size.work` at most 3, atom timeouts capped at 5400 seconds.
+`verify.mjs`, `fanout.mjs` and `cutover.mjs` take `--policy` with the same default; `fanout.mjs` and `cutover.mjs` pass
+their policy on to `schedule.mjs` and `verify.mjs` (since round 9). `atomize.mjs`, `plan-template.mjs` and `direct.mjs`
+take `--policy` with the same default, and `cutover.mjs` passes its policy to them too (since round 10).
 
 ## Hillclimb campaign defaults
 
@@ -452,6 +471,8 @@ own `runner` gets `<atoms.json> --out <dir> --concurrency N --timeout S`, withou
 | `RUFF` | `uvx ruff@$(RUFF_VERSION)` when `uvx` is on `PATH`, else `ruff` (`?=`) | The ruff command `make lint` runs; CI installs `ruff==0.17.0` with pip. |
 | `COVERAGE_DIR` | `.test-work/coverage` | Where `make coverage-python` writes coverage.py data or the trace counts. |
 | `GAP_PY_TESTS`, `GAP_NODE_TESTS` | the round-4 test files named in the `Makefile` | Run by `make gap-tools-test`; the Python ones are kept out of `ledger-test` so they run once. |
+| `COVERAGE_SETUP` | `tscheck-setup loop-setup` | Prerequisites of `coverage-node`. `tests/test_coverage_fails.py` sets it empty so its probe runs do not run `npm ci`; normal runs leave it alone. |
+| `EXPERIMENT_TESTS` | every `experiments/*/analyze.test.mjs` except P-51's `controls.test.mjs` | Run by `make experiments-test`, part of `make test`; with none it prints `no experiment analysis tests`. |
 
 Setup targets run `npm ci --ignore-scripts` from a lockfile: `loop-setup` (`tools/asc`), `tscheck-setup`
 (`tools/tscheck`) and `rust-lane-setup` (`tools/rust_lane`). `isolate-test` depends on `loop-setup` and
@@ -459,13 +480,15 @@ Setup targets run `npm ci --ignore-scripts` from a lockfile: `loop-setup` (`tool
 `rust-lane-setup`.
 
 Quality targets outside `make test`: `make lint` runs `$(RUFF) check` over the tree with [ruff.toml](../../ruff.toml)
-(rules E4, E7, E9 and F, with E401, E402, E701, E702 and E731 ignored; `.tools`, `.test-work` and `TODELETE` excluded)
-and `node --check` on every `.mjs`, `.js` and `.cjs` file outside `node_modules`, `.git`, `.tools` and `.test-work`.
-`make coverage` runs `coverage-node` (after `tscheck-setup` and `loop-setup`: the Node suites under
+(rules E4, E7, E9 and F, with E401, E402, E701, E702 and E731 ignored; `.tools`, `.test-work` and `TODELETE` excluded),
+`tools/check_comments.py` (no code comments, REQ-REPO-010) and `node --check` on every `.mjs`, `.js` and `.cjs` file
+outside `node_modules`, `.git`, `.tools` and `.test-work`.
+`make coverage` runs `coverage-node` (after `$(COVERAGE_SETUP)`: the Node suites under
 `--experimental-test-coverage`, excluding test files from the report and skipping `loop-review.test.mjs` test 14, whose write counter
 sees coverage's own writes; `make test` still runs it) and `coverage-python` (coverage.py over `core` and `tools` when it is installed,
-else `python3 -m trace` counts into `$(COVERAGE_DIR)/trace`). `make gap-tools-test`, part of `make test`, runs
-`GAP_PY_TESTS` and `GAP_NODE_TESTS`.
+else `python3 -m trace` counts into `$(COVERAGE_DIR)/trace`). Either half fails when a test fails, and so does
+`make coverage`; `tests/test_coverage_fails.py` checks this. `make gap-tools-test`, part of `make test`, runs
+`GAP_PY_TESTS` and `GAP_NODE_TESTS`, and `make experiments-test` runs `EXPERIMENT_TESTS`.
 
 ## Change history
 
@@ -480,3 +503,6 @@ else `python3 -m trace` counts into `$(COVERAGE_DIR)/trace`). `make gap-tools-te
 | 3.4 | 2026-11-09 | round 4 | `runNeed` `synthCell`; Makefile `RUFF_VERSION`, `RUFF`, `COVERAGE_DIR`, `GAP_PY_TESTS`, `GAP_NODE_TESTS` and the targets `lint`, `coverage` and `gap-tools-test` | this commit |
 | 3.5 | 2026-11-09 | round 5 | `ENDOFORGE_ASC` default is now the `tools/asc` pin; `ENDOFORGE_SECOND_HOST` (test-only) added | this commit |
 | 3.6 | 2026-11-09 | round 6 | `ENDOFORGE_WASMTIME` default is now empty (the pinned wheel); `ENDOFORGE_WASMTIME_SHA256` applies only to a CLI; `ENDOFORGE_WORKER_IMAGE` also feeds the `RealDocker` test; `CARGO_HOME` defaults to `~/.cargo` (corrected) | this commit |
+| 3.7 | 2026-11-09 | rounds 7b and 8 | `ENDOFORGE_TOOLCHAIN_NODE` defaults to the running Node's install prefix and a home without `bin/node` is refused (round 7b); Makefile `COVERAGE_SETUP` and `EXPERIMENT_TESTS` and the target `experiments-test`; `make lint` runs the comment check | this commit |
+| 3.8 | 2026-11-10 | round 9 | Atomizer command defaults: `fanout.mjs` and `cutover.mjs` take `--policy` and pass it to `schedule.mjs` and `verify.mjs` | this commit |
+| 3.9 | 2026-11-10 | round 10 | Reference sandbox options (`timeout`, `startupMs`, `hold`) and the derived deadline; the manifest's `stage` block (`base`, `checkTimeoutSec`); `atomize.mjs`, `plan-template.mjs` and `direct.mjs` take `--policy` | this commit |

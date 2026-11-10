@@ -31,8 +31,14 @@ class CommentForms(unittest.TestCase):
     def test_star_without_space_is_code(self):
         self.assertEqual(lines('a.js', 'const a = 2\n*3;\n'), [])
 
-    def test_trailing_slash_comment_after_code_is_not_a_comment_line(self):
-        self.assertEqual(lines('a.ts', 'const a = 1; // tail\n'), [])
+    def test_end_of_line_slash_comment_after_code(self):
+        self.assertEqual(cc.comments('a.ts', 'const a = 1; // tail\n'), [(1, '// tail')])
+        self.assertEqual(cc.comments('a.mjs', 'if (x) {   // why\n  y();\n}\n'), [(1, '// why')])
+
+    def test_inline_block_comment_after_and_between_code(self):
+        self.assertEqual(cc.comments('a.js', 'f(a, /* b */ c);\n'), [(1, '/* b */')])
+        self.assertEqual(cc.comments('a.js', 'x(); /* one\n two */ y();\n'), [(1, '/* one'), (2, 'two */')])
+        self.assertEqual(lines('a.js', 'import/* a */(1);\n'), [1])
 
     def test_slash_forms_in_each_suffix(self):
         for suffix in ('.mjs', '.js', '.cjs', '.ts', '.rs'):
@@ -60,6 +66,91 @@ class CommentForms(unittest.TestCase):
     def test_text_is_stripped(self):
         self.assertEqual(cc.comments('a.mjs', '    // spaced   \n'), [(1, '// spaced')])
         self.assertEqual(cc.comments('a.py', 'x = 1   #  note  \n'), [(1, '#  note')])
+
+
+class LexedNotComments(unittest.TestCase):
+    def test_strings(self):
+        for text in ("const u = 'http://x';\n", 'const s = "/* not */";\n', "s = 'it\\'s // x';\n",
+                     's = "a\\"// b";\n', "s = 'line \\\n// continued';\n"):
+            with self.subTest(text=text):
+                self.assertEqual(lines('a.mjs', text), [])
+
+    def test_template_literals(self):
+        for text in ('t = `// a\n/* b */`;\n', 't = `${a /* real */}`;\n', 't = `x ${`// ${y}`} // z`;\n',
+                     't = `${ {a: 1}.a } // t`;\n', 't = `\\`// e`;\n'):
+            with self.subTest(text=text):
+                expected = [1] if 'real' in text else []
+                self.assertEqual(lines('a.mjs', text), expected)
+
+    def test_template_then_code_comment(self):
+        self.assertEqual(cc.comments('a.mjs', 'f(`${x}`); // after\n'), [(1, '// after')])
+
+    def test_regular_expressions(self):
+        for text in ('const r = /\\/\\/ x/;\n', 'const r = /[/*]/g;\n', 'x.replace(/\\/*$/, "");\n',
+                     'return /a\\/\\/b/.test(s);\n', 'if (!/\\/\\//.test(s)) f();\n', 'a = [/\\/*/, /x/];\n',
+                     'const r = /[\\]/]\\/\\//;\n', '}\n/ab\\/\\/c/.test(s);\n', 'const r = /=\\/\\//;\n'):
+            with self.subTest(text=text):
+                self.assertEqual(lines('a.mjs', text), [])
+
+    def test_division_is_not_a_regex(self):
+        self.assertEqual(cc.comments('a.mjs', 'const h = a / b / c; // ratio\n'), [(1, '// ratio')])
+        self.assertEqual(cc.comments('a.mjs', 'x = (a) / 2 // half\n'), [(1, '// half')])
+        self.assertEqual(cc.comments('a.mjs', 'x = a[0] / 2 /* q */\n'), [(1, '/* q */')])
+        self.assertEqual(cc.comments('a.mjs', 'x = 10 / 2; // n\n'), [(1, '// n')])
+        self.assertEqual(cc.comments('a.mjs', "x = 's' / 2; // n\n"), [(1, '// n')])
+
+    def test_division_after_postfix_operators(self):
+        for text in ('let n=4, d=2; const r = n++ / d;\n', 'z = x-- / y;\n', 'z = f(a) / b;\n', 'z = a[0] / c;\n',
+                     'z = a[i]++ / c;\n', 'z = (n)-- / 2 / 3;\n', 'z = n ++ / d / e;\n', 'z = n++/d/e;\n'):
+            with self.subTest(text=text):
+                self.assertEqual(lines('a.mjs', text), [])
+        self.assertEqual(cc.comments('a.mjs', 'const r = n++ / d; // rationale\n'), [(1, '// rationale')])
+        self.assertEqual(cc.comments('a.mjs', 'z = x-- / y; /* q */\n'), [(1, '/* q */')])
+        self.assertEqual(cc.comments('a.mjs', 'z = a) / b; // r\n'), [(1, '// r')])
+        self.assertEqual(cc.comments('a.mjs', 'z = a] / c; // r\n'), [(1, '// r')])
+
+    def test_regex_after_operators_and_prefix_increments(self):
+        for text in ('x = a + /\\/\\//.source;\n', 'x = a || /\\/\\//;\n', 'x = a ? /\\/\\// : 0;\n',
+                     'x = y = /\\/\\//;\n', 'x = ++/\\/\\//.lastIndex;\n', 'f(a, /\\/\\//);\n',
+                     'x = !/\\/\\//.test(s);\n', 'x = a + ++/\\/\\//.lastIndex;\n', 'a\n++/\\/\\//.lastIndex;\n'):
+            with self.subTest(text=text):
+                self.assertEqual(lines('a.mjs', text), [])
+        self.assertEqual(cc.comments('a.mjs', 'x = a + /\\/\\//; // r\n'), [(1, '// r')])
+
+    def test_private_names_and_shebang(self):
+        self.assertEqual(lines('a.mjs', '#!/usr/bin/env node // x\nclass A { #p = 1; }\n'), [])
+
+    def test_regressions_from_the_repository(self):
+        for rel in ('tools/tscheck/test/verdict.test.mjs', 'core/runtime/test/contained-js.test.mjs'):
+            with self.subTest(path=rel):
+                text = (REPO / rel).read_text(encoding='utf8')
+                self.assertEqual(cc.comments(rel, text), [])
+        text = ("  '@ts-nocheck after a block comment': [project(listed(), "
+                "{ '/proj/a.ts': `/* x */ // @ts-nocheck\\n${bad}` }), /@ts-nocheck/],\n"
+                "for (const source of ['exports.main = () => import/* a */(1);', "
+                "'exports.main = () => import // b\\n(1);']) {}\n")
+        self.assertEqual(lines('a.mjs', text), [])
+
+    def test_rust_literals(self):
+        text = ('fn f<\'a>(s: &\'a str) -> char { let u = "http://x"; let r = r#"/* "// */"#; let c = \'/\';\n'
+                "let q = '\\''; let b = br\"//\"; '\"' }\n")
+        self.assertEqual(lines('a.rs', text), [])
+        self.assertEqual(cc.comments('a.rs', 'let a = 1; // tail\n/* outer /* inner */ still */ x\n'),
+                         [(1, '// tail'), (2, '/* outer /* inner */ still */')])
+
+    def test_unterminated_input_is_a_syntax_error(self):
+        for text in ('x = "abc\n', 'x = `abc\n', '/* open\n', 'x = /abc\n'):
+            with self.subTest(text=text), self.assertRaises(SyntaxError):
+                cc.comments('a.mjs', text)
+
+    def test_owned_tool_trees_are_clean(self):
+        files = subprocess.run(['git', 'ls-files', '--', 'tools/conductor', 'tools/job', 'tools/lib', 'tools/tscheck',
+                                'tools/atomizer'], cwd=REPO, capture_output=True, text=True, check=True).stdout.split()
+        found = []
+        for rel in files:
+            if cc.checked(rel):
+                found += [(rel, n, s) for n, s in cc.comments(rel, (REPO / rel).read_text(encoding='utf8'))]
+        self.assertEqual(found, [])
 
 
 class KeepRules(unittest.TestCase):
@@ -178,6 +269,18 @@ class Command(unittest.TestCase):
         result = self.run_script()
         self.assertEqual(result.returncode, 2)
         self.assertIn('bad.py: cannot tokenize', result.stderr)
+
+    def test_end_of_line_comments_listed(self):
+        self.add('a.mjs', 'const u = "http://x"; // tail\nf(/* arg */ 1);\n')
+        result = self.run_script()
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(result.stdout.splitlines(), ['a.mjs:1: // tail', 'a.mjs:2: /* arg */'])
+
+    def test_unterminated_javascript_exits_two(self):
+        self.add('bad.mjs', 'const s = `open\n')
+        result = self.run_script()
+        self.assertEqual(result.returncode, 2)
+        self.assertIn('bad.mjs: cannot tokenize: unterminated template literal at line 1', result.stderr)
 
     def test_help_lists_usage(self):
         result = self.run_script('--help')

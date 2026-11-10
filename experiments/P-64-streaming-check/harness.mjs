@@ -4,6 +4,7 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { applyCall, applyReply } from '../../core/runtime/x1/agent.mjs';
 import { hash } from '../../core/runtime/x1/host.mjs';
 import { CallScanner } from './stream.mjs';
+import { streamTailMs } from './tail.mjs';
 
 const editableFor = stage => stage === 'implementation' ? ['kernel.ts', 'glue.json'] : ['CONTRACT.md', 'tests.json'];
 
@@ -120,13 +121,12 @@ export async function replayTurn({ record, messages, stream, base, context = nul
     const checked = runsCheck(calls);
     const kernelEdits = calls.filter(call => call?.name === 'edit_file' && call.path === 'kernel.ts').length;
     const lastToken = info.lastToken ?? info.result;
-    const streamReady = Math.max(lastToken, final.finishedAt);
     return {
       label: record.label, stage, id, checked, kernelEdits, calls: calls.map(call => call?.name === 'edit_file' ? `edit:${call.path}` : call?.name),
       firstOutput: info.firstOutput, toolStart: info.toolStart, lastToken, resultAt: info.result, closeAt: record.wallMs, replayCloseAt: closeAt, lastEditAt,
       toolChars: info.toolChars, usage: info.usage,
       stream: { finalAt: final.at, finalFinishedAt: final.finishedAt, failed: final.result.failed, error: final.result.error ?? null, digest: final.digest, checks: fulls.length,
-        tailMs: (streamReady - lastToken) + (info.result - lastToken) },
+        tailMs: streamTailMs({ lastToken, resultAt: info.result, finalFinishedAt: final.finishedAt }) },
       base: { failed: base.result.failed, error: base.result.error ?? null, roundTripMs: base.result.roundTripMs, compileMs: base.result.compileMs, finishedAt: base.finishedAt,
         tailMs: (record.wallMs - lastToken) + base.result.roundTripMs, digest: hash(JSON.stringify(finalFiles)) },
       prechecks: prechecks.map(entry => ({ at: entry.at, finishedAt: entry.finishedAt, refuse: entry.result.refuse, failedGates: entry.result.failedGates ?? null, chars: entry.chars, kernelDigest: entry.kernelDigest ?? null })),

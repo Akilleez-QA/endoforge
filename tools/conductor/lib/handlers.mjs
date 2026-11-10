@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { validate } from '../../job/lib/validate.mjs';
 import { health } from '../../job/lib/load.mjs';
@@ -18,7 +19,7 @@ const imagesFor = (job, id) => { const a = job.atoms.find((x) => x.id === id); r
 function launchPending(ctx) {
   const { job, file } = ctx, started = [];
   const plan = ctx.update((s) => assignLogins(job, s));
-  if (plan.awaitingGo) return started;                         // the card changed: nothing launches before the user's new go
+  if (plan.awaitingGo) return started;
   const ids = Object.entries(plan.atoms).filter(([, st]) => ['pending', 'relaunch'].includes(st.status)).map(([id]) => id).slice(0, slotsFree(job, plan));
   for (const id of ids) {
     const cur = ctx.update(() => {});
@@ -35,9 +36,9 @@ export async function settleAtom(ctx, id, checkAtom = sliceCheck) {
   const { job, file } = ctx, st = ctx.update(() => {}).atoms[id], exit = laneExit(st);
   if (exit !== 0) return relaunchOrEscalate(ctx, id, exit === LOST ? `the worker ended with no recorded exit code; see ${st.lane.log}` : `the worker exited ${exit}; see ${st.lane.log}`, { stage: 'worker', exit });
   const g = collectAtom(job, file, st, id);
-  if (!st.lane.adopted) spawnSync('git', ['-C', job.repo, 'worktree', 'remove', '--force', st.lane.worktree], { stdio: 'ignore' });   // collected: the lane's copy goes (adopted lanes are left as they were)
+  if (!st.lane.adopted) spawnSync('git', ['-C', job.repo, 'worktree', 'remove', '--force', st.lane.worktree], { stdio: 'ignore' });
   if (g.status === 'reverted') return relaunchOrEscalate(ctx, id, gateFeedback(g), { stage: g.stage, error: g.error });
-  ctx.update((s) => { s.atoms[id].status = 'checking'; s.atoms[id].sha = g.sha ?? null; });
+  ctx.update((s) => { const a = s.atoms[id]; a.status = 'checking'; a.sha = g.sha ?? null; if (g.added?.length) a.added = [...new Set([...(a.added ?? []), ...g.added])]; });
   return judge(ctx, id, checkAtom);
 }
 
@@ -56,6 +57,7 @@ export async function judge(ctx, id, checkAtom = sliceCheck) {
   if (verdict.pass) {
     ctx.update((s) => { record(s); Object.assign(s.atoms[id], { status: 'frozen', last: verdict.why, feedback: null }); s.atoms[id].history.push({ iter: st.iter, pass: true, sha: g.sha ?? null }); });
     emit(job, file, { kind: 'GATE', summary: `${id} frozen at iteration ${st.iter}: ${verdict.why}`, data: { atom: id, iter: st.iter, pass: true } });
+    traceNeeded(ctx, id);
     return;
   }
   let feedback = verdict.feedback;
@@ -67,6 +69,18 @@ export async function judge(ctx, id, checkAtom = sliceCheck) {
   return relaunchOrEscalate(ctx, id, feedback, { stage: 'check', findings: verdict.findings, failing: failingSignature(verdict) });
 }
 
+export const isTestFile = (p) => { const b = path.posix.basename(p); return /^test_.+\.(py|mjs|cjs|js|ts|sh)$/.test(b) || /.+_test\.py$/.test(b) || /\.(test|spec)\.[cm]?[jt]sx?$/.test(b); };
+
+function traceNeeded(ctx, id) {
+  const { job, file } = ctx, a = ctx.update(() => {}).atoms[id], told = new Set(a.traceNotified ?? []);
+  const tests = (a.added ?? []).filter((p) => isTestFile(p) && !told.has(p) && spawnSync('git', ['-C', job.repo, 'cat-file', '-e', `HEAD:${p}`], { stdio: 'ignore' }).status === 0).sort();
+  if (!tests.length) return;
+  ctx.update((s) => { s.atoms[id].traceNotified = [...told, ...tests]; });
+  emit(job, file, { kind: 'NEEDS-COORDINATOR', summary: `TRACE-NEEDED ${id}: new test files ${tests.join(', ')}`,
+    detail: `${id} froze with new test files. Add their trace rows (verification matrix or a supporting entry, and Makefile reach) before other atoms' checks run them:\n${tests.map((t) => `- ${t}`).join('\n')}`,
+    data: { event: 'TRACE-NEEDED', atom: id, iter: a.iter, sha: a.sha ?? null, tests } });
+}
+
 const failingSignature = (v) => (v.findings ?? []).map((f) => `${f.id}:${Object.entries(f.items ?? {}).filter(([, p]) => !p).map(([n]) => n).sort().join('|')}`).sort().join(';');
 
 function relaunchOrEscalate(ctx, id, feedback, evidence) {
@@ -74,7 +88,7 @@ function relaunchOrEscalate(ctx, id, feedback, evidence) {
   const sig = evidence.failing ?? `${evidence.stage}:${String(evidence.error ?? evidence.exit ?? '').split('\n').filter(Boolean).at(-1) ?? ''}`;
   const s = ctx.update((st) => { const a = st.atoms[id]; const prev = a.history.filter((h) => !h.pass).at(-1);
     a.history.push({ iter: a.iter, pass: false, ...evidence, signature: sig }); a.feedback = feedback; a.last = String(feedback).split('\n')[0].slice(0, 160);
-    a.repeated = Boolean(prev && prev.signature === sig && sig);       // U1: the same failure twice is a decision, not a retry
+    a.repeated = Boolean(prev && prev.signature === sig && sig);
     a.status = a.repeated || a.iter - (a.iterBase ?? 0) >= st.budget.maxIterations ? 'needs-coordinator' : 'relaunch'; });
   const a = s.atoms[id];
   if (a.status === 'needs-coordinator')
@@ -96,7 +110,7 @@ export const handlers = {
     if (v.ok) return { advance: true, why: 'every gate to Orchestrate passed' };
     const blocking = v.errors.filter((e) => !(e.inv === 'I8' && /health refuses/.test(e.msg)));
     if (blocking.length) escalate(ctx.job, ctx.file, { to: 'coordinator', key: `gates:${blocking.map((e) => e.inv).join(',')}`, why: `the job does not pass its gates: ${blocking.map((e) => `${e.gate} ${e.inv}: ${e.msg}`).join('; ')}`, packet: { errors: blocking } });
-    return null;                                                 // machine health is transient: wait
+    return null;
   },
   smoke: (ctx) => {
     const sm = ctx.job.proofs?.smoke;

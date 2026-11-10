@@ -14,8 +14,12 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO = path.resolve(HERE, '../../..');
 function args(argv) { const o = { _: [] }; for (let i = 0; i < argv.length; i++) { const a = argv[i]; if (a.startsWith('--')) o[a.slice(2)] = argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[++i] : true; else o._.push(a); } return o; }
 const A = args(process.argv.slice(2));
-if (!A._[0] || !A.out) { console.error('usage: atomize.mjs <need.md> --out <dir> [--model sonnet|opus|codex] [--repair 1] [--fixture atoms.json]'); process.exit(2); }
-const policy = JSON.parse(fs.readFileSync(path.join(HERE, '..', 'policy.json'), 'utf8'));
+const USAGE = 'usage: atomize.mjs <need.md> --out <dir> [--model sonnet|opus|codex] [--repair 1] [--fixture atoms.json] [--policy file]';
+if (!A._[0] || !A.out || A.out === true) { console.error(USAGE); process.exit(2); }
+if (A.policy === true) { console.error('--policy needs a file'); console.error(USAGE); process.exit(2); }
+const POLICY_FILE = A.policy ? path.resolve(A.policy) : path.join(HERE, '..', 'policy.json');
+let policy, POLICY;
+try { const text = fs.readFileSync(POLICY_FILE); policy = JSON.parse(text.toString('utf8')); if (!policy || typeof policy !== 'object' || Array.isArray(policy)) throw new Error('not a JSON object'); POLICY = { path: POLICY_FILE, sha256: crypto.createHash('sha256').update(text).digest('hex') }; } catch (e) { console.error(`unreadable policy ${POLICY_FILE}: ${e.message}`); console.error(USAGE); process.exit(2); }
 const needText = fs.readFileSync(A._[0], 'utf8');
 const needId = (needText.match(/^# Request (\S+)/m) ?? [, path.basename(A._[0], '.md')])[1];
 const model = A.model ?? 'sonnet', REPAIR = Number(A.repair ?? 1);
@@ -54,8 +58,8 @@ const prompt = `${RULES}\n## The need (id ${needId})\n\n${needText.trim()}\n`;
 const promptSha = crypto.createHash('sha256').update(prompt).digest('hex');
 const homeTemplate = makeHomeTemplate(fs.mkdtempSync(path.join(os.tmpdir(), 'atomize-home-')));
 const ATOMIZE_ID = newId(`atomize-${needId}`);
-const receipt = { atomizeId: ATOMIZE_ID, needId, model, promptSha256: promptSha, attempts: [], startedAt: new Date().toISOString() };
-emit('atomize.start', { atomizeId: ATOMIZE_ID, need: needId, model, promptSha256: promptSha, promptBytes: Buffer.byteLength(prompt), needSha256: crypto.createHash('sha256').update(needText).digest('hex'), out: OUT, fixture: A.fixture ?? null, context: context(), load: load() });
+const receipt = { atomizeId: ATOMIZE_ID, needId, model, policy: POLICY, promptSha256: promptSha, attempts: [], startedAt: new Date().toISOString() };
+emit('atomize.start', { atomizeId: ATOMIZE_ID, need: needId, model, policy: POLICY, promptSha256: promptSha, promptBytes: Buffer.byteLength(prompt), needSha256: crypto.createHash('sha256').update(needText).digest('hex'), out: OUT, fixture: A.fixture ?? null, context: context(), load: load() });
 async function turn(text, label) {
   if (A.fixture) fs.writeFileSync(path.join(OUT, 'receipt', `${label}-prompt.md`), text);
   if (A.fixture) return { json: fs.readFileSync(A.fixture, 'utf8'), wallMs: 0, usage: null, fixture: A.fixture };
@@ -96,8 +100,8 @@ const P = doc?.atoms ? plan(doc.atoms) : null;
 if (doc) fs.writeFileSync(path.join(OUT, 'atoms.json'), JSON.stringify(doc, null, 1));
 if (P) fs.writeFileSync(path.join(OUT, 'plan.json'), JSON.stringify(P, null, 1));
 fs.writeFileSync(path.join(OUT, 'receipt', 'atomize.json'), JSON.stringify(receipt, null, 1));
-emit('atomize.end', { atomizeId: ATOMIZE_ID, need: needId, model, valid: receipt.valid, attempts: receipt.attempts.length, atomsSha256: doc ? crypto.createHash('sha256').update(JSON.stringify(doc, null, 1)).digest('hex') : null, plan: P && !P.cycle ? { atoms: doc.atoms.length, total: P.total, critical: P.critical, criticalPath: P.criticalPath, speedupBound: P.speedupBound, width: P.width, waves: P.waves } : null, kinds: doc?.atoms ? Object.fromEntries(Object.entries(doc.atoms.reduce((m, a) => { m[a.kind] = (m[a.kind] ?? 0) + 1; return m; }, {}))) : null });
-const R = [`# Atomization of ${needId}`, '', `Model ${model}; attempts ${receipt.attempts.length}; valid: ${receipt.valid}. Prompt sha256 ${promptSha.slice(0, 16)}…`, ''];
+emit('atomize.end', { atomizeId: ATOMIZE_ID, need: needId, model, policy: POLICY, valid: receipt.valid, attempts: receipt.attempts.length, atomsSha256: doc ? crypto.createHash('sha256').update(JSON.stringify(doc, null, 1)).digest('hex') : null, plan: P && !P.cycle ? { atoms: doc.atoms.length, total: P.total, critical: P.critical, criticalPath: P.criticalPath, speedupBound: P.speedupBound, width: P.width, waves: P.waves } : null, kinds: doc?.atoms ? Object.fromEntries(Object.entries(doc.atoms.reduce((m, a) => { m[a.kind] = (m[a.kind] ?? 0) + 1; return m; }, {}))) : null });
+const R = [`# Atomization of ${needId}`, '', `Model ${model}; policy ${POLICY.path} (sha256 ${POLICY.sha256.slice(0, 16)}…); attempts ${receipt.attempts.length}; valid: ${receipt.valid}. Prompt sha256 ${promptSha.slice(0, 16)}…`, ''];
 if (P && !P.cycle) {
   R.push(`Atoms ${doc.atoms.length}; total work ${P.total}; critical path ${P.critical} (${P.criticalPath.join(' → ')}); speedup bound ${P.speedupBound}x; widest wave ${P.width}.`, '', '| Wave | Atoms |', '|---|---|');
   for (const [l, ids] of Object.entries(P.waves)) R.push(`| ${l} | ${ids.map((id) => { const a = doc.atoms.find((x) => x.id === id); return `${id} (${a.kind}, ${a.worker.model}${a.worker.tools?.length ? '+tools' : ''}, w${a.size.work}/i${a.size.interface})`; }).join('; ')} |`);
