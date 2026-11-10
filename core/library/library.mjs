@@ -42,19 +42,33 @@ export async function openLibrary({ journal: path = null, cells = 1, deadlineMs 
   const noteReuse = record => { const list = reuses.get(record.source.candidate) ?? []; list.push(record); reuses.set(record.source.candidate, list); };
   const noteCompose = record => { for (const source of record.sources) noteReuse({ ...record, source }); };
   const noteRevoke = record => { for (const id of record.covers) revoked.set(id, record); };
-  const noteGrant = record => {
-    const list = (grants.get(record.id) ?? []).filter(grant => canonical(grant) !== canonical(record.grantee));
-    if (record.kind === 'library_grant') list.push(record.grantee);
-    grants.set(record.id, list);
+  const kept = id => {
+    const seen = new Set();
+    while (entries.get(id)?.reclaimedInto && !seen.has(id)) { seen.add(id); id = entries.get(id).reclaimedInto; }
+    return id;
   };
+  const noteGrant = record => {
+    const id = kept(record.id), list = (grants.get(id) ?? []).filter(grant => canonical(grant) !== canonical(record.grantee));
+    if (record.kind === 'library_grant') list.push(record.grantee);
+    grants.set(id, list);
+  };
+  const examplesKey = (environment, id) => canonical([environment ?? null, id]);
   const noteRefusal = record => {
     if (!record.entryId) return;
-    const known = examples.get(record.entryId) ?? new Map();
+    const key = examplesKey(record.environment, record.entryId), known = examples.get(key) ?? new Map();
     for (const example of record.counterexamples ?? []) known.set(canonical([example.fn, example.args]), example);
-    examples.set(record.entryId, known);
+    examples.set(key, known);
     if (record.pair) refusedPairs.set(record.pair, { reason: record.reason, witnesses: record.witnesses ?? [] });
   };
-  const noteReclaim = record => { const entry = entries.get(record.id); RELEASED.forEach(field => { entry[field] = null; }); entry.reclaimedInto = record.into; vectors.delete(record.id); };
+  const noteReclaim = record => {
+    const entry = entries.get(record.id);
+    RELEASED.forEach(field => { entry[field] = null; });
+    entry.reclaimedInto = record.into;
+    vectors.delete(record.id);
+    const into = kept(record.into), moved = grants.get(record.id) ?? [];
+    if (moved.length) grants.set(into, [...(grants.get(into) ?? []).filter(grant => !moved.some(other => canonical(other) === canonical(grant))), ...moved]);
+    grants.delete(record.id);
+  };
   const noteQualification = record => {
     const entry = entries.get(record.id);
     if (record.ok !== false) entry.qualifiedHost = record.host;
@@ -83,17 +97,18 @@ export async function openLibrary({ journal: path = null, cells = 1, deadlineMs 
     }
     return rows.sort((a, b) => b.score - a.score || (a.id < b.id ? -1 : 1));
   };
-  const pairOf = (id, tests, contract) => sha256(canonical([id, tests, numerals(contract), gate, hostDigest]));
+  const pairOf = (id, tests, contract) => sha256(canonical([id, tests, numerals(contract), gate, hostDigest, environmentId]));
+  const examplesHere = id => [...new Map([...(examples.get(examplesKey(null, id)) ?? []), ...(examples.get(examplesKey(environmentId, id)) ?? [])]).values()];
   const knownRefusal = (id, tests, contract) => {
     const pair = refusedPairs.get(pairOf(id, tests, contract));
-    if (pair) return { refused: pair.reason, witnesses: pair.witnesses, counterexamples: [...(examples.get(id)?.values() ?? [])] };
-    const matched = [...(examples.get(id)?.values() ?? [])].filter(example => tests.some(test => test.fn === example.fn && canonical(test.args) === canonical(example.args) && !accepted(test, example.trap ? { trap: true } : { value: example.got })));
+    if (pair) return { refused: pair.reason, witnesses: pair.witnesses, counterexamples: examplesHere(id) };
+    const matched = examplesHere(id).filter(example => tests.some(test => test.fn === example.fn && canonical(test.args) === canonical(example.args) && !accepted(test, example.trap ? { trap: true } : { value: example.got })));
     return matched.length ? { refused: 'evaluator_failed', witnesses: [], counterexamples: matched } : null;
   };
   const refusalDetail = (id, tests, contract, result, reason, usedCell) => {
     if (!usedCell) return {};
     const discrimination = result.discrimination, survivors = discrimination ? [...discrimination.survivors, ...discrimination.wrappers.survivors] : [];
-    return { entryId: id, pair: pairOf(id, tests, contract), counterexamples: reason === 'evaluator_failed' ? result.failing ?? [] : [], witnesses: survivors.slice(0, 16).map(({ kind, fn, args }) => ({ kind, fn, args })) };
+    return { entryId: id, environment: environmentId, pair: pairOf(id, tests, contract), counterexamples: reason === 'evaluator_failed' ? result.failing ?? [] : [], witnesses: survivors.slice(0, 16).map(({ kind, fn, args }) => ({ kind, fn, args })) };
   };
   const unionPlan = (capability, contract, principal, excludeRun) => {
     if (capability.exports.length < 2) return null;
@@ -143,9 +158,9 @@ export async function openLibrary({ journal: path = null, cells = 1, deadlineMs 
     environmentId,
     retrieve(text, { principal = defaultPrincipal, excludeRun = null } = {}) { return rank(text, principal, excludeRun); },
     qualifications(id) { return entries.get(id)?.qualifications ?? {}; },
-    counterexamples(id) { return [...(examples.get(id)?.values() ?? [])]; },
+    counterexamples(id) { return examplesHere(id); },
     grant(id, grantee, { by = defaultPrincipal } = {}) {
-      const entry = entries.get(id);
+      const entry = entries.get(kept(id));
       if (!entry) throw Error('unknown kernel');
       mayGrant(entry, by);
       const record = { kind: 'library_grant', id, grantee, by };
@@ -153,7 +168,7 @@ export async function openLibrary({ journal: path = null, cells = 1, deadlineMs 
       noteGrant(record);
     },
     ungrant(id, grantee, { by = defaultPrincipal } = {}) {
-      const entry = entries.get(id);
+      const entry = entries.get(kept(id));
       if (!entry) throw Error('unknown kernel');
       mayGrant(entry, by);
       const record = { kind: 'library_ungrant', id, grantee, by };
