@@ -37,7 +37,8 @@ export function collectAtom(job, file, st, id, { waitMs = 600_000 } = {}) {
     }
     ok(git(job.repo, 'commit', '-q', '-m', `${job.id} ${id} i${st.iter} (${lane.engine}:${lane.account})`, ...(job.conductor?.trailer ? ['-m', job.conductor.trailer] : [])), 'commit');
     const sha = ok(git(job.repo, 'rev-parse', 'HEAD'), 'rev-parse');
-    return record(gf, { ok: true, change: true, sha, stray });
+    const added = ok(git(job.repo, 'diff-tree', '--no-commit-id', '--name-only', '--diff-filter=A', '-r', sha), 'diff-tree').split('\n').filter(Boolean);
+    return record(gf, { ok: true, change: true, sha, added, stray });
   }, { waitMs });
 }
 
