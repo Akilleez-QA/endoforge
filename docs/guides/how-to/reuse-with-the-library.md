@@ -20,8 +20,8 @@ const [outcome] = await library.admit([{ ledger: 'first/ledger.sqlite', promotio
 `admit` takes a ledger and its `promotion.json` (the current and `isolate` paths write one next to the ledger). It
 verifies the ledger's hash chain, the promotion, the receipt and the bindings between them, then runs the kernel's own
 tests again under the current gates. An admitted kernel gets a behavioural fingerprint and a key computed from its
-capability (argument and result kinds, units, ranges, precision, code tables, whether it traps) and the numerals in its
-contract. Every admission, reuse, refusal and revocation is appended to the journal, a separate hash chain.
+capability (argument and result kinds, units, ranges, precision, code tables, whether it traps, and the nested layout
+of record, list and text values) and the numerals in its contract. Every admission, reuse, refusal and revocation is appended to the journal, a separate hash chain.
 
 ## 2. Pass it to runNeed
 
@@ -38,7 +38,8 @@ generation.
 A need can only match if its frozen `CONTRACT.md` declares its capability in a fenced `capability` JSON block, so the
 capability's hash is bound at the freeze. Both specification prompts (the `current` path's Codex prompt and the
 `agent` path's stage prompt) ask the model for this block, and the freeze refuses one that is malformed or disagrees
-with the frozen tests or is missing: a contract without the block is not frozen, so it never reaches the library. A
+with the frozen tests or is missing, or that leaves out the layout of a record, list or text value: a contract
+without a valid block is not frozen, so it never reaches the library. A
 need you build yourself and pass to `library.lookup` without the block misses with `no_capability`.
 
 ## Try it

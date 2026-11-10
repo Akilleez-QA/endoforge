@@ -3,10 +3,10 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-CFG |
-| Version | 3.7 |
+| Version | 3.8 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
-| Date | 2026-11-09 |
+| Date | 2026-11-10 |
 | Baseline commit | 63e95c79afb282a7fcae4decd57d2e7ed6cf0d40 |
 | Applies to | endoforge main at baseline commit |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
@@ -430,6 +430,8 @@ manifest is the health check; without it the job tool runs `.local/bin/system-sa
 `schedule.mjs run <atoms.json> --run-dir <dir>` takes `--concurrency` (8, or `ENDOFORGE_CODEX_CONCURRENCY` with the
 Codex backend), `--retries` (1), `--timeout-ms` (900000), `--policy` (`tools/atomizer/policy.json`), `--force` and
 `--no-augment`. Policy limits: at most 64 atoms, `size.work` at most 3, atom timeouts capped at 5400 seconds.
+`verify.mjs`, `fanout.mjs` and `cutover.mjs` take `--policy` with the same default; `fanout.mjs` and `cutover.mjs` pass
+their policy on to `schedule.mjs` and `verify.mjs` (since round 9).
 
 ## Hillclimb campaign defaults
 
@@ -485,3 +487,4 @@ else `python3 -m trace` counts into `$(COVERAGE_DIR)/trace`). Either half fails 
 | 3.5 | 2026-11-09 | round 5 | `ENDOFORGE_ASC` default is now the `tools/asc` pin; `ENDOFORGE_SECOND_HOST` (test-only) added | this commit |
 | 3.6 | 2026-11-09 | round 6 | `ENDOFORGE_WASMTIME` default is now empty (the pinned wheel); `ENDOFORGE_WASMTIME_SHA256` applies only to a CLI; `ENDOFORGE_WORKER_IMAGE` also feeds the `RealDocker` test; `CARGO_HOME` defaults to `~/.cargo` (corrected) | this commit |
 | 3.7 | 2026-11-09 | rounds 7b and 8 | `ENDOFORGE_TOOLCHAIN_NODE` defaults to the running Node's install prefix and a home without `bin/node` is refused (round 7b); Makefile `COVERAGE_SETUP` and `EXPERIMENT_TESTS` and the target `experiments-test`; `make lint` runs the comment check | this commit |
+| 3.8 | 2026-11-10 | round 9 | Atomizer command defaults: `fanout.mjs` and `cutover.mjs` take `--policy` and pass it to `schedule.mjs` and `verify.mjs` | this commit |

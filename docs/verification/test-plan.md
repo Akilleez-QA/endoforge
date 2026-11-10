@@ -3,10 +3,10 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-STP |
-| Version | 1.7 |
+| Version | 1.8 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
-| Date | 2026-11-09 |
+| Date | 2026-11-10 |
 | Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
 | Applies to | endoforge main at baseline commit, plus the trace and release-record tooling added in this re-baseline |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
@@ -193,6 +193,11 @@ Live model runs (experiments) follow each experiment's `PRECOMMIT.md`; they are 
 - Round 8's defects (from a backfill review of merged pull requests) all sat inside requirements whose tests passed:
   no test reached the failing case. The new tests reproduce each reported case; other untested cases of the same kind
   may remain.
+- Tests that need a timeout or a process to appear can fail under heavy host load. Round 9 made the bridge-death test
+  in `core/runtime/test/isolate-pool.test.mjs` wait for the pool's own bridge pid instead of reading the process's
+  children once (it failed in CI on Node 26 under load). `core/runtime/test/gaps4-synth.test.mjs` S1 still fails with
+  "M2 reference sandbox failed or timed out" when several full suites run at once (finding D-14): the reference
+  sandbox has one 30-second wall-clock limit over all its reference calls.
 - The atomizer tests use script workers and fixtures. Round 6's regression (no prompt asked for the capability block)
   passed them all; round 7 added tests that assert on the rendered prompt text and run the compose helper in a real
   sandbox, but a real model run is still not part of the suite.
@@ -220,3 +225,4 @@ See the [verification matrix](verification-matrix.md).
 | 1.5 | 2026-11-09 | round 6 | New skip cases (`RealPinnedWasmtime`, `RealDocker`); TP-6 records the round-6 admission cases; the coverage section and §8 record GAP-EF-015 and GAP-EF-016 | this commit |
 | 1.6 | 2026-11-09 | round 7 | `lint` runs the no-comments check; `gap-tools-test` runs its test; the coverage section records the first CI `coverage` run and a failing-test run (GAP-EF-016 closed); §8 records no open gap, the script-worker limit of the atomizer tests and the first `RealDocker` run | this commit |
 | 1.7 | 2026-11-09 | round 8 | `experiments-test` runs the experiment analysis tests in `make test`; the coverage section and §8 record the automated failing-test coverage check and the backfill-review lesson; the hillclimb compose-mount skip case | this commit |
+| 1.8 | 2026-11-10 | round 9 | §8 records the load-sensitive tests: the bridge-death test's pid-based wait (round 9) and the open `gaps4-synth` reference-sandbox timeout (D-14) | this commit |

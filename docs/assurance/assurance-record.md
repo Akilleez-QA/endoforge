@@ -3,10 +3,10 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SAR |
-| Version | 1.7 |
+| Version | 1.8 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
-| Date | 2026-11-09 |
+| Date | 2026-11-10 |
 | Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
 | Applies to | endoforge main at baseline commit |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
@@ -64,6 +64,14 @@ Findings:
   the corrected behaviour and traced to the new test. Two requirements were added: REQ-ATOM-007 (`verify.mjs --policy`
   and the helper CLIs' usage and refusals, D-10) and REQ-ATOM-008 (the `node` toolchain defaults to the running Node,
   from round 7b). REQ-REPO-003 now covers the new `experiments-test` target. No gap was opened.
+- Round 9 took three items: a flaky test from PR #143's CI (S1) and the round-8 findings D-11 (S2) and D-12 (S3). No
+  requirement was added. REQ-GEN-011 now requires the capability block to declare the layout of every record, list or
+  text value, the prompts to ask for it, and the freeze and G7 to refuse a block without it; REQ-ATOM-006 has the
+  atomizer prompts ask for it; REQ-LIB-001 puts the nested layout in the library key and binding (D-11 closed).
+  REQ-ATOM-007 has `fanout.mjs` and `cutover.mjs` pass their policy to `verify.mjs` (D-12 closed). REQ-ISO-010 names
+  the read-only `LedgerBridge.pid` that the bridge-death test now uses. The layout rule tightens a contract: a block
+  that froze before round 9 without a layout is now refused, and a library entry admitted before round 9 with a
+  structured value is keyed without its layout and is no longer found. No gap was opened.
 - Trace check after the update (`python3 -I tools/check_trace.py`): 95 requirements, 95 traced, 14 gaps, 0 TBD; 97
   discovered test files, 92 traced and 5 supporting; 0 problems. After the round-2 records pass on 2026-11-09: 127
   requirements, 127 traced, 10 gaps; 111 discovered test files, 105 traced and 6 supporting; 0 problems. After the
@@ -77,7 +85,9 @@ Findings:
   test files, 129 traced and 8 supporting (one more: the library-reuse example test); 0 problems. After the round-8
   records pass: 154 requirement IDs (one deleted), 154 traced, 0 gaps; 145 discovered test files, 133 traced and 12
   supporting (four more: the P-64, P-65, P-70 and P-71 analysis tests, which support historical experiment records);
-  0 problems.
+  0 problems. After the round-9 records pass: 154 requirement IDs (one deleted), 154 traced, 0 gaps; 146 discovered
+  test files, 134 traced and 12 supporting (one more traced: `tools/atomizer/test/verify-policy-pass.test.mjs`); 0
+  problems.
 
 ### Design analysis
 
@@ -90,7 +100,7 @@ step harness, is retired to `TODELETE/` with REQ-STEP-001 deleted, because nothi
 decision core this repository does not have. Round 6 gave C-17, the kernel host, its first caller outside its own
 tests: C-26's admission. C-27 and C-30 named the round-6 gaps (GAP-EF-016, GAP-EF-015); round 7 closed both and
 allocated REQ-ATOM-006 to C-22 and REQ-REPO-010 (the no-comments check) to C-27. Round 8 allocated REQ-ATOM-007 and
-REQ-ATOM-008 to C-22.
+REQ-ATOM-008 to C-22. Round 9 allocated nothing new; it changed C-05, C-06, C-07 and C-22 within their requirements.
 
 ### Testing analysis
 
@@ -166,6 +176,25 @@ Findings:
   experiment analysis tests (`experiments-test`). Each atom's conductor check passed on 2026-11-09; none of these files
   is in a recorded STR, and no CI run of round 8 is recorded. Two workers first failed the atomizer compose test
   because `tools/asc/node_modules` was not installed in their worktree; `make loop-setup` installs it.
+- Round 9 added one test file (`tools/atomizer/test/verify-policy-pass.test.mjs`, 5 cases), added seven S2 cases to
+  `core/runtime/test/gaps8-capability-nested.test.mjs` in place of the round-8 case that asserted a block without
+  layout still agrees, added one S2 case to `tools/atomizer/test/commands.test.mjs`, and changed the bridge-death test
+  in `core/runtime/test/isolate-pool.test.mjs`. The fixtures that froze structured blocks without a layout
+  (`core/runtime/test/gaps-gluestate.test.mjs`, `core/runtime/test/gaps2-commit.test.mjs`,
+  `tools/test_gate_structured.mjs`) now carry it. The workers reported their tests failing first against the old code:
+  five of the seven gaps8 S2 cases (the other two pass on both by design: the freeze accepting a full layout and the
+  scalar key pinned to its old value), and the fanout and cutover cases (cutover's `verify.json` recorded the default
+  policy, and both tools accepted a missing policy file). The bridge-death race was not reproduced on demand. Conductor
+  checks: C-CAPLAYOUT passed on 2026-11-10 (the Node coverage suites, 993 of 994 passed and 1 skipped; `make
+  engine-test atomizer-test gate-test`; the comment check). C-VERIFYPOLICY's own `make atomizer-test` failed in one
+  compose-helper case that does not call fanout or cutover; C-CAPLAYOUT's later run of the same target, on a tree
+  holding the S3 change, had 0 failures. C-BRIDGERACE was run only in part: the bridge-death test passed 25 runs in a row, 600 of 600 runs
+  at 24 at once and 1,600 of 1,600 at 64 at once (iteration 1), `make isolate-test` passed on its last run (353 of
+  354 passed, 0 failed) and the comment check passed, but the check's 25 runs pinned to one CPU with `taskset` were
+  refused by the worker sandbox and have not been run. Two earlier `make isolate-test` runs failed in
+  `core/runtime/test/gaps4-synth.test.mjs`, not in the bridge test: once on `exports.reduce.qualified` in the
+  structured-vector synthesis case and once on S1's reference-sandbox timeout (D-14); each passed when run alone. None
+  of these files is in a recorded STR, and no CI run of round 9 is recorded.
 
 ### Source code quality
 
@@ -175,7 +204,7 @@ Findings:
 | Gitleaks 8.30.1 | `gitleaks git --no-banner --redact --log-opts=HEAD .` | 1 `generic-api-key` match in `experiments/P-51-escape-rate/controls.test.mjs:21`: the synthetic kernel key `synthetic/run/k`, a false positive |
 | Privacy lint | `python3 -I tools/check-privacy.py` | 0 failures |
 | JavaScript syntax | `node --check` on every `.mjs`, `.js` and `.cjs` (in `make lint`) | 0 failures at `b71eebf`; a syntax check only, no style or semantic lint |
-| Comment check (REQ-REPO-010) | `python3 -I tools/check_comments.py` (in `make lint`) | 0 comment lines on the round-8 head on 2026-11-09. Round 7 removed the whole comment lines (D-07); round 8 lexes JavaScript, TypeScript and Rust, so it also finds end-of-line and inline comments, and the 20 it found were removed (D-09). In shell files and Makefiles it finds only `#` at the start of a line |
+| Comment check (REQ-REPO-010) | `python3 -I tools/check_comments.py` (in `make lint`) | 0 comment lines on the round-8 head on 2026-11-09 and on the round-9 head on 2026-11-10. Round 7 removed the whole comment lines (D-07); round 8 lexes JavaScript, TypeScript and Rust, so it also finds end-of-line and inline comments, and the 20 it found were removed (D-09). In shell files and Makefiles it finds only `#` at the start of a line |
 
 ### Configuration audit
 
@@ -213,9 +242,11 @@ No issues were filed for these findings; they are reported to the maintainer thr
 | D-08 | S4 | Stale documentation (verification matrix baseline, oracle wording, missing control documents) | `docs/` | Closed in this PR |
 | D-09 | S4 | 20 end-of-line `//` comments remain after code, which `tools/check_comments.py` does not count in JavaScript files (it finds Python end-of-line comments): 15 in `tools/conductor/lib/` (`adopt`, `checks`, `collect`, `daemon`, `handlers`), 5 in `tools/atomizer/` (`bin/backfill.mjs:10`, `bin/speed.mjs:41`, `test/lessons.test.mjs:12`, `test/run.mjs:19` and `:101`) | `tools/conductor/lib/`, `tools/atomizer/` | Closed 2026-11-09 (round 8): `tools/check_comments.py` lexes JavaScript, TypeScript and Rust and finds end-of-line and inline comments (REQ-REPO-010); the 20 were removed |
 | D-10 | S4 | `tools/atomizer/bin/verify.mjs` prints `[--policy file]` in its usage and the README listed it, but the program always loads the `policy.json` next to it and ignores the flag. `ledger-export.mjs` and `repair-noop.mjs` print no usage; a bare `ledger-export.mjs` with no ledger throws `ENOENT` | `tools/atomizer/bin/` | Closed 2026-11-09 (round 8): `verify.mjs` honours `--policy` and records it in `verify.json`; both helpers print usage and refuse bad arguments with exit 2 (REQ-ATOM-007) |
-| D-11 | S4 | G7 and library lookup can still miss nested drift. A capability block that says `kind: record`, `list` or `text` without its fields, items or bounds agrees with any glue layout, and `capabilityRule` and `capabilityProblems` (`core/runtime/x1/generator.mjs`) do not ask for that layout, so for such blocks the round-8 recursive comparison has nothing to compare. Library lookup's `signature` (`core/library/key.mjs`) compares only the top level, so the library could reuse a capability whose nested units differ | `core/runtime/x1/generator.mjs`, `core/library/key.mjs` | Open (round 8) |
-| D-12 | S4 | `fanout.mjs` and `cutover.mjs` call `verify.mjs` without `--policy`, so a run scheduled with another policy is verified against the default `policy.json` | `tools/atomizer/bin/fanout.mjs`, `tools/atomizer/bin/cutover.mjs` | Open (round 8) |
+| D-11 | S4 | G7 and library lookup can still miss nested drift. A capability block that says `kind: record`, `list` or `text` without its fields, items or bounds agrees with any glue layout, and `capabilityRule` and `capabilityProblems` (`core/runtime/x1/generator.mjs`) do not ask for that layout, so for such blocks the round-8 recursive comparison has nothing to compare. Library lookup's `signature` (`core/library/key.mjs`) compares only the top level, so the library could reuse a capability whose nested units differ | `core/runtime/x1/generator.mjs`, `core/library/key.mjs` | Closed 2026-11-10 (round 9): a record, list or text value must declare its layout in the block; every prompt that asks for the block asks for it; the freeze and G7 refuse a block without it (REQ-GEN-011, REQ-ATOM-006); the library key and binding include the nested layout (REQ-LIB-001) |
+| D-12 | S4 | `fanout.mjs` and `cutover.mjs` call `verify.mjs` without `--policy`, so a run scheduled with another policy is verified against the default `policy.json` | `tools/atomizer/bin/fanout.mjs`, `tools/atomizer/bin/cutover.mjs` | Closed 2026-11-10 (round 9): both take `--policy`, pass it to `schedule.mjs` and `verify.mjs`, record it, and refuse an unreadable one with exit 2 (REQ-ATOM-007). Cutover's planning steps still read the default policy |
 | D-13 | S4 | `docs/releases/VDD-main-20261108.md` says "CI has no secret-scanning job", which was false when it was generated (the CI job `secret-scan` existed). The generator now reads the workflows (REQ-REPO-008); the record is generated and is not edited by hand | `docs/releases/VDD-main-20261108.md` | Open (round 8): corrected at the next generated release record |
+| D-14 | S4 | `core/runtime/test/gaps4-synth.test.mjs` S1 fails with "M2 reference sandbox failed or timed out" after about 30 s when several full suites run at once (load average 40 to 60). Run alone it passed in 2.8 to 16 s, and it still passed with twice `nproc` CPU spinners running, so plain CPU load does not reproduce it. `runReferences` runs every reference call in one child process under a single 30-second wall-clock `execFile` timeout | `core/runtime/x1/synth/sandbox.mjs` (`runReferences`), `core/runtime/test/gaps4-synth.test.mjs` | Open (round 9) |
+| D-15 | S4 | Conductor: a coordinator patch that sets an atom to `relaunch` after the job's phase is `done` is ignored, because `conduct` returns as soon as it reads phase `done` and no handler runs | `tools/conductor/lib/daemon.mjs` (`conduct`) | Open (round 9) |
 
 ### Overall assessment
 
@@ -223,7 +254,9 @@ Every requirement traces to tests that exist, and every discovered test file tra
 No behaviour is registered as untested: GAP-EF-015 (the gate CLI's freeze) and GAP-EF-016 (the coverage target and CI
 job), opened in round 6, were closed in round 7, after the other fourteen. Since round 8 an automated test
 (`tests/test_coverage_fails.py`) shows a failing test failing `make coverage`, which GAP-EF-016's closure had rested on
-inspection for. Round 8 fixed the backfill review's findings and closed D-09 and D-10; D-11 to D-13 are open.
+inspection for. Round 8 fixed the backfill review's findings and closed D-09 and D-10. Round 9 closed D-11 and D-12;
+D-13, D-14 (a load-dependent timeout in the reference sandbox) and D-15 (a conductor patch ignored after `done`) are
+open.
 The real second-host case and the sandboxed-worker cases skip where their host prerequisites are missing, including in CI for the second host. Assurance is author-side only; no independent review has been performed.
 
 ## Change history
@@ -238,3 +271,4 @@ The real second-host case and the sandboxed-worker cases skip where their host p
 | 1.5 | 2026-11-09 | round 6 | Round-6 trace counts; GAP-EF-015 and GAP-EF-016 opened; the round-6 test files and the defects they exposed; the unrun `RealDocker` cases; C-17 gains a caller | this commit |
 | 1.6 | 2026-11-09 | round 7 | Round-7 trace counts; GAP-EF-015 and GAP-EF-016 closed (no gap open); the round-6 atomizer regression; the `RealDocker` cases and the `coverage` job ran in CI; D-07 closed; D-09 and D-10 opened | this commit |
 | 1.7 | 2026-11-09 | round 8 | Round-8 trace counts (no gap open); the backfill review in the peer review summary; the round-8 defects and test files; the comment check finds end-of-line comments; D-09 and D-10 closed; D-11 (shallow capability blocks, top-level library signature), D-12 (`verify.mjs` not given the run's policy) and D-13 (the 2026-11-08 VDD's secret-scan sentence) opened | this commit |
+| 1.8 | 2026-11-10 | round 9 | Round-9 trace counts (no gap open); the round-9 requirement changes and test files, with the conductor checks that ran only in part; D-11 and D-12 closed; D-14 (the `gaps4-synth` reference-sandbox timeout under load) and D-15 (a conductor `relaunch` patch ignored after `done`) opened | this commit |

@@ -124,6 +124,10 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 - Requirements REQ-ATOM-007 (`verify.mjs --policy` and the helper CLIs' refusals) and REQ-ATOM-008 (the `node`
   toolchain from the running Node); nine requirements changed for the round-8 fixes. D-09 and D-10 closed; D-11 to
   D-13 opened in the assurance record.
+- `fanout.mjs` and `cutover.mjs` take `--policy <file>` and record the policy's `path` and `sha256` as `policy`
+  (fanout in `fanout.json` and `pool.start`, cutover in `cutover.start`). `LedgerBridge` has a read-only `pid`.
+- Round 9 changed REQ-GEN-011, REQ-ATOM-006, REQ-LIB-001, REQ-ATOM-007 and REQ-ISO-010, closed D-11 and D-12, and
+  opened D-14 and D-15 in the assurance record.
 
 - `examples/first-loop.mjs` and `examples/show-gates.py`: the README and getting-started example (a scripted model
   promotes an addition kernel and refuses a subtracting one), tested by `core/runtime/test/loop-example.test.mjs`.
@@ -286,6 +290,28 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
   which this repository does not have. `make harness-test` now runs `tools/step_harness/test_retired.py`.
 
 ### Fixed
+
+Round 9 fixes a flaky test from PR #143's CI and the round-8 findings D-11 and D-12. Each fix has a test; five of the seven
+capability-layout cases and the policy cases failed first against the old code.
+
+- The bridge-death test in `core/runtime/test/isolate-pool.test.mjs` read the test process's children once, right
+  after `pool.run()`, and expected exactly one `python3`. The pool spawns its ledger bridge only after its shared
+  modules are ready, so under load there could be none yet (CI on Node 26: 0 found, 1 expected), and a `python3` it
+  found might not be the pool's bridge, so the test could kill the wrong process. It now waits for `pool.ledger.pid`,
+  checks that the test process is that pid's parent, kills exactly that pid, and checks that the bridge was not
+  respawned.
+- A capability block could declare a result or argument of kind `record`, `list` or `text` without its layout, and it
+  then agreed with any glue (D-11); the prompts did not ask for the layout, and the library key compared only the top
+  level, so a need could reuse an entry whose nested units differ. The freeze and G7 now refuse a record, list or text
+  value, at any depth, without its layout (record `fields` with kinds, units and codes; list `items` and `max`; text
+  `maxBytes`). Every prompt that asks for the block asks for the layout, and glue prompts ask for the same layout in
+  `glue.json`. The library key and binding include the nested layout; record fields compare by name, and a capability
+  with only scalar values keeps its old key. A contract with a structured block and no layout no longer freezes, and a
+  library entry admitted earlier with a structured value is keyed without its layout and is no longer found.
+- `fanout.mjs` and `cutover.mjs` called `verify.mjs` without `--policy`, so a run scheduled with another policy was
+  verified against the default `policy.json` (D-12). Both now take `--policy`, pass it to `schedule.mjs` and
+  `verify.mjs`, and refuse a missing, unreadable or non-object policy with exit 2 before running anything. Cutover's
+  planning steps still read the default policy.
 
 Round 8 fixes the findings of the 2026-11-09 backfill review, a local Codex review of about 60 merged pull requests
 that had no completed review, plus D-09 and D-10 from the round-7 records. Each fix has a test that failed first.

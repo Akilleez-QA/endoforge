@@ -35,7 +35,7 @@ Most events also carry:
 | `plan.start` | `bin/plan-template.mjs` | `planId`, `model`, `effort`, `promptSha256`, `promptBytes`. |
 | `plan.attempt` | `bin/plan-template.mjs` | `planId`, `attempt`, `wallMs`, `ok`, `error`, `cli` (durationMs, apiMs, usage). |
 | `plan.end` | `bin/plan-template.mjs` | `planId`, `ok`, `wallMs`; on failure `error`; on success `errors`, `exports`, `modules`, `atoms`, `plan`, `usage`. |
-| `pool.start` | `bin/fanout.mjs`, `bin/backfill.mjs` | `outDir`, `requests` (need ids), `parallelRuns`, `perRunConcurrency`. |
+| `pool.start` | `bin/fanout.mjs`, `bin/backfill.mjs` | `outDir`, `requests` (need ids), `parallelRuns`, `perRunConcurrency`; from `fanout.mjs` also `policy` (`path`, `sha256`). |
 | `pool.end` | `bin/fanout.mjs`, `bin/backfill.mjs` | `wallMs`, `sumAtomWallMs`, `pooledSpeedup`, `promotable`, `verified`, `tokens`, `perRequest` (need, wallMs, allDone, promotable, verifyExit, realizedSpeedup). |
 | `run.start` | `bin/schedule.mjs`, `bin/backfill.mjs` | `runDir`, `concurrency`, `retries`, `timeoutMs`, `atomsSha256`, `atoms` (count), `augmented`, `normalizedCompose`, `plan` (waves, total, critical, criticalPath, speedupBound, width), `atomSpecs` (id, kind, model, tools, effort, size, inputs, outputs). |
 | `atom.start` | `bin/schedule.mjs`, `bin/backfill.mjs` | `atom`, `kind`, `model`, `readyAtMs`, `startAtMs`, `queueMs`, `running`; backfilled lines add `readyDerived`. |
@@ -47,7 +47,7 @@ Most events also carry:
 | `verify.end` | `bin/verify.mjs`, `bin/backfill.mjs` | `ok`, `fails`, `acceptance` (id, kind, ok, exit), `gates` (promotable, byGate, testsPassed, testsTotal), `reviews`. |
 | `run.archived` | `bin/verify.mjs`, `bin/backfill.mjs` | The archive record: `path` (repository-relative), `bytes`, `sha256`, `files`, `format`. |
 | `archive.refused` | `bin/verify.mjs`, `bin/backfill.mjs` | `refused`, the reason no archive was written (a credential-like string, or the archiver failed). |
-| `cutover.start` | `bin/cutover.mjs` | `experimentId`, `ladder`, `cases`, `rep`, `parallelCases`, `dagConcurrency`. |
+| `cutover.start` | `bin/cutover.mjs` | `experimentId`, `ladder`, `cases`, `rep`, `parallelCases`, `dagConcurrency`, `policy` (`path`, `sha256`). |
 | `cutover.case` | `bin/cutover.mjs` | The case record also written to that case's `case.json`. |
 | `cutover.end` | `bin/cutover.mjs` | `experimentId`, `rep`, `cases` (count). |
 

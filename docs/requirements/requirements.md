@@ -3,10 +3,10 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SRS |
-| Version | 2.8 |
+| Version | 2.9 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
-| Date | 2026-11-09 |
+| Date | 2026-11-10 |
 | Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
 | Applies to | endoforge main at baseline commit |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
@@ -186,13 +186,13 @@ The evaluator shall refuse invalid frozen policies and duplicate candidate ident
 
 ### REQ-LIB-001 — Kernel library reuse
 
-The library shall key promoted kernels by a canonical contract key that ignores labels and names, admit a kernel only after a gate that refuses an evaluator unable to discriminate WebAssembly mutants, serve, refuse, revoke and requalify entries across restarts, and let the pipeline reuse a kernel on a pass and generate on a miss.
+The library shall key promoted kernels by a canonical contract key that ignores labels and names, admit a kernel only after a gate that refuses an evaluator unable to discriminate WebAssembly mutants, serve, refuse, revoke and requalify entries across restarts, and let the pipeline reuse a kernel on a pass and generate on a miss, with the key and the export binding including the nested layout of record, list and text values (record fields matched by name, each with its kind, unit, range, precision, rounding, codes and labels; list `items` and `max`; text `maxBytes`), so a need whose nested layout differs from an entry's misses and field order does not count, while a capability with only scalar values keeps the key it had before the layout was keyed.
 
-- Rationale: A need that a promoted kernel already satisfies should skip implementation.
+- Rationale: A need that a promoted kernel already satisfies should skip implementation. Until round 9 the key compared each argument and result at the top level only, so the library could reuse a capability whose nested units differ (finding D-11).
 - Derivation: `core/library/library.mjs`, `core/library/key.mjs`, `core/library/discriminate.mjs`, `core/library/mutants.mjs`, `tools/library_verify_promotion.py`
 - Allocated to: SDD §4 C-05 Library
-- Verification: T — `make library-test`
-- Status: Baselined
+- Verification: T — `make library-test`; the nested-layout key and binding cases run in `make isolate-test`
+- Status: Baselined (changed in round 9, S2: the key and binding include the nested layout). An entry admitted before round 9 with a record, list or text value keeps the key it was journaled with, which left out the layout, so a need with the same capability now misses it with `no_contract_match`; the entry is not refused
 
 ### REQ-LIB-002 — Library composition
 
@@ -368,13 +368,13 @@ Only supervisor configuration shall authorize supplying an omitted WASM maximum,
 
 ### REQ-ISO-010 — Persistent batched ledger bridge
 
-The pool shall write receipts through one persistent ledger bridge that batches concurrent requests per ledger path in a single transaction with per-request savepoints, replies only after commit, verifies the full hash chain on every read, invalidates cached rows on any mismatch, and fails closed without respawn when the bridge exits.
+The pool shall write receipts through one persistent ledger bridge that batches concurrent requests per ledger path in a single transaction with per-request savepoints, replies only after commit, verifies the full hash chain on every read, invalidates cached rows on any mismatch, and fails closed without respawn when the bridge exits, with `LedgerBridge` exposing the bridge process's pid read-only as `pid` (`undefined` until the process is spawned, and still the dead process's pid after the bridge fails closed).
 
 - Rationale: Remove per-request process spawn and full re-validation as the throughput limit without weakening chain verification.
 - Derivation: `core/runtime/isolate-ledger.mjs`
 - Allocated to: SDD §4 C-06 Isolate pool
 - Verification: T — `make isolate-test`
-- Status: Baselined
+- Status: Baselined (changed in round 9, S1: the bridge-death test waits for the pool's own bridge through `pool.ledger.pid`, checks that its parent is the test process and kills exactly that pid. Before, it read the test process's children once, right after `pool.run()`, and expected one `python3`: the bridge might not have started yet (seen in CI on Node 26 under load), and a `python3` child it found might not be the pool's bridge)
 
 ### REQ-ISO-011 — Stack size
 
@@ -790,13 +790,13 @@ After the freeze, `generate` shall re-read `tests.json` and `frozen.sha256` from
 
 ### REQ-GEN-011 — Capability block required at the freeze and checked at G7
 
-Generation shall ask in both specification prompts for a fenced ```capability block in `CONTRACT.md` (exports with ordered arguments, kinds, units, ranges, number precision, code tables and traps), refuse at the freeze on the `current`, `isolate` and `agent` paths a contract with no block or with a block that is malformed or disagrees with the frozen tests (the agent path returns the refusal to the model as specification problems and never freezes), fail G7 when `glue.json` disagrees with the frozen block on exports, argument kinds, units, ranges and codes, result kind, unit, precision, rounding, codes and labels, or traps (`capabilityAgreement`, comparing units and ranges as library lookup does, and going down through structured values: record fields matched by name with missing and extra fields reported, list `items` and `max`, text `maxBytes`, and at every level the same kind, unit, range, precision, rounding, codes and labels as at the top), and let library lookup serve a generated need whose block matches a promoted kernel without an implementation stage on the `current` and `agent` paths.
+Generation shall ask in both specification prompts for a fenced ```capability block in `CONTRACT.md` (exports with ordered arguments, kinds, units, ranges, number precision, code tables and traps, and for every record, list or text value, at every depth, its layout: a record's `fields`, a nonempty list of uniquely named fields, each with its kind, a unit when integer, number or code, and codes when code; a list's `items`, the layout of one item, and `max`, 1 to 4096; a text value's `maxBytes`, 1 to 65536), ask in both implementation prompts for `glue.json` to declare the same nested layout, refuse at the freeze on the `current`, `isolate` and `agent` paths a contract with no block or with a block that is malformed, leaves out a structured value's layout, or disagrees with the frozen tests (the agent path returns the refusal to the model as specification problems and never freezes), fail G7 when the frozen block leaves out a structured value's layout (`the capability block does not declare the layout: ...`, whatever the glue declares) or when `glue.json` disagrees with the frozen block on exports, argument kinds, units, ranges and codes, result kind, unit, precision, rounding, codes and labels, or traps (`capabilityAgreement`, comparing units and ranges as library lookup does, and going down through structured values: record fields matched by name with missing and extra fields reported, list `items` and `max`, text `maxBytes`, and at every level the same kind, unit, range, precision, rounding, codes and labels as at the top), and let library lookup serve a generated need whose block matches a promoted kernel without an implementation stage on the `current` and `agent` paths.
 
 - Rationale: The library keys entries by the capability that `core/library/key.mjs` `capabilityFromContract` reads from this block. A block-less contract could freeze until round 6 and then always missed with `no_capability`; glue that disagrees with the block would describe a different capability from the one the library keys.
 - Derivation: `core/runtime/x1/generator.mjs`, `core/runtime/x1/agent.mjs`, `core/runtime/x1/contract.mjs`, `core/runtime/x1/gates.mjs`, `core/library/key.mjs`
 - Allocated to: SDD §4 C-07 X1 candidate loop
 - Verification: T — `make isolate-test`
-- Status: Baselined (round 5; changed in round 6, M1: the block is required on every path and G7 checks the glue against it; changed in round 8, R4: G7 compares nested structure, where it compared only the top level, so a nested Celsius result relabelled Fahrenheit in `glue.json` passed). Since round 7 the stand-alone `tools/gate/gate.mjs freeze` runs the same check (REQ-GATECLI-001), and every atomizer path that writes `CONTRACT.md` asks for the block (REQ-ATOM-006). A block that names a structured kind without declaring its fields, items or bounds still agrees with glue that declares them, and `capabilityRule` does not ask for that layout, so for such a block nested drift is not caught (finding D-11)
+- Status: Baselined (round 5; changed in round 6, M1: the block is required on every path and G7 checks the glue against it; changed in round 8, R4: G7 compares nested structure, where it compared only the top level, so a nested Celsius result relabelled Fahrenheit in `glue.json` passed). Since round 7 the stand-alone `tools/gate/gate.mjs freeze` runs the same check (REQ-GATECLI-001), and every atomizer path that writes `CONTRACT.md` asks for the block (REQ-ATOM-006). Changed in round 9, S2: a record, list or text value must declare its layout in the block, every prompt that asks for the block asks for it, and the freeze and G7 refuse a block without it. Until then such a block agreed with any glue layout, so nested drift went uncaught (finding D-11, closed)
 
 ### REQ-PROMOTE-001 — Local promotion
 
@@ -1236,23 +1236,23 @@ The atomizer commands `atomize`, `direct`, `fanout`, `report` and `cutover` shal
 
 ### REQ-ATOM-006 — Capability block on every atomizer contract path
 
-Every atomizer path that writes `CONTRACT.md` shall ask for the ```capability block in the candidate loop's own wording (`capabilityRule`): the planning prompt of `atomize.mjs`, the `contract` kind procedure in `policy.json`, the contract atom of `plan-template.mjs` and the `direct` procedure (before its freeze), with the glue procedure and the templated glue atom reading the contract to match the block and every prompt naming the gates G1 to G9; `compose-kernel.mjs` refuses with exit 3, before freezing or compiling, a contract atom's `CONTRACT.md` with no block or a block that is not JSON; and the compose atom's toolchain carries the gate's own modules and the pinned compiler, so the compose helper freezes and gates to a promotable kernel inside the atom sandbox.
+Every atomizer path that writes `CONTRACT.md` shall ask for the ```capability block in the candidate loop's own wording (`capabilityRule`, which asks for the layout of every record, list or text value): the planning prompt of `atomize.mjs`, the `contract` kind procedure in `policy.json`, the contract atom of `plan-template.mjs` and the `direct` procedure (before its freeze), with the glue procedure, the `direct` procedure and the templated glue atom asking for the same nested layout in `glue.json`, the glue procedure and the templated glue atom reading the contract to match the block, the `direct` atom's contract and the templated contract atom naming the layout, and every prompt naming the gates G1 to G9; `compose-kernel.mjs` refuses with exit 3, before freezing or compiling, a contract atom's `CONTRACT.md` with no block or a block that is not JSON; and the compose atom's toolchain carries the gate's own modules and the pinned compiler, so the compose helper freezes and gates to a promotable kernel inside the atom sandbox.
 
 - Rationale: Round 6 made the block required at the freeze, but no atomizer prompt asked for it and the compose sandbox could not load the gate's modules, so every real atomizer run failed at the freeze or at G7. The tests use script workers, so they did not show it (round 7, N1).
 - Derivation: `tools/atomizer/bin/atomize.mjs`, `tools/atomizer/bin/plan-template.mjs`, `tools/atomizer/bin/direct.mjs`, `tools/atomizer/bin/compose-kernel.mjs`, `tools/atomizer/policy.json`, `tools/atomizer/lib/workers.mjs`, `tools/atomizer/lib/augment.mjs`
 - Allocated to: SDD §4 C-22 Atomizer
 - Verification: T — `make atomizer-test` (rendered prompts asserted as text; the compose helper runs in a real `bwrap` sandbox)
-- Status: Baselined (round 7)
+- Status: Baselined (round 7; changed in round 9, S2: the prompts ask for the nested layout of records, lists and text)
 
 ### REQ-ATOM-007 — Atomizer verify policy and helper usage
 
-`tools/atomizer/bin/verify.mjs` shall load the policy named by `--policy` (default the `policy.json` next to the tool) and take from it the `node` toolchain its acceptance checks run with, taking its options and the run directory in any order, refuse with exit 2 and its usage, before checking anything, a missing, unreadable or non-object policy, a missing or second run directory, a run directory without `atoms.json` and an unknown option, record the policy's path and SHA-256 as `policy` in `receipt/verify.json`, and print its usage with exit 0 for `--help`; `ledger-export.mjs` and `repair-noop.mjs` print their usage with exit 0 for `--help` and refuse with exit 2, a message and no stack trace, missing or bad arguments (no ledger events file, `--out` without a value, an unknown argument, a missing `--failures` or `--map`, a `--map` that is not a JSON list of `from`/`to` paths), while `repair-noop.mjs` keeps exit 10 for a failing or unreadable `failures.json`.
+`tools/atomizer/bin/verify.mjs` shall load the policy named by `--policy` (default the `policy.json` next to the tool) and take from it the `node` toolchain its acceptance checks run with, taking its options and the run directory in any order, refuse with exit 2 and its usage, before checking anything, a missing, unreadable or non-object policy, a missing or second run directory, a run directory without `atoms.json` and an unknown option, record the policy's path and SHA-256 as `policy` in `receipt/verify.json`, and print its usage with exit 0 for `--help`; `ledger-export.mjs` and `repair-noop.mjs` print their usage with exit 0 for `--help` and refuse with exit 2, a message and no stack trace, missing or bad arguments (no ledger events file, `--out` without a value, an unknown argument, a missing `--failures` or `--map`, a `--map` that is not a JSON list of `from`/`to` paths), while `repair-noop.mjs` keeps exit 10 for a failing or unreadable `failures.json`; `fanout.mjs` and `cutover.mjs` take `--policy <file>` (default the same `policy.json`), refuse with exit 2 before running anything a missing, unreadable or non-object policy or a `--policy` with no file after it, pass that file to `schedule.mjs` and `verify.mjs`, and record its path and SHA-256 as `policy`: `fanout.mjs` in `fanout.json` and the `pool.start` event, `cutover.mjs` in the `cutover.start` event.
 
 - Rationale: Until round 8 `verify.mjs` printed `--policy` in its usage but always loaded the default policy, `ledger-export.mjs` and `repair-noop.mjs` printed no usage, and a bare `ledger-export.mjs` with no ledger threw `ENOENT` (finding D-10, backfill review R13).
-- Derivation: `tools/atomizer/bin/verify.mjs`, `tools/atomizer/bin/ledger-export.mjs`, `tools/atomizer/bin/repair-noop.mjs`
+- Derivation: `tools/atomizer/bin/verify.mjs`, `tools/atomizer/bin/ledger-export.mjs`, `tools/atomizer/bin/repair-noop.mjs`, `tools/atomizer/bin/fanout.mjs`, `tools/atomizer/bin/cutover.mjs`
 - Allocated to: SDD §4 C-22 Atomizer
 - Verification: T — `make atomizer-test`
-- Status: Baselined (round 8). `fanout.mjs` and `cutover.mjs` call `verify.mjs` without `--policy`, so a run scheduled with another policy is verified against the default one (finding D-12)
+- Status: Baselined (round 8; changed in round 9, S3: `fanout.mjs` and `cutover.mjs` pass the policy they ran with to `schedule.mjs` and `verify.mjs`, where they called `verify.mjs` without `--policy` and so verified against the default one; finding D-12, closed). Cutover's planning steps (`atomize.mjs`, `plan-template.mjs`, `direct.mjs`) take no `--policy`, so the atomized and templated arms still plan under the default `policy.json`
 
 ### REQ-ATOM-008 — Node toolchain from the running Node
 
@@ -1689,3 +1689,4 @@ Closed gaps (their IDs are not reused):
 | 2.6 | 2026-11-09 | round 6 | 3 requirements added: synchronous host calls (REQ-ISO-019), declared effects, durable denials and task conformance in the kernel host (REQ-KERNEL-005), the shared lock, headroom and exit-file modules (REQ-ERR-002); REQ-GEN-011 changed (block required at the freeze on every path, G7 checks glue against it); REQ-COMPAT-001 (host-buffer calls), REQ-RUST-001 (admission of any conforming crate through the kernel host, two tasks), REQ-FACTORY-003 (local turns without agent tools, pinned Wasmtime wheel, real-Docker cases), REQ-HILL-002 (stage policy to a campaign's own runner) extended; REQ-SYNTH-008 now tested on the `current` path; REQ-LIB-003 rationale corrected; GAP-EF-015 and GAP-EF-016 opened | this commit |
 | 2.7 | 2026-11-09 | round 7 | 2 requirements added: capability block on every atomizer contract path (REQ-ATOM-006) and no code comments (REQ-REPO-010); REQ-GATECLI-001 changed (`freeze` checks the capability block); REQ-REPO-009 (a failing test fails `make coverage`; the CI job ran), REQ-GEN-011 and REQ-FACTORY-003 (the `RealDocker` cases ran in CI) updated; REQ-LIFE-001 and REQ-LIFE-004 rationales give the state graph and evidence fields; GAP-EF-015 and GAP-EF-016 closed, so no gap is open | this commit |
 | 2.8 | 2026-11-09 | round 8 | 2 requirements added: `verify.mjs --policy` and the helper CLIs' usage and refusals (REQ-ATOM-007, D-10 closed) and the `node` toolchain from the running Node (REQ-ATOM-008, round 7b); changed from the 2026-11-09 backfill review: REQ-LIB-005 (exact text fingerprints, grants kept on reclaim), REQ-LIB-006 (refusals per environment), REQ-GEN-011 (G7 compares nested structure), REQ-KERNEL-005 (deep-copied declaration, non-finite JSON numbers refused), REQ-HILL-002 (compose atoms mount what `hillclimb.mjs` imports), REQ-REPO-003 (`experiments-test`), REQ-REPO-008 (secret-scan statement from the workflows), REQ-REPO-009 (automated failing-test coverage check) and REQ-REPO-010 (end-of-line and inline comments, D-09 closed); no gap open | this commit |
+| 2.9 | 2026-11-10 | round 9 | Changed: REQ-GEN-011 (a record, list or text value must declare its layout in the capability block; the prompts ask for it; the freeze and G7 refuse a block without it), REQ-ATOM-006 (the atomizer prompts ask for the nested layout), REQ-LIB-001 (the library key and binding include the nested layout; D-11 closed), REQ-ATOM-007 (`fanout.mjs` and `cutover.mjs` pass their policy to `verify.mjs`; D-12 closed) and REQ-ISO-010 (`LedgerBridge.pid`; the bridge-death test kills the pool's own bridge); no gap open | this commit |

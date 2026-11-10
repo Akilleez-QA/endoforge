@@ -52,8 +52,8 @@ ranges, precision, codes and labels, and which exports trap.
 A need declares its capability in a fenced `capability` JSON block inside its frozen `CONTRACT.md`, so the hash of the
 declaration is bound at the freeze. Both specification prompts ask for that block (`capabilityRule` in
 [generator.mjs](../../core/runtime/x1/generator.mjs)), and the freeze refuses a block that is not JSON, uses an unknown
-kind, leaves out a unit or a number result's precision, or disagrees with the frozen tests on exports, argument counts
-or traps. Since round 6 the freeze also refuses a contract with no block on every loop path, so a need the loop
+kind, leaves out a unit, a number result's precision or the layout of a record, list or text value (since round 9),
+or disagrees with the frozen tests on exports, argument counts or traps. Since round 6 the freeze also refuses a contract with no block on every loop path, so a need the loop
 generates always reaches lookup with one. A need handed to the library directly without a block misses with
 `no_capability` under the default `retrieval: 'key'`.
 
@@ -67,7 +67,12 @@ nearest entries.
 The key (`keysOf`, mode `contract` by default) hashes, per export and by position, without export or argument names:
 argument kind, unit, parsed range and its openness, code tables; result kind, unit, precision, declared rounding, code
 tables, labels; whether the export traps; and the set of numerals in the contract outside headings and the capability
-block. The need's prose is not part of the key. The `interface` mode drops the numerals, and `prose` uses the whole
+block. Since round 9 it also hashes the nested layout of record, list and text values: record fields sorted by name,
+each with its kind, unit, range, precision, rounding, codes and labels and its own layout; a list's `items` and `max`;
+a text value's `maxBytes`. Field order does not count, and a capability with only scalar values keeps the key it had
+before. An entry admitted before round 9 with a structured value keeps the key it was journaled with, so a need with
+the same capability misses it with `no_contract_match`. The export binding (`binding`) and the union's per-export
+signature use the same description. The need's prose is not part of the key. The `interface` mode drops the numerals, and `prose` uses the whole
 normalized text.
 
 `lookup` returns a miss, with a reason, unless exactly one behaviour is held under the key:
@@ -234,6 +239,7 @@ reclaimed entry applies to the entry it was reclaimed into.
 | A near-miss that differs in | Caught by |
 |---|---|
 | A declared unit, precision, rounding mode, range bound or its openness | The key |
+| The same inside a record, list or text value, or a field, list bound or text bound | The key (since round 9) |
 | A constant written as a numeral in the contract | The key |
 | Sign, or any behaviour the need's tests see | The tests in the cell |
 | A variant the tests can't see | The discrimination check, when a mutant or wrapper reaches it |
@@ -243,8 +249,6 @@ It does not see:
 - an English-only difference that changes no numeral and no declared field ("round down", "exclusive");
 - a wrong unit or label that the gates accept: G7 and G9 refuse some mislabels, not all, so an admitted entry can carry
   a unit it doesn't compute and match a need that declares it;
-- a difference inside a record, list or text value: the key compares each argument and result at the top level only,
-  so two capabilities whose nested fields carry different units share a key (finding D-11);
 - unit spellings outside its small alias table (`F` and `C` are read as temperatures);
 - a fault the mutant set and grid don't reach, including one visible only on NaN or infinity.
 
