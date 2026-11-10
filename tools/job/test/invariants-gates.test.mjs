@@ -208,3 +208,45 @@ test('I16: job.mjs stage refuses a trace gate before running any check', () => {
   assert.match(r.stdout, /REFUSED decide I16: conductor\.gate/);
   assert.equal(proofs.baseline, undefined);
 });
+
+test('I16: the conductor\'s effective checks and its slice command are inspected, not only the criterion fallback', () => {
+  const dir = path.join(tmp, 'i16-effective'); fs.mkdirSync(dir);
+  const job = fixtureJob(dir, dir, { runs: { 'C-T': 'node --test a.test.mjs' } });
+  job.conductor = {
+    slice: { command: 'make sums && python3 -I tools/check_trace.py' },
+    checks: [
+      { id: 'K-TRACE', atoms: ['A'], run: 'python3 -I tools/check_trace.py' },
+      { id: 'K-MEASURE', measure: ['python3', '-B', 'tests/test_trace_rows.py'], target: 0 },
+      { id: 'K-OK', run: 'node --test a.test.mjs' },
+    ],
+  };
+  const e = errs(decide(job), 'I16');
+  assert.equal(e.length, 3, JSON.stringify(e));
+  assert.ok(e.some((x) => /conductor\.slice\.command/.test(x.msg) && /check_trace/.test(x.msg)));
+  assert.ok(e.some((x) => /conductor check K-TRACE/.test(x.msg) && /atom A/.test(x.msg) && /check_trace/.test(x.msg)));
+  assert.ok(e.some((x) => /conductor check K-MEASURE/.test(x.msg) && /test_trace_rows/.test(x.msg)));
+  for (const x of e) assert.match(x.msg, /records are written after freeze/);
+  const ok = fixtureJob(dir, dir, { runs: { 'C-T': 'node --test a.test.mjs' } });
+  ok.conductor = { slice: { command: ['make', 'sums'] }, checks: [{ id: 'K-OK', run: 'node --test a.test.mjs' }] };
+  assert.deepEqual(errs(decide(ok), 'I16'), []);
+});
+
+test('I17: calibrateBase expands the conductor\'s placeholders, with ${repo} the baseline worktree', () => {
+  const repo = makeRepo('i17-vars', { 'ok.mjs': 'process.exit(0)\n' });
+  const dir = path.join(tmp, 'i17-vars-job'); fs.mkdirSync(dir);
+  const job = fixtureJob(dir, repo, { runs: {
+    'C-REPO': 'node "${repo}/ok.mjs"',
+    'C-VARS': 'test "${atom}" = A && test "${files}" = src && test -d "${input}" && touch "${out}" && test -n "${rubric}" && test ! -e "${rubric}"',
+    'C-WT': 'test "${repo}" = "$(pwd)"',
+  } });
+  const b = calibrateBase(job);
+  const s = Object.fromEntries(Object.entries(b.checks).map(([id, r]) => [id, r.status]));
+  assert.deepEqual(s, { 'C-REPO': 'passed', 'C-VARS': 'passed', 'C-WT': 'passed' }, JSON.stringify(b.checks));
+  assert.equal(b.checks['C-REPO'].run, 'node "${repo}/ok.mjs"');
+});
+
+test('I17: job.mjs stage stages a job whose check names ${repo}', () => {
+  const { r, proofs } = stage('stage-vars', { 'C-REPO': 'node "${repo}/ok.mjs"' });
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.equal(proofs.baseline.checks['C-REPO'].status, 'passed');
+});

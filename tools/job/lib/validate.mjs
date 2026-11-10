@@ -23,7 +23,8 @@ export function manifestPaths(job) {
   return out;
 }
 
-export const RECORDS_CHECK = /check[_-]trace\w*|test_\w*trace\w*/;
+const sameRun = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+export const RECORDS_CHECK =/check[_-]trace\w*|test_\w*trace\w*/;
 const MAKE = /^(g?make|\$\(MAKE\)|\$\{MAKE\})$/;
 const WITH_ARG = new Set(['-C', '-f', '-I', '-o', '-W', '--directory', '--file', '--makefile']);
 
@@ -223,7 +224,8 @@ const RULES = {
     if (missing.length) E('I9', `no smoke receipt for ${missing.join(', ')} (one atom per engine before the wide launch)`);
     if (smoke && Object.values(smoke.engines ?? {}).some(Boolean) && !smoke.receipt) E('I12', 'the smoke proof claims a pass without a receipt path');
     const after = 'records are written after freeze by the coordinator\'s records pass, so a records check run before then fails every atom; run it in the records pass instead';
-    const gates = [['conductor.gate', job.conductor?.gate], ...atoms.map((a) => [`atom ${a.id}'s gate`, a.gate])];
+    const effective = (job.conductor?.checks ?? []).flatMap((k) => [k.run, k.measure].filter((r) => r != null).map((r) => [`conductor check ${k.id ?? '?'}${k.atoms?.length ? ` (a check of atom ${k.atoms.join(', atom ')})` : ''}`, r]));
+    const gates = [['conductor.gate', job.conductor?.gate], ['conductor.slice.command', job.conductor?.slice?.command], ...effective, ...atoms.map((a) => [`atom ${a.id}'s gate`, a.gate])];
     for (const [where, g] of gates) { const hit = g && recordsCheck(g, x.make); if (hit) E('I16', `${where} runs a records check (${hit}); ${after}`); }
     for (const c of criteria) {
       const hit = c.check?.run && recordsCheck(c.check.run, x.make);
@@ -234,9 +236,9 @@ const RULES = {
     for (const c of criteria) {
       if (c.check?.kind === 'human' || !c.check?.run) continue;
       const b = job.proofs?.baseline?.checks?.[c.id];
-      if (b && b.run === c.check.run && b.status === 'broken') E('I17', `criterion ${c.id}: its check is broken on the base tree (${b.why}); fix the command (guard a file an atom will create with test -f) and stage again`);
+      if (b && sameRun(b.run, c.check.run) && b.status === 'broken') E('I17', `criterion ${c.id}: its check is broken on the base tree (${b.why}); fix the command (guard a file an atom will create with test -f) and stage again`);
       else if (x.requireBaseline && !b) E('I17', `criterion ${c.id}: its check has not been calibrated on the base tree (job.mjs stage runs each check once in a throwaway worktree)`);
-      else if (x.requireBaseline && b.run !== c.check.run) E('I17', `criterion ${c.id}: its check changed since it was calibrated on the base tree; stage again`);
+      else if (x.requireBaseline && !sameRun(b.run, c.check.run)) E('I17', `criterion ${c.id}: its check changed since it was calibrated on the base tree; stage again`);
     }
     if (!job.proofs?.lessons?.retrieved) E('I14', 'open lessons from earlier jobs of this kind have not been retrieved into the card (job.mjs card)');
     if (!x.confirmation) E('I1', 'the job card has not been confirmed by the user (job.mjs card, then job.mjs confirm)');
@@ -286,7 +288,7 @@ export function validate(job, { gate = 'orchestrate', offline = false, volatile 
   if (upto >= gateIndex('decide')) for (const c of criteria) {
     if (c.check?.kind === 'human' || !c.check?.run) continue;
     const b = job.proofs?.baseline?.checks?.[c.id];
-    if (!b || b.run !== c.check.run) { if (!requireBaseline) warnings.push({ gate: 'decide', inv: 'I17', msg: `criterion ${c.id}: its check ${b ? 'changed since it was' : 'has not been'} calibrated on the base tree (job.mjs stage)` }); }
+    if (!b || !sameRun(b.run, c.check.run)) { if (!requireBaseline) warnings.push({ gate: 'decide', inv: 'I17', msg: `criterion ${c.id}: its check ${b ? 'changed since it was' : 'has not been'} calibrated on the base tree (job.mjs stage)` }); }
     else if (b.status === 'passed') warnings.push({ gate: 'decide', inv: 'I17', msg: `criterion ${c.id}: its check passes on the base tree before any change; make sure it can fail on the work it measures` });
   }
   for (const g of job.gates ?? []) if (g.criticalPath) warnings.push({ gate: 'decide', inv: 'I11', msg: `gate ${g.id} sits on the critical path; run it beside the loop if it can` });

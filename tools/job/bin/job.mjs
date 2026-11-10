@@ -65,6 +65,11 @@ export function calibrate(job, only = null) {
   return res;
 }
 
+export function expandCheck(cmd, vars) {
+  const sub = (x) => Object.entries(vars).reduce((s, [k, v]) => s.replaceAll(`\${${k}}`, v), String(x));
+  return Array.isArray(cmd) ? cmd.map(sub) : ['sh', '-c', sub(cmd)];
+}
+
 export function calibrateBase(job, { timeoutMs = (job.stage?.checkTimeoutSec ?? 1800) * 1000, log = () => {} } = {}) {
   const sh = (cwd, ...args) => {
     const r = spawnSync('git', ['-C', cwd, ...args], { encoding: 'utf8' });
@@ -74,7 +79,7 @@ export function calibrateBase(job, { timeoutMs = (job.stage?.checkTimeoutSec ?? 
   const base = sh(job.repo, 'rev-parse', job.stage?.base ?? 'HEAD');
   const wt = path.join(fs.mkdtempSync(path.join(os.tmpdir(), 'job-baseline-')), 'tree');
   const links = (job.conductor?.links ?? []).filter((l) => l.path && l.target);
-  const checks = {};
+  const checks = {}, scratch = path.join(path.dirname(wt), 'slices');
   sh(job.repo, 'worktree', 'add', '-q', '--detach', wt, base);
   try {
     for (const c of job.criteria ?? []) {
@@ -82,8 +87,13 @@ export function calibrateBase(job, { timeoutMs = (job.stage?.checkTimeoutSec ?? 
       sh(wt, 'reset', '-q', '--hard', base);
       sh(wt, 'clean', '-fdq', ...links.flatMap((l) => ['-e', `/${l.path}`]));
       for (const l of links) if (!fs.existsSync(path.join(wt, l.path))) fs.symlinkSync(l.target, path.join(wt, l.path));
+      const atom = (job.atoms ?? []).find((a) => (a.checks ?? []).includes(c.id));
+      const input = path.join(scratch, atom?.id ?? '_', c.id);
+      fs.rmSync(input, { recursive: true, force: true }); fs.mkdirSync(input, { recursive: true });
+      const vars = { atom: atom?.id ?? '', input, out: path.join(input, `${c.id}.json`), repo: wt, files: (atom?.files ?? []).join(' '), rubric: path.join(input, `rubric-${c.id}.json`) };
+      const argv = expandCheck(c.check.run, vars);
       const t0 = Date.now();
-      const r = spawnSync('sh', ['-c', c.check.run], { cwd: wt, encoding: 'utf8', timeout: timeoutMs, killSignal: 'SIGKILL', maxBuffer: 64 * 1024 * 1024 });
+      const r = spawnSync(argv[0], argv.slice(1), { cwd: wt, encoding: 'utf8', timeout: timeoutMs, killSignal: 'SIGKILL', maxBuffer: 64 * 1024 * 1024 });
       const ms = Date.now() - t0;
       const res = classifyBaseline({ status: r.status, signal: r.signal, output: `${r.stdout ?? ''}\n${r.stderr ?? ''}\n${r.error?.code === 'ETIMEDOUT' ? '' : r.error?.message ?? ''}`, timedOut: r.error?.code === 'ETIMEDOUT', ms });
       checks[c.id] = { run: c.check.run, ...res, ms };
