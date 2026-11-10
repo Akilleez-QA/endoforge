@@ -48,12 +48,12 @@ export function adopt(o) {
   const state = initState(job);
   for (const id of ids) {
     const l = loop[id], a = L.atoms[id];
-    if (!l) continue;                                              // extra atoms start pending
+    if (!l) continue;
     const v = { round: l.round, atom: id.toLowerCase(), ATOM: id, lanes: o.lanesDir, logs: o.logsDir };
     Object.assign(state.atoms[id], { status: STATUS[l.status] ?? 'failed', iter: l.iter, history: l.history ?? [], adoptedFrom: { round: l.round, status: l.status } });
     if (l.status !== 'running') continue;
     const collected = fromTemplate(map.layout.collected, v);
-    if (collected && fs.existsSync(collected)) { Object.assign(state.atoms[id], { status: 'checking', sha: null }); continue; }   // the old tool already collected it
+    if (collected && fs.existsSync(collected)) { Object.assign(state.atoms[id], { status: 'checking', sha: null }); continue; }
     state.atoms[id].lane = { unit: fromTemplate(map.layout.unit, v), worktree: fromTemplate(map.layout.worktree, v), base: fromTemplate(map.layout.base, v),
       engine: a.engine, account: a.account ?? 'default', prompt: fromTemplate(map.layout.prompt, v), log: fromTemplate(map.layout.log, v), adopted: true };
   }

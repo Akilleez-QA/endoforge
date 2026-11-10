@@ -13,13 +13,13 @@ export function escalate(job, file, { to, key, atom = null, why, packet = null }
     if (atom && to === 'coordinator' && s.atoms[atom]) s.atoms[atom].status = 'needs-coordinator';
   });
   if (!fresh) return false;
-  const packetFile = to === 'coordinator' ? writePacket(job, file, { key, atom, why, packet }) : null;   // the model's compact context
+  const packetFile = to === 'coordinator' ? writePacket(job, file, { key, atom, why, packet }) : null;
   emit(job, file, { kind: to === 'coordinator' ? 'NEEDS-COORDINATOR' : 'NEEDS-YOU', summary: `${atom ? `${atom}: ` : ''}${why}`, detail: packetFile ? `Packet: ${packetFile}` : '', data: { key, atom, packet: packetFile ?? packet } });
   return fresh;
 }
 
 export const BASE_HANDLERS = {
-  staged: () => null,                                          // waits for `go` (the user's go on the staged card)
+  staged: () => null,
   gates: (ctx) => (allSettled(ctx.state) ? { advance: true, why: 'every atom frozen or locked' } : null),
   locks: (ctx) => {
     const need = (ctx.job.conductor?.locks ?? []).filter((a) => ctx.state.atoms[a]?.status !== 'locked');
@@ -31,7 +31,7 @@ export const BASE_HANDLERS = {
 
 export async function conduct(file, { load, handlers = {}, tickMs = 5000, maxTicks = Infinity, wait = sleep } = {}) {
   const table = { ...BASE_HANDLERS, ...handlers };
-  for (let tick = 0; tick < maxTicks;) {                       // a tick is a wait; advancing a phase costs none
+  for (let tick = 0; tick < maxTicks;) {
     const job = load(file);
     if (!fs.existsSync(stateFile(job, file))) updateState(job, file, () => {});
     let s = loadState(job, file);
@@ -50,7 +50,7 @@ export async function conduct(file, { load, handlers = {}, tickMs = 5000, maxTic
         if (r?.advance) {
           s = updateState(job, file, (st) => transition(st, job, nextPhase(st.phase, job), r.why));
           if (s.phase === 'done') { emit(job, file, { kind: 'DONE', summary: `${job.title ?? job.id} done`, data: { atoms: s.atoms } }); return s; }
-          continue;                                            // run the next phase at once
+          continue;
         }
       }
     }

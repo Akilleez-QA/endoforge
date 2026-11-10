@@ -69,17 +69,17 @@ export async function checkAtom(ctx, id) {
     const r = await runOnce(k, vars, wait);
     if (r.unscored) return { id: k.id, unscored: r.unscored };
     const it = items(r.findings, k.itemPass);
-    if ((k.noiseRuns ?? 1) > 1) {                                   // U5: the check's own run-to-run noise
+    if ((k.noiseRuns ?? 1) > 1) {
       const r2 = await runOnce(k, { ...vars, out: path.join(out, `${k.id}.2.json`) }, wait);
       if (!r2.unscored && (r2.pass !== r.pass || !same(items(r2.findings, k.itemPass), it))) return { id: k.id, unstable: 'two runs on the same slice disagree' };
     }
-    if (Object.keys(it).length) {                                   // U5: freeze the item list on first use
+    if (Object.keys(it).length) {
       const frozen = readRubric(rubric);
       if (frozen?.unreadable) return { id: k.id, unstable: `its frozen item list ${rubric} is unreadable (${frozen.unreadable}); restore or remove it` };
       if (!frozen) writeJSONAtomic(rubric, { check: k.id, items: Object.keys(it).sort(), frozenAt: new Date().toISOString() });
       else if (JSON.stringify(frozen.items) !== JSON.stringify(Object.keys(it).sort())) return { id: k.id, unstable: `its item list changed (${frozen.items.join(', ')} → ${Object.keys(it).sort().join(', ')}); it must re-score the frozen items in ${rubric}` };
     }
-    const before = st.items?.[k.id] ?? {};                          // U6: the keep-list
+    const before = st.items?.[k.id] ?? {};
     const regressed = Object.keys(before).filter((n) => before[n] && it[n] === false), improved = Object.keys(it).filter((n) => it[n] && !before[n]);
     return { id: k.id, pass: r.pass, fix: r.fix, findings: r.findings ?? [], items: it, regressed, improved, ...(r.value != null ? { value: r.value } : {}) };
   }));

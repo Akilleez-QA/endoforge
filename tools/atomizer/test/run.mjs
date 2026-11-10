@@ -16,7 +16,7 @@ check('receipt lessons unit tests', lessonsT.status === 0, (lessonsT.stdout + le
 check('routing unit tests', !routing.error && routing.status === 0, routing.error?.message ?? (routing.stdout + routing.stderr).trim());
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'atomizer-test-'));
 process.env.ATOMIZER_LEDGER_DIR = path.join(tmp, 'ledger');
-process.env.ENDOFORGE_CLAUDE_ACCOUNTS = path.join(tmp, 'no-claude-accts');  // hermetic: never mount the host's real logins
+process.env.ENDOFORGE_CLAUDE_ACCOUNTS = path.join(tmp, 'no-claude-accts');
 const repoRoot = path.resolve(HERE, '../../..');
 const savedCodex = process.env.ENDOFORGE_TOOLCHAIN_CODEX;
 const restoreCodex = () => {
@@ -98,7 +98,7 @@ check('compose receipt lists 8 inputs and a hashed output', rec.inputs.length ==
 }
 {
   const { makeHomeTemplate, runIsolated } = await import('../lib/isolate.mjs');
-  const root = fs.mkdtempSync(path.join(HERE, 'claude-accts-'));  // outside /tmp: the isolate overlays /tmp
+  const root = fs.mkdtempSync(path.join(HERE, 'claude-accts-'));
   const saved = process.env.ENDOFORGE_CLAUDE_ACCOUNTS;
   try {
     for (const n of ['a', 'b']) {

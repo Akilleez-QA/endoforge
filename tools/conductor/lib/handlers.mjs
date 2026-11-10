@@ -18,7 +18,7 @@ const imagesFor = (job, id) => { const a = job.atoms.find((x) => x.id === id); r
 function launchPending(ctx) {
   const { job, file } = ctx, started = [];
   const plan = ctx.update((s) => assignLogins(job, s));
-  if (plan.awaitingGo) return started;                         // the card changed: nothing launches before the user's new go
+  if (plan.awaitingGo) return started;
   const ids = Object.entries(plan.atoms).filter(([, st]) => ['pending', 'relaunch'].includes(st.status)).map(([id]) => id).slice(0, slotsFree(job, plan));
   for (const id of ids) {
     const cur = ctx.update(() => {});
@@ -35,7 +35,7 @@ export async function settleAtom(ctx, id, checkAtom = sliceCheck) {
   const { job, file } = ctx, st = ctx.update(() => {}).atoms[id], exit = laneExit(st);
   if (exit !== 0) return relaunchOrEscalate(ctx, id, exit === LOST ? `the worker ended with no recorded exit code; see ${st.lane.log}` : `the worker exited ${exit}; see ${st.lane.log}`, { stage: 'worker', exit });
   const g = collectAtom(job, file, st, id);
-  if (!st.lane.adopted) spawnSync('git', ['-C', job.repo, 'worktree', 'remove', '--force', st.lane.worktree], { stdio: 'ignore' });   // collected: the lane's copy goes (adopted lanes are left as they were)
+  if (!st.lane.adopted) spawnSync('git', ['-C', job.repo, 'worktree', 'remove', '--force', st.lane.worktree], { stdio: 'ignore' });
   if (g.status === 'reverted') return relaunchOrEscalate(ctx, id, gateFeedback(g), { stage: g.stage, error: g.error });
   ctx.update((s) => { s.atoms[id].status = 'checking'; s.atoms[id].sha = g.sha ?? null; });
   return judge(ctx, id, checkAtom);
@@ -74,7 +74,7 @@ function relaunchOrEscalate(ctx, id, feedback, evidence) {
   const sig = evidence.failing ?? `${evidence.stage}:${String(evidence.error ?? evidence.exit ?? '').split('\n').filter(Boolean).at(-1) ?? ''}`;
   const s = ctx.update((st) => { const a = st.atoms[id]; const prev = a.history.filter((h) => !h.pass).at(-1);
     a.history.push({ iter: a.iter, pass: false, ...evidence, signature: sig }); a.feedback = feedback; a.last = String(feedback).split('\n')[0].slice(0, 160);
-    a.repeated = Boolean(prev && prev.signature === sig && sig);       // U1: the same failure twice is a decision, not a retry
+    a.repeated = Boolean(prev && prev.signature === sig && sig);
     a.status = a.repeated || a.iter - (a.iterBase ?? 0) >= st.budget.maxIterations ? 'needs-coordinator' : 'relaunch'; });
   const a = s.atoms[id];
   if (a.status === 'needs-coordinator')
@@ -96,7 +96,7 @@ export const handlers = {
     if (v.ok) return { advance: true, why: 'every gate to Orchestrate passed' };
     const blocking = v.errors.filter((e) => !(e.inv === 'I8' && /health refuses/.test(e.msg)));
     if (blocking.length) escalate(ctx.job, ctx.file, { to: 'coordinator', key: `gates:${blocking.map((e) => e.inv).join(',')}`, why: `the job does not pass its gates: ${blocking.map((e) => `${e.gate} ${e.inv}: ${e.msg}`).join('; ')}`, packet: { errors: blocking } });
-    return null;                                                 // machine health is transient: wait
+    return null;
   },
   smoke: (ctx) => {
     const sm = ctx.job.proofs?.smoke;
