@@ -48,7 +48,9 @@ export async function conduct(file, { load, handlers = {}, tickMs = 5000, maxTic
       else {
         const r = await h({ job, file, state: s, update: (fn) => updateState(job, file, fn) });
         if (r?.advance) {
-          s = updateState(job, file, (st) => transition(st, job, nextPhase(st.phase, job), r.why));
+          const ran = s.phase;
+          s = updateState(job, file, (st) => (st.phase === ran ? transition(st, job, nextPhase(st.phase, job), r.why) : st));
+          if (s.phase !== nextPhase(ran, job)) continue;
           if (s.phase === 'done') { emit(job, file, { kind: 'DONE', summary: `${job.title ?? job.id} done`, data: { atoms: s.atoms } }); return s; }
           continue;
         }
