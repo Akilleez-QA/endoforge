@@ -320,5 +320,8 @@ See [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
 
 ## License
 
-GNU General Public License v3.0 only (GPL-3.0-only). Copyright © 2026 Refrigeration.AI, which also offers commercial
-licenses for products or services under different terms. Contact craig@nh3.biz.
+GNU General Public License v3.0 only (GPL-3.0-only). Copyright © 2026 Refrigeration.AI. See [LICENSE](LICENSE) and [NOTICE.md](NOTICE.md).
+
+## Commercial licensing
+
+If you want to use it to create a product or service under different terms, commercial licenses are available from Refrigeration.AI. Contact craig@nh3.biz.
