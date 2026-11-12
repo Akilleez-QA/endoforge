@@ -304,6 +304,11 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Fixed
 
+- CI's "Install test dependencies" step (jobs `test` and `coverage`) retries `apt-get update` and `apt-get install`
+  up to five times, waiting 10, 20, 40 and 80 s between attempts. In CI run 43043833441 on `main`, name resolution
+  for the Ubuntu archives failed for about four and a half minutes (`Temporary failure resolving`), longer than
+  apt's own retries within one run, and `test (22)`, `test (26)` and `coverage` all failed before any test ran.
+
 - Job staging expands the conductor's check placeholders (`${repo}` and the input and output paths) before calibrating a check, so valid checks are no longer classed as broken; I16 inspects the checks the conductor will actually run (`conductor.checks` and the slice command), not only the criterion commands (Codex review of PR #144).
 - The comment check's lexer treats postfix `++`/`--` as ending an expression, so `n++ / d` is division rather than an unterminated regular expression (Codex review of PR #144).
 

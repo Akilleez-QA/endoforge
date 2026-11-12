@@ -55,7 +55,20 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - name: Install test dependencies
-        run: sudo apt-get update && sudo apt-get install -y age bubblewrap gcc
+        shell: bash
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if sudo apt-get update && sudo apt-get install -y age bubblewrap gcc; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 5 ]; then
+              delay=$((10 * 2 ** (attempt - 1)))
+              echo "::warning::apt-get attempt $attempt of 5 failed; retrying in ${delay} s"
+              sleep "$delay"
+            fi
+          done
+          echo "::error::apt-get failed after 5 attempts"
+          exit 1
       - name: Install kernel test tools
         run: make tools
       - name: Repository tests
@@ -75,7 +88,20 @@ jobs:
         with:
           node-version: "22"
       - name: Install test dependencies
-        run: sudo apt-get update && sudo apt-get install -y age bubblewrap gcc
+        shell: bash
+        run: |
+          for attempt in 1 2 3 4 5; do
+            if sudo apt-get update && sudo apt-get install -y age bubblewrap gcc; then
+              exit 0
+            fi
+            if [ "$attempt" -lt 5 ]; then
+              delay=$((10 * 2 ** (attempt - 1)))
+              echo "::warning::apt-get attempt $attempt of 5 failed; retrying in ${delay} s"
+              sleep "$delay"
+            fi
+          done
+          echo "::error::apt-get failed after 5 attempts"
+          exit 1
       - name: Install kernel test tools
         run: make tools
       - name: Install coverage.py
