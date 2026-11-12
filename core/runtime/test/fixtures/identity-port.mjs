@@ -8,12 +8,18 @@ export const signature = { version: 1, name: 'identity',
   inputs: [{ path: 'x', type: 'number', unit: '1', domain: [0, 10] }],
   output: { type: 'number', unit: '1' } };
 
-export async function createPort({ barrier, participants, release } = {}) {
+export async function createPort({ barrier, participants, release, abort } = {}) {
   if (barrier) {
     await writeFile(join(barrier, `${process.pid}-${threadId}`), 'ready');
-    while ((await readdir(barrier)).length < participants) await setTimeout(10);
+    while ((await readdir(barrier)).length < participants) {
+      if (abort && existsSync(abort)) throw new Error('fixture wait aborted');
+      await setTimeout(10);
+    }
   }
-  while (release && !existsSync(release)) await setTimeout(10);
+  while (release && !existsSync(release)) {
+    if (abort && existsSync(abort)) throw new Error('fixture wait aborted');
+    await setTimeout(10);
+  }
   return {
     describe(candidate) {
       if (candidate === 'heap') {
