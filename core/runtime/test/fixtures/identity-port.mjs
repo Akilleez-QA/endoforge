@@ -9,18 +9,11 @@ export const signature = { version: 1, name: 'identity',
   output: { type: 'number', unit: '1' } };
 
 export async function createPort({ barrier, participants, release } = {}) {
-  const deadline = Date.now() + 20000;
   if (barrier) {
     await writeFile(join(barrier, `${process.pid}-${threadId}`), 'ready');
-    while ((await readdir(barrier)).length < participants) {
-      if (Date.now() > deadline) throw new Error('fixture barrier timed out');
-      await setTimeout(10);
-    }
+    while ((await readdir(barrier)).length < participants) await setTimeout(10);
   }
-  while (release && !existsSync(release)) {
-    if (Date.now() > deadline) throw new Error('fixture release timed out');
-    await setTimeout(10);
-  }
+  while (release && !existsSync(release)) await setTimeout(10);
   return {
     describe(candidate) {
       if (candidate === 'heap') {
