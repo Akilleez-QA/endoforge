@@ -304,6 +304,12 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Fixed
 
+- The ledger writer's journal lost a `retire_syncs` count when two segment retirements overlapped: each background
+  thread read the old count before its sync and wrote back old + its own, so one thread's syncs were overwritten.
+  The count is now added under a lock after the sync. `WriterTests.test_rotation_retires_the_full_segment` failed
+  this way on `main` (`1 not greater than or equal to 2`); `test_overlapping_retirements_count_every_sync` forces
+  the overlap and fails on the old code.
+
 - Job staging expands the conductor's check placeholders (`${repo}` and the input and output paths) before calibrating a check, so valid checks are no longer classed as broken; I16 inspects the checks the conductor will actually run (`conductor.checks` and the slice command), not only the criterion commands (Codex review of PR #144).
 - The comment check's lexer treats postfix `++`/`--` as ending an expression, so `n++ / d` is division rather than an unterminated regular expression (Codex review of PR #144).
 

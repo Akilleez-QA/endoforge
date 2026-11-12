@@ -4,11 +4,13 @@ import os
 from pathlib import Path
 import sqlite3
 import tempfile
+import threading
 import types
 import unittest
 from unittest import mock
 
 from core.ledger.ledger import Ledger
+from tools import ledger_writer
 from tools.ledger_writer import HEADER, Journal, JournalCorrupt, Writer
 
 
@@ -247,6 +249,25 @@ class WriterTests(unittest.TestCase):
         self.assertGreaterEqual(writer.journal.counts["retire_syncs"], 2)
         writer.close()
         self.assertEqual(list(self.journal_dir.glob("*.journal")), [])
+
+    def test_overlapping_retirements_count_every_sync(self):
+        writer, output = self.writer()
+        writer.journal.segment_bytes = 1
+        both = threading.Barrier(2)
+        durable = ledger_writer.make_durable
+
+        def overlapping(paths):
+            both.wait(timeout=10)
+            return durable(paths)
+
+        with mock.patch.object(ledger_writer, "make_durable", overlapping):
+            writer.batch([line(1, "admit", self.ledger("a"), need="a")])
+            writer.batch([line(2, "admit", self.ledger("b"), need="b")])
+            for thread in writer.journal.retiring:
+                thread.join()
+        expected = sum(durable([str(self.ledger(name))]) for name in ("a", "b"))
+        self.assertEqual(writer.journal.counts["retire_syncs"], expected)
+        writer.close()
 
     def test_new_ledgers_are_in_wal_mode(self):
         writer, output = self.writer()
