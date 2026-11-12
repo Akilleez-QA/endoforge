@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
@@ -9,12 +9,15 @@ import { fixture, hostPort, python } from './ledger-fixture.mjs';
 
 export async function poolBreach(t, isolation, breach, size = 8) {
   let pool, abort;
-  t.after(async () => {
+  const stop = async () => {
     if (!pool) return;
-    writeFileSync(abort, 'abort');
+    if (existsSync(directory)) writeFileSync(abort, 'abort');
     await pool.close();
-  });
+    pool = null;
+  };
+  t.after(stop);
   const { reference, job, directory } = await fixture(t);
+  t.after(stop);
   abort = join(directory, 'abort');
   const barrier = join(directory, 'barrier'), release = join(directory, 'release');
   mkdirSync(barrier);
