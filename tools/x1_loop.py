@@ -91,11 +91,18 @@ def sealed(decision):
 
 
 def store_decision(decision, path):
-    with Path(path).open("x") as output:
-        json.dump(decision, output, sort_keys=True)
-        output.flush()
-        os.fsync(output.fileno())
-    directory = os.open(Path(path).parent, os.O_RDONLY)
+    path = Path(path)
+    staging = path.with_name(f".{path.name}.{os.getpid()}-{os.urandom(4).hex()}.tmp")
+    fd = os.open(staging, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o666)
+    try:
+        with os.fdopen(fd, "w") as output:
+            json.dump(decision, output, sort_keys=True)
+            output.flush()
+            os.fsync(output.fileno())
+        os.link(staging, path)
+    finally:
+        os.unlink(staging)
+    directory = os.open(path.parent, os.O_RDONLY)
     try:
         os.fsync(directory)
     finally:
