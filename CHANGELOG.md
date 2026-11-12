@@ -304,6 +304,11 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
 
 ### Fixed
 
+- The ledger writer's journal lost a `retire_syncs` count when two segment retirements overlapped: each background
+  thread read the old count before its sync and wrote back old + its own, so one thread's syncs were overwritten.
+  The count is now added under a lock after the sync. `WriterTests.test_rotation_retires_the_full_segment` failed
+  this way on `main` (`1 not greater than or equal to 2`); `test_overlapping_retirements_count_every_sync` forces
+  the overlap and fails on the old code.
 - A SIGKILL of the ledger bridge while it wrote a decision file (`promotion.json`, `compatibility-promotion.json`)
   left an empty or partial file, which readers such as `library.admit` and the loop-crash test could not parse
   (`Unexpected end of JSON input` in `loop-crash.test.mjs`, CI run 42786354789). `store_decision` now writes and

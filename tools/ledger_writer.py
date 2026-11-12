@@ -188,6 +188,7 @@ class Journal:
                            journal_bytes=0, segments_recovered=0, frames_replayed=0, ledgers_replayed=0,
                            torn_tails=0, conflicts=0, ledgers_missing=0)
         self.retiring = []
+        self.retire_lock = threading.Lock()
         self.serial = 0
         lock = os.open(self.directory / ".recover", os.O_RDWR | os.O_CREAT, 0o600)
         try:
@@ -320,7 +321,9 @@ class Journal:
             self.retiring.append(thread)
 
     def retire(self, fd, path, touched):
-        self.counts["retire_syncs"] += make_durable(list(touched))
+        syncs = make_durable(list(touched))
+        with self.retire_lock:
+            self.counts["retire_syncs"] += syncs
         os.unlink(path)
         os.close(fd)
 
