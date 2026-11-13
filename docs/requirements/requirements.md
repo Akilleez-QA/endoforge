@@ -3,10 +3,10 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SRS |
-| Version | 2.10 |
+| Version | 2.11 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
-| Date | 2026-11-10 |
+| Date | 2026-11-12 |
 | Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
 | Applies to | endoforge main at baseline commit |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
@@ -610,7 +610,7 @@ The loop commit shall refuse a forged receipt, a receipt that does not bind the 
 
 ### REQ-LOOP-003 — Crashes never promote
 
-SIGKILL of the cell, the supervisor or the ledger bridge at any stage shall never yield a promotion without its evidence: the attempt is lost, records are either absent or complete, and the task can resume from the ledger.
+SIGKILL of the cell, the supervisor or the ledger bridge at any stage shall never yield a promotion without its evidence: the attempt is lost, records and decision files are either absent or complete, and the task can resume from the ledger.
 
 - Rationale: Crash safety is part of the acceptance contract.
 - Derivation: `core/runtime/x1/loop.mjs`, `tools/x1_loop.py`, `tools/ledger_writer.py`
@@ -1731,3 +1731,4 @@ Closed gaps (their IDs are not reused):
 | 2.8 | 2026-11-09 | round 8 | 2 requirements added: `verify.mjs --policy` and the helper CLIs' usage and refusals (REQ-ATOM-007, D-10 closed) and the `node` toolchain from the running Node (REQ-ATOM-008, round 7b); changed from the 2026-11-09 backfill review: REQ-LIB-005 (exact text fingerprints, grants kept on reclaim), REQ-LIB-006 (refusals per environment), REQ-GEN-011 (G7 compares nested structure), REQ-KERNEL-005 (deep-copied declaration, non-finite JSON numbers refused), REQ-HILL-002 (compose atoms mount what `hillclimb.mjs` imports), REQ-REPO-003 (`experiments-test`), REQ-REPO-008 (secret-scan statement from the workflows), REQ-REPO-009 (automated failing-test coverage check) and REQ-REPO-010 (end-of-line and inline comments, D-09 closed); no gap open | this commit |
 | 2.9 | 2026-11-10 | round 9 | Changed: REQ-GEN-011 (a record, list or text value must declare its layout in the capability block; the prompts ask for it; the freeze and G7 refuse a block without it), REQ-ATOM-006 (the atomizer prompts ask for the nested layout), REQ-LIB-001 (the library key and binding include the nested layout; D-11 closed), REQ-ATOM-007 (`fanout.mjs` and `cutover.mjs` pass their policy to `verify.mjs`; D-12 closed) and REQ-ISO-010 (`LedgerBridge.pid`; the bridge-death test kills the pool's own bridge); no gap open | this commit |
 | 2.10 | 2026-11-10 | round 10 | 4 requirements added: the reference sandbox deadline and its distinct errors (REQ-SYNTH-009, D-14 closed), a relaunch patch reopens a finished job (REQ-COND-005, D-15 closed), the `TRACE-NEEDED` event (REQ-COND-006) and invariants I16 and I17 (REQ-JOB-004); changed: REQ-ATOM-007 (cutover's planning steps take, use and record `--policy`; D-16 closed) and REQ-LIB-002 (union members match on nested layout and bind by export name when they share a signature); no gap open | this commit |
+| 2.11 | 2026-11-12 | flake fix | Changed: REQ-LOOP-003 (a decision file is either absent or complete after a bridge kill; it is published under its final name only once written and synced) | this PR |

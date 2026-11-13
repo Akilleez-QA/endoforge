@@ -1,15 +1,14 @@
 import hashlib
 import json
 import math
-import os
 import re
 import sqlite3
 import sys
 from contextlib import closing
-from pathlib import Path
 
 from core.ledger.frozen import frozen_record
 from core.ledger.ledger import Ledger, encode
+from tools.x1_loop import store_decision
 
 POLICY = "COMPAT-TS-CHECK-RUN2-TESTS/v1"
 LANE = "compatibility"
@@ -29,18 +28,6 @@ def sha256(text):
 def sealed(decision):
     decision["sha256"] = sha256(json.dumps(decision, sort_keys=True, separators=(",", ":")))
     return decision
-
-
-def store_decision(decision, path):
-    with Path(path).open("x") as output:
-        json.dump(decision, output, sort_keys=True)
-        output.flush()
-        os.fsync(output.fileno())
-    directory = os.open(Path(path).parent, os.O_RDONLY)
-    try:
-        os.fsync(directory)
-    finally:
-        os.close(directory)
 
 
 def frozen_of(records, identity):

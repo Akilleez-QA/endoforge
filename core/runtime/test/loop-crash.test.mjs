@@ -106,7 +106,7 @@ for (const point of ['commit_start', 'after_register', 'after_receipt', 'before_
   });
 }
 
-for (const point of ['after_commit', 'after_decision']) {
+for (const point of ['after_commit', 'mid_decision', 'after_decision']) {
   test(`SIGKILL of the bridge at ${point} returns no promotion over complete durable records`, { timeout: 60000 }, async t => {
     const root = scratch(t), directory = join(root, 'addition');
     const run = await launch({ root, directory }, bridgeEnv(point));
