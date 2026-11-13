@@ -309,6 +309,10 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
   The count is now added under a lock after the sync. `WriterTests.test_rotation_retires_the_full_segment` failed
   this way on `main` (`1 not greater than or equal to 2`); `test_overlapping_retirements_count_every_sync` forces
   the overlap and fails on the old code.
+- CI's "Install test dependencies" step (jobs `test` and `coverage`) retries `apt-get update` and `apt-get install`
+  up to five times, waiting 10, 20, 40 and 80 s between attempts. In CI run 43043833441 on `main`, name resolution
+  for the Ubuntu archives failed for about four and a half minutes (`Temporary failure resolving`), longer than
+  apt's own retries within one run, and `test (22)`, `test (26)` and `coverage` all failed before any test ran.
 
 - Job staging expands the conductor's check placeholders (`${repo}` and the input and output paths) before calibrating a check, so valid checks are no longer classed as broken; I16 inspects the checks the conductor will actually run (`conductor.checks` and the slice command), not only the criterion commands (Codex review of PR #144).
 - The comment check's lexer treats postfix `++`/`--` as ending an expression, so `n++ / d` is division rather than an unterminated regular expression (Codex review of PR #144).
