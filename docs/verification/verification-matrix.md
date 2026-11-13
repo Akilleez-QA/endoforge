@@ -209,6 +209,7 @@ Every other discovered test file is listed here with its classification.
 
 | Test file | Classification and reason |
 |---|---|
+| `tools/test_fold_changelog.py` | Tooling test for the unreleased-fragment fold, run by `make ledger-test` |
 | `experiments/P-19-need-to-candidate/verify.py` | Experiment receipt verification: replays P-19 chain hashes and percentiles (`receipt-test`). Supports the historical P-19 record, not a current requirement |
 | `experiments/P-51-escape-rate/controls.test.mjs` | P-51 synthetic controls, run by hand with a pinned AssemblyScript; excluded from `make test` in `tests/test-reachability.json` |
 | `experiments/P-64-streaming-check/analyze.test.mjs` | P-64 analysis check (`experiments-test`): the corrected streaming tail (overlapping waits counted once) and that `receipt/replay/analysis.json` is regenerated from the raw replay rows. Supports the historical P-64 record and its [amendment](../../experiments/P-64-streaming-check/AMENDMENT.md), not a current requirement |

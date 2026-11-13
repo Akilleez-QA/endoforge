@@ -31,7 +31,7 @@ reports test coverage.
   <slug>`, commit `PRECOMMIT.md` before the run, then add `RESULT.md` and an `INDEX.md` row and run `make index`.
 - Run `make sums` after changing a file listed in `sources/SHA256SUMS`.
 - Update the [configuration reference](docs/configuration/configuration-reference.md) when you add or change a setting,
-  and [CHANGELOG.md](CHANGELOG.md) for notable changes.
+  and add a [changelog fragment](changes/unreleased/README.md) for notable changes. Do not edit CHANGELOG.md in the PR.
 - Keep examples synthetic. Don't commit home-directory paths, account names, credentials or email addresses;
   `make check` runs a privacy lint.
 
