@@ -309,6 +309,10 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
   The count is now added under a lock after the sync. `WriterTests.test_rotation_retires_the_full_segment` failed
   this way on `main` (`1 not greater than or equal to 2`); `test_overlapping_retirements_count_every_sync` forces
   the overlap and fails on the old code.
+- CI's "Install test dependencies" step (jobs `test` and `coverage`) retries `apt-get update` and `apt-get install`
+  up to five times, waiting 10, 20, 40 and 80 s between attempts. In CI run 43043833441 on `main`, name resolution
+  for the Ubuntu archives failed for about four and a half minutes (`Temporary failure resolving`), longer than
+  apt's own retries within one run, and `test (22)`, `test (26)` and `coverage` all failed before any test ran.
 - A SIGKILL of the ledger bridge while it wrote a decision file (`promotion.json`, `compatibility-promotion.json`)
   left an empty or partial file, which readers such as `library.admit` and the loop-crash test could not parse
   (`Unexpected end of JSON input` in `loop-crash.test.mjs`, CI run 42786354789). `store_decision` now writes and
