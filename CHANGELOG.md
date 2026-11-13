@@ -319,6 +319,14 @@ Notable changes are recorded here using [Keep a Changelog](https://keepachangelo
   fsyncs a temporary file in the same directory and links it to the final name, so the decision file is absent or
   complete (REQ-LOOP-003). The compatibility lane uses the same function. A new crash point, `mid_decision`, kills
   the bridge halfway through the write and fails on the old code.
+- `isolate-process.test.mjs` "process heap: one lost cell, zero lost siblings" could report all seven siblings lost
+  (`workcellsLost` 8, expected 1; CI run 42556975516). The identity port fixture gave its barrier and release waits
+  one 20 s deadline from the cell's start, and the test writes the release file only after the breaching cell has
+  died. When the heap breach took longer than that on a loaded runner, every sibling threw `fixture release timed
+  out` and was counted as lost. The waits now have no deadline of their own; the test's after hook writes an abort
+  file before `pool.close()`, so a cell still waiting when the test ends throws `fixture wait aborted` instead of
+  keeping `close()` pending. Delaying the release by 21 s reproduces `8 !== 1` on the old fixture and passes on the
+  new one.
 
 - Job staging expands the conductor's check placeholders (`${repo}` and the input and output paths) before calibrating a check, so valid checks are no longer classed as broken; I16 inspects the checks the conductor will actually run (`conductor.checks` and the slice command), not only the criterion commands (Codex review of PR #144).
 - The comment check's lexer treats postfix `++`/`--` as ending an expression, so `n++ / d` is division rather than an unterminated regular expression (Codex review of PR #144).

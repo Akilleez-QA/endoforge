@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { setTimeout as delay } from 'node:timers/promises';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { IsolatePool } from '../isolate-pool.mjs';
@@ -31,6 +33,34 @@ for (const breach of ['heap', 'wasm_memory']) {
     assert.deepEqual(chain, { receipts: 17, verified: true });
   });
 }
+
+test('process close settles aborted barrier and release waits', { timeout: 60000 }, async t => {
+  let pool, abort;
+  t.after(async () => {
+    if (!pool) return;
+    writeFileSync(abort, 'abort');
+    await pool.close();
+  });
+  const { job, directory } = await fixture(t);
+  const barrier = join(directory, 'barrier'), release = join(directory, 'release');
+  abort = join(directory, 'abort');
+  mkdirSync(barrier);
+  pool = new IsolatePool({ hostPort, isolation: 'process', size: 2 });
+  const settled = [false, false];
+  const jobs = [{ barrier, participants: 3 }, { release }].map((options, i) =>
+    pool.run(job(['pass'], { ...options, abort })).then(result => { settled[i] = true; return result; }));
+  await delay(200);
+  assert.deepEqual(settled, [false, false]);
+  writeFileSync(abort, 'abort');
+  let timer;
+  try {
+    await Promise.race([pool.close(), new Promise((resolve, reject) => {
+      timer = setTimeout(() => reject(new Error('pool.close() hung after fixture wait abort')), 30000);
+    })]);
+  } finally { clearTimeout(timer); }
+  assert.deepEqual(settled, [true, true]);
+  for (const result of await Promise.all(jobs)) assert.equal(result.report, null);
+});
 
 const repository = fileURLToPath(new URL('../../../', import.meta.url));
 
