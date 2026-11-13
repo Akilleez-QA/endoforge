@@ -130,7 +130,7 @@ per task.
    prompt carries the corrected `tests.json` and says that it replaces the version the resumed session remembers. With
    `ENDOFORGE_SELF_CHECK=1` one repair session runs on gate failures.
 5. The supervisor compiles, `register`s the candidate, runs the pool job, then calls `promote`, which writes and
-   fsyncs `promotion.json`.
+   fsyncs `promotion.json` under a temporary name and links it into place, so the file is absent or complete.
 
 `ENDOFORGE_CODEX_TERSE` shapes the prompts: `exact` (the default) adds a rule to derive every expected value from the
 formula, `scalar` adds a finite-scalar boundary rule and filters tests before the freeze, `reference` has the model

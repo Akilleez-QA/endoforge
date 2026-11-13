@@ -1,3 +1,4 @@
+import json
 import os
 import signal
 import sqlite3
@@ -48,10 +49,23 @@ if point:
         db.execute("PRAGMA synchronous=FULL")
         return db
 
+    class TornDump:
+        def __getattr__(self, name):
+            return getattr(json, name)
+
+        @staticmethod
+        def dump(value, output, **options):
+            text = json.dumps(value, **options)
+            output.write(text[:len(text) // 2])
+            output.flush()
+            kill()
+
     def write_decision(result):
         written = isinstance(result, dict) and "decisionPath" in result
         if written and point == "after_commit":
             kill()
+        if written and point == "mid_decision":
+            loop.json = TornDump()
         original_write(result)
         if written and point == "after_decision":
             kill()
