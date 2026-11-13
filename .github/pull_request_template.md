@@ -34,3 +34,5 @@ updated in this pull request, or explain why none apply. `make check` runs the t
 - [ ] I added no code comments, secrets, or private data.
 - [ ] This pull request has one concern and fewer than 400 changed lines.
 - [ ] AI-assisted commits include an `Assisted-by` trailer, or no AI was used.
+
+- [ ] Notable changes have a `changes/unreleased/<slug>.md` fragment, not a CHANGELOG.md edit.
