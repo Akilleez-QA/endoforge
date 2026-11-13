@@ -1,4 +1,4 @@
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
@@ -8,20 +8,29 @@ import { createPort } from './identity-port.mjs';
 import { fixture, hostPort, python } from './ledger-fixture.mjs';
 
 export async function poolBreach(t, isolation, breach, size = 8) {
+  let pool, abort;
+  const stop = async () => {
+    if (!pool) return;
+    if (existsSync(directory)) writeFileSync(abort, 'abort');
+    await pool.close();
+    pool = null;
+  };
+  t.after(stop);
   const { reference, job, directory } = await fixture(t);
+  t.after(stop);
+  abort = join(directory, 'abort');
   const barrier = join(directory, 'barrier'), release = join(directory, 'release');
   mkdirSync(barrier);
   const wasm = breach === 'wasm_memory';
-  const pool = new IsolatePool({ isolation, size, cgroupRoot: process.env.EF_TEST_CGROUP_ROOT,
+  pool = new IsolatePool({ isolation, size, cgroupRoot: process.env.EF_TEST_CGROUP_ROOT,
     hostPort: wasm ? fileURLToPath(new URL('./wasm-port.mjs', import.meta.url)) : hostPort,
     resourceLimits: { maxOldGenerationSizeMb: 24, maxYoungGenerationSizeMb: 4 }, wasmMemoryMaxMb: 64 });
-  t.after(() => pool.close());
   const expected = await evaluateCandidates(reference, ['pass', 'effects'], await createPort());
   const healthy = wasm ? { action: 'instantiate', bytes: [0, 97, 115, 109, 1, 0, 0, 0] } : {};
-  const failedJob = pool.run(job([wasm ? 'pass' : 'heap'], { barrier, participants: size,
+  const failedJob = pool.run(job([wasm ? 'pass' : 'heap'], { abort, barrier, participants: size,
     ...(wasm ? { action: 'grow', pages: 4096 } : {}) }));
   const siblings = Array.from({ length: size - 1 }, () => pool.run(job(['pass', 'effects'],
-    { ...healthy, barrier, participants: size, release })));
+    { ...healthy, abort, barrier, participants: size, release })));
   const queued = pool.run(job(['pass', 'effects'], healthy));
   const failed = await failedJob;
   writeFileSync(release, 'go');
