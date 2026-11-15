@@ -46,6 +46,8 @@ Read the [project README](../README.md), then the tutorial.
 - [The candidate loop](architecture/candidate-loop.md): one attempt from need to decision, and what each gate checks.
 - [Evaluator synthesis](architecture/evaluator-synthesis.md): the candidate-blind check, as designed before the code.
 - [Limitations and safe use](guides/explanation/limitations.md): what a promotion does and does not mean.
+- [Kitesurf fit note](guides/explanation/kitesurf-fit.md): where a stateless CDP browser could stand in for Chromium
+  in hill-climb renders, and what it would do to run time.
 
 ## Writing documentation
 
