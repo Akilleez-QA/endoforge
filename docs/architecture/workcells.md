@@ -94,6 +94,16 @@ variants with checked versions:
 - a module compiled outside the cell cannot be instantiated, except a `sharedWasmModules` entry the supervisor
   compiled through the same guard.
 
+A pinned third-party tool built with exception handling or SIMD, such as the browser engine pinned in
+[tools/browser/pin.mjs](../../tools/browser/pin.mjs), goes through a separate path,
+[isolate-wasm-tooling.mjs](../../core/runtime/isolate-wasm-tooling.mjs). Only a module whose SHA-256 is in the
+supervisor's `toolingWasmModules` takes it. The path checks top-level sections only: it refuses memory imports, shared
+memory, memory64 and more than one memory, and declares each memory's maximum as the smaller of the module's own and
+the pin's `maximumPages`. Code bodies are not rewritten, so no breach flag applies; V8 enforces the declared maximum
+(`memory.grow` returns -1, JavaScript `grow()` throws `RangeError`). Candidate kernels, unpinned and tampered modules
+still take the unchanged guard above, and the loop's G2 gate is not touched. A digest may not be both trusted and
+tooling.
+
 Candidates and `portOptions` cannot add trust: the policy is copied and frozen in the constructor, and every result
 carries the supervisor's copy.
 

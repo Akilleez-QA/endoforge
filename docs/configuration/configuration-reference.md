@@ -263,6 +263,7 @@ Fixed limits in `core/runtime/x1/agent.mjs`: 64 KiB per file, four times that pe
 | `wasmMemoryMaxMb` | `64` | Ceiling per WebAssembly memory, 1 to 4096. |
 | `trustedWasmModules` | `[]` | `{ name, sha256, maximumPages }` entries that may omit a memory maximum. |
 | `sharedWasmModules` | `[]` | `{ sha256, path }`; thread pools compile once and share. |
+| `toolingWasmModules` | `[]` | `{ name, sha256, maximumPages }` pinned tool modules admitted with exception handling and SIMD; memory capped at `maximumPages`. |
 | `prewarm` | `false` | Start every cell in the constructor. |
 | `warm`, `warmTimeoutMs` | unset, `60000` | Await the port's `warm(options)` before a cell is ready. |
 | `jobTimeoutMs`, `jobDeadlineMs` | unset | Compute budget and wall deadline per job. |

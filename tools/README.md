@@ -98,6 +98,7 @@ turns and ledger writes leave it.
 | Tool | What it does | Status |
 |---|---|---|
 | [asc](asc/README.md) | Pins the AssemblyScript compiler (0.28.20) that workcells load, with file digests and workcell limits | Active; used by every `isolate` and `agent` loop run |
+| [browser](browser/README.md) | Pins the Kitesurf browser engine build (`kitesurf-core` at `4a29038`) for workcells; pin only so far | Pin only; the render spike follows |
 | [tscheck](tscheck/README.md) | Type checks TypeScript inside workcells with `tsrs`, a WebAssembly build of the TypeScript 7 compiler | Active, opt-in route; `make tscheck-test` |
 | [gate](gate/README.md) | Stand-alone freeze-then-check runner for one kernel directory; `freeze` refuses a contract without a valid capability block; `run` compiles `kernel.ts` with the `tools/asc` pin (or `ENDOFORGE_ASC`) and runs the core gates G1 to G9, structured state included | Used inside atomizer compose atoms; tested by `tools/test_gate_structured.mjs` (REQ-GATECLI-001) in `make gate-test` |
 | [kernel](kernel/README.md) | The WIT kernel contract, its exact-interface validator and a Wasmtime host with limits, a per-call broker, declared-effect checks, a hash-chained denial journal and frozen-task conformance | Conformance lane; the candidate loop does not import it, and the Rust lane's admission calls it; `make kernel-test` |
