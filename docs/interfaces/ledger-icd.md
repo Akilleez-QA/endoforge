@@ -79,6 +79,7 @@ explains it. This section is its contract with the ledger and its callers.
 | `resourceLimits` | `{ maxOldGenerationSizeMb: 128, maxYoungGenerationSizeMb: 16, stackSizeMb? }`, positive integers. Heap flags in `execArgv` or `NODE_OPTIONS` are refused. Process mode passes them as Node flags and refuses `stackSizeMb` if the host won't raise its stack limit |
 | `wasmMemoryMaxMb` | Integer 1–4096, default 64, per linear memory |
 | `trustedWasmModules` | `[{ name, sha256, maximumPages }]`, default `[]`; unique names and digests; `maximumPages` at most `wasmMemoryMaxMb × 16`. Copied and frozen; every result carries it |
+| `toolingWasmModules` | `[{ name, sha256, maximumPages }]`, default `[]`; validated like `trustedWasmModules` and disjoint from it. Only these digests may use exception handling or SIMD; results carry the list when it is not empty |
 | `sharedWasmModules` | `[{ sha256, path }]` naming trusted digests; a thread pool compiles each once through the guard and posts it to its cells; ignored in process mode |
 | `warm`, `warmTimeoutMs` | Options for each cell's `warm`, and its budget (60,000 ms) |
 | `prewarm` | `true` calls `ready()` from the constructor |
@@ -106,7 +107,7 @@ explains it. This section is its contract with the ledger and its callers.
 ### Result
 
 `{ status, reason, report, evidence?, workcell, isolation, cgroup, cgroupLimits?, resourceLimits, wasmMemoryMaxMb,
-trustedWasmModules, sharedWasmModules?, receipts, timings? }`.
+trustedWasmModules, toolingWasmModules?, sharedWasmModules?, receipts, timings? }`.
 
 - `status` is `completed`, `outcome_unknown`, `rejected` (process-mode heap or WASM limit) or `waiting` (a loop port
   parked a model wait). A completed report may still reject candidates.

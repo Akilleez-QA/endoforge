@@ -25,6 +25,7 @@ scripted model and prints the result ([output](../../docs/architecture/agent-loo
 | [isolate-pool.mjs](isolate-pool.mjs) | `IsolatePool`: thread or process cells, queue, limits, warm state, results, receipts |
 | [isolate-workcell.mjs](isolate-workcell.mjs) | The cell's entry: installs the WASM guard, warms, imports the host port, runs the job |
 | [isolate-wasm.mjs](isolate-wasm.mjs), [isolate-wasm-compile.mjs](isolate-wasm-compile.mjs) | The WASM memory guard, and the one-shot compiler for shared modules |
+| [isolate-wasm-tooling.mjs](isolate-wasm-tooling.mjs) | Admission for digest-pinned tool modules that need exception handling or SIMD |
 | [isolate-cgroup.mjs](isolate-cgroup.mjs) | cgroup v2 groups for process cells |
 | [isolate-ledger.mjs](isolate-ledger.mjs) | `LedgerBridge`, the persistent Python ledger process |
 | [dump-list.mjs](dump-list.mjs) | Sheddable-memory registration for the machine's memory guard |

@@ -10,6 +10,7 @@ import { dumpListEnabled, registerHolder } from './dump-list.mjs';
 import { attachCgroup, prepareCgroup, releaseCgroup } from './isolate-cgroup.mjs';
 import { LedgerBridge } from './isolate-ledger.mjs';
 import { trustedWasmPolicy } from './isolate-wasm.mjs';
+import { toolingWasmPolicy } from './isolate-wasm-tooling.mjs';
 
 const positive = value => Number.isSafeInteger(value) && value > 0;
 const stackMargin = 192;
@@ -44,6 +45,7 @@ export class IsolatePool {
   #limits;
   #wasmMemoryMaxMb;
   #trustedWasmModules;
+  #toolingWasmModules;
   #isolation;
   #cgroupRoot;
   #cgroupLimits;
@@ -79,7 +81,7 @@ export class IsolatePool {
   #syncHostCalls;
 
   constructor({ hostPort, size = availableParallelism(), resourceLimits = {}, wasmMemoryMaxMb = 64,
-    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], prewarm = false, warm, warmTimeoutMs = 60000, jobTimeoutMs, jobDeadlineMs, hostCall, hostCalls, syncHostCalls, frozenThroughLedger = false, cellEnv, cellFlags = [], ledgerBridge, retireAfterJobs = 256, dumpList, rates = null } = {}) {
+    isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], toolingWasmModules = [], prewarm = false, warm, warmTimeoutMs = 60000, jobTimeoutMs, jobDeadlineMs, hostCall, hostCalls, syncHostCalls, frozenThroughLedger = false, cellEnv, cellFlags = [], ledgerBridge, retireAfterJobs = 256, dumpList, rates = null } = {}) {
     if (!positive(retireAfterJobs)) throw new TypeError('retireAfterJobs must be a positive integer');
     this.#retireAfterJobs = retireAfterJobs;
     this.#rates = rates;
@@ -124,6 +126,8 @@ export class IsolatePool {
     this.#limits = Object.freeze(limits);
     this.#wasmMemoryMaxMb = wasmMemoryMaxMb;
     this.#trustedWasmModules = trustedWasmPolicy(trustedWasmModules, wasmMemoryMaxMb);
+    this.#toolingWasmModules = toolingWasmPolicy(toolingWasmModules, wasmMemoryMaxMb);
+    if (this.#toolingWasmModules.some(({ sha256 }) => this.#trustedWasmModules.some(entry => entry.sha256 === sha256))) throw new TypeError('a digest cannot be both trusted and tooling');
     this.#isolation = isolation;
     if (!Array.isArray(sharedWasmModules) || !sharedWasmModules.every(({ sha256, path }) => typeof path === 'string' && path &&
         this.#trustedWasmModules.some(entry => entry.sha256 === sha256))) throw new TypeError('sharedWasmModules must name trustedWasmModules digests and paths');
@@ -279,7 +283,7 @@ export class IsolatePool {
   #spawn() {
     const subprocess = this.#isolation === 'process';
     const entry = new URL('./isolate-workcell.mjs', import.meta.url);
-    const policy = { wasmMemoryMaxMb: this.#wasmMemoryMaxMb, trustedWasmModules: this.#trustedWasmModules,
+    const policy = { wasmMemoryMaxMb: this.#wasmMemoryMaxMb, trustedWasmModules: this.#trustedWasmModules, toolingWasmModules: this.#toolingWasmModules,
       ...(this.#warmOptions ? { warm: this.#warmOptions, hostPort: this.#hostPort } : {}) };
     const heapArgv = [`--max-old-space-size=${this.#limits.maxOldGenerationSizeMb}`, `--max-semi-space-size=${this.#limits.maxYoungGenerationSizeMb}`, ...this.#cellFlags];
     const processOptions = { serialization: 'advanced', stdio: ['ignore', 'ignore', 'pipe', 'ipc', ...(this.#syncHostCalls ? ['pipe', 'pipe'] : [])], ...(this.#cellEnv ? { env: this.#cellEnv } : {}) };
@@ -575,7 +579,7 @@ export class IsolatePool {
   }
 
   async #finish(job, result) {
-    result = { ...result, trustedWasmModules: this.#trustedWasmModules };
+    result = { ...result, trustedWasmModules: this.#trustedWasmModules, ...(this.#toolingWasmModules.length ? { toolingWasmModules: this.#toolingWasmModules } : {}) };
     try {
       const evaluated = performance.now();
       const receipts = job.data.ledger === 'caller' ? [] : await this.#persist('append', job.data, result);
