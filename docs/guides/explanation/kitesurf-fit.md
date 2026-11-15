@@ -1,13 +1,19 @@
-# Kitesurf fit note
+# Kitesurf measurement note
 
-Date: 2026-11-14. Status: research note; no code change and no default change.
+Date: 2026-11-14, revised the same day. Status: research note; no code change and no default change.
 
 [Kitesurf](https://github.com/cloudflare/kitesurf) is Cloudflare's stateless browser engine for agents, open-sourced
 under Apache-2.0 on 2026-11-13 ([announcement](https://blog.cloudflare.com/kitesurf-open-source/),
-[documentation](https://developers.cloudflare.com/browser-run/kitesurf/)). It runs on Workers, parses HTML, applies
-CSS, runs page JavaScript and renders screenshots, and it speaks the Chrome DevTools Protocol (CDP), so Puppeteer,
-Playwright and `chrome-devtools-mcp` can drive it. This note asks where it could stand in for Chromium in EndoForge
-and what that would do to run time. EndoForge does not vendor or depend on Kitesurf; this page only links to it.
+[documentation](https://developers.cloudflare.com/browser-run/kitesurf/)). It parses HTML, applies CSS, runs page
+JavaScript and renders screenshots. Its engine is Rust compiled to WebAssembly (Blitz, Stylo, Taffy, Parley,
+`vello_cpu`, and Boa for page JavaScript) behind a TypeScript layer that runs on Workers and speaks the Chrome DevTools
+Protocol (CDP).
+
+This note records what the sources say and what one local run measured. The run used Kitesurf's own packaging:
+`wrangler dev`, `workerd` and a CDP client. EndoForge's direction is different: run Kitesurf's WebAssembly core inside
+a workcell, with no browser process or CDP server, as designed in
+[#152](https://github.com/Akilleez-QA/endoforge/pull/152). The numbers below describe the `wrangler dev` and CDP path,
+not the in-workcell path. EndoForge does not vendor or depend on Kitesurf; this page only links to it.
 
 ## What the sources say
 
@@ -21,70 +27,58 @@ and what that would do to run time. EndoForge does not vendor or depend on Kites
   Deploying a self-hosted instance needs a Workers Paid plan (Dynamic Workers); the managed Browser Run endpoint needs
   a Cloudflare account and API token. Neither is used here.
 
-## Where EndoForge uses a browser today
+## Where a browser enters a run today
 
-Nowhere in the engine. A search of `main` at `b4bf587` for `chromium`, `puppeteer`, `playwright`, `cdp`, `devtools`
-and `headless` finds no browser use; the one hit for "browser" is the V8 isolate explanation in
-[getting started](../tutorials/getting-started.md). Workcells, gates and the agent loop run WebAssembly and
-JavaScript in V8 isolates, not in a browser.
+On `main` at `b4bf587` no browser engine is wired into the engine. Workcells, gates and the agent loop run WebAssembly
+and JavaScript in V8 isolates; the workcell browser design (#152) would add a browser engine there. Until then, the
+one place a browser can enter a run is [hill-climb](../../../tools/hillclimb/README.md):
 
-The one place a browser can enter a run is [hill-climb](../../../tools/hillclimb/README.md):
-
-- `render` runs each campaign's own `render` commands and writes stills (`tools/hillclimb/bin/hillclimb.mjs`,
-  `renderJobs` and `cmdRender`), then records the stage's wall time in `render.json` as `seconds`. A page-layout
-  campaign (the README's example goal is a landing page at phone width) would put its screenshot command here.
+- `render` runs each campaign's own `render` commands on the host and writes stills
+  (`tools/hillclimb/bin/hillclimb.mjs`, `renderJobs` and `cmdRender`), then records the stage's wall time in
+  `render.json` as `seconds`. A page-layout campaign (the README's example goal is a landing page at phone width)
+  would put its screenshot command here.
 - `judge` fast-renders every competing variant before a judge atom picks one per owner, so render cost grows with
   the number of variants.
 - `refs --fetch` downloads approved references with `curl`, not a browser.
 
-EndoForge ships no campaign whose render command drives a browser, so there is no in-repository Chromium to replace.
+EndoForge ships no campaign whose render command drives a browser.
 
-## Where Kitesurf could replace Chromium
+## What Kitesurf suits, on any path
 
-- Hill-climb `fast` renders of static or lightly scripted pages: one-shot screenshots per round and per variant,
-  where the critic needs a readable still rather than pixel-exact output. Each render is a fresh, stateless session,
-  which matches how the round already treats stills.
-- Text or DOM extraction for critics, where a page's HTML and computed layout matter more than paint.
-- Agent tools that need a CDP browser for a single page load inside a run, through `chrome-devtools-mcp` pointed at
-  a local Kitesurf.
+These limits belong to the engine, so they apply to the in-workcell design as much as to the CDP path.
 
-## Where it cannot
+- Suits: `fast` stills of static or lightly scripted pages, where a critic needs a readable image rather than
+  pixel-exact output, and text or DOM extraction, where HTML and computed layout matter more than paint.
+- Does not suit: `final` renders and pixel comparisons meant to stand for what a person sees in Chrome, since
+  Kitesurf is not pixel-perfect (within one engine and one pinned build, round-to-round diffs stay meaningful);
+  WebGL, canvas-heavy 3D or video, such as the 3D-asset and game-level goals the hill-climb README names; anything
+  that logs in and keeps a session, or a site behind a bot challenge.
+- A local Kitesurf server is out of reach of factory-runtime atoms: the egress proxy admits an exact provider
+  allowlist on port 443 only (`tools/factory_runtime/egress.py`). The in-workcell design needs no server.
+- A hosted instance is outside this project's limits: self-hosting needs Workers Paid, and the managed endpoint needs
+  an account token.
 
-- Hill-climb `final` renders and any pixel comparison meant to stand for what a person sees in Chrome. Kitesurf is
-  not pixel-perfect, so a `final` profile, or `pixel-diff.py` across engines, should stay on Chromium. Within one
-  engine, round-to-round pixel diffs are still meaningful.
-- Campaigns that render WebGL, canvas-heavy 3D or video, such as the 3D-asset and game-level goals the hill-climb
-  README names.
-- Anything that logs in and keeps a session, or a site behind a bot challenge.
-- Sandboxed atoms as they stand. The factory runtime's egress proxy admits an exact provider allowlist on port 443
-  only (`tools/factory_runtime/egress.py`), so a worker inside it cannot reach a local Kitesurf without a policy
-  change. Render commands run on the host, not in atoms, so this does not block `render`.
-- A hosted instance, under this project's limits: self-hosting needs Workers Paid, and the managed endpoint needs an
-  account token. The local `wrangler dev` path is the only one this note uses.
-
-## Expected effect on run time
+## Run time on the measured path
 
 Hill-climb's run time is model-bound. In [P-29](../../../experiments/P-29-hillclimb/RESULT.md) the generator round's
-p50 total was 63.0 to 69.1 s per request with no browser in the loop, so a browser swap cannot change that number.
-It can only change `render.json` `seconds` for campaigns that render pages.
+p50 total was 63.0 to 69.1 s per request with no browser in the loop, so a browser cannot change that number. It can
+only change `render.json` `seconds` for campaigns that render pages. On the `wrangler dev` and CDP path:
 
-- Per page, Kitesurf is slower, not faster. Cloudflare measured 1.7 to 1.8 times Chromium's wall time; the local
-  probe below measured 1.8 times (median 261.5 ms against 144.8 ms per page load).
-- Per session start, the local probe measured 13.4 to 15.0 ms to connect to a running Kitesurf against 199.3 to
-  258.1 ms to spawn and connect a fresh headless Chromium. For one page per fresh browser, that more than offsets the
-  per-page loss in this probe (about 276 ms against 345 ms); a long-running Chromium reused across pages keeps its lead.
-- Memory is where it pays. The probe's `workerd` stayed at 87.6 to 87.9 MiB resident across 15 loads, against 373 to
-  383 MiB idle and 490.6 to 496.7 MiB peak for the headless Chromium process tree. Cloudflare reports 4.7 to 7.0
-  times less memory.
-- Estimate (unmeasured in EndoForge): a render stage limited by memory rather than by a serial loop could run about
-  four times as many concurrent page sessions in the same memory, from the probe's ratio of roughly 88 to 375 MiB.
-  Hill-climb runs render jobs one after another today (`renderJobs` is a serial loop), so the swap alone would make
-  `render` slower by about 1.8 times per page, and a gain needs parallel renders first.
+- Per page, Kitesurf was slower. Cloudflare measured 1.7 to 1.8 times Chromium's wall time; the local probe below
+  measured 1.8 times (median 261.5 ms against 144.8 ms per page load).
+- Per session start, connecting to a running Kitesurf took 13.4 to 15.0 ms against 199.3 to 258.1 ms to spawn and
+  connect a fresh headless Chromium. For one page per fresh browser that more than offset the per-page loss in this
+  probe (about 276 ms against 345 ms); a long-running Chromium reused across pages keeps its lead.
+- Memory: `workerd` stayed at 87.6 to 87.9 MiB resident across 15 loads, against 373 to 383 MiB idle and 490.6 to
+  496.7 MiB peak for the headless Chromium process tree. Cloudflare reports 4.7 to 7.0 times less memory.
+- Hill-climb runs render jobs one after another (`renderJobs` is a serial loop), so any gain from cheaper sessions
+  needs parallel renders first. That gain is unmeasured.
 
-Verdict for run time: neutral to slightly worse as wired today; a possible gain only for `judge` and other
-multi-variant renders after they are parallelized. Measure with `render.json` before changing any default.
+The in-workcell path has different costs: no CDP round trips or `workerd`, but one engine module per process cell.
+#152 records first numbers for the core alone in plain Node and labels what is still unmeasured; they are not
+comparable with the numbers here.
 
-## Local proof
+## Local proof (`wrangler dev` and CDP path)
 
 Run 2026-11-14, 7:55 to 8:10 PM ET, on a shared 32-thread Linux host with other jobs running (1-minute load 15 to 54).
 Nothing was deployed and no Cloudflare account was used. The server listened on loopback only and was stopped by PID.
@@ -131,5 +125,5 @@ trivial page, so neither CSS layout cost nor screenshots were measured; no hill-
 
 ## Next step
 
-If a page-layout campaign appears, add Kitesurf as an optional `fast` render command next to the Chromium one and
-compare `render.json` seconds and still quality over a few rounds, keeping `final` on Chromium.
+Review the workcell browser design (#152). Its first spike renders one local HTML file to pixels inside a workcell.
+Measure any render change with `render.json` before changing a default, and keep `final` renders on Chromium.
