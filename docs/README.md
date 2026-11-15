@@ -45,7 +45,7 @@ Read the [project README](../README.md), then the tutorial.
   the three loop paths and where each part lives in the code.
 - [The candidate loop](architecture/candidate-loop.md): one attempt from need to decision, and what each gate checks.
 - [Evaluator synthesis](architecture/evaluator-synthesis.md): the candidate-blind check, as designed before the code.
-- [Workcell browser](architecture/workcell-browser.md): a design for rendering pages inside a workcell, before the code.
+- [Workcell browser](architecture/workcell-browser.md): a design for rendering pages inside a workcell; the first spike is in [tools/browser](../tools/browser/README.md).
 - [Limitations and safe use](guides/explanation/limitations.md): what a promotion does and does not mean.
 - [Kitesurf measurement note](guides/explanation/kitesurf-fit.md): what Cloudflare's Kitesurf browser engine is, and
   what one local run on its `wrangler dev` and CDP path measured.

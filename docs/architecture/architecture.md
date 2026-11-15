@@ -116,6 +116,7 @@ checks yet; see [SRS §11](../requirements/requirements.md#11-untested-behaviour
 | C-29 | Factory runtime | `tools/factory_runtime/` | Job specs, scheduler, recovery, egress, sandboxed worker with the `bridge.py` relay (local-provider turns without `node` or `codex`), protected provider call, WebAssembly runner on the pinned Wasmtime wheel | REQ-FACTORY-003 |
 | C-30 | Glue gate CLI and project scheduler | `tools/gate/`, `tools/project-scheduler/` | Stand-alone glue check through the core gates, compiled with the `tools/asc` pin by default, whose `freeze` refuses a contract without a valid capability block; cross-project scheduling under token reservations | REQ-GATECLI-001, REQ-SCHED-001 |
 | C-31 | Stub pool and approved atoms | `core/runtime/stub-pool.mjs`, `tools/approved_atoms.py` | Replay stub outputs; approved-atom registry | REQ-STUB-001, REQ-FACTORY-004 |
+| C-32 | Workcell browser | `tools/browser/` | Renders HTML to PNG with the pinned Kitesurf engine in process workcells, offline | REQ-BROWSER-001 |
 
 ## 5. Execution concept
 
