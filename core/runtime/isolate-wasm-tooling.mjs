@@ -1,4 +1,4 @@
-const { validate, CompileError } = WebAssembly;
+const { validate, CompileError, RuntimeError } = WebAssembly;
 const refuse = message => { throw new CompileError(message); };
 const leb = value => {
   const bytes = [];
@@ -22,6 +22,7 @@ export function toolingWasmPolicy(entries, maxMb) {
 export function admitToolingWasm(bytes, entry) {
   if (!validate(bytes)) refuse('invalid wasm module');
   let offset = 8, memories = 0;
+  const limits = [], exportedMemories = [];
   const byte = () => offset < bytes.length ? bytes[offset++] : refuse('truncated wasm');
   const uint = () => {
     let value = 0;
@@ -49,6 +50,15 @@ export function admitToolingWasm(bytes, entry) {
       }
       if (offset !== end) refuse('malformed import section');
     }
+    if (id === 7) {
+      for (let count = uint(); count; count--) {
+        const length = uint(), name = new TextDecoder().decode(bytes.subarray(offset, offset + length));
+        offset += length;
+        const kind = byte(), index = uint();
+        if (kind === 2) exportedMemories.push({ name, memory: index });
+      }
+      if (offset !== end) refuse('malformed export section');
+    }
     if (id !== 5) {
       offset = end;
       output.push(bytes.subarray(start, end));
@@ -61,6 +71,7 @@ export function admitToolingWasm(bytes, entry) {
       if (flag > 1) unsupported();
       const initial = uint(), maximum = Math.min(flag ? uint() : Infinity, entry.maximumPages);
       if (initial > maximum) refuse('tooling module memory exceeds its pinned maximum');
+      limits.push(maximum);
       entries.push(1, ...leb(initial), ...leb(maximum));
     }
     if (offset !== end) refuse('malformed memory section');
@@ -69,5 +80,19 @@ export function admitToolingWasm(bytes, entry) {
   }
   const admitted = new Uint8Array(output.reduce((total, part) => total + part.length, 0));
   output.reduce((at, part) => { admitted.set(part, at); return at + part.length; }, 0);
-  return { bytes: admitted, flag: null, start: null, tooling: entry.name };
+  return { bytes: admitted, flag: null, start: null, tooling: entry.name, limits, exportedMemories };
+}
+
+export const toolingTrap = onTrap => error => {
+  if (error instanceof RuntimeError && error.message === 'unreachable') onTrap();
+  throw error;
+};
+
+export function guardToolingExports(instance, trapped) {
+  const wrap = target => function (...args) {
+    try { return Reflect.apply(target, this, args); } catch (error) { return trapped(error); }
+  };
+  const exports = Object.create(null);
+  for (const [name, value] of Object.entries(instance.exports)) exports[name] = typeof value === 'function' ? wrap(value) : value;
+  Object.defineProperty(instance, 'exports', { value: Object.freeze(exports), enumerable: true });
 }
