@@ -46,6 +46,8 @@ Read the [project README](../README.md), then the tutorial.
 - [The candidate loop](architecture/candidate-loop.md): one attempt from need to decision, and what each gate checks.
 - [Evaluator synthesis](architecture/evaluator-synthesis.md): the candidate-blind check, as designed before the code.
 - [Limitations and safe use](guides/explanation/limitations.md): what a promotion does and does not mean.
+- [Kitesurf measurement note](guides/explanation/kitesurf-fit.md): what Cloudflare's Kitesurf browser engine is, and
+  what one local run on its `wrangler dev` and CDP path measured.
 
 ## Writing documentation
 
