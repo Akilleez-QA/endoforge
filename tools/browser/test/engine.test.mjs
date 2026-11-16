@@ -6,7 +6,7 @@ import test from 'node:test';
 import { createLoopPool } from '../../../core/runtime/x1/loop.mjs';
 import { verifyArtifact } from '../artifact.mjs';
 import { ENGINE_LIMITS, PROCESS_ONLY, assertionProblem, createEngine } from '../engine-host.mjs';
-import { FIXED_TIME_MS, deterministic } from '../engine.mjs';
+import { FIXED_TIME_MS, deterministic, openEngine } from '../engine.mjs';
 import { KITESURF_CORE, WORKCELL } from '../pin.mjs';
 
 const artifact = verifyArtifact();
@@ -74,25 +74,35 @@ test('a document that fetches never passes and the bridge only counts the refuse
     observed: 'document requested 2 resource(s): https://kitesurf.local/a.png, https://kitesurf.local/s.css, needs none' });
 });
 
-test('one warm worker is reused without restore and renders the same bytes as a fresh one', needsEngine, async t => {
-  const engine = engineFor(t), page = { ...small, html, png: true };
-  const warm = await engine.start();
-  const first = await engine.inspect(page), second = await engine.inspect(page);
-  assert.deepEqual([first.engine.generation, second.engine.generation, second.engine.checks, second.glueImports], [1, 1, 2, 1]);
-  assert.deepEqual(first.engine.warm, { pages: warm.pages, externrefs: warm.externrefs });
-  assert.ok(second.pages >= first.pages && first.pages >= warm.pages);
-  assert.ok(Number.isSafeInteger(second.externrefs) && second.externrefs > 0);
+test('every check restores the one image taken after priming, and 1,000 restored checks match a fresh engine with no growth', needsEngine, async t => {
+  const page = { html, viewport, expect: [{ select: 'li', count: 2 }, { select: '#add', box: { minWidth: 44 } }, { page: 'noHorizontalOverflow' }], png: true };
   const fresh = await engineFor(t).inspect(page);
-  assert.deepEqual(Buffer.from(fresh.png), Buffer.from(second.png));
+  const engine = engineFor(t), warm = await engine.start();
+  const seen = new Set();
+  for (let i = 1; i <= 1000; i++) {
+    const result = await engine.inspect(page);
+    assert.deepEqual([result.status, result.engine.generation, result.restores, result.image, result.glueImports], ['completed', 1, i, warm.image, 1]);
+    assert.deepEqual([result.pages, result.externrefs], [warm.pages, warm.externrefs]);
+    assert.deepEqual(result.results, fresh.results);
+    seen.add(Buffer.from(result.png).toString('hex'));
+  }
+  assert.deepEqual([...seen], [Buffer.from(fresh.png).toString('hex')]);
+  assert.deepEqual(engine.stats(), { started: 1, replaced: 1, checks: 1000, faults: 0 });
+  assert.equal(ENGINE_LIMITS.maxChecks, 1000);
 });
 
-test('the engine has no memory snapshot or restore path, and its limits are the design values', () => {
-  for (const name of ['engine.mjs', 'engine-host.mjs']) {
-    const source = readFileSync(new URL(`../${name}`, import.meta.url), 'utf8');
-    const imports = [...source.matchAll(/^import .* from '([^']+)';$/gm)].map(match => match[1]);
-    assert.deepEqual(imports.filter(path => !['node:perf_hooks', 'node:worker_threads', '../../core/runtime/isolate-wasm.mjs', '../../core/runtime/isolate-wasm-tooling.mjs', './artifact.mjs'].includes(path)), [], name);
-    assert.doesNotMatch(source, /tsrs-reuse|snapshot|restore|memory\.buffer\)?\.set|new Uint8Array\(exports\.memory/i, name);
-  }
+test('a restore after a larger document gives the same output, and a handle left live refuses the restore', needsEngine, async () => {
+  const engine = await openEngine({ toolingWasmModules: WORKCELL.toolingWasmModules });
+  const page = { html, viewport, expect: [{ select: 'li', count: 2 }], png: true };
+  const before = await engine.check(page), grown = await engine.check(list(300)), after = await engine.check(page);
+  assert.deepEqual([grown.pass, after.results, Buffer.from(after.png)], [true, before.results, Buffer.from(before.png)]);
+  assert.equal((await engine.check(small)).pass, true);
+  const leaked = engine.open('<p>leaked</p>');
+  await assert.rejects(engine.check(small), /^Error: 1 engine handle\(s\) live at restore: restore refused$/);
+  assert.equal(engine.growth().restores, 4);
+  engine.close(leaked);
+  assert.equal((await engine.check(small)).pass, true);
+  assert.equal(engine.growth().restores, 5);
   assert.deepEqual(ENGINE_LIMITS, { maxChecks: 1000, maxGrowthBytes: 16 * 1024 * 1024, timeoutMs: 5000 });
 });
 

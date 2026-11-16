@@ -69,14 +69,17 @@ fetches fails the check. `png: true` also returns the PNG of the same document.
 | `{ select, apart }` | the first matches of the two selectors do not overlap | `#add and #overlap overlap by 10x10, needs apart` |
 | `{ page: 'noHorizontalOverflow' }` | no element passes the viewport's right edge | `page overflows horizontally: div right edge 500 passes the viewport width 390, needs noHorizontalOverflow` |
 
-`pixel` is not built yet. The Worker is reused as it is, never snapshotted or restored from a memory image: restoring
-an image taken before the engine's lazily created futures queue existed is what produced its `RefCell already borrowed`
-panic, and a test keeps restore helpers out of both modules. The glue is never imported a second time in a living
-Worker; replacement is always a new Worker. The host terminates and replaces the Worker after a fault (the Worker
+`pixel` is not built yet. After priming and the drain, the Worker copies the whole wasm memory once, and it restores
+that image before every check, zero-filling any memory grown since. Only this primed image is ever restored: an image
+taken before priming lacks the engine's lazily created futures queue, and restoring it caused the `RefCell already
+borrowed` panic, traps and unbounded growth. Every `DomHandle` the Worker creates is tracked and freed in a `finally`;
+if any is still live at restore time, the Worker refuses to restore, answers `outcome_unknown` and exits, and the host
+replaces it. The glue is never imported a second time in a living Worker; replacement is always a new Worker. The host terminates and replaces the Worker after a fault (the Worker
 replies `outcome_unknown` and exits), an error or exit before the reply, no reply within `timeoutMs` (5 s, since the
-engine is unmetered), 1,000 checks, or 16 MiB of wasm memory growth since warm, and starts the replacement at once. A
+engine is unmetered), 1,000 checks, or 16 MiB of wasm memory growth since warm (a backstop: a restore cannot shrink grown memory), and starts the replacement at once. A
 check the Worker did not answer is `outcome_unknown`, never a pass. Each result records the wasm memory `pages`, the
-externref table length `externrefs` and `engine: { generation, checks, warm }`; `stats()` counts starts,
+externref table length `externrefs`, `restores`, the primed image's digest `image` and
+`engine: { generation, checks, warm }`; `stats()` counts starts,
 replacements, checks and faults.
 
 `make browser-test` runs [test/render.test.mjs](test/render.test.mjs) and [test/engine.test.mjs](test/engine.test.mjs). Without a verified artifact the tests that need

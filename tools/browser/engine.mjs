@@ -99,51 +99,69 @@ function assertion(handle, item, viewport) {
   return [!overlap, overlap ? `${selector} and ${item.apart} overlap by ${Math.round(across)}x${Math.round(down)}, needs apart` : `${selector} and ${item.apart} are apart`];
 }
 
-export function inspectWith(glue, { html, viewport, expect, png = false }) {
-  return deterministic(() => {
-    const handle = new glue.DomHandle(html, BASE_URL);
+const drain = () => new Promise(resolve => setImmediate(resolve));
+
+export async function openEngine({ dir, toolingWasmModules }) {
+  const artifact = verifyArtifact(dir);
+  if (artifact.status !== 'ready') throw new Error(`kitesurf artifact not usable (${artifact.reason}): run make browser-setup`);
+  const { wasm, glue: source, sans, sansItalic, serif, mono } = artifact.bytes;
+  const digest = sha256(wasm);
+  if (!toolingWasmModules.some(entry => entry.sha256 === digest)) throw new Error(`kitesurf wasm ${digest} is not admitted by the cell's toolingWasmModules: run make browser-setup for the pinned artifact`);
+  const glue = await import(`data:text/javascript;base64,${source.toString('base64')}`);
+  let fetched = [], restores = 0;
+  glue.__setBridgeFetchResource((id, url) => { fetched.push(url); });
+  const exports = deterministic(() => glue.initSync({ module: new WebAssembly.Module(wasm) }));
+  if (!deterministic(() => glue.register_ua_fonts(...[sans, sansItalic, serif, mono].map(bytes => new Uint8Array(bytes))))) throw new Error('kitesurf refused the UA fonts');
+  const live = new Set();
+  const open = html => { const handle = new glue.DomHandle(html, BASE_URL); live.add(handle); return handle; };
+  const close = handle => { handle.free(); live.delete(handle); };
+  const run = ({ html, viewport, expect, png = false }) => deterministic(() => {
+    const handle = open(html);
     try {
       handle.setViewport(...viewport);
       const results = expect.map(item => { const [pass, observed] = assertion(handle, item, viewport); return { assertion: item, pass, observed }; });
       return { results, ...(png ? { png: glue.ks_render_html_to_png(html, BASE_URL, ...viewport) } : {}) };
-    } finally { handle.free(); }
+    } finally { close(handle); }
   });
+  run(PRIMER);
+  await drain();
+  const image = new Uint8Array(exports.memory.buffer).slice(), imageSha256 = sha256(image);
+  const restore = () => {
+    if (live.size) throw new Error(`${live.size} engine handle(s) live at restore: restore refused`);
+    const memory = new Uint8Array(exports.memory.buffer);
+    memory.set(image);
+    memory.fill(0, image.length);
+    restores += 1;
+  };
+  return {
+    open, close,
+    growth: () => ({ pages: exports.memory.buffer.byteLength / 65536, externrefs: exports.__wbindgen_externrefs.length, glueImports: 1, restores, image: imageSha256 }),
+    async check(request) {
+      fetched = [];
+      restore();
+      const { results, png } = run(request);
+      await drain();
+      if (fetched.length) results.push({ assertion: { fetch: 'none' }, pass: false, observed: `document requested ${fetched.length} resource(s): ${fetched.join(', ')}, needs none` });
+      return { status: 'completed', pass: results.every(result => result.pass), results, fetches: fetched.length, ...(png ? { png } : {}) };
+    },
+  };
 }
 
 async function serve({ dir, policy: { wasmMemoryMaxMb, toolingWasmModules } }) {
   installWasmLimit(wasmMemoryMaxMb, () => process.exit(18), [], [], toolingWasmModules);
   globalThis.fetch = url => Promise.reject(new Error(`browser engine refuses network requests: ${url}`));
   const started = performance.now();
-  const artifact = verifyArtifact(dir);
-  if (artifact.status !== 'ready') return parentPort.postMessage({ type: 'ready', error: `kitesurf artifact not usable (${artifact.reason}): run make browser-setup` });
-  const { wasm, glue: source, sans, sansItalic, serif, mono } = artifact.bytes;
-  const digest = sha256(wasm);
-  if (!toolingWasmModules.some(entry => entry.sha256 === digest)) return parentPort.postMessage({ type: 'ready',
-    error: `kitesurf wasm ${digest} is not admitted by the cell's toolingWasmModules: run make browser-setup for the pinned artifact` });
-  const glue = await import(`data:text/javascript;base64,${source.toString('base64')}`);
-  let fetched = [];
-  glue.__setBridgeFetchResource((id, url) => { fetched.push(url); });
-  const exports = deterministic(() => glue.initSync({ module: new WebAssembly.Module(wasm) }));
-  if (!deterministic(() => glue.register_ua_fonts(...[sans, sansItalic, serif, mono].map(bytes => new Uint8Array(bytes))))) throw new Error('kitesurf refused the UA fonts');
-  const growth = () => ({ pages: exports.memory.buffer.byteLength / 65536, externrefs: exports.__wbindgen_externrefs.length, glueImports: 1 });
-  inspectWith(glue, PRIMER);
-  await new Promise(resolve => setImmediate(resolve));
-  parentPort.postMessage({ type: 'ready', ...growth(), readyMs: performance.now() - started });
+  let engine;
+  try { engine = await openEngine({ dir, toolingWasmModules }); } catch (error) { return parentPort.postMessage({ type: 'ready', error: error.message }); }
+  parentPort.postMessage({ type: 'ready', ...engine.growth(), readyMs: performance.now() - started });
   parentPort.on('message', async request => {
-    fetched = [];
     const begin = performance.now();
     let reply;
-    try {
-      reply = inspectWith(glue, request);
-    } catch (error) {
+    try { reply = await engine.check(request); } catch (error) {
       parentPort.postMessage({ id: request.id, status: 'outcome_unknown', reason: `engine fault: ${error?.message ?? error}` });
       process.exit(1);
     }
-    await new Promise(resolve => setImmediate(resolve));
-    const { results, png } = reply;
-    if (fetched.length) results.push({ assertion: { fetch: 'none' }, pass: false, observed: `document requested ${fetched.length} resource(s): ${fetched.join(', ')}, needs none` });
-    parentPort.postMessage({ id: request.id, status: 'completed', pass: results.every(result => result.pass), results, fetches: fetched.length, ...growth(),
-      ms: performance.now() - begin, ...(png ? { png } : {}) }, png ? [png.buffer] : []);
+    parentPort.postMessage({ id: request.id, ...reply, ...engine.growth(), ms: performance.now() - begin }, reply.png ? [reply.png.buffer] : []);
   });
 }
 

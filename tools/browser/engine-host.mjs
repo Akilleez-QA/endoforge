@@ -54,7 +54,7 @@ export function createEngine({ policy, dir, ...limits } = {}) {
       worker.removeAllListeners('exit').removeAllListeners('error').on('error', () => {});
       if (ready.error) return failed(ready.error);
       stats.started += 1;
-      resolve({ worker, warmPages: ready.pages, readyMs: ready.readyMs, checks: 0, generation: stats.started, warm: { pages: ready.pages, externrefs: ready.externrefs } });
+      resolve({ worker, warmPages: ready.pages, readyMs: ready.readyMs, checks: 0, generation: stats.started, warm: { pages: ready.pages, externrefs: ready.externrefs, image: ready.image } });
     });
   });
   const check = async input => {
