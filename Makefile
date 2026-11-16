@@ -43,6 +43,7 @@ check:
 	$(PYTHON) -I tools/check_file_url_paths.py
 	$(PYTHON) -I tools/check_trace.py
 	$(PYTHON) -I tools/gen_data_dictionary.py --check
+	$(PYTHON) -I tools/check_durable_sync.py
 
 index:
 	$(PYTHON) -I tools/experiments_index.py
