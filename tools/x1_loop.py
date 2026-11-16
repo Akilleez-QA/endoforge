@@ -10,6 +10,7 @@ from pathlib import Path
 
 from core.ledger.frozen import digest, frozen_record, snapshot
 from core.ledger.ledger import Ledger, encode
+from tools.durable import sync_dir, sync_file
 
 REPOSITORY = Path(__file__).resolve().parents[1]
 ROUND_CHECKS = ["schema", "interface", "bounds", "determinism", "forbidden_effects", "residual"]
@@ -98,15 +99,11 @@ def store_decision(decision, path):
         with os.fdopen(fd, "w") as output:
             json.dump(decision, output, sort_keys=True)
             output.flush()
-            os.fsync(output.fileno())
+            sync_file(output.fileno())
         os.link(staging, path)
     finally:
         os.unlink(staging)
-    directory = os.open(path.parent, os.O_RDONLY)
-    try:
-        os.fsync(directory)
-    finally:
-        os.close(directory)
+    sync_dir(path.parent)
 
 
 def write_decision(result):
