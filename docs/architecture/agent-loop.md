@@ -244,7 +244,8 @@ The name is everything after the first `|` outside a value. [compact.mjs](../../
 the table to one JSON test per line in `tests.json`, with keys in the order `name, fn, args, expect, tol` or `name,
 fn, args, expectError`. Before every specification check, `specificationProblems` expands it and returns a line that
 does not parse (with its line and column), a table whose expansion would pass the 64 KiB file limit (sizes are
-counted as values are built, so a `$name` reused many times is refused before anything is expanded), or a test that [test strength](gates.md#test-strength-g1), the capability
+counted as values are built, so a `$name` reused many times is refused on its line before anything is expanded; a
+table that passes that count but not the final byte check is refused as a whole), or a test that [test strength](gates.md#test-strength-g1), the capability
 block or the oracle refuses (with its `tests.txt` line) as specification problems. At the freeze the cell writes the
 expanded `tests.json` before the oracle runs and before hashing; the host expands its own shadow `tests.txt` the same
 way, so the comparison and everything after it see only `tests.json`. The result carries `compact`: the source's
