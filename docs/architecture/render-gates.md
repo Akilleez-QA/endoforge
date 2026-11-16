@@ -168,6 +168,28 @@ raw traces helped in 2 of 6 configurations (arXiv 2505.04441) and verbose test r
 (arXiv 2609.00362). Under many parallel agents check CPU becomes a bottleneck (arXiv 2609.19947); admission of heavy checks
 against free CPU is a later step, taken when measured width calls for it.
 
+## Checks instead of prose
+
+The loop's trust comes from its environment, so each rule this design adds is enforced by code, and what a reviewer looks
+at is evidence, not the candidate's source:
+
+- **Boundaries are import rules.** The job isolate never imports the engine's modules (it reaches the Worker only through
+  its message interface), the loop cell never imports the contained cohort's guest code, and tooling WebAssembly is admitted
+  only through `toolingWasmModules`. A dependency check in `make check` refuses an import across these boundaries, with a
+  message naming the allowed route.
+- **A feature map for each view.** A view's glue declares its user-facing parts as named features (`id`, `selector`,
+  `label`), and render tests refer to features by name. The specification, the tests, the view and the feedback share one
+  vocabulary (`feature "add button" box 30x20, needs minWidth 44`), and G7 refuses a test that names an undeclared feature
+  or a view whose features do not match its block in `CONTRACT.md`.
+- **Exhaustive where small.** A property render test with a depth instead of a sample explores every reachable reducer
+  state up to that depth, in the manner of bounded model checking, with a state budget that refuses the test at freeze
+  when the space is too large.
+- **State charts and renders as evidence.** For a promoted user interface the receipt records the reached-state graph of
+  its property tests as a state chart, and the PNG digest of each render test with the engine pin. A host such as Cstack
+  can show these with an approval, so a person reviews behaviour and pixels, not code.
+- **Bans come with cleanup.** When a check bans a pattern, the same change removes the pattern's existing occurrences, so
+  agents do not copy them from the codebase.
+
 ## Evaluation
 
 One experiment, planned in writing before it runs, on a set of interface needs with a real model:
@@ -198,7 +220,11 @@ Each one pull request of about 400 changed lines or fewer, with requirements and
    information, the per-turn cohort run by host call, and TypeScript views to the engine.
 6. **Prompts and examples**: `renderRules`, and a to-do user interface through the real loop with a test double in each
    language, promoted, with a `wrong` variant refused by G10.
-7. **The experiment.**
+7. **Boundaries and evidence**: the import-boundary check in `make check`, features in the glue and G7, depth-bounded
+   exhaustive property tests, and state charts and render digests in the receipt.
+8. **The experiment.**
+
+An outer loop that fuzzes each promoted user interface and proposes fixes comes after these foundations hold, not before.
 
 ## Decision record
 
