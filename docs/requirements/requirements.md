@@ -1084,6 +1084,16 @@ A type check run in the contained cohort, with a reused tsrs instance or a host 
 - Verification: T — `make tscheck-test`, `make pipeline-test`
 - Status: Baselined
 
+### REQ-BROWSER-001 — Browser rendering in a process workcell
+
+HTML shall be rendered to PNG inside a process workcell by the digest-pinned `kitesurf-core` module, admitted only through `toolingWasmModules`, with thread cells refused, fetch and network refused, and a missing or mismatched artifact reported as skipped or as an unknown outcome, never a pass.
+
+- Rationale: A browser engine is tooling with a wider WebAssembly feature set than candidate kernels; keep it pinned, offline and out of thread cells.
+- Derivation: `tools/browser/port.mjs`, `tools/browser/artifact.mjs`, `tools/browser/setup.mjs`, `tools/browser/pin.mjs`
+- Allocated to: SDD §4 C-32 Workcell browser
+- Verification: T — `make browser-test`
+- Status: Baselined
+
 ### REQ-KERNEL-001 — Kernel component contract
 
 The kernel contract tool shall emit an artifact record only for a component that conforms to `kernel.wit`, bind the record to the exact bytes, refuse omitted, changed or added fields, undeclared capabilities and exports, wrong types and versions, malformed WIT and invalid components, and fail closed when a tool is missing or at another version.
