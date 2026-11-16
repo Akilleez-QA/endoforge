@@ -101,7 +101,7 @@ manner of spec-first property testing of web interfaces (Quickstrom, PLDI 2022).
 |---|---|---|
 | `count` | the selector matches exactly that many nodes | `querySelectorAll`, KS:packages/core/src/dom/tree.rs:414 |
 | `text` | the first match's rendered text, whitespace collapsed, equals the string | `innerTextRendered`, KS:packages/core/src/dom/tree.rs:713 |
-| `attr` | the first match matches `[name="value"]` (the core exports no attribute getter) | `querySelectorAll` |
+| `attr` | the first match matches `[name="value"]`; the observed attributes are reported | `querySelectorAll`; `nodeInfo`, KS:packages/core/src/dom/tree.rs:611 |
 | `style` | each computed property of the first match equals its value | `computedStyleValue`, KS:packages/core/src/style/computed.rs:732 |
 | `box` | the first match's rectangle meets its bounds and `inViewport` | `getBoundingClientRect`, KS:packages/core/src/layout/geometry.rs:864 |
 | `apart` | two selectors' rectangles do not overlap | `getBoundingClientRect` |
