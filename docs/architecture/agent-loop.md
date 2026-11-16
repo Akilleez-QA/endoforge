@@ -72,6 +72,12 @@ A reply that isn't a calls object, or has too many calls, gets an error message 
 `done` meets a failing check, the failures go back with `Fix what failed, then done.` An empty `calls` list counts as
 `done`.
 
+An implementation check reports one stage: `compile` when G2 fails, with up to five of the compiler's own diagnostics
+(code such as `TS2304`, line, column and message, at most 1 KiB), and otherwise `checks`, with every failing gate and
+the first 20 failing tests in `tests.json` order. A gate or test that passed in any earlier round of the attempt that
+reached the checks stage and fails now carries `"regression": true`. A compiler that times out or cannot start stays
+`compiler failed or timed out`, with `unavailable` on the external compiler.
+
 ## Two stages
 
 | Stage | Editable | Its check | Ends when |
