@@ -1,0 +1,1 @@
+| 2026-11-16 | repeated failure | 1 requirement added: the same failure in two consecutive implementation checks ends the stage with `repeated_failure`, recorded and refused (REQ-LOOP-012) | this PR |
