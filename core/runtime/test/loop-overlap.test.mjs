@@ -3,7 +3,9 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { createHash } from 'node:crypto';
 import test from 'node:test';
+import { stagePrompts } from '../x1/agent.mjs';
 import { agentLimits, completedCalls, createLoopPool } from '../x1/loop.mjs';
 import { runNeed } from '../x1/pipeline.mjs';
 import { scriptedProvider, WarmClaudeTransport } from '../x1/transports.mjs';
@@ -123,6 +125,16 @@ test('without a partial reply the overlap starts when the specification reply en
   assert.equal(result.overlap.outcome, 'used');
   assert.equal(result.rounds.length, 1);
   assert.ok(result.rounds[0].failures);
+});
+
+test('the blind implementation prompt never claims frozen tests, and the normal prompt is unchanged', () => {
+  const overlay = { 'CONTRACT.md': 'C', 'tests.json': 'T' };
+  const normal = JSON.parse(stagePrompts.implementation({ id: 'x', overlay })), blind = JSON.parse(stagePrompts.implementation({ id: 'x', overlay, blind: true }));
+  assert.equal(createHash('sha256').update(normal.instructions).digest('hex'), 'c3f54090ca2d1a8ed570920ace1db05269ede625317860c460dae5ee269f647a');
+  assert.deepEqual(Object.keys(normal.frozen), ['CONTRACT.md', 'tests.json']);
+  assert.deepEqual(Object.keys(blind.frozen), ['CONTRACT.md']);
+  assert.notEqual(blind.instructions, normal.instructions);
+  for (const phrase of ['tests.json are frozen', 'Implement all frozen tests']) assert.ok(!blind.instructions.includes(phrase), phrase);
 });
 
 test('completed calls are read from a partial reply, braces and quotes inside strings included', () => {
