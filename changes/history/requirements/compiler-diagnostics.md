@@ -1,0 +1,1 @@
+| 2026-11-16 | slice 1 | Changed: REQ-LOOP-001 (a failed check returns the first failing stage, the compiler's own capped diagnostics at G2 and regressions against every earlier round that reached the checks stage) | this PR |

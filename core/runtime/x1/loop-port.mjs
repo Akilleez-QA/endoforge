@@ -5,7 +5,7 @@ import { performance } from 'node:perf_hooks';
 import { compile as compileKernel, loadCompiler, x1Flags } from '../../../experiments/assemblyscript-toolchain.mjs';
 import { ASC_FILES, ASC_PATH, ASC_VERSION } from '../../../tools/asc/pin.mjs';
 import { agentStage, frozenSpecification, repeatedFailure, specificationFiles, specificationProblems, stagePrompts, takeReply } from './agent.mjs';
-import { runGates } from './gates.mjs';
+import { compileFailure, runGates } from './gates.mjs';
 import { createPort as x1Port, hash, implementationFiles as hostFiles } from './host.mjs';
 
 export const cellFiles = Object.freeze(['loop-port.mjs', 'agent.mjs', 'oracle.mjs']);
@@ -47,17 +47,30 @@ function declaredPages(bytes) {
 }
 async function compileInCell(files, onRead) {
   const source = hash(files['kernel.ts']);
+  const diagnostics = [], text = files['kernel.ts'];
+  const onDiagnostic = ({ code, category, message, range }) => {
+    if (category !== 3) return;
+    const start = range?.source?.normalizedPath === 'kernel.ts' ? range.start : null;
+    const line = start === null ? null : text.slice(0, start).split('\n').length;
+    diagnostics.push({ code: `${code < 1000 ? 'AS' : 'TS'}${code}`, line, column: line && start - text.lastIndexOf('\n', start - 1), message });
+  };
   try {
-    const bytes = await compileKernel({ name: 'kernel', source: files['kernel.ts'] }, ascPath, { flags: x1Flags, onRead });
-    if (!bytes) return { source, error: 'compiler failed or timed out' };
+    const bytes = await compileKernel({ name: 'kernel', source: text }, ascPath, { flags: x1Flags, onRead, onDiagnostic });
+    if (!bytes) return compileFailure(source, diagnostics);
     const pages = declaredPages(bytes);
     if (pages === null || pages > maximumKernelPages) return { source, error: 'compiled memory exceeds the kernel limit' };
     return { source, wasm: Buffer.from(bytes).toString('base64') };
-  } catch { return { source, error: 'compiler failed or timed out' }; }
+  } catch { return compileFailure(source, []); }
 }
 const stageLimits = (limits, spent) => ({ ...limits, maxTokens: limits.maxTokens + spent });
-const summary = result => result.promotable ? null : { gates: Object.fromEntries(Object.entries(result.gates).filter(([, gate]) => !gate.ok)),
-  tests: (result.tests || []).filter(test => !test.pass).slice(0, 20) };
+const passed = result => ({ gates: Object.keys(result.gates).filter(name => result.gates[name].ok), tests: (result.tests || []).flatMap((test, index) => test.pass ? [index] : []) });
+const summary = (result, before) => {
+  if (result.promotable) return null;
+  const mark = (entry, was) => was ? { ...entry, regression: true } : entry;
+  const failing = Object.entries(result.gates).filter(([, gate]) => !gate.ok), compile = failing.find(([name]) => name === 'G2_compiles');
+  return { stage: compile ? 'compile' : 'checks', gates: Object.fromEntries((compile ? [compile] : failing).map(([name, gate]) => [name, mark(gate, before.gates.has(name))])),
+    tests: compile ? [] : (result.tests || []).flatMap((test, index) => test.pass ? [] : [mark(test, before.tests.has(index))]).slice(0, 20) };
+};
 
 export async function warm({ primes = 8, path = ASC_PATH } = {}) {
   ascPath = path;
@@ -92,9 +105,10 @@ export function createPort(options, { stage = () => {}, host } = {}) {
   };
   const checkRound = current => {
     const begin = performance.now();
-    const failures = summary(runGates(current));
+    const earlier = rounds.filter(round => round.passed && round.failures?.stage !== 'compile');
+    const result = runGates(current), failures = summary(result, { gates: new Set(earlier.flatMap(round => round.passed.gates)), tests: new Set(earlier.flatMap(round => round.passed.tests)) });
     gateMs += performance.now() - begin;
-    rounds.push({ round: rounds.length, source: current.compiled.source, failures });
+    rounds.push({ round: rounds.length, source: current.compiled.source, failures, passed: passed(result) });
     return failures;
   };
   const repairRounds = async () => {
