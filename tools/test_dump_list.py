@@ -71,7 +71,7 @@ class DumpListTests(unittest.TestCase):
             holder.refresh()
         self.assertEqual(holder.writes, 1)
         deadline = time.monotonic() + 3
-        while json.loads(holder.path.read_text())["sheddable_bytes"] != 60 and time.monotonic() < deadline:
+        while holder.writes < 2 and time.monotonic() < deadline:
             time.sleep(0.01)
         self.assertEqual(json.loads(holder.path.read_text())["sheddable_bytes"], 60)
         self.assertEqual(holder.writes, 2)

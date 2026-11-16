@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { runNeed } from '../x1/pipeline.mjs';
-const fake = new URL('./fixtures/x1/fake-codex.mjs', import.meta.url).pathname;
+const fake = fileURLToPath(new URL('./fixtures/x1/fake-codex.mjs', import.meta.url));
 test('terse fallback does not retry a stage error', async t => {
   const root = await mkdtemp(join(tmpdir(), 'ef-pipeline-fallback-'));
   t.after(() => rm(root, { recursive: true, force: true }));
