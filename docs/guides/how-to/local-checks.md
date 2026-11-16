@@ -39,6 +39,7 @@ relies on `assert` for its checks fails there.
 | `tools/source_sums.py --check` | Source file digests. |
 | `tools/experiment_id.py check` | Every experiment number is allocated once. |
 | `tools/check-privacy.py` | No home paths, account paths or email addresses in experiment records. |
+| `tools/check_file_url_paths.py` | No `URL.pathname` used as a path outside frozen experiments; use `fileURLToPath`, because `pathname` keeps `%20` for a space. |
 | `tools/check_trace.py` | Requirements trace to tests and design, every test file is classified, every environment variable the code reads is in the [configuration reference](../../configuration/configuration-reference.md), and relative links and anchors resolve. |
 | `tools/gen_data_dictionary.py --check` | The [data dictionary](../../data/data-dictionary.md) matches the schema files. |
 

@@ -6,7 +6,7 @@
 | Version | 2.12 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
-| Date | 2026-11-12 |
+| Date | 2026-11-16 |
 | Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
 | Applies to | endoforge main at baseline commit |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
@@ -1656,6 +1656,16 @@ CI shall run a Gitleaks scan of the full history with a checksum-verified binary
 - Verification: T — `make test` (`gap-tools-test`); I — `.github/workflows/ci.yml` job `lint`
 - Status: Baselined (round 7; changed in round 8, R12: JavaScript, TypeScript and Rust are lexed, so end-of-line and inline comments are found, and the 20 the check had missed were removed, closing D-09). In shell files and Makefiles only `#` at the start of a line is found, because `$#` and `${#x}` make end-of-line `#` ambiguous
 
+### REQ-REPO-011 — File URLs become paths through `fileURLToPath`
+
+`make check` shall run `tools/check_file_url_paths.py`, which lists every tracked `.mjs`, `.js`, `.cjs`, `.ts`, `.mts`, `.cts`, `.sh` and Makefile file outside `node_modules`, `vendor/` and every frozen experiment (a directory `experiments/<name>/` with a tracked `RESULT.md`) with `git ls-files`, prints `file:line: text` for every line that reads `.pathname` or destructures `pathname`, unless its allowlist names that file and a fragment of that line, and exits 1 with the message `use fileURLToPath(new URL(...)) from node:url; URL.pathname keeps percent-encoding, so paths with spaces break`; it exits 0 when there is none and 2 when `git ls-files` fails. The allowlist holds only uses on a URL that is not a `file:` URL.
+
+- Rationale: `new URL(x, import.meta.url).pathname` keeps percent-encoding, so in a checkout whose path holds a space the fixtures handed a path with `%20` to `spawn` and worker threads, and about 111 loop tests and several generator tests failed before they ran; CI passed only because its checkout path has no space. The 18 uses outside frozen experiments now go through `fileURLToPath`. Frozen experiments keep their measured scripts unchanged.
+- Derivation: `tools/check_file_url_paths.py`, `Makefile`
+- Allocated to: SDD §4 C-27 Repository checks
+- Verification: T — `make ledger-test` (`tools/test_check_file_url_paths.py`); I — `Makefile` target `check`
+- Status: Baselined (added in version 2.12)
+
 ## 11. Untested behaviour (requirement gaps)
 
 These behaviours exist in the code at the baseline but no test in `make test` checks them. They are not
@@ -1742,4 +1752,4 @@ Closed gaps (their IDs are not reused):
 | 2.9 | 2026-11-10 | round 9 | Changed: REQ-GEN-011 (a record, list or text value must declare its layout in the capability block; the prompts ask for it; the freeze and G7 refuse a block without it), REQ-ATOM-006 (the atomizer prompts ask for the nested layout), REQ-LIB-001 (the library key and binding include the nested layout; D-11 closed), REQ-ATOM-007 (`fanout.mjs` and `cutover.mjs` pass their policy to `verify.mjs`; D-12 closed) and REQ-ISO-010 (`LedgerBridge.pid`; the bridge-death test kills the pool's own bridge); no gap open | this commit |
 | 2.10 | 2026-11-10 | round 10 | 4 requirements added: the reference sandbox deadline and its distinct errors (REQ-SYNTH-009, D-14 closed), a relaunch patch reopens a finished job (REQ-COND-005, D-15 closed), the `TRACE-NEEDED` event (REQ-COND-006) and invariants I16 and I17 (REQ-JOB-004); changed: REQ-ATOM-007 (cutover's planning steps take, use and record `--policy`; D-16 closed) and REQ-LIB-002 (union members match on nested layout and bind by export name when they share a signature); no gap open | this commit |
 | 2.11 | 2026-11-12 | flake fix | Changed: REQ-LOOP-003 (a decision file is either absent or complete after a bridge kill; it is published under its final name only once written and synced) | this PR |
-| 2.12 | 2026-11-16 | render tests | 1 requirement added: render tests in the frozen specification, glue media and the pre-render-gate rule (REQ-X1-012) | this PR |
+| 2.12 | 2026-11-16 | file URL paths | 1 requirement added: file URLs become paths through `fileURLToPath`, checked by `make check` (REQ-REPO-011) | this PR |
