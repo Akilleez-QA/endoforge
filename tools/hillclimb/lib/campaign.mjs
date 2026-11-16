@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { validateFanout } from './fanout.mjs';
 
 export const SCHEMA = 'endoforge/hillclimb/1';
@@ -61,5 +62,5 @@ export function lastRound(c) {
 }
 
 export function vars(c, n, extra = {}) {
-  return { repo: c.repo ?? '', workdir: c.workdir, round: n, roundDir: roundDir(c, n), tool: path.resolve(new URL('..', import.meta.url).pathname), ...extra };
+  return { repo: c.repo ?? '', workdir: c.workdir, round: n, roundDir: roundDir(c, n), tool: path.resolve(fileURLToPath(new URL('..', import.meta.url))), ...extra };
 }

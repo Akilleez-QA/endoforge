@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { generate, terseRule, exactRule } from '../x1/generator.mjs';
-const fake = new URL('./fixtures/x1/fake-codex.mjs', import.meta.url).pathname;
+const fake = fileURLToPath(new URL('./fixtures/x1/fake-codex.mjs', import.meta.url));
 test('exact terse mode adds the numeric derivation rule to the specification stage only', async t => {
   const root = await mkdtemp(join(tmpdir(), 'ef-generator-exact-'));
   t.after(() => rm(root, { recursive: true, force: true }));
