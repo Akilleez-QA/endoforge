@@ -72,10 +72,12 @@ test('a reference cannot run code outside its deadline through a thrown value, a
   const trap = 'new Proxy({}, { get() { for (;;) {} }, getPrototypeOf() { for (;;) {} } })';
   assert.equal(referenceFunctions(`throw ${trap};`, ['kwToHp']), null);
   assert.deepEqual(referenceFunctions(`function kwToHp(kw) { throw ${trap}; }`, ['kwToHp']).kwToHp([1]), { trap: true });
-  const hostile = referenceFunctions(`function kwToHp(kw) { return kw; } Object.defineProperty(globalThis, 'call', { get() { for (;;) {} }, set() { for (;;) {} } }); Object.defineProperty(Object.prototype, 'trap', { get() { for (;;) {} } });`, ['kwToHp']);
-  assert.deepEqual(hostile.kwToHp([1]), { trap: true, timeout: true });
-  const getter = referenceFunctions(`Object.defineProperty(globalThis, 'kwToHp', { get() { for (;;) {} } });`, ['kwToHp']);
-  assert.deepEqual(getter, {});
+  const loop = '{ get() { for (;;) {} }, set() { for (;;) {} }';
+  assert.deepEqual(referenceFunctions(`function kwToHp(kw) { return kw; } Object.defineProperty(globalThis, 'call', ${loop} });`, ['kwToHp']).kwToHp([1]), { trap: true });
+  assert.deepEqual(referenceFunctions(`function kwToHp(kw) { return kw; } Object.defineProperty(globalThis, 'call', ${loop}, configurable: true });`, ['kwToHp']).kwToHp([1]), { value: 1 });
+  assert.deepEqual(referenceFunctions(`function kwToHp(kw) { return kw; } Object.defineProperty(Object.prototype, 'trap', ${loop} });`, ['kwToHp']).kwToHp([1]), { value: 1 });
+  assert.deepEqual(referenceFunctions(`Object.defineProperty(globalThis, 'kwToHp', ${loop} });`, ['kwToHp']), {});
+  assert.deepEqual(referenceFunctions(`Object.defineProperty(Object.prototype, 'kwToHp', ${loop} });`, ['kwToHp']), {});
 });
 
 test('two agreeing references replace a wrong literal, and every number test gets a tolerance', () => {

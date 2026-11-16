@@ -529,11 +529,9 @@ export function referenceFunctions(code, names, { timeout = 50 } = {}) {
     if (fn) found[name] = args => {
       let got;
       try {
-        got = twice(() => {
-          for (const [key, value] of [['call', caller], ['f', fn], ['a', [...args]]]) Object.defineProperty(context, key, { value, writable: true, configurable: true });
-          return vm.runInContext('call(f, a)', context, options);
-        });
-      } catch { return { trap: true, timeout: true }; }
+        for (const [key, value] of [['call', caller], ['f', fn], ['a', [...args]]]) Object.defineProperty(context, key, { value, writable: true, configurable: true });
+      } catch { return { trap: true }; }
+      try { got = twice(() => vm.runInContext('call(f, a)', context, options)); } catch { return { trap: true, timeout: true }; }
       return own(got, 'trap') ? { trap: true } : { value: own(got, 'value') };
     };
   }

@@ -910,7 +910,7 @@ Evaluator synthesis shall generate inputs for a record, list or text parameter f
 
 ### REQ-ORACLE-001 — Formula oracle
 
-With `limits.oracle` set (default off), the agent loop shall recompute frozen expectations from the contract's formula, ranges and `reference.js` before the freeze, replace a literal when the formula and the reference agree on another value, return flagged tests to the model, evaluate a piecewise or conditional rule only inside its own condition, and abstain on a branch it cannot read or on conflicting definitions; a reference load or call that runs past its sandbox deadline is run once more before its result is used.
+With `limits.oracle` set (default off), the agent loop shall recompute frozen expectations from the contract's formula, ranges and `reference.js` before the freeze, replace a literal when the formula and the reference agree on another value, return flagged tests to the model, evaluate a piecewise or conditional rule only inside its own condition, and abstain on a branch it cannot read or on conflicting definitions; a reference load or call that fails after at least half its sandbox deadline is run once more before its result is used.
 
 - Rationale: Catch wrong frozen expectations before implementation (P-69, P-70, P-71; still off by default).
 - Derivation: `core/runtime/x1/oracle.mjs`
