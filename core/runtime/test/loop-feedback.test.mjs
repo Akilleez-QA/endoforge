@@ -58,6 +58,16 @@ test('the next model prompt carries the staged feedback', { timeout: 60000 }, as
   assert.deepEqual(prompt.results.at(-1).check.gates.G2_compiles.diagnostics, expected);
 });
 
+test('a compile failure between rounds does not erase what passed before it', { timeout: 60000 }, async () => {
+  const tests = JSON.stringify([{ name: 'a', fn: 'add', args: [1, 1], expect: 2 }, { name: 'b', fn: 'add', args: [2, 3], expect: 5 }]);
+  const check = checkPort();
+  const first = await check(kernelFiles('export function add(a:i32,b:i32):i32{return a==2?a-b:a+b}', tests));
+  assert.deepEqual(first.tests.map(t => t.name), ['b']);
+  assert.equal((await check(kernelFiles(broken, tests))).stage, 'compile');
+  const third = await check(kernelFiles('export function add(a:i32,b:i32):i32{return a+b+1}', tests));
+  assert.deepEqual(third.tests.map(t => [t.name, t.regression ?? false]), [['a', true], ['b', false]]);
+});
+
 test('feedback lists failing tests in test order and marks what passed last round as a regression', { timeout: 60000 }, async () => {
   const tests = JSON.stringify([{ name: 'small', fn: 'add', args: [1, 1], expect: 2 }, { name: 'mixed', fn: 'add', args: [2, 3], expect: 5 }, { name: 'zero', fn: 'add', args: [0, 0], expect: 0 }]);
   const check = checkPort();

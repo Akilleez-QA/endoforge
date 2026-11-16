@@ -68,8 +68,8 @@ const summary = (result, before) => {
   if (result.promotable) return null;
   const mark = (entry, was) => was ? { ...entry, regression: true } : entry;
   const failing = Object.entries(result.gates).filter(([, gate]) => !gate.ok), compile = failing.find(([name]) => name === 'G2_compiles');
-  return { stage: compile ? 'compile' : 'checks', gates: Object.fromEntries((compile ? [compile] : failing).map(([name, gate]) => [name, mark(gate, before?.gates.includes(name))])),
-    tests: compile ? [] : (result.tests || []).flatMap((test, index) => test.pass ? [] : [mark(test, before?.tests.includes(index))]).slice(0, 20) };
+  return { stage: compile ? 'compile' : 'checks', gates: Object.fromEntries((compile ? [compile] : failing).map(([name, gate]) => [name, mark(gate, before.gates.has(name))])),
+    tests: compile ? [] : (result.tests || []).flatMap((test, index) => test.pass ? [] : [mark(test, before.tests.has(index))]).slice(0, 20) };
 };
 
 export async function warm({ primes = 8, path = ASC_PATH } = {}) {
@@ -105,7 +105,8 @@ export function createPort(options, { stage = () => {}, host } = {}) {
   };
   const checkRound = current => {
     const begin = performance.now();
-    const result = runGates(current), failures = summary(result, rounds.at(-1)?.passed);
+    const earlier = rounds.filter(round => round.passed && round.failures?.stage !== 'compile');
+    const result = runGates(current), failures = summary(result, { gates: new Set(earlier.flatMap(round => round.passed.gates)), tests: new Set(earlier.flatMap(round => round.passed.tests)) });
     gateMs += performance.now() - begin;
     rounds.push({ round: rounds.length, source: current.compiled.source, failures, passed: passed(result) });
     return failures;

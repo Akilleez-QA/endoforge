@@ -3,5 +3,6 @@
   diagnostics (code, line, column, message; at most five and 1 KiB) at
   G2, in the cell and on the external compiler.
 - Check feedback reports only the first failing stage, lists failing
-  tests in test order and marks a gate or test that passed in the
-  previous round as a regression.
+  tests in test order and marks a gate or test that passed in any
+  earlier round of the attempt as a regression, even across a
+  compile failure.
