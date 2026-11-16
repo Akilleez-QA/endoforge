@@ -47,7 +47,8 @@ and `createBrowserPool` stay as the PNG spike and its pinned-digest evidence; th
 step ([loop-port.mjs](../../core/runtime/x1/loop-port.mjs)) starts one engine Worker through
 [engine-host.mjs](engine-host.mjs). The Worker ([engine.mjs](engine.mjs)) inherits the cell's permission flags, because
 it is created without `execArgv`. It installs the workcell wasm guard with the Kitesurf tooling entry, verifies the
-artifact, compiles the wasm once, loads the glue, registers the four fonts and primes once. Off by default; refused in
+artifact, compiles the wasm once, imports the glue once, registers the four fonts, primes with one render and one
+document check, and drains its microtask queue before it reports ready. Off by default; refused in
 thread cells and in any thread that is not a process's main thread.
 
 `inspect({ html, viewport: [w, h], expect, png })` checks the request, then the Worker parses the document, sets the
@@ -66,10 +67,14 @@ fetches fails the check. `png: true` also returns the PNG of the same document.
 | `{ select, apart }` | the first matches of the two selectors do not overlap | `#add and #overlap overlap by 10x10, needs apart` |
 | `{ page: 'noHorizontalOverflow' }` | no element passes the viewport's right edge | `page overflows horizontally: div right edge 500 passes the viewport width 390, needs noHorizontalOverflow` |
 
-`pixel` is not built yet. The Worker is reused as it is, never restored from a memory image. The host replaces it
-after a fault (the Worker replies `outcome_unknown` and exits), an error or exit before the reply, a check over
-`timeoutMs` (10 s), 1,000 checks, or 16 MiB of wasm memory growth since warm. A check the Worker did not answer is
-`outcome_unknown`, never a pass. Results carry `engine: { generation, checks }`, and `stats()` counts starts,
+`pixel` is not built yet. The Worker is reused as it is, never snapshotted or restored from a memory image: restoring
+an image taken before the engine's lazily created futures queue existed is what produced its `RefCell already borrowed`
+panic, and a test keeps restore helpers out of both modules. The glue is never imported a second time in a living
+Worker; replacement is always a new Worker. The host terminates and replaces the Worker after a fault (the Worker
+replies `outcome_unknown` and exits), an error or exit before the reply, no reply within `timeoutMs` (5 s, since the
+engine is unmetered), 1,000 checks, or 16 MiB of wasm memory growth since warm, and starts the replacement at once. A
+check the Worker did not answer is `outcome_unknown`, never a pass. Each result records the wasm memory `pages`, the
+externref table length `externrefs` and `engine: { generation, checks, warm }`; `stats()` counts starts,
 replacements, checks and faults.
 
 `make browser-test` runs [test/render.test.mjs](test/render.test.mjs) and [test/engine.test.mjs](test/engine.test.mjs). Without a verified artifact the tests that need

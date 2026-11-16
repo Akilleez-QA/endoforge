@@ -1,6 +1,6 @@
 import { isMainThread, Worker } from 'node:worker_threads';
 
-export const ENGINE_LIMITS = Object.freeze({ maxChecks: 1000, maxGrowthBytes: 16 * 1024 * 1024, timeoutMs: 10000 });
+export const ENGINE_LIMITS = Object.freeze({ maxChecks: 1000, maxGrowthBytes: 16 * 1024 * 1024, timeoutMs: 5000 });
 export const PROCESS_ONLY = 'the render engine runs only in a process cell';
 export const ASSERTIONS = Object.freeze(['count', 'text', 'attr', 'style', 'box', 'apart', 'page']);
 const BOX_KEYS = ['minWidth', 'minHeight', 'maxWidth', 'maxHeight', 'inViewport'];
@@ -36,9 +36,10 @@ export function createEngine({ dir, maximumPages, ...limits } = {}) {
   const stats = { started: 0, replaced: 0, checks: 0, faults: 0 };
   let current = null, queue = Promise.resolve(), closed = false, nextId = 0;
   const retire = cell => {
-    if (current === cell) current = null;
     stats.replaced += 1;
     cell.worker.terminate();
+    current = closed ? null : spawn();
+    current?.catch(() => {});
   };
   const spawn = () => new Promise((resolve, reject) => {
     if (!isMainThread) return reject(new Error(PROCESS_ONLY));
@@ -50,13 +51,16 @@ export function createEngine({ dir, maximumPages, ...limits } = {}) {
       worker.removeAllListeners('exit').removeAllListeners('error').on('error', () => {});
       if (ready.error) return failed(ready.error);
       stats.started += 1;
-      resolve({ worker, warmPages: ready.pages, readyMs: ready.readyMs, checks: 0, generation: stats.started });
+      resolve({ worker, warmPages: ready.pages, readyMs: ready.readyMs, checks: 0, generation: stats.started, warm: { pages: ready.pages, externrefs: ready.externrefs } });
     });
   });
   const check = async input => {
     if (closed) throw new Error('engine closed');
     let cell;
-    try { cell = current ??= await spawn(); } catch (error) { return { status: 'outcome_unknown', reason: error.message }; }
+    try { cell = await (current ??= spawn()); } catch (error) {
+      current = null;
+      return { status: 'outcome_unknown', reason: error.message };
+    }
     const id = ++nextId;
     return new Promise(resolve => {
       const { worker } = cell;
@@ -67,7 +71,7 @@ export function createEngine({ dir, maximumPages, ...limits } = {}) {
         stats.checks += 1;
         if (result.status !== 'completed') stats.faults += 1;
         if (replace || result.status !== 'completed') retire(cell);
-        resolve({ ...result, engine: { generation: cell.generation, checks: cell.checks, readyMs: cell.readyMs } });
+        resolve({ ...result, engine: { generation: cell.generation, checks: cell.checks, readyMs: cell.readyMs, warm: cell.warm } });
       };
       const onMessage = reply => {
         if (reply.id !== id) return;
@@ -83,8 +87,8 @@ export function createEngine({ dir, maximumPages, ...limits } = {}) {
   };
   return {
     async start() {
-      if (!current) current = await spawn();
-      return { generation: current.generation, readyMs: current.readyMs, warmPages: current.warmPages };
+      const cell = await (current ??= spawn());
+      return { generation: cell.generation, readyMs: cell.readyMs, ...cell.warm };
     },
     inspect(input) {
       const valid = request(input);
@@ -92,12 +96,13 @@ export function createEngine({ dir, maximumPages, ...limits } = {}) {
       queue = result.catch(() => {});
       return result;
     },
-    stats: () => ({ ...stats, current: current && { generation: current.generation, checks: current.checks } }),
+    stats: () => ({ ...stats }),
     async close() {
       closed = true;
       await queue;
-      if (current) await current.worker.terminate();
+      const cell = await current?.catch(() => null);
       current = null;
+      await cell?.worker.terminate();
     },
   };
 }

@@ -74,12 +74,24 @@ test('a document that fetches never passes and the bridge only counts the refuse
 
 test('one warm worker is reused without restore and renders the same bytes as a fresh one', needsEngine, async t => {
   const engine = engineFor(t), page = { ...small, html, png: true };
+  const warm = await engine.start();
   const first = await engine.inspect(page), second = await engine.inspect(page);
-  assert.deepEqual([first.engine.generation, second.engine.generation, second.engine.checks], [1, 1, 2]);
-  assert.ok(second.pages >= first.pages);
+  assert.deepEqual([first.engine.generation, second.engine.generation, second.engine.checks, second.glueImports], [1, 1, 2, 1]);
+  assert.deepEqual(first.engine.warm, { pages: warm.pages, externrefs: warm.externrefs });
+  assert.ok(second.pages >= first.pages && first.pages >= warm.pages);
+  assert.ok(Number.isSafeInteger(second.externrefs) && second.externrefs > 0);
   const fresh = await engineFor(t).inspect(page);
   assert.deepEqual(Buffer.from(fresh.png), Buffer.from(second.png));
-  assert.equal(ENGINE_LIMITS.maxChecks, 1000);
+});
+
+test('the engine has no memory snapshot or restore path, and its limits are the design values', () => {
+  for (const name of ['engine.mjs', 'engine-host.mjs']) {
+    const source = readFileSync(new URL(`../${name}`, import.meta.url), 'utf8');
+    const imports = [...source.matchAll(/^import .* from '([^']+)';$/gm)].map(match => match[1]);
+    assert.deepEqual(imports.filter(path => !['node:perf_hooks', 'node:worker_threads', '../../core/runtime/isolate-wasm.mjs', './artifact.mjs', './pin.mjs'].includes(path)), [], name);
+    assert.doesNotMatch(source, /tsrs-reuse|snapshot|restore|memory\.buffer\)?\.set|new Uint8Array\(exports\.memory/i, name);
+  }
+  assert.deepEqual(ENGINE_LIMITS, { maxChecks: 1000, maxGrowthBytes: 16 * 1024 * 1024, timeoutMs: 5000 });
 });
 
 test('an engine fault ends only its worker as outcome_unknown and a replacement serves the next check', needsEngine, async t => {
@@ -89,7 +101,7 @@ test('an engine fault ends only its worker as outcome_unknown and a replacement 
   assert.deepEqual([faulted.status, faulted.pass, faulted.reason], ['outcome_unknown', undefined, 'engine fault: unreachable']);
   const next = await engine.inspect(small);
   assert.deepEqual([next.status, next.pass, next.engine.generation], ['completed', true, 2]);
-  assert.deepEqual(engine.stats(), { started: 2, replaced: 1, checks: 3, faults: 1, current: { generation: 2, checks: 1 } });
+  assert.deepEqual(engine.stats(), { started: 2, replaced: 1, checks: 3, faults: 1 });
   const slow = engineFor(t, { timeoutMs: 20 });
   await slow.start();
   const stopped = await slow.inspect(list(20000));

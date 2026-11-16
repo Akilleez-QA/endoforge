@@ -8,7 +8,7 @@ export const FIXED_TIME_MS = Date.UTC(2026, 0, 1);
 export const BASE_URL = 'https://kitesurf.local/';
 const RANDOM_SEED = 0x6b697465;
 const PRIMER = { html: '<ul><li>primer</li></ul><button id="go" style="width:48px;height:48px">Go</button>', viewport: [390, 844],
-  expect: [{ select: 'li', count: 1 }, { select: '#go', box: { minWidth: 44 } }, { page: 'noHorizontalOverflow' }] };
+  expect: [{ select: 'li', count: 1 }, { select: '#go', box: { minWidth: 44 } }, { page: 'noHorizontalOverflow' }], png: true };
 
 export function deterministic(run) {
   const RealDate = globalThis.Date, { crypto } = globalThis;
@@ -123,9 +123,10 @@ async function serve({ dir, maximumPages = KITESURF_CORE.maximumPages }) {
   glue.__setBridgeFetchResource((id, url) => { fetched.push(url); });
   const exports = deterministic(() => glue.initSync({ module: new WebAssembly.Module(wasm) }));
   if (!deterministic(() => glue.register_ua_fonts(...[sans, sansItalic, serif, mono].map(bytes => new Uint8Array(bytes))))) throw new Error('kitesurf refused the UA fonts');
-  const pages = () => exports.memory.buffer.byteLength / 65536;
+  const growth = () => ({ pages: exports.memory.buffer.byteLength / 65536, externrefs: exports.__wbindgen_externrefs.length, glueImports: 1 });
   inspectWith(glue, PRIMER);
-  parentPort.postMessage({ type: 'ready', pages: pages(), readyMs: performance.now() - started });
+  await new Promise(resolve => setImmediate(resolve));
+  parentPort.postMessage({ type: 'ready', ...growth(), readyMs: performance.now() - started });
   parentPort.on('message', async request => {
     fetched = [];
     const begin = performance.now();
@@ -139,7 +140,7 @@ async function serve({ dir, maximumPages = KITESURF_CORE.maximumPages }) {
     await new Promise(resolve => setImmediate(resolve));
     const { results, png } = reply;
     if (fetched.length) results.push({ assertion: { fetch: 'none' }, pass: false, observed: `document requested ${fetched.length} resource(s): ${fetched.join(', ')}, needs none` });
-    parentPort.postMessage({ id: request.id, status: 'completed', pass: results.every(result => result.pass), results, fetches: fetched.length, pages: pages(),
+    parentPort.postMessage({ id: request.id, status: 'completed', pass: results.every(result => result.pass), results, fetches: fetched.length, ...growth(),
       ms: performance.now() - begin, ...(png ? { png } : {}) }, png ? [png.buffer] : []);
   });
 }
