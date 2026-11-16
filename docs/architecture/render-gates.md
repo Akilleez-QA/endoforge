@@ -40,6 +40,9 @@ flowchart LR
 2. **G1-G9**, unchanged.
 3. **Render gates (G10, G11)** for kernels with render tests, below.
 
+For a TypeScript candidate, stages 1 and 2 are tsrs, on every edit and at `check`, and the per-turn run of the emitted
+JavaScript in the contained cohort; see [the TypeScript lane](#the-typescript-lane-in-the-loop).
+
 Stages stop at the first failing stage, and the model gets that stage's failures only, in test order, with any check
 that passed in the previous round and fails now marked as a regression.
 
@@ -119,27 +122,39 @@ element removed in turn, each asserted text and style changed), the measure DOM-
 suites (MAEWU, ICSME 2021) and the counterpart of the module mutants the library uses before reuse
 ([serving](library.md#serving)).
 
-## TypeScript and tsrs
+## The TypeScript lane in the loop
 
-tsrs belongs in the loop where it adds a signal nothing else gives: candidates written in TypeScript.
+tsrs is EndoForge's near-real-time TypeScript checker: a fresh check took 15.6 ms in
+[P-58](../../experiments/P-58-cohort-typecheck/RESULT.md), an incremental check after a one-file edit was 65-80% faster in
+[P-49](../../experiments/P-49-incremental/RESULT.md), and instance reuse held 23.6 ms of CPU per accepted attempt, two runs
+included, in [P-60](../../experiments/P-60-tscheck-snapshot/RESULT.md). The loop uses it for what it is for: TypeScript
+candidates, checked as they are written.
 
-- **On AssemblyScript source it adds nothing measured.** With AssemblyScript's own declarations
-  (`std/assembly/index.d.ts`, `noLib`, `skipLibCheck`), tsrs passed all 20 kernels of
-  [P-15](../../experiments/P-15-workcell-concurrency/) and caught 60 of 60 seeded type defects in 5-6 ms; asc caught the
-  same defects (30 of 30 in a 10-kernel sample) with TypeScript-style codes in its own diagnostics. With the lane's
-  current project setup (`projectFor` in [contained-route.mjs](../../tools/tscheck/contained-route.mjs)), tsrs refused all
-  21 kernels tried, with 954 `TS2304` and 5 `TS2693` errors about AssemblyScript built-ins, so that setup must not feed
-  the loop.
-- **For TypeScript candidates** the loop would check with tsrs in the job isolate, and run the emitted JavaScript once per
-  turn in the [contained cohort](../../core/runtime/README.md#contained-javascript) by host call, never in the loop cell's
-  process: Node's `vm` is not a security mechanism, and an out-of-memory error can end the whole process. P-54 measured
-  the cohort at about 0.5-1.1 ms of CPU per attempt.
-- **Comparing the two lanes on one source** stays advisory and limited to AssemblyScript's portable subset with
-  normalized outputs. By AssemblyScript's own documentation, numeric types are plain `number` under `tsc`, `i64` is not
-  portable, a throw aborts in WebAssembly, and `Map#get` differs, so a mismatch is usually a language difference, not a
-  defect.
+TypeScript is a first-class candidate language next to AssemblyScript, in the same loop cell and the same turn:
 
-Whether TypeScript candidates, for views or whole needs, beat AssemblyScript is decided by the experiment below.
+1. **On every edit.** When the agent's reply edits a `.ts` file, tsrs checks the project in the job isolate and the
+   diagnostics go back in that reply's results, before the agent asks for a full check. Reuse and incremental build
+   information come from the cell's own previous check, never from the candidate, as tscheck already requires.
+2. **On `check`.** A clean check emits JavaScript, which runs twice per turn in the
+   [contained cohort](../../core/runtime/README.md#contained-javascript) by host call, never in the loop cell's process:
+   Node's `vm` is not a security mechanism, and an out-of-memory error can end the whole process. P-54 measured the
+   cohort at about 0.5-1.1 ms of CPU per attempt. The two runs must agree, and the frozen tests score the result, as
+   [contained-route.mjs](../../tools/tscheck/contained-route.mjs) does after the attempt today.
+3. **Views.** A TypeScript view returns its HTML as a string; the job isolate hands it to the engine Worker and G10 and G11
+   apply exactly as for AssemblyScript views.
+
+The two languages carry different guarantees. AssemblyScript kernels keep the fuel meter (G6), the units gate (G9) and the
+non-finite probes (G8); TypeScript candidates are bounded by the cohort's deadline and heap limits instead and are not
+unit-checked. The specification stage chooses the language per need; which language promotes better for user
+interfaces is measured, not assumed.
+
+tsrs does not check AssemblyScript source: its errors come from asc's own diagnostics (stage 1). In a probe, tsrs given
+the TypeScript lane's current project setup refused all 21 AssemblyScript kernels tried on AssemblyScript built-ins, so
+AssemblyScript source must never be routed to it.
+
+Comparing an AssemblyScript build with a JavaScript build of the same source stays advisory and limited to
+AssemblyScript's portable subset with normalized outputs: by AssemblyScript's own documentation numeric types are plain
+`number` under `tsc`, `i64` is not portable, a throw aborts in WebAssembly, and `Map#get` differs.
 
 ## Speed
 
@@ -161,8 +176,8 @@ One experiment, planned in writing before it runs, on a set of interface needs w
 |---|---|
 | A | Today's loop |
 | B | A plus compiler diagnostics and staged, guarded feedback |
-| C | B plus render gates, AssemblyScript views |
-| D | Render gates with TypeScript candidates: tsrs in the job isolate, JavaScript per turn in the cohort |
+| C | B plus render gates, AssemblyScript candidates |
+| D | B plus render gates, TypeScript candidates: tsrs on every edit, JavaScript per turn in the cohort |
 
 Recorded per arm: promotion rate; model calls and wall time per promotion; check CPU per turn; engine faults and Worker
 replacements per thousand checks; resident memory per cell; and the share of deliberately broken views and kernels that
@@ -179,9 +194,11 @@ Each one pull request of about 400 changed lines or fewer, with requirements and
 3. **Render tests in the specification**: `render`, `steps` and property tests in `testProblems`; empty-document and
    mutation strength checks; `media` in the glue schema and G7.
 4. **G10 and G11** in `check` and in the supervisor's commit re-run; labels; drift list. Opt-in with `ENDOFORGE_RENDER=1`.
-5. **Prompts and an example**: `renderRules`, and a to-do reducer and view through the real loop with a test double,
-   promoted, with a `wrong` variant refused by G10.
-6. **The experiment**, including arm D's tsrs and per-turn cohort route.
+5. **The TypeScript lane in the loop**: tsrs in the job isolate on every edit with reuse and incremental build
+   information, the per-turn cohort run by host call, and TypeScript views to the engine.
+6. **Prompts and examples**: `renderRules`, and a to-do user interface through the real loop with a test double in each
+   language, promoted, with a `wrong` variant refused by G10.
+7. **The experiment.**
 
 ## Decision record
 
@@ -203,7 +220,7 @@ shared one evidence packet and one model family.
 |---|---|
 | Every check runs in the repair loop | Accepted for every trusted, deterministic check: compile, gates and render. Running untrusted JavaScript per turn is accepted only through the cohort, for TypeScript candidates |
 | The browser runs in the same isolate as the generated code | Refined to the same process with its own isolate: a panic would end the job's isolate, and a Worker contains it at a measured 0.011 ms per request |
-| tsrs belongs in the loop | Accepted for TypeScript candidates; on AssemblyScript source it duplicated asc's own type errors in the probes |
+| tsrs belongs in the loop | Accepted: near-real-time type feedback on every edit of a TypeScript candidate, with TypeScript a first-class candidate language. AssemblyScript source is checked by asc's own diagnostics, not tsrs |
 
 **Paths not taken.** Twenty were considered.
 
@@ -213,7 +230,7 @@ shared one evidence packet and one model family.
 | A separate render pool by host call | Same containment as the Worker, with a process hop and a second failure domain |
 | Everything, including emitted JavaScript, in the loop cell | `vm` is not a security boundary, and an out-of-memory error ends the process |
 | The agent loop moved into the cohort | Puts the conversation inside the hardened guest; no measured gain |
-| tsrs as a check of AssemblyScript source | Redundant with asc's own diagnostics on the probe corpus |
+| Routing AssemblyScript source through tsrs | Not what tsrs is for; asc's own diagnostics cover AssemblyScript |
 | A hard gate comparing the WebAssembly and JavaScript lanes | Dominated by documented language differences |
 | Memory-image reuse of the engine | Measured unbounded growth and traps |
 | Page JavaScript through Kitesurf's Boa | One to two orders of magnitude slower than V8, and unmetered |
@@ -227,8 +244,8 @@ shared one evidence packet and one model family.
   a separate process.
 - Arm B no faster to promotion than arm A: drop the staged feedback and keep diagnostics only.
 - Arm C no better than B at refusing broken views, or slower to promotion: keep render checks as evidence after the loop.
-- Arm D promoting more needs, or with fewer model calls, than C: make TypeScript candidates the default for user
-  interfaces.
+- Arm D promoting more needs, or with fewer model calls, than C: make TypeScript the default language for user
+  interfaces; the reverse makes AssemblyScript the default.
 - Any G11 disagreement on a recorded test: stop and investigate engine determinism before using render gates for
   promotion.
 
