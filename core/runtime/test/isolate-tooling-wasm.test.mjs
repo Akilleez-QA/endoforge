@@ -32,6 +32,11 @@ const oom = module(section(1, [1, 0x60, 0, 0]), section(3, [1, 0]), memory(), ex
   section(10, [1, 13, 0, 0x41, 4, 0x40, 0, 0x41, 0x7f, 0x46, 0x04, 0x40, 0x00, 0x0b, 0x0b]));
 const divide = module(section(1, [1, 0x60, 0, 1, 0x7f]), section(3, [1, 0]), memory(), exported,
   section(10, [1, 7, 0, 0x41, 1, 0x41, 0, 0x6d, 0x0b]));
+const abort = module(section(1, [1, 0x60, 0, 0]), section(3, [1, 0]), memory(), exported,
+  section(10, [1, 8, 0, 0x41, 1, 0x40, 0, 0x1a, 0x00, 0x0b]));
+const recovered = module(section(1, [1, 0x60, 0, 0]), section(3, [2, 0, 0]), memory(),
+  section(7, [3, 6, ...Buffer.from('memory'), 2, 0, 3, ...Buffer.from('run'), 0, 1, 7, ...Buffer.from('prepare'), 0, 0]),
+  section(10, [2, 7, 0, 0x41, 4, 0x40, 0, 0x1a, 0x0b, 3, 0, 0x00, 0x0b]));
 const importer = module(section(2, [1, 3, ...Buffer.from('env'), 6, ...Buffer.from('memory'), 2, 0, 1]));
 const digest = bytes => createHash('sha256').update(Uint8Array.from(bytes)).digest('hex');
 const pin = (bytes, maximumPages = 2) => ({ name: 'synthetic-tool', sha256: digest(bytes), maximumPages });
@@ -45,6 +50,7 @@ const { parentPort, workerData: { bytes, trusted, tooling } } = await import('no
 try {
   installWasmLimit(1, error => { throw new Error(error); }, trusted, [], tooling);
   const { exports } = new WebAssembly.Instance(new WebAssembly.Module(Uint8Array.from(bytes)), { env: { memory: new WebAssembly.Memory({ initial: 1 }) } });
+  exports.prepare?.();
   const value = exports.run(), before = exports.memory.grow(1);
   let overflow = null;
   try { exports.memory.grow(1); } catch (error) { overflow = error.message; }
@@ -71,8 +77,13 @@ test('a pinned tooling module runs with exception handling or SIMD and stops at 
   }
 });
 
-test('a pinned tooling module that traps with unreachable after memory.grow is a memory limit breach and other traps are not', async () => {
+test('a pinned tooling module that traps with unreachable after a failed memory.grow is a memory limit breach', async () => {
   assert.deepEqual(await cell(oom, { tooling: [pin(oom)] }), { error: 'ERR_WORKCELL_WASM_MEMORY_LIMIT' });
+});
+
+test('a tooling trap without a failed memory.grow in the same call is not a memory limit breach', async () => {
+  assert.deepEqual(await cell(abort, { tooling: [pin(abort)] }), { error: 'unreachable' });
+  assert.deepEqual(await cell(recovered, { tooling: [pin(recovered)] }), { error: 'unreachable' });
   assert.deepEqual(await cell(divide, { tooling: [pin(divide)] }), { error: 'divide by zero' });
 });
 

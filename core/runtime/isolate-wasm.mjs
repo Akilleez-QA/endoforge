@@ -1,5 +1,5 @@
 import { createHash } from 'node:crypto';
-import { admitToolingWasm, guardToolingExports, toolingTrap, toolingWasmPolicy } from './isolate-wasm-tooling.mjs';
+import { admitToolingWasm, guardToolingExports, toolingWasmPolicy } from './isolate-wasm-tooling.mjs';
 
 const pageBytes = 65536;
 const leb = value => {
@@ -266,11 +266,9 @@ export function installWasmLimit(maxMb, breach, trustedWasmModules = [], sharedW
     const data = modules.get(module);
     if (!data) throw new TypeError('workcell requires a locally checked WebAssembly.Module');
     if (data.tooling) {
-      const trapped = toolingTrap(fail);
-      let result;
-      try { result = Reflect.construct(native.Instance, [module, imports], derived); } catch (error) { trapped(error); }
+      const result = Reflect.construct(native.Instance, [module, imports], derived);
       for (const { name, memory } of data.exportedMemories) memoryLimits.set(result.exports[name], data.limits[memory]);
-      guardToolingExports(result, trapped);
+      guardToolingExports(result, data.flag, fail);
       return result;
     }
     const result = Reflect.construct(native.Instance, [module, imports], derived);
