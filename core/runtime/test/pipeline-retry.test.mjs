@@ -3,12 +3,13 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm, readdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { IsolatePool } from '../isolate-pool.mjs';
 import { runNeed } from '../x1/pipeline.mjs';
-const fixtures = new URL('./fixtures/x1/', import.meta.url).pathname;
+const fixtures = fileURLToPath(new URL('./fixtures/x1/', import.meta.url));
 const setup = async (t, extra) => {
   const root = await mkdtemp(join(tmpdir(), 'ef-pipeline-retry-'));
-  const pool = new IsolatePool({ hostPort: new URL('../x1/host.mjs', import.meta.url).pathname, size: 1, isolation: 'thread', prewarm: true });
+  const pool = new IsolatePool({ hostPort: fileURLToPath(new URL('../x1/host.mjs', import.meta.url)), size: 1, isolation: 'thread', prewarm: true });
   await pool.ready();
   t.after(async () => { await pool.close(); await rm(root, { recursive: true, force: true }); });
   const env = { ...process.env, ENDOFORGE_CODEX_CMD: JSON.stringify([process.execPath, join(fixtures, 'fake-codex.mjs')]), CODEX_HOME: join(root, 'none'),

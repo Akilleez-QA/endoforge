@@ -3,13 +3,14 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, rm, readFile, access } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { generate, terseRule, exactRule, scalarRule } from '../x1/generator.mjs';
 import { filterScalarTests } from '../x1/scalar.mjs';
 import { runNeed } from '../x1/pipeline.mjs';
 import { hash } from '../x1/host.mjs';
 import { IsolatePool } from '../isolate-pool.mjs';
 import { capabilityFence } from './fixtures/x1/candidate.mjs';
-const fake = new URL('./fixtures/x1/fake-codex.mjs', import.meta.url).pathname;
+const fake = fileURLToPath(new URL('./fixtures/x1/fake-codex.mjs', import.meta.url));
 const contract = 'export function add(a: i32, b: f64): f64;\nexport function unknown(x): f64;';
 const number = name => ({ name, kind: 'number', unit: '1' }), shown = { kind: 'number', unit: '1', precision: 2 };
 const frozenContract = `${contract}\n\n\`\`\`capability\n${JSON.stringify({ exports: [{ name: 'add', args: [{ name: 'a', kind: 'integer', unit: '1' }, number('b')], result: shown },
@@ -89,10 +90,10 @@ test('exact and default retain input bytes and original prompts, without scalar 
 });
 test('pipeline returns scalar drop evidence alongside a real gate receipt', async t => {
   const { root, env } = await setup(t);
-  const pool = new IsolatePool({ hostPort: new URL('../x1/host.mjs', import.meta.url).pathname, size: 1 });
+  const pool = new IsolatePool({ hostPort: fileURLToPath(new URL('../x1/host.mjs', import.meta.url)), size: 1 });
   t.after(() => pool.close());
   const result = await runNeed({ need: 'add', directory: join(root, 'request'), pool, env: { ...env,
-    ENDOFORGE_ASC_CMD: new URL('./fixtures/x1/fake-asc.mjs', import.meta.url).pathname,
+    ENDOFORGE_ASC_CMD: fileURLToPath(new URL('./fixtures/x1/fake-asc.mjs', import.meta.url)),
     FAKE_CODEX_CONTRACT: `add(a: i32, b: i32): i32\n\n${capabilityFence}`, FAKE_CODEX_TESTS: JSON.stringify([{ ...value, args: [2, 3], expect: 5 }, invalid[0], fractional]) } });
   assert.equal(result.promoted, true); assert.ok(result.receipt);
   assert.equal(result.scalarFilter.droppedCount, 2);
