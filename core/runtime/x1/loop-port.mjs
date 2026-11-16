@@ -4,6 +4,7 @@ import { dirname, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { compile as compileKernel, loadCompiler, x1Flags } from '../../../experiments/assemblyscript-toolchain.mjs';
 import { ASC_FILES, ASC_PATH, ASC_VERSION } from '../../../tools/asc/pin.mjs';
+import { createEngine } from '../../../tools/browser/engine-host.mjs';
 import { agentStage, frozenSpecification, specificationFiles, specificationProblems, stagePrompts, takeReply } from './agent.mjs';
 import { runGates } from './gates.mjs';
 import { createPort as x1Port, hash, implementationFiles as hostFiles } from './host.mjs';
@@ -23,6 +24,7 @@ const primer = {
 primer.files['frozen.sha256'] = JSON.stringify({ contract: hash(primer.files['CONTRACT.md']), tests: hash(primer.files['tests.json']) });
 let compiler;
 let ascPath = ASC_PATH;
+let engine = null;
 const pinned = path => {
   const modules = join(dirname(path), '..', '..');
   const files = Object.fromEntries(Object.entries(ASC_FILES).map(([name, sha256]) => {
@@ -59,8 +61,11 @@ const stageLimits = (limits, spent) => ({ ...limits, maxTokens: limits.maxTokens
 const summary = result => result.promotable ? null : { gates: Object.fromEntries(Object.entries(result.gates).filter(([, gate]) => !gate.ok)),
   tests: (result.tests || []).filter(test => !test.pass).slice(0, 20) };
 
-export async function warm({ primes = 8, path = ASC_PATH } = {}) {
+export const inspect = input => (engine ? engine.inspect(input) : Promise.reject(Error('render engine is off in this cell')));
+
+export async function warm({ primes = 8, path = ASC_PATH, render = false } = {}) {
   ascPath = path;
+  if (render) await (engine ??= createEngine()).start();
   compiler = pinned(path);
   await loadCompiler(path);
   for (let i = 0; i < primes; i++) runGates({ ...primer, compiled: await compileInCell(primer.files) });
@@ -200,6 +205,10 @@ export function createPort(options, { stage = () => {}, host } = {}) {
     },
     measure: value => base.measure(value),
     async evaluate(evaluateCandidates, reference) {
+      if (options.mode === 'inspect') {
+        const result = await inspect(options.render);
+        return { ...result, stage: result.status === 'completed' ? 'inspected' : 'outcome_unknown' };
+      }
       compiler ||= pinned(ascPath);
       await loadCompiler(ascPath);
       if (options.mode === 'check') {

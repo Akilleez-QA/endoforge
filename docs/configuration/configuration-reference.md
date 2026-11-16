@@ -249,6 +249,7 @@ Fixed limits in `core/runtime/x1/agent.mjs`: 64 KiB per file, four times that pe
 | `rates` | `null` | A `createStageRates` object to record per-stage arrivals and timings. |
 | `cellEnv` | `{}` | Environment for process cells; the default gives them an empty environment. |
 | `primes` | unset (the warm step's default, 8) | Passed to the cell's warm step. |
+| `render` | `false` | `true` adds the pinned `kitesurf-core` to `toolingWasmModules` and makes each process cell warm the render engine in its own Worker ([tools/browser](../../tools/browser/README.md#the-engine-worker)); a job with `portOptions: { mode: 'inspect', render: { html, viewport, expect } }` returns the assertion results. Refused with `isolation: 'thread'`. |
 | `ascPath`, `hostPort` | the pinned `tools/asc` compiler; `core/runtime/x1/loop-port.mjs` | Compiler module and cell port. |
 | others | | Passed to `IsolatePool`. The pinned compiler's limits apply unless overridden: `wasmMemoryMaxMb: 4096`, `maxOldGenerationSizeMb: 1024`, `maxYoungGenerationSizeMb: 32` and its trusted modules. |
 

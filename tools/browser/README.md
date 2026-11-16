@@ -38,5 +38,39 @@ exits 0, so the tests skip.
   `process`. Cells get the permission model with read access to the repository and no network grant; the global
   `fetch` and the engine's fetch bridge both refuse.
 
-`make browser-test` runs [test/render.test.mjs](test/render.test.mjs). Without a verified artifact the tests that need
+## The engine Worker
+
+This is the canonical way to run the engine in the repair loop (slice 2 of the render-gates design). The port above
+and `createBrowserPool` stay as the PNG spike and its pinned-digest evidence; they are not wired into the loop.
+
+`createLoopPool({ render: true })` adds `KITESURF_CORE` to the pool's `toolingWasmModules`, and the loop cell's warm
+step ([loop-port.mjs](../../core/runtime/x1/loop-port.mjs)) starts one engine Worker through
+[engine-host.mjs](engine-host.mjs). The Worker ([engine.mjs](engine.mjs)) inherits the cell's permission flags, because
+it is created without `execArgv`. It installs the workcell wasm guard with the Kitesurf tooling entry, verifies the
+artifact, compiles the wasm once, loads the glue, registers the four fonts and primes once. Off by default; refused in
+thread cells and in any thread that is not a process's main thread.
+
+`inspect({ html, viewport: [w, h], expect, png })` checks the request, then the Worker parses the document, sets the
+viewport, runs each assertion, frees the `DomHandle`, waits one macrotask turn so queued engine work finishes, and
+replies. Every engine call runs with `new Date()` and `Date.now()` fixed at 2026-01-01 and a seeded
+`crypto.getRandomValues`, restored afterwards. The fetch bridge refuses every request and counts it; a document that
+fetches fails the check. `png: true` also returns the PNG of the same document.
+
+| Assertion | Passes when | Failure says, for example |
+|---|---|---|
+| `{ select, count }` | the selector matches that many nodes | `li count 2, needs 1` |
+| `{ select, text }` | the first match's rendered text, whitespace collapsed, equals it | `li text "Milk", needs "Bread"` |
+| `{ select, attr: { name: value } }` | the first match also matches `:is(select)[name="value"]` | `#add role absent, needs "button"` |
+| `{ select, style: { property: value } }` | each computed value equals its value | `#add display block, needs inline` |
+| `{ select, box }` | the first match's rectangle meets `minWidth`, `minHeight`, `maxWidth`, `maxHeight`, `inViewport` | `#add box 30x20 at 8,48, needs minWidth 44, minHeight 44` |
+| `{ select, apart }` | the first matches of the two selectors do not overlap | `#add and #overlap overlap by 10x10, needs apart` |
+| `{ page: 'noHorizontalOverflow' }` | no element passes the viewport's right edge | `page overflows horizontally: div right edge 500 passes the viewport width 390, needs noHorizontalOverflow` |
+
+`pixel` is not built yet. The Worker is reused as it is, never restored from a memory image. The host replaces it
+after a fault (the Worker replies `outcome_unknown` and exits), an error or exit before the reply, a check over
+`timeoutMs` (10 s), 1,000 checks, or 16 MiB of wasm memory growth since warm. A check the Worker did not answer is
+`outcome_unknown`, never a pass. Results carry `engine: { generation, checks }`, and `stats()` counts starts,
+replacements, checks and faults.
+
+`make browser-test` runs [test/render.test.mjs](test/render.test.mjs) and [test/engine.test.mjs](test/engine.test.mjs). Without a verified artifact the tests that need
 the engine report skipped, never passed.
