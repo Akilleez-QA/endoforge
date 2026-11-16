@@ -688,6 +688,16 @@ Every loop path shall pass the `principal` given to `runNeed` to `library.serve`
 - Verification: T — `make ledger-test`
 - Status: Baselined
 
+### REQ-LOOP-011 — A passing check ends the stage
+
+The agent loop shall end a stage without another model turn when the reply's last `check` passed and no edit followed it, with or without `done`, and otherwise check again before ending on `done` or a later edit, returning any failures to the next turn.
+
+- Rationale: A passing check needs no further model turn, and a check that ran before a later edit says nothing about the edited files.
+- Derivation: `core/runtime/x1/agent.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make loop-test`
+- Status: Baselined
+
 ### REQ-GEN-001 — Two-stage generation with freeze
 
 Generation shall invoke an environment-configured Codex command twice, durably freeze contract/tests before code, refuse drift and premature code, and return candidate bytes without conferring promotion, without reading or copying auth files.

@@ -93,17 +93,19 @@ export async function takeReply({ messages, overlay, editable, check, receipt, l
   if (!parsed) { messages.push({ role: 'user', content: JSON.stringify({ error: 'reply must be one JSON object with a calls array' }) }); return null; }
   if (parsed.calls.length > MAX_CALLS) { messages.push({ role: 'user', content: JSON.stringify({ error: 'too many calls' }) }); return null; }
   const results = [];
-  let finished = parsed.calls.length === 0, failures = null, checked = false;
+  let finished = parsed.calls.length === 0, failures = null, checked = false, current = false;
   for (const call of parsed.calls) {
     receipt.tool_calls += 1;
     if (call?.name === 'done') { finished = true; continue; }
-    if (call?.name === 'check') { failures = await check(); checked = true; results.push({ check: failures ?? 'passed' }); continue; }
-    results.push({ path: call?.path, ...applyCall(overlay, editable, call) });
+    if (call?.name === 'check') { failures = await check(); checked = current = true; results.push({ check: failures ?? 'passed' }); continue; }
+    const result = applyCall(overlay, editable, call);
+    if (result.written !== undefined) current = false;
+    results.push({ path: call?.path, ...result });
   }
-  if (finished) {
-    if (!checked) { failures = await check(); checked = true; }
+  if (finished || checked) {
+    if (!current) failures = await check();
     if (!failures) return 'stop';
-    results.push({ check: failures });
+    if (finished || !current) results.push({ check: failures });
   }
   messages.push({ role: 'user', content: JSON.stringify({ results, instructions: 'Fix what failed, then done.' }) });
   return null;
