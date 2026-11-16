@@ -698,6 +698,16 @@ The agent loop shall end a stage without another model turn when the reply's las
 - Verification: T — `make loop-test`
 - Status: Baselined
 
+### REQ-LOOP-012 — A repeated failure ends the implementation stage
+
+The agent loop shall end an implementation stage with exit reason `repeated_failure`, without another model turn, when a reply's check fails and the two most recent checks failed with the same failing gates and the same failing tests (name, function, arguments, expected and returned value, trap); that exit records those gates and tests on the agent receipt and in the rejected evaluation's reason, never promotes the candidate, and leaves the normal turns to a failure that changes or has no failing test.
+
+- Rationale: In P-66 every failed agent run repeated the same failure until `max_turns`, and in P-69 stopping at the second identical failure saved 8 of 12 failed candidates without losing a promotion; a frozen value the kernel cannot meet makes every further turn wasted.
+- Derivation: `core/runtime/x1/agent.mjs`, `core/runtime/x1/loop-port.mjs`, `core/runtime/x1/loop.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make loop-test`
+- Status: Baselined
+
 ### REQ-GEN-001 — Two-stage generation with freeze
 
 Generation shall invoke an environment-configured Codex command twice, durably freeze contract/tests before code, refuse drift and premature code, and return candidate bytes without conferring promotion, without reading or copying auth files.

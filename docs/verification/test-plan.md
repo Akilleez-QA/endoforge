@@ -128,9 +128,10 @@ Automated tests: the code is the procedure. Run one Node file with `node --test 
 - Preconditions: a fresh clone; Node ≥ 22.8; network for `make loop-setup`.
 - Steps: the commands in the [tutorial](../guides/tutorials/getting-started.md), sections 2 to 7.
 - Expected result: `make check` exits 0; `first-loop.mjs` prints `"promoted": true` with ledger kinds `task`,
-  `admitted_input`, `frozen_evaluator`, `candidate`, `receipt`; `first-loop.mjs wrong` prints `"promoted": false` with
-  `exit` `max_turns`.
-- Last run: 2026-11-08 at `4d692a4` in a fresh clone, Node 26.13.0: as expected (see the assurance record).
+  `admitted_input`, `frozen_evaluator`, `candidate`, `receipt`; `first-loop.mjs wrong` prints `"promoted": false` after
+  three turns (two identical failed checks).
+- Last run: 2026-11-08 at `4d692a4` in a fresh clone, Node 26.13.0: as expected (see the assurance record), when the
+  expected `wrong` result was `exit` `max_turns`, before the repeated-failure stop.
 
 ### TP-4 — Secret scan
 

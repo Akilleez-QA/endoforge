@@ -58,6 +58,14 @@ export function applyReply(overlay, editable, text) {
   if (!parsed || parsed.calls.length > MAX_CALLS) return;
   for (const call of parsed.calls) if (call?.name === 'edit_file') applyCall(overlay, editable, call);
 }
+const failureKey = failures => (failures?.tests?.length ? JSON.stringify([Object.entries(failures.gates ?? {}).map(([name, gate]) => [name, gate.why]).sort(),
+  failures.tests.map(({ name, fn, args, expect, got, trap }) => [name, fn, args, expect, got, trap === true])]) : null);
+export function repeatedFailure(rounds) {
+  if (rounds.length < 2) return null;
+  const last = rounds.at(-1).failures, key = failureKey(last);
+  if (!key || key !== failureKey(rounds.at(-2).failures)) return null;
+  return { gates: Object.keys(last.gates ?? {}).sort(), tests: last.tests.map(({ name, fn, args, expect, got }) => ({ name, fn, args, expect, got })) };
+}
 export const specificationFiles = ({ oracle = false } = {}) => oracle ? ['CONTRACT.md', 'tests.json', referenceFile] : ['CONTRACT.md', 'tests.json'];
 export function frozenSpecification(overlay) {
   const frozen = freezeSpecification(overlay);
@@ -75,15 +83,15 @@ export function specificationProblems(overlay, { oracle = false } = {}) {
   if (oracle && !problems.length) problems.push(...oracleProblems(analyzeSpecification(overlay)));
   return problems.length ? { problems } : null;
 }
-export async function agentStage({ ask, messages, overlay, editable, prompt, check, receipt, limits }) {
+export async function agentStage({ ask, messages, overlay, editable, prompt, check, repeated, receipt, limits }) {
   messages.push({ role: 'user', content: prompt });
   for (let turn = 0; turn < limits.maxTurns; turn++) {
-    const exit = await takeReply({ messages, overlay, editable, check, receipt, limits }, await ask(messages, limits.maxTokens - receipt.tokens));
+    const exit = await takeReply({ messages, overlay, editable, check, repeated, receipt, limits }, await ask(messages, limits.maxTokens - receipt.tokens));
     if (exit) return exit;
   }
   return 'max_turns';
 }
-export async function takeReply({ messages, overlay, editable, check, receipt, limits: { maxTokens } }, reply) {
+export async function takeReply({ messages, overlay, editable, check, repeated, receipt, limits: { maxTokens } }, reply) {
   receipt.turns += 1;
   if (!Number.isSafeInteger(reply?.usage) || reply.usage < 0) throw Error('invalid usage');
   receipt.tokens += reply.usage;
@@ -105,6 +113,8 @@ export async function takeReply({ messages, overlay, editable, check, receipt, l
   if (finished || checked) {
     if (!current) failures = await check();
     if (!failures) return 'stop';
+    const repeat = repeated?.();
+    if (repeat) { receipt.repeated = repeat; return 'repeated_failure'; }
     if (finished || !current) results.push({ check: failures });
   }
   messages.push({ role: 'user', content: JSON.stringify({ results, instructions: 'Fix what failed, then done.' }) });

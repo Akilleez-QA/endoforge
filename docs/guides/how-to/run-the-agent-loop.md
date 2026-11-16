@@ -167,7 +167,7 @@ Pass `limits` to `runNeed`. The default is `{ maxTurns: 6, maxTokens: 64000 }`.
 
 | Key | What it does |
 |---|---|
-| `maxTurns` | Turns per stage. A stage that has not finished by then ends with `max_turns`. |
+| `maxTurns` | Turns per stage. A stage that has not finished by then ends with `max_turns`. An implementation stage whose check fails the same tests with the same values twice in a row ends earlier, with `repeated_failure`. |
 | `maxTokens` | Token budget per need, counted from the provider's `usage`. Reaching it ends with `max_tokens`. |
 | `oracle` | When true, the specification stage also writes `reference.js`, and each frozen expectation is checked against the contract's formula and the reference before the freeze. Off by default; see [P-71](../../../experiments/P-71-oracle-round2/RESULT.md). |
 
@@ -180,7 +180,7 @@ Pass `limits` to `runNeed`. The default is `{ maxTurns: 6, maxTokens: 64000 }`.
 | `promoted` | `true` when the ledger's decision is `promote`. |
 | `candidate`, `receipt`, `decision` | The candidate's content hash, the receipt id and the decision record's hash. |
 | `status` | The receipt's outcome state, such as `passed` or `rejected`. |
-| `agent` | `{ turns, tokens, tool_calls, exit_reason }`. `exit_reason` is `stop` when the agent finished with passing checks. |
+| `agent` | `{ turns, tokens, tool_calls, exit_reason }`. `exit_reason` is `stop` when the agent finished with passing checks; with `repeated_failure`, `agent.repeated` names the gates and tests that failed twice. |
 | `rounds` | One entry per `check`: `{ round, source, failures }`, where `failures` is `null` or `{ gates, tests }`. |
 | `content` | The candidate's files and compiled module as JSON. |
 | `modelMs`, `timings` | Time spent waiting for the model, and per stage. |

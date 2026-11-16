@@ -79,6 +79,43 @@ test('a failed check goes straight back to the next model turn in the same job',
   assert.match(seen[0], /G4_tests/);
 });
 
+const kernelTurns = (kernels, tests = files['tests.json']) => ({ messages, turn }) => {
+  const turnInput = kernel => inputFor(files['CONTRACT.md'], tests, kernel, good.glue);
+  return turn === 0 ? reply(specification(turnInput(good.kernel))) : reply(implementation(turnInput(kernels[Math.min(turn, kernels.length) - 1]), idOf(messages)));
+};
+const receiptOf = async directory => (await records(join(directory, 'ledger.sqlite'))).find(record => record.kind === 'receipt').data;
+const wrong = seeds[1].kernel, otherWrong = 'export function add(a:i32,b:i32):i32{return a*b}';
+
+const frozenWrong = JSON.stringify([{ name: 'add', fn: 'add', args: [2, 3], expect: 6 }]);
+const repeatedStops = waits => async t => {
+  const root = scratch(t), directory = join(root, 'repeat'), pool = agentPool(t, kernelTurns([good.kernel], frozenWrong), { waits });
+  const result = await runNeed({ need, directory, pool, env });
+  assert.equal(result.promoted, false, JSON.stringify(result));
+  assert.equal(result.agent.exit_reason, 'repeated_failure');
+  assert.equal(result.agent.turns, 3);
+  assert.equal(result.rounds.length, 2);
+  assert.deepEqual(result.agent.repeated, { gates: ['G4_tests'], tests: [{ name: 'add', fn: 'add', args: [2, 3], expect: 6, got: 5 }] });
+  const receipt = await receiptOf(directory);
+  assert.equal(receipt.outcome_state, 'failed');
+  assert.equal(receipt.observations[0].reason, 'agent stopped: repeated_failure on add');
+  assert.equal((await storedDecision(directory)).decision, 'refuse');
+};
+const changingRepairs = waits => async t => {
+  const root = scratch(t), pool = agentPool(t, kernelTurns([wrong, otherWrong, good.kernel]), { waits });
+  const result = await runNeed({ need, directory: join(root, 'changing'), pool, env });
+  assert.equal(result.promoted, true, JSON.stringify(result));
+  assert.equal(result.agent.exit_reason, 'stop');
+  assert.equal(result.agent.turns, 4);
+  assert.deepEqual(result.rounds.map(round => Boolean(round.failures)), [true, true, false]);
+  const once = await runNeed({ need, directory: join(root, 'once'), pool: agentPool(t, kernelTurns([wrong, good.kernel]), { waits }), env });
+  assert.equal(once.promoted, true, JSON.stringify(once));
+  assert.equal(once.agent.turns, 3);
+};
+test('the same failure twice ends the stage early and is refused (release)', { timeout: 30000 }, repeatedStops('release'));
+test('the same failure twice ends the stage early and is refused (hold)', { timeout: 30000 }, repeatedStops('hold'));
+test('a failure that changes between checks keeps its repair turns and can still promote (release)', { timeout: 30000 }, changingRepairs('release'));
+test('a failure that changes between checks keeps its repair turns and can still promote (hold)', { timeout: 30000 }, changingRepairs('hold'));
+
 test('turn and token limits stop the loop, and the attempt is a recorded failure', { timeout: 30000 }, async t => {
   const root = scratch(t);
   const pool = agentPool(t, ({ messages, turn }) => (turn === 0 ? reply(specification(input(good))) : reply({ calls: implementation(input(good), idOf(messages)).calls.filter(call => call.name !== 'done') })));
