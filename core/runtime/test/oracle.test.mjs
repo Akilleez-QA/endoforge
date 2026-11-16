@@ -68,7 +68,7 @@ test('a reference that stalls once past its deadline is run again, and one that 
   assert.deepEqual(loaded?.kwToHp([1]), { value: 3 });
 });
 
-test('a reference cannot run code outside its deadline through a thrown value, a global accessor or a prototype getter', () => {
+test('a reference cannot run code outside its deadline through a thrown value, a global accessor or a prototype getter', { timeout: 20000 }, () => {
   const trap = 'new Proxy({}, { get() { for (;;) {} }, getPrototypeOf() { for (;;) {} } })';
   assert.equal(referenceFunctions(`throw ${trap};`, ['kwToHp']), null);
   assert.deepEqual(referenceFunctions(`function kwToHp(kw) { throw ${trap}; }`, ['kwToHp']).kwToHp([1]), { trap: true });
