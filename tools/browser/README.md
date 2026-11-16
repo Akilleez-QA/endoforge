@@ -43,10 +43,12 @@ exits 0, so the tests skip.
 This is the canonical way to run the engine in the repair loop (slice 2 of the render-gates design). The port above
 and `createBrowserPool` stay as the PNG spike and its pinned-digest evidence; they are not wired into the loop.
 
-`createLoopPool({ render: true })` adds `KITESURF_CORE` to the pool's `toolingWasmModules`, and the loop cell's warm
+`createLoopPool({ render: true })` sets the pool's `toolingWasmModules` to `[KITESURF_CORE]` unless the caller passes a
+list, which replaces it and must admit the pinned digest, and the loop cell's warm
 step ([loop-port.mjs](../../core/runtime/x1/loop-port.mjs)) starts one engine Worker through
 [engine-host.mjs](engine-host.mjs). The Worker ([engine.mjs](engine.mjs)) inherits the cell's permission flags, because
-it is created without `execArgv`. It installs the workcell wasm guard from the cell's own policy, the
+it is created without `execArgv`. It is also created without `resourceLimits`, so its JavaScript heap is a second V8
+isolate in the cell process that the cell's heap limits do not set; its wasm memory is bounded by the guard. It installs the workcell wasm guard from the cell's own policy, the
 `wasmMemoryMaxMb` and `toolingWasmModules` the pool was given (passed through the warm options, never re-read from
 `pin.mjs`), verifies the artifact, refuses a wasm whose digest that policy does not admit, compiles the wasm once, imports the glue once, registers the four fonts, primes with one render and one
 document check, and drains its microtask queue before it reports ready. A missing or unadmitted artifact fails the cell's warm with an error that names `make browser-setup`; it never
@@ -56,17 +58,17 @@ thread cells and in any thread that is not a process's main thread.
 `inspect({ html, viewport: [w, h], expect, png })` checks the request, then the Worker parses the document, sets the
 viewport, runs each assertion, frees the `DomHandle`, waits one macrotask turn so queued engine work finishes, and
 replies. Every engine call runs with `new Date()` and `Date.now()` fixed at 2026-01-01 and a seeded
-`crypto.getRandomValues`, restored afterwards. The fetch bridge refuses every request and counts it; a document that
-fetches fails the check. `png: true` also returns the PNG of the same document.
+`crypto.getRandomValues`, restored afterwards. The fetch bridge answers no request: the Worker records each one, and a document that
+requests any resource fails the check. `png: true` also returns the PNG of the same document.
 
 | Assertion | Passes when | Failure says, for example |
 |---|---|---|
 | `{ select, count }` | the selector matches that many nodes | `li count 2, needs 1` |
 | `{ select, text }` | the first match's rendered text, whitespace collapsed, equals it | `li text "Milk", needs "Bread"` |
-| `{ select, attr: { name: value } }` | the first match also matches `:is(select)[name="value"]` | `#add role absent, needs "button"` |
+| `{ select, attr: { name: value } }` | the first match has each attribute with exactly that value | `#add role absent, needs "button"` |
 | `{ select, style: { property: value } }` | each computed value equals its value | `#add display block, needs inline` |
-| `{ select, box }` | the first match's rectangle meets `minWidth`, `minHeight`, `maxWidth`, `maxHeight`, `inViewport` | `#add box 30x20 at 8,48, needs minWidth 44, minHeight 44` |
-| `{ select, apart }` | the first matches of the two selectors do not overlap | `#add and #overlap overlap by 10x10, needs apart` |
+| `{ select, box }` | the first match has a box (an element with `display: none` fails) and its rectangle meets `minWidth`, `minHeight`, `maxWidth`, `maxHeight`, `inViewport` | `#add box 30x20 at 8,48, needs minWidth 44, minHeight 44` |
+| `{ select, apart }` | the first matches of the two selectors both have a box and do not overlap | `#add and #overlap overlap by 10x10, needs apart` |
 | `{ page: 'noHorizontalOverflow' }` | no element passes the viewport's right edge | `page overflows horizontally: div right edge 500 passes the viewport width 390, needs noHorizontalOverflow` |
 
 `pixel` is not built yet. After priming and the drain, the Worker copies the whole wasm memory once, and it restores

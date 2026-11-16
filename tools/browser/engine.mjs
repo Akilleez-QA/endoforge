@@ -75,8 +75,9 @@ function assertion(handle, item, viewport) {
   }
   if (item.attr !== undefined) {
     const attributes = handle.nodeInfo(first).attributes ?? [];
-    const missing = Object.entries(item.attr).filter(([name, value]) => !select(handle, `:is(${selector})[${name}=${quote(value)}]`).ids?.includes(first));
-    const seen = name => { const at = attributes.findIndex((key, i) => i % 2 === 0 && key === name); return at < 0 ? 'absent' : quote(attributes[at + 1]); };
+    const valueOf = name => { const at = attributes.findIndex((key, i) => i % 2 === 0 && key === name.toLowerCase()); return at < 0 ? undefined : attributes[at + 1]; };
+    const missing = Object.entries(item.attr).filter(([name, value]) => valueOf(name) !== value);
+    const seen = name => valueOf(name) === undefined ? 'absent' : quote(valueOf(name));
     return [!missing.length, missing.length ? missing.map(([name, value]) => `${selector} ${name} ${seen(name)}, needs ${quote(value)}`).join('; ') : `${selector} has ${Object.keys(item.attr).join(', ')}`];
   }
   if (item.style !== undefined) {
@@ -85,6 +86,7 @@ function assertion(handle, item, viewport) {
     return [!wrong.length, (wrong.length ? wrong : observed).map(([name, value, got]) => `${selector} ${name} ${got}${got === value ? '' : `, needs ${value}`}`).join('; ')];
   }
   const rect = handle.getBoundingClientRect(first);
+  if (!rect?.hasBox) return [false, `${selector} has no box`];
   if (item.box !== undefined) {
     const problems = boxProblems(rect, item.box, viewport);
     return [!problems.length, `${selector} box ${size(rect)} at ${Math.round(rect.x)},${Math.round(rect.y)}${problems.length ? `, needs ${problems.join(', ')}` : ''}`];
@@ -93,6 +95,7 @@ function assertion(handle, item, viewport) {
   if (other.error) return [false, other.error];
   if (!other.ids.length) return [false, `${item.apart} matched nothing`];
   const second = handle.getBoundingClientRect(other.ids[0]);
+  if (!second?.hasBox) return [false, `${item.apart} has no box`];
   const across = Math.min(rect.x + rect.width, second.x + second.width) - Math.max(rect.x, second.x);
   const down = Math.min(rect.y + rect.height, second.y + second.height) - Math.max(rect.y, second.y);
   const overlap = across > 0 && down > 0;
