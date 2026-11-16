@@ -1646,6 +1646,16 @@ CI shall run a Gitleaks scan of the full history with a checksum-verified binary
 - Verification: T — `make test` (`gap-tools-test`); I — `.github/workflows/ci.yml` job `lint`
 - Status: Baselined (round 7; changed in round 8, R12: JavaScript, TypeScript and Rust are lexed, so end-of-line and inline comments are found, and the 20 the check had missed were removed, closing D-09). In shell files and Makefiles only `#` at the start of a line is found, because `$#` and `${#x}` make end-of-line `#` ambiguous
 
+### REQ-REPO-012 — Durable syncs on every platform
+
+Python code that makes a file or directory durable shall do so through `tools/durable.py`: `sync_data` (data, with `fcntl.F_FULLFSYNC` where the platform has it, else `os.fdatasync` where it exists, else `os.fsync`), `sync_file` (`F_FULLFSYNC` where available, else `os.fsync`; a file system that refuses `F_FULLFSYNC` falls back to `os.fsync`) and `sync_dir` (opens the directory with `os.O_DIRECTORY`, optionally `os.O_NOFOLLOW`, and syncs it with `sync_file`; skipped on Windows, where directories cannot be opened for syncing), and `make check` runs `tools/check_durable_sync.py`, which lists tracked `.py` files outside `experiments/`, `vendor/` and `node_modules` with `git ls-files` and refuses every call of `os.fsync` or `os.fdatasync` and every use of `F_FULLFSYNC` outside the helper and the self-contained modules it names with their reasons, printing `file:line: text` and the fix and exiting 1, exiting 0 when there is none and 2 when `git ls-files` fails.
+
+- Rationale: macOS and Windows have no `os.fdatasync`, so the ledger writer stopped with an `AttributeError` there and the ledger bridge exited before any loop test could run; and plain `fsync` on macOS does not flush the drive's cache, so it does not give the durability the ledgers rely on. One helper chooses the strongest sync per platform and leaves Linux unchanged. Modules that import no repository package keep plain `os.fsync`, which works on every POSIX system, so that they stay self-contained.
+- Derivation: `tools/durable.py`, `tools/check_durable_sync.py`, `tools/ledger_writer.py`, `tools/x1_loop.py`, `tools/constraint_store.py`, `Makefile`
+- Allocated to: SDD §4 C-27 Repository checks
+- Verification: T — `make test` (`ledger-test`)
+- Status: Proposed
+
 ## 11. Untested behaviour (requirement gaps)
 
 These behaviours exist in the code at the baseline but no test in `make test` checks them. They are not
