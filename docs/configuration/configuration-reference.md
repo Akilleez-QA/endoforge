@@ -210,6 +210,7 @@ in `core/runtime/x1/loop.mjs`. Values are not validated.
 | `maxTurns` | `6` | Turns per stage (specification, then implementation) before exit `max_turns`; an implementation stage that fails the same tests with the same values in two consecutive checks ends earlier with `repeated_failure`. The host refuses any model call after `2 × maxTurns` calls. |
 | `maxTokens` | `64000` | Token budget per stage (`tokenBudget = 'stage'` in `loop.mjs`): the specification and the implementation each get it, counted from each reply's `usage`. The stage's remainder is passed to the provider; reaching it ends the stage with `max_tokens`. |
 | `oracle` | off | When truthy, the specification stage may also write `reference.js`, and `tests.json` is checked against the contract's formula, ranges and the reference before the freeze. Each test becomes `verified`, `corrected`, `flagged`, `unverified` or `abstained`; flagged tests go back to the model, corrected values are frozen, and the result carries an `oracle` report. Off by default after P-69, P-70 and P-71. |
+| `overlap` | off | Experimental, pending P-72. When truthy, an implementation call starts as soon as a specification reply has delivered `CONTRACT.md` with its capability block (while the reply streams, with a warm transport built with `partial: true`, else when the reply ends), given `CONTRACT.md` but never `tests.json`. Its reply is used as the first implementation turn after the freeze and admission, discarded on reuse, and replaced by the normal stage when the frozen capability block changed. The result carries an `overlap` record. Needs a free transport lane. |
 
 Fixed limits in `core/runtime/x1/agent.mjs`: 64 KiB per file, four times that per reply, 16 calls per reply.
 
@@ -291,6 +292,7 @@ lane), in `core/runtime/x1/transports.mjs`.
 | `configDir` (spawn) | unset | Login directory; must exist. |
 | `queueTimeoutMs` (warm) | `timeoutMs` | Wait for a free lane; when every login is parked past this, fail at once with `UsageParked`. |
 | `idleMs` (warm) | `300000` | An idle lane's process is stopped after this. |
+| `partial` (warm) | `false` | Adds `--include-partial-messages` and passes the reply text received so far to a turn's `onPartial`; used by `limits.overlap`. |
 | `governor` | a governor per login | A `UsageGovernor` to admit every turn through; `null` turns governing off. |
 | `usageState` | the `ENDOFORGE_USAGE_STATE` default | Governor state file. |
 | `watchdog` | from `CLAUDE_CODE_RETRY_WATCHDOG` | `true`, `false` or `{ maxWaitMs, recheckMs }`. |

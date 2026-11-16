@@ -243,10 +243,40 @@ the same corrections to its shadow copy, and the result carries an `oracle` repo
 [P-70](../../experiments/P-70-oracle-injected/RESULT.md) and [P-71](../../experiments/P-71-oracle-round2/RESULT.md)
 continue that work.
 
+## Implementation overlap
+
+`limits.overlap` is an experimental flag, off by default, built for the `overlap` arm of P-72 (its precommit is on the
+`exp/loop-speed` branch) and pending its result. With it on, the supervisor (`modelTurn` in [loop.mjs](../../core/runtime/x1/loop.mjs)) starts one
+implementation call in a second session as soon as a specification reply has delivered a `CONTRACT.md` whose
+capability block parses:
+
+- **When.** With `new WarmClaudeTransport({ partial: true })` the lane runs `claude` with `--include-partial-messages`
+  and passes the reply text received so far to the turn's `onPartial`; the supervisor reads the completed calls from
+  it and starts as soon as the `CONTRACT.md` edit is complete, while the rest of the reply (usually `tests.json`) is
+  still streaming. Without partial text it starts when the reply ends, before the freeze and admission round trip.
+- **What it sees.** `stagePrompts.implementation({ blind: true })`: the id, `CONTRACT.md`, the glue schema, glue rules,
+  template and `stateRules`, never `tests.json`.
+- **When it is used.** Only as the reply to the cell's first implementation turn, after the freeze and admission. The
+  cell applies and checks it as it would any reply, so nothing is compiled or checked before the freeze and the gates
+  are unchanged. If admission returns `reused`, its session is ended and the result discarded. If the frozen
+  capability block differs from the one it started from, if it never got a lane, if it failed or if it went past the
+  stage's token budget, it is replaced by the normal implementation call.
+
+The call counts against the `2 × maxTurns` call limit, and its tokens count in the implementation stage when used. It
+needs a second free transport lane; with one lane it waits until the implementation turn and is then replaced. The
+result carries `overlap: { ran, trigger, offsetMs, specReplyMs, outcome, reason, callMs, usage, waitedMs }`:
+`trigger` is `partial` or `reply`; `offsetMs` is its start after the start of the specification call that delivered
+the block, and `specReplyMs` that call's length; `outcome` is `used`, `discarded` (`reused`, or `unused` when no
+implementation turn came) or `replaced` (`block changed`, `not started`, a call error or the token budget); `callMs`
+and `usage` are its own; `waitedMs` is how long the implementation turn waited for it, which is what `modelMs` counts.
+P-72 decides whether it becomes a default; if it does, the freeze rule in
+[candidate-loop.md](candidate-loop.md#the-shape-of-one-attempt) must first say that code may be written before the
+freeze, never shown the tests and never checked before it.
+
 ## The result
 
 `runNeed` returns `{ promoted, inconclusive?, candidate, receipt, decision, problem, status, agent, rounds, content,
-testDouble, modelMs, timings, rerun, synthesis?, synthTimings?, oracle?, contained?, compatibility?, revision?,
+testDouble, modelMs, timings, rerun, synthesis?, synthTimings?, oracle?, overlap?, contained?, compatibility?, revision?,
 suspects? }`. `contained` and `compatibility` come from the compatibility route; `revision` and `suspects` from a
 specification correction. `rerun` is `{ agrees, ms }` from the
 [re-run at commit](gates.md#commit-re-runs-the-gates) (`null` when no attempt claimed a pass); `synthesis` is the

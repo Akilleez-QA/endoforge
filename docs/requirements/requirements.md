@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SRS |
-| Version | 2.14 |
+| Version | 2.15 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-16 |
@@ -948,6 +948,16 @@ With `limits.oracle` set (default off), the agent loop shall recompute frozen ex
 - Verification: T — `make isolate-test`
 - Status: Baselined
 
+### REQ-OVERLAP-001 — Implementation overlap
+
+With `limits.overlap` set (default off), the agent loop shall start one implementation model call as soon as a specification reply has delivered a `CONTRACT.md` with a parsing capability block (from the partial reply when the transport streams one, otherwise when the reply ends), give it the need's id, that `CONTRACT.md` and the implementation rules but never `tests.json`, hand its reply to the cell only as the first implementation turn after the freeze and admission, discard it when admission reuses a capability, replace it with the normal implementation stage when the frozen capability block differs from the one it started from, and record in the result whether it ran, its trigger, its start offset in the specification reply, its outcome and reason, and its timings.
+
+- Rationale: P-72 measures whether writing code blind to the tests, while the specification reply is still streaming, shortens the time to a promoted candidate; the freeze rules and gates are unchanged.
+- Derivation: `core/runtime/x1/loop.mjs`, `core/runtime/x1/agent.mjs`, `core/runtime/x1/transports.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make loop-test`
+- Status: Proposed (experimental flag pending P-72)
+
 ## 7. Model access
 
 ### REQ-SUB-001 — Subscription guard
@@ -1765,3 +1775,4 @@ Closed gaps (their IDs are not reused):
 | 2.12 | 2026-11-16 | passing check | 1 requirement added: a passing check ends the stage without `done`, and an edit after the last check is checked again (REQ-LOOP-011) | this PR |
 | 2.13 | 2026-11-16 | repeated failure | 1 requirement added: the same failure in two consecutive implementation checks ends the stage with `repeated_failure`, recorded and refused (REQ-LOOP-012) | this PR |
 | 2.14 | 2026-11-16 | G8 kinds | 1 requirement added: G8 probes and judges NaN, `Infinity` and `-Infinity` by what the contract names (REQ-X1-013) | this PR |
+| 2.15 | 2026-11-16 | P-72 overlap arm | 1 requirement added: implementation overlap behind `limits.overlap` (REQ-OVERLAP-001), off by default | this PR |
