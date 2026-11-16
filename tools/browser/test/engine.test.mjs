@@ -67,10 +67,10 @@ test('inspect passes and fails each assertion with what it observed and what it 
 });
 
 test('box and apart fail for an element with no box, and attr compares the attribute itself', needsEngine, async t => {
-  const page = '<p id="gone" style="display: none">x</p><div id="here" style="width: 50px; height: 50px"></div><button id="add" aria-label="Add item">+</button>';
+  const page = '<p id="gone" style="display: none">x</p><div id="here" style="width: 50px; height: 50px"></div><button id="add" aria-label="Add item">+</button><svg id="icon" viewBox="0 0 10 10"></svg>';
   const result = await engineFor(t).inspect({ html: page, viewport: [100, 100], expect: [{ select: '#gone', box: { maxWidth: 10, inViewport: true } }, { select: '#gone', apart: '#here' },
-    { select: '#here', apart: '#gone' }, { select: '#add', attr: { 'aria-label': 'Add item' } }, { select: '#add', attr: { 'aria-label': 'Add' } }, { select: '#add', attr: { 'ARIA-LABEL': 'Add item' } }] });
-  assert.deepEqual(observed(result), [[false, '#gone has no box'], [false, '#gone has no box'], [false, '#gone has no box'], [true, '#add has aria-label'], [false, '#add aria-label "Add item", needs "Add"'], [true, '#add has ARIA-LABEL']]);
+    { select: '#here', apart: '#gone' }, { select: '#add', attr: { 'aria-label': 'Add item' } }, { select: '#add', attr: { 'aria-label': 'Add' } }, { select: '#add', attr: { 'ARIA-LABEL': 'Add item' } }, { select: '#icon', attr: { viewBox: '0 0 10 10' } }] });
+  assert.deepEqual(observed(result), [[false, '#gone has no box'], [false, '#gone has no box'], [false, '#gone has no box'], [true, '#add has aria-label'], [false, '#add aria-label "Add item", needs "Add"'], [true, '#add has ARIA-LABEL'], [true, '#icon has viewBox']]);
   assert.equal(result.pass, false);
 });
 

@@ -60,7 +60,7 @@ viewport, runs each assertion, frees the `DomHandle`, waits one macrotask turn s
 replies. Every engine call runs with `new Date()` and `Date.now()` fixed at 2026-01-01 and a seeded
 `crypto.getRandomValues`, restored afterwards. The fetch bridge answers no request: the Worker records each one, and a document that
 requests any resource fails the check. Requests the engine makes after the reply's one macrotask drain are not
-counted, for that check or the next. `png: true` also returns the PNG of the same document.
+counted for that check, and one that lands during a later check's drain counts against that later check. `png: true` also returns the PNG of the same document.
 
 | Assertion | Passes when | Failure says, for example |
 |---|---|---|
