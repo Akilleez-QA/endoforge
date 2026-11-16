@@ -3,6 +3,7 @@ import { existsSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import { compile } from '../x1/compiler.mjs';
+import { capabilityProblems } from '../x1/generator.mjs';
 import { renderSelectors, runGates, testProblems } from '../x1/gates.mjs';
 import { hash } from '../x1/host.mjs';
 
@@ -121,6 +122,14 @@ test('G1 refuses a frozen render test with a digest before any code runs', () =>
 test('G3 requires every reducer a render test steps through', () => {
   const result = runGates(candidate({ tests: [valueTest, { ...renderTest, steps: [{ fn: 'reset', event: { add: 0 } }] }] }));
   assert.equal(result.gates.G3_exports.why, 'missing exports: reset');
+});
+
+test('the freeze refuses a render test whose steps name an export the capability block does not declare as a reducer', () => {
+  assert.deepEqual(capabilityProblems(contractFor(), [valueTest, renderTest]), []);
+  assert.deepEqual(capabilityProblems(contractFor(), [valueTest, { ...renderTest, steps: [{ fn: 'reset', event: { add: 0 } }] }]),
+    ['render test shows one item steps through reset, which the capability block does not export; declare reset(state, event) -> state there']);
+  assert.deepEqual(capabilityProblems(contractFor(), [valueTest, { ...renderTest, steps: [{ fn: 'view', event: { add: 0 } }] }]),
+    ['render test shows one item steps through view, so the capability block must declare it as a reducer view(state, event) -> state whose result has the layout of its state argument']);
 });
 
 test('G7 requires the view to take the state its reducer steps produce', () => {

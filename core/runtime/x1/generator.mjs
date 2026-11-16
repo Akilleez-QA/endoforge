@@ -3,7 +3,8 @@ import { readFile, writeFile, mkdir, readdir, lstat } from 'node:fs/promises';
 import { basename, isAbsolute, join, resolve } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { capabilityBlock, layoutKinds, layoutProblems } from './contract.mjs';
-import { testProblems } from './gates.mjs';
+import { reducersOf, testProblems } from './gates.mjs';
+import { layoutTable } from './measure.mjs';
 import { configuration, hash, implementationFiles } from './host.mjs';
 import { ledger } from './ledger.mjs';
 import { fillExpected } from './reference.mjs';
@@ -63,6 +64,11 @@ export function capabilityProblems(contract, tests) {
     if (!item) { problems.push(`test ${test?.name ?? test?.fn} calls ${test?.fn}, which the capability block does not export`); continue; }
     if (Array.isArray(item.args) && Array.isArray(test.args) && test.args.length !== item.args.length) problems.push(`test ${test.name ?? test.fn} passes ${test.args.length} arguments; capability export ${item.name} declares ${item.args.length}`);
     if (test.expectError === true && Array.isArray(traps) && !traps.includes(test.fn)) problems.push(`capability traps must list ${test.fn}, which has an expectError test`);
+    for (const fn of new Set(reducersOf(test))) {
+      const reducer = exports.get(fn), shown = type => { try { return JSON.stringify(layoutTable(type)); } catch { return null; } };
+      if (!reducer) problems.push(`render test ${test.name ?? test.fn} steps through ${fn}, which the capability block does not export; declare ${fn}(state, event) -> state there`);
+      else if (!Array.isArray(reducer.args) || reducer.args.length !== 2 || !shown(reducer.args[0]) || shown(reducer.args[0]) !== shown(reducer.result)) problems.push(`render test ${test.name ?? test.fn} steps through ${fn}, so the capability block must declare it as a reducer ${fn}(state, event) -> state whose result has the layout of its state argument`);
+    }
   }
   return [...new Set(problems)];
 }

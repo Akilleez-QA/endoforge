@@ -235,6 +235,10 @@ and no 64-hex-digit or `data:image/` string, may appear anywhere in a render tes
 reference view, need the engine and are checked in a later slice; `renderSelectors` returns the selectors that check
 will read.
 
+The loop's freeze (`capabilityProblems` in [generator.mjs](../../core/runtime/x1/generator.mjs)) already refuses a
+render test whose steps name an export that the capability block does not declare as a reducer
+`fn(state, event) -> state` with its state layout, naming the export.
+
 Until the render gate (G10) exists, a kernel with render tests is never promotable. G4 calls each view with the test's
 `args` and passes it when the call returns without error, without comparing the HTML; G5 compares the two runs and G6
 meters them like any other call. Steps are not run. `runGates` then records `G10_render` as
