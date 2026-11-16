@@ -175,24 +175,26 @@ const replaced = (value, path, leaf) => {
   path.slice(0, -1).reduce((node, key) => node[key], copy)[path.at(-1)] = leaf;
   return copy;
 };
-export function probeCalls(tests, functions, entries = new Map()) {
+const nonFiniteValues = { NaN: NaN, Infinity: Infinity, '-Infinity': -Infinity };
+export function probeCalls(tests, functions, entries = new Map(), kinds = {}) {
   const calls = [];
   for (const fn of [...new Set(tests.map(test => test.fn))]) {
     const params = functions[fn]?.params;
     if (!params) continue;
+    const probed = (kinds[fn] ?? Object.keys(nonFiniteValues)).map(kind => [kind, nonFiniteValues[kind]]);
     const base = (tests.find(test => test.fn === fn && !test.expectError) ?? tests.find(test => test.fn === fn)).args;
     const entry = entries.get(fn);
     if (usesBuffers(entry)) {
       if (!Array.isArray(base) || base.length !== entry.args.length) continue;
       const own = [];
       entry.args.forEach((arg, index) => {
-        for (const path of numberPaths(arg, base[index])) for (const value of [NaN, Infinity, -Infinity]) own.push({ fn, args: base.map((item, i) => (i === index ? replaced(item, path, value) : item)) });
+        for (const path of numberPaths(arg, base[index])) for (const [kind, value] of probed) own.push({ fn, kind, args: base.map((item, i) => (i === index ? replaced(item, path, value) : item)) });
       });
       calls.push(...own.slice(0, probeLimit));
       continue;
     }
     params.forEach((type, index) => {
-      if (floats.has(type)) for (const value of [NaN, Infinity, -Infinity]) calls.push({ fn, args: params.map((_, i) => (i === index ? value : base[i] ?? 0)) });
+      if (floats.has(type)) for (const [kind, value] of probed) calls.push({ fn, kind, args: params.map((_, i) => (i === index ? value : base[i] ?? 0)) });
     });
   }
   return calls;

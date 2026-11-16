@@ -188,11 +188,15 @@ problem carries a letter:
 
 ### NaN and infinity (G8)
 
-For each export, `nonFiniteExpectation` reads the contract's text and classifies what it says about non-finite
-input: `permitted`, `trap`, `excluded`, `finite` or `silent`. `probeCalls` takes the first value test's arguments
-for that export and replaces one float parameter at a time with NaN, `Infinity` and `-Infinity`; for a structured
-argument it replaces one `number` field inside the state at a time (up to 64 probes per export). A probe fails when
-the contract requires a trap and the call returns, when the contract promises a finite result and the call returns a
+For each export, `nonFiniteKinds` reads the contract's text and classifies what it says about each kind of
+non-finite input, NaN, `Infinity` and `-Infinity`, separately: `permitted`, `trap`, `excluded`, `finite` or `silent`.
+A sentence binds the kinds it names: NaN binds NaN only, infinity binds both infinities, positive or negative
+infinity binds one, and non-finite or finite binds all three. A promise about finite results binds all three. So
+"traps when any input is NaN" is a NaN trap and says nothing about infinity. `nonFiniteExpectation` keeps one
+summary per export. `probeCalls` takes the first value test's arguments for that export and replaces one float
+parameter at a time with each kind whose expectation is stated, or with all three when none is; for a structured
+argument it replaces one `number` field inside the state at a time (up to 64 probes per export). Each probe is
+judged by its own kind's expectation. A probe fails when the contract requires a trap and the call returns, when the contract promises a finite result and the call returns a
 non-finite one, or when a probe exhausts fuel or stack. Integer parameters are not probed, so an export with only
 integer parameters records `probes: 0`.
 

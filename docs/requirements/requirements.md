@@ -3,10 +3,10 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SRS |
-| Version | 2.13 |
+| Version | 2.14 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
-| Date | 2026-11-12 |
+| Date | 2026-11-16 |
 | Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
 | Applies to | endoforge main at baseline commit |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
@@ -586,6 +586,16 @@ The meter shall read every memory a module declares or imports, export each unex
 - Derivation: `core/runtime/x1/meter.mjs`
 - Allocated to: SDD §4 C-07 X1 candidate loop
 - Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-X1-013 — Non-finite probes follow what the contract names
+
+G8 shall classify each export's contract separately for NaN, `Infinity` and `-Infinity` from the kinds each sentence names (NaN or NaNs; infinity, positive or negative infinity; non-finite or finite for all three), probe only the kinds whose expectation is stated (all three when none is), judge each probe by its own kind's expectation, and read a sentence that names NaN with a trap verb (traps, trapped, rejected, aborted, thrown) as a NaN trap.
+
+- Rationale: A contract that traps only on NaN was probed with infinities and refused for returning on them, so every P-66 H05 run paid a repair turn for a trap the need never asked for.
+- Derivation: `core/runtime/x1/contract.mjs`, `core/runtime/x1/measure.mjs`, `core/runtime/x1/gates.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make pipeline-test`
 - Status: Baselined
 
 ### REQ-LOOP-001 — Agent loop in the cell
@@ -1754,3 +1764,4 @@ Closed gaps (their IDs are not reused):
 | 2.11 | 2026-11-12 | flake fix | Changed: REQ-LOOP-003 (a decision file is either absent or complete after a bridge kill; it is published under its final name only once written and synced) | this PR |
 | 2.12 | 2026-11-16 | passing check | 1 requirement added: a passing check ends the stage without `done`, and an edit after the last check is checked again (REQ-LOOP-011) | this PR |
 | 2.13 | 2026-11-16 | repeated failure | 1 requirement added: the same failure in two consecutive implementation checks ends the stage with `repeated_failure`, recorded and refused (REQ-LOOP-012) | this PR |
+| 2.14 | 2026-11-16 | G8 kinds | 1 requirement added: G8 probes and judges NaN, `Infinity` and `-Infinity` by what the contract names (REQ-X1-013) | this PR |

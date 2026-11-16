@@ -2,12 +2,13 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { hash } from '../x1/host.mjs';
 import { runGates } from '../x1/gates.mjs';
-import { glueFindings, glueProblems, kernelParameters, nonFiniteExpectation, statesComputation, unitDisagreements } from '../x1/contract.mjs';
+import { glueFindings, glueProblems, kernelParameters, nonFiniteExpectation, nonFiniteKinds, probedKinds, statesComputation, unitDisagreements } from '../x1/contract.mjs';
 import { unitFindings } from '../x1/dimensions.mjs';
 import { candidate } from './fixtures/x1/candidate.mjs';
 import { wasm } from './fixtures/x1/wasm.mjs';
 const passThrough = { name: 'scale', params: ['f64'], results: ['f64'], body: [0x20, 0] };
 const guarded = { name: 'scale', params: ['f64'], results: ['f64'], body: [0x20, 0, 0x20, 0, 0x62, 0x04, 0x40, 0x00, 0x0b, 0x20, 0, 0x44, 0, 0, 0, 0, 0, 0, 0xf0, 0x7f, 0x61, 0x04, 0x40, 0x00, 0x0b, 0x20, 0, 0x44, 0, 0, 0, 0, 0, 0, 0xf0, 0xff, 0x61, 0x04, 0x40, 0x00, 0x0b, 0x20, 0] };
+const nanOnly = { name: 'scale', params: ['f64'], results: ['f64'], body: [0x20, 0, 0x20, 0, 0x62, 0x04, 0x40, 0x00, 0x0b, 0x20, 0] };
 const toZero = { name: 'scale', params: ['f64'], results: ['f64'], body: [0x44, 0, 0, 0, 0, 0, 0, 0, 0] };
 const scaleBlock = (unit = '1', name = 'x') => ({ exports: [{ name: 'scale', args: [{ name, kind: 'number', unit }], result: { kind: 'number', unit: '1', precision: 2 } }], traps: [] });
 const fenced = (text, block) => `${text}\n\n\`\`\`capability\n${JSON.stringify(block)}\n\`\`\`\n`;
@@ -60,6 +61,46 @@ test('integer parameters get no float probe', () => {
   const result = runGates(candidate());
   assert.equal(result.gates.G8_nonfinite.ok, true);
   assert.equal(result.gates.G8_nonfinite.probes, 0);
+});
+const kinds = (nan, inf, ninf = inf) => ({ NaN: nan, Infinity: inf, '-Infinity': ninf });
+test('NaN-only, infinity-only, non-finite and mixed wording each read per kind of non-finite value', () => {
+  for (const [text, want] of [
+    ['It traps with abort() when any input is NaN.', kinds('trap', 'silent')],
+    ['NaN input is rejected before arithmetic.', kinds('trap', 'silent')],
+    ['Traps on NaNs.', kinds('trap', 'silent')],
+    ['Trap on infinite input.', kinds('silent', 'trap')],
+    ['Trap when x is positive infinity.', kinds('silent', 'trap', 'silent')],
+    ['Trap when x is -Infinity.', kinds('silent', 'silent', 'trap')],
+    ['Trap on non-finite input.', kinds('trap', 'trap')],
+    ['Inputs must be finite; reject any domain violation before arithmetic.', kinds('trap', 'trap')],
+    ['NaN inputs propagate to the result.', kinds('permitted', 'silent')],
+    ['NaN is outside this contract.', kinds('excluded', 'silent')],
+    ['Results are finite numbers. It traps when any input is NaN.', kinds('trap', 'finite')],
+    ['It traps when lo or hi is NaN. An infinite x returns infinity unchanged.', kinds('trap', 'permitted')],
+    ['Multiply by two.', kinds('silent', 'silent')],
+  ]) assert.deepEqual(nonFiniteKinds(text, ['scale']).scale, want, text);
+});
+test('only the kinds a contract states are probed, and a silent contract keeps all three', () => {
+  assert.deepEqual(probedKinds(kinds('trap', 'silent')), ['NaN']);
+  assert.deepEqual(probedKinds(kinds('silent', 'trap')), ['Infinity', '-Infinity']);
+  assert.deepEqual(probedKinds(kinds('silent', 'silent')), ['NaN', 'Infinity', '-Infinity']);
+});
+test('a NaN trap stated for one export does not demand an infinity trap from either export', () => {
+  const contract = 'Export exactly two functions. subcoolingF(a: f64, b: f64): f64 returns a - b; both inputs must be in -100..200 inclusive, otherwise trap with abort(). subcoolStatus(x: f64, lo: f64, hi: f64): i32 returns 0, 1 or 2; it traps with abort() when lo > hi or any input is NaN.';
+  assert.deepEqual(nonFiniteKinds(contract, ['subcoolingF', 'subcoolStatus']), { subcoolingF: kinds('trap', 'silent'), subcoolStatus: kinds('trap', 'silent') });
+});
+const nanTrap = 'It traps with abort() when the low target is above the high target or any input is NaN.';
+for (const [name, fn, contract, ok, probes] of [
+  ['a NaN-only trap accepts a kernel that traps on NaN and returns on infinity', nanOnly, nanTrap, true, 1],
+  ['a NaN-only trap still refuses a kernel that returns on NaN', passThrough, nanTrap, false, 1],
+  ['a NaN-only trap refuses a kernel that hides NaN behind a finite value', toZero, nanTrap, false, 1],
+  ['an infinity trap refuses a kernel that returns on infinity', nanOnly, 'Trap on infinite input.', false, 2],
+  ['an infinity trap accepts a kernel that traps on both infinities', guarded, 'Trap on infinite input.', true, 2],
+  ['a non-finite trap still probes and refuses infinities', nanOnly, 'Trap on non-finite input.', false, 3],
+]) test(name, () => {
+  const gate = runGates(kernel(fn, contract)).gates.G8_nonfinite;
+  assert.equal(gate.ok, ok, JSON.stringify(gate));
+  assert.equal(gate.probes, probes);
 });
 const glueFor = (args, result = { kind: 'number', unit: '1', precision: 2 }) => ({ exports: [{ name: 'f', args, result }] });
 const arg = (name, unit = '1') => ({ name, kind: 'number', unit });
