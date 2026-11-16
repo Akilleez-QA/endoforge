@@ -29,7 +29,7 @@ export const defaultModel = 'sonnet';
 const standIn = command => basename(String(command)) !== 'claude';
 const sharedArguments = ({ model = defaultModel, system = transportSystem, effort }) => ['-p', '--json-schema', JSON.stringify(replySchema), '--tools', '', '--no-session-persistence', '--strict-mcp-config',
   '--setting-sources', '', '--permission-mode', 'dontAsk', '--safe-mode', '--model', model, ...(effort ? ['--effort', effort] : []), '--system-prompt', system];
-export const warmArguments = options => [...sharedArguments(options), '--input-format', 'stream-json', '--output-format', 'stream-json', '--verbose'];
+export const warmArguments = options => [...sharedArguments(options), '--input-format', 'stream-json', '--output-format', 'stream-json', '--verbose', ...(options.partial ? ['--include-partial-messages'] : [])];
 export const spawnArguments = options => [...sharedArguments(options), '--disable-slash-commands', '--output-format', 'stream-json', '--verbose'];
 export const usageOf = result => ['input_tokens', 'output_tokens', 'cache_creation_input_tokens', 'cache_read_input_tokens'].reduce((total, key) => total + (Number.isSafeInteger(result.usage?.[key]) ? result.usage[key] : 0), 0);
 const loginOf = (configDir, base = process.env) => configDir ?? join(base.HOME || homedir(), '.claude');
@@ -43,6 +43,14 @@ const initIsAcceptable = event => !event.tools?.some(tool => !allowedTools.has(t
 const flatten = messages => messages.map(message => `${message.role}: ${message.content}`).join('\n\n');
 const withinBudget = (remaining, usage) => {
   if (remaining !== undefined && usage > remaining) throw Error('model token budget exceeded');
+};
+const partialText = onPartial => {
+  let text = '';
+  return event => {
+    if (event?.type === 'content_block_start') text = '';
+    const piece = event?.type === 'content_block_delta' ? event.delta?.partial_json ?? event.delta?.text : undefined;
+    if (typeof piece === 'string') { text += piece; onPartial(text); }
+  };
 };
 const beforeBudget = remaining => {
   if (remaining !== undefined && remaining <= 0) throw Error('model token budget reached');
@@ -59,11 +67,12 @@ export function scriptedProvider(script) {
   return {
     name: 'scripted', testDouble: true,
     async start() { return { startupMs: 0, lanes: 0 }; },
-    async send({ session, messages, remaining }) {
+    async send({ session, messages, remaining, onPartial, onStart }) {
       beforeBudget(remaining);
       const turn = seen.get(session) ?? 0;
       seen.set(session, turn + 1);
-      const reply = await script({ session, messages, turn, remaining });
+      onStart?.();
+      const reply = await script({ session, messages, turn, remaining, onPartial });
       withinBudget(remaining, reply?.usage);
       return reply;
     },
@@ -86,8 +95,9 @@ export class SpawnClaudeTransport {
     this.spawns = 0;
   }
   async start() { return { startupMs: 0, lanes: 0 }; }
-  send({ messages, remaining, timeoutMs = this.timeoutMs }) {
+  send({ messages, remaining, timeoutMs = this.timeoutMs, onStart }) {
     const begin = performance.now();
+    onStart?.();
     this.spawns += 1;
     return new Promise((resolve, reject) => {
       beforeBudget(remaining);
@@ -157,6 +167,7 @@ class Lane {
         if (event.rate_limit_info?.status === 'rejected') this.instance.limitedUntil = (event.rate_limit_info.resetsAt ?? 0) * 1000;
         return undefined;
       }
+      if (event.type === 'stream_event') return this.pending?.partial?.(event.event);
       if (event.type !== 'result' || !this.pending) return undefined;
       if (!this.initSeen) return fail(notSubscription);
       const { resolve, reject, begin: sent, timer } = this.pending;
@@ -183,14 +194,14 @@ class Lane {
     if (pending) { clearTimeout(pending.timer); pending.reject(Error(why)); }
     if (child) child.kill('SIGKILL');
   }
-  write(text, timeoutMs) {
+  write(text, timeoutMs, onPartial) {
     if (!this.child) return Promise.reject(Error('transport closed'));
     if (this.pending) return Promise.reject(Error('transport turn already pending'));
     this.initSeen = false;
     this.rateLimit = null;
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => this.shut('transport timed out'), timeoutMs);
-      this.pending = { resolve, reject, begin: performance.now(), timer };
+      this.pending = { resolve, reject, begin: performance.now(), timer, ...(onPartial ? { partial: partialText(onPartial) } : {}) };
       this.child.stdin.write(`${JSON.stringify({ type: 'user', message: { role: 'user', content: [{ type: 'text', text }] } })}\n`);
     });
   }
@@ -204,13 +215,13 @@ export class WarmClaudeTransport {
   #closed = false;
   #directory;
   #recheck;
-  constructor({ instances = [{ name: 'default' }], model, system, effort, cwd, command = 'claude', timeoutMs = 300000, queueTimeoutMs = timeoutMs, idleMs = 300000, base, environment, governor, usageState, watchdog, testDouble = standIn(command) } = {}) {
+  constructor({ instances = [{ name: 'default' }], model, system, effort, partial = false, cwd, command = 'claude', timeoutMs = 300000, queueTimeoutMs = timeoutMs, idleMs = 300000, base, environment, governor, usageState, watchdog, testDouble = standIn(command) } = {}) {
     refuseCredentials(environment);
     this.testDouble = Boolean(testDouble);
     this.#directory = new WorkingDirectory(cwd);
     const watched = watchdogEnvironment(watchdog, { base: base ?? process.env, timeoutMs });
     Object.assign(this, { command, timeoutMs, queueTimeoutMs, idleMs, base, environment: { ...environment, ...watched } });
-    this.arguments = warmArguments({ model, system, effort });
+    this.arguments = warmArguments({ model, system, effort, partial });
     for (const instance of instances) {
       requireDirectory(instance.configDir);
       const shared = { ...instance, limitedUntil: 0, governor: governed(instance.governor !== undefined ? instance.governor : governor, instance.configDir, usageState, base) };
@@ -267,7 +278,7 @@ export class WarmClaudeTransport {
       this.#assign();
     });
   }
-  async send({ session, messages, remaining, timeoutMs = this.timeoutMs }) {
+  async send({ session, messages, remaining, timeoutMs = this.timeoutMs, onPartial, onStart }) {
     beforeBudget(remaining);
     const lane = await this.#acquire(session);
     const wasOpen = Boolean(lane.child);
@@ -279,7 +290,8 @@ export class WarmClaudeTransport {
       throw error;
     }
     let reply;
-    try { reply = await lane.write(flatten(messages.slice(wasOpen ? lane.sent : 0)), timeoutMs); } catch (error) {
+    onStart?.();
+    try { reply = await lane.write(flatten(messages.slice(wasOpen ? lane.sent : 0)), timeoutMs, onPartial); } catch (error) {
       ticket?.release({ completed: false });
       throw error;
     }
