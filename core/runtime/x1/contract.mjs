@@ -150,8 +150,8 @@ function partDifferences(where, block, glue, keys) {
   return out;
 }
 const same = value => value;
-const argumentKeys = [['kind', same], ['unit', sameUnit], ['range', sameRange], ['codes', labelTable]];
-const resultKeys = [['kind', same], ['unit', sameUnit], ['precision', same], ['rounding', same], ['codes', labelTable], ['labels', labelTable]];
+const argumentKeys = [['kind', same], ['unit', sameUnit], ['range', sameRange], ['codes', labelTable], ['media', same]];
+const resultKeys = [['kind', same], ['unit', sameUnit], ['precision', same], ['rounding', same], ['codes', labelTable], ['labels', labelTable], ['media', same]];
 const declaredBound = { list: 'max', text: 'maxBytes' };
 const isValue = value => value !== null && typeof value === 'object' && !Array.isArray(value);
 function valueDifferences(where, block, glue, keys) {

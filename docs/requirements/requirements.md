@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SRS |
-| Version | 2.11 |
+| Version | 2.12 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-12 |
@@ -584,6 +584,16 @@ The meter shall read every memory a module declares or imports, export each unex
 
 - Rationale: A composed library module has one memory per part; reading only the first would leave the others unmeasured.
 - Derivation: `core/runtime/x1/meter.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
+### REQ-X1-012 — Render tests in the frozen specification
+
+The X1 gates shall accept a frozen render test, `{ name, fn, args, render: { viewport, expect } }` with optional reducer `steps`, only in its closed form, and otherwise refuse it with a message that states the valid form. `testProblems` refuses a render test with no assertions, an unknown or malformed assertion (`count`, `text`, `attr`, `style`, `box`, `apart`, `page: "noHorizontalOverflow"`, `pixel`), a viewport outside integers 1 to 4096, a step that is not a `{ fn, event }` call of an export other than the view, an `expect`, `expectError` or `tol` beside `render`, a `property` (not supported yet), or a PNG digest anywhere. G3 requires every step's export; G7 requires each view named by a render test to return `text` with `media: "text/html"`, each step export to be a reducer whose result keeps its state layout, `media` only on a text result, and the capability block to declare the same media. Until the render gate exists, a kernel with render tests runs each view call under G4 (it must return), G5 and G6, records `G10_render` as not ok, and is never promotable.
+
+- Rationale: The specification must be able to hold render tests before the engine runs them, without a render check ever counting as passed when it was not executed.
+- Derivation: `core/runtime/x1/gates.mjs`, `core/runtime/x1/contract.mjs`, `core/runtime/x1/glue.schema.json`, `tools/gate/glue.schema.json`
 - Allocated to: SDD §4 C-07 X1 candidate loop
 - Verification: T — `make isolate-test`
 - Status: Baselined
@@ -1732,3 +1742,4 @@ Closed gaps (their IDs are not reused):
 | 2.9 | 2026-11-10 | round 9 | Changed: REQ-GEN-011 (a record, list or text value must declare its layout in the capability block; the prompts ask for it; the freeze and G7 refuse a block without it), REQ-ATOM-006 (the atomizer prompts ask for the nested layout), REQ-LIB-001 (the library key and binding include the nested layout; D-11 closed), REQ-ATOM-007 (`fanout.mjs` and `cutover.mjs` pass their policy to `verify.mjs`; D-12 closed) and REQ-ISO-010 (`LedgerBridge.pid`; the bridge-death test kills the pool's own bridge); no gap open | this commit |
 | 2.10 | 2026-11-10 | round 10 | 4 requirements added: the reference sandbox deadline and its distinct errors (REQ-SYNTH-009, D-14 closed), a relaunch patch reopens a finished job (REQ-COND-005, D-15 closed), the `TRACE-NEEDED` event (REQ-COND-006) and invariants I16 and I17 (REQ-JOB-004); changed: REQ-ATOM-007 (cutover's planning steps take, use and record `--policy`; D-16 closed) and REQ-LIB-002 (union members match on nested layout and bind by export name when they share a signature); no gap open | this commit |
 | 2.11 | 2026-11-12 | flake fix | Changed: REQ-LOOP-003 (a decision file is either absent or complete after a bridge kill; it is published under its final name only once written and synced) | this PR |
+| 2.12 | 2026-11-16 | render tests | 1 requirement added: render tests in the frozen specification, glue media and the pre-render-gate rule (REQ-X1-012) | this PR |
