@@ -3,10 +3,10 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SRS |
-| Version | 2.11 |
+| Version | 2.12 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
-| Date | 2026-11-12 |
+| Date | 2026-11-16 |
 | Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
 | Applies to | endoforge main at baseline commit |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
@@ -590,7 +590,7 @@ The meter shall read every memory a module declares or imports, export each unex
 
 ### REQ-LOOP-001 — Agent loop in the cell
 
-The agent loop shall run model turns and checks in one job, return a failed check to the next turn, stop at turn, token and deadline limits as a recorded failure without promotion, keep the model out of the frozen files and outside the overlay, and pass only reply text and usage into the cell and its records.
+The agent loop shall run model turns and checks in one job, return a failed check to the next turn as the first failing stage only (a compile failure with up to five of the compiler's own diagnostics, each with code, line, column and message and at most 1 KiB in all, before any gate or test failure; otherwise the failing gates and the failing tests in test order), marking each gate or test that passed in the previous round and fails now as a regression and keeping a compiler timeout or unavailable compiler distinct from a compile error, stop at turn, token and deadline limits as a recorded failure without promotion, keep the model out of the frozen files and outside the overlay, and pass only reply text and usage into the cell and its records.
 
 - Rationale: The model iterates against checks it cannot change.
 - Derivation: `core/runtime/x1/agent.mjs`, `core/runtime/x1/loop.mjs`, `core/runtime/x1/loop-port.mjs`
@@ -1732,3 +1732,4 @@ Closed gaps (their IDs are not reused):
 | 2.9 | 2026-11-10 | round 9 | Changed: REQ-GEN-011 (a record, list or text value must declare its layout in the capability block; the prompts ask for it; the freeze and G7 refuse a block without it), REQ-ATOM-006 (the atomizer prompts ask for the nested layout), REQ-LIB-001 (the library key and binding include the nested layout; D-11 closed), REQ-ATOM-007 (`fanout.mjs` and `cutover.mjs` pass their policy to `verify.mjs`; D-12 closed) and REQ-ISO-010 (`LedgerBridge.pid`; the bridge-death test kills the pool's own bridge); no gap open | this commit |
 | 2.10 | 2026-11-10 | round 10 | 4 requirements added: the reference sandbox deadline and its distinct errors (REQ-SYNTH-009, D-14 closed), a relaunch patch reopens a finished job (REQ-COND-005, D-15 closed), the `TRACE-NEEDED` event (REQ-COND-006) and invariants I16 and I17 (REQ-JOB-004); changed: REQ-ATOM-007 (cutover's planning steps take, use and record `--policy`; D-16 closed) and REQ-LIB-002 (union members match on nested layout and bind by export name when they share a signature); no gap open | this commit |
 | 2.11 | 2026-11-12 | flake fix | Changed: REQ-LOOP-003 (a decision file is either absent or complete after a bridge kill; it is published under its final name only once written and synced) | this PR |
+| 2.12 | 2026-11-16 | slice 1 | Changed: REQ-LOOP-001 (a failed check returns the first failing stage, the compiler's own capped diagnostics at G2 and regressions against the previous round) | this PR |
