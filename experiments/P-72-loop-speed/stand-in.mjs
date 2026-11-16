@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-import { readFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { createInterface } from 'node:readline';
 
@@ -12,6 +12,19 @@ if (argv[0] === 'auth' && argv[1] === 'status') {
 if (argv[0] === '--version') { process.stdout.write('stand-in (P-72 test double, no model)\n'); process.exit(0); }
 
 const emit = value => process.stdout.write(`${JSON.stringify(value)}\n`);
+const streaming = argv.includes('--include-partial-messages');
+const pause = ms => new Promise(resolve => setTimeout(resolve, ms));
+const turnsDirectory = join(process.env.CLAUDE_CONFIG_DIR ?? '.', 'stand-in-turns');
+function nextImplementationTurn(id) {
+  const file = join(turnsDirectory, `${id}.${process.ppid}.impl`);
+  let turn = 0;
+  try { turn = Number(readFileSync(file, 'utf8')) || 0; } catch { turn = 0; }
+  mkdirSync(turnsDirectory, { recursive: true });
+  writeFileSync(file, String(turn + 1));
+  return turn + 1;
+}
+const compactValue = value => JSON.stringify(value);
+const compactText = tests => tests.map(test => `${test.fn}(${test.args.map(compactValue).join(', ')}) = ${test.expectError ? 'trap' : compactValue(test.expect)}${Number.isFinite(test.tol) ? ` ~ ${compactValue(test.tol)}` : ''} | ${test.name}`).join('\n') + '\n';
 const capability = glue => '```capability\n' + JSON.stringify({ exports: glue.exports.map(entry => ({ name: entry.name, args: entry.args.map(({ name, kind, unit, range }) => ({ name, kind, unit, ...(range ? { range } : {}) })),
   result: entry.result })), traps: glue.traps.map(trap => trap.fn) }) + '\n```\n';
 
@@ -29,7 +42,7 @@ const specification = {
     const tests = [{ name: 'small', fn: 'kwToHp', args: [0.5], expect: 0.5 * 1000 / 745.699872, tol: 1e-9 }, { name: 'one', fn: 'kwToHp', args: [1], expect: wrong ? 1.3412 : 1000 / 745.699872, tol: 1e-9 },
       { name: 'neg', fn: 'kwToHp', args: [-1], expectError: true }];
     const reference = 'function kwToHp(kw) { if (!(kw >= 0 && kw <= 10000)) throw new Error("range"); return kw * 1000 / 745.699872; }';
-    return { 'CONTRACT.md': contract, 'tests.json': JSON.stringify(tests), ...(oracle ? { 'reference.js': reference } : {}) };
+    return { 'CONTRACT.md': contract, tests, ...(oracle ? { 'reference.js': reference } : {}) };
   },
   H05: ({ oracle }) => {
     const contract = `# Subcooling\n\nsubcoolingF(saturatedCondensingF: f64, liquidLineF: f64): f64 returns saturatedCondensingF - liquidLineF; both inputs must be in -100..200, otherwise it traps with abort().\n\nsubcoolingF = saturatedCondensingF - liquidLineF\n\nsubcoolStatus(subcoolF: f64, targetLowF: f64, targetHighF: f64): i32 returns 0 below the band, 1 inside it, 2 above it. subcoolStatus traps with abort() on NaN input or when targetLowF > targetHighF.\n\nShow 1 decimal place.\n\n${capability(h05Glue('x'))}`;
@@ -37,9 +50,11 @@ const specification = {
       { name: 'below', fn: 'subcoolStatus', args: [7, 8, 14], expect: 0 }, { name: 'inside', fn: 'subcoolStatus', args: [10, 8, 14], expect: 1 }, { name: 'above', fn: 'subcoolStatus', args: [20, 8, 14], expect: 2 },
       { name: 'band', fn: 'subcoolStatus', args: [10, 14, 8], expectError: true }];
     const reference = 'function subcoolingF(s, l) { if (!(s >= -100 && s <= 200 && l >= -100 && l <= 200)) throw new Error("range"); return s - l; }\nfunction subcoolStatus(x, lo, hi) { if (Number.isNaN(x) || Number.isNaN(lo) || Number.isNaN(hi) || lo > hi) throw new Error("band"); return x < lo ? 0 : x <= hi ? 1 : 2; }';
-    return { 'CONTRACT.md': contract, 'tests.json': JSON.stringify(tests), ...(oracle ? { 'reference.js': reference } : {}) };
+    return { 'CONTRACT.md': contract, tests, ...(oracle ? { 'reference.js': reference } : {}) };
   },
 };
+const specificationEdits = ({ tests, ...files }, compact) => ({ 'CONTRACT.md': files['CONTRACT.md'], ...(compact ? { 'tests.txt': compactText(tests) } : { 'tests.json': JSON.stringify(tests) }),
+  ...(files['reference.js'] ? { 'reference.js': files['reference.js'] } : {}) });
 
 const h01Kernel = divisor => `export function kwToHp(kw: f64): f64 { if (!(kw >= 0 && kw <= 10000)) abort(); return kw * 1000 / ${divisor}; }`;
 const h05Kernel = ({ guard = 'finite', upper = '<=' } = {}) => `export function subcoolingF(saturatedCondensingF: f64, liquidLineF: f64): f64 {
@@ -59,19 +74,35 @@ function implementation(state) {
   const { need, arm, sample, id } = state, turn = state.implTurn;
   if (need === 'H01') {
     const glue = edit('glue.json', JSON.stringify(h01Glue(id)));
-    if (arm === 'main' && sample === 3) return [edit('kernel.ts', h01Kernel('746.0')), glue, { name: 'done' }];
+    if ((arm === 'main' || arm === 'compact') && sample === 3) return [edit('kernel.ts', h01Kernel('746.0')), glue, { name: 'done' }];
     if (turn === 1) return [edit('kernel.ts', h01Kernel('746.0')), glue, { name: 'check' }];
     if (turn === 2) return [edit('kernel.ts', h01Kernel('745.699872')), { name: 'check' }];
     return [{ name: 'done' }];
   }
   const glue = edit('glue.json', JSON.stringify(h05Glue(id)));
   if (arm === 'fixed' && sample === 0) return [edit('kernel.ts', h05Kernel({ upper: '<' })), glue, { name: 'done' }];
-  if (arm === 'compact' && sample === 1 && turn === 1) return [edit('kernel.ts', h05Kernel({ guard: 'nan' })), glue, { name: 'check' }];
+  if ((arm === 'main' || arm === 'compact') && sample === 1 && turn === 1) return [edit('kernel.ts', h05Kernel({ guard: 'nan' })), glue, { name: 'check' }];
   return [edit('kernel.ts', h05Kernel()), glue, { name: 'done' }];
 }
 
 let state = null, cost = 0;
-createInterface({ input: process.stdin }).on('line', line => {
+async function answer(calls, output) {
+  const json = JSON.stringify({ calls });
+  if (streaming) {
+    const contract = calls.findIndex(call => call.path === 'CONTRACT.md'), cut = contract >= 0 ? `{"calls":[${calls.slice(0, contract + 1).map(call => JSON.stringify(call)).join(',')}`.length : Math.ceil(json.length / 2);
+    emit({ type: 'stream_event', event: { type: 'content_block_start', index: 0, content_block: { type: 'tool_use', name: 'StructuredOutput' } } });
+    emit({ type: 'stream_event', event: { type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: json.slice(0, cut) } } });
+    await pause(settings.partialPauseMs ?? 60);
+    emit({ type: 'stream_event', event: { type: 'content_block_delta', index: 0, delta: { type: 'input_json_delta', partial_json: json.slice(cut) } } });
+    emit({ type: 'stream_event', event: { type: 'content_block_stop', index: 0 } });
+  }
+  cost += 0.002;
+  emit({ type: 'result', is_error: false, structured_output: { calls }, usage: { input_tokens: 10, output_tokens: output }, duration_api_ms: 5, total_cost_usd: cost });
+}
+
+let queue = Promise.resolve();
+createInterface({ input: process.stdin }).on('line', line => { queue = queue.then(() => turn(line)); });
+async function turn(line) {
   const text = JSON.parse(line).message.content[0].text;
   emit({ type: 'system', subtype: 'init', tools: ['StructuredOutput'], apiKeySource: 'none', mcp_servers: [], model: 'stand-in' });
   if (text === '/clear') { state = null; return emit({ type: 'result', is_error: false, result: '', usage: {}, duration_api_ms: 0 }); }
@@ -86,14 +117,13 @@ createInterface({ input: process.stdin }).on('line', line => {
   let calls;
   if (state.stage === 'specification') {
     state.specTurn += 1;
+    state.compact ||= text.includes('tests.txt');
     const files = specification[state.need]({ oracle: text.includes('reference.js') || state.oracle, wrong: state.arm === 'oracle' && state.sample === 0 && state.specTurn === 1 });
     state.oracle ||= text.includes('reference.js');
-    calls = [...Object.entries(files).map(([path, content]) => edit(path, content)), { name: 'done' }];
+    calls = [...Object.entries(specificationEdits(files, state.compact)).map(([path, content]) => edit(path, content)), { name: 'done' }];
   } else {
-    state.implTurn += 1;
+    state.implTurn = nextImplementationTurn(state.id);
     calls = implementation(state);
   }
-  cost += 0.002;
-  const output = state.stage === 'specification' ? 2000 : 1000;
-  emit({ type: 'result', is_error: false, structured_output: { calls }, usage: { input_tokens: 10, output_tokens: output }, duration_api_ms: 5, total_cost_usd: cost });
-});
+  return answer(calls, state.stage === 'specification' ? 2000 : 1000);
+}

@@ -5,10 +5,10 @@
   "budget": { "modelCalls": 1300 },
   "arms": {
     "main": { "commit": "f834d2128d5ad3f335a0bcb73f241d3a0a0c77d0", "limits": {} },
-    "fixed": { "commit": null, "limits": {}, "pending": "main plus PR #164 (a passing check ends the turn), PR #165 (G8 probes only named non-finite kinds) and the stop-identical PR" },
-    "oracle": { "commit": null, "limits": { "oracle": true }, "pending": "the fixed commit" },
-    "overlap": { "commit": null, "limits": { "overlap": true }, "pending": "the fixed commit plus the overlap PR, behind limits.overlap" },
-    "compact": { "commit": null, "limits": { "compactTests": true }, "pending": "the fixed commit plus the compact PR, behind limits.compactTests" }
+    "fixed": { "commit": "f0b8da4d16023cfe869f754011e6c6ca77e6a7cc", "branch": "p72/fixed", "limits": {}, "integrates": ["#164", "#167", "#165"] },
+    "oracle": { "commit": "f0b8da4d16023cfe869f754011e6c6ca77e6a7cc", "branch": "p72/fixed", "limits": { "oracle": true }, "integrates": ["#164", "#167", "#165"] },
+    "overlap": { "commit": "430b2d8cafa95a2d666e1c0cc4fe198e8b03bf80", "branch": "p72/overlap", "limits": { "overlap": true }, "integrates": ["#164", "#167", "#165", "#169"], "transport": { "lanes": 2, "partial": true } },
+    "compact": { "commit": "e4192a7b578f0980e394f4230cd794bc675b3b0e", "branch": "p72/compact", "limits": { "compactTests": true }, "integrates": ["#164", "#167", "#165", "#170"] }
   },
   "stages": {
     "smoke": { "testDouble": true, "needs": ["H05", "H01"] },

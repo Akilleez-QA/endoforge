@@ -76,25 +76,24 @@ const arms = armNames.filter(arm => { assert.ok(plan.arms[arm], `plan.json lacks
 const harness = { commit: git('rev-parse', 'HEAD'), dirty: git('status', '--porcelain').length > 0 };
 const trees = {};
 for (const arm of arms) {
-  const entry = plan.arms[arm];
-  if (testDouble) { trees[arm] = { arm, tree: root, commit: harness.commit, source: 'checkout', limits: entry.limits }; continue; }
+  const entry = plan.arms[arm], transport = { lanes: entry.transport?.lanes ?? 1, partial: entry.transport?.partial === true };
+  assert.ok(Number.isSafeInteger(transport.lanes) && transport.lanes >= 1, `arm ${arm}: transport.lanes must be a positive integer`);
+  if (entry.limits.overlap) assert.ok(transport.lanes >= 2 && transport.partial, `arm ${arm}: limits.overlap needs a warm transport with at least two lanes and partial: true`);
   if (!entry.commit) throw Error(`arm ${arm} has no commit yet: ${entry.pending ?? 'not integrated'}`);
   const sha = git('rev-parse', '--verify', `${entry.commit}^{commit}`);
-  trees[arm] = { arm, tree: materialize(sha), commit: sha, source: 'archive', limits: entry.limits };
+  trees[arm] = { arm, tree: materialize(sha), commit: sha, source: 'archive', limits: entry.limits, transport };
 }
 for (const arm of arms) trees[arm].flags = Object.fromEntries(Object.keys(trees[arm].limits).map(key => [key, mentions(trees[arm].tree, key)]));
-if (!testDouble) {
-  assert.ok(trees.main.commit.startsWith('f834d21'), 'the main arm runs main at f834d21');
-  if (arms.includes('fixed')) git('merge-base', '--is-ancestor', trees.main.commit, trees.fixed.commit);
-  if (arms.includes('oracle')) assert.equal(trees.oracle.commit, trees.fixed.commit, 'oracle is the fixed commit with limits.oracle on');
-  for (const arm of ['overlap', 'compact'].filter(name => arms.includes(name))) git('merge-base', '--is-ancestor', trees.fixed.commit, trees[arm].commit);
-  for (const arm of arms) for (const [key, present] of Object.entries(trees[arm].flags)) assert.ok(present, `arm ${arm}: limits.${key} is not read anywhere in its loop at ${trees[arm].commit}`);
-}
+assert.ok(trees.main.commit.startsWith('f834d21'), 'the main arm runs main at f834d21');
+if (arms.includes('fixed')) git('merge-base', '--is-ancestor', trees.main.commit, trees.fixed.commit);
+if (arms.includes('oracle')) assert.equal(trees.oracle.commit, trees.fixed.commit, 'oracle is the fixed commit with limits.oracle on');
+for (const arm of ['overlap', 'compact'].filter(name => arms.includes(name))) git('merge-base', '--is-ancestor', trees.fixed.commit, trees[arm].commit);
+for (const arm of arms) for (const [key, present] of Object.entries(trees[arm].flags)) assert.ok(present, `arm ${arm}: limits.${key} is not read anywhere in its loop at ${trees[arm].commit}`);
 
 const needText = id => id.startsWith('H') ? hNeeds.find(need => need.id === id).need : readR(needsRoot, id);
 const slots = slotsOf(arms, plan.perArm);
 const callsFile = join(output, 'calls.json');
-const calls = existsSync(callsFile) ? JSON.parse(readFileSync(callsFile, 'utf8')) : { model: 0, refused: 0, needs: 0 };
+const calls = { model: 0, refused: 0, needs: 0, overlap: 0, ...(existsSync(callsFile) ? JSON.parse(readFileSync(callsFile, 'utf8')) : {}) };
 const saveCalls = () => writeFileSync(callsFile, JSON.stringify(calls));
 const previous = existsSync(join(output, 'rows.jsonl')) ? readFileSync(join(output, 'rows.jsonl'), 'utf8').trim().split('\n').filter(Boolean).map(line => JSON.parse(line)).filter(row => row.stage === stage) : [];
 const done = new Set(previous.map(row => row.need));
@@ -106,9 +105,10 @@ writeFileSync(join(output, stage, 'environment.json'), JSON.stringify({ precommi
 authStatus(`${stage}:start`);
 if (!testDouble && !existsSync(join(output, 'env-check.json'))) await environmentCheck();
 
-function permit() {
+function permit(overlap) {
   if (calls.model >= ceiling) { calls.refused += 1; saveCalls(); return false; }
   calls.model += 1;
+  if (overlap) calls.overlap += 1;
   saveCalls();
   return true;
 }
@@ -118,7 +118,7 @@ function spawnWorker(slot) {
   const pending = new Map();
   let next = 0;
   child.on('message', message => {
-    if (message.type === 'permit') return child.send({ type: 'permit', id: message.id, ok: permit() });
+    if (message.type === 'permit') return child.send({ type: 'permit', id: message.id, ok: permit(message.overlap === true) });
     const entry = pending.get(message.id);
     if (!entry) return undefined;
     if (message.type === 'started') return entry.started?.(message);
@@ -169,9 +169,11 @@ function buildRow(entry, worker, startIndex, result, needBegin) {
     overlap: answer.overlap ?? null, compact: answer.compact ?? null, answerExtra: Object.fromEntries(Object.entries(answer).filter(([key]) => !known.has(key))),
     heldOut: held, escaped: Boolean(answer.promoted && held && held.clean !== true),
     wallMs: result.wallMs ?? null, modelMs: answer.modelMs ?? null, timings: answer.timings ?? null, startupMs: worker.startupMs ?? null, replies, calls: replies.length,
-    outputTokens: replies.reduce((total, reply) => total + (reply.detail?.output ?? 0), 0), leu: leuOf(replies),
+    outputTokens: replies.reduce((total, reply) => total + (reply.detail?.output ?? 0), 0), leu: leuOf(replies.filter(reply => !reply.overlap)) + leuOf(replies.filter(reply => reply.overlap)),
     extraTurns: { g8: causeCount(replies, 'g8'), afterPass: causeCount(replies, 'after-pass'), repeated: causeCount(replies, 'repeated'), oracleFlag: causeCount(replies, 'oracle-flag'),
       failedCheck: causeCount(replies, 'failed-check'), invalidReply: causeCount(replies, 'invalid-reply') },
+    overlapCalls: replies.filter(reply => reply.overlap).length, overlapSends: replies.filter(reply => reply.overlap).map(({ beginMs, endMs, failed, error, cancelled, usage, startedMs, partials }) => ({ beginMs, endMs, failed: Boolean(failed), error: error ?? null, cancelled: Boolean(cancelled), usage: usage ?? null, startedMs, partials })),
+    endSessions: result.endSessions ?? [], cancelledSends: result.cancelledSends ?? [], transport: worker.transport ?? null,
     sendErrors, transportErrors, unknownProviderAccess: result.unknownProviderAccess ?? [], inits: result.inits ?? [], loadStart: result.loadStart ?? null, loadEnd: result.loadEnd ?? null,
     loaded: (result.loadStart ?? 0) > loadLimit || (result.loadEnd ?? 0) > loadLimit, candidate: answer.candidate ?? null, contentHash: answer.content ? hash(answer.content) : null };
 }
@@ -187,8 +189,9 @@ try {
     if (!active.length) { halted = 'every arm stopped at an escape'; break; }
     authStatus(`${stage}:${entry.need}`);
     for (const worker of active) {
-      const started = await worker.call('start', { configDir, model: plan.model, effort: plan.effort, cwd: empty, command: standIn });
+      const started = await worker.call('start', { configDir, model: plan.model, effort: plan.effort, cwd: empty, command: standIn, ...trees[worker.slot.arm].transport });
       worker.startupMs = started.startupMs;
+      worker.transport = { lanes: started.lanes ?? null, partial: started.partial ?? null, error: started.error ?? null };
     }
     const sequence = startOrder(precommit, entry.need, workers.length).filter(index => !stopped[workers[index].slot.arm]);
     const needBegin = new Date().toISOString(), text = needText(entry.need), running = [];
