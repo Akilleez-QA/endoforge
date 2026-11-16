@@ -8,6 +8,7 @@ import { ASC_PATH, WORKCELL } from '../../../tools/asc/pin.mjs';
 import { IsolatePool } from '../isolate-pool.mjs';
 import { applyReply, specificationFiles } from './agent.mjs';
 import { applyChanges } from './oracle.mjs';
+import { compactFile, compactRecord, expandedText } from './compact.mjs';
 import { runGates, testProblems } from './gates.mjs';
 import { generate } from './generator.mjs';
 import { cellFiles, verifyFromMemory } from './loop-port.mjs';
@@ -90,6 +91,11 @@ async function answerKind(pool, provider, call, job, context) {
   if (call.kind === 'model') return modelTurn(context, provider, job.portOptions.jobKey, call.messages);
   if (call.kind === 'admit') {
     if (context.admission) throw Error('already admitted');
+    if (context.limits.compactTests) {
+      const source = context.shadow[compactFile] ?? '';
+      context.shadow['tests.json'] = expandedText(source);
+      context.compact = compactRecord(source, context.shadow['tests.json']);
+    }
     if (context.limits.oracle) { context.shadow['tests.json'] = applyChanges(context.shadow['tests.json'] ?? '', call.oracle?.changes ?? []); context.oracle = call.oracle?.report ?? null; }
     const oracle = ['CONTRACT.md', 'tests.json'];
     if (oracle.some(name => frozenText(call.files, name) !== context.shadow[name])) throw Error('frozen files differ from the model replies');
@@ -300,11 +306,11 @@ export async function attemptAgent({ need, directory, pool, observe, limits = ag
     timings.total = performance.now() - begin;
     return { promoted: outcome.promoted, ...lane, ...revisionOf(context), ...(outcome.inconclusive ? { inconclusive: true } : {}), candidate: outcome.candidate, receipt: outcome.receipt, decision: outcome.decision, problem: outcome.problem, status: outcome.status,
       agent: kept.agent ?? null, rounds: kept.rounds ?? [], content: returned ?? null, testDouble: provider.testDouble, modelMs: context.modelMs, timings, rerun: outcome.rerun,
-      ...(outcome.synthesis ? { synthesis: outcome.synthesis } : {}), ...(context.synth ? { synthTimings: context.synth.timings } : {}), ...(context.oracle ? { oracle: context.oracle } : {}) };
+      ...(outcome.synthesis ? { synthesis: outcome.synthesis } : {}), ...(context.synth ? { synthTimings: context.synth.timings } : {}), ...(context.oracle ? { oracle: context.oracle } : {}), ...(context.compact ? { compact: context.compact } : {}) };
   } catch (error) {
     provider?.endSession(jobKey);
     timings.total = performance.now() - begin;
-    return { promoted: false, error: 'pipeline stage failed; inspect local artifacts', ...unknownOutcome(error), testDouble: provider?.testDouble ?? false, modelMs: context.modelMs, timings, ...(context.oracle ? { oracle: context.oracle } : {}) };
+    return { promoted: false, error: 'pipeline stage failed; inspect local artifacts', ...unknownOutcome(error), testDouble: provider?.testDouble ?? false, modelMs: context.modelMs, timings, ...(context.oracle ? { oracle: context.oracle } : {}), ...(context.compact ? { compact: context.compact } : {}) };
   } finally {
     agentJobs.delete(jobKey);
   }

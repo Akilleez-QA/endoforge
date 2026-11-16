@@ -23,7 +23,8 @@ LABEL_MIGRATION = ("New records use the task acceptance and frozen residual labe
                    "existing ledgers verify and need no rewrite. Both generations of decision required all nine gates.")
 ORACLE_FILES = ("CONTRACT.md", "tests.json", "frozen.sha256")
 IMPLEMENTATION_FILES = ("host.mjs", "gates.mjs", "glue.schema.json", "measure.mjs", "meter.mjs", "contract.mjs", "dimensions.mjs",
-                        "generator.mjs", "ledger.mjs", "reference.mjs", "scalar.mjs", "loop-port.mjs", "agent.mjs", "oracle.mjs")
+                        "generator.mjs", "ledger.mjs", "reference.mjs", "scalar.mjs", "loop-port.mjs", "agent.mjs", "oracle.mjs",
+                        "compact.mjs")
 SUSPECT_ORIGIN = "evaluator_synthesis"
 SCALAR_KINDS = ("number", "integer", "boolean", "code")
 BUFFER_KINDS = ("record", "list", "text")

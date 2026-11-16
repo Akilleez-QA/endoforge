@@ -1,0 +1,1 @@
+| 2026-11-16 | compact tests | 1 requirement added: the compact test table behind `limits.compactTests`, expanded to `tests.json` within the 64 KiB file limit (REQ-COMPACT-001), off by default | this PR |
