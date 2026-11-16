@@ -84,3 +84,15 @@ The run stops at the call budget, at the end of the need list, at the halt rule,
 ## Limits
 
 One model, one account, one machine. Four runs per need and arm, so per-need pass rates are coarse, and differences in expected time under about 1 s are not expected to be distinguishable. The replayed levers are replays, not live runs. Needs and references were written by a model; H needs carry held-out tests, R needs do not.
+
+## Amendment 1, 2026-11-16, before any arm is built or run
+
+Building the runner and analysis (PR #168) found five points this file did not settle. They are settled here, before any model call, as follows:
+
+1. **A need an arm never promotes.** If an arm promotes none of its four runs on a need, that need's expected time for the arm is unbounded. Such needs are left out of the paired mean and interval for that comparison, listed beside its verdict, and counted by the pass-rate rule, which is where an arm that fails needs is judged.
+2. **Oracle corrections without a reference.** R needs have no reference implementation, so their corrected values cannot be checked. Rule 2's condition that no correction froze a value its reference contradicts is enforced on H needs; corrections on R needs are reported as unchecked.
+3. **Oracle refusals.** An oracle refusal is a run whose specification never froze after an oracle flag turn.
+4. **First-check pass rate.** Measure 5 is taken over runs that reached an implementation check; runs that did not are counted and reported separately.
+5. **Hedging replay.** The second attempt starts at the `fixed` arm's p90 time whenever the first run has not been promoted by then, whether or not it has already failed.
+
+And one condition on the run itself: if the `overlap` arm reaches the model through a provider method other than the ones the runner counts, the run does not start until the runner counts it and the stand-in smoke has been re-run on the integrated commits.
