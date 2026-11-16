@@ -1,12 +1,25 @@
 import { isBuffer, layoutOf, scalarLeaves } from './measure.mjs';
-const nonFinite = /\b(?:non-?finite|nan|infinit(?:e|y|ies))\b/i;
+const nonFinite = /\b(?:non-?finite|nans?|infinit(?:e|y|ies))\b/i;
 const statedFinite = /\bmust be finite\b|\bfinite and\b/i;
-const trapVerb = /\b(?:traps?|trapping|rejects?|rejecting|aborts?|throws?)\b/i;
+const trapVerb = /\b(?:traps?|trapped|trapping|reject(?:s|ed|ing)?|abort(?:s|ed|ing)?|throw(?:s|n|ing)?)\b/i;
 const aboutTests = /\b(?:tests?|cases?|freezes?|frozen)\b/i;
 const negated = /\b(?:never|not|no|cannot)\b/i;
-const permits = /\b(?:returns?|yields?|propagates?|produces?)\b[^\n]*\b(?:non-?finite|nan|infinit(?:e|y|ies))\b|\b(?:non-?finite|nan|infinit(?:e|y|ies))\b[^\n]*\b(?:propagates?|returned)\b/i;
-const excludes = /\b(?:non-?finite|nan|infinit\w*)\b[^\n]*\b(?:outside|excluded|out of scope|unsupported)\b|\bfinite inputs? (?:is|are) (?:the )?(?:boundary )?(?:precondition|assumption)|\bcallers? (?:supply|supplies|provide|provides) finite\b/i;
+const permits = /\b(?:returns?|yields?|propagates?|produces?)\b[^\n]*\b(?:non-?finite|nans?|infinit(?:e|y|ies))\b|\b(?:non-?finite|nans?|infinit(?:e|y|ies))\b[^\n]*\b(?:propagates?|returned)\b/i;
+const excludes = /\b(?:non-?finite|nans?|infinit\w*)\b[^\n]*\b(?:outside|excluded|out of scope|unsupported)\b|\bfinite inputs? (?:is|are) (?:the )?(?:boundary )?(?:precondition|assumption)|\bcallers? (?:supply|supplies|provide|provides) finite\b/i;
 const promises = /\b(?:results?|returns?|outputs?)\b[^\n]*\bfinite\b|\bfinite\b[^\n]*\b(?:results?|returns?|outputs?)\b/i;
+export const nonFiniteKindNames = Object.freeze(['NaN', 'Infinity', '-Infinity']);
+export const nonFiniteKind = value => (Number.isNaN(value) ? 'NaN' : value > 0 ? 'Infinity' : '-Infinity');
+const allKinds = new Set(nonFiniteKindNames);
+function namedKinds(sentence) {
+  if (/\bnon-?finite\b|\bfinite\b/i.test(sentence)) return allKinds;
+  const kinds = new Set();
+  if (/\bnans?\b/i.test(sentence)) kinds.add('NaN');
+  const positive = /(?:\+|\bpositive\s+)infinit/i.test(sentence), negative = /(?:-|\bnegative\s+)infinit/i.test(sentence);
+  if (positive) kinds.add('Infinity');
+  if (negative) kinds.add('-Infinity');
+  if (!positive && !negative && /\binfinit(?:e|y|ies)\b/i.test(sentence)) { kinds.add('Infinity'); kinds.add('-Infinity'); }
+  return kinds;
+}
 const words = { zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6 };
 const decimals = /\b(\d+|zero|one|two|three|four|five|six)\s+decimal/gi;
 const family = new Map(Object.entries({ f: 'F', degf: 'F', fahrenheit: 'F', c: 'C', degc: 'C', celsius: 'C', psig: 'psig', psia: 'psia', psi: 'psi', kpa: 'kPa', bar: 'bar', lb: 'lb', lbs: 'lb', pound: 'lb', pounds: 'lb', kg: 'kg', g: 'g', gram: 'g', grams: 'g', m: 'm', meter: 'm', meters: 'm', metre: 'm', metres: 'm', ft: 'ft', feet: 'ft', kw: 'kW', hp: 'hp', usd: 'USD', percent: '%', pct: '%', cfm: 'cfm', gpm: 'gpm', btu: 'Btu', s: 's', sec: 's', second: 's', seconds: 's', min: 'min', minute: 'min', minutes: 'min', h: 'h', hr: 'h', hour: 'h', hours: 'h' }));
@@ -23,17 +36,29 @@ export function exportBlocks(contract, names) {
   return { blocks, shared };
 }
 const sentences = lines => lines.join('\n').split(/(?<=\.)\s+|\n/).filter(Boolean);
-export function nonFiniteExpectation(contract, names) {
+const order = ['permitted', 'trap', 'excluded', 'finite'];
+export function nonFiniteKinds(contract, names) {
   const { blocks, shared } = exportBlocks(contract, names);
-  const excluded = sentences(contract.split('\n')).some(sentence => excludes.test(sentence));
+  const excluding = sentences(contract.split('\n')).filter(sentence => excludes.test(sentence));
   return Object.fromEntries(names.map(name => {
-    const relevant = sentences([...shared, ...blocks[name]]), any = pattern => relevant.some(sentence => pattern(sentence));
-    if (any(s => permits.test(s) && !negated.test(s) && !trapVerb.test(s))) return [name, 'permitted'];
-    if (any(s => (nonFinite.test(s) || statedFinite.test(s)) && trapVerb.test(s) && !aboutTests.test(s))) return [name, 'trap'];
-    if (excluded) return [name, 'excluded'];
-    if (any(s => promises.test(s) && !aboutTests.test(s))) return [name, 'finite'];
-    return [name, 'silent'];
+    const relevant = sentences([...shared, ...blocks[name]]);
+    const classify = kind => {
+      const covers = sentence => namedKinds(sentence).has(kind);
+      if (relevant.some(s => permits.test(s) && !negated.test(s) && !trapVerb.test(s) && covers(s))) return 'permitted';
+      if (relevant.some(s => (nonFinite.test(s) || statedFinite.test(s)) && trapVerb.test(s) && !aboutTests.test(s) && covers(s))) return 'trap';
+      if (excluding.some(covers)) return 'excluded';
+      if (relevant.some(s => promises.test(s) && !aboutTests.test(s))) return 'finite';
+      return 'silent';
+    };
+    return [name, Object.fromEntries(nonFiniteKindNames.map(kind => [kind, classify(kind)]))];
   }));
+}
+export function nonFiniteExpectation(contract, names) {
+  return Object.fromEntries(Object.entries(nonFiniteKinds(contract, names)).map(([name, kinds]) => [name, order.find(state => Object.values(kinds).includes(state)) ?? 'silent']));
+}
+export function probedKinds(kinds) {
+  const stated = nonFiniteKindNames.filter(kind => kinds[kind] !== 'silent');
+  return stated.length ? stated : nonFiniteKindNames;
 }
 export function hasNonFinite(value) {
   if (typeof value === 'number') return !Number.isFinite(value);

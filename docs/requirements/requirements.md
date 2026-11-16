@@ -588,6 +588,16 @@ The meter shall read every memory a module declares or imports, export each unex
 - Verification: T — `make isolate-test`
 - Status: Baselined
 
+### REQ-X1-013 — Non-finite probes follow what the contract names
+
+G8 shall classify each export's contract separately for NaN, `Infinity` and `-Infinity` from the kinds each sentence names (NaN or NaNs; infinity, positive or negative infinity; non-finite or finite for all three), probe only the kinds whose expectation is stated (all three when none is), judge each probe by its own kind's expectation, and read a sentence that names NaN with a trap verb (traps, trapped, rejected, aborted, thrown) as a NaN trap.
+
+- Rationale: A contract that traps only on NaN was probed with infinities and refused for returning on them, so every P-66 H05 run paid a repair turn for a trap the need never asked for.
+- Derivation: `core/runtime/x1/contract.mjs`, `core/runtime/x1/measure.mjs`, `core/runtime/x1/gates.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make pipeline-test`
+- Status: Baselined
+
 ### REQ-LOOP-001 — Agent loop in the cell
 
 The agent loop shall run model turns and checks in one job, return a failed check to the next turn as the first failing stage only (a compile failure with up to five of the compiler's own diagnostics, each with code, line, column and message and at most 1 KiB in all, before any gate or test failure; otherwise the failing gates and the failing tests in test order), marking each gate or test that passed in any earlier round of the attempt that reached the checks stage and fails now as a regression and keeping a compiler timeout or unavailable compiler distinct from a compile error, stop at turn, token and deadline limits as a recorded failure without promotion, keep the model out of the frozen files and outside the overlay, and pass only reply text and usage into the cell and its records.
