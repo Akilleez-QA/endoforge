@@ -504,17 +504,25 @@ export function outsideRange(rules, parameters, args) {
   });
 }
 
+const stalled = error => error?.code === 'ERR_SCRIPT_EXECUTION_TIMEOUT';
+const twice = run => { try { return run(); } catch (error) { if (!stalled(error)) throw error; return run(); } };
+
 export function referenceFunctions(code, names, { timeout = 50 } = {}) {
   if (typeof code !== 'string' || !code.trim()) return null;
-  const context = vm.createContext(Object.create(null), { codeGeneration: { strings: false, wasm: false } });
-  try { vm.runInContext(code, context, { timeout }); } catch { return null; }
+  let context;
+  try {
+    twice(() => {
+      context = vm.createContext(Object.create(null), { codeGeneration: { strings: false, wasm: false } });
+      vm.runInContext(code, context, { timeout });
+    });
+  } catch { return null; }
   const caller = vm.runInContext('(f, a) => { try { const v = f(...a); return typeof v === "number" || typeof v === "boolean" ? { value: v } : { value: null }; } catch { return { trap: true }; } }', context);
   const found = {};
   for (const name of names) {
     const fn = vm.runInContext(`typeof ${name} === 'function' ? ${name} : undefined`, context);
     if (fn) found[name] = args => {
       let got;
-      try { got = vm.runInContext('call(f, a)', Object.assign(context, { call: caller, f: fn, a: [...args] }), { timeout }); } catch { return { trap: true, timeout: true }; }
+      try { got = twice(() => vm.runInContext('call(f, a)', Object.assign(context, { call: caller, f: fn, a: [...args] }), { timeout })); } catch { return { trap: true, timeout: true }; }
       return got.trap ? { trap: true } : { value: got.value };
     };
   }

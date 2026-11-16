@@ -56,6 +56,15 @@ test('a reference runs in a fresh context and its traps are outcomes', () => {
   assert.deepEqual(referenceFunctions('function kwToHp() { for (;;) {} }', ['kwToHp']).kwToHp([1]), { trap: true, timeout: true });
 });
 
+test('a reference that stalls once past its deadline is run again, and one that never returns is still a timeout trap', () => {
+  const stall = 'const end = Date.now() + 200; while (Date.now() < end) {}';
+  const once = referenceFunctions(`let calls = 0; function kwToHp(kw) { if (calls++ === 0) { ${stall} } return kw * 2; }`, ['kwToHp']);
+  assert.deepEqual([once.kwToHp([1]), once.kwToHp([2])], [{ value: 2 }, { value: 4 }]);
+  const always = referenceFunctions(`function kwToHp(kw) { ${stall} return kw; }`, ['kwToHp']);
+  assert.deepEqual(always.kwToHp([1]), { trap: true, timeout: true });
+  assert.equal(referenceFunctions(`${stall} function kwToHp(kw) { return kw; }`, ['kwToHp']), null);
+});
+
 test('two agreeing references replace a wrong literal, and every number test gets a tolerance', () => {
   const frozen = freezeSpecification(files(8.314471));
   assert.equal(frozen.report.corrected, 1);
