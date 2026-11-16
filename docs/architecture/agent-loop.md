@@ -80,7 +80,7 @@ after the reply's last check, that check no longer counts: the stage is checked 
 | Stage | Editable | Its check | Ends when |
 |---|---|---|---|
 | Specification | `CONTRACT.md`, `tests.json` (and `reference.js` with the oracle) | `specificationProblems`: a nonempty contract, JSON tests that pass [test strength](gates.md#test-strength-g1), and with the oracle, no flagged test | A passing check that no later edit in the reply follows, then the freeze |
-| Implementation | `kernel.ts`, `glue.json` | Compile in the cell, then `runGates` (all nine [gates](gates.md)) | A passing check that no later edit in the reply follows, or the turn or token limit |
+| Implementation | `kernel.ts`, `glue.json` | Compile in the cell, then `runGates` (all nine [gates](gates.md)) | A passing check that no later edit in the reply follows, a [repeated failure](#repeated-failure), or the turn or token limit |
 
 The stage prompts (`stagePrompts`) are JSON. Today they ask for the kernel candidate form: the specification prompt
 asks for a pure, bounded AssemblyScript kernel with explicit assumptions, exports and tests including boundary and
@@ -103,6 +103,30 @@ for any stage definitions.
 The in-cell compile uses the pinned compiler already loaded in the cell (`compileInCell`, flags `--maximumMemory
 1024`) over an overlay that holds only `kernel.ts`. It refuses a module that declares more than 1,024 pages (64 MiB)
 and skips recompiling when `kernel.ts` hasn't changed since the last check.
+
+## Repeated failure
+
+An implementation stage ends with `repeated_failure` when a reply's check fails and the two most recent checks
+(`rounds`) failed with the same failing gates (name and `why`) and the same failing tests, compared by `name`, `fn`,
+`args`, `expect`, `got` and trap (`repeatedFailure` in [agent.mjs](../../core/runtime/x1/agent.mjs)). No further
+model turn is asked for. A failure with no failing test, such as a compile error, never counts, since its gate
+message does not show whether the code changed. The receipt carries `repeated: { gates, tests }` with each test's
+`name`, `fn`, `args`, `expect` and `got`, and the commit records the evaluation as rejected with the reason
+`agent stopped: repeated_failure on <test names>`, so the decision is `refuse`. The stage never ends with `stop` this
+way, so no candidate is promoted by it. A failure that changes between checks keeps its turns.
+
+The rule is P-69's precommitted rival: on its paired `base` arm it cut every failed run (both froze a wrong expected
+value and repeated it identically for six checks) after two checks, saving 8 of 12 failed candidates, and stopped no
+run that later promoted ([P-69](../../experiments/P-69-formula-oracle/RESULT.md#strongest-rival)). In
+[P-66](../../experiments/P-66-best-of-n/RESULT.md) all six `max_turns` failures repeated the same gate and the same
+number of failing tests for six checks, four of them on a frozen value the kernel and an independent reference both
+contradicted.
+
+A repeated failure does not revise the frozen tests. A [specification
+correction](evaluator-synthesis.md#4b-acting-on-suspects-a-specification-correction) needs a `suspect_frozen_tests`
+report from two agreeing candidate-blind references, made before implementation; the kernel's own value is neither, and
+freezing it would fit the test to the candidate. The recorded tests are the evidence a later revision, by a person or
+by synthesis, can start from.
 
 ## Budgets
 
@@ -228,8 +252,8 @@ specification correction. `rerun` is `{ agrees, ms }` from the
 [re-run at commit](gates.md#commit-re-runs-the-gates) (`null` when no attempt claimed a pass); `synthesis` is the
 synthesized evaluator's verdict. A reused capability returns `{ promoted: true, reused, decision, agent, testDouble,
 modelMs, timings }` instead. `agent` is the receipt `{ turns, tokens, tool_calls, exit_reason }`;
-`exit_reason` is `stop`, `max_turns` or `max_tokens`; anything but `stop` is recorded as a rejected evaluation,
-so the ledger refuses the candidate. `rounds` lists
+`exit_reason` is `stop`, `repeated_failure`, `max_turns` or `max_tokens`; anything but `stop` is recorded as a
+rejected evaluation, so the ledger refuses the candidate. With `repeated_failure` the receipt also has `repeated`. `rounds` lists
 every implementation check, failed ones included. A failure before the freeze returns `promoted: false` with an
 `error` and writes no candidate.
 

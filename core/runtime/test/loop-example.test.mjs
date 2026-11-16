@@ -23,12 +23,12 @@ test('the README example promotes the addition kernel, prints all nine passing g
   assert.equal(run(process.execPath, ['-e', 'const { readFileSync } = require("node:fs"); const { exports } = new WebAssembly.Instance(new WebAssembly.Module(readFileSync(process.argv[1]))); console.log(exports.add(2, 3))', module]), '5\n');
 });
 
-test('the README example refuses the subtracting kernel at G4 after seven turns', { timeout: 180000 }, t => {
+test('the README example refuses the subtracting kernel at G4 after the same failure twice', { timeout: 180000 }, t => {
   const result = loop(['wrong']);
   t.after(() => rmSync(dirname(dirname(result.ledger)), { recursive: true, force: true }));
   assert.equal(result.promoted, false);
-  assert.equal(result.turns, 7);
-  assert.deepEqual(result.rounds, Array(6).fill(['G4_tests']));
+  assert.equal(result.turns, 3);
+  assert.deepEqual(result.rounds, Array(2).fill(['G4_tests']));
   const printed = gates(result.ledger);
   assert.match(printed, /^  G4_tests +FAIL  \{"passed": 0, "total": 1\}$/m);
   assert.match(printed, /^decision: refuse$/m);
@@ -53,7 +53,7 @@ test('the README counter example promotes the reducer, prints all nine passing g
   assert.equal(run(process.execPath, ['-e', host, module]), '1 2 3 2 0 0 \n');
 });
 
-test('the tutorial turnstile example fails G4 once, repairs and promotes; stubborn is refused at the turn limit', { timeout: 180000 }, t => {
+test('the tutorial turnstile example fails G4 once, repairs and promotes; stubborn is refused after the same failure twice', { timeout: 180000 }, t => {
   const result = JSON.parse(run(process.execPath, ['examples/agent-loop.mjs']));
   t.after(() => rmSync(dirname(dirname(result.ledger)), { recursive: true, force: true }));
   assert.deepEqual({ ...result, ledger: undefined }, { promoted: true, testDouble: true, turns: 3, exit: 'stop',
@@ -67,8 +67,9 @@ test('the tutorial turnstile example fails G4 once, repairs and promotes; stubbo
   const stubborn = JSON.parse(run(process.execPath, ['examples/agent-loop.mjs', 'stubborn']));
   t.after(() => rmSync(dirname(dirname(stubborn.ledger)), { recursive: true, force: true }));
   assert.equal(stubborn.promoted, false);
-  assert.equal(stubborn.exit, 'max_turns');
-  assert.equal(stubborn.turns, 7);
+  assert.equal(stubborn.exit, 'repeated_failure');
+  assert.equal(stubborn.turns, 3);
+  assert.deepEqual(stubborn.rounds, [{ failed: ['G4_tests'], tests: ['push locks'] }, { failed: ['G4_tests'], tests: ['push locks'] }]);
   const refused = gates(stubborn.ledger);
   assert.match(refused, /^  G4_tests +FAIL  \{"passed": 4, "total": 5\}$/m);
   assert.match(refused, /^decision: refuse$/m);

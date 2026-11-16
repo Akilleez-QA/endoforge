@@ -151,8 +151,9 @@ $ node -e 'const m = new WebAssembly.Module(require("fs").readFileSync(process.a
 ```
 
 [`examples/first-loop.mjs`](examples/first-loop.mjs) is the same loop on an even smaller test need, `integer add(a,b)`.
-Run `node examples/first-loop.mjs wrong` and its scripted model answers with code that subtracts. The gates fail it six
-times in a row (`"rounds": [["G4_tests"], ...]`), the double never repairs it, and the ledger records `refuse`.
+Run `node examples/first-loop.mjs wrong` and its scripted model answers with code that subtracts. The gates fail it
+twice in a row with the same value (`"rounds": [["G4_tests"], ["G4_tests"]]`), the loop stops there, and the ledger
+records `refuse`.
 
 ### What an agent turn looks like
 

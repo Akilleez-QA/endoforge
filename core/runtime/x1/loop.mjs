@@ -289,7 +289,7 @@ export async function attemptAgent({ need, directory, pool, observe, limits = ag
     timings.freeze = context.freezeMs ?? null;
     if (!context.admission) throw Error('no frozen evaluator');
     const content = returned ?? JSON.stringify({ id, files: {}, compiled: { error: 'attempt lost' } });
-    if (observed.status === 'completed' && kept.agent?.exit_reason !== 'stop') Object.assign(observed, { status: 'rejected', reason: `agent stopped: ${kept.agent?.exit_reason ?? 'unknown'}` });
+    if (observed.status === 'completed' && kept.agent?.exit_reason !== 'stop') Object.assign(observed, { status: 'rejected', reason: stoppedReason(kept.agent) });
     const sources = returned ? { 'kernel.ts': hash(context.shadow['kernel.ts'] ?? ''), 'glue.json': hash(context.shadow['glue.json'] ?? '') } : null;
     observe?.('committing');
     const outcome = await commitCandidate(pool, { evaluated: { observed: { ...observed, ...(evidence ? { evidence: kept } : {}) }, content, sources },
@@ -310,6 +310,7 @@ export async function attemptAgent({ need, directory, pool, observe, limits = ag
   }
 }
 
+const stoppedReason = agent => `agent stopped: ${agent?.exit_reason ?? 'unknown'}${agent?.repeated ? ` on ${agent.repeated.tests.map(test => test.name ?? test.fn).join(', ')}` : ''}`;
 const unknownOutcome = error => error?.outcome === 'outcome_unknown' ? { status: 'outcome_unknown' } : {};
 export const revisionOf = context => (context.revision ? { revision: context.revision.identity, suspects: context.suspect.tests } : {});
 export function admit(pool, reference, input = {}) {

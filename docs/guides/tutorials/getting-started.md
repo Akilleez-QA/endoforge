@@ -184,8 +184,8 @@ node examples/agent-loop.mjs stubborn
 {
   "promoted": false,
   "testDouble": true,
-  "turns": 7,
-  "exit": "max_turns",
+  "turns": 3,
+  "exit": "repeated_failure",
   "rounds": [
     {
       "failed": [
@@ -194,8 +194,10 @@ node examples/agent-loop.mjs stubborn
   ...
 ```
 
-The loop gave the agent one specification turn and six implementation turns (`limits.maxTurns`, default 6), then
-stopped. The receipt was still written, and `show-gates.py` on this ledger prints `G4_tests FAIL {"passed": 4,
+The loop gave the agent one specification turn and two implementation turns, then stopped: the second check failed
+the same test (`push locks`) with the same value as the first, so further turns could not change the outcome
+([repeated failure](../../architecture/agent-loop.md#repeated-failure)). A failure that changes between checks keeps
+its turns, up to `limits.maxTurns` (default 6). The receipt was still written, and `show-gates.py` on this ledger prints `G4_tests FAIL {"passed": 4,
 "total": 5}` and `decision: refuse`. Nothing was promoted.
 
 ## 7. Put a real agent in the loop

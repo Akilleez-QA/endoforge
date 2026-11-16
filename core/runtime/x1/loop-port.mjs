@@ -4,7 +4,7 @@ import { dirname, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { compile as compileKernel, loadCompiler, x1Flags } from '../../../experiments/assemblyscript-toolchain.mjs';
 import { ASC_FILES, ASC_PATH, ASC_VERSION } from '../../../tools/asc/pin.mjs';
-import { agentStage, frozenSpecification, specificationFiles, specificationProblems, stagePrompts, takeReply } from './agent.mjs';
+import { agentStage, frozenSpecification, repeatedFailure, specificationFiles, specificationProblems, stagePrompts, takeReply } from './agent.mjs';
 import { runGates } from './gates.mjs';
 import { createPort as x1Port, hash, implementationFiles as hostFiles } from './host.mjs';
 
@@ -131,7 +131,7 @@ export function createPort(options, { stage = () => {}, host } = {}) {
     stage('admitted');
     const files = () => ({ 'CONTRACT.md': overlay['CONTRACT.md'], 'tests.json': overlay['tests.json'], 'frozen.sha256': overlay['frozen.sha256'], 'kernel.ts': overlay['kernel.ts'] ?? '', 'glue.json': overlay['glue.json'] ?? '' });
     agentReceipt.exit_reason = await agentStage({ ask, messages, overlay, editable: ['kernel.ts', 'glue.json'], prompt: stagePrompts.implementation({ id, overlay: messages.length ? null : overlay }),
-      check: async () => (overlay['kernel.ts'] === undefined ? { problems: ['kernel.ts is missing'] } : checkRound(await compileRound(files()))), receipt: agentReceipt, limits: stageLimits(limits, agentReceipt.tokens) });
+      check: async () => (overlay['kernel.ts'] === undefined ? { problems: ['kernel.ts is missing'] } : checkRound(await compileRound(files()))), repeated: () => repeatedFailure(rounds), receipt: agentReceipt, limits: stageLimits(limits, agentReceipt.tokens) });
     if (overlay['kernel.ts'] === undefined) throw Error(`implementation stopped: ${agentReceipt.exit_reason}`);
     return compileRound(files());
   };
@@ -155,14 +155,14 @@ export function createPort(options, { stage = () => {}, host } = {}) {
     const stages = {
       specification: { editable: specificationFiles(limits), check: async () => specificationProblems(overlay, limits), prompt: () => stagePrompts.specification({ need: options.need, id, oracle: limits.oracle }) },
       implementation: { editable: ['kernel.ts', 'glue.json'], prompt: () => stagePrompts.implementation({ id, overlay: messages.length ? null : overlay }),
-        check: async () => (overlay['kernel.ts'] === undefined ? { problems: ['kernel.ts is missing'] } : checkRound(await compileRound(files()))) },
+        check: async () => (overlay['kernel.ts'] === undefined ? { problems: ['kernel.ts is missing'] } : checkRound(await compileRound(files()))), repeated: () => repeatedFailure(rounds) },
     };
     const begin = name => { messages.push({ role: 'user', content: stages[name].prompt() }); Object.assign(state, { stage: name, turn: 0, stageTokens: state.receipt.tokens }); };
     if (options.admission) await admitted();
     if (!state.stage) begin(options.admission ? 'implementation' : 'specification');
     else {
       const { stage: name } = state;
-      let exit = await takeReply({ messages, overlay, editable: stages[name].editable, check: stages[name].check, receipt: state.receipt, limits: stageLimits(limits, state.stageTokens ?? 0) }, options.reply);
+      let exit = await takeReply({ messages, overlay, editable: stages[name].editable, check: stages[name].check, repeated: stages[name].repeated, receipt: state.receipt, limits: stageLimits(limits, state.stageTokens ?? 0) }, options.reply);
       state.turn += 1;
       if (!exit && state.turn >= limits.maxTurns) exit = 'max_turns';
       if (exit) {

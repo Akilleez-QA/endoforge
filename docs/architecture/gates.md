@@ -45,7 +45,8 @@ kernel: /tmp/ef-first-loop-9N4s7O/addition/kernel.wasm (57 bytes)
 ```
 
 `node examples/first-loop.mjs wrong` feeds the same loop a kernel that fails its frozen test. The model gets the
-failure back six times, the attempt stops at its turn limit, and the decision is `refuse` with `G4_tests FAIL
+failure back once, the second check fails the same test with the same value, the attempt stops with
+`repeated_failure`, and the decision is `refuse` with `G4_tests FAIL
 {"passed": 0, "total": 1}`.
 
 ## Order of evaluation

@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SRS |
-| Version | 2.12 |
+| Version | 2.13 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-12 |
@@ -694,6 +694,16 @@ The agent loop shall end a stage without another model turn when the reply's las
 
 - Rationale: A passing check needs no further model turn, and a check that ran before a later edit says nothing about the edited files.
 - Derivation: `core/runtime/x1/agent.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make loop-test`
+- Status: Baselined
+
+### REQ-LOOP-012 — A repeated failure ends the implementation stage
+
+The agent loop shall end an implementation stage with exit reason `repeated_failure`, without another model turn, when a reply's check fails and the two most recent checks failed with the same failing gates and the same failing tests (name, function, arguments, expected and returned value, trap); that exit records those gates and tests on the agent receipt and in the rejected evaluation's reason, never promotes the candidate, and leaves the normal turns to a failure that changes or has no failing test.
+
+- Rationale: In P-66 every failed agent run repeated the same failure until `max_turns`, and in P-69 stopping at the second identical failure saved 8 of 12 failed candidates without losing a promotion; a frozen value the kernel cannot meet makes every further turn wasted.
+- Derivation: `core/runtime/x1/agent.mjs`, `core/runtime/x1/loop-port.mjs`, `core/runtime/x1/loop.mjs`
 - Allocated to: SDD §4 C-07 X1 candidate loop
 - Verification: T — `make loop-test`
 - Status: Baselined
@@ -1743,3 +1753,4 @@ Closed gaps (their IDs are not reused):
 | 2.10 | 2026-11-10 | round 10 | 4 requirements added: the reference sandbox deadline and its distinct errors (REQ-SYNTH-009, D-14 closed), a relaunch patch reopens a finished job (REQ-COND-005, D-15 closed), the `TRACE-NEEDED` event (REQ-COND-006) and invariants I16 and I17 (REQ-JOB-004); changed: REQ-ATOM-007 (cutover's planning steps take, use and record `--policy`; D-16 closed) and REQ-LIB-002 (union members match on nested layout and bind by export name when they share a signature); no gap open | this commit |
 | 2.11 | 2026-11-12 | flake fix | Changed: REQ-LOOP-003 (a decision file is either absent or complete after a bridge kill; it is published under its final name only once written and synced) | this PR |
 | 2.12 | 2026-11-16 | passing check | 1 requirement added: a passing check ends the stage without `done`, and an edit after the last check is checked again (REQ-LOOP-011) | this PR |
+| 2.13 | 2026-11-16 | repeated failure | 1 requirement added: the same failure in two consecutive implementation checks ends the stage with `repeated_failure`, recorded and refused (REQ-LOOP-012) | this PR |
