@@ -93,7 +93,10 @@ are `KS:path:line` at that commit.
     { "page": "noHorizontalOverflow" } ] } }
 ```
 
-Reducer `steps` run in the job isolate under the meter; the view's HTML then goes to the engine. Behaviour over many
+State flows in one direction: `args[0]` is the starting state, each step applies its reducer, `next(state, event)`, to
+the state so far, and the view renders the result. Assertion shapes are closed: `apart` is
+`{ "select": "...", "apart": "other selector" }`, `pixel` is a `"#rrggbb"` colour, and `count` and `box` sizes are at
+most 4,096. Reducer `steps` run in the job isolate under the meter; the view's HTML then goes to the engine. Behaviour over many
 steps is checked by [temporal render properties](#temporal-render-properties) below.
 
 | Assertion | Passes when | Engine call |
