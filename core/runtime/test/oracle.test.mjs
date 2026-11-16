@@ -56,6 +56,30 @@ test('a reference runs in a fresh context and its traps are outcomes', () => {
   assert.deepEqual(referenceFunctions('function kwToHp() { for (;;) {} }', ['kwToHp']).kwToHp([1]), { trap: true, timeout: true });
 });
 
+test('a reference that stalls once past its deadline is run again, and one that never returns is still a timeout trap', () => {
+  const stall = 'const end = Date.now() + 200; while (Date.now() < end) {}';
+  const once = referenceFunctions(`let calls = 0; function kwToHp(kw) { if (calls++ === 0) { ${stall} } return kw * 2; }`, ['kwToHp']);
+  assert.deepEqual([once.kwToHp([1]), once.kwToHp([2])], [{ value: 2 }, { value: 4 }]);
+  const always = referenceFunctions(`function kwToHp(kw) { ${stall} return kw; }`, ['kwToHp']);
+  assert.deepEqual(always.kwToHp([1]), { trap: true, timeout: true });
+  assert.equal(referenceFunctions(`${stall} function kwToHp(kw) { return kw; }`, ['kwToHp']), null);
+  const until = Date.now() + 300;
+  const loaded = referenceFunctions(`while (Date.now() < ${until}) {} function kwToHp(kw) { return kw * 3; }`, ['kwToHp'], { timeout: 200 });
+  assert.deepEqual(loaded?.kwToHp([1]), { value: 3 });
+});
+
+test('a reference cannot run code outside its deadline through a thrown value, a global accessor or a prototype getter', { timeout: 20000 }, () => {
+  const trap = 'new Proxy({}, { get() { for (;;) {} }, getPrototypeOf() { for (;;) {} } })';
+  assert.equal(referenceFunctions(`throw ${trap};`, ['kwToHp']), null);
+  assert.deepEqual(referenceFunctions(`function kwToHp(kw) { throw ${trap}; }`, ['kwToHp']).kwToHp([1]), { trap: true });
+  const loop = '{ get() { for (;;) {} }, set() { for (;;) {} }';
+  assert.deepEqual(referenceFunctions(`function kwToHp(kw) { return kw; } Object.defineProperty(globalThis, 'call', ${loop} });`, ['kwToHp']).kwToHp([1]), { trap: true });
+  assert.deepEqual(referenceFunctions(`function kwToHp(kw) { return kw; } Object.defineProperty(globalThis, 'call', ${loop}, configurable: true });`, ['kwToHp']).kwToHp([1]), { value: 1 });
+  assert.deepEqual(referenceFunctions(`function kwToHp(kw) { return kw; } Object.defineProperty(Object.prototype, 'trap', ${loop} });`, ['kwToHp']).kwToHp([1]), { value: 1 });
+  assert.deepEqual(referenceFunctions(`Object.defineProperty(globalThis, 'kwToHp', ${loop} });`, ['kwToHp']), {});
+  assert.deepEqual(referenceFunctions(`Object.defineProperty(Object.prototype, 'kwToHp', ${loop} });`, ['kwToHp']), {});
+});
+
 test('two agreeing references replace a wrong literal, and every number test gets a tolerance', () => {
   const frozen = freezeSpecification(files(8.314471));
   assert.equal(frozen.report.corrected, 1);
