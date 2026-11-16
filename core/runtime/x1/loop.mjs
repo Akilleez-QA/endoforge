@@ -40,8 +40,9 @@ export function createLoopPool({ size = 1, isolation = 'process', jobTimeoutMs =
   if (!['release', 'hold'].includes(waits)) throw TypeError('waits must be release or hold');
   if (typeof render !== 'boolean') throw TypeError('render must be boolean');
   if (render && isolation !== 'process') throw TypeError(PROCESS_ONLY);
-  const pool = new IsolatePool({ hostPort, size, isolation, jobTimeoutMs, jobDeadlineMs, ...WORKCELL, ...(render ? { toolingWasmModules: [KITESURF_CORE] } : {}),
-    warm: { path: ascPath, ...(primes === undefined ? {} : { primes }), ...(render ? { render } : {}) },
+  const policy = render ? { wasmMemoryMaxMb: rest.wasmMemoryMaxMb ?? WORKCELL.wasmMemoryMaxMb, toolingWasmModules: rest.toolingWasmModules ?? [KITESURF_CORE] } : null;
+  const pool = new IsolatePool({ hostPort, size, isolation, jobTimeoutMs, jobDeadlineMs, ...WORKCELL, ...policy,
+    warm: { path: ascPath, ...(primes === undefined ? {} : { primes }), ...(policy ? { render: policy } : {}) },
     ledgerBridge: { extension: 'tools.x1_loop', restart: true },
     cellEnv, cellFlags: isolation === 'process' ? cellPermissions(hostPort, ascPath) : [], rates, ...rest,
     ...(provider ? { hostCall: (call, job) => answerCall(pool, provider, call, job) } : {}) });

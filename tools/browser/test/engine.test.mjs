@@ -7,7 +7,7 @@ import { createLoopPool } from '../../../core/runtime/x1/loop.mjs';
 import { verifyArtifact } from '../artifact.mjs';
 import { ENGINE_LIMITS, PROCESS_ONLY, assertionProblem, createEngine } from '../engine-host.mjs';
 import { FIXED_TIME_MS, deterministic } from '../engine.mjs';
-import { KITESURF_CORE } from '../pin.mjs';
+import { KITESURF_CORE, WORKCELL } from '../pin.mjs';
 
 const artifact = verifyArtifact();
 const needsEngine = artifact.status === 'ready' ? { timeout: 120000 } : { skip: `kitesurf artifact ${artifact.reason}` };
@@ -15,7 +15,7 @@ const html = readFileSync(new URL('fixtures/inspect.html', import.meta.url), 'ut
 const viewport = [390, 844];
 const small = { html: '<p>ok</p>', viewport: [100, 100], expect: [{ select: 'p', count: 1 }] };
 const list = items => ({ html: `<ul>${'<li>item text here</li>'.repeat(items)}</ul>`, viewport, expect: [{ select: 'li', count: items }] });
-const engineFor = (t, options) => { const engine = createEngine(options); t.after(() => engine.close()); return engine; };
+const engineFor = (t, options) => { const engine = createEngine({ policy: WORKCELL, ...options }); t.after(() => engine.close()); return engine; };
 const observed = result => result.results.map(entry => [entry.pass, entry.observed]);
 
 test('a missing artifact gives outcome_unknown, never a pass, and bad requests are refused before the engine', async t => {
@@ -23,7 +23,9 @@ test('a missing artifact gives outcome_unknown, never a pass, and bad requests a
   t.after(() => rmSync(dir, { recursive: true, force: true }));
   const result = await engineFor(t, { dir: `${dir}/` }).inspect(small);
   assert.equal(result.status, 'outcome_unknown');
-  assert.match(result.reason, /kitesurf artifact not usable \(missing kitesurf_core_bg.wasm\)/);
+  assert.match(result.reason, /kitesurf artifact not usable \(missing kitesurf_core_bg.wasm\): run make browser-setup/);
+  assert.throws(() => createEngine(), /cell policy/);
+  assert.throws(() => createEngine({ policy: { wasmMemoryMaxMb: 256, toolingWasmModules: [{ name: 'x', sha256: 'nope', maximumPages: 1 }] } }), /invalid toolingWasmModules entry/);
   const engine = engineFor(t);
   assert.throws(() => engine.inspect({ ...small, viewport: [0, 10] }), /viewport/);
   assert.throws(() => engine.inspect({ ...small, expect: [] }), /nonempty/);
@@ -88,14 +90,14 @@ test('the engine has no memory snapshot or restore path, and its limits are the 
   for (const name of ['engine.mjs', 'engine-host.mjs']) {
     const source = readFileSync(new URL(`../${name}`, import.meta.url), 'utf8');
     const imports = [...source.matchAll(/^import .* from '([^']+)';$/gm)].map(match => match[1]);
-    assert.deepEqual(imports.filter(path => !['node:perf_hooks', 'node:worker_threads', '../../core/runtime/isolate-wasm.mjs', './artifact.mjs', './pin.mjs'].includes(path)), [], name);
+    assert.deepEqual(imports.filter(path => !['node:perf_hooks', 'node:worker_threads', '../../core/runtime/isolate-wasm.mjs', '../../core/runtime/isolate-wasm-tooling.mjs', './artifact.mjs'].includes(path)), [], name);
     assert.doesNotMatch(source, /tsrs-reuse|snapshot|restore|memory\.buffer\)?\.set|new Uint8Array\(exports\.memory/i, name);
   }
   assert.deepEqual(ENGINE_LIMITS, { maxChecks: 1000, maxGrowthBytes: 16 * 1024 * 1024, timeoutMs: 5000 });
 });
 
 test('an engine fault ends only its worker as outcome_unknown and a replacement serves the next check', needsEngine, async t => {
-  const engine = engineFor(t, { maximumPages: 200 });
+  const engine = engineFor(t, { policy: { ...WORKCELL, toolingWasmModules: [{ ...KITESURF_CORE, maximumPages: 200 }] } });
   assert.equal((await engine.inspect(small)).pass, true);
   const faulted = await engine.inspect(list(4000));
   assert.deepEqual([faulted.status, faulted.pass, faulted.reason], ['outcome_unknown', undefined, 'engine fault: unreachable']);
@@ -107,6 +109,14 @@ test('an engine fault ends only its worker as outcome_unknown and a replacement 
   const stopped = await slow.inspect(list(20000));
   assert.deepEqual([stopped.status, stopped.reason], ['outcome_unknown', 'engine check exceeded 20 ms']);
   assert.equal((await slow.inspect(small)).engine.generation, 2);
+});
+
+test('the worker installs the guard from the policy it is given, and a different digest there refuses the artifact', needsEngine, async t => {
+  const other = { ...KITESURF_CORE, sha256: 'a'.repeat(64) };
+  const refused = await engineFor(t, { policy: { ...WORKCELL, toolingWasmModules: [other] } }).inspect(small);
+  assert.deepEqual([refused.status, refused.reason], ['outcome_unknown',
+    `kitesurf wasm ${KITESURF_CORE.sha256} is not admitted by the cell's toolingWasmModules: run make browser-setup for the pinned artifact`]);
+  await assert.rejects(engineFor(t, { policy: { ...WORKCELL, toolingWasmModules: [other] } }).start(), /not admitted by the cell's toolingWasmModules/);
 });
 
 test('the worker is replaced after N checks and after 16 MiB of growth since warm', needsEngine, async t => {
@@ -131,6 +141,11 @@ test('a loop cell pool with render on reaches the engine in its own worker; off 
   assert.deepEqual([result.report.stage, result.report.pass, result.report.engine.generation], ['inspected', true, 1]);
   assert.deepEqual(result.toolingWasmModules.map(entry => entry.sha256), [KITESURF_CORE.sha256]);
   assert.equal((await job({ ...small, expect: [{ select: 'p', count: 2 }] })).report.results[0].observed, 'p count 1, needs 2');
+  const other = createLoopPool({ primes: 1, render: true, toolingWasmModules: [{ ...KITESURF_CORE, sha256: 'a'.repeat(64) }] });
+  t.after(() => other.close());
+  const refused = await other.run({ ledger: 'caller', reference: {}, candidates: ['render'], portOptions: { mode: 'inspect', render: small } }).catch(error => ({ status: 'rejected', reason: error.message }));
+  assert.notEqual(refused.status, 'completed');
+  assert.match(refused.reason, /not admitted by the cell's toolingWasmModules: run make browser-setup/);
   const plain = createLoopPool({ primes: 1 });
   t.after(() => plain.close());
   const off = await plain.run({ ledger: 'caller', reference: {}, candidates: ['render'], portOptions: { mode: 'inspect', render: small } });

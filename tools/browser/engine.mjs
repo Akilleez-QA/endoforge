@@ -1,8 +1,7 @@
 import { performance } from 'node:perf_hooks';
 import { parentPort, workerData } from 'node:worker_threads';
 import { installWasmLimit } from '../../core/runtime/isolate-wasm.mjs';
-import { verifyArtifact } from './artifact.mjs';
-import { KITESURF_CORE, WORKCELL } from './pin.mjs';
+import { sha256, verifyArtifact } from './artifact.mjs';
 
 export const FIXED_TIME_MS = Date.UTC(2026, 0, 1);
 export const BASE_URL = 'https://kitesurf.local/';
@@ -111,13 +110,16 @@ export function inspectWith(glue, { html, viewport, expect, png = false }) {
   });
 }
 
-async function serve({ dir, maximumPages = KITESURF_CORE.maximumPages }) {
-  installWasmLimit(WORKCELL.wasmMemoryMaxMb, () => process.exit(18), [], [], [{ ...KITESURF_CORE, maximumPages }]);
+async function serve({ dir, policy: { wasmMemoryMaxMb, toolingWasmModules } }) {
+  installWasmLimit(wasmMemoryMaxMb, () => process.exit(18), [], [], toolingWasmModules);
   globalThis.fetch = url => Promise.reject(new Error(`browser engine refuses network requests: ${url}`));
   const started = performance.now();
   const artifact = verifyArtifact(dir);
   if (artifact.status !== 'ready') return parentPort.postMessage({ type: 'ready', error: `kitesurf artifact not usable (${artifact.reason}): run make browser-setup` });
   const { wasm, glue: source, sans, sansItalic, serif, mono } = artifact.bytes;
+  const digest = sha256(wasm);
+  if (!toolingWasmModules.some(entry => entry.sha256 === digest)) return parentPort.postMessage({ type: 'ready',
+    error: `kitesurf wasm ${digest} is not admitted by the cell's toolingWasmModules: run make browser-setup for the pinned artifact` });
   const glue = await import(`data:text/javascript;base64,${source.toString('base64')}`);
   let fetched = [];
   glue.__setBridgeFetchResource((id, url) => { fetched.push(url); });

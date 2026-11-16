@@ -46,9 +46,11 @@ and `createBrowserPool` stay as the PNG spike and its pinned-digest evidence; th
 `createLoopPool({ render: true })` adds `KITESURF_CORE` to the pool's `toolingWasmModules`, and the loop cell's warm
 step ([loop-port.mjs](../../core/runtime/x1/loop-port.mjs)) starts one engine Worker through
 [engine-host.mjs](engine-host.mjs). The Worker ([engine.mjs](engine.mjs)) inherits the cell's permission flags, because
-it is created without `execArgv`. It installs the workcell wasm guard with the Kitesurf tooling entry, verifies the
-artifact, compiles the wasm once, imports the glue once, registers the four fonts, primes with one render and one
-document check, and drains its microtask queue before it reports ready. Off by default; refused in
+it is created without `execArgv`. It installs the workcell wasm guard from the cell's own policy, the
+`wasmMemoryMaxMb` and `toolingWasmModules` the pool was given (passed through the warm options, never re-read from
+`pin.mjs`), verifies the artifact, refuses a wasm whose digest that policy does not admit, compiles the wasm once, imports the glue once, registers the four fonts, primes with one render and one
+document check, and drains its microtask queue before it reports ready. A missing or unadmitted artifact fails the cell's warm with an error that names `make browser-setup`; it never
+degrades to per-check results. Off by default; refused in
 thread cells and in any thread that is not a process's main thread.
 
 `inspect({ html, viewport: [w, h], expect, png })` checks the request, then the Worker parses the document, sets the

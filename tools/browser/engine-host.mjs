@@ -1,4 +1,5 @@
 import { isMainThread, Worker } from 'node:worker_threads';
+import { toolingWasmPolicy } from '../../core/runtime/isolate-wasm-tooling.mjs';
 
 export const ENGINE_LIMITS = Object.freeze({ maxChecks: 1000, maxGrowthBytes: 16 * 1024 * 1024, timeoutMs: 5000 });
 export const PROCESS_ONLY = 'the render engine runs only in a process cell';
@@ -31,7 +32,9 @@ function request({ html, viewport, expect, png = false }) {
   return { html, viewport: [...viewport], expect, png: png === true };
 }
 
-export function createEngine({ dir, maximumPages, ...limits } = {}) {
+export function createEngine({ policy, dir, ...limits } = {}) {
+  if (!Number.isSafeInteger(policy?.wasmMemoryMaxMb) || policy.wasmMemoryMaxMb < 1) throw new TypeError('createEngine needs the cell policy { wasmMemoryMaxMb, toolingWasmModules }');
+  const cellPolicy = { wasmMemoryMaxMb: policy.wasmMemoryMaxMb, toolingWasmModules: toolingWasmPolicy(policy.toolingWasmModules, policy.wasmMemoryMaxMb).map(entry => ({ ...entry })) };
   const { maxChecks, maxGrowthBytes, timeoutMs } = { ...ENGINE_LIMITS, ...limits };
   const stats = { started: 0, replaced: 0, checks: 0, faults: 0 };
   let current = null, queue = Promise.resolve(), closed = false, nextId = 0;
@@ -43,7 +46,7 @@ export function createEngine({ dir, maximumPages, ...limits } = {}) {
   };
   const spawn = () => new Promise((resolve, reject) => {
     if (!isMainThread) return reject(new Error(PROCESS_ONLY));
-    const worker = new Worker(engineUrl, { workerData: { kitesurfEngine: { dir, maximumPages } } });
+    const worker = new Worker(engineUrl, { workerData: { kitesurfEngine: { dir, policy: cellPolicy } } });
     const failed = reason => { worker.terminate(); reject(new Error(reason)); };
     worker.once('exit', code => failed(`engine worker exited with code ${code} before it was ready`));
     worker.once('error', error => failed(`engine worker failed to start: ${error.message}`));

@@ -63,9 +63,9 @@ const summary = result => result.promotable ? null : { gates: Object.fromEntries
 
 export const inspect = input => (engine ? engine.inspect(input) : Promise.reject(Error('render engine is off in this cell')));
 
-export async function warm({ primes = 8, path = ASC_PATH, render = false } = {}) {
+export async function warm({ primes = 8, path = ASC_PATH, render = null } = {}) {
   ascPath = path;
-  if (render) await (engine ??= createEngine()).start();
+  if (render) await (engine ??= createEngine({ policy: render })).start();
   compiler = pinned(path);
   await loadCompiler(path);
   for (let i = 0; i < primes; i++) runGates({ ...primer, compiled: await compileInCell(primer.files) });
