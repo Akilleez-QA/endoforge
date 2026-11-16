@@ -504,26 +504,37 @@ export function outsideRange(rules, parameters, args) {
   });
 }
 
-const stalled = error => error?.code === 'ERR_SCRIPT_EXECUTION_TIMEOUT';
-const twice = run => { try { return run(); } catch (error) { if (!stalled(error)) throw error; return run(); } };
-
 export function referenceFunctions(code, names, { timeout = 50 } = {}) {
+  const options = { timeout, displayErrors: false };
+  const twice = run => {
+    const begin = performance.now();
+    try { return run(); } catch (error) { if (performance.now() - begin < timeout / 2) throw error; return run(); }
+  };
   if (typeof code !== 'string' || !code.trim()) return null;
-  let context;
+  let context, caller;
   try {
     twice(() => {
       context = vm.createContext(Object.create(null), { codeGeneration: { strings: false, wasm: false } });
-      vm.runInContext(code, context, { timeout });
+      vm.runInContext(code, context, options);
     });
+    caller = vm.runInContext('(f, a) => { try { const v = f(...a); return typeof v === "number" || typeof v === "boolean" ? { value: v } : { value: null }; } catch { return { trap: true }; } }', context, options);
   } catch { return null; }
-  const caller = vm.runInContext('(f, a) => { try { const v = f(...a); return typeof v === "number" || typeof v === "boolean" ? { value: v } : { value: null }; } catch { return { trap: true }; } }', context);
+  const own = (record, key) => Object.getOwnPropertyDescriptor(record, key)?.value;
   const found = {};
   for (const name of names) {
-    const fn = vm.runInContext(`typeof ${name} === 'function' ? ${name} : undefined`, context);
+    const declared = Object.getOwnPropertyDescriptor(context, name);
+    if (declared && !Object.hasOwn(declared, 'value')) continue;
+    let fn;
+    try { fn = vm.runInContext(`typeof ${name} === 'function' ? ${name} : undefined`, context, options); } catch { continue; }
     if (fn) found[name] = args => {
       let got;
-      try { got = twice(() => vm.runInContext('call(f, a)', Object.assign(context, { call: caller, f: fn, a: [...args] }), { timeout })); } catch { return { trap: true, timeout: true }; }
-      return got.trap ? { trap: true } : { value: got.value };
+      try {
+        got = twice(() => {
+          for (const [key, value] of [['call', caller], ['f', fn], ['a', [...args]]]) Object.defineProperty(context, key, { value, writable: true, configurable: true });
+          return vm.runInContext('call(f, a)', context, options);
+        });
+      } catch { return { trap: true, timeout: true }; }
+      return own(got, 'trap') ? { trap: true } : { value: own(got, 'value') };
     };
   }
   return found;

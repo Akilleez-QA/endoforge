@@ -214,7 +214,11 @@ names, and fails over to the next ([agent pool contract](../../core/runtime/READ
 `reference.js`, plain JavaScript computing each export, and states each formula in `CONTRACT.md` as
 `name = expression`. Before the freeze, [oracle.mjs](../../core/runtime/x1/oracle.mjs) recomputes every number test
 from the formula, the contract's stated ranges and the reference (run in a 50 ms sandbox, and run once more when a load or call
-stalls past that, so one scheduling stall is not read as a trap), and gives it a status:
+runs past that, so one scheduling stall is not read as a trap for a call or as a missing reference for a load; a
+reference that never returns therefore costs about 100 ms per call; the retry reuses the call's context, so a
+reference is expected to be pure. Outside the deadline the oracle never reads a thrown value, an accessor the reference
+defined or an inherited property, so such code cannot run untimed; on Node 22 a global accessor the reference itself
+reads while loading still escapes the vm deadline, and only the cell's job timeout stops it), and gives it a status:
 `verified`, `corrected` (formula and reference agree on another value, which is frozen instead), `flagged` (returned to
 the model as a specification problem), `unverified`, or `abstained` (a rule the parser cannot read). The host applies
 the same corrections to its shadow copy, and the result carries an `oracle` report.
