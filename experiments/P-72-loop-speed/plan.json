@@ -1,0 +1,18 @@
+{
+  "model": "claude-sonnet-5-5",
+  "effort": "low",
+  "perArm": 4,
+  "budget": { "modelCalls": 1300 },
+  "arms": {
+    "main": { "commit": "f834d2128d5ad3f335a0bcb73f241d3a0a0c77d0", "limits": {} },
+    "fixed": { "commit": null, "limits": {}, "pending": "main plus PR #164 (a passing check ends the turn), PR #165 (G8 probes only named non-finite kinds) and the stop-identical PR" },
+    "oracle": { "commit": null, "limits": { "oracle": true }, "pending": "the fixed commit" },
+    "overlap": { "commit": null, "limits": { "overlap": true }, "pending": "the fixed commit plus the overlap PR, behind limits.overlap" },
+    "compact": { "commit": null, "limits": { "compactTests": true }, "pending": "the fixed commit plus the compact PR, behind limits.compactTests" }
+  },
+  "stages": {
+    "smoke": { "testDouble": true, "needs": ["H05", "H01"] },
+    "smoke-halt": { "testDouble": true, "needs": ["H01", "H05", "H02"] },
+    "main": { "needs": ["CC-026", "CC-001", "C-005", "H05", "CC-007", "H01", "H02", "CC-014", "C-016", "C-012", "H08", "C-010", "CC-027", "C-006", "CC-009", "H04", "CC-011", "CC-013", "C-007", "H07", "C-019", "C-015", "H10", "H06", "CC-036", "H09", "H03"] }
+  }
+}
