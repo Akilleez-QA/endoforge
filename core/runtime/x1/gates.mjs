@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import path from 'node:path';
 import { readFileSync } from 'node:fs';
-import { capabilityAgreement, capabilityBlock, glueFindings, hasNonFinite, nonFiniteExpectation, probeProblem, unitDisagreements } from './contract.mjs';
+import { capabilityAgreement, capabilityBlock, glueFindings, hasNonFinite, nonFiniteKinds, probeProblem, probedKinds, unitDisagreements } from './contract.mjs';
 import { unitFindings } from './dimensions.mjs';
 import { LayoutError, bufferArity, callKernel, freshKernel, invoke, isBuffer, kernelFuel, layoutOf, parseBufferEntries, probeCalls, scalarKinds } from './measure.mjs';
 import { loadKernel } from './meter.mjs';
@@ -263,10 +263,11 @@ result.gates.G5_deterministic = { ok: same };
   }
 }
 {
-  const expected = nonFiniteExpectation(fs.readFileSync(f('CONTRACT.md'), 'utf8'), Object.keys(loaded.shape.functions));
-  const calls = probeCalls(tests, loaded.shape.functions, entries), kernel = calls.length ? freshKernel(loaded) : null, problems = [], unjudged = {};
-  for (const { fn, args } of calls) {
-    const outcome = callKernel(kernel, fn, args, entries.get(fn)), expectation = expected[fn];
+  const expected = nonFiniteKinds(fs.readFileSync(f('CONTRACT.md'), 'utf8'), Object.keys(loaded.shape.functions));
+  const probed = Object.fromEntries(Object.entries(expected).map(([fn, kinds]) => [fn, probedKinds(kinds)]));
+  const calls = probeCalls(tests, loaded.shape.functions, entries, probed), kernel = calls.length ? freshKernel(loaded) : null, problems = [], unjudged = {};
+  for (const { fn, kind, args } of calls) {
+    const outcome = callKernel(kernel, fn, args, entries.get(fn)), expectation = expected[fn][kind];
     if (outcome.limit) { problems.push(`${fn}(${shownArgs(args)}): ${outcome.limit}`); break; }
     const problem = probeProblem(expectation, outcome);
     if (problem) problems.push(`${fn}(${shownArgs(args)}): ${problem}`);
