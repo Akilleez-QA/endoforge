@@ -79,7 +79,7 @@ after the reply's last check, that check no longer counts: the stage is checked 
 
 | Stage | Editable | Its check | Ends when |
 |---|---|---|---|
-| Specification | `CONTRACT.md`, `tests.json` (and `reference.js` with the oracle) | `specificationProblems`: a nonempty contract, JSON tests that pass [test strength](gates.md#test-strength-g1), and with the oracle, no flagged test | A passing check that no later edit in the reply follows, then the freeze |
+| Specification | `CONTRACT.md`, `tests.json` (`tests.txt` with [compact tests](#compact-tests)) (and `reference.js` with the oracle) | `specificationProblems`: a nonempty contract, JSON tests that pass [test strength](gates.md#test-strength-g1), and with the oracle, no flagged test | A passing check that no later edit in the reply follows, then the freeze |
 | Implementation | `kernel.ts`, `glue.json` | Compile in the cell, then `runGates` (all nine [gates](gates.md)) | A passing check that no later edit in the reply follows, a [repeated failure](#repeated-failure), or the turn or token limit |
 
 The stage prompts (`stagePrompts`) are JSON. Today they ask for the kernel candidate form: the specification prompt
@@ -153,7 +153,7 @@ by synthesis, can start from.
 When the specification stage ends, the cell writes `frozen.sha256` and sends `{kind: 'admit', files}`: the three
 frozen files and the exact bytes of its implementation files (the host list `host.mjs`, `gates.mjs`,
 `glue.schema.json`, `measure.mjs`, `meter.mjs`, `contract.mjs`, `dimensions.mjs`, `generator.mjs`, `ledger.mjs`,
-`reference.mjs`, `scalar.mjs`, plus the cell list `loop-port.mjs`, `agent.mjs`, `oracle.mjs`), all hex-encoded. The
+`reference.mjs`, `scalar.mjs`, plus the cell list `loop-port.mjs`, `agent.mjs`, `oracle.mjs`, `compact.mjs`), all hex-encoded. The
 host then:
 
 1. checks that the frozen `CONTRACT.md` and `tests.json` equal its own shadow copy, built by applying the model's
@@ -243,10 +243,38 @@ the same corrections to its shadow copy, and the result carries an `oracle` repo
 [P-70](../../experiments/P-70-oracle-injected/RESULT.md) and [P-71](../../experiments/P-71-oracle-round2/RESULT.md)
 continue that work.
 
+## Compact tests
+
+`limits.compactTests` is an experimental flag, off by default, pending P-72's `compact`
+arm. The specification reply is the loop's longest model call, and its time grows with output tokens, so the flag
+asks for `tests.txt` instead of `tests.json`, one test per line:
+
+```text
+shape Item(id, done, title)
+let empty = {nextId: 1, items: []}
+area(2, 3) = 6 | small rectangle
+ratio(10, 3) = 3.333 ~ 0.001 | thirds
+add($empty, Item(1, false, "milk")) = {nextId: 2, items: [Item(1, false, "milk")]} | first item
+area(-1, 3) = trap | negative width
+```
+
+A test line is `fn(args) = expected | name`, with `~ tol` after the expected value, or `= trap` for `expectError`.
+Values are JSON numbers, `true`, `false`, `null`, JSON strings, lists and records whose keys may be bare words, so a
+JSON value always fits. `shape` declares a positional record constructor and `let` a named value used as `$name`.
+The name is everything after the first `|` outside a value. [compact.mjs](../../core/runtime/x1/compact.mjs) expands
+the table to one JSON test per line in `tests.json`, with keys in the order `name, fn, args, expect, tol` or `name,
+fn, args, expectError`. Before every specification check, `specificationProblems` expands it and returns a line that
+does not parse (with its line and column) or a test that [test strength](gates.md#test-strength-g1), the capability
+block or the oracle refuses (with its `tests.txt` line) as specification problems. At the freeze the cell writes the
+expanded `tests.json` before the oracle runs and before hashing; the host expands its own shadow `tests.txt` the same
+way, so the comparison and everything after it see only `tests.json`. The result carries `compact`: the source's
+SHA-256, `bytes`, `chars`, the expanded `expandedBytes` and the number of tests. No token count is recorded; P-72
+reads output tokens from the transport.
+
 ## The result
 
 `runNeed` returns `{ promoted, inconclusive?, candidate, receipt, decision, problem, status, agent, rounds, content,
-testDouble, modelMs, timings, rerun, synthesis?, synthTimings?, oracle?, contained?, compatibility?, revision?,
+testDouble, modelMs, timings, rerun, synthesis?, synthTimings?, oracle?, compact?, contained?, compatibility?, revision?,
 suspects? }`. `contained` and `compatibility` come from the compatibility route; `revision` and `suspects` from a
 specification correction. `rerun` is `{ agrees, ms }` from the
 [re-run at commit](gates.md#commit-re-runs-the-gates) (`null` when no attempt claimed a pass); `synthesis` is the

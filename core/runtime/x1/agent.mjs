@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { testProblems } from './gates.mjs';
 import { capabilityProblems, capabilityRule, glueRules, glueTemplate, exactRule } from './generator.mjs';
+import { compactFile, compactRule, expandTests } from './compact.mjs';
 import { analyzeSpecification, freezeSpecification, oracleProblems, referenceFile, referenceRule } from './oracle.mjs';
 
 const glueSchema = JSON.parse(readFileSync(new URL('./glue.schema.json', import.meta.url)));
@@ -20,8 +21,8 @@ export const stateRules = Object.freeze([
   'In tests.json, structured arguments and expected results are JSON: an object with exactly the declared fields for a record, an array for a list, a string for a text and true or false for a boolean.',
 ]);
 export const stagePrompts = {
-  specification: ({ need, id, oracle = false }) => JSON.stringify({ stage: 'specification', need, id, glueRules, stateRules, instructions:
-    `Write only CONTRACT.md and tests.json${oracle ? ` and ${referenceFile}` : ''}, CONTRACT.md under 40 lines. Do not write kernel.ts or glue.json yet. Define a pure bounded AssemblyScript kernel, explicit assumptions, exports and tests. tests.json is a nonempty array of {name,fn,args,expect,tol?} or {name,fn,args,expectError:true}. Include boundary and trap cases. For every number result, state in CONTRACT.md the decimal places to show. Every value test needs expect (a finite number, boolean or string, or for a kernel over structured state an object or array of these following stateRules); tol is at most 1% of every number it applies to; expectError tests must trap in the kernel. When the need keeps state, such as a list of items, make the kernel a reducer over records, lists and text: state and event in, next state out. ${capabilityRule} These files will be frozen before implementation. ${exactRule}${oracle ? ` ${referenceRule}` : ''} Send every file in one reply, then done.` }),
+  specification: ({ need, id, oracle = false, compactTests = false }) => JSON.stringify({ stage: 'specification', need, id, glueRules, stateRules, instructions:
+    `Write only CONTRACT.md and ${compactTests ? compactFile : 'tests.json'}${oracle ? ` and ${referenceFile}` : ''}, CONTRACT.md under 40 lines. Do not write kernel.ts or glue.json yet. Define a pure bounded AssemblyScript kernel, explicit assumptions, exports and tests. ${compactTests ? compactRule : 'tests.json is a nonempty array of {name,fn,args,expect,tol?} or {name,fn,args,expectError:true}.'} Include boundary and trap cases. For every number result, state in CONTRACT.md the decimal places to show. Every value test needs expect (a finite number, boolean or string, or for a kernel over structured state an object or array of these following stateRules); tol is at most 1% of every number it applies to; expectError tests must trap in the kernel. When the need keeps state, such as a list of items, make the kernel a reducer over records, lists and text: state and event in, next state out. ${capabilityRule} These files will be frozen before implementation. ${exactRule}${oracle ? ` ${referenceRule}` : ''} Send every file in one reply, then done.` }),
   implementation: ({ id, overlay }) => JSON.stringify({ stage: 'implementation', id, ...(overlay ? { frozen: { 'CONTRACT.md': overlay['CONTRACT.md'], 'tests.json': overlay['tests.json'] } } : {}), glueSchema, glueRules, glueTemplate, stateRules, instructions:
     'CONTRACT.md and tests.json are frozen; you can read them but not change them. Write kernel.ts and glue.json only. Use AssemblyScript 0.28.20, runtime stub, no imports except env.abort, explicit bounded memory. The compiler runs with --noAssert, which deletes assert() calls, so never use assert; make every expectError case trap with an explicit if (condition) abort() or throw. Implement all frozen tests and the closed glue schema; glue.id must equal id. Records, lists and text at the boundary follow stateRules exactly. glue.json must satisfy every rule in glueRules and declare the exports, kinds, units, ranges, precision, nested layout (record fields, list items and max, text maxBytes) and traps of the capability block in CONTRACT.md; glueTemplate shows the shape. Send every file in one reply, then done. A failed check comes back as your next prompt.' }),
 };
@@ -66,22 +67,25 @@ export function repeatedFailure(rounds) {
   if (!key || key !== failureKey(rounds.at(-2).failures)) return null;
   return { gates: Object.keys(last.gates ?? {}).sort(), tests: last.tests.map(({ name, fn, args, expect, got }) => ({ name, fn, args, expect, got })) };
 }
-export const specificationFiles = ({ oracle = false } = {}) => oracle ? ['CONTRACT.md', 'tests.json', referenceFile] : ['CONTRACT.md', 'tests.json'];
+export const specificationFiles = ({ oracle = false, compactTests = false } = {}) => ['CONTRACT.md', compactTests ? compactFile : 'tests.json', ...(oracle ? [referenceFile] : [])];
 export function frozenSpecification(overlay) {
   const frozen = freezeSpecification(overlay);
   if (!frozen) return null;
   overlay['tests.json'] = frozen.text;
   return { changes: frozen.changes, report: frozen.report };
 }
-export function specificationProblems(overlay, { oracle = false } = {}) {
+export function specificationProblems(overlay, { oracle = false, compactTests = false } = {}) {
   const problems = [];
   if (!overlay['CONTRACT.md']?.trim()) problems.push('CONTRACT.md is empty');
+  const compact = compactTests ? expandTests(overlay[compactFile]) : null;
+  if (compact?.problems) return { problems: [...problems, ...compact.problems] };
+  const files = compact ? { ...overlay, 'tests.json': compact.text } : overlay;
   let tests = null;
-  try { tests = JSON.parse(overlay['tests.json'] ?? ''); } catch { problems.push('tests.json is not JSON'); }
+  try { tests = JSON.parse(files['tests.json'] ?? ''); } catch { problems.push('tests.json is not JSON'); }
   if (tests !== null) problems.push(...testProblems(tests));
-  if (tests !== null) problems.push(...capabilityProblems(overlay['CONTRACT.md'], tests));
-  if (oracle && !problems.length) problems.push(...oracleProblems(analyzeSpecification(overlay)));
-  return problems.length ? { problems } : null;
+  if (tests !== null) problems.push(...capabilityProblems(files['CONTRACT.md'], tests));
+  if (oracle && !problems.length) problems.push(...oracleProblems(analyzeSpecification(files)));
+  return problems.length ? { problems: compact ? problems.map(compact.locate) : problems } : null;
 }
 export async function agentStage({ ask, messages, overlay, editable, prompt, check, repeated, receipt, limits }) {
   messages.push({ role: 'user', content: prompt });

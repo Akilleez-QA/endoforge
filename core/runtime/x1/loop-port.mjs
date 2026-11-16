@@ -5,10 +5,11 @@ import { performance } from 'node:perf_hooks';
 import { compile as compileKernel, loadCompiler, x1Flags } from '../../../experiments/assemblyscript-toolchain.mjs';
 import { ASC_FILES, ASC_PATH, ASC_VERSION } from '../../../tools/asc/pin.mjs';
 import { agentStage, frozenSpecification, repeatedFailure, specificationFiles, specificationProblems, stagePrompts, takeReply } from './agent.mjs';
+import { compactFile, expandedText } from './compact.mjs';
 import { runGates } from './gates.mjs';
 import { createPort as x1Port, hash, implementationFiles as hostFiles } from './host.mjs';
 
-export const cellFiles = Object.freeze(['loop-port.mjs', 'agent.mjs', 'oracle.mjs']);
+export const cellFiles = Object.freeze(['loop-port.mjs', 'agent.mjs', 'oracle.mjs', 'compact.mjs']);
 export const implementationFiles = Object.freeze([...hostFiles, ...cellFiles]);
 const oracleFiles = ['CONTRACT.md', 'tests.json', 'frozen.sha256'];
 const maximumKernelPages = 1024;
@@ -119,9 +120,10 @@ export function createPort(options, { stage = () => {}, host } = {}) {
       const { bundle } = await verifyFromMemory(options.admission)({ identity: options.admission.identity });
       for (const name of oracleFiles) overlay[name] = Buffer.from(bundle.files[name], 'hex').toString();
     } else {
-      agentReceipt.exit_reason = await agentStage({ ask, messages, overlay, editable: specificationFiles(limits), prompt: stagePrompts.specification({ need, id, oracle: limits.oracle }),
+      agentReceipt.exit_reason = await agentStage({ ask, messages, overlay, editable: specificationFiles(limits), prompt: stagePrompts.specification({ need, id, oracle: limits.oracle, compactTests: limits.compactTests }),
         check: async () => specificationProblems(overlay, limits), receipt: agentReceipt, limits });
       if (agentReceipt.exit_reason !== 'stop') throw Error(`specification stopped: ${agentReceipt.exit_reason}`);
+      if (limits.compactTests) overlay['tests.json'] = expandedText(overlay[compactFile]);
       const oracle = limits.oracle ? frozenSpecification(overlay) : null;
       overlay['frozen.sha256'] = JSON.stringify({ contract: hash(overlay['CONTRACT.md']), tests: hash(overlay['tests.json']) });
       const frozen = Object.fromEntries(oracleFiles.map(name => [name, Buffer.from(overlay[name]).toString('hex')]));
@@ -153,7 +155,7 @@ export function createPort(options, { stage = () => {}, host } = {}) {
     });
     const files = () => ({ 'CONTRACT.md': overlay['CONTRACT.md'], 'tests.json': overlay['tests.json'], 'frozen.sha256': overlay['frozen.sha256'], 'kernel.ts': overlay['kernel.ts'] ?? '', 'glue.json': overlay['glue.json'] ?? '' });
     const stages = {
-      specification: { editable: specificationFiles(limits), check: async () => specificationProblems(overlay, limits), prompt: () => stagePrompts.specification({ need: options.need, id, oracle: limits.oracle }) },
+      specification: { editable: specificationFiles(limits), check: async () => specificationProblems(overlay, limits), prompt: () => stagePrompts.specification({ need: options.need, id, oracle: limits.oracle, compactTests: limits.compactTests }) },
       implementation: { editable: ['kernel.ts', 'glue.json'], prompt: () => stagePrompts.implementation({ id, overlay: messages.length ? null : overlay }),
         check: async () => (overlay['kernel.ts'] === undefined ? { problems: ['kernel.ts is missing'] } : checkRound(await compileRound(files()))), repeated: () => repeatedFailure(rounds) },
     };
@@ -169,6 +171,7 @@ export function createPort(options, { stage = () => {}, host } = {}) {
         state.receipt.exit_reason = exit;
         if (name === 'specification') {
           if (exit !== 'stop') throw Error(`specification stopped: ${exit}`);
+          if (limits.compactTests) overlay['tests.json'] = expandedText(overlay[compactFile]);
           const oracle = limits.oracle ? frozenSpecification(overlay) : null;
           overlay['frozen.sha256'] = JSON.stringify({ contract: hash(overlay['CONTRACT.md']), tests: hash(overlay['tests.json']) });
           const frozen = Object.fromEntries(oracleFiles.map(file => [file, Buffer.from(overlay[file]).toString('hex')]));
