@@ -38,5 +38,53 @@ exits 0, so the tests skip.
   `process`. Cells get the permission model with read access to the repository and no network grant; the global
   `fetch` and the engine's fetch bridge both refuse.
 
-`make browser-test` runs [test/render.test.mjs](test/render.test.mjs). Without a verified artifact the tests that need
+## The engine Worker
+
+This is the canonical way to run the engine in the repair loop (slice 2 of the render-gates design). The port above
+and `createBrowserPool` stay as the PNG spike and its pinned-digest evidence; they are not wired into the loop.
+
+`createLoopPool({ render: true })` sets the pool's `toolingWasmModules` to `[KITESURF_CORE]` unless the caller passes a
+list, which replaces it and must admit the pinned digest, and the loop cell's warm
+step ([loop-port.mjs](../../core/runtime/x1/loop-port.mjs)) starts one engine Worker through
+[engine-host.mjs](engine-host.mjs). The Worker ([engine.mjs](engine.mjs)) inherits the cell's permission flags, because
+it is created without `execArgv`. It is also created without `resourceLimits`, so its JavaScript heap is a second V8
+isolate in the cell process that the cell's heap limits do not set; its wasm memory is bounded by the guard. It installs the workcell wasm guard from the cell's own policy, the
+`wasmMemoryMaxMb` and `toolingWasmModules` the pool was given (passed through the warm options, never re-read from
+`pin.mjs`), verifies the artifact, refuses a wasm whose digest that policy does not admit, compiles the wasm once, imports the glue once, registers the four fonts, primes with one render and one
+document check, and drains its microtask queue before it reports ready. A missing or unadmitted artifact fails the cell's warm with an error that names `make browser-setup`; it never
+degrades to per-check results. Off by default; refused in
+thread cells and in any thread that is not a process's main thread.
+
+`inspect({ html, viewport: [w, h], expect, png })` checks the request, then the Worker parses the document, sets the
+viewport, runs each assertion, frees the `DomHandle`, waits one macrotask turn so queued engine work finishes, and
+replies. Every engine call runs with `new Date()` and `Date.now()` fixed at 2026-01-01 and a seeded
+`crypto.getRandomValues`, restored afterwards. The fetch bridge answers no request: the Worker records each one, and a document that
+requests any resource fails the check. Requests the engine makes after the reply's one macrotask drain are not
+counted for that check: one that lands between checks is dropped, and one that lands during a later check's drain
+counts against that later check. `png: true` also returns the PNG of the same document.
+
+| Assertion | Passes when | Failure says, for example |
+|---|---|---|
+| `{ select, count }` | the selector matches that many nodes | `li count 2, needs 1` |
+| `{ select, text }` | the first match's rendered text, whitespace collapsed, equals it | `li text "Milk", needs "Bread"` |
+| `{ select, attr: { name: value } }` | the first match has each attribute with exactly that value; a name matches exactly, else in lowercase as HTML parses it | `#add role absent, needs "button"` |
+| `{ select, style: { property: value } }` | each computed value equals its value | `#add display block, needs inline` |
+| `{ select, box }` | the first match has a box (an element with `display: none` fails) and its rectangle meets `minWidth`, `minHeight`, `maxWidth`, `maxHeight`, `inViewport` | `#add box 30x20 at 8,48, needs minWidth 44, minHeight 44` |
+| `{ select, apart }` | the first matches of the two selectors both have a box and do not overlap | `#add and #overlap overlap by 10x10, needs apart` |
+| `{ page: 'noHorizontalOverflow' }` | no element passes the viewport's right edge | `page overflows horizontally: div right edge 500 passes the viewport width 390, needs noHorizontalOverflow` |
+
+`pixel` is not built yet. After priming and the drain, the Worker copies the whole wasm memory once, and it restores
+that image before every check, zero-filling any memory grown since. Only this primed image is ever restored: an image
+taken before priming lacks the engine's lazily created futures queue, and restoring it caused the `RefCell already
+borrowed` panic, traps and unbounded growth. Every `DomHandle` the Worker creates is tracked and freed in a `finally`;
+if any is still live at restore time, the Worker refuses to restore, answers `outcome_unknown` and exits, and the host
+replaces it. The glue is never imported a second time in a living Worker; replacement is always a new Worker. The host terminates and replaces the Worker after a fault (the Worker
+replies `outcome_unknown` and exits), an error or exit before the reply, no reply within `timeoutMs` (5 s, since the
+engine is unmetered), 1,000 checks, or 16 MiB of wasm memory growth since warm (a backstop: a restore cannot shrink grown memory), and starts the replacement at once. A
+check the Worker did not answer is `outcome_unknown`, never a pass. Each result records the wasm memory `pages`, the
+externref table length `externrefs`, `restores`, the primed image's digest `image` and
+`engine: { generation, checks, warm }`; `stats()` counts starts,
+replacements, checks and faults.
+
+`make browser-test` runs [test/render.test.mjs](test/render.test.mjs) and [test/engine.test.mjs](test/engine.test.mjs). Without a verified artifact the tests that need
 the engine report skipped, never passed.

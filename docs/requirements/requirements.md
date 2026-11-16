@@ -920,7 +920,7 @@ Evaluator synthesis shall generate inputs for a record, list or text parameter f
 
 ### REQ-ORACLE-001 — Formula oracle
 
-With `limits.oracle` set (default off), the agent loop shall recompute frozen expectations from the contract's formula, ranges and `reference.js` before the freeze, replace a literal when the formula and the reference agree on another value, return flagged tests to the model, evaluate a piecewise or conditional rule only inside its own condition, and abstain on a branch it cannot read or on conflicting definitions.
+With `limits.oracle` set (default off), the agent loop shall recompute frozen expectations from the contract's formula, ranges and `reference.js` before the freeze, replace a literal when the formula and the reference agree on another value, return flagged tests to the model, evaluate a piecewise or conditional rule only inside its own condition, and abstain on a branch it cannot read or on conflicting definitions; a reference load or call that fails after at least half its sandbox deadline is run once more before its result is used.
 
 - Rationale: Catch wrong frozen expectations before implementation (P-69, P-70, P-71; still off by default).
 - Derivation: `core/runtime/x1/oracle.mjs`
@@ -1100,6 +1100,16 @@ HTML shall be rendered to PNG inside a process workcell by the digest-pinned `ki
 
 - Rationale: A browser engine is tooling with a wider WebAssembly feature set than candidate kernels; keep it pinned, offline and out of thread cells.
 - Derivation: `tools/browser/port.mjs`, `tools/browser/artifact.mjs`, `tools/browser/setup.mjs`, `tools/browser/pin.mjs`
+- Allocated to: SDD §4 C-32 Workcell browser
+- Verification: T — `make browser-test`
+- Status: Baselined
+
+### REQ-BROWSER-002 — Render engine Worker in the loop cell
+
+With `render: true`, a loop cell process shall warm the digest-pinned `kitesurf-core` in its own Worker under the wasm guard built from the pool's own `toolingWasmModules` entry, failing the warm when the artifact is missing or not admitted, and run, through `inspect({ html, viewport, expect })`, the `count`, `text`, `attr`, `style`, `box`, `apart` and `page: noHorizontalOverflow` assertions with `Date` fixed and seeded randomness, `box` and `apart` failing for an element with no box: every fetch is left unanswered, recorded and fails the check, each assertion reports what it observed and what it needs, the Worker is primed with one render and one check, its whole memory image is taken once after priming and restored before every check, a restore with an engine handle still live is refused and ends the Worker, and the Worker is replaced after a fault, an exit, no reply within 5 s, 1,000 checks or 16 MiB of memory growth since warm, and a check the Worker did not answer is `outcome_unknown`, never a pass. Render is off by default and refused in thread cells.
+
+- Rationale: An engine panic must end only the engine's isolate, and a check the engine did not finish must never count as passed (the render-gates design, slice 2).
+- Derivation: `tools/browser/engine.mjs`, `tools/browser/engine-host.mjs`, `core/runtime/x1/loop.mjs`, `core/runtime/x1/loop-port.mjs`
 - Allocated to: SDD §4 C-32 Workcell browser
 - Verification: T — `make browser-test`
 - Status: Baselined

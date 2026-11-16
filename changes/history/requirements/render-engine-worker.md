@@ -1,0 +1,1 @@
+| 2026-11-16 | render engine Worker | 1 requirement added: the pinned Kitesurf engine in its own Worker inside a process loop cell, with render assertions through `inspect` (REQ-BROWSER-002) | this PR |
