@@ -22,14 +22,14 @@ LEDGER_TESTS := $(filter-out $(GAP_PY_TESTS),$(wildcard core/ledger/test_*.py to
 RUFF_VERSION := 0.17.0
 RUFF ?= $(if $(shell command -v uvx),uvx ruff@$(RUFF_VERSION),ruff)
 COVERAGE_DIR := .test-work/coverage
-NODE_COVERAGE_TESTS := $(RUNTIME_TESTS) $(wildcard core/engine/*.test.mjs core/library/test/*.test.mjs tools/tscheck/test/*.test.mjs tools/compatibility/*.test.mjs) tools/test_gate_structured.mjs $(ATOMIZER_TESTS) $(LIB_NODE_TESTS) $(wildcard $(GAP_NODE_TESTS))
-COVERAGE_SETUP := tscheck-setup loop-setup
+NODE_COVERAGE_TESTS := $(RUNTIME_TESTS) $(wildcard core/engine/*.test.mjs core/library/test/*.test.mjs tools/tscheck/test/*.test.mjs tools/browser/test/*.test.mjs tools/compatibility/*.test.mjs) tools/test_gate_structured.mjs $(ATOMIZER_TESTS) $(LIB_NODE_TESTS) $(wildcard $(GAP_NODE_TESTS))
+COVERAGE_SETUP := tscheck-setup loop-setup browser-setup
 EXPERIMENT_TESTS := $(filter-out experiments/P-51-escape-rate/controls.test.mjs,$(wildcard experiments/*/analyze.test.mjs))
 PY_COVERAGE_TESTS := $(call pymods,$(wildcard tests/test_*.py core/ledger/test_*.py tools/test_*.py tools/factory_runtime/test_*.py tools/step_harness/test_*.py tools/hardware_record/test_*.py tools/seeded_faults/test_*.py tools/escape_harness/test_*.py))
 
-.PHONY: test test-optimized check index sums core-test ledger-test engine-test isolate-test tscheck-setup tscheck-test tscheck-requalify atomizer-test harness-test hardware-test runtime-test lib-test library-test portability-test factory-state-test seeded-fault-test escape-test compatibility-test gate-test
+.PHONY: test test-optimized check index sums core-test ledger-test engine-test isolate-test tscheck-setup tscheck-test tscheck-requalify browser-setup browser-test atomizer-test harness-test hardware-test runtime-test lib-test library-test portability-test factory-state-test seeded-fault-test escape-test compatibility-test gate-test
 
-test: pipeline-test loop-test check core-test ledger-test engine-test isolate-test tscheck-test atomizer-test harness-test hardware-test runtime-test lib-test library-test portability-test factory-state-test seeded-fault-test escape-test compatibility-test kernel-test gate-test
+test: pipeline-test loop-test check core-test ledger-test engine-test isolate-test tscheck-test browser-test atomizer-test harness-test hardware-test runtime-test lib-test library-test portability-test factory-state-test seeded-fault-test escape-test compatibility-test kernel-test gate-test
 
 test-optimized:
 	PYTHONOPTIMIZE=1 $(MAKE) test PYTHON="$(PYTHON) -O"
@@ -43,6 +43,7 @@ check:
 	$(PYTHON) -I tools/check_file_url_paths.py
 	$(PYTHON) -I tools/check_trace.py
 	$(PYTHON) -I tools/gen_data_dictionary.py --check
+	$(PYTHON) -I tools/check_durable_sync.py
 
 index:
 	$(PYTHON) -I tools/experiments_index.py
@@ -74,6 +75,12 @@ tscheck-setup:
 
 tscheck-test: tscheck-setup
 	node --test tools/tscheck/test/*.test.mjs
+
+browser-setup:
+	node tools/browser/setup.mjs
+
+browser-test: browser-setup
+	node --test tools/browser/test/*.test.mjs
 
 tscheck-requalify:
 	node tools/tscheck/requalify.mjs --work "$(WORK)" --tsc "$(TSC)"

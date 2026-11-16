@@ -14,11 +14,12 @@ export async function loadCompiler(ascPath) {
 export const probeFlags = Object.freeze(['--initialMemory', '1', '--maximumMemory', '16']);
 export const x1Flags = Object.freeze(['--maximumMemory', '1024']);
 
-export async function compile(c, ascPath, { flags = probeFlags, onRead } = {}) {
+export async function compile(c, ascPath, { flags = probeFlags, onRead, onDiagnostic } = {}) {
   const asc = await loadCompiler(ascPath), files = {}, overlay = { [`${c.name}.ts`]: c.source };
   const result = await asc.main([`${c.name}.ts`, '-O3', '--runtime', 'stub', '--noColors', ...flags, '--noAssert', '--outFile', 'out.wasm'], {
     stdout: asc.createMemoryStream(), stderr: asc.createMemoryStream(),
     readFile: name => { onRead?.(name); return overlay[name] ?? null; }, writeFile: (name, data) => { files[name] = data; }, listFiles: () => [],
+    ...(onDiagnostic ? { reportDiagnostic: onDiagnostic } : {}),
   });
   return result.error ? null : files['out.wasm'];
 }

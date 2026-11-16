@@ -32,6 +32,8 @@ reports test coverage.
 - Run `make sums` after changing a file listed in `sources/SHA256SUMS`.
 - Update the [configuration reference](docs/configuration/configuration-reference.md) when you add or change a setting,
   and add a [changelog fragment](changes/unreleased/README.md) for notable changes. Do not edit CHANGELOG.md in the PR.
+- Record a requirements or verification-matrix change-history entry as a [history fragment](changes/history/README.md),
+  not as a row in the document's table.
 - Keep examples synthetic. Don't commit home-directory paths, account names, credentials or email addresses;
   `make check` runs a privacy lint.
 
