@@ -49,6 +49,8 @@ Read the [project README](../README.md), then the tutorial.
 - [Limitations and safe use](guides/explanation/limitations.md): what a promotion does and does not mean.
 - [Kitesurf measurement note](guides/explanation/kitesurf-fit.md): what Cloudflare's Kitesurf browser engine is, and
   what one local run on its `wrangler dev` and CDP path measured.
+- [What Kitesurf's design suggests](guides/explanation/kitesurf-lessons.md): choices Kitesurf made for Cloudflare
+  Workers, and which of them carry over to workcells.
 
 ## Writing documentation
 
