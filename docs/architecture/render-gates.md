@@ -93,9 +93,8 @@ are `KS:path:line` at that commit.
     { "page": "noHorizontalOverflow" } ] } }
 ```
 
-Reducer `steps` run in the job isolate under the meter; the view's HTML then goes to the engine. A property render test
-replaces `steps` with an event alphabet and a state budget, and its assertions must hold in every reached state, in the
-manner of spec-first property testing of web interfaces (Quickstrom, PLDI 2022).
+Reducer `steps` run in the job isolate under the meter; the view's HTML then goes to the engine. Behaviour over many
+steps is checked by [temporal render properties](#temporal-render-properties) below.
 
 | Assertion | Passes when | Engine call |
 |---|---|---|
@@ -176,6 +175,51 @@ raw traces helped in 2 of 6 configurations (arXiv 2505.04441) and verbose test r
 (arXiv 2609.00362). Under many parallel agents check CPU becomes a bottleneck (arXiv 2609.19947); admission of heavy checks
 against free CPU is a later step, taken when measured width calls for it.
 
+## Temporal render properties
+
+A render test checks one state. A temporal render property checks behaviour over a trace of user actions, in the model
+of [Bombadil](https://github.com/antithesishq/bombadil) (Antithesis, MIT) and its predecessor Quickstrom (PLDI 2022):
+extractors read each state, formulas with `always`, `eventually` and `next` judge the trace, and action generators drive
+it. The loop runs this inside the repair loop, against the engine; Bombadil itself runs after promotion, against
+Chromium.
+
+**In the repair loop, as a gate.**
+
+- **Actions are user actions.** A click on a declared feature is hit-tested through the engine (`elementFromPoint`,
+  KS:packages/core/src/layout/hit_test.rs:56) to the feature's declared event, which the reducer applies; typing and keys
+  use the engine's input operations (`setFocus`, `setInputText`, `handleKey`). A direct reducer event is also allowed.
+  There is no page JavaScript: a view's interactions are its declared feature events.
+- **States are extracted, not scripted.** Each step renders the view, and extractors are declared queries on features
+  (`count`, `text`, `style`, `box`, focused feature) plus the reducer state, so a property can compare the two
+  (`count(item) == state.items.length`), the differential form practitioners use most.
+- **Formulas are frozen JSON** mirroring Bombadil's syntax: `pure`, `not`, `and`, `or`, `implies`, `next`, `always` and
+  `eventually`, with time counted in steps. An `eventually` must carry a step bound; G1 refuses an unbounded one.
+- **Definitive verdicts only.** A violated `always`, or a bounded `eventually` that ran out, fails G10. A presumptive pass
+  on an unfinished trace never promotes: on finite traces such verdicts can hold on every prefix while the behaviour is
+  wrong (runtime verification with LTL3 and RV-LTL; QuickLTL, PLDI 2022).
+- **Exploration is seeded.** Actions are chosen by weight from a seed recorded with the evidence; a small space is
+  explored exhaustively to its depth; a violating trace is shrunk by deleting actions, deterministically, before the
+  model sees it.
+- **Default properties** apply to every view, adapted from Bombadil's: no trap, no fetch, no horizontal overflow, every
+  declared feature present.
+- **The evaluator** is Bombadil's own LTL crate, `bombadil-ltl` (about 1,350 lines of pure Rust with no I/O; its only
+  dependency is a profiling macro), built to WebAssembly in the Rust lane and admitted as pinned tooling, with its
+  upstream equivalence and snapshot tests run as conformance. If it does not build for WebAssembly without OS
+  dependencies, the gate ports its semantics and runs the same test vectors. The build has not been tried; no Rust
+  toolchain was available where this was written.
+
+**After promotion, as triage.** Bombadil drives Chromium against a small trusted host page that loads the promoted
+`kernel.wasm`, renders its view and wires declared feature events to its reducer, with the default properties and the
+same temporal properties exported in Bombadil's TypeScript form. This covers what the loop cannot see: real event
+wiring, focus, asynchronous timing and Chromium's own layout, where most high-impact client-side faults sit (65% of 317
+client-side JavaScript faults were DOM-related, 80% of the highest-impact ones; Ocariza et al., ESEM 2013). A violation
+becomes a shrunk trace and a proposed frozen test for a later repair attempt. It never blocks or grants a promotion: its
+replay is best-effort and its shrinking experimental by its own manual.
+
+Not taken: Bombadil driving the engine itself (its browser driver needs debugger pauses, a screencast frame per state and
+a live page DOM for its extractors), Bombadil on every turn (a browser process per check), and gating on presumptive
+verdicts.
+
 ## Checks instead of prose
 
 The loop's trust comes from its environment, so each rule this design adds is enforced by code, and what a reviewer looks
@@ -189,7 +233,7 @@ at is evidence, not the candidate's source:
   `label`), and render tests refer to features by name. The specification, the tests, the view and the feedback share one
   vocabulary (`feature "add button" box 30x20, needs minWidth 44`), and G7 refuses a test that names an undeclared feature
   or a view whose features do not match its block in `CONTRACT.md`.
-- **Exhaustive where small.** A property render test with a depth instead of a sample explores every reachable reducer
+- **Exhaustive where small.** A temporal render property with a depth instead of a sample explores every reachable
   state up to that depth, in the manner of bounded model checking, with a state budget that refuses the test at freeze
   when the space is too large.
 - **State charts and renders as evidence.** For a promoted user interface the receipt records the reached-state graph of
@@ -230,9 +274,11 @@ Each one pull request of about 400 changed lines or fewer, with requirements and
    language, promoted, with a `wrong` variant refused by G10.
 7. **Boundaries and evidence**: the import-boundary check in `make check`, features in the glue and G7, depth-bounded
    exhaustive property tests, and state charts and render digests in the receipt.
-8. **The experiment.**
-
-An outer loop that fuzzes each promoted user interface and proposes fixes comes after these foundations hold, not before.
+8. **Temporal render properties**: `bombadil-ltl` to WebAssembly in the Rust lane with its conformance tests, feature
+   actions through the engine, seeded exploration and shrinking, and G1's refusal of unbounded `eventually`.
+9. **The experiment**, with an arm that adds temporal properties to arm C, recording the share of broken views refused.
+10. **The outer loop**: Bombadil and Chromium against the reference host page after promotion, as triage that proposes
+    frozen tests. It comes after these foundations hold, not before.
 
 ## Decision record
 
