@@ -3,10 +3,10 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SRS |
-| Version | 2.11 |
+| Version | 2.12 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
-| Date | 2026-11-12 |
+| Date | 2026-11-16 |
 | Baseline commit | 4d692a41853045c4e013405d8e674528745a38b9 |
 | Applies to | endoforge main at baseline commit |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
@@ -348,7 +348,7 @@ Workcells shall enforce `wasmMemoryMaxMb` (default 64 MiB, integer 1–4096) on 
 
 ### REQ-ISO-008 — Supervisor-only trusted WASM caps
 
-Only supervisor configuration shall authorize supplying an omitted WASM maximum, by a named complete-binary SHA-256 match and a positive integer page cap within the workcell ceiling; candidate inputs grant no trust, growth past a supplied cap is a breach under REQ-ISO-006, and the supervisor records the configured name, digest and cap in results and receipts, including worker losses. A separate supervisor list, `toolingWasmModules`, admits only a complete-binary SHA-256 match, allows exception handling and SIMD only for those digests, bounds each memory at the smaller of its declared maximum and the pinned cap, refuses memory imports, shared memory and memory64 and a digest that is also trusted, and sends every other module through the unchanged guard.
+Only supervisor configuration shall authorize supplying an omitted WASM maximum, by a named complete-binary SHA-256 match and a positive integer page cap within the workcell ceiling; candidate inputs grant no trust, growth past a supplied cap is a breach under REQ-ISO-006, and the supervisor records the configured name, digest and cap in results and receipts, including worker losses. A separate supervisor list, `toolingWasmModules`, admits only a complete-binary SHA-256 match, allows exception handling and SIMD only for those digests, bounds each memory at the smaller of its declared maximum and the pinned cap, refuses memory imports, shared memory and memory64 and a digest that is also trusted, and sends every other module through the unchanged guard. A tooling module's JavaScript `Memory.grow` past its pinned cap, or an exported call that traps with `unreachable` after an in-module `memory.grow` in that same call returned -1 at the cap (the supervisor rewrites each `memory.grow` to record a failed grow), stops the workcell as `ERR_WORKCELL_WASM_MEMORY_LIMIT`; every other trap, including `unreachable` with no failed grow in the call, propagates unchanged.
 
 - Rationale: Permit pinned compiler helpers while retaining fail-closed candidate checks and auditable policy.
 - Derivation: `core/runtime/isolate-wasm.mjs`, `core/runtime/isolate-wasm-tooling.mjs`, `core/runtime/isolate-pool.mjs`
@@ -590,7 +590,7 @@ The meter shall read every memory a module declares or imports, export each unex
 
 ### REQ-LOOP-001 — Agent loop in the cell
 
-The agent loop shall run model turns and checks in one job, return a failed check to the next turn, stop at turn, token and deadline limits as a recorded failure without promotion, keep the model out of the frozen files and outside the overlay, and pass only reply text and usage into the cell and its records.
+The agent loop shall run model turns and checks in one job, return a failed check to the next turn as the first failing stage only (a compile failure with up to five of the compiler's own diagnostics, each with code, line, column and message and at most 1 KiB in all, before any gate or test failure; otherwise the failing gates and the failing tests in test order), marking each gate or test that passed in any earlier round of the attempt that reached the checks stage and fails now as a regression and keeping a compiler timeout or unavailable compiler distinct from a compile error, stop at turn, token and deadline limits as a recorded failure without promotion, keep the model out of the frozen files and outside the overlay, and pass only reply text and usage into the cell and its records.
 
 - Rationale: The model iterates against checks it cannot change.
 - Derivation: `core/runtime/x1/agent.mjs`, `core/runtime/x1/loop.mjs`, `core/runtime/x1/loop-port.mjs`
@@ -1092,6 +1092,16 @@ A type check run in the contained cohort, with a reused tsrs instance or a host 
 - Derivation: `tools/tscheck/cohort-check.mjs`, `tools/tscheck/tsrs-reuse.mjs`, `tools/tscheck/contained-route.mjs`, `tools/tscheck/cohort-preparer.mjs`
 - Allocated to: SDD §4 C-16 TypeScript checker
 - Verification: T — `make tscheck-test`, `make pipeline-test`
+- Status: Baselined
+
+### REQ-BROWSER-001 — Browser rendering in a process workcell
+
+HTML shall be rendered to PNG inside a process workcell by the digest-pinned `kitesurf-core` module, admitted only through `toolingWasmModules`, with thread cells refused, fetch and network refused, and a missing or mismatched artifact reported as skipped or as an unknown outcome, never a pass.
+
+- Rationale: A browser engine is tooling with a wider WebAssembly feature set than candidate kernels; keep it pinned, offline and out of thread cells.
+- Derivation: `tools/browser/port.mjs`, `tools/browser/artifact.mjs`, `tools/browser/setup.mjs`, `tools/browser/pin.mjs`
+- Allocated to: SDD §4 C-32 Workcell browser
+- Verification: T — `make browser-test`
 - Status: Baselined
 
 ### REQ-KERNEL-001 — Kernel component contract
@@ -1656,6 +1666,26 @@ CI shall run a Gitleaks scan of the full history with a checksum-verified binary
 - Verification: T — `make test` (`gap-tools-test`); I — `.github/workflows/ci.yml` job `lint`
 - Status: Baselined (round 7; changed in round 8, R12: JavaScript, TypeScript and Rust are lexed, so end-of-line and inline comments are found, and the 20 the check had missed were removed, closing D-09). In shell files and Makefiles only `#` at the start of a line is found, because `$#` and `${#x}` make end-of-line `#` ambiguous
 
+### REQ-REPO-011 — File URLs become paths through `fileURLToPath`
+
+`make check` shall run `tools/check_file_url_paths.py`, which lists every tracked `.mjs`, `.js`, `.cjs`, `.ts`, `.mts`, `.cts`, `.sh` and Makefile file outside `node_modules`, `vendor/` and every frozen experiment (a directory `experiments/<name>/` with a tracked `RESULT.md`) with `git ls-files`, prints `file:line: text` for every line that reads `.pathname` or destructures `pathname`, unless its allowlist names that file and a fragment of that line, and exits 1 with the message `use fileURLToPath(new URL(...)) from node:url; URL.pathname keeps percent-encoding, so paths with spaces break`; it exits 0 when there is none and 2 when `git ls-files` fails. The allowlist holds only uses on a URL that is not a `file:` URL.
+
+- Rationale: `new URL(x, import.meta.url).pathname` keeps percent-encoding, so in a checkout whose path holds a space the fixtures handed a path with `%20` to `spawn` and worker threads, and about 111 loop tests and several generator tests failed before they ran; CI passed only because its checkout path has no space. The 18 uses outside frozen experiments now go through `fileURLToPath`. Frozen experiments keep their measured scripts unchanged.
+- Derivation: `tools/check_file_url_paths.py`, `Makefile`
+- Allocated to: SDD §4 C-27 Repository checks
+- Verification: T — `make ledger-test` (`tools/test_check_file_url_paths.py`); I — `Makefile` target `check`
+- Status: Baselined (added in version 2.12)
+
+### REQ-REPO-012 — Durable syncs on every platform
+
+Python code that makes a file or directory durable shall do so through `tools/durable.py`: `sync_data` (data, with `fcntl.F_FULLFSYNC` where the platform has it, else `os.fdatasync` where it exists, else `os.fsync`), `sync_file` (`F_FULLFSYNC` where available, else `os.fsync`; a file system that refuses `F_FULLFSYNC` falls back to `os.fsync`) and `sync_dir` (opens the directory with `os.O_DIRECTORY`, optionally `os.O_NOFOLLOW`, and syncs it with `sync_file`; skipped on Windows, where directories cannot be opened for syncing), and `make check` runs `tools/check_durable_sync.py`, which lists tracked `.py` files outside `experiments/`, `vendor/` and `node_modules` with `git ls-files` and refuses every call of `os.fsync` or `os.fdatasync` and every use of `F_FULLFSYNC` outside the helper and the self-contained modules it names with their reasons, printing `file:line: text` and the fix and exiting 1, exiting 0 when there is none and 2 when `git ls-files` fails.
+
+- Rationale: macOS and Windows have no `os.fdatasync`, so the ledger writer stopped with an `AttributeError` there and the ledger bridge exited before any loop test could run; and plain `fsync` on macOS does not flush the drive's cache, so it does not give the durability the ledgers rely on. One helper chooses the strongest sync per platform and leaves Linux unchanged. Modules that import no repository package keep plain `os.fsync`, which works on every POSIX system, so that they stay self-contained.
+- Derivation: `tools/durable.py`, `tools/check_durable_sync.py`, `tools/ledger_writer.py`, `tools/x1_loop.py`, `tools/constraint_store.py`, `Makefile`
+- Allocated to: SDD §4 C-27 Repository checks
+- Verification: T — `make test` (`ledger-test`)
+- Status: Proposed
+
 ## 11. Untested behaviour (requirement gaps)
 
 These behaviours exist in the code at the baseline but no test in `make test` checks them. They are not
@@ -1727,6 +1757,8 @@ Closed gaps (their IDs are not reused):
 
 ## Change history
 
+Entries from open PRs wait as fragments in [changes/history/](../../changes/history/README.md) until they are folded into this table.
+
 | Version | Date | Commit | Change | Reviewed in |
 |---|---|---|---|---|
 | 1.0 | 2026-10-30 | `3083a5a` | Table of implemented requirements | earlier PRs |
@@ -1742,4 +1774,4 @@ Closed gaps (their IDs are not reused):
 | 2.9 | 2026-11-10 | round 9 | Changed: REQ-GEN-011 (a record, list or text value must declare its layout in the capability block; the prompts ask for it; the freeze and G7 refuse a block without it), REQ-ATOM-006 (the atomizer prompts ask for the nested layout), REQ-LIB-001 (the library key and binding include the nested layout; D-11 closed), REQ-ATOM-007 (`fanout.mjs` and `cutover.mjs` pass their policy to `verify.mjs`; D-12 closed) and REQ-ISO-010 (`LedgerBridge.pid`; the bridge-death test kills the pool's own bridge); no gap open | this commit |
 | 2.10 | 2026-11-10 | round 10 | 4 requirements added: the reference sandbox deadline and its distinct errors (REQ-SYNTH-009, D-14 closed), a relaunch patch reopens a finished job (REQ-COND-005, D-15 closed), the `TRACE-NEEDED` event (REQ-COND-006) and invariants I16 and I17 (REQ-JOB-004); changed: REQ-ATOM-007 (cutover's planning steps take, use and record `--policy`; D-16 closed) and REQ-LIB-002 (union members match on nested layout and bind by export name when they share a signature); no gap open | this commit |
 | 2.11 | 2026-11-12 | flake fix | Changed: REQ-LOOP-003 (a decision file is either absent or complete after a bridge kill; it is published under its final name only once written and synced) | this PR |
-| 2.12 | 2026-11-16 | P-72 overlap arm | 1 requirement added: implementation overlap behind `limits.overlap` (REQ-OVERLAP-001), off by default | this PR |
+| 2.12 | 2026-11-16 | file URL paths | 1 requirement added: file URLs become paths through `fileURLToPath`, checked by `make check` (REQ-REPO-011) | this PR |

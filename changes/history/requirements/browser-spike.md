@@ -1,0 +1,1 @@
+| 2026-11-16 | `fe1cb9e` | 1 requirement added: HTML rendered to PNG in a process workcell by the digest-pinned `kitesurf-core`, thread cells, fetch and network refused, a missing or mismatched artifact never a pass (REQ-BROWSER-001) | #154 |
