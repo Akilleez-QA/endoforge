@@ -59,6 +59,10 @@ class Labels(unittest.TestCase):
         records, candidate = passing_records(NINE - {"G9_units"})
         self.assertEqual(decide(records, candidate)["decision"], "refuse")
 
+    def test_a_tenth_render_gate_is_refused_even_when_it_passes(self):
+        records, candidate = passing_records(NINE | {"G10_render"})
+        self.assertEqual(decide(records, candidate)["decision"], "refuse")
+
     def test_admit_writes_the_nine_gate_labels(self):
         with tempfile.TemporaryDirectory() as root:
             (Path(root) / "CONTRACT.md").write_text("contract")

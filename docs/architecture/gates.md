@@ -74,7 +74,7 @@ gate runs and records its own verdict. `promotable` is true only when every reco
 |---|---|---|
 | `G1_frozen` | `frozen.sha256` exists; the SHA-256 of `CONTRACT.md` and of `tests.json` equal the hashes in it; `tests.json` parses; and `testProblems` finds nothing (below) | `runGates`, `testProblems` |
 | `G2_compiles` | The compiled record exists, has no error, and its `source` is the SHA-256 of this `kernel.ts`; the module loads through the fuel meter; it imports nothing except `env.abort`; and it instantiates | `runGates`, [meter.mjs](../../core/runtime/x1/meter.mjs) |
-| `G3_exports` | Every `fn` named in `tests.json` is an exported function of the module | `functionNames` |
+| `G3_exports` | Every `fn` named in `tests.json`, including the reducers a render test steps through, is an exported function of the module | `functionNames` |
 | `G4_tests` | Every frozen test passes on the first run (comparison rules below) | `runAll` |
 | `G6_bounded` | No call in the first run ran out of fuel or stack | `runAll` |
 | `G5_deterministic` | A second run, on a fresh instance and in the same order, gives the same output and the same error-or-not for every test | `runAll` |
@@ -94,7 +94,8 @@ so a weak specification is never frozen. It requires:
 - a list `expect` only when some argument is structured (a list result needs the state it comes from, or a record
   around it);
 - `tol` only where `expect` holds a number, finite, non-negative and at most 1% of `max(1, |v|)` for every number `v`
-  it applies to (`maximumRelativeTolerance`).
+  it applies to (`maximumRelativeTolerance`);
+- a render test only in its closed form ([render tests](#render-tests-before-the-render-gate)).
 
 ### How a test passes (G4)
 
@@ -164,6 +165,11 @@ no unknown fields, an `id`, an `assumption` and a `question` of at least 20 char
   that leaves out a layout (REQ-GEN-011), and since round 7 so does the stand-alone
   [gate CLI](../../tools/gate/README.md)'s `freeze` (REQ-GATECLI-001).
 
+- every export a render test names returns `text` with `media: "text/html"`; every export a render test steps through
+  is a reducer `fn(state, event) -> state` whose result has the layout of its state argument, and the view's first
+  argument has that layout too; `media` appears only on a text result (the closed schema refuses it on fields and on
+  arguments, and only `text/html` exists), and the capability block declares the same `media` per argument and result.
+
 A unit that disagrees with its argument's name (`unitDisagreements`) is reported as advisory and does not fail G7;
 G9 makes the binding units decision.
 
@@ -194,6 +200,53 @@ argument it replaces one `number` field inside the state at a time (up to 64 pro
 the contract requires a trap and the call returns, when the contract promises a finite result and the call returns a
 non-finite one, or when a probe exhausts fuel or stack. Integer parameters are not probed, so an export with only
 integer parameters records `probes: 0`.
+
+### Render tests before the render gate
+
+A frozen test with a `render` key is a render test for a view, an export that returns a complete HTML document
+(the render-gates design, slice 3):
+
+```json
+{ "name": "adding an item shows it", "fn": "view", "args": [{ "count": 0 }],
+  "steps": [{ "fn": "next", "event": { "add": 1 } }],
+  "render": { "viewport": [390, 844], "expect": [{ "select": "li", "count": 1 }, { "page": "noHorizontalOverflow" }] } }
+```
+
+Every shape is closed, and `testProblems` refuses anything else with a message that states the valid form:
+
+| Part | Valid form |
+|---|---|
+| Test | `name`, `fn`, `args`, `render`, and optionally `steps`; no `expect`, `expectError` or `tol`. A `property` key is refused; temporal render properties come in a later slice under their own key, so frozen render tests stay valid |
+| `render` | `viewport: [width, height]`, integers from 1 to 4096, and a nonempty `expect` list |
+| `steps` | 1 to 64 `{ fn, event }` calls of a reducer export other than the view; the event is finite JSON without null |
+| `count` | `{ select, count }`, an integer from 0 to 4096 |
+| `text` | `{ select, text }`, a string |
+| `attr` | `{ select, attr: { name: "value" } }`, at least one attribute |
+| `style` | `{ select, style: { property: "value" } }`, lowercase property names, nonempty values |
+| `box` | `{ select, box }` with any of `minWidth`, `minHeight`, `maxWidth`, `maxHeight` (0 to 4096, min at most max) and `inViewport` (boolean) |
+| `apart` | `{ select, apart: "other selector" }` |
+| `pixel` | `{ select, pixel: "#rrggbb" }` |
+| `page` | `{ page: "noHorizontalOverflow" }`, without `select` |
+
+A selector is a nonempty string of at most 256 characters. No key named like a PNG, digest, SHA-256 or screenshot,
+and no 64-hex-digit or `data:image/` string, may appear anywhere in a render test. An assertion that names a
+`feature` is refused for now; `select` is the only locator. Whether the engine accepts a selector
+(`canonicalizeSelector`), and whether the tests fail against the empty document and against DOM mutants of a
+reference view, need the engine and are checked in a later slice; `renderSelectors` returns the selectors that check
+will read.
+
+The loop's freeze (`capabilityProblems` in [generator.mjs](../../core/runtime/x1/generator.mjs)) already refuses a
+render test whose steps name an export that the capability block does not declare as a reducer
+`fn(state, event) -> state` with its state layout, naming the export.
+
+Until the render gate (G10) exists, a kernel with render tests is never promotable. G4 calls each view with the test's
+`args` and passes it when the call returns without error, without comparing the HTML; G5 compares the two runs and G6
+meters them like any other call. Steps are not run. `runGates` then records `G10_render` as
+not ok with the number of render tests it did not execute, so `promotable` is false, and `decide` also refuses a gate
+set other than `G1_frozen` to `G9_units`. A kernel without render tests is judged as before and has no `G10_render`.
+No stage prompt asks for render tests yet, but a model that freezes one anyway will see `G10_render` fail every repair
+round until its turn, token or deadline limit; slice 3b should stop such an attempt as awaiting the render gate once
+every other gate passes.
 
 ## Structured state
 

@@ -588,6 +588,16 @@ The meter shall read every memory a module declares or imports, export each unex
 - Verification: T — `make isolate-test`
 - Status: Baselined
 
+### REQ-X1-012 — Render tests in the frozen specification
+
+The X1 gates shall accept a frozen render test, `{ name, fn, args, render: { viewport, expect } }` with optional reducer `steps`, only in its closed form, and otherwise refuse it with a message that states the valid form. `testProblems` refuses a render test with no assertions, an unknown or malformed assertion (`count`, `text`, `attr`, `style`, `box`, `apart`, `page: "noHorizontalOverflow"`, `pixel`), a viewport outside integers 1 to 4096, a step that is not a `{ fn, event }` call of an export other than the view, an `expect`, `expectError` or `tol` beside `render`, a `property` (not supported yet), or a PNG digest anywhere. The freeze (`capabilityProblems`) requires the capability block to declare every step's export as a reducer whose result keeps its state layout; G3 requires every step's export; G7 requires each view named by a render test to return `text` with `media: "text/html"`, each step export to be a reducer whose result keeps its state layout, `media` only on a text result, and the capability block to declare the same media. Until the render gate exists, a kernel with render tests runs each view call under G4 (it must return), G5 and G6, records `G10_render` as not ok, and is never promotable.
+
+- Rationale: The specification must be able to hold render tests before the engine runs them, without a render check ever counting as passed when it was not executed.
+- Derivation: `core/runtime/x1/gates.mjs`, `core/runtime/x1/contract.mjs`, `core/runtime/x1/generator.mjs`, `core/runtime/x1/glue.schema.json`, `tools/gate/glue.schema.json`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
+- Status: Baselined
+
 ### REQ-LOOP-001 — Agent loop in the cell
 
 The agent loop shall run model turns and checks in one job, return a failed check to the next turn as the first failing stage only (a compile failure with up to five of the compiler's own diagnostics, each with code, line, column and message and at most 1 KiB in all, before any gate or test failure; otherwise the failing gates and the failing tests in test order), marking each gate or test that passed in any earlier round of the attempt that reached the checks stage and fails now as a regression and keeping a compiler timeout or unavailable compiler distinct from a compile error, stop at turn, token and deadline limits as a recorded failure without promotion, keep the model out of the frozen files and outside the overlay, and pass only reply text and usage into the cell and its records.
