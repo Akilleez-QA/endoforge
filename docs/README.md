@@ -46,9 +46,13 @@ Read the [project README](../README.md), then the tutorial.
 - [The candidate loop](architecture/candidate-loop.md): one attempt from need to decision, and what each gate checks.
 - [Evaluator synthesis](architecture/evaluator-synthesis.md): the candidate-blind check, as designed before the code.
 - [Workcell browser](architecture/workcell-browser.md): a design for rendering pages inside a workcell, before the code.
+- [The integrated repair loop](architecture/render-gates.md): a design for what the agent's repair loop checks every
+  turn, including compiler diagnostics and user interfaces rendered by a pinned browser engine, with its decision record.
 - [Limitations and safe use](guides/explanation/limitations.md): what a promotion does and does not mean.
 - [Kitesurf measurement note](guides/explanation/kitesurf-fit.md): what Cloudflare's Kitesurf browser engine is, and
   what one local run on its `wrangler dev` and CDP path measured.
+- [What Kitesurf's design suggests](guides/explanation/kitesurf-lessons.md): choices Kitesurf made for Cloudflare
+  Workers, and which of them carry over to workcells.
 
 ## Writing documentation
 

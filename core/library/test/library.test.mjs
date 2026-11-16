@@ -146,7 +146,7 @@ test('nothing a cell imports can start a process', async () => {
     if (seen.has(url.href)) continue;
     seen.add(url.href);
     const text = await readFile(url, 'utf8');
-    assert.doesNotMatch(text, /child_process/, url.pathname);
+    assert.doesNotMatch(text, /child_process/, fileURLToPath(url));
     for (const [, name] of text.matchAll(/from '(\.[^']+)'/g)) pending.push(new URL(name, url));
   }
   assert(seen.size >= 5);
