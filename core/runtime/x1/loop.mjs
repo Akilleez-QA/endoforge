@@ -6,7 +6,8 @@ import { basename, dirname, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { ASC_PATH, WORKCELL } from '../../../tools/asc/pin.mjs';
 import { IsolatePool } from '../isolate-pool.mjs';
-import { applyReply, specificationFiles } from './agent.mjs';
+import { applyReply, specificationFiles, stagePrompts } from './agent.mjs';
+import { capabilityBlock } from './contract.mjs';
 import { applyChanges } from './oracle.mjs';
 import { runGates, testProblems } from './gates.mjs';
 import { generate } from './generator.mjs';
@@ -56,20 +57,84 @@ export function createLoopPool({ size = 1, isolation = 'process', jobTimeoutMs =
 }
 
 const frozenText = (files, name) => Buffer.from(files?.[name] ?? '', 'hex').toString();
+const blockOf = contract => { const { block } = capabilityBlock(contract); return block ? JSON.stringify(block) : null; };
+export function completedCalls(text) {
+  const open = String(text).search(/"calls"\s*:\s*\[/), calls = [];
+  if (open < 0) return calls;
+  let depth = 0, quoted = false, escaped = false, from = 0;
+  for (let i = text.indexOf('[', open) + 1; i < text.length; i++) {
+    const c = text[i];
+    if (quoted) { if (escaped) escaped = false; else if (c === '\\') escaped = true; else if (c === '"') quoted = false; continue; }
+    if (c === '"') quoted = true;
+    else if (c === '{' && depth++ === 0) from = i;
+    else if (c === '}' && --depth === 0) { try { calls.push(JSON.parse(text.slice(from, i + 1))); } catch { } }
+    else if (c === ']' && depth === 0) break;
+  }
+  return calls;
+}
+const contractIn = text => completedCalls(text).filter(call => call?.name === 'edit_file' && call.path === 'CONTRACT.md' && typeof call.content === 'string').at(-1)?.content;
+function startOverlap(context, provider, contract, trigger, specBegin) {
+  const overlap = context.overlap, block = blockOf(contract);
+  if (overlap.record || !block || context.calls >= 2 * context.limits.maxTurns) return;
+  context.calls += 1;
+  const begin = performance.now();
+  overlap.record = { ran: true, trigger, offsetMs: begin - specBegin, specReplyMs: null, outcome: null, reason: null, callMs: null, usage: null, waitedMs: null };
+  Object.assign(overlap, { block, started: false, settled: false, reply: null, error: null });
+  context.observe?.('overlap:start');
+  const prompt = stagePrompts.implementation({ id: context.id, overlay: { 'CONTRACT.md': contract }, blind: true });
+  overlap.pending = Promise.resolve().then(() => provider.send({ session: overlap.session, messages: [{ role: 'user', content: prompt }], remaining: context.limits.maxTokens,
+    ...(Number.isFinite(context.deadline) ? { timeoutMs: Math.max(1, context.deadline - Date.now()) } : {}), onStart: () => { overlap.started = true; } }))
+    .then(reply => { overlap.reply = reply; }, error => { overlap.error = error.message; })
+    .finally(() => { overlap.settled = true; overlap.record.callMs = performance.now() - begin; overlap.record.usage = overlap.reply?.usage ?? null; });
+}
+function dropOverlap(context, provider, outcome, reason) {
+  const overlap = context.overlap;
+  if (!overlap?.pending) return;
+  overlap.pending = null;
+  Object.assign(overlap.record, { outcome, reason });
+  provider.endSession(overlap.session);
+  context.observe?.(`overlap:${outcome}`);
+}
+async function takeOverlap(context, provider, remaining) {
+  const overlap = context.overlap, pending = overlap.pending;
+  if (!overlap.started && !overlap.settled) return dropOverlap(context, provider, 'replaced', 'not started');
+  if (blockOf(context.shadow['CONTRACT.md']) !== overlap.block) return dropOverlap(context, provider, 'replaced', 'block changed');
+  const begin = performance.now();
+  await pending;
+  overlap.record.waitedMs = performance.now() - begin;
+  context.modelMs += overlap.record.waitedMs;
+  const { reply } = overlap;
+  if (!reply || !Number.isSafeInteger(reply.usage) || reply.usage < 0) return dropOverlap(context, provider, 'replaced', overlap.error ?? 'invalid usage');
+  if (reply.usage > remaining) return dropOverlap(context, provider, 'replaced', 'model token budget exceeded');
+  dropOverlap(context, provider, 'used', null);
+  context.tokens += reply.usage;
+  applyReply(context.shadow, context.editable, reply.text);
+  return { text: reply.text, usage: reply.usage };
+}
 async function modelTurn(context, provider, session, messages) {
   const { limits, deadline } = context, remaining = limits.maxTokens - (context.tokens - context.stageBase);
   if (Date.now() >= deadline) throw Error('request deadline reached');
+  if (context.admission && context.overlap?.pending) {
+    const used = await takeOverlap(context, provider, remaining);
+    if (used) return used;
+  }
   if (context.calls >= 2 * limits.maxTurns) throw Error('model call limit reached');
   if (remaining <= 0) throw Error('model token budget reached');
   context.calls += 1;
   const begin = performance.now(), slot = context.rates?.arrive(context.admission ? 'model:impl' : 'model:spec');
+  const overlapping = limits.overlap && !context.admission && context.overlap && !context.overlap.record;
+  const onPartial = overlapping ? text => { if (!context.overlap.record) { try { startOverlap(context, provider, contractIn(text), 'partial', begin); } catch { } } } : undefined;
   context.observe?.('model');
   try {
     const timeoutMs = Number.isFinite(deadline) ? Math.max(1, deadline - Date.now()) : undefined;
-    const reply = await provider.send({ session, messages, remaining, ...(timeoutMs ? { timeoutMs } : {}) });
+    const reply = await provider.send({ session, messages, remaining, ...(timeoutMs ? { timeoutMs } : {}), ...(onPartial ? { onPartial } : {}) });
     if (!Number.isSafeInteger(reply?.usage) || reply.usage < 0) throw Error('invalid usage');
     context.tokens += reply.usage;
     applyReply(context.shadow, context.editable, reply.text);
+    if (overlapping) {
+      startOverlap(context, provider, context.shadow['CONTRACT.md'], 'reply', begin);
+      if (context.overlap.record && context.overlap.record.specReplyMs === null) context.overlap.record.specReplyMs = performance.now() - begin;
+    }
     return { text: reply.text, usage: reply.usage };
   } finally {
     context.modelMs += performance.now() - begin;
@@ -117,7 +182,7 @@ async function answerKind(pool, provider, call, job, context) {
     context.compatibility = await compatibilityFreeze(context.containedRoute, context.directory, context.need, context.shadow['tests.json']);
     context.observe?.('admitted');
     context.reused = await reuse(context.library, context.id, files, context.principal);
-    if (context.reused) context.restart = false;
+    if (context.reused) { context.restart = false; dropOverlap(context, provider, 'discarded', 'reused'); }
     return context.reused || context.restart ? { ...first, reused: true } : context.admission;
   }
   throw Error('unknown host call');
@@ -200,13 +265,14 @@ export async function attemptAgent({ need, directory, pool, observe, limits = ag
   const timings = Object.fromEntries(['generate', 'freeze', 'compile', 'gate', 'ledger', 'promote'].map(k => [k, null]));
   const begin = performance.now(), jobKey = `agent-${process.pid}-${++nextAgentJob}`, id = basename(directory);
   const reference = { ledger: join(directory, 'ledger.sqlite') };
-  const context = { need, id, observe, modelMs: 0, admission: null, reference, limits: { ...limits }, deadline, calls: 0, tokens: 0, stageBase: 0, shadow: {}, editable: specificationFiles(limits), library, synth: null, reused: null, principal, directory, containedRoute, suspect: null, revision: null, restart: false, compatibility: null };
+  const context = { need, id, observe, modelMs: 0, admission: null, reference, limits: { ...limits }, deadline, calls: 0, tokens: 0, stageBase: 0, shadow: {}, editable: specificationFiles(limits), library, synth: null, reused: null, principal, directory, containedRoute, suspect: null, revision: null, restart: false, compatibility: null, overlap: limits.overlap ? { session: `${jobKey}:overlap`, record: null } : null };
+  const overlapOf = () => (context.overlap ? { overlap: context.overlap.record ?? { ran: false } } : {});
   const reusedResult = agent => {
     timings.generate = context.modelMs;
     timings.freeze = context.freezeMs ?? null;
     timings.promote = 0;
     timings.total = performance.now() - begin;
-    return { promoted: true, reused: context.reused.receipt, decision: context.reused.hash, agent, testDouble: provider.testDouble, modelMs: context.modelMs, timings };
+    return { promoted: true, reused: context.reused.receipt, decision: context.reused.hash, agent, testDouble: provider.testDouble, modelMs: context.modelMs, timings, ...overlapOf() };
   };
   const { provider, waits, rates } = providers.get(pool) ?? {};
   context.rates = rates;
@@ -300,12 +366,13 @@ export async function attemptAgent({ need, directory, pool, observe, limits = ag
     timings.total = performance.now() - begin;
     return { promoted: outcome.promoted, ...lane, ...revisionOf(context), ...(outcome.inconclusive ? { inconclusive: true } : {}), candidate: outcome.candidate, receipt: outcome.receipt, decision: outcome.decision, problem: outcome.problem, status: outcome.status,
       agent: kept.agent ?? null, rounds: kept.rounds ?? [], content: returned ?? null, testDouble: provider.testDouble, modelMs: context.modelMs, timings, rerun: outcome.rerun,
-      ...(outcome.synthesis ? { synthesis: outcome.synthesis } : {}), ...(context.synth ? { synthTimings: context.synth.timings } : {}), ...(context.oracle ? { oracle: context.oracle } : {}) };
+      ...(outcome.synthesis ? { synthesis: outcome.synthesis } : {}), ...(context.synth ? { synthTimings: context.synth.timings } : {}), ...(context.oracle ? { oracle: context.oracle } : {}), ...overlapOf() };
   } catch (error) {
     provider?.endSession(jobKey);
     timings.total = performance.now() - begin;
-    return { promoted: false, error: 'pipeline stage failed; inspect local artifacts', ...unknownOutcome(error), testDouble: provider?.testDouble ?? false, modelMs: context.modelMs, timings, ...(context.oracle ? { oracle: context.oracle } : {}) };
+    return { promoted: false, error: 'pipeline stage failed; inspect local artifacts', ...unknownOutcome(error), testDouble: provider?.testDouble ?? false, modelMs: context.modelMs, timings, ...(context.oracle ? { oracle: context.oracle } : {}), ...overlapOf() };
   } finally {
+    if (provider) dropOverlap(context, provider, 'discarded', 'unused');
     agentJobs.delete(jobKey);
   }
 }

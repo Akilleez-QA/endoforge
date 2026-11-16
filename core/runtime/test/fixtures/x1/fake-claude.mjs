@@ -21,7 +21,9 @@ if (process.argv.includes('--input-format')) {
       if (mode === 'refuse') return emit({ type: 'result', is_error: true, result: 'nope', usage: {} });
       if (mode === 'limit') emit({ type: 'rate_limit_event', rate_limit_info: { status: 'rejected', resetsAt: Date.now() / 1000 + limitS } });
       if (turnMs) await new Promise(resolve => setTimeout(resolve, turnMs));
-      emit(answer(history.length, text));
+      const result = answer(history.length, text), json = JSON.stringify(result.structured_output);
+      if (process.argv.includes('--include-partial-messages')) for (const event of [{ type: 'content_block_start' }, { type: 'content_block_delta', delta: { type: 'input_json_delta', partial_json: json.slice(0, 12) } }, { type: 'content_block_delta', delta: { type: 'input_json_delta', partial_json: json.slice(12) } }]) emit({ type: 'stream_event', event });
+      emit(result);
     });
   });
 } else {
