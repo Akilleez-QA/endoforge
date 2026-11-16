@@ -3,10 +3,11 @@ import assert from 'node:assert/strict';
 import { mkdtemp, rm, readFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { generate, referenceRule } from '../x1/generator.mjs';
 import { fillExpected } from '../x1/reference.mjs';
 import { capabilityFor } from './fixtures/x1/candidate.mjs';
-const fake = new URL('./fixtures/x1/fake-codex.mjs', import.meta.url).pathname;
+const fake = fileURLToPath(new URL('./fixtures/x1/fake-codex.mjs', import.meta.url));
 test('reference evaluator fills expected values and tolerances from the formula', async () => {
   const code = 'function f(x) { if (x < 0) throw Error("neg"); return Math.sqrt(x); } function g(x) { return x * 2; } function h(x) { return x > 1; }';
   const out = await fillExpected(code, [{ name: 'a', fn: 'f', args: [2], expect: 1.41 }, { name: 'b', fn: 'g', args: [3] }, { name: 'c', fn: 'f', args: [-1], expectError: true }, { name: 'd', fn: 'h', args: [2] }, { name: 'e', fn: 'f', args: [3], tol: 0.5 }]);

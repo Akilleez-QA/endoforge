@@ -3,10 +3,11 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { IsolatePool } from '../isolate-pool.mjs';
 import { runNeed } from '../x1/pipeline.mjs';
 import { scriptedProvider } from '../x1/transports.mjs';
-const fixtures = new URL('./fixtures/x1/', import.meta.url).pathname;
+const fixtures = fileURLToPath(new URL('./fixtures/x1/', import.meta.url));
 const reply = (path, value) => ({ text: JSON.stringify({ calls: [{ name: 'edit_file', path, content: JSON.stringify(value) }, { name: 'done' }] }), usage: 1 });
 const provider = reference => scriptedProvider(({ session, messages }) => {
   if (session.startsWith('need')) return reply('sheet.json', { residual: ['Adds two integers.'], quantities: [], relations: [], invariants: [] });
@@ -15,7 +16,7 @@ const provider = reference => scriptedProvider(({ session, messages }) => {
 });
 const setup = async t => {
   const root = await mkdtemp(join(tmpdir(), 'ef-synth-pipeline-'));
-  const pool = new IsolatePool({ hostPort: new URL('../x1/host.mjs', import.meta.url).pathname, size: 1, isolation: 'thread', prewarm: true });
+  const pool = new IsolatePool({ hostPort: fileURLToPath(new URL('../x1/host.mjs', import.meta.url)), size: 1, isolation: 'thread', prewarm: true });
   await pool.ready();
   t.after(async () => { await pool.close(); await rm(root, { recursive: true, force: true }); });
   const env = { ...process.env, ENDOFORGE_CODEX_CMD: JSON.stringify([process.execPath, join(fixtures, 'fake-codex.mjs')]), CODEX_HOME: join(root, 'none'),
