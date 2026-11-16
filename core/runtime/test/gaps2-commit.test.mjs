@@ -214,7 +214,7 @@ from tools.x1_loop import IMPLEMENTATION_FILES, GATE_LABEL
 print(json.dumps(dict(files=list(IMPLEMENTATION_FILES), label=GATE_LABEL)))
 `, {});
   for (const name of implementationFiles) assert.ok(listed.files.includes(name), `IMPLEMENTATION_FILES misses ${name}`);
-  for (const name of ['oracle.mjs', 'dimensions.mjs', 'generator.mjs', 'ledger.mjs', 'reference.mjs', 'scalar.mjs']) assert.ok(listed.files.includes(name), name);
+  for (const name of ['oracle.mjs', 'compact.mjs', 'dimensions.mjs', 'generator.mjs', 'ledger.mjs', 'reference.mjs', 'scalar.mjs']) assert.ok(listed.files.includes(name), name);
   const drifted = await python(`
 import json, sys
 from tools.x1_loop import frozen_drift
@@ -224,7 +224,7 @@ for name in names:
     record = dict(data=dict(content=json.dumps(dict(files={name: "00"}))))
     out[name] = frozen_drift(record, None)
 print(json.dumps(out))
-`, ['oracle.mjs', 'dimensions.mjs', 'generator.mjs', 'ledger.mjs', 'reference.mjs', 'scalar.mjs']);
+`, ['oracle.mjs', 'compact.mjs', 'dimensions.mjs', 'generator.mjs', 'ledger.mjs', 'reference.mjs', 'scalar.mjs']);
   for (const [name, drift] of Object.entries(drifted)) assert.equal(drift, true, name);
   assert.equal(receipt({ identity: 'evr:x' }, 'd', 'c').data.precommit.acceptance_boundary, listed.label);
 });

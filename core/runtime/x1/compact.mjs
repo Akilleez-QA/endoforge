@@ -6,8 +6,14 @@ const word = /[A-Za-z_][A-Za-z0-9_]*/y;
 const number = /-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?/y;
 const string = /"(?:[^"\\\u0000-\u001f]|\\["\\/bfnrt]|\\u[0-9a-fA-F]{4})*"/y;
 const reserved = new Set(['true', 'false', 'null', 'trap', 'shape', 'let']);
+export const EXPANDED_LIMIT = 65536;
+const sizes = new WeakMap();
+const sizeOf = item => item !== null && typeof item === 'object' ? sizes.get(item) : JSON.stringify(item).length;
 
 class Refusal extends Error {}
+const tooLarge = () => { throw new Refusal(`expands past ${EXPANDED_LIMIT} bytes of tests.json`); };
+const sized = (item, size) => { if (size > EXPANDED_LIMIT) tooLarge(); sizes.set(item, size); return item; };
+const listSize = items => items.reduce((total, item) => total + sizeOf(item) + 1, 2);
 function reader(line, shapes, values) {
   let at = 0;
   const fail = what => { throw new Refusal(`${what} at column ${at + 1}`); };
@@ -25,14 +31,16 @@ function reader(line, shapes, values) {
   const value = () => {
     space();
     const start = at;
-    if (take('[')) return sequence(']', value);
+    if (take('[')) { const items = sequence(']', value); return sized(items, listSize(items)); }
     if (take('{')) {
       const record = {};
+      let size = 2;
       for (const [key, item] of sequence('}', () => { const key = match(string) ?? match(word); if (key === null) fail('expected a field name'); expect(':'); return [key[0] === '"' ? JSON.parse(key) : key, value()]; })) {
         if (Object.hasOwn(record, key)) { at = start; fail(`duplicate field ${key}`); }
         Object.defineProperty(record, key, { value: item, enumerable: true, writable: true, configurable: true });
+        size += JSON.stringify(key).length + sizeOf(item) + 2;
       }
-      return record;
+      return sized(record, size);
     }
     if (take('$')) {
       const name = match(word);
@@ -55,7 +63,7 @@ function reader(line, shapes, values) {
       expect('(', `( after ${name}`);
       const items = sequence(')', value);
       if (items.length !== fields.length) { at = start; fail(`${name} takes ${fields.length} values, got ${items.length}`); }
-      return Object.fromEntries(fields.map((field, index) => [field, items[index]]));
+      return sized(Object.fromEntries(fields.map((field, index) => [field, items[index]])), fields.reduce((total, field, index) => total + JSON.stringify(field).length + sizeOf(items[index]) + 2, 2));
     }
     at = start;
     return fail(name === null ? 'expected a value' : `${name} is not a value or a shape`);
@@ -112,12 +120,17 @@ function parseLine(line, shapes, values) {
 export function expandTests(source) {
   if (typeof source !== 'string' || !source.trim()) return { problems: [`${compactFile} is missing or empty`] };
   const shapes = new Map(), values = new Map(), tests = [], lines = [], problems = [];
+  let total = 4;
   source.split('\n').forEach((raw, index) => {
     const line = raw.replace(/\r$/, '');
     if (!line.trim()) return;
     try {
       const test = parseLine(line, shapes, values);
-      if (test) { tests.push(test); lines.push(index + 1); }
+      if (test) {
+        total += listSize(test.args) + sizeOf(test.expect ?? null) + JSON.stringify(test.name).length + test.fn.length + 64;
+        if (total > EXPANDED_LIMIT) tooLarge();
+        tests.push(test); lines.push(index + 1);
+      }
     } catch (error) {
       if (!(error instanceof Refusal)) throw error;
       problems.push(`${compactFile} line ${index + 1}: ${error.message}`);
@@ -126,7 +139,9 @@ export function expandTests(source) {
   if (!problems.length && !tests.length) problems.push(`${compactFile} has no test lines`);
   if (problems.length) return { problems: problems.slice(0, 20) };
   const locate = problem => { const index = /^test (\d+)/.exec(problem)?.[1]; return index === undefined ? problem : `${problem} (${compactFile} line ${lines[Number(index)]})`; };
-  return { tests, lines, locate, text: `[\n${tests.map(test => JSON.stringify(test)).join(',\n')}\n]\n` };
+  const text = `[\n${tests.map(test => JSON.stringify(test)).join(',\n')}\n]\n`;
+  if (Buffer.byteLength(text) > EXPANDED_LIMIT) return { problems: [`${compactFile}: expands past ${EXPANDED_LIMIT} bytes of tests.json`] };
+  return { tests, lines, locate, text };
 }
 export function expandedText(source) {
   const expanded = expandTests(source);
