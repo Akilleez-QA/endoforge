@@ -59,13 +59,14 @@ thread cells and in any thread that is not a process's main thread.
 viewport, runs each assertion, frees the `DomHandle`, waits one macrotask turn so queued engine work finishes, and
 replies. Every engine call runs with `new Date()` and `Date.now()` fixed at 2026-01-01 and a seeded
 `crypto.getRandomValues`, restored afterwards. The fetch bridge answers no request: the Worker records each one, and a document that
-requests any resource fails the check. `png: true` also returns the PNG of the same document.
+requests any resource fails the check. Requests the engine makes after the reply's one macrotask drain are not
+counted, for that check or the next. `png: true` also returns the PNG of the same document.
 
 | Assertion | Passes when | Failure says, for example |
 |---|---|---|
 | `{ select, count }` | the selector matches that many nodes | `li count 2, needs 1` |
 | `{ select, text }` | the first match's rendered text, whitespace collapsed, equals it | `li text "Milk", needs "Bread"` |
-| `{ select, attr: { name: value } }` | the first match has each attribute with exactly that value | `#add role absent, needs "button"` |
+| `{ select, attr: { name: value } }` | the first match has each attribute with exactly that value; a name matches exactly, else in lowercase as HTML parses it | `#add role absent, needs "button"` |
 | `{ select, style: { property: value } }` | each computed value equals its value | `#add display block, needs inline` |
 | `{ select, box }` | the first match has a box (an element with `display: none` fails) and its rectangle meets `minWidth`, `minHeight`, `maxWidth`, `maxHeight`, `inViewport` | `#add box 30x20 at 8,48, needs minWidth 44, minHeight 44` |
 | `{ select, apart }` | the first matches of the two selectors both have a box and do not overlap | `#add and #overlap overlap by 10x10, needs apart` |

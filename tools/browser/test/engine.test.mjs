@@ -69,12 +69,12 @@ test('inspect passes and fails each assertion with what it observed and what it 
 test('box and apart fail for an element with no box, and attr compares the attribute itself', needsEngine, async t => {
   const page = '<p id="gone" style="display: none">x</p><div id="here" style="width: 50px; height: 50px"></div><button id="add" aria-label="Add item">+</button>';
   const result = await engineFor(t).inspect({ html: page, viewport: [100, 100], expect: [{ select: '#gone', box: { maxWidth: 10, inViewport: true } }, { select: '#gone', apart: '#here' },
-    { select: '#here', apart: '#gone' }, { select: '#add', attr: { 'aria-label': 'Add item' } }, { select: '#add', attr: { 'aria-label': 'Add' } }] });
-  assert.deepEqual(observed(result), [[false, '#gone has no box'], [false, '#gone has no box'], [false, '#gone has no box'], [true, '#add has aria-label'], [false, '#add aria-label "Add item", needs "Add"']]);
+    { select: '#here', apart: '#gone' }, { select: '#add', attr: { 'aria-label': 'Add item' } }, { select: '#add', attr: { 'aria-label': 'Add' } }, { select: '#add', attr: { 'ARIA-LABEL': 'Add item' } }] });
+  assert.deepEqual(observed(result), [[false, '#gone has no box'], [false, '#gone has no box'], [false, '#gone has no box'], [true, '#add has aria-label'], [false, '#add aria-label "Add item", needs "Add"'], [true, '#add has ARIA-LABEL']]);
   assert.equal(result.pass, false);
 });
 
-test('a document that fetches never passes and the bridge only counts the refused requests', needsEngine, async t => {
+test('a document that fetches never passes and the bridge records every request it leaves unanswered', needsEngine, async t => {
   const result = await engineFor(t).inspect({ html: '<p>x</p><img src="a.png"><link rel="stylesheet" href="s.css">', viewport, expect: [{ select: 'p', count: 1 }] });
   assert.equal(result.pass, false);
   assert.equal(result.fetches, 2);

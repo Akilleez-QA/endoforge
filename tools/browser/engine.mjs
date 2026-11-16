@@ -75,7 +75,8 @@ function assertion(handle, item, viewport) {
   }
   if (item.attr !== undefined) {
     const attributes = handle.nodeInfo(first).attributes ?? [];
-    const valueOf = name => { const at = attributes.findIndex((key, i) => i % 2 === 0 && key === name.toLowerCase()); return at < 0 ? undefined : attributes[at + 1]; };
+    const named = wanted => attributes.findIndex((key, i) => i % 2 === 0 && key === wanted);
+    const valueOf = name => { const at = named(name) >= 0 ? named(name) : named(name.toLowerCase()); return at < 0 ? undefined : attributes[at + 1]; };
     const missing = Object.entries(item.attr).filter(([name, value]) => valueOf(name) !== value);
     const seen = name => valueOf(name) === undefined ? 'absent' : quote(valueOf(name));
     return [!missing.length, missing.length ? missing.map(([name, value]) => `${selector} ${name} ${seen(name)}, needs ${quote(value)}`).join('; ') : `${selector} has ${Object.keys(item.attr).join(', ')}`];
