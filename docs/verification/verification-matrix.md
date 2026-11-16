@@ -226,6 +226,8 @@ Every other discovered test file is listed here with its classification.
 
 ## Change history
 
+Entries from open PRs wait as fragments in [changes/history/](../../changes/history/README.md) until they are folded into this table.
+
 | Version | Date | Commit | Change | Reviewed in |
 |---|---|---|---|---|
 | 1.0 | 2026-10-30 | `3083a5a` | Eight-row matrix and relocation evidence (now in the verification history) | earlier PRs |
