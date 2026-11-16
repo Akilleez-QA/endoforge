@@ -13,12 +13,13 @@ const source = `export function next(state: usize, event: usize, out: usize): vo
 }
 
 export function view(state: usize, out: usize): void {
+  if (load<i32>(state) < 0) abort();
   const page = '<!doctype html><ul><li>item</li></ul>';
   for (let i = 0; i < page.length; i++) store<u8>(out + 4 + <usize>i, <u8>page.charCodeAt(i));
   store<u32>(out, <u32>page.length);
 }
 `;
-const module = 'AGFzbQEAAAABDAJgAn9/AGADf39/AAMDAgABBQUBAQGACAcYAwRuZXh0AAEEdmlldwAABm1lbW9yeQIADAECCmYCUQEBfwNAIAJBnAgoAgBBAXYiAEgEQCABQQRqIAJqIAAgAk0Ef0F/BSACQQF0QaAIai8BAAs6AAAgAkEBaiECDAELCyABQZwIKAIAQQF2NgIACxIAIAIgACgCACABKAIAajYCAAsLXwIAQYwICwFcAEGYCAtRAgAAAEoAAAA8ACEAZABvAGMAdAB5AHAAZQAgAGgAdABtAGwAPgA8AHUAbAA+ADwAbABpAD4AaQB0AGUAbQA8AC8AbABpAD4APAAvAHUAbAA+';
+const module = 'AGFzbQEAAAABEwNgBH9/f38AYAJ/fwBgA39/fwACDQEDZW52BWFib3J0AAADAwIBAgUFAQEBgAgHGAMEbmV4dAACBHZpZXcAAQZtZW1vcnkCAAwBAgp7AmYBAX8gACgCAEEASARAQQBBAEEAQQAQAAsDQCACQZwIKAIAQQF2IgBIBEAgAUEEaiACaiAAIAJNBH9BfwUgAkEBdEGgCGovAQALOgAAIAJBAWohAgwBCwsgAUGcCCgCAEEBdjYCAAsSACACIAAoAgAgASgCAGo2AgALC18CAEGMCAsBXABBmAgLUQIAAABKAAAAPAAhAGQAbwBjAHQAeQBwAGUAIABoAHQAbQBsAD4APAB1AGwAPgA8AGwAaQA+AGkAdABlAG0APAAvAGwAaQA+ADwALwB1AGwAPg==';
 const state = { kind: 'record', fields: [{ name: 'count', kind: 'integer', unit: '1' }] };
 const event = { kind: 'record', fields: [{ name: 'add', kind: 'integer', unit: '1' }] };
 const page = { kind: 'text', maxBytes: 256, media: 'text/html' };
@@ -98,11 +99,15 @@ test('without render tests the same kernel promotes, so the refusal comes from t
   assert.equal(Object.hasOwn(result.gates, 'G10_render'), false);
 });
 
-test('a render test whose view call does not return fails G4', () => {
-  const result = runGates(candidate({ tests: [valueTest, { ...renderTest, args: [{ count: 0, extra: 1 }] }] }));
-  assert.equal(result.gates.G4_tests.ok, false);
-  assert.equal(result.tests[1].pass, false);
-  assert.equal(result.promotable, false);
+test('a render test whose view call traps, or whose state does not encode, fails G4', () => {
+  for (const args of [[{ count: -2 }], [{ count: 0, extra: 1 }]]) {
+    const result = runGates(candidate({ tests: [valueTest, { ...renderTest, args }] }));
+    assert.equal(result.gates.G4_tests.ok, false, JSON.stringify(args));
+    assert.equal(result.tests[1].pass, false);
+    assert.equal(result.promotable, false);
+  }
+  const trapped = runGates(candidate({ tests: [valueTest, { ...renderTest, args: [{ count: -2 }] }] })).tests[1];
+  assert.equal(trapped.trap, true, JSON.stringify(trapped));
 });
 
 test('G7 refuses a render test that names an export without an HTML view result', () => {
