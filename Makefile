@@ -40,6 +40,7 @@ check:
 	$(PYTHON) -I tools/source_sums.py --check
 	$(PYTHON) -I tools/experiment_id.py check
 	$(PYTHON) -I tools/check-privacy.py
+	$(PYTHON) -I tools/check_file_url_paths.py
 	$(PYTHON) -I tools/check_trace.py
 	$(PYTHON) -I tools/gen_data_dictionary.py --check
 	$(PYTHON) -I tools/check_durable_sync.py

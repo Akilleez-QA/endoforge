@@ -1,5 +1,6 @@
 import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { admit, createLoopPool, evaluateAndCommit } from '../../../x1/loop.mjs';
 import { runNeed } from '../../../x1/pipeline.mjs';
 import { scriptedProvider } from '../../../x1/transports.mjs';
@@ -8,7 +9,7 @@ import { implementation, inputFor, reply, specification } from './scripted-model
 import { good } from './seeds.mjs';
 
 const { root, isolation = 'thread', action = 'run', agent = false, resume = false, directory, kill, editFile, count = 1, log } = JSON.parse(process.argv[2]);
-const hostPort = new URL('./loop-stage-port.mjs', import.meta.url).pathname;
+const hostPort = fileURLToPath(new URL('./loop-stage-port.mjs', import.meta.url));
 const { files } = candidate(), model = inputFor(files['CONTRACT.md'], files['tests.json'], good.kernel, good.glue);
 const script = ({ messages }) => {
   const stage = JSON.parse(messages.at(-1).content).stage;
@@ -17,7 +18,7 @@ const script = ({ messages }) => {
 const cellEnv = Object.fromEntries(Object.entries(process.env).filter(([name]) => name.startsWith('EF_')));
 const pool = createLoopPool({ isolation, hostPort, primes: 1, jobTimeoutMs: 30000, cellEnv, ...(agent ? { provider: scriptedProvider(script) } : {}) });
 const env = { ...process.env, ENDOFORGE_LOOP: agent ? 'agent' : 'isolate', CODEX_HOME: join(root, 'unused-home'), ENDOFORGE_CODEX_TEST_DOUBLE: '1',
-  ENDOFORGE_CODEX_CMD: JSON.stringify([process.execPath, new URL('./fake-codex.mjs', import.meta.url).pathname]) };
+  ENDOFORGE_CODEX_CMD: JSON.stringify([process.execPath, fileURLToPath(new URL('./fake-codex.mjs', import.meta.url))]) };
 const observe = stage => {
   if (stage === 'generated' && editFile) appendFileSync(editFile, '\n');
   if (kill === stage) process.kill(process.pid, 'SIGKILL');

@@ -3,10 +3,10 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SDD |
-| Version | 3.9 |
+| Version | 3.10 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
-| Date | 2026-11-10 |
+| Date | 2026-11-16 |
 | Baseline commit | 63e95c79afb282a7fcae4decd57d2e7ed6cf0d40 |
 | Applies to | endoforge main at baseline commit |
 | Classification | Self-assessed Class E analog; not safety-critical (see [SMP §1](../plan/software-management-plan.md#1-software-classification-self-assessed)) |
@@ -111,7 +111,7 @@ checks yet; see [SRS §11](../requirements/requirements.md#11-untested-behaviour
 | C-24 | Hillclimb | `tools/hillclimb/` | Lessons ledger across rounds, fan-out planning, round scoring, stage policy passed to the default and a campaign's own runner, compose atoms that mount what `hillclimb.mjs` imports | REQ-HILL-001, REQ-HILL-002, REQ-HILL-003 |
 | C-25 | Factory campaign and portability | `tools/factory_campaign/`, `tools/factory_portability/` | Campaign state recovery, model journal, bounded repair, encrypted checkpoints, Wasmtime qualification, stage resume and transfer to a second host | REQ-FACTORY-001, REQ-FACTORY-002, REQ-FACTORY-005 |
 | C-26 | Rust lane | `tools/rust_lane/` | Reproducible build of any Rust kernel crate that meets the kernel contract, admitted only through C-17's frozen-task conformance; two frozen tasks (P-06, tally) | REQ-RUST-001 |
-| C-27 | Repository checks | `tools/check-docs.py`, `tools/check-privacy.py`, `tools/check_trace.py`, `tools/gen_data_dictionary.py`, `tools/experiments_index.py`, `tools/source_sums.py`, `tools/experiment_id.py`, `tests/test_reachability.py`, `ruff.toml`, `tools/check_comments.py`, `tools/durable.py`, `tools/check_durable_sync.py` | Links, digests, privacy, index, allocation, reachability, trace and data-dictionary checks; lint (including the no-comments check) and coverage targets; the platform's strongest durable sync and the check that keeps raw syncs out | REQ-DOCS-001, REQ-REPO-001, REQ-REPO-002, REQ-REPO-003, REQ-REPO-004, REQ-REPO-005, REQ-REPO-006, REQ-REPO-007, REQ-REPO-009, REQ-REPO-010, REQ-REPO-012 |
+| C-27 | Repository checks | `tools/check-docs.py`, `tools/check-privacy.py`, `tools/check_trace.py`, `tools/gen_data_dictionary.py`, `tools/experiments_index.py`, `tools/source_sums.py`, `tools/experiment_id.py`, `tests/test_reachability.py`, `ruff.toml`, `tools/check_comments.py`, `tools/check_file_url_paths.py`, `tools/durable.py`, `tools/check_durable_sync.py` | Links, digests, privacy, index, allocation, reachability, trace, data-dictionary and file URL path checks; lint (including the no-comments check) and coverage targets; the platform's strongest durable sync and the check that keeps raw syncs out | REQ-DOCS-001, REQ-REPO-001, REQ-REPO-002, REQ-REPO-003, REQ-REPO-004, REQ-REPO-005, REQ-REPO-006, REQ-REPO-007, REQ-REPO-009, REQ-REPO-010, REQ-REPO-011, REQ-REPO-012 |
 | C-28 | Release records | `tools/gen_release_docs.py` | Generates the test report and version description from recorded runs | REQ-REPO-008 |
 | C-29 | Factory runtime | `tools/factory_runtime/` | Job specs, scheduler, recovery, egress, sandboxed worker with the `bridge.py` relay (local-provider turns without `node` or `codex`), protected provider call, WebAssembly runner on the pinned Wasmtime wheel | REQ-FACTORY-003 |
 | C-30 | Glue gate CLI and project scheduler | `tools/gate/`, `tools/project-scheduler/` | Stand-alone glue check through the core gates, compiled with the `tools/asc` pin by default, whose `freeze` refuses a contract without a valid capability block; cross-project scheduling under token reservations | REQ-GATECLI-001, REQ-SCHED-001 |
@@ -279,3 +279,4 @@ synthetic identity invariant, including failure propagation.
 | 3.7 | 2026-11-09 | round 8 | REQ-ATOM-007 (`verify.mjs --policy`, helper usage) and REQ-ATOM-008 (`node` toolchain default) allocated to C-22; C-24's compose atoms mount the import closure of `hillclimb.mjs`; C-05's fingerprints keep text exact, reclaim keeps grants and refusals are kept per environment; C-07's G7 compares nested structure; C-17 deep-copies effect declarations; C-27's comment check lexes JavaScript, TypeScript and Rust | this commit |
 | 3.8 | 2026-11-10 | round 9 | C-07's freeze and G7 require the layout of every record, list and text value in the capability block (REQ-GEN-011); C-05's key and binding include that layout (REQ-LIB-001); C-22's prompts ask for it (REQ-ATOM-006) and `fanout.mjs` and `cutover.mjs` pass their policy to `verify.mjs` (REQ-ATOM-007); C-06's `LedgerBridge` exposes its pid (REQ-ISO-010) | this commit |
 | 3.9 | 2026-11-10 | round 10 | REQ-SYNTH-009 (the reference sandbox deadline) allocated to C-08; REQ-COND-005 (a relaunch reopens a finished job), REQ-COND-006 (`TRACE-NEEDED`) and REQ-JOB-004 (I16, I17) to C-23; C-22's planning steps take the cutover policy (REQ-ATOM-007); C-05's unions match on nested layout (REQ-LIB-002) | this commit |
+| 3.10 | 2026-11-16 | file URL paths | REQ-REPO-011 allocated to C-27 (`tools/check_file_url_paths.py`, run by `make check`) | this PR |
