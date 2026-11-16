@@ -5,6 +5,8 @@ import { fileURLToPath } from 'node:url';
 import { basename, dirname, join } from 'node:path';
 import { performance } from 'node:perf_hooks';
 import { ASC_PATH, WORKCELL } from '../../../tools/asc/pin.mjs';
+import { PROCESS_ONLY } from '../../../tools/browser/engine-host.mjs';
+import { KITESURF_CORE } from '../../../tools/browser/pin.mjs';
 import { IsolatePool } from '../isolate-pool.mjs';
 import { applyReply, specificationFiles } from './agent.mjs';
 import { applyChanges } from './oracle.mjs';
@@ -34,10 +36,13 @@ const readable = path => `--allow-fs-read=${realpathSync(path)}/*`;
 export function cellPermissions(hostPort, ascPath) {
   return [permissionFlag, readable(repository), readable(dirname(dirname(dirname(ascPath)))), readable(dirname(hostPort)), '--allow-worker'];
 }
-export function createLoopPool({ size = 1, isolation = 'process', jobTimeoutMs = 60000, jobDeadlineMs = 900000, ascPath = ASC_PATH, hostPort = hostPortPath, primes, provider, cellEnv = {}, waits = 'release', rates = null, ...rest } = {}) {
+export function createLoopPool({ size = 1, isolation = 'process', jobTimeoutMs = 60000, jobDeadlineMs = 900000, ascPath = ASC_PATH, hostPort = hostPortPath, primes, provider, cellEnv = {}, waits = 'release', rates = null, render = false, ...rest } = {}) {
   if (!['release', 'hold'].includes(waits)) throw TypeError('waits must be release or hold');
-  const pool = new IsolatePool({ hostPort, size, isolation, jobTimeoutMs, jobDeadlineMs, ...WORKCELL,
-    warm: { path: ascPath, ...(primes === undefined ? {} : { primes }) },
+  if (typeof render !== 'boolean') throw TypeError('render must be boolean');
+  if (render && isolation !== 'process') throw TypeError(PROCESS_ONLY);
+  const policy = render ? { wasmMemoryMaxMb: rest.wasmMemoryMaxMb ?? WORKCELL.wasmMemoryMaxMb, toolingWasmModules: rest.toolingWasmModules ?? [KITESURF_CORE] } : null;
+  const pool = new IsolatePool({ hostPort, size, isolation, jobTimeoutMs, jobDeadlineMs, ...WORKCELL, ...policy,
+    warm: { path: ascPath, ...(primes === undefined ? {} : { primes }), ...(policy ? { render: policy } : {}) },
     ledgerBridge: { extension: 'tools.x1_loop', restart: true },
     cellEnv, cellFlags: isolation === 'process' ? cellPermissions(hostPort, ascPath) : [], rates, ...rest,
     ...(provider ? { hostCall: (call, job) => answerCall(pool, provider, call, job) } : {}) });

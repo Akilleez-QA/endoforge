@@ -1094,6 +1094,16 @@ HTML shall be rendered to PNG inside a process workcell by the digest-pinned `ki
 - Verification: T — `make browser-test`
 - Status: Baselined
 
+### REQ-BROWSER-002 — Render engine Worker in the loop cell
+
+With `render: true`, a loop cell process shall warm the digest-pinned `kitesurf-core` in its own Worker under the wasm guard built from the pool's own `toolingWasmModules` entry, failing the warm when the artifact is missing or not admitted, and run, through `inspect({ html, viewport, expect })`, the `count`, `text`, `attr`, `style`, `box`, `apart` and `page: noHorizontalOverflow` assertions with `Date` fixed and seeded randomness, `box` and `apart` failing for an element with no box: every fetch is left unanswered, recorded and fails the check, each assertion reports what it observed and what it needs, the Worker is primed with one render and one check, its whole memory image is taken once after priming and restored before every check, a restore with an engine handle still live is refused and ends the Worker, and the Worker is replaced after a fault, an exit, no reply within 5 s, 1,000 checks or 16 MiB of memory growth since warm, and a check the Worker did not answer is `outcome_unknown`, never a pass. Render is off by default and refused in thread cells.
+
+- Rationale: An engine panic must end only the engine's isolate, and a check the engine did not finish must never count as passed (the render-gates design, slice 2).
+- Derivation: `tools/browser/engine.mjs`, `tools/browser/engine-host.mjs`, `core/runtime/x1/loop.mjs`, `core/runtime/x1/loop-port.mjs`
+- Allocated to: SDD §4 C-32 Workcell browser
+- Verification: T — `make browser-test`
+- Status: Baselined
+
 ### REQ-KERNEL-001 — Kernel component contract
 
 The kernel contract tool shall emit an artifact record only for a component that conforms to `kernel.wit`, bind the record to the exact bytes, refuse omitted, changed or added fields, undeclared capabilities and exports, wrong types and versions, malformed WIT and invalid components, and fail closed when a tool is missing or at another version.
