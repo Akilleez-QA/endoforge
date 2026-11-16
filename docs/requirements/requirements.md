@@ -1737,6 +1737,8 @@ Closed gaps (their IDs are not reused):
 
 ## Change history
 
+Entries from open PRs wait as fragments in [changes/history/](../../changes/history/README.md) until they are folded into this table.
+
 | Version | Date | Commit | Change | Reviewed in |
 |---|---|---|---|---|
 | 1.0 | 2026-10-30 | `3083a5a` | Table of implemented requirements | earlier PRs |
