@@ -64,20 +64,23 @@ enforces the shape with `--json-schema` (`replySchema`), and the cell parses it 
 | `{"name":"read_file","path":P}` | Returns the file from the overlay, or `no such file` |
 | `{"name":"edit_file","path":P,"content":C}` | Writes the whole file |
 | `{"name":"edit_file","path":P,"old":O,"new":N}` | Replaces `O`, which must occur exactly once |
-| `{"name":"check"}` | Runs the stage's check now and returns its failures, or `passed` |
+| `{"name":"check"}` | Runs the stage's check now and returns its failures, or `passed`; a pass ends the stage unless a later call edits a file |
 | `{"name":"done"}` | Ends the stage; if no check ran in this reply, one runs first |
 
 Only the stage's editable paths can be written (`path refused` otherwise), and a file is at most 64 KiB (`LIMIT`).
 A reply that isn't a calls object, or has too many calls, gets an error message as the next prompt, not a crash. When
 `done` meets a failing check, the failures go back with `Fix what failed, then done.` An empty `calls` list counts as
-`done`.
+`done`. A reply whose last check passed ends the stage without `done` and without another turn. If a call writes a file
+after the reply's last check, that check no longer counts: the stage is checked again before it ends, with or without
+`done`. In P-66, 15 of 209 promoted `sonnet-low` runs paid one extra turn (median 1.6 s, 61 output tokens) to say
+`done` after a passing check; that turn is gone.
 
 ## Two stages
 
 | Stage | Editable | Its check | Ends when |
 |---|---|---|---|
-| Specification | `CONTRACT.md`, `tests.json` (and `reference.js` with the oracle) | `specificationProblems`: a nonempty contract, JSON tests that pass [test strength](gates.md#test-strength-g1), and with the oracle, no flagged test | `done` with a passing check, then the freeze |
-| Implementation | `kernel.ts`, `glue.json` | Compile in the cell, then `runGates` (all nine [gates](gates.md)) | `done` with a passing check, or the turn or token limit |
+| Specification | `CONTRACT.md`, `tests.json` (and `reference.js` with the oracle) | `specificationProblems`: a nonempty contract, JSON tests that pass [test strength](gates.md#test-strength-g1), and with the oracle, no flagged test | A passing check that no later edit in the reply follows, then the freeze |
+| Implementation | `kernel.ts`, `glue.json` | Compile in the cell, then `runGates` (all nine [gates](gates.md)) | A passing check that no later edit in the reply follows, or the turn or token limit |
 
 The stage prompts (`stagePrompts`) are JSON. Today they ask for the kernel candidate form: the specification prompt
 asks for a pure, bounded AssemblyScript kernel with explicit assumptions, exports and tests including boundary and

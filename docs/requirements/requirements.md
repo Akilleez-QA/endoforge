@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Document ID | ENDOFORGE-SRS |
-| Version | 2.11 |
+| Version | 2.12 |
 | Status | Baselined |
 | Owner | Akilleez-QA maintainer |
 | Date | 2026-11-12 |
@@ -686,6 +686,16 @@ Every loop path shall pass the `principal` given to `runNeed` to `library.serve`
 - Derivation: `tools/x1_loop.py`
 - Allocated to: SDD §4 C-07 X1 candidate loop
 - Verification: T — `make ledger-test`
+- Status: Baselined
+
+### REQ-LOOP-011 — A passing check ends the stage
+
+The agent loop shall end a stage without another model turn when the reply's last `check` passed and no edit followed it, with or without `done`, and otherwise check again before ending on `done` or a later edit, returning any failures to the next turn.
+
+- Rationale: A passing check needs no further model turn, and a check that ran before a later edit says nothing about the edited files.
+- Derivation: `core/runtime/x1/agent.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make loop-test`
 - Status: Baselined
 
 ### REQ-GEN-001 — Two-stage generation with freeze
@@ -1732,3 +1742,4 @@ Closed gaps (their IDs are not reused):
 | 2.9 | 2026-11-10 | round 9 | Changed: REQ-GEN-011 (a record, list or text value must declare its layout in the capability block; the prompts ask for it; the freeze and G7 refuse a block without it), REQ-ATOM-006 (the atomizer prompts ask for the nested layout), REQ-LIB-001 (the library key and binding include the nested layout; D-11 closed), REQ-ATOM-007 (`fanout.mjs` and `cutover.mjs` pass their policy to `verify.mjs`; D-12 closed) and REQ-ISO-010 (`LedgerBridge.pid`; the bridge-death test kills the pool's own bridge); no gap open | this commit |
 | 2.10 | 2026-11-10 | round 10 | 4 requirements added: the reference sandbox deadline and its distinct errors (REQ-SYNTH-009, D-14 closed), a relaunch patch reopens a finished job (REQ-COND-005, D-15 closed), the `TRACE-NEEDED` event (REQ-COND-006) and invariants I16 and I17 (REQ-JOB-004); changed: REQ-ATOM-007 (cutover's planning steps take, use and record `--policy`; D-16 closed) and REQ-LIB-002 (union members match on nested layout and bind by export name when they share a signature); no gap open | this commit |
 | 2.11 | 2026-11-12 | flake fix | Changed: REQ-LOOP-003 (a decision file is either absent or complete after a bridge kill; it is published under its final name only once written and synced) | this PR |
+| 2.12 | 2026-11-16 | passing check | 1 requirement added: a passing check ends the stage without `done`, and an edit after the last check is checked again (REQ-LOOP-011) | this PR |
