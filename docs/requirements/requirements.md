@@ -588,7 +588,7 @@ The meter shall read every memory a module declares or imports, export each unex
 - Verification: T — `make isolate-test`
 - Status: Baselined
 
-### REQ-X1-012 — Non-finite probes follow what the contract names
+### REQ-X1-013 — Non-finite probes follow what the contract names
 
 G8 shall classify each export's contract separately for NaN, `Infinity` and `-Infinity` from the kinds each sentence names (NaN or NaNs; infinity, positive or negative infinity; non-finite or finite for all three), probe only the kinds whose expectation is stated (all three when none is), judge each probe by its own kind's expectation, and read a sentence that names NaN with a trap verb (traps, trapped, rejected, aborted, thrown) as a NaN trap.
 
@@ -1742,4 +1742,4 @@ Closed gaps (their IDs are not reused):
 | 2.9 | 2026-11-10 | round 9 | Changed: REQ-GEN-011 (a record, list or text value must declare its layout in the capability block; the prompts ask for it; the freeze and G7 refuse a block without it), REQ-ATOM-006 (the atomizer prompts ask for the nested layout), REQ-LIB-001 (the library key and binding include the nested layout; D-11 closed), REQ-ATOM-007 (`fanout.mjs` and `cutover.mjs` pass their policy to `verify.mjs`; D-12 closed) and REQ-ISO-010 (`LedgerBridge.pid`; the bridge-death test kills the pool's own bridge); no gap open | this commit |
 | 2.10 | 2026-11-10 | round 10 | 4 requirements added: the reference sandbox deadline and its distinct errors (REQ-SYNTH-009, D-14 closed), a relaunch patch reopens a finished job (REQ-COND-005, D-15 closed), the `TRACE-NEEDED` event (REQ-COND-006) and invariants I16 and I17 (REQ-JOB-004); changed: REQ-ATOM-007 (cutover's planning steps take, use and record `--policy`; D-16 closed) and REQ-LIB-002 (union members match on nested layout and bind by export name when they share a signature); no gap open | this commit |
 | 2.11 | 2026-11-12 | flake fix | Changed: REQ-LOOP-003 (a decision file is either absent or complete after a bridge kill; it is published under its final name only once written and synced) | this PR |
-| 2.12 | 2026-11-16 | G8 kinds | 1 requirement added: G8 probes and judges NaN, `Infinity` and `-Infinity` by what the contract names (REQ-X1-012) | this PR |
+| 2.12 | 2026-11-16 | G8 kinds | 1 requirement added: G8 probes and judges NaN, `Infinity` and `-Infinity` by what the contract names (REQ-X1-013) | this PR |
