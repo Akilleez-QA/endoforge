@@ -63,19 +63,25 @@ are `KS:path:line` at that commit.
   panics the engine (`RefCell already borrowed` in its futures queue) exited the Worker with code 1 and an `error` event
   carrying the panic, and the parent process carried on. The same panic in the job's own isolate would end the agent's
   turn. A request and reply between the two isolates took 0.011 ms at p50 for 16 KiB.
-- **Reuse without restore.** The engine is kept warm and reused as it is, and its memory is never snapshotted or
-  restored. Restore is unsafe for this engine because its glue keeps state outside linear memory:
-  - Over 200 rounds, restore grew its externref table from 1,028 to 26,628 slots and its memory from 134 to 6,980 pages,
-    and trapped when microtasks were pending. Without restore the table reached 1,156 and memory 167 pages with no fault.
-  - The only panic observed in any probe was caused by restore. The engine's futures queue is a lazily created static
-    (`js-sys` 0.3.104 `futures/queue.rs:119`). An image taken before its first use rolls it back while JavaScript keeps
-    the old queue's microtask closure, which then reads reused memory. Early snapshots panicked in 3 of 3 runs, snapshots
-    taken after a primed render and a microtask drain in 0 of 3, and no valid run without restore panicked.
+- **Every check from the same primed image.** The Worker primes the engine with one render and one document check,
+  drains microtasks, takes one image of its memory, and restores that image before every check, so each check starts
+  from identical engine state. The timing of the image is what makes this safe; the engine's glue keeps state outside
+  linear memory, and lazily created statics must exist before the image is taken:
+  - The only panic seen in any probe (`RefCell already borrowed`) came from an image taken before the engine's futures
+    queue existed. The queue is a lazily created static (`js-sys` 0.3.104 `futures/queue.rs:119`); restoring an earlier
+    image rolls it back while JavaScript keeps the old queue's microtask closure, which then reads reused memory. Early
+    images panicked in 3 of 3 runs, primed images in 0 of 3.
+  - Over 200 rounds of a render and a document check, an early image grew the externref table from 1,028 to 26,628 slots
+    and memory from 134 to 6,206 pages and trapped 197 times when microtasks were pending. A primed image kept the table
+    at 1,156 slots and memory at 167 pages, with 0 panics, 0 traps, outputs equal to a fresh engine in all 200 rounds,
+    and 0.25 ms per restore.
+  - Engine handles must not outlive a check. With every `DomHandle` freed before restore the run was clean; without, it
+    panicked 3 times, trapped 7 times and grew memory to 336 pages, as finalizers freed memory the image had reused. The
+    Worker frees every handle in a `finally`, and a live handle at restore time ends the Worker instead of restoring.
 
-  The Worker primes the engine with one render and one document check and drains microtasks before it serves. It is
-  replaced after a fault, after 1,000 checks, after 16 MiB of growth since warm, or when a request outlives its budget;
+  The Worker is replaced after a fault, an exit, a live handle at restore, or a request that outlives its budget;
   replacement ends the Worker rather than re-importing the glue inside it. Each result records the engine's memory pages
-  and externref table length.
+  and externref table length, which must equal the image's.
 - **Attribution.** The engine queues work on its microtask queue. The Worker drains it before it replies, and a fault
   between request and reply, or an exit of the Worker, makes G10 `outcome_unknown` for that check, never a pass.
 - **Determinism.** The Worker runs the engine with a fixed clock (`Date`, `Date.now`) and seeded `crypto.getRandomValues`,
@@ -315,7 +321,7 @@ shared one evidence packet and one model family.
 | The agent loop moved into the cohort | Puts the conversation inside the hardened guest; no measured gain |
 | Routing AssemblyScript source through tsrs | Not what tsrs is for; asc's own diagnostics cover AssemblyScript |
 | A hard gate comparing the WebAssembly and JavaScript lanes | Dominated by documented language differences |
-| Memory-image reuse of the engine | Measured unbounded growth and traps |
+| Reusing the engine as is, without restore | State carries between checks; a primed image restored per check measured clean and costs 0.25 ms |
 | Page JavaScript through Kitesurf's Boa | One to two orders of magnitude slower than V8, and unmetered |
 | A vision model as a gate | Not deterministic; possible later as advisory |
 | Declarative templates instead of generated views | Narrows what a need can produce; a fallback if views promote poorly |
@@ -334,7 +340,7 @@ shared one evidence packet and one model family.
 
 **Open.** Memory as a whole is bounded per layer, not measured as a whole: the V8 heap of each cell and Worker by
 `resourceLimits`, candidate WebAssembly by the guard and a fresh instance per run, tsrs by restore and discard, and the
-engine by replacement. WebAssembly memory is external to `resourceLimits`, so a loop cell's process-wide memory with the
+engine by restoring its primed image before every check. WebAssembly memory is external to `resourceLimits`, so a loop cell's process-wide memory with the
 compiler, the engine and tsrs at width is bounded only by each module's declared maximum and, on Linux, by the cell's
 cgroup. The experiment measures it before any default changes.
 
@@ -345,11 +351,12 @@ number (RPN) is their product. "After" is the rating with the control in place.
 
 | Failure mode | Cause | Effect | S | O | D | RPN | Control | O, D after | RPN after |
 |---|---|---|---|---|---|---|---|---|---|
-| Engine memory restored | Reusing tscheck's restore pattern | Stale queue closure panics; traps; unbounded table and memory growth | 9 | 8 | 4 | 288 | No snapshot or restore of the engine, enforced by a test of the engine module's imports | 1, 2 | 18 |
+| Engine restored from an early image | Image taken before lazily created statics exist | Stale queue closure panics; traps; unbounded table and memory growth | 9 | 8 | 4 | 288 | One image, taken only after priming and a drain; a test that restore uses only that image and that 1,000 checks leave table and pages unchanged | 1, 2 | 18 |
+| Handle outlives a check | A `DomHandle` not freed before restore | Finalizer frees reused memory: panics, traps, growth | 8 | 4 | 5 | 160 | Handles freed in `finally`; a live handle at restore ends the Worker | 1, 2 | 16 |
 | Engine work fails after the call returns | Async work on the microtask queue | Fault lands on a later check or kills the turn | 8 | 3 | 6 | 144 | Drain before reply; fault or exit between request and reply is `outcome_unknown`; Worker isolation | 2, 2 | 32 |
 | Engine hangs | Tooling WebAssembly has no fuel meter | Turn stalls until the 900 s job deadline | 6 | 2 | 7 | 84 | Per-request budget; the host ends the Worker and answers `outcome_unknown` | 2, 2 | 24 |
 | Process-wide memory exhaustion | WebAssembly memory is external to `resourceLimits` | Loop cell process ends, losing the job | 9 | 2 | 6 | 108 | Declared engine maximum (256 MiB), replacement at 16 MiB growth, cgroups on Linux, RSS in evidence | 2, 3 | 54 |
-| Reused engine grows | Externref table and memory never shrink | Slow growth until replacement | 4 | 7 | 3 | 84 | Replacement thresholds; pages and table length in evidence | 7, 2 | 56 |
+| Engine state carries between checks | Reusing the engine as is | Growth, and a check that depends on earlier checks | 5 | 7 | 4 | 140 | Restore from the primed image before every check; pages and table length must equal the image's | 1, 2 | 10 |
 | Glue re-imported inside a living Worker | New `data:` URL per instance | Module records accumulate | 4 | 4 | 7 | 112 | Replacement ends the Worker | 1, 3 | 12 |
 | Render varies between runs | Glue reads the clock and `crypto.getRandomValues` at run time | G11 disagreement; flaky verdicts | 6 | 3 | 2 | 36 | Fixed clock (`new Date()`, `Date.now()`) and seeded randomness in the Worker; G11 | 1, 2 | 12 |
 | Page requests a resource | Linked CSS, fonts or images | Nondeterminism or a blocked render | 5 | 4 | 2 | 40 | Fetch bridge refuses and counts; any count fails G10 | 4, 1 | 20 |
