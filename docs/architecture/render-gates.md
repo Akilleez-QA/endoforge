@@ -60,14 +60,22 @@ as digest-pinned tooling WebAssembly (#153), runs in its own Worker inside the l
 are `KS:path:line` at that commit.
 
 - **Same process, separate isolate.** A panic inside the engine ends its Worker only. In a probe, a workload that
-  reproduces Kitesurf's one known asynchronous panic (`RefCell already borrowed` in its futures queue) exited the Worker
-  with code 1 and an `error` event carrying the panic, and the parent process carried on. The same panic in the job's
-  own isolate would end the agent's turn. A request and reply between the two isolates took 0.011 ms at p50 for 16 KiB.
-- **Reuse without restore.** The engine is kept warm and reused as it is. Restoring its memory image, as tscheck restores
-  tsrs (`tools/tscheck/tsrs-reuse.mjs`), is unsafe for this engine: its glue keeps state outside linear memory. In a probe
-  over 200 rounds, restore grew its externref table from 1,028 to 26,628 slots and its memory from 134 to 6,980 pages,
-  and trapped when microtasks were pending; without restore the table reached 1,156 and memory 167 pages with no fault.
-  The Worker is replaced after a fault, after 1,000 checks, or after 16 MiB of growth since warm.
+  panics the engine (`RefCell already borrowed` in its futures queue) exited the Worker with code 1 and an `error` event
+  carrying the panic, and the parent process carried on. The same panic in the job's own isolate would end the agent's
+  turn. A request and reply between the two isolates took 0.011 ms at p50 for 16 KiB.
+- **Reuse without restore.** The engine is kept warm and reused as it is, and its memory is never snapshotted or
+  restored. Restore is unsafe for this engine because its glue keeps state outside linear memory:
+  - Over 200 rounds, restore grew its externref table from 1,028 to 26,628 slots and its memory from 134 to 6,980 pages,
+    and trapped when microtasks were pending. Without restore the table reached 1,156 and memory 167 pages with no fault.
+  - The only panic observed in any probe was caused by restore. The engine's futures queue is a lazily created static
+    (`js-sys` 0.3.104 `futures/queue.rs:119`). An image taken before its first use rolls it back while JavaScript keeps
+    the old queue's microtask closure, which then reads reused memory. Early snapshots panicked in 3 of 3 runs, snapshots
+    taken after a primed render and a microtask drain in 0 of 3, and no valid run without restore panicked.
+
+  The Worker primes the engine with one render and one document check and drains microtasks before it serves. It is
+  replaced after a fault, after 1,000 checks, after 16 MiB of growth since warm, or when a request outlives its budget;
+  replacement ends the Worker rather than re-importing the glue inside it. Each result records the engine's memory pages
+  and externref table length.
 - **Attribution.** The engine queues work on its microtask queue. The Worker drains it before it replies, and a fault
   between request and reply, or an exit of the Worker, makes G10 `outcome_unknown` for that check, never a pass.
 - **Determinism.** The Worker runs the engine with a fixed clock (`Date`, `Date.now`) and seeded `crypto.getRandomValues`,
@@ -275,4 +283,30 @@ shared one evidence packet and one model family.
 - Any G11 disagreement on a recorded test: stop and investigate engine determinism before using render gates for
   promotion.
 
-**Open.** The cause of the engine's asynchronous panic is unknown; a reproducer exists and is to be reported upstream.
+**Open.** Memory as a whole is bounded per layer, not measured as a whole: the V8 heap of each cell and Worker by
+`resourceLimits`, candidate WebAssembly by the guard and a fresh instance per run, tsrs by restore and discard, and the
+engine by replacement. WebAssembly memory is external to `resourceLimits`, so a loop cell's process-wide memory with the
+compiler, the engine and tsrs at width is bounded only by each module's declared maximum and, on Linux, by the cell's
+cgroup. The experiment measures it before any default changes.
+
+## Failure modes
+
+Severity, occurrence and detection are rated 1 to 10 (10 worst) by judgement from the evidence above; the risk priority
+number (RPN) is their product. "After" is the rating with the control in place.
+
+| Failure mode | Cause | Effect | S | O | D | RPN | Control | O, D after | RPN after |
+|---|---|---|---|---|---|---|---|---|---|
+| Engine memory restored | Reusing tscheck's restore pattern | Stale queue closure panics; traps; unbounded table and memory growth | 9 | 8 | 4 | 288 | No snapshot or restore of the engine, enforced by a test of the engine module's imports | 1, 2 | 18 |
+| Engine work fails after the call returns | Async work on the microtask queue | Fault lands on a later check or kills the turn | 8 | 3 | 6 | 144 | Drain before reply; fault or exit between request and reply is `outcome_unknown`; Worker isolation | 2, 2 | 32 |
+| Engine hangs | Tooling WebAssembly has no fuel meter | Turn stalls until the 900 s job deadline | 6 | 2 | 7 | 84 | Per-request budget; the host ends the Worker and answers `outcome_unknown` | 2, 2 | 24 |
+| Process-wide memory exhaustion | WebAssembly memory is external to `resourceLimits` | Loop cell process ends, losing the job | 9 | 2 | 6 | 108 | Declared engine maximum (256 MiB), replacement at 16 MiB growth, cgroups on Linux, RSS in evidence | 2, 3 | 54 |
+| Reused engine grows | Externref table and memory never shrink | Slow growth until replacement | 4 | 7 | 3 | 84 | Replacement thresholds; pages and table length in evidence | 7, 2 | 56 |
+| Glue re-imported inside a living Worker | New `data:` URL per instance | Module records accumulate | 4 | 4 | 7 | 112 | Replacement ends the Worker | 1, 3 | 12 |
+| Render varies between runs | Glue reads the clock and `crypto.getRandomValues` at run time | G11 disagreement; flaky verdicts | 6 | 3 | 2 | 36 | Fixed clock (`new Date()`, `Date.now()`) and seeded randomness in the Worker; G11 | 1, 2 | 12 |
+| Page requests a resource | Linked CSS, fonts or images | Nondeterminism or a blocked render | 5 | 4 | 2 | 40 | Fetch bridge refuses and counts; any count fails G10 | 4, 1 | 20 |
+| Unsupported CSS | Blitz gaps (`overflow: auto`, sticky, subgrid) | False refusal or a pass that looks wrong in Chromium | 5 | 5 | 6 | 150 | Structural assertions; G1 empty-document and mutation checks; optional Chromium check at promotion | 5, 4 | 100 |
+| Pinned artifact tampered or mismatched | Supply chain or local corruption | Wrong engine judging | 9 | 1 | 1 | 9 | Tarball and module digests; tests skip, never pass | 1, 1 | 9 |
+| Finalizer frees live memory | GC timing of wasm-bindgen finalizers | Corruption | 8 | 1 | 6 | 48 | Explicit `free()`; forced GC after every call in 7 configurations gave 0 faults | 1, 6 | 48 |
+
+The largest remaining risk is CSS fidelity, which no in-loop control removes; it is why the gates assert structure and
+behaviour and why a Chromium check at promotion stays available.
