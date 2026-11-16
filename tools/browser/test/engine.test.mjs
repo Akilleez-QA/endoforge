@@ -106,11 +106,11 @@ test('a restore after a larger document gives the same output, and a handle left
   assert.deepEqual(ENGINE_LIMITS, { maxChecks: 1000, maxGrowthBytes: 16 * 1024 * 1024, timeoutMs: 5000 });
 });
 
-test('an engine fault ends only its worker as outcome_unknown and a replacement serves the next check', needsEngine, async t => {
+test('an engine that runs out of memory at its pin ends only its worker as outcome_unknown and a replacement serves the next check', needsEngine, async t => {
   const engine = engineFor(t, { policy: { ...WORKCELL, toolingWasmModules: [{ ...KITESURF_CORE, maximumPages: 200 }] } });
   assert.equal((await engine.inspect(small)).pass, true);
   const faulted = await engine.inspect(list(4000));
-  assert.deepEqual([faulted.status, faulted.pass, faulted.reason], ['outcome_unknown', undefined, 'engine fault: unreachable']);
+  assert.deepEqual([faulted.status, faulted.pass, faulted.reason], ['outcome_unknown', undefined, 'engine fault: ERR_WORKCELL_WASM_MEMORY_LIMIT']);
   const next = await engine.inspect(small);
   assert.deepEqual([next.status, next.pass, next.engine.generation], ['completed', true, 2]);
   assert.deepEqual(engine.stats(), { started: 2, replaced: 1, checks: 3, faults: 1 });

@@ -148,7 +148,11 @@ export async function openEngine({ dir, toolingWasmModules }) {
 }
 
 async function serve({ dir, policy: { wasmMemoryMaxMb, toolingWasmModules } }) {
-  installWasmLimit(wasmMemoryMaxMb, () => process.exit(18), [], [], toolingWasmModules);
+  let current = null;
+  installWasmLimit(wasmMemoryMaxMb, error => {
+    if (current !== null) parentPort.postMessage({ id: current, status: 'outcome_unknown', reason: `engine fault: ${error}` });
+    process.exit(18);
+  }, [], [], toolingWasmModules);
   globalThis.fetch = url => Promise.reject(new Error(`browser engine refuses network requests: ${url}`));
   const started = performance.now();
   let engine;
@@ -157,10 +161,12 @@ async function serve({ dir, policy: { wasmMemoryMaxMb, toolingWasmModules } }) {
   parentPort.on('message', async request => {
     const begin = performance.now();
     let reply;
+    current = request.id;
     try { reply = await engine.check(request); } catch (error) {
       parentPort.postMessage({ id: request.id, status: 'outcome_unknown', reason: `engine fault: ${error?.message ?? error}` });
       process.exit(1);
     }
+    current = null;
     parentPort.postMessage({ id: request.id, ...reply, ...engine.growth(), ms: performance.now() - begin }, reply.png ? [reply.png.buffer] : []);
   });
 }
