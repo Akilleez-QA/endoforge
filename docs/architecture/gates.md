@@ -244,6 +244,9 @@ Until the render gate (G10) exists, a kernel with render tests is never promotab
 meters them like any other call. Steps are not run. `runGates` then records `G10_render` as
 not ok with the number of render tests it did not execute, so `promotable` is false, and `decide` also refuses a gate
 set other than `G1_frozen` to `G9_units`. A kernel without render tests is judged as before and has no `G10_render`.
+No stage prompt asks for render tests yet, but a model that freezes one anyway will see `G10_render` fail every repair
+round until its turn, token or deadline limit; slice 3b should stop such an attempt as awaiting the render gate once
+every other gate passes.
 
 ## Structured state
 

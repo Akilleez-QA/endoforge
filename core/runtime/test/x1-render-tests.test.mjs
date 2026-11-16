@@ -102,8 +102,8 @@ test('without render tests the same kernel promotes, so the refusal comes from t
 test('a render test whose view call traps, or whose state does not encode, fails G4', () => {
   const [trapped, unencoded] = [[{ count: -2 }], [{ count: 0, extra: 1 }]].map(args => runGates(candidate({ tests: [valueTest, { ...renderTest, args }] })));
   for (const result of [trapped, unencoded]) {
-    assert.equal(result.gates.G4_tests.ok, false);
-    assert.equal(result.tests[1].pass, false);
+    assert.equal(result.gates.G4_tests.ok, false, JSON.stringify(result.tests[1]));
+    assert.equal(result.tests[1].pass, false, JSON.stringify(result.tests[1]));
     assert.equal(result.promotable, false);
   }
   assert.equal(trapped.tests[1].trap, true, JSON.stringify(trapped.tests[1]));
