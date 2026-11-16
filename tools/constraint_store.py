@@ -3,6 +3,7 @@ import os
 
 from core.constraints.port import RecordCorrupt
 from core.constraints.store import chain, verify
+from tools.durable import sync_file
 
 
 class JsonlStore:
@@ -27,6 +28,6 @@ class JsonlStore:
         descriptor = os.open(self.path, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)
         try:
             os.write(descriptor, payload.encode())
-            os.fsync(descriptor)
+            sync_file(descriptor)
         finally:
             os.close(descriptor)

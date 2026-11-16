@@ -17,6 +17,7 @@ import traceback
 
 from core.ledger.ledger import TABLES, Ledger
 from tools import dump_list
+from tools.durable import sync_data, sync_dir, sync_file
 
 MAGIC = b"EFJ1"
 HEADER = struct.Struct(">4sI32s")
@@ -108,11 +109,13 @@ def trim_heap():
 
 def fsync_path(path, directory=False):
     try:
-        fd = os.open(path, os.O_RDONLY | (os.O_DIRECTORY if directory else 0))
+        if directory:
+            return 0 if sync_dir(path) == "skipped" else 1
+        fd = os.open(path, os.O_RDONLY)
     except FileNotFoundError:
         return 0
     try:
-        os.fsync(fd)
+        sync_file(fd)
     finally:
         os.close(fd)
     return 1
@@ -237,9 +240,9 @@ class Journal:
             with open(quarantine, "xb") as output:
                 output.write(data[end:])
                 output.flush()
-                os.fsync(output.fileno())
+                sync_file(output.fileno())
             os.ftruncate(fd, end)
-            os.fsync(fd)
+            sync_file(fd)
             self.counts["recovery_syncs"] += 2 + fsync_path(self.directory, True)
             self.counts["torn_tails"] += 1
         pending = {}
@@ -287,7 +290,7 @@ class Journal:
             with open(conflict, "x") as output:
                 json.dump(dict(writer=self.writer, error=str(error), versions=[v for v, _, _ in entries]), output)
                 output.flush()
-                os.fsync(output.fileno())
+                sync_file(output.fileno())
             self.counts["recovery_syncs"] += 1
             self.counts["conflicts"] += 1
         finally:
@@ -303,7 +306,7 @@ class Journal:
             view = view[os.write(self.fd, view):]
 
     def sync(self):
-        os.fdatasync(self.fd)
+        sync_data(self.fd)
         self.counts["journal_syncs"] += 1
 
     def write(self, entries):
