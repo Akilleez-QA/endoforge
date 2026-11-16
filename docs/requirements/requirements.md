@@ -918,6 +918,16 @@ With `limits.oracle` set (default off), the agent loop shall recompute frozen ex
 - Verification: T — `make isolate-test`
 - Status: Baselined
 
+### REQ-COMPACT-001 — Compact test table
+
+With `limits.compactTests` set (default off), the agent loop shall ask the specification stage for `tests.txt`, one test per line, instead of `tests.json`, expand it deterministically to the `tests.json` shape `{name,fn,args,expect,tol?}` or `{name,fn,args,expectError:true}` before every specification check and before the freeze, return a line that does not parse, or an expansion that test strength, the capability block or the oracle refuses, to the model as a specification problem naming its line, freeze only the expanded `tests.json`, and record the source's SHA-256 and size in the result's `compact` field, leaving the prompt, the editable files and the checks unchanged when the flag is off.
+
+- Rationale: The specification reply is the longest model call (P-66: median 15.5 s for about 2,122 output tokens), and model time scales with output tokens. P-72 measures whether the shorter form saves time; until then it stays off.
+- Derivation: `core/runtime/x1/compact.mjs`, `core/runtime/x1/agent.mjs`, `core/runtime/x1/loop-port.mjs`, `core/runtime/x1/loop.mjs`
+- Allocated to: SDD §4 C-07 X1 candidate loop
+- Verification: T — `make isolate-test`
+- Status: Proposed (experimental, pending P-72)
+
 ## 7. Model access
 
 ### REQ-SUB-001 — Subscription guard
