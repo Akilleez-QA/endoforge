@@ -7,6 +7,26 @@ import { LayoutError, bufferArity, callKernel, freshKernel, invoke, isBuffer, ke
 import { loadKernel } from './meter.mjs';
 const glueSchema = JSON.parse(readFileSync(new URL('./glue.schema.json', import.meta.url)));
 export const maximumRelativeTolerance = 0.01;
+export const diagnosticLimits = Object.freeze({ entries: 5, bytes: 1024, message: 240 });
+const position = value => Number.isSafeInteger(value) && value > 0 ? value : null;
+export function compileDiagnostics(list) {
+  const kept = [];
+  let bytes = 0;
+  for (const item of Array.isArray(list) ? list : []) {
+    if (kept.length >= diagnosticLimits.entries) break;
+    const entry = { code: String(item?.code ?? '').slice(0, 16), line: position(item?.line), column: position(item?.column), message: String(item?.message ?? '').slice(0, diagnosticLimits.message) };
+    bytes += Buffer.byteLength(JSON.stringify(entry));
+    if (bytes > diagnosticLimits.bytes) break;
+    kept.push(entry);
+  }
+  return kept;
+}
+export function compileFailure(source, list) {
+  const diagnostics = compileDiagnostics(list);
+  if (!diagnostics.length) return { source, error: 'compiler failed or timed out' };
+  const [first] = diagnostics;
+  return { source, error: `${first.code}${first.line ? ` at line ${first.line}, column ${first.column}` : ''}: ${first.message}`, diagnostics };
+}
 export function testProblems(tests) {
   if (!Array.isArray(tests) || !tests.length) return ['tests.json must be a nonempty array'];
   const problems = [];
@@ -124,7 +144,7 @@ const fs = { existsSync: n => Object.hasOwn(files, n), readFileSync: n => {
 const sha = p => crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex');
 try {
 const result = { at: new Date().toISOString(), gates: {}, tests: [], promotable: false };
-const fail = (g, why) => { result.gates[g] = { ok: false, why }; throw result; };
+const fail = (g, why, more) => { result.gates[g] = { ok: false, why, ...more }; throw result; };
 if (!fs.existsSync(f('frozen.sha256'))) fail('G1_frozen', 'no frozen.sha256');
 const frozen = JSON.parse(fs.readFileSync(f('frozen.sha256'), 'utf8'));
 if (sha(f('CONTRACT.md')) !== frozen.contract) fail('G1_frozen', 'CONTRACT.md changed after freeze');
@@ -134,7 +154,7 @@ try { frozenTests = JSON.parse(fs.readFileSync(f('tests.json'), 'utf8')); } catc
 const weak = testProblems(frozenTests);
 if (weak.length) fail('G1_frozen', weak.slice(0, 20).join('; '));
 result.gates.G1_frozen = { ok: true };
-if (!compiled || compiled.error || compiled.source !== sha(f('kernel.ts'))) fail('G2_compiles', compiled?.error || 'compile binding differs');
+if (!compiled || compiled.error || compiled.source !== sha(f('kernel.ts'))) fail('G2_compiles', compiled?.error || 'compile binding differs', compiled?.diagnostics ? { diagnostics: compileDiagnostics(compiled.diagnostics) } : undefined);
 const bytes = Buffer.from(compiled.wasm, 'base64');
 let loaded;
 try { loaded = loadKernel(bytes, kernelFuel); }

@@ -348,7 +348,7 @@ Workcells shall enforce `wasmMemoryMaxMb` (default 64 MiB, integer 1–4096) on 
 
 ### REQ-ISO-008 — Supervisor-only trusted WASM caps
 
-Only supervisor configuration shall authorize supplying an omitted WASM maximum, by a named complete-binary SHA-256 match and a positive integer page cap within the workcell ceiling; candidate inputs grant no trust, growth past a supplied cap is a breach under REQ-ISO-006, and the supervisor records the configured name, digest and cap in results and receipts, including worker losses. A separate supervisor list, `toolingWasmModules`, admits only a complete-binary SHA-256 match, allows exception handling and SIMD only for those digests, bounds each memory at the smaller of its declared maximum and the pinned cap, refuses memory imports, shared memory and memory64 and a digest that is also trusted, and sends every other module through the unchanged guard.
+Only supervisor configuration shall authorize supplying an omitted WASM maximum, by a named complete-binary SHA-256 match and a positive integer page cap within the workcell ceiling; candidate inputs grant no trust, growth past a supplied cap is a breach under REQ-ISO-006, and the supervisor records the configured name, digest and cap in results and receipts, including worker losses. A separate supervisor list, `toolingWasmModules`, admits only a complete-binary SHA-256 match, allows exception handling and SIMD only for those digests, bounds each memory at the smaller of its declared maximum and the pinned cap, refuses memory imports, shared memory and memory64 and a digest that is also trusted, and sends every other module through the unchanged guard. A tooling module's JavaScript `Memory.grow` past its pinned cap, or an exported call that traps with `unreachable` after an in-module `memory.grow` in that same call returned -1 at the cap (the supervisor rewrites each `memory.grow` to record a failed grow), stops the workcell as `ERR_WORKCELL_WASM_MEMORY_LIMIT`; every other trap, including `unreachable` with no failed grow in the call, propagates unchanged.
 
 - Rationale: Permit pinned compiler helpers while retaining fail-closed candidate checks and auditable policy.
 - Derivation: `core/runtime/isolate-wasm.mjs`, `core/runtime/isolate-wasm-tooling.mjs`, `core/runtime/isolate-pool.mjs`
@@ -600,7 +600,7 @@ G8 shall classify each export's contract separately for NaN, `Infinity` and `-In
 
 ### REQ-LOOP-001 — Agent loop in the cell
 
-The agent loop shall run model turns and checks in one job, return a failed check to the next turn, stop at turn, token and deadline limits as a recorded failure without promotion, keep the model out of the frozen files and outside the overlay, and pass only reply text and usage into the cell and its records.
+The agent loop shall run model turns and checks in one job, return a failed check to the next turn as the first failing stage only (a compile failure with up to five of the compiler's own diagnostics, each with code, line, column and message and at most 1 KiB in all, before any gate or test failure; otherwise the failing gates and the failing tests in test order), marking each gate or test that passed in any earlier round of the attempt that reached the checks stage and fails now as a regression and keeping a compiler timeout or unavailable compiler distinct from a compile error, stop at turn, token and deadline limits as a recorded failure without promotion, keep the model out of the frozen files and outside the overlay, and pass only reply text and usage into the cell and its records.
 
 - Rationale: The model iterates against checks it cannot change.
 - Derivation: `core/runtime/x1/agent.mjs`, `core/runtime/x1/loop.mjs`, `core/runtime/x1/loop-port.mjs`
@@ -1092,6 +1092,16 @@ A type check run in the contained cohort, with a reused tsrs instance or a host 
 - Derivation: `tools/tscheck/cohort-check.mjs`, `tools/tscheck/tsrs-reuse.mjs`, `tools/tscheck/contained-route.mjs`, `tools/tscheck/cohort-preparer.mjs`
 - Allocated to: SDD §4 C-16 TypeScript checker
 - Verification: T — `make tscheck-test`, `make pipeline-test`
+- Status: Baselined
+
+### REQ-BROWSER-001 — Browser rendering in a process workcell
+
+HTML shall be rendered to PNG inside a process workcell by the digest-pinned `kitesurf-core` module, admitted only through `toolingWasmModules`, with thread cells refused, fetch and network refused, and a missing or mismatched artifact reported as skipped or as an unknown outcome, never a pass.
+
+- Rationale: A browser engine is tooling with a wider WebAssembly feature set than candidate kernels; keep it pinned, offline and out of thread cells.
+- Derivation: `tools/browser/port.mjs`, `tools/browser/artifact.mjs`, `tools/browser/setup.mjs`, `tools/browser/pin.mjs`
+- Allocated to: SDD §4 C-32 Workcell browser
+- Verification: T — `make browser-test`
 - Status: Baselined
 
 ### REQ-KERNEL-001 — Kernel component contract
@@ -1666,6 +1676,16 @@ CI shall run a Gitleaks scan of the full history with a checksum-verified binary
 - Verification: T — `make ledger-test` (`tools/test_check_file_url_paths.py`); I — `Makefile` target `check`
 - Status: Baselined (added in version 2.12)
 
+### REQ-REPO-012 — Durable syncs on every platform
+
+Python code that makes a file or directory durable shall do so through `tools/durable.py`: `sync_data` (data, with `fcntl.F_FULLFSYNC` where the platform has it, else `os.fdatasync` where it exists, else `os.fsync`), `sync_file` (`F_FULLFSYNC` where available, else `os.fsync`; a file system that refuses `F_FULLFSYNC` falls back to `os.fsync`) and `sync_dir` (opens the directory with `os.O_DIRECTORY`, optionally `os.O_NOFOLLOW`, and syncs it with `sync_file`; skipped on Windows, where directories cannot be opened for syncing), and `make check` runs `tools/check_durable_sync.py`, which lists tracked `.py` files outside `experiments/`, `vendor/` and `node_modules` with `git ls-files` and refuses every call of `os.fsync` or `os.fdatasync` and every use of `F_FULLFSYNC` outside the helper and the self-contained modules it names with their reasons, printing `file:line: text` and the fix and exiting 1, exiting 0 when there is none and 2 when `git ls-files` fails.
+
+- Rationale: macOS and Windows have no `os.fdatasync`, so the ledger writer stopped with an `AttributeError` there and the ledger bridge exited before any loop test could run; and plain `fsync` on macOS does not flush the drive's cache, so it does not give the durability the ledgers rely on. One helper chooses the strongest sync per platform and leaves Linux unchanged. Modules that import no repository package keep plain `os.fsync`, which works on every POSIX system, so that they stay self-contained.
+- Derivation: `tools/durable.py`, `tools/check_durable_sync.py`, `tools/ledger_writer.py`, `tools/x1_loop.py`, `tools/constraint_store.py`, `Makefile`
+- Allocated to: SDD §4 C-27 Repository checks
+- Verification: T — `make test` (`ledger-test`)
+- Status: Proposed
+
 ## 11. Untested behaviour (requirement gaps)
 
 These behaviours exist in the code at the baseline but no test in `make test` checks them. They are not
@@ -1736,6 +1756,8 @@ Closed gaps (their IDs are not reused):
 - TBD count at baseline: 0.
 
 ## Change history
+
+Entries from open PRs wait as fragments in [changes/history/](../../changes/history/README.md) until they are folded into this table.
 
 | Version | Date | Commit | Change | Reviewed in |
 |---|---|---|---|---|
