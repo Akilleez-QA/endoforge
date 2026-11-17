@@ -1,0 +1,49 @@
+{
+ "capture": "4,912 writer requests from a P-78 width-64 row (explore-p78/capture-w64.json)",
+ "p78_one_per_batch": {
+  "requests": 4912,
+  "ledgers": 1563,
+  "errors": 0,
+  "handles": false,
+  "sent_bytes": 229673080,
+  "answered_bytes": 66234829,
+  "responses": "19c05cdd194257aed44e881ccba0e29e956b24bc9ce6056517b0c75d48f0faf7",
+  "normalized": "4955e905d0c20c9087ece46faff11340033c7528515f1dbd71f45cd9a4831544",
+  "rows": "225a144fff16269190e0a9b8d1e0edae995400b141f706506702932295eab97b",
+  "wall_ms": 21.117162696864753,
+  "cpu_ms": 4.51460464169381
+ },
+ "p79_one_per_batch": {
+  "requests": 4912,
+  "ledgers": 1563,
+  "errors": 0,
+  "handles": false,
+  "sent_bytes": 229673080,
+  "answered_bytes": 66234829,
+  "responses": "19c05cdd194257aed44e881ccba0e29e956b24bc9ce6056517b0c75d48f0faf7",
+  "normalized": "4955e905d0c20c9087ece46faff11340033c7528515f1dbd71f45cd9a4831544",
+  "rows": "225a144fff16269190e0a9b8d1e0edae995400b141f706506702932295eab97b",
+  "wall_ms": 21.137564917553274,
+  "cpu_ms": 4.525723330618892
+ },
+ "p78_batches_of_8": {
+  "requests": 4912,
+  "batch": 8,
+  "answers": 4912,
+  "errors": 0,
+  "sorted_answers": "91653d270185b7c343c57689dc7da113d9086f080d8a458f047a618272910cc5",
+  "rows": "6052e46f59bfd43cda8cf094b966ed458dabe0d0b59d73a33be8835a5c8fc476",
+  "frames": 614,
+  "journal_syncs": 614
+ },
+ "p79_batches_of_8": {
+  "requests": 4912,
+  "batch": 8,
+  "answers": 4912,
+  "errors": 0,
+  "sorted_answers": "91653d270185b7c343c57689dc7da113d9086f080d8a458f047a618272910cc5",
+  "rows": "6052e46f59bfd43cda8cf094b966ed458dabe0d0b59d73a33be8835a5c8fc476",
+  "frames": 1183,
+  "journal_syncs": 1183
+ }
+}
