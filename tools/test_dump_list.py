@@ -7,7 +7,9 @@ import subprocess
 import sys
 import tempfile
 import time
+import types
 import unittest
+from unittest import mock
 
 from tools import dump_list
 
@@ -63,16 +65,20 @@ class DumpListTests(unittest.TestCase):
         self.assertEqual(os.listdir(self.root), [holder.path.name])
 
     def test_rate_limit_and_trailing_write(self):
+        now = [100.0]
+        clock = types.SimpleNamespace(monotonic=lambda: now[0])
         value = [10]
-        holder = dump_list.register("rate", 1, lambda: value[0], folder=self.root, listen=False, refresh_seconds=0.2)
-        self.addCleanup(holder.close)
-        for _ in range(50):
-            value[0] += 1
-            holder.refresh()
-        self.assertEqual(holder.writes, 1)
-        deadline = time.monotonic() + 3
-        while holder.writes < 2 and time.monotonic() < deadline:
-            time.sleep(0.01)
+        with mock.patch.object(dump_list, "time", clock):
+            holder = dump_list.register("rate", 1, lambda: value[0], folder=self.root, listen=False, refresh_seconds=0.2)
+            self.addCleanup(holder.close)
+            for _ in range(50):
+                value[0] += 1
+                holder.refresh()
+            self.assertEqual(holder.writes, 1)
+            now[0] += 1
+            deadline = time.monotonic() + 3
+            while holder.writes < 2 and time.monotonic() < deadline:
+                time.sleep(0.01)
         self.assertEqual(json.loads(holder.path.read_text())["sheddable_bytes"], 60)
         self.assertEqual(holder.writes, 2)
 
