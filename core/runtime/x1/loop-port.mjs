@@ -202,6 +202,7 @@ export function createPort(options, { stage = () => {}, host } = {}) {
     };
     const begin = name => { messages.push({ role: 'user', content: stages[name].prompt() }); Object.assign(state, { stage: name, turn: 0, stageTokens: state.receipt.tokens }); };
     if (options.admission) await admitted();
+    if (options.admission && resumed?.stage === 'implementation' && resumed.turn === 0) stage('admitted');
     if (!state.stage) begin(options.admission ? 'implementation' : 'specification');
     else {
       const { stage: name } = state;
@@ -215,10 +216,9 @@ export function createPort(options, { stage = () => {}, host } = {}) {
           const oracle = limits.oracle ? frozenSpecification(overlay) : null;
           overlay['frozen.sha256'] = JSON.stringify({ contract: hash(overlay['CONTRACT.md']), tests: hash(overlay['tests.json']) });
           const frozen = Object.fromEntries(oracleFiles.map(file => [file, Buffer.from(overlay[file]).toString('hex')]));
-          options.admission = await host({ kind: 'admit', files: frozen, implementation: implementationDigests, ...(oracle ? { oracle } : {}) });
-          if (options.admission.reused) return { reused: true };
-          stage('admitted');
           begin('implementation');
+          stage('model:wait');
+          return { waiting: state, admit: { kind: 'admit', files: frozen, implementation: implementationDigests, ...(oracle ? { oracle } : {}) } };
         } else {
           if (overlay['kernel.ts'] === undefined) throw Error(`implementation stopped: ${exit}`);
           return { candidate: await compileRound(files()) };
@@ -255,7 +255,7 @@ export function createPort(options, { stage = () => {}, host } = {}) {
       }
       if (options.waits === 'release') {
         const next = await releasedCandidate();
-        if (next.waiting) { port.waiting = next.waiting; return { stage: 'waiting' }; }
+        if (next.waiting) { port.waiting = next.waiting; port.admit = next.admit; return { stage: 'waiting' }; }
         candidate = next.candidate ?? null;
       } else candidate = options.mode === 'agent' ? await agentCandidate() : options.repair ? await repairRounds() : await compileRound(options.candidate.files);
       if (!candidate) { port.reused = true; return { stage: 'reused' }; }
@@ -266,7 +266,7 @@ export function createPort(options, { stage = () => {}, host } = {}) {
       return evaluateCandidates(options.mode === 'agent' ? { identity: options.admission.identity } : reference, [identity], port, { requireFrozen: verifyFromMemory(options.admission) });
     },
     evidence() {
-      if (port.waiting) return { waiting: port.waiting, compiler, timings: { compile: compileMs, gates: gateMs } };
+      if (port.waiting) return { waiting: port.waiting, ...(port.admit ? { admit: port.admit } : {}), compiler, timings: { compile: compileMs, gates: gateMs } };
       if (port.reused) return { reused: true, compiler, ...(agentReceipt ? { agent: agentReceipt } : {}), timings: { compile: compileMs, gates: gateMs } };
       stage('verdict');
       return { content: port.content, identity, compiler, rounds, ...(agentReceipt ? { agent: agentReceipt } : {}), timings: { compile: compileMs, gates: gateMs } };
