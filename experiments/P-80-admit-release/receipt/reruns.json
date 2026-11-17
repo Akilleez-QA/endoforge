@@ -1,0 +1,54 @@
+{
+ "base-ledger-writer-1": {
+  "fail": 0,
+  "failing": []
+ },
+ "base-ledger-writer-2": {
+  "fail": 1,
+  "failing": [
+   "SIGKILL of the writer at half_frame with the ledger files lost keeps every acknowledged event once"
+  ]
+ },
+ "base-ledger-writer-3": {
+  "fail": 1,
+  "failing": [
+   "SIGKILL of the writer at half_frame with the ledger files lost keeps every acknowledged event once"
+  ]
+ },
+ "base-loop-crash-1": {
+  "fail": 0,
+  "failing": []
+ },
+ "base-loop-crash-2": {
+  "fail": 0,
+  "failing": []
+ },
+ "base-loop-crash-3": {
+  "fail": 1,
+  "failing": [
+   "bridge and supervisor kills at random times never yield a promotion without its evidence"
+  ]
+ },
+ "base-loop-crash-4": {
+  "fail": 0,
+  "failing": []
+ },
+ "endoforge-loop-crash-1": {
+  "fail": 0,
+  "failing": []
+ },
+ "endoforge-loop-crash-2": {
+  "fail": 1,
+  "failing": [
+   "bridge and supervisor kills at random times never yield a promotion without its evidence"
+  ]
+ },
+ "endoforge-loop-crash-3": {
+  "fail": 0,
+  "failing": []
+ },
+ "endoforge-loop-crash-4": {
+  "fail": 0,
+  "failing": []
+ }
+}

@@ -1,0 +1,636 @@
+{
+ "w64": {
+  "rows": {
+   "accept-p78": [
+    {
+     "label": "w64-r0",
+     "load": 2.3,
+     "rerun": null,
+     "thr": 73.37,
+     "wall": 864.0,
+     "compile": 56.9,
+     "gate": 16.7,
+     "crossing": 651.4,
+     "spawns": 13,
+     "freeze": 55.3,
+     "ledger": 75.1,
+     "elu": 0.425,
+     "cores": {
+      "host": 0.56,
+      "cells": 7.91,
+      "writers": 1.1
+     },
+     "cpu_ms": {
+      "host": 7.7,
+      "cells": 107.9,
+      "writers": 15.0
+     },
+     "cell_gross": 0.999,
+     "cell_net": 0.652,
+     "cell_wait": 197.8,
+     "ledger_util": 0.889,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.08,
+     "outcomes": {
+      "true/true/passed/-": 1618,
+      "false/false/failed/-": 269
+     },
+     "all": 1887,
+     "verdict": "ledger"
+    },
+    {
+     "label": "w64-r1",
+     "load": 3.5,
+     "rerun": null,
+     "thr": 78.09,
+     "wall": 814.6,
+     "compile": 49.8,
+     "gate": 14.7,
+     "crossing": 605.4,
+     "spawns": 18,
+     "freeze": 57.5,
+     "ledger": 79.2,
+     "elu": 0.429,
+     "cores": {
+      "host": 0.58,
+      "cells": 7.93,
+      "writers": 1.13
+     },
+     "cpu_ms": {
+      "host": 7.4,
+      "cells": 101.6,
+      "writers": 14.5
+     },
+     "cell_gross": 0.998,
+     "cell_net": 0.625,
+     "cell_wait": 183.8,
+     "ledger_util": 0.9,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.08,
+     "outcomes": {
+      "true/true/passed/-": 1716,
+      "false/false/failed/-": 285
+     },
+     "all": 2001,
+     "verdict": "ledger"
+    },
+    {
+     "label": "w64-r2",
+     "load": 2.7,
+     "rerun": null,
+     "thr": 77.02,
+     "wall": 825.2,
+     "compile": 52.4,
+     "gate": 15.7,
+     "crossing": 616.7,
+     "spawns": 18,
+     "freeze": 55.5,
+     "ledger": 76.9,
+     "elu": 0.425,
+     "cores": {
+      "host": 0.58,
+      "cells": 8.17,
+      "writers": 1.14
+     },
+     "cpu_ms": {
+      "host": 7.6,
+      "cells": 106.1,
+      "writers": 14.9
+     },
+     "cell_gross": 0.998,
+     "cell_net": 0.639,
+     "cell_wait": 186.9,
+     "ledger_util": 0.913,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.08,
+     "outcomes": {
+      "true/true/passed/-": 1690,
+      "false/false/failed/-": 282
+     },
+     "all": 1972,
+     "verdict": "ledger"
+    },
+    {
+     "label": "w64-r3",
+     "load": 2.6,
+     "rerun": null,
+     "thr": 76.3,
+     "wall": 834.7,
+     "compile": 52.0,
+     "gate": 16.1,
+     "crossing": 627.2,
+     "spawns": 18,
+     "freeze": 56.0,
+     "ledger": 75.4,
+     "elu": 0.412,
+     "cores": {
+      "host": 0.58,
+      "cells": 7.9,
+      "writers": 1.12
+     },
+     "cpu_ms": {
+      "host": 7.6,
+      "cells": 103.5,
+      "writers": 14.6
+     },
+     "cell_gross": 0.998,
+     "cell_net": 0.639,
+     "cell_wait": 190.4,
+     "ledger_util": 0.888,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.08,
+     "outcomes": {
+      "true/true/passed/-": 1680,
+      "false/false/failed/-": 279
+     },
+     "all": 1959,
+     "verdict": "ledger"
+    }
+   ],
+   "accept-p80": [
+    {
+     "label": "w64-r0",
+     "load": 3.8,
+     "rerun": null,
+     "thr": 78.15,
+     "wall": 804.9,
+     "compile": 77.0,
+     "gate": 24.4,
+     "crossing": 460.2,
+     "spawns": 20,
+     "freeze": 101.6,
+     "ledger": 131.7,
+     "elu": 0.427,
+     "cores": {
+      "host": 0.62,
+      "cells": 8.82,
+      "writers": 1.21
+     },
+     "cpu_ms": {
+      "host": 8.0,
+      "cells": 112.8,
+      "writers": 15.5
+     },
+     "cell_gross": 0.968,
+     "cell_net": 0.968,
+     "cell_wait": 134.3,
+     "ledger_util": 0.88,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.15,
+     "outcomes": {
+      "true/true/passed/-": 1754,
+      "false/false/failed/-": 292
+     },
+     "all": 2046,
+     "verdict": "cell"
+    },
+    {
+     "label": "w64-r1",
+     "load": 3.5,
+     "rerun": null,
+     "thr": 79.91,
+     "wall": 794.7,
+     "compile": 76.2,
+     "gate": 24.2,
+     "crossing": 417.4,
+     "spawns": 22,
+     "freeze": 115.6,
+     "ledger": 151.4,
+     "elu": 0.417,
+     "cores": {
+      "host": 0.64,
+      "cells": 8.78,
+      "writers": 1.23
+     },
+     "cpu_ms": {
+      "host": 8.0,
+      "cells": 109.9,
+      "writers": 15.4
+     },
+     "cell_gross": 0.966,
+     "cell_net": 0.966,
+     "cell_wait": 118.8,
+     "ledger_util": 0.852,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.16,
+     "outcomes": {
+      "true/true/passed/-": 1780,
+      "false/false/failed/-": 297
+     },
+     "all": 2077,
+     "verdict": "cell"
+    },
+    {
+     "label": "w64-r2",
+     "load": 3.6,
+     "rerun": null,
+     "thr": 79.08,
+     "wall": 801.1,
+     "compile": 76.2,
+     "gate": 24.2,
+     "crossing": 426.5,
+     "spawns": 21,
+     "freeze": 113.1,
+     "ledger": 151.6,
+     "elu": 0.412,
+     "cores": {
+      "host": 0.63,
+      "cells": 8.84,
+      "writers": 1.22
+     },
+     "cpu_ms": {
+      "host": 8.0,
+      "cells": 111.8,
+      "writers": 15.4
+     },
+     "cell_gross": 0.958,
+     "cell_net": 0.958,
+     "cell_wait": 122.1,
+     "ledger_util": 0.83,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.15,
+     "outcomes": {
+      "true/true/passed/-": 1763,
+      "false/false/failed/-": 294
+     },
+     "all": 2057,
+     "verdict": "cell"
+    },
+    {
+     "label": "w64-r3",
+     "load": 3.6,
+     "rerun": null,
+     "thr": 79.21,
+     "wall": 800.1,
+     "compile": 74.9,
+     "gate": 23.4,
+     "crossing": 439.5,
+     "spawns": 19,
+     "freeze": 114.0,
+     "ledger": 138.2,
+     "elu": 0.429,
+     "cores": {
+      "host": 0.63,
+      "cells": 8.74,
+      "writers": 1.21
+     },
+     "cpu_ms": {
+      "host": 7.9,
+      "cells": 110.4,
+      "writers": 15.2
+     },
+     "cell_gross": 0.943,
+     "cell_net": 0.943,
+     "cell_wait": 127.2,
+     "ledger_util": 0.856,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.16,
+     "outcomes": {
+      "true/true/passed/-": 1779,
+      "false/false/failed/-": 296
+     },
+     "all": 2075,
+     "verdict": "cell"
+    }
+   ]
+  },
+  "metric": "thr",
+  "means": [
+   76.195,
+   79.0875
+  ],
+  "change": 0.03796180851761943,
+  "welch_t": 2.69397546883507,
+  "df": 3.755979836642213,
+  "p": 0.05821374674814728,
+  "cell_cpu_ms": [
+   104.775,
+   111.225
+  ]
+ },
+ "w1": {
+  "rows": {
+   "accept-p78": [
+    {
+     "label": "w1-r0",
+     "load": 3.7,
+     "rerun": null,
+     "thr": 16.02,
+     "wall": 63.3,
+     "compile": 24.1,
+     "gate": 7.2,
+     "crossing": 9.3,
+     "spawns": 3,
+     "freeze": 9.3,
+     "ledger": 10.2,
+     "elu": 0.044,
+     "cores": {
+      "host": 0.07,
+      "cells": 0.96,
+      "writers": 0.14
+     },
+     "cpu_ms": {
+      "host": 4.6,
+      "cells": 59.9,
+      "writers": 8.6
+     },
+     "cell_gross": 0.781,
+     "cell_net": 0.631,
+     "cell_wait": 0.0,
+     "ledger_util": 0.078,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.37,
+     "outcomes": {
+      "true/true/passed/-": 345,
+      "false/false/failed/-": 57
+     },
+     "all": 402,
+     "verdict": "cell"
+    },
+    {
+     "label": "w1-r1",
+     "load": 3.8,
+     "rerun": null,
+     "thr": 15.56,
+     "wall": 65.1,
+     "compile": 25.2,
+     "gate": 7.2,
+     "crossing": 9.5,
+     "spawns": 3,
+     "freeze": 9.4,
+     "ledger": 10.4,
+     "elu": 0.043,
+     "cores": {
+      "host": 0.07,
+      "cells": 1.05,
+      "writers": 0.14
+     },
+     "cpu_ms": {
+      "host": 4.6,
+      "cells": 67.6,
+      "writers": 8.7
+     },
+     "cell_gross": 0.782,
+     "cell_net": 0.635,
+     "cell_wait": 0.0,
+     "ledger_util": 0.077,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.37,
+     "outcomes": {
+      "true/true/passed/-": 337,
+      "false/false/failed/-": 56
+     },
+     "all": 393,
+     "verdict": "cell"
+    },
+    {
+     "label": "w1-r2",
+     "load": 3.6,
+     "rerun": null,
+     "thr": 15.76,
+     "wall": 64.0,
+     "compile": 24.3,
+     "gate": 7.2,
+     "crossing": 9.4,
+     "spawns": 3,
+     "freeze": 9.4,
+     "ledger": 10.3,
+     "elu": 0.043,
+     "cores": {
+      "host": 0.07,
+      "cells": 1.01,
+      "writers": 0.14
+     },
+     "cpu_ms": {
+      "host": 4.7,
+      "cells": 64.3,
+      "writers": 8.7
+     },
+     "cell_gross": 0.78,
+     "cell_net": 0.631,
+     "cell_wait": 0.0,
+     "ledger_util": 0.078,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.37,
+     "outcomes": {
+      "true/true/passed/-": 340,
+      "false/false/failed/-": 57
+     },
+     "all": 397,
+     "verdict": "cell"
+    },
+    {
+     "label": "w1-r3",
+     "load": 3.3,
+     "rerun": null,
+     "thr": 15.56,
+     "wall": 64.9,
+     "compile": 24.9,
+     "gate": 7.3,
+     "crossing": 9.4,
+     "spawns": 3,
+     "freeze": 9.4,
+     "ledger": 10.4,
+     "elu": 0.042,
+     "cores": {
+      "host": 0.08,
+      "cells": 1.06,
+      "writers": 0.13
+     },
+     "cpu_ms": {
+      "host": 4.9,
+      "cells": 68.1,
+      "writers": 8.6
+     },
+     "cell_gross": 0.781,
+     "cell_net": 0.634,
+     "cell_wait": 0.0,
+     "ledger_util": 0.077,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.37,
+     "outcomes": {
+      "true/true/passed/-": 337,
+      "false/false/failed/-": 56
+     },
+     "all": 393,
+     "verdict": "cell"
+    }
+   ],
+   "accept-p80": [
+    {
+     "label": "w1-r0",
+     "load": 3.4,
+     "rerun": null,
+     "thr": 15.16,
+     "wall": 66.4,
+     "compile": 26.2,
+     "gate": 7.6,
+     "crossing": 9.6,
+     "spawns": 3,
+     "freeze": 9.3,
+     "ledger": 10.3,
+     "elu": 0.043,
+     "cores": {
+      "host": 0.07,
+      "cells": 1.08,
+      "writers": 0.13
+     },
+     "cpu_ms": {
+      "host": 4.7,
+      "cells": 70.9,
+      "writers": 8.7
+     },
+     "cell_gross": 0.648,
+     "cell_net": 0.648,
+     "cell_wait": 0.0,
+     "ledger_util": 0.074,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.41,
+     "outcomes": {
+      "true/true/passed/-": 330,
+      "false/false/failed/-": 55
+     },
+     "all": 385,
+     "verdict": "cell"
+    },
+    {
+     "label": "w1-r1",
+     "load": 3.2,
+     "rerun": null,
+     "thr": 15.67,
+     "wall": 64.6,
+     "compile": 25.1,
+     "gate": 7.2,
+     "crossing": 9.2,
+     "spawns": 3,
+     "freeze": 9.4,
+     "ledger": 10.4,
+     "elu": 0.043,
+     "cores": {
+      "host": 0.07,
+      "cells": 1.05,
+      "writers": 0.14
+     },
+     "cpu_ms": {
+      "host": 4.6,
+      "cells": 67.3,
+      "writers": 8.8
+     },
+     "cell_gross": 0.634,
+     "cell_net": 0.634,
+     "cell_wait": 0.0,
+     "ledger_util": 0.078,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.42,
+     "outcomes": {
+      "true/true/passed/-": 339,
+      "false/false/failed/-": 56
+     },
+     "all": 395,
+     "verdict": "cell"
+    },
+    {
+     "label": "w1-r2",
+     "load": 3.1,
+     "rerun": null,
+     "thr": 15.66,
+     "wall": 63.8,
+     "compile": 23.8,
+     "gate": 7.3,
+     "crossing": 9.3,
+     "spawns": 4,
+     "freeze": 9.3,
+     "ledger": 10.4,
+     "elu": 0.042,
+     "cores": {
+      "host": 0.07,
+      "cells": 0.99,
+      "writers": 0.14
+     },
+     "cpu_ms": {
+      "host": 4.7,
+      "cells": 63.2,
+      "writers": 8.7
+     },
+     "cell_gross": 0.63,
+     "cell_net": 0.63,
+     "cell_wait": 0.0,
+     "ledger_util": 0.077,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.42,
+     "outcomes": {
+      "true/true/passed/-": 337,
+      "false/false/failed/-": 56
+     },
+     "all": 393,
+     "verdict": "cell"
+    },
+    {
+     "label": "w1-r3",
+     "load": 2.8,
+     "rerun": null,
+     "thr": 15.26,
+     "wall": 65.3,
+     "compile": 24.8,
+     "gate": 7.4,
+     "crossing": 9.7,
+     "spawns": 4,
+     "freeze": 9.4,
+     "ledger": 10.6,
+     "elu": 0.041,
+     "cores": {
+      "host": 0.07,
+      "cells": 1.0,
+      "writers": 0.13
+     },
+     "cpu_ms": {
+      "host": 4.7,
+      "cells": 65.4,
+      "writers": 8.8
+     },
+     "cell_gross": 0.64,
+     "cell_net": 0.64,
+     "cell_wait": 0.0,
+     "ledger_util": 0.076,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.42,
+     "outcomes": {
+      "true/true/passed/-": 331,
+      "false/false/failed/-": 55
+     },
+     "all": 386,
+     "verdict": "cell"
+    }
+   ]
+  },
+  "metric": "wall",
+  "means": [
+   64.325,
+   65.025
+  ],
+  "change": 0.01088223863194715,
+  "welch_t": 1.0125627624320361,
+  "df": 5.586635931980745,
+  "p": 0.3530957165422529,
+  "cell_cpu_ms": [
+   64.975,
+   66.7
+  ]
+ }
+}

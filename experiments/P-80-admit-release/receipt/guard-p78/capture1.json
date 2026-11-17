@@ -1,0 +1,289 @@
+{
+ "plan": "capture1",
+ "corpusBuild": "child",
+ "hostWasmGuard": false,
+ "commit": "8f631011f1ebd06589a110bd88b9b904c3b7f182",
+ "node": "v26.13.1",
+ "cpu": "Apple M6",
+ "parallelism": 12,
+ "memoryGb": 16,
+ "perflevels": "hw.perflevel0.physicalcpu: 2\nhw.perflevel1.physicalcpu: 4\nhw.perflevel2.physicalcpu: 6",
+ "corpus": {
+  "digest": "3d4322be203936ec4ccd902b300e7b37d25ec12d11f73f321c3748cae9a20f8d",
+  "kernels": 21
+ },
+ "started": "2026-11-17T17:33:26.032Z",
+ "rows": [
+  {
+   "label": "capture-w1",
+   "config": {
+    "arm": "A",
+    "scale": 0,
+    "width": 1,
+    "seconds": 12,
+    "warmup": 2,
+    "capture": true,
+    "cells": 1
+   },
+   "loadStart": 3.3271484375,
+   "loadEnd": 3.1962890625,
+   "loaded": false,
+   "memoryLevel": [
+    64,
+    64
+   ],
+   "windowSeconds": 9.981985792,
+   "completed": 151,
+   "all": 186,
+   "throughput": 15.12725054377637,
+   "promotedPerSecond": 13.023460733052504,
+   "wrongVerdicts": 0,
+   "errors": 0,
+   "buckets": {
+    "wall": 66.06038793377483,
+    "spawnInit": 0,
+    "model": 0.000349033112620087,
+    "freeze": 9.249063192052995,
+    "compile": 25.303673523178787,
+    "gate": 7.672356529801328,
+    "crossing": 9.867096278145569,
+    "ledger": 10.454739887417237,
+    "promote": 3.260548218542991,
+    "setup": 0.011065370860901777,
+    "unattributed": 0.24149590066239976
+   },
+   "nonModelShare": 0.9999947164537852,
+   "reconciliation": 0.0036556839615367993,
+   "littleResidual": 0.0006879607067267202,
+   "cpuMsPerCandidate": 10.42656291390728,
+   "rss": {
+    "treeMb": 936.734375,
+    "peakTreeMb": 936.8125,
+    "parentMb": 137.921875,
+    "cellMb": [
+     476.828125
+    ],
+    "writerMb": 320.46875,
+    "writers": 4
+   },
+   "hostElu": 0.0487136411269715,
+   "cellSpawnsInWindow": 2,
+   "cpuMsPerNeedByRole": {
+    "host": 5.3543509933774835,
+    "cells": 68.94039735099338,
+    "writers": 8.47682119205298,
+    "other": 0
+   },
+   "coresByRole": {
+    "host": 0.0809966089761391,
+    "cells": 1.0428786633159737,
+    "writers": 0.1282309979869785,
+    "other": 0
+   },
+   "perGb": 16.536496332620445,
+   "outcomes": {
+    "true/true/passed/-": 160,
+    "false/false/failed/-": 26
+   },
+   "transportErrors": {},
+   "fakeSpawns": 0,
+   "verdict": {
+    "bottleneck": "cell",
+    "kind": "unsaturated",
+    "reason": "0.8 candidates in cell on average; no stage at 0.8 net utilisation with a queue",
+    "members": [
+     "cell"
+    ]
+   },
+   "view": {
+    "at": 12.449020124999999,
+    "windowSeconds": 9.98198725,
+    "supervisorEventLoop": 0.04698279693521922,
+    "stages": {
+     "model:spec": {
+      "servers": "unbounded",
+      "group": "model",
+      "arrivalsPerSecond": 15.127248334243264,
+      "completionsPerSecond": 15.127248334243264,
+      "utilisation": null,
+      "netUtilisation": null,
+      "queue": {
+       "now": 0,
+       "mean": 0,
+       "growthPerSecond": 0
+      },
+      "inSystem": {
+       "now": 0,
+       "mean": 0.000613045964368957
+      },
+      "sojournMs": 0.040525940397317106,
+      "waitMs": 0,
+      "serviceMs": {
+       "mean": 0.040525940397317106,
+       "p50": 0.03524999999899592,
+       "p95": 0.06125000000020009,
+       "p99": 0.07604200000014316
+      },
+      "little": {
+       "L": 0.000613045964368957,
+       "lambdaW": 0.000613045964368957,
+       "error": 0
+      }
+     },
+     "model:impl": {
+      "servers": "unbounded",
+      "group": "model",
+      "arrivalsPerSecond": 17.23103783768107,
+      "completionsPerSecond": 17.23103783768107,
+      "utilisation": null,
+      "netUtilisation": null,
+      "queue": {
+       "now": 0,
+       "mean": 0,
+       "growthPerSecond": 0
+      },
+      "inSystem": {
+       "now": 0,
+       "mean": 0.0012290630805996128
+      },
+      "sojournMs": 0.07132844186041312,
+      "waitMs": 0,
+      "serviceMs": {
+       "mean": 0.07132844186041312,
+       "p50": 0.06529199999931734,
+       "p95": 0.09891700000025594,
+       "p99": 0.120958000000428
+      },
+      "little": {
+       "L": 0.0012290630805996128,
+       "lambdaW": 0.0012290630805996128,
+       "error": 0
+      }
+     },
+     "cell": {
+      "servers": 1,
+      "arrivalsPerSecond": 47.485534506167596,
+      "completionsPerSecond": 47.485534506167596,
+      "utilisation": 0.7847726367312275,
+      "netUtilisation": 0.6442865367314512,
+      "queue": {
+       "now": 0,
+       "mean": 0.00043948693683339,
+       "growthPerSecond": 0
+      },
+      "inSystem": {
+       "now": 1,
+       "mean": 0.7852121236680608
+      },
+      "sojournMs": 16.57918405274263,
+      "waitMs": 0.00925491350213568,
+      "serviceMs": {
+       "mean": 16.569929139240497,
+       "p50": 9.660541000000194,
+       "p95": 51.155540999999175,
+       "p99": 72.1615410000004
+      },
+      "little": {
+       "L": 0.7852121236680608,
+       "lambdaW": 0.7872714164206137,
+       "error": 0.0026225941888582465
+      }
+     },
+     "cell.compile": {
+      "servers": 1,
+      "within": "cell",
+      "arrivalsPerSecond": 47.485534506167596,
+      "completionsPerSecond": 47.485534506167596,
+      "utilisation": 0.382774953153742,
+      "netUtilisation": 0.382774953153742,
+      "queue": {
+       "now": 0,
+       "mean": 0,
+       "growthPerSecond": 0
+      },
+      "inSystem": {
+       "now": 0,
+       "mean": 0.382774953153742
+      },
+      "sojournMs": 8.060874898734177,
+      "waitMs": 0,
+      "serviceMs": {
+       "mean": 8.060874898734177,
+       "p50": 0,
+       "p95": 25.88837500000045,
+       "p99": 41.83462599999996
+      },
+      "little": null
+     },
+     "cell.gates": {
+      "servers": 1,
+      "within": "cell",
+      "arrivalsPerSecond": 47.485534506167596,
+      "completionsPerSecond": 47.485534506167596,
+      "utilisation": 0.11606164253515754,
+      "netUtilisation": 0.11606164253515754,
+      "queue": {
+       "now": 0,
+       "mean": 0,
+       "growthPerSecond": 0
+      },
+      "inSystem": {
+       "now": 0,
+       "mean": 0.11606164253515754
+      },
+      "sojournMs": 2.444147333333334,
+      "waitMs": 0,
+      "serviceMs": {
+       "mean": 2.444147333333334,
+       "p50": 0,
+       "p95": 19.407623999999487,
+       "p99": 26.522915999999896
+      },
+      "little": null
+     },
+     "ledger": {
+      "servers": 4,
+      "arrivalsPerSecond": 47.485534506167596,
+      "completionsPerSecond": 47.485534506167596,
+      "utilisation": 0.07362340770371134,
+      "netUtilisation": 0.07362340770371134,
+      "queue": {
+       "now": 0,
+       "mean": 0,
+       "growthPerSecond": 0
+      },
+      "inSystem": {
+       "now": 0,
+       "mean": 0.29449363081484536
+      },
+      "sojournMs": 6.201754573839649,
+      "waitMs": 0,
+      "serviceMs": {
+       "mean": 6.201754573839649,
+       "p50": 5.76549999999952,
+       "p95": 9.793125000000146,
+       "p99": 10.337709000001269
+      },
+      "little": {
+       "L": 0.29449363081484536,
+       "lambdaW": 0.29449363081484536,
+       "error": 0
+      }
+     }
+    },
+    "verdict": {
+     "bottleneck": "cell",
+     "kind": "unsaturated",
+     "reason": "0.8 candidates in cell on average; no stage at 0.8 net utilisation with a queue",
+     "members": [
+      "cell"
+     ]
+    },
+    "dropped": 0
+   },
+   "wallP50": 53.85699999999997,
+   "quietLoad": 3.3271484375
+  }
+ ],
+ "finished": "2026-11-17T17:33:38.581Z"
+}
