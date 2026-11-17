@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-ARMS = ("accept-p76", "accept-p77")
+ARMS = ("accept-p77", "accept-p78")
 
 
 def rows(arm, width):
@@ -24,6 +24,15 @@ def welch(a, b):
     return t, df
 
 
+def two_sided_p(t, df, steps=20000):
+    # P(|T| > |t|) for Student's t with df degrees of freedom, by Simpson's rule on the density from 0 to |t|.
+    c = math.gamma((df + 1) / 2) / (math.sqrt(df * math.pi) * math.gamma(df / 2))
+    f = lambda x: c * (1 + x * x / df) ** (-(df + 1) / 2)
+    h = abs(t) / steps
+    area = h / 3 * (f(0) + f(abs(t)) + sum((4 if i % 2 else 2) * f(i * h) for i in range(1, steps)))
+    return max(0.0, 1 - 2 * area)
+
+
 def stage(row, name, key):
     return row["view"]["stages"][name].get(key)
 
@@ -33,7 +42,7 @@ def describe(arm, width):
     for row in rows(arm, width):
         n = row["completed"]
         out.append(dict(label=row["label"], load=round(row.get("quietLoad") or row["loadStart"], 1), rerun=row.get("rerunOf"), thr=round(row["throughput"], 2),
-                        wall=round(row["buckets"]["wall"], 1), freeze=round(row["buckets"]["freeze"], 1), ledger=round(row["buckets"]["ledger"], 1),
+                        wall=round(row["buckets"]["wall"], 1), compile=round(row["buckets"]["compile"], 1), gate=round(row["buckets"]["gate"], 1), crossing=round(row["buckets"]["crossing"], 1), spawns=row.get("cellSpawnsInWindow"), freeze=round(row["buckets"]["freeze"], 1), ledger=round(row["buckets"]["ledger"], 1),
                         elu=round(row["hostElu"], 3), cores={k: round(v, 2) for k, v in row["coresByRole"].items() if k != "other"},
                         cpu_ms={k: round(v, 1) for k, v in row["cpuMsPerNeedByRole"].items() if k != "other"},
                         cell_net=round(stage(row, "cell", "netUtilisation"), 3), cell_wait=round(stage(row, "cell", "waitMs"), 1),
@@ -50,7 +59,8 @@ def main():
         a, b = [r[key] for r in table[ARMS[0]]], [r[key] for r in table[ARMS[1]]]
         t, df = welch(a, b) if len(a) > 1 and len(b) > 1 else (None, None)
         report[width] = dict(rows=table, metric=key, means=[statistics.mean(a), statistics.mean(b)],
-                             change=statistics.mean(b) / statistics.mean(a) - 1, welch_t=t, df=df)
+                             change=statistics.mean(b) / statistics.mean(a) - 1, welch_t=t, df=df, p=two_sided_p(t, df) if t is not None else None,
+                             cell_cpu_ms=[statistics.mean(r["cpu_ms"]["cells"] for r in table[arm]) for arm in ARMS])
     for arm in ARMS:
         path = HERE / "receipt" / arm / "bytes.json"
         if path.exists():
