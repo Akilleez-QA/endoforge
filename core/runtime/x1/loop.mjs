@@ -10,7 +10,8 @@ import { KITESURF_CORE } from '../../../tools/browser/pin.mjs';
 import { IsolatePool } from '../isolate-pool.mjs';
 import { applyReply, specificationFiles } from './agent.mjs';
 import { applyChanges } from './oracle.mjs';
-import { runGates, testProblems } from './gates.mjs';
+import { testProblems } from './gates.mjs';
+import { rerunGates, shapeOf } from './rerun.mjs';
 import { generate } from './generator.mjs';
 import { cellFiles, verifyFromMemory } from './loop-port.mjs';
 import { configuration, hash } from './host.mjs';
@@ -177,15 +178,13 @@ async function frozenEvaluator(admission) {
     return text ? JSON.parse(Buffer.from(text, 'hex').toString()) : null;
   } catch { return null; }
 }
-const shapeOf = tests => JSON.stringify((tests ?? []).map(({ fn, args, got, pass, trap }) => [fn, args, got, pass, trap === true]));
 export async function checkAtCommit(content, observed, evaluator = null, cell = {}) {
   const passed = observed.status === 'completed' ? (observed.report?.attempts ?? []).filter(attempt => attempt?.stage === 'passed') : [];
   if (!passed.length) return { observed, rerun: null, synthesis: null, problem: null };
   const begin = performance.now();
-  let candidate = null, result = null;
-  try { candidate = JSON.parse(content); result = runGates(candidate); } catch { }
+  const result = await rerunGates(content);
   const agrees = result?.promotable === true && passed.every(attempt => {
-    try { return shapeOf(JSON.parse(attempt.results.find(check => check.check === 'residual').reason).tests) === shapeOf(result.tests); } catch { return false; }
+    try { return shapeOf(JSON.parse(attempt.results.find(check => check.check === 'residual').reason).tests) === result.shape; } catch { return false; }
   });
   const rerun = { agrees, ms: performance.now() - begin };
   if (!agrees) {
@@ -194,7 +193,7 @@ export async function checkAtCommit(content, observed, evaluator = null, cell = 
   }
   if (!evaluator) return { observed, rerun, synthesis: null, problem: null };
   let verdict;
-  try { verdict = await judgeInCell(evaluator, candidate, cell ?? {}); } catch (error) { verdict = { decision: 'refuse', failures: [`judge failed: ${error.message}`] }; }
+  try { verdict = await judgeInCell(evaluator, JSON.parse(content), cell ?? {}); } catch (error) { verdict = { decision: 'refuse', failures: [`judge failed: ${error.message}`] }; }
   verdict = { ...verdict, evaluator: hash(JSON.stringify(evaluator)) };
   if (verdict.decision !== 'refuse') return { observed, rerun, synthesis: verdict, problem: null };
   const problem = 'synthesized evaluator refused the candidate';
