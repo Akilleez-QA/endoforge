@@ -105,7 +105,7 @@ async function answerKind(pool, provider, call, job, context) {
     context.observe?.('admitting');
     const begin = performance.now();
     let files = context.synth ? { ...call.files, [evaluatorFile]: await freezeEvaluator(context.synth, context.shadow) } : call.files;
-    const first = await admit(pool, context.reference, { need: context.need, configuration, files });
+    const first = await admit(pool, context.reference, { need: context.need, configuration, files, implementation: call.implementation });
     context.admission = first;
     context.reference.identity = first.identity;
     if (context.suspect) {
