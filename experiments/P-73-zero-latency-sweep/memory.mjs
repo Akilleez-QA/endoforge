@@ -97,7 +97,7 @@ if (plan === 'composition') {
     await pool.ready(); await pool.ledger.start();
     const warm = await work(pool, size, 8, directory);
     const rows = tree(), total = rows.reduce((t, row) => t + row.rssKb, 0) / 1024;
-    const cells = rows.filter(row => row.pid !== process.pid && row.pid !== pool.ledger.pid).map(row => row.rssKb / 1024);
+    const cells = rows.filter(row => row.pid !== process.pid && row.pid !== pool.ledger.pid && row.comm === 'node').map(row => row.rssKb / 1024);
     result.rows.push({ kind: 'pool', isolation, size, treeMb: total, grownMb: total - before, perCellMb: (total - before) / size, cellRssMb: cells, parentMb: rows.find(row => row.pid === process.pid).rssKb / 1024, writerMb: (rows.find(row => row.pid === pool.ledger.pid)?.rssKb ?? 0) / 1024, throughput: warm.throughput, errors: warm.errors, perGb: warm.throughput / (total / 1024) });
     console.log(JSON.stringify(result.rows.at(-1)));
     await pool.close(); await sleep(1000); save();

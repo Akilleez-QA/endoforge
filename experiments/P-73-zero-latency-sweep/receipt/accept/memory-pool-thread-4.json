@@ -1,0 +1,48 @@
+{
+ "plan": "pool",
+ "commit": "14434ac6b25beb4b77eb8fde281ccc73ad0a5633",
+ "node": "v26.13.1",
+ "memoryGb": 16,
+ "started": "2026-11-17T07:01:52.799Z",
+ "before": {
+  "freeMb": 6944.25,
+  "compressorMb": 2029.265625,
+  "storedInCompressorMb": 3893.671875,
+  "swapins": 1146782,
+  "swapouts": 1882502,
+  "decompressions": 251198694,
+  "swapUsedMb": 8843.44,
+  "pressureLevel": 1,
+  "freePercent": 70,
+  "diskFreeGb": 74
+ },
+ "rows": [
+  {
+   "kind": "pool",
+   "isolation": "thread",
+   "size": 4,
+   "treeMb": 1935.71875,
+   "grownMb": 1157.15625,
+   "perCellMb": 289.2890625,
+   "cellRssMb": [],
+   "parentMb": 1617.96875,
+   "writerMb": 316.328125,
+   "throughput": 35.062053822681435,
+   "errors": 0,
+   "perGb": 18.54791307591859
+  }
+ ],
+ "finished": "2026-11-17T07:02:03.424Z",
+ "after": {
+  "freeMb": 5993.34375,
+  "compressorMb": 1902.921875,
+  "storedInCompressorMb": 3645.984375,
+  "swapins": 1148124,
+  "swapouts": 1882502,
+  "decompressions": 251218752,
+  "swapUsedMb": 8827.38,
+  "pressureLevel": 1,
+  "freePercent": 70,
+  "diskFreeGb": 74
+ }
+}

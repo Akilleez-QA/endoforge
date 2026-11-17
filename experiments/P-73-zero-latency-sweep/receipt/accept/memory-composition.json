@@ -1,0 +1,74 @@
+{
+ "plan": "composition",
+ "commit": "14434ac6b25beb4b77eb8fde281ccc73ad0a5633",
+ "node": "v26.13.1",
+ "memoryGb": 16,
+ "started": "2026-11-17T07:00:27.037Z",
+ "before": {
+  "freeMb": 4981.03125,
+  "compressorMb": 3241.71875,
+  "storedInCompressorMb": 6358.828125,
+  "swapins": 1125592,
+  "swapouts": 1768942,
+  "decompressions": 242129847,
+  "swapUsedMb": 7405.19,
+  "pressureLevel": 1,
+  "freePercent": 63,
+  "diskFreeGb": 76
+ },
+ "rows": [
+  {
+   "kind": "composition",
+   "steps": {
+    "bare": {
+     "rssMb": 46.796875,
+     "heapUsedMb": 3.6869049072265625,
+     "heapTotalMb": 4.640625,
+     "externalMb": 1.5885610580444336,
+     "arrayBuffersMb": 0.13154888153076172
+    },
+    "toolchainImported": {
+     "rssMb": 49.1875,
+     "heapUsedMb": 4.550651550292969,
+     "heapTotalMb": 4.890625,
+     "externalMb": 1.5885992050170898,
+     "arrayBuffersMb": 0.13154888153076172
+    },
+    "afterFirstCompile": {
+     "rssMb": 279.0625,
+     "heapUsedMb": 48.04522705078125,
+     "heapTotalMb": 64.9375,
+     "externalMb": 25.65422248840332,
+     "arrayBuffersMb": 8.642769813537598
+    },
+    "after21Compiles": {
+     "rssMb": 498.546875,
+     "heapUsedMb": 160.03064727783203,
+     "heapTotalMb": 198.6875,
+     "externalMb": 25.65422248840332,
+     "arrayBuffersMb": 8.642769813537598
+    },
+    "afterGc": {
+     "rssMb": 498.59375,
+     "heapUsedMb": 26.569808959960938,
+     "heapTotalMb": 126.4375,
+     "externalMb": 25.65422248840332,
+     "arrayBuffersMb": 8.642769813537598
+    }
+   }
+  }
+ ],
+ "after": {
+  "freeMb": 4971.15625,
+  "compressorMb": 3239.21875,
+  "storedInCompressorMb": 6353.34375,
+  "swapins": 1125596,
+  "swapouts": 1768942,
+  "decompressions": 242130206,
+  "swapUsedMb": 7405.19,
+  "pressureLevel": 1,
+  "freePercent": 63,
+  "diskFreeGb": 76
+ },
+ "finished": "2026-11-17T07:00:27.602Z"
+}

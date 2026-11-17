@@ -39,6 +39,7 @@ const descendants = () => {
 const memoryLevel = () => Number(execFileSync('sysctl', ['-n', 'kern.memorystatus_level'], { encoding: 'utf8' }).trim());
 const taskpolicy = (pids, flag) => { for (const pid of pids) execFileSync('taskpolicy', [flag, '-p', String(pid)]); };
 
+const transportErrors = new Map();
 const intervalsOf = () => ({ model: [], transport: [], jobs: [], ledger: [], events: [], compile: 0, gates: 0 });
 function providerFor(arm, scale, perNeed, transport) {
   return scriptedProvider(async ({ messages }) => {
@@ -46,7 +47,7 @@ function providerFor(arm, scale, perNeed, transport) {
     const input = known.get(first.need.split(': ')[1]);
     if (arm === 'B') {
       const begin = performance.now();
-      await transport.send({ messages: [{ role: 'user', content: 'stand-in turn' }] });
+      try { await transport.send({ messages: [{ role: 'user', content: 'stand-in turn' }] }); } catch (error) { transportErrors.set(error.message, (transportErrors.get(error.message) ?? 0) + 1); throw error; }
       record?.transport.push([begin, performance.now()]);
     }
     const ms = (stage === 'specification' ? SPEC_MS : IMPL_MS) * scale, begin = performance.now();
@@ -86,6 +87,7 @@ function bucketsOf(record, start, end) {
 }
 
 async function arm(label, config) {
+  transportErrors.clear();
   const loadStart = loadavg()[0], memStart = memoryLevel();
   const directory = mkdtempSync(join(output, `${label}-`));
   const perNeed = new Map(), cells = config.cells ?? Math.min(config.width, 12);
@@ -101,7 +103,7 @@ async function arm(label, config) {
   const request = pool.ledger.request.bind(pool.ledger);
   pool.ledger.request = async (action, job, ...rest) => { const begin = performance.now(); try { return await request(action, job, ...rest); } finally { perNeed.get(basename(dirname(job?.reference?.ledger ?? '')))?.ledger.push([begin, performance.now(), action]); } };
   await pool.ready(); await pool.ledger.start();
-  const tree = descendants(), cellPids = tree.filter(row => row.pid !== process.pid && row.pid !== pool.ledger.pid).map(row => row.pid);
+  const tree = descendants(), cellPids = tree.filter(row => row.pid !== process.pid && row.pid !== pool.ledger.pid && row.comm === 'node').map(row => row.pid);
   if (config.qos === 'cells-background') taskpolicy(cellPids, '-b');
   if (config.qos === 'writer-background') taskpolicy([pool.ledger.pid], '-b');
   if (config.qos === 'cells-utility') for (const pid of cellPids) execFileSync('taskpolicy', ['-t', '2', '-l', '2', '-p', String(pid)]);
@@ -123,7 +125,7 @@ async function arm(label, config) {
       const answer = await runNeed({ need: `TEST DOUBLE ONLY: ${input.name}`, directory: join(directory, id), pool, env: { ENDOFORGE_LOOP: 'agent' }, limits: { maxTurns: 2, maxTokens: 64000 }, observe: name => record.events.push([name, performance.now()]) });
       const end = performance.now();
       record.compile = answer.timings?.compile ?? 0; record.gates = answer.timings?.gate ?? 0;
-      done.push({ index, name: input.name, start, end, promoted: answer.promoted, expected: input.expectPromoted, error: answer.error ?? null, buckets: bucketsOf(record, start, end) });
+      done.push({ index, name: input.name, start, end, promoted: answer.promoted, expected: input.expectPromoted, error: answer.error ?? null, outcome: `${answer.promoted}/${input.expectPromoted}/${answer.status ?? '-'}/${answer.problem ?? '-'}`, buckets: bucketsOf(record, start, end) });
       perNeed.delete(id);
       rmSync(join(directory, id), { recursive: true, force: true });
     }
@@ -149,7 +151,7 @@ async function arm(label, config) {
     throughput, promotedPerSecond: inWindow.filter(item => item.promoted).length / seconds, wrongVerdicts: done.filter(item => item.promoted !== item.expected).length, errors: done.filter(item => item.error).length,
     buckets, nonModelShare: nonModel, reconciliation: Math.abs(buckets.unattributed) / buckets.wall, littleResidual, cpuMsPerCandidate: (windowEnd.cpu - windowStart.cpu) / Math.max(1, inWindow.length),
     rss: { treeMb: rssKb / 1024, peakTreeMb: peakRss / 1024, parentMb: (windowEnd.tree.find(r => r.pid === process.pid)?.rssKb ?? 0) / 1024, cellMb: cellsRss.map(kb => kb / 1024), writerMb: (windowEnd.tree.find(r => r.comm.startsWith('python'))?.rssKb ?? 0) / 1024 },
-    perGb: throughput / (rssKb / 1024 / 1024), fakeSpawns: fakeStarts, verdict: view.verdict, view, wallP50: [...inWindow.map(r => r.buckets.wall)].sort((a, b) => a - b)[Math.floor(inWindow.length / 2)] ?? null };
+    perGb: throughput / (rssKb / 1024 / 1024), outcomes: done.reduce((all, item) => (all[item.outcome] = (all[item.outcome] ?? 0) + 1, all), {}), transportErrors: Object.fromEntries(transportErrors), fakeSpawns: fakeStarts, verdict: view.verdict, view, wallP50: [...inWindow.map(r => r.buckets.wall)].sort((a, b) => a - b)[Math.floor(inWindow.length / 2)] ?? null };
   console.log(JSON.stringify({ label, thr: +throughput.toFixed(2), n: inWindow.length, nonModel: +(100 * nonModel).toFixed(1), recon: +(100 * row.reconciliation).toFixed(1), little: +(100 * littleResidual).toFixed(1), verdict: `${view.verdict.bottleneck} (${view.verdict.kind})`, rssMb: Math.round(rssKb / 1024), load: [loadStart, loadEnd].map(v => +v.toFixed(1)), wrong: row.wrongVerdicts, errors: row.errors, b: Object.fromEntries(keys.map(k => [k, +buckets[k].toFixed(1)])) }));
   console.log(format(view));
   return row;
@@ -158,11 +160,14 @@ async function arm(label, config) {
 const result = { plan, commit: execFileSync('git', ['rev-parse', 'HEAD'], { cwd: here('../../'), encoding: 'utf8' }).trim(), node: process.version, cpu: cpus()[0]?.model, parallelism: availableParallelism(), memoryGb: totalmem() / 2 ** 30,
   perflevels: execFileSync('sysctl', ['hw.perflevel0.physicalcpu', 'hw.perflevel1.physicalcpu', 'hw.perflevel2.physicalcpu'], { encoding: 'utf8' }).trim(),
   corpus: { digest: hash(JSON.stringify(corpus)), kernels: corpus.length }, started: new Date().toISOString(), rows: [] };
+const receiptPath = join(receipt, `${plan}${plan === 'qos-clamp' ? `-${selected[0]}` : ''}.json`);
+try { const prior = JSON.parse(readFileSync(receiptPath, 'utf8')); result.rows = prior.rows; result.resumed = [...(prior.resumed ?? []), { at: new Date().toISOString(), kept: prior.rows.length }]; } catch { }
 const save = () => { result.finished = new Date().toISOString(); writeFileSync(join(receipt, `${plan}${plan === 'qos-clamp' ? `-${selected[0]}` : ''}.json`), JSON.stringify(result, null, 1)); };
 const waitForLoad = async () => { for (let i = 0; loadavg()[0] > 16; i++) { if (i > 40) throw Error('stop: load above 16 for 10 minutes'); await sleep(15000); } };
 const timing = scale => (scale >= 1 ? { seconds: 150, warmup: 25 } : scale >= 0.1 ? { seconds: 45, warmup: 8 } : { seconds: 25, warmup: 5 });
 const timingWide = scale => (scale >= 1 ? { seconds: 110, warmup: 35 } : scale >= 0.1 ? { seconds: 45, warmup: 10 } : { seconds: 25, warmup: 6 });
 const runRow = async (label, config) => {
+  if (result.rows.some(row => row.label === label || row.rerunOf === label)) return;
   await waitForLoad();
   let row = await arm(label, config);
   if (row.loaded) { await waitForLoad(); row = { ...(await arm(`${label}-rerun`, config)), rerunOf: label }; }
@@ -177,6 +182,8 @@ if (plan === 'pilot') {
   for (const a of ['A', 'B']) for (const scale of [1, 0.1, 0.01, 0]) for (const width of [1, 64]) await runRow(`${a}-s${scale}-w${width}`, { arm: a, scale, width, ...(width === 1 ? timing(scale) : timingWide(scale)) });
 } else if (plan === 'sweep') {
   for (const a of ['A', 'B']) for (const width of [1, 2, 4, 6, 8, 12, 24, 64]) await runRow(`sweep-${a}-w${width}`, { arm: a, scale: 0, width, seconds: 25, warmup: 6 });
+} else if (plan === 'sweep-rerun') {
+  for (const a of ['B', 'A']) for (const width of [1, 2, 4, 6, 8, 12, 24, 64]) await runRow(`sweep-${a}-w${width}-rerun`, { arm: a, scale: 0, width, seconds: 25, warmup: 6 });
 } else if (plan === 'qos') {
   for (let rep = 0; rep < 2; rep++) for (const qos of ['default', 'cells-utility', 'cells-background', 'writer-background']) await runRow(`qos-${qos}-${rep}`, { arm: 'A', scale: 0, width: 12, qos, seconds: 25, warmup: 6 });
 } else if (plan === 'qos-clamp') {

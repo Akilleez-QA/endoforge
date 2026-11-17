@@ -1,0 +1,349 @@
+{
+ "plan": "tiers",
+ "commit": "14434ac6b25beb4b77eb8fde281ccc73ad0a5633",
+ "node": "v26.13.1",
+ "memoryGb": 16,
+ "started": "2026-11-17T07:17:38.971Z",
+ "before": {
+  "freeMb": 3657.359375,
+  "compressorMb": 3041.578125,
+  "storedInCompressorMb": 5997.078125,
+  "swapins": 1429800,
+  "swapouts": 2010265,
+  "decompressions": 276627264,
+  "swapUsedMb": 5108.12,
+  "pressureLevel": 1,
+  "freePercent": 64,
+  "diskFreeGb": 78
+ },
+ "rows": [
+  {
+   "label": "hot-only",
+   "ballastCells": 0,
+   "treeRssMb": 4454.453125,
+   "state": {
+    "freeMb": 249.34375,
+    "compressorMb": 4856.890625,
+    "storedInCompressorMb": 9105.71875,
+    "swapins": 1430010,
+    "swapouts": 2021377,
+    "decompressions": 278023108,
+    "swapUsedMb": 5281.75,
+    "pressureLevel": 1,
+    "freePercent": 52,
+    "diskFreeGb": 78
+   },
+   "after": {
+    "freeMb": 880.21875,
+    "compressorMb": 7205.484375,
+    "storedInCompressorMb": 12562.671875,
+    "swapins": 1431351,
+    "swapouts": 2021377,
+    "decompressions": 278210375,
+    "swapUsedMb": 5265.75,
+    "pressureLevel": 2,
+    "freePercent": 36,
+    "diskFreeGb": 77
+   },
+   "hot": {
+    "throughput": 38.234278391040014,
+    "n": 643,
+    "wallP50": 273.2067910000005,
+    "wallP95": 403.81720900000073,
+    "errors": 0
+   },
+   "load": 4.990234375
+  },
+  {
+   "label": "ballast-6",
+   "ballastCells": 6,
+   "treeRssMb": 3602.625,
+   "state": {
+    "freeMb": 247.25,
+    "compressorMb": 5270.75,
+    "storedInCompressorMb": 9046.484375,
+    "swapins": 1439945,
+    "swapouts": 2097953,
+    "decompressions": 278611267,
+    "swapUsedMb": 6326.25,
+    "pressureLevel": 2,
+    "freePercent": 48,
+    "diskFreeGb": 76
+   },
+   "after": {
+    "freeMb": 124.171875,
+    "compressorMb": 4921.34375,
+    "storedInCompressorMb": 8603.4375,
+    "swapins": 1456238,
+    "swapouts": 2097953,
+    "decompressions": 279160563,
+    "swapUsedMb": 6070.25,
+    "pressureLevel": 1,
+    "freePercent": 51,
+    "diskFreeGb": 76
+   },
+   "hot": {
+    "throughput": 32.59363569094919,
+    "n": 497,
+    "wallP50": 331.40958300000057,
+    "wallP95": 542.070832999998,
+    "errors": 0
+   },
+   "load": 7.01806640625
+  },
+  {
+   "label": "ballast-12",
+   "ballastCells": 12,
+   "treeRssMb": 3891.15625,
+   "state": {
+    "freeMb": 244.78125,
+    "compressorMb": 4582.546875,
+    "storedInCompressorMb": 6734.453125,
+    "swapins": 1490291,
+    "swapouts": 2188329,
+    "decompressions": 279836184,
+    "swapUsedMb": 6954.38,
+    "pressureLevel": 1,
+    "freePercent": 51,
+    "diskFreeGb": 75
+   },
+   "after": {
+    "freeMb": 230.859375,
+    "compressorMb": 5824.21875,
+    "storedInCompressorMb": 9620.90625,
+    "swapins": 1496662,
+    "swapouts": 2188329,
+    "decompressions": 280439395,
+    "swapUsedMb": 6858.38,
+    "pressureLevel": 2,
+    "freePercent": 44,
+    "diskFreeGb": 75
+   },
+   "hot": {
+    "throughput": 28.89612107240437,
+    "n": 444,
+    "wallP50": 369.06779200000165,
+    "wallP95": 634.706124999997,
+    "errors": 0
+   },
+   "load": 7.54541015625
+  },
+  {
+   "label": "ballast-18",
+   "ballastCells": 18,
+   "treeRssMb": 3266.9375,
+   "state": {
+    "freeMb": 285.796875,
+    "compressorMb": 5050.28125,
+    "storedInCompressorMb": 8090.265625,
+    "swapins": 1514870,
+    "swapouts": 2314713,
+    "decompressions": 281204041,
+    "swapUsedMb": 8545.12,
+    "pressureLevel": 1,
+    "freePercent": 48,
+    "diskFreeGb": 74
+   },
+   "after": {
+    "freeMb": 252.5,
+    "compressorMb": 5074.546875,
+    "storedInCompressorMb": 8147.6875,
+    "swapins": 1532253,
+    "swapouts": 2314713,
+    "decompressions": 281453517,
+    "swapUsedMb": 8273.12,
+    "pressureLevel": 1,
+    "freePercent": 49,
+    "diskFreeGb": 74
+   },
+   "hot": {
+    "throughput": 28.13935753549976,
+    "n": 431,
+    "wallP50": 397.43433299998287,
+    "wallP95": 618.5633329999982,
+    "errors": 0
+   },
+   "load": 5.62109375
+  }
+ ],
+ "finished": "2026-11-17T07:22:24.348Z",
+ "stopped": "swap above 8 GB",
+ "pageIn": {
+  "idleMs": 60000,
+  "idleState": {
+   "freeMb": 165.5625,
+   "compressorMb": 4594.75,
+   "storedInCompressorMb": 7119.9375,
+   "swapins": 1552405,
+   "swapouts": 2314713,
+   "decompressions": 281592120,
+   "swapUsedMb": 7945.12,
+   "pressureLevel": 1,
+   "freePercent": 53,
+   "diskFreeGb": 74
+  },
+  "pools": [
+   {
+    "pool": 0,
+    "cold": {
+     "n": 6,
+     "p50": 461.82004199997755,
+     "p95": 467.88945899999817,
+     "max": 467.88945899999817
+    },
+    "warm": {
+     "n": 6,
+     "p50": 221.44974999999977,
+     "p95": 227.85404199999175,
+     "max": 227.85404199999175
+    },
+    "swapins": 10437,
+    "decompressions": 24630
+   },
+   {
+    "pool": 1,
+    "cold": {
+     "n": 6,
+     "p50": 362.71650000000955,
+     "p95": 387.5472909999953,
+     "max": 387.5472909999953
+    },
+    "warm": {
+     "n": 6,
+     "p50": 250.11220800000592,
+     "p95": 260.1087079999852,
+     "max": 260.1087079999852
+    },
+    "swapins": 70,
+    "decompressions": 23671
+   },
+   {
+    "pool": 2,
+    "cold": {
+     "n": 6,
+     "p50": 351.8582919999899,
+     "p95": 360.00579199998174,
+     "max": 360.00579199998174
+    },
+    "warm": {
+     "n": 6,
+     "p50": 232.01029199999175,
+     "p95": 245.84820800001035,
+     "max": 245.84820800001035
+    },
+    "swapins": 8,
+    "decompressions": 30395
+   }
+  ]
+ },
+ "fullPool": [
+  {
+   "throughput": 27.634564800999733,
+   "n": 172,
+   "wallP50": 214.32991699999548,
+   "wallP95": 274.2676249999786,
+   "errors": 0
+  },
+  {
+   "throughput": 28.36079995611352,
+   "n": 174,
+   "wallP50": 204.35579199998756,
+   "wallP95": 271.1476669999829,
+   "errors": 0
+  },
+  {
+   "throughput": 25.73430827870227,
+   "n": 156,
+   "wallP50": 218.6780410000065,
+   "wallP95": 328.46595899999375,
+   "errors": 0
+  }
+ ],
+ "fullPoolCells": 30,
+ "released": [
+  {
+   "freeMb": 6870.390625,
+   "compressorMb": 2097.125,
+   "storedInCompressorMb": 4057.140625,
+   "swapins": 1574800,
+   "swapouts": 2314713,
+   "decompressions": 281973318,
+   "swapUsedMb": 7601,
+   "pressureLevel": 1,
+   "freePercent": 70,
+   "diskFreeGb": 75
+  },
+  {
+   "freeMb": 6498.96875,
+   "compressorMb": 2057.46875,
+   "storedInCompressorMb": 3912.078125,
+   "swapins": 1578361,
+   "swapouts": 2314713,
+   "decompressions": 281995619,
+   "swapUsedMb": 7544.94,
+   "pressureLevel": 1,
+   "freePercent": 68,
+   "diskFreeGb": 75
+  },
+  {
+   "freeMb": 6450.921875,
+   "compressorMb": 2032.65625,
+   "storedInCompressorMb": 3844.515625,
+   "swapins": 1580559,
+   "swapouts": 2314713,
+   "decompressions": 282003490,
+   "swapUsedMb": 7504.94,
+   "pressureLevel": 1,
+   "freePercent": 69,
+   "diskFreeGb": 75
+  },
+  {
+   "freeMb": 5774.015625,
+   "compressorMb": 2007.375,
+   "storedInCompressorMb": 3738.5625,
+   "swapins": 1594938,
+   "swapouts": 2316045,
+   "decompressions": 282028901,
+   "swapUsedMb": 6648.88,
+   "pressureLevel": 1,
+   "freePercent": 69,
+   "diskFreeGb": 76
+  },
+  {
+   "freeMb": 5525.125,
+   "compressorMb": 1994.078125,
+   "storedInCompressorMb": 3698.90625,
+   "swapins": 1598420,
+   "swapouts": 2316045,
+   "decompressions": 282038598,
+   "swapUsedMb": 6592.88,
+   "pressureLevel": 1,
+   "freePercent": 70,
+   "diskFreeGb": 76
+  },
+  {
+   "freeMb": 5348.5,
+   "compressorMb": 1907.671875,
+   "storedInCompressorMb": 3543.9375,
+   "swapins": 1599090,
+   "swapouts": 2316045,
+   "decompressions": 282049613,
+   "swapUsedMb": 6576.88,
+   "pressureLevel": 1,
+   "freePercent": 68,
+   "diskFreeGb": 76
+  }
+ ],
+ "after": {
+  "freeMb": 5376.40625,
+  "compressorMb": 1907.34375,
+  "storedInCompressorMb": 3543.40625,
+  "swapins": 1599094,
+  "swapouts": 2316045,
+  "decompressions": 282049652,
+  "swapUsedMb": 6576.88,
+  "pressureLevel": 1,
+  "freePercent": 68,
+  "diskFreeGb": 76
+ }
+}
