@@ -8,7 +8,7 @@ import { readFileSync, readSync, writeSync } from 'node:fs';
 import { deserialize, serialize } from 'node:v8';
 import { dumpListEnabled, registerHolder } from './dump-list.mjs';
 import { attachCgroup, prepareCgroup, releaseCgroup } from './isolate-cgroup.mjs';
-import { LedgerShards } from './isolate-ledger.mjs';
+import { LedgerBridge } from './isolate-ledger.mjs';
 import { trustedWasmPolicy } from './isolate-wasm.mjs';
 import { toolingWasmPolicy } from './isolate-wasm-tooling.mjs';
 
@@ -88,7 +88,7 @@ export class IsolatePool {
     this.#hostCall = hostCall;
     this.#cellEnv = cellEnv;
     this.#cellFlags = cellFlags;
-    this.#ledger = new LedgerShards(ledgerBridge);
+    this.#ledger = new LedgerBridge(ledgerBridge);
     if (jobDeadlineMs !== undefined && !positive(jobDeadlineMs)) throw new TypeError('jobDeadlineMs must be a positive integer');
     this.#jobDeadlineMs = jobDeadlineMs;
     if (!['thread', 'process'].includes(isolation)) throw new TypeError('isolation must be thread or process');

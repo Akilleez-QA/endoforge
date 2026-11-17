@@ -1,6 +1,5 @@
 import { performance } from 'node:perf_hooks';
 import { renameSync, writeFileSync } from 'node:fs';
-import { LEDGER_SHARDS } from './isolate-ledger.mjs';
 
 const FIELDS = ['arrivals', 'completions', 'inSystem', 'inService', 'last', 'areaSystem', 'areaQueue', 'areaBusy', 'sojourn', 'service', 'wait', 'blocked', 'lastDone'];
 const F = Object.fromEntries(FIELDS.map((name, index) => [name, index]));
@@ -194,7 +193,7 @@ export function loopStages({ cells = 1, lane = 0 } = {}) {
     cell: { servers: cells, queue: 'explicit' },
     'cell.compile': { servers: cells, within: 'cell' },
     'cell.gates': { servers: cells, within: 'cell' },
-    ledger: { servers: LEDGER_SHARDS },
+    ledger: { servers: 1 },
     ...(lane ? { tscheck: { servers: lane, queue: 'explicit' }, 'tscheck.check': { servers: lane, within: 'tscheck' }, 'tscheck.run': { servers: lane, within: 'tscheck' } } : {}),
   };
 }
