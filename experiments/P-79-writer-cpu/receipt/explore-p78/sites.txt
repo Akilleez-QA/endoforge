@@ -1,0 +1,64 @@
+requests 1563 admit, CPU 7.049 ms per request (instrumented)
+validate         ledger.py:_append:185                                                  calls/req   3.00  ms/req  1.563  KB/req      0.0
+validate_frozen  ledger.py:validate:67                                                  calls/req   1.00  ms/req  1.499  KB/req      0.0
+dumps            ledger.py:encode:46<frozen_record:97                                   calls/req   1.00  ms/req  0.493  KB/req    422.6
+dumps            ledger.py:encode:46<_append:183                                        calls/req   3.00  ms/req  0.493  KB/req    422.9
+sql              COMMIT                                                                 calls/req   1.00  ms/req  0.491  KB/req      0.0
+dumps            ledger.py:encode:46<validate_frozen:50                                 calls/req   1.00  ms/req  0.482  KB/req    422.6
+dumps            ledger_writer.py:apply:449                                             calls/req   1.00  ms/req  0.482  KB/req    424.9
+sql              INSERT INTO records VALUES                                             calls/req   3.00  ms/req  0.410  KB/req      0.0
+dumps            ledger.py:encode:46<frozen_record:89                                   calls/req   1.00  ms/req  0.272  KB/req    422.0
+loads            ledger.py:_append:184                                                  calls/req   3.00  ms/req  0.267  KB/req    422.9
+dumps            ledger.py:encode:46<validate_frozen:55                                 calls/req   1.00  ms/req  0.253  KB/req    422.0
+loads            x1_loop.py:admission:147                                               calls/req   1.00  ms/req  0.244  KB/req    422.0
+loads            frozen.py:validate_frozen:52                                           calls/req   1.00  ms/req  0.243  KB/req    422.0
+repository_files x1_loop.py:admitted_files:140                                          calls/req   1.00  ms/req  0.227  KB/req    405.4
+repository_files x1_loop.py:admission:148                                               calls/req   1.00  ms/req  0.205  KB/req    405.4
+sha256           frozen.py:digest:10<validate_frozen:48                                 calls/req   1.00  ms/req  0.158  KB/req    422.0
+sha256           ledger.py:event_hash:50<_append:187                                    calls/req   3.00  ms/req  0.157  KB/req    423.1
+sha256           frozen.py:digest:10<frozen_record:93                                   calls/req   1.00  ms/req  0.156  KB/req    422.0
+sha256           frozen.py:digest:10<frozen_record:97                                   calls/req   1.00  ms/req  0.156  KB/req    422.6
+sha256           ledger_writer.py:encode_frame:49                                       calls/req   1.00  ms/req  0.152  KB/req    425.1
+sha256           frozen.py:digest:10<validate_frozen:50                                 calls/req   1.00  ms/req  0.149  KB/req    422.6
+sha256           ledger_writer.py:apply:450                                             calls/req   1.00  ms/req  0.149  KB/req    424.9
+sql              BEGIN IMMEDIATE                                                        calls/req   1.00  ms/req  0.142  KB/req      0.0
+sha256           x1_loop.py:<genexpr>:141<admitted_files:141                            calls/req  14.00  ms/req  0.092  KB/req    202.7
+loads            sites.py:<module>:81                                                   calls/req   1.00  ms/req  0.087  KB/req     47.5
+sql              CREATE TABLE IF NOT EXISTS x1_decisions                                calls/req   1.00  ms/req  0.037  KB/req      0.0
+dumps            ledger_writer.py:flush:525                                             calls/req   1.00  ms/req  0.027  KB/req     17.9
+dumps            ledger.py:encode:46<admission:150                                      calls/req   1.00  ms/req  0.023  KB/req     17.1
+sql              CREATE TABLE IF NOT EXISTS records                                     calls/req   1.00  ms/req  0.022  KB/req      0.0
+{'validate': 1.563, 'validate_frozen': 1.499, 'dumps': 2.546, 'sql': 1.167, 'loads': 0.859, 'repository_files': 0.432, 'sha256': 1.169}
+requests 1563 commit, CPU 2.344 ms per request (instrumented)
+loads            x1_loop.py:frozen_drift:217                                            calls/req   1.00  ms/req  0.256  KB/req    422.0
+repository_files x1_loop.py:frozen_drift:225                                            calls/req   1.00  ms/req  0.222  KB/req    405.4
+sql              COMMIT                                                                 calls/req   1.00  ms/req  0.216  KB/req      0.0
+loads            x1_loop.py:report_problem:290                                          calls/req   0.86  ms/req  0.213  KB/req    361.6
+sha256           ledger.py:event_hash:50<_read:142                                      calls/req   3.00  ms/req  0.151  KB/req    423.1
+loads            ledger_writer.py:batch:469                                             calls/req   1.00  ms/req  0.097  KB/req     50.9
+loads            ledger.py:_append:184                                                  calls/req   2.00  ms/req  0.096  KB/req     50.6
+loads            sites.py:<module>:81                                                   calls/req   1.00  ms/req  0.087  KB/req     47.9
+dumps            ledger_writer.py:apply:449                                             calls/req   1.00  ms/req  0.083  KB/req     68.8
+dumps            ledger.py:encode:46<_append:183                                        calls/req   2.00  ms/req  0.082  KB/req     50.6
+loads            x1_loop.py:report_problem:312                                          calls/req   1.71  ms/req  0.080  KB/req     15.2
+sql              INSERT INTO records VALUES                                             calls/req   2.00  ms/req  0.075  KB/req      0.0
+loads            x1_loop.py:decide:74                                                   calls/req   1.71  ms/req  0.072  KB/req     15.2
+sql              INSERT INTO x1_decisions                                               calls/req   1.00  ms/req  0.072  KB/req      0.0
+validate         ledger.py:_append:185                                                  calls/req   2.00  ms/req  0.049  KB/req      0.0
+dumps            ledger_writer.py:flush:525                                             calls/req   1.00  ms/req  0.044  KB/req     23.4
+loads            x1_loop.py:evidence_problem:332                                        calls/req   0.86  ms/req  0.037  KB/req     19.4
+validate         <string>:process:26                                                    calls/req   1.00  ms/req  0.030  KB/req      0.0
+sha256           ledger_writer.py:encode_frame:49                                       calls/req   1.00  ms/req  0.026  KB/req     69.0
+sha256           ledger_writer.py:apply:450                                             calls/req   1.00  ms/req  0.026  KB/req     68.8
+loads            x1_loop.py:report_problem:302                                          calls/req   0.86  ms/req  0.023  KB/req      3.8
+sha256           ledger.py:event_hash:50<_append:187                                    calls/req   2.00  ms/req  0.021  KB/req     50.7
+{'loads': 0.98, 'repository_files': 0.222, 'sql': 0.414, 'sha256': 0.253, 'dumps': 0.222, 'validate': 0.078}
+requests 1786 park, CPU 0.716 ms per request (instrumented)
+sha256           ledger.py:event_hash:50<_read:142                                      calls/req   3.00  ms/req  0.153  KB/req    423.3
+sql              COMMIT                                                                 calls/req   1.00  ms/req  0.116  KB/req      0.0
+loads            ledger_writer.py:batch:469                                             calls/req   1.00  ms/req  0.114  KB/req     65.6
+dumps            ledger_writer.py:apply:449                                             calls/req   1.00  ms/req  0.082  KB/req     65.7
+loads            sites.py:<module>:81                                                   calls/req   1.00  ms/req  0.076  KB/req     42.1
+sha256           ledger_writer.py:encode_frame:49                                       calls/req   1.00  ms/req  0.025  KB/req     65.9
+sha256           ledger_writer.py:apply:450                                             calls/req   1.00  ms/req  0.025  KB/req     65.7
+{'sha256': 0.222, 'sql': 0.175, 'loads': 0.191, 'dumps': 0.089}

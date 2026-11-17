@@ -1,0 +1,82 @@
+diff --git a/tools/ledger_writer.py b/tools/ledger_writer.py
+index 05c2cc1..aee6645 100644
+--- a/tools/ledger_writer.py
++++ b/tools/ledger_writer.py
+@@ -31,6 +31,7 @@ VERSION_TABLE = "CREATE TABLE IF NOT EXISTS ledger_journal (version INTEGER PRIM
+ MARK = "INSERT INTO ledger_journal (version, digest) VALUES (?, ?)"
+ DUMP_NAME = "endoforge-ledger-writer"
+ DUMP_PRIORITY = 110
++TRACE = []  # exploratory P-79 trace, not committed
+ 
+ 
+ class JournalCorrupt(Exception):
+@@ -464,6 +465,7 @@ class Writer:
+         responses.extend(answered)
+ 
+     def batch(self, lines):
++        _t0 = time.monotonic()
+         groups = {}
+         for line in lines:
+             request = json.loads(line)
+@@ -480,6 +482,12 @@ class Writer:
+         self.counts["max_batch"] = max(self.counts["max_batch"], len(lines))
+         while len(self.handles) > HANDLES:
+             self.handles.popitem(last=False)[1][1].close()
++        _t1 = time.monotonic()
++        _actions = {}
++        for _line in lines:
++            _r = json.loads(_line); _actions[_r["id"]] = _r["action"]
++        for _resp in responses:
++            _resp["_trace"] = [_actions.get(_resp["id"]), _t0, _t1, len(lines)]
+         if self.pending is None:
+             self.flush([(entries, responses)])
+         else:
+@@ -510,27 +518,38 @@ class Writer:
+                 return
+ 
+     def flush(self, items):
++        _t2 = time.monotonic()
+         entries = [entry for batch, _ in items for entry in batch]
+         if entries:
+             self.journal.write(entries)
++        _t3 = time.monotonic()
++        _traces = []
+         write_decision = getattr(self.extension, "write_decision", None)
+         out = []
+         for _, responses in items:
+             for response in responses:
++                _tr = response.pop("_trace", None)
++                _d0 = time.monotonic()
+                 if write_decision:
+                     try:
+                         write_decision(response.get("result"))
+                     except Exception as error:
+                         response = dict(id=response["id"], error=str(error))
+                 out.append(json.dumps(response) + "\n")
++                if _tr: _traces.append(_tr + [time.monotonic() - _d0])
+         self.counts["flushes"] += 1
+         self.respond(out)
++        _t5 = time.monotonic()
++        for _tr in _traces:
++            TRACE.append(_tr + [_t2, _t3, _t5, len(_traces)])
+ 
+     def respond(self, lines):
+         self.output.write("".join(lines))
+         self.output.flush()
+ 
+     def close(self):
++        if os.environ.get("P79_TRACE"):
++            import atexit
+         if self.syncer is not None:
+             self.pending.put(None)
+             self.syncer.join()
+@@ -538,6 +557,9 @@ class Writer:
+             entry[1].close()
+         self.handles.clear()
+         self.journal.close()
++        if os.environ.get("P79_TRACE"):
++            with open(os.path.join(os.environ["P79_TRACE"], f"{os.getpid()}.json"), "w") as _o:
++                json.dump(TRACE, _o)
+ 
+     def stats(self):
+         usage = resource.getrusage(resource.RUSAGE_SELF)
