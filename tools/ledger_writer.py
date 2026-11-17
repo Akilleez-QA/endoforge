@@ -468,14 +468,7 @@ class Writer:
         for line in lines:
             request = json.loads(line)
             groups.setdefault(request["job"]["reference"]["ledger"], []).append(request)
-        holding = getattr(self.extension, "HOLDING", ())
-        held = [path for path, requests in groups.items() if any(r["action"] in holding for r in requests)]
         responses, entries = [], []
-        for path in held:
-            self.apply(path, groups.pop(path), responses, entries)
-        if held and groups and self.pending is not None:
-            self.pending.put((entries, responses))
-            responses, entries = [], []
         for path, requests in groups.items():
             self.apply(path, requests, responses, entries)
         now = time.monotonic()

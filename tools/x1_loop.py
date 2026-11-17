@@ -501,7 +501,6 @@ def revise(request, prior, append, _process, _db):
 
 
 LOOP = dict(admit=admit, commit=commit, park=park, revise=revise)
-HOLDING = ("admit", "revise")
 
 
 def main(arguments):

@@ -92,26 +92,6 @@ class WriterTests(unittest.TestCase):
         writer.batch([line(1, "admit", self.ledger("a"), need="a"), line(2, "admit", self.ledger("b"), need="b")])
         self.assertEqual(events, ["sync", "respond"])
 
-    def test_a_request_a_cell_holds_for_is_synced_and_answered_before_the_rest_of_its_batch(self):
-        output = io.StringIO()
-        writer = Writer(None, types.SimpleNamespace(LOOP=EXTENSION.LOOP, HOLDING=("admit",)), Journal(self.journal_dir), output)
-        other, held = self.ledger("other"), self.ledger("held")
-        writer.batch([line(1, "admit", other, need="other")])
-        events, items = [], []
-        apply, sync, respond = writer.apply, writer.journal.sync, writer.respond
-        writer.apply = lambda path, *rest: (events.append(("apply", Path(path).parent.name)), apply(path, *rest))
-        writer.pending = types.SimpleNamespace(put=lambda item: (events.append(("handed", [r["id"] for r in item[1]])), items.append(item)))
-        writer.batch([line(2, "note", other, id="input-0"), line(3, "admit", held, need="held")])
-        self.assertEqual(events, [("apply", "held"), ("handed", [3]), ("apply", "other"), ("handed", [2])])
-        events.clear()
-        writer.journal.sync = lambda: (events.append("sync"), sync())
-        writer.respond = lambda lines: (events.append(("respond", [json.loads(text)["id"] for text in lines])), respond(lines))
-        for item in items:
-            writer.flush([item])
-        self.assertEqual(events, ["sync", ("respond", [3]), "sync", ("respond", [2])])
-        self.assertEqual(ids(held), ["task"])
-        self.assertEqual(ids(other), ["task", "input-0"])
-
     def test_a_failed_journal_sync_answers_nothing(self):
         writer, output = self.writer()
         writer.journal.sync = mock.Mock(side_effect=OSError(5, "Input/output error"))
