@@ -129,7 +129,7 @@ and skips recompiling when `kernel.ts` hasn't changed since the last check.
 
 ## The freeze
 
-When the specification stage ends, the cell writes `frozen.sha256` and asks for `{kind: 'admit', files}`. Under `release` it ends its job with that request beside its continuation, so no cell is held during the freeze, and the next job rechecks the admission before the implementation turn (P-80); under `hold` it is a host call. The request carries the three
+When the specification stage ends, the cell writes `frozen.sha256` and sends `{kind: 'admit', files}`: the three
 frozen files and the exact bytes of its implementation files (the host list `host.mjs`, `gates.mjs`,
 `glue.schema.json`, `measure.mjs`, `meter.mjs`, `contract.mjs`, `dimensions.mjs`, `generator.mjs`, `ledger.mjs`,
 `reference.mjs`, `scalar.mjs`, plus the cell list `loop-port.mjs`, `agent.mjs`, `oracle.mjs`), all hex-encoded. The
@@ -158,7 +158,7 @@ check (`verifyFromMemory`), and the commit compares EndoForge's own implementati
 
 `createLoopPool({ waits })` is `release` by default.
 
-1. When the cell needs a model reply, or the freeze at the end of the specification stage, it ends its job with status `waiting` and its continuation (and, for the freeze, the admit request): stage, turn,
+1. When the cell needs a model reply it ends its job with status `waiting` and its continuation: stage, turn,
    messages, overlay, receipt, compiler identity and the check rounds so far.
 2. The supervisor calls the model with no cell held.
 3. Once the task is frozen and the conversation holds a reply, the supervisor first writes `{cell, host}` to the

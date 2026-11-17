@@ -490,7 +490,7 @@ X1 gates G1–G9 shall run through the real evaluator in thread/process pools, b
 
 ### REQ-X1-002 — Release the cell while waiting
 
-Under `waits: 'release'`, the default, an agent attempt waiting on its model or on its freeze shall hold no workcell: once the task is frozen and its conversation holds a reply, its continuation is durable in the task's ledger before the model call, each reply is admitted fresh into any free cell with deadline, limits, frozen evaluator, implementation files, frozen files and compiler identity rechecked, and a continuation resumed twice cannot reach a promotion.
+Under `waits: 'release'`, the default, an agent attempt waiting on its model shall hold no workcell: once the task is frozen and its conversation holds a reply, its continuation is durable in the task's ledger before the model call, each reply is admitted fresh into any free cell with deadline, limits, frozen evaluator, implementation files, frozen files and compiler identity rechecked, and a continuation resumed twice cannot reach a promotion.
 
 - Rationale: Edition 3 §9: waiting releases compute; a swarm is a queue (P-57).
 - Derivation: `core/runtime/x1/loop.mjs`, `core/runtime/x1/agent.mjs`, `tools/x1_loop.py`
