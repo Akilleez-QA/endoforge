@@ -142,21 +142,27 @@ const seeded = seed => () => {
   return ((x ^ (x >>> 14)) >>> 0) / 4294967296;
 };
 const logLines = log => existsSync(log) ? readFileSync(log, 'utf8').split('\n').filter(Boolean).length : 0;
+const reached = (child, log, lines) => new Promise(resolve => {
+  if (logLines(log) >= lines) return resolve(true);
+  if (child.exitCode !== null || child.signalCode) return resolve(false);
+  const poll = setInterval(() => { if (logLines(log) >= lines) { clearInterval(poll); resolve(true); } }, 2);
+  child.once('close', () => { clearInterval(poll); resolve(logLines(log) >= lines); });
+});
 
 test('bridge and supervisor kills at random times never yield a promotion without its evidence', { timeout: 240000 }, async t => {
   const root = scratch(t), random = seeded(110);
   const promotedLines = [];
   for (let round = 0; round < 8; round++) {
     const directory = join(root, `round-${round}`), log = join(root, `round-${round}.jsonl`);
-    const after = 1 + Math.floor(random() * 3), delay = Math.floor(random() * 600), count = after + 6;
-    t.diagnostic(`round ${round}: kill the ${round % 2 ? 'supervisor' : 'bridge'} ${delay} ms after task ${after} of ${count}`);
+    const after = 1 + Math.floor(random() * 3), at = random(), count = after + 6;
     mkdirSync(directory);
     const child = spawn(process.execPath, [driver, JSON.stringify({ root, directory, count, log })], { stdio: 'ignore' });
-    await new Promise(resolve => {
-      const poll = setInterval(() => { if (logLines(log) >= after) { clearInterval(poll); resolve(); } }, 20);
-      child.once('close', () => { clearInterval(poll); resolve(); });
-    });
-    await new Promise(resolve => setTimeout(resolve, delay));
+    assert(await reached(child, log, after), `round ${round} ended before task ${after}`);
+    const started = performance.now();
+    assert(await reached(child, log, after + 1), `round ${round} ended before task ${after + 1}`);
+    const span = performance.now() - started, delay = Math.floor(at * span);
+    await Promise.race([new Promise(resolve => setTimeout(resolve, delay)), reached(child, log, after + 2)]);
+    t.diagnostic(`round ${round}: kill the ${round % 2 ? 'supervisor' : 'bridge'} ${delay} ms into task ${after + 2} of ${count} (task ${after + 1} took ${Math.round(span)} ms; ${logLines(log)} done at the kill)`);
     assert.equal(child.exitCode, null, `round ${round} finished before its kill`);
     const target = round % 2 ? child.pid : await new Promise(resolve => execFile('pgrep', ['-P', String(child.pid), '-f', 'tools.ledger_writer'], (_, stdout) => resolve(Number(String(stdout).trim().split('\n')[0]))));
     assert(target, `round ${round} found no process to kill`);
