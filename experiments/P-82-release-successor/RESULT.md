@@ -1,6 +1,6 @@
 # P-82 release-successor: the freeze releases the cell, and a retiring cell's successor warms as a standby with one primer round, on top of P-78: result
 
-Status: **kept, pending GitHub CI** (every local keep bar met), 2026-11-18. Reference machine: Apple M6 Mac mini, 12 cores (2 Super, 4 Performance, 6 Efficiency), 16 GiB, Node v26.13.1, Python 3.15.2. Stand-in model only (arm A, zero latency): **no model calls, no tokens**, and the credential variables are asserted unset. Precommit: [PRECOMMIT.md](PRECOMMIT.md), digest in `receipt/precommit.sha256`, committed and pushed (ed4f3aa) before any measurement of the lever.
+Status: **kept** (every keep bar met, including GitHub Linux CI on PR #184 at 5ca4000: lint, test (22), test (26), coverage, rust-lane and secret-scan green), 2026-11-18. Reference machine: Apple M6 Mac mini, 12 cores (2 Super, 4 Performance, 6 Efficiency), 16 GiB, Node v26.13.1, Python 3.15.2. Stand-in model only (arm A, zero latency): **no model calls, no tokens**, and the credential variables are asserted unset. Precommit: [PRECOMMIT.md](PRECOMMIT.md), digest in `receipt/precommit.sha256`, committed and pushed (ed4f3aa) before any measurement of the lever.
 
 - **Lever measured:** ea3625c, pushed before the acceptance rows; every P-82 receipt names it. It is P-80's 10c0cac and P-81's 6af4a68 re-applied on 48cd38f, with only `sources/SHA256SUMS` regenerated.
 - **Base arm:** P-78 at 48cd38f, which is `climb-r5-cell-cpu` with the CI fixes merged, and equal in tree to `main` after #178–#180.
