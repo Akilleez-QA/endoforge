@@ -1,5 +1,5 @@
 # Exploratory: CPU and bytes of json.dumps, json.loads, sha256, bytes.fromhex/.hex and SQLite by calling site, over a writer replay (sync off).
-import collections, hashlib, importlib, io, json, os, shutil, sqlite3, sys, time
+import collections, hashlib, io, json, os, shutil, sys, time
 
 root, capture, dest, limit = sys.argv[1], sys.argv[2], sys.argv[3], int(sys.argv[4])
 sys.path.insert(0, root)
@@ -61,7 +61,7 @@ class Conn:
         entry = cost[("sql", "COMMIT")]; entry[0] += 1; entry[1] += time.process_time() - begin
     def __getattr__(self, n): return getattr(self.db, n)
 real_conn = W.ledger_connection
-W.ledger_connection = lambda path: (lambda l, d: (l, Conn(d)))(*real_conn(path))
+W.ledger_connection = lambda path: (lambda ledger, d: (ledger, Conn(d)))(*real_conn(path))
 
 lines, prefix = [], None
 with open(capture, "rb") as handle:
