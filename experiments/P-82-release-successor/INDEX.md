@@ -1,0 +1,3 @@
+| Probe | Question | Result |
+|---|---|---|
+| [P-82](PRECOMMIT.md) | Round 9 of the climb loop: on top of P-78, do P-80's admit release and P-81's warm standby successor with one primer round, together, lift zero-latency throughput at width 64 past the keep bar? | **Kept** (CI green): width 64 76.3 → 80.7 needs/s (+5.8%, Welch t = 8.5, p ≈ 0.0002; predicted +5% to +10%); width 1 64.1 → 59.5 ms (−7.3%, p ≈ 0.0003); cell net utilisation 0.64 → 0.94, 10.6 cores, CPU per need +3.0%; needs/s per GB 15.4 → 17.0; single levers +4.3% (release) and +1.9% (successor), interaction −0.4% ± 0.9%; request stream identical, 0 wrong verdicts, no new test failure. The cells and the machine's CPU bind next (cell CPU per need 1.75× width 1) | [RESULT.md](RESULT.md) |

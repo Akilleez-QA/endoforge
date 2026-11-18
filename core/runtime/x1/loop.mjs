@@ -94,39 +94,40 @@ async function answerCall(pool, provider, call, job) {
 }
 async function answerKind(pool, provider, call, job, context) {
   if (call.kind === 'model') return modelTurn(context, provider, job.portOptions.jobKey, call.messages);
-  if (call.kind === 'admit') {
-    if (context.admission) throw Error('already admitted');
-    if (context.limits.oracle) { context.shadow['tests.json'] = applyChanges(context.shadow['tests.json'] ?? '', call.oracle?.changes ?? []); context.oracle = call.oracle?.report ?? null; }
-    const oracle = ['CONTRACT.md', 'tests.json'];
-    if (oracle.some(name => frozenText(call.files, name) !== context.shadow[name])) throw Error('frozen files differ from the model replies');
-    let tests = null;
-    try { tests = JSON.parse(context.shadow['tests.json']); } catch { }
-    if (testProblems(tests).length) throw Error('frozen tests must each assert something a kernel can fail');
-    context.observe?.('admitting');
-    const begin = performance.now();
-    let files = context.synth ? { ...call.files, [evaluatorFile]: await freezeEvaluator(context.synth, context.shadow) } : call.files;
-    const first = await admit(pool, context.reference, { need: context.need, configuration, files, implementation: call.implementation });
-    context.admission = first;
-    context.reference.identity = first.identity;
-    if (context.suspect) {
-      const revised = await reviseFrozen(pool, context.reference, context.suspect);
-      context.admission = revised.admission;
-      context.reference.identity = revised.admission.identity;
-      context.revision = { identity: revised.admission.identity, ...revised.revision };
-      Object.assign(context.shadow, revised.files);
-      files = { ...files, ...Object.fromEntries(Object.entries(revised.files).map(([name, text]) => [name, Buffer.from(text).toString('hex')])) };
-      context.restart = true;
-    }
-    context.freezeMs = performance.now() - begin;
-    context.editable = ['kernel.ts', 'glue.json'];
-    context.stageBase = context.tokens;
-    context.compatibility = await compatibilityFreeze(context.containedRoute, context.directory, context.need, context.shadow['tests.json']);
-    context.observe?.('admitted');
-    context.reused = await reuse(context.library, context.id, files, context.principal);
-    if (context.reused) context.restart = false;
-    return context.reused || context.restart ? { ...first, reused: true } : context.admission;
-  }
+  if (call.kind === 'admit') return freeze(pool, context, call);
   throw Error('unknown host call');
+}
+async function freeze(pool, context, call) {
+  if (context.admission) throw Error('already admitted');
+  if (context.limits.oracle) { context.shadow['tests.json'] = applyChanges(context.shadow['tests.json'] ?? '', call.oracle?.changes ?? []); context.oracle = call.oracle?.report ?? null; }
+  const oracle = ['CONTRACT.md', 'tests.json'];
+  if (oracle.some(name => frozenText(call.files, name) !== context.shadow[name])) throw Error('frozen files differ from the model replies');
+  let tests = null;
+  try { tests = JSON.parse(context.shadow['tests.json']); } catch { }
+  if (testProblems(tests).length) throw Error('frozen tests must each assert something a kernel can fail');
+  context.observe?.('admitting');
+  const begin = performance.now();
+  let files = context.synth ? { ...call.files, [evaluatorFile]: await freezeEvaluator(context.synth, context.shadow) } : call.files;
+  const first = await admit(pool, context.reference, { need: context.need, configuration, files, implementation: call.implementation });
+  context.admission = first;
+  context.reference.identity = first.identity;
+  if (context.suspect) {
+    const revised = await reviseFrozen(pool, context.reference, context.suspect);
+    context.admission = revised.admission;
+    context.reference.identity = revised.admission.identity;
+    context.revision = { identity: revised.admission.identity, ...revised.revision };
+    Object.assign(context.shadow, revised.files);
+    files = { ...files, ...Object.fromEntries(Object.entries(revised.files).map(([name, text]) => [name, Buffer.from(text).toString('hex')])) };
+    context.restart = true;
+  }
+  context.freezeMs = performance.now() - begin;
+  context.editable = ['kernel.ts', 'glue.json'];
+  context.stageBase = context.tokens;
+  context.compatibility = await compatibilityFreeze(context.containedRoute, context.directory, context.need, context.shadow['tests.json']);
+  context.observe?.('admitted');
+  context.reused = await reuse(context.library, context.id, files, context.principal);
+  if (context.reused) context.restart = false;
+  return context.reused || context.restart ? { ...first, reused: true } : context.admission;
 }
 async function freezeEvaluator(synth, shadow) {
   const root = await mkdtemp(join(tmpdir(), 'ef-synth-'));
@@ -276,6 +277,11 @@ export async function attemptAgent({ need, directory, pool, observe, limits = ag
       timings.gate += result.evidence?.timings?.gates ?? 0;
       if (rates && result.evidence?.timings) { rates.span('cell.compile', result.evidence.timings.compile); rates.span('cell.gates', result.evidence.timings.gates); }
       if (result.status !== 'waiting') break;
+      if (result.evidence.admit) {
+        await freeze(pool, context, result.evidence.admit);
+        if (context.reused) { provider.endSession(jobKey); return reusedResult(result.evidence.waiting.receipt); }
+        if (context.restart) { context.restart = false; waiting = null; continue; }
+      }
       const { shadow, calls, tokens, stageBase, editable } = context;
       waiting = { cell: result.evidence.waiting, host: { shadow, calls, tokens, stageBase, editable } };
       if (!context.admission || !waiting.cell.receipt.turns) continue;
