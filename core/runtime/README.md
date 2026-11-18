@@ -83,7 +83,7 @@ repair and commit into one warm cell and one bridge. `createLoopPool` in [x1/loo
 | `admit(pool, reference, { need, configuration, files?, resume? })` | One bridge request. Without `reference.identity` it appends task, input and frozen evaluator in one transaction; with one it re-verifies the tree. Returns `{ identity, digest, encoded }` |
 | `checkCandidate(pool, admission, { id, files })` | One cell job with no durable effect; returns failing gates and tests, or `null` |
 | `evaluateInCell(pool, { candidate, admission, repair?, timings? })` | One cell job; returns `{ observed, content, sources }`. A lost cell gives an `outcome_unknown` observation |
-| `commitCandidate(pool, { evaluated, reference, digest, decisionPath?, timings?, receiptId?, continuation?, evaluator? })` | Re-runs the gates on the supervisor when the report claims a pass (`checkAtCommit`), applies a frozen synthesized `evaluator`, then one bridge request; returns `{ promoted, inconclusive?, candidate, receipt, decision, problem, status, report, rounds, rerun, synthesis? }` |
+| `commitCandidate(pool, { evaluated, reference, digest, decisionPath?, timings?, receiptId?, continuation?, evaluator? })` | Re-runs the gates on one of two supervisor worker threads (`x1/rerun.mjs`), off the event loop, when the report claims a pass (`checkAtCommit`), applies a frozen synthesized `evaluator`, then one bridge request; returns `{ promoted, inconclusive?, candidate, receipt, decision, problem, status, report, rounds, rerun, synthesis? }` |
 | `evaluateAndCommit(pool, {...})` | The last two together |
 | `repair: { module, maxRounds, options }` | Runs a host-supplied repair module inside the cell, a fresh compile and instances each round; it may not change the oracle files |
 
