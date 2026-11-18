@@ -94,6 +94,16 @@ variants with checked versions:
 - a module compiled outside the cell cannot be instantiated, except a `sharedWasmModules` entry the supervisor
   compiled through the same guard.
 
+The guard rewrites every memory-bearing module a cell compiles, the 8.9 MB pinned compiler included, once per cell
+start. Since P-78 the rewrite copies each module once: sections and entries stay views of the input, each output is
+concatenated once, and the code bodies are scanned with a table of each admitted opcode's immediates (any other
+opcode is refused). Each `memory.grow` becomes a call to its bounded helper; every other byte is copied through
+unchanged. `isolate-wasm-rewrite.test.mjs` pins this: in a guarded worker set up as a workcell starts, the compiler and
+the primer kernels of a warm-up must come out with the length and SHA-256 that the per-byte rewrite before P-78
+produced, and the whole compile sequence must hash the same. Like a workcell, that worker first lets Node's bundled
+undici (before major version 8, as in Node 22) instantiate its own WebAssembly parser, before any guard or recorder is
+installed, so the warm-up cannot reach it under the guard and only the cell's own modules are recorded.
+
 A pinned third-party tool built with exception handling or SIMD, such as the browser engine pinned in
 [tools/browser/pin.mjs](../../tools/browser/pin.mjs), goes through a separate path,
 [isolate-wasm-tooling.mjs](../../core/runtime/isolate-wasm-tooling.mjs). Only a module whose SHA-256 is in the

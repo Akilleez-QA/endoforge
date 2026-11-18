@@ -2,8 +2,6 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { Worker } from 'node:worker_threads';
 
-// P-78: the guard rewrites every module a cell compiles, the 8.9 MB compiler included, once per cell start. The rewrite
-// copies through every byte it does not change; these digests are what the per-byte rewrite before P-78 produced.
 const guard = new URL('../isolate-wasm.mjs', import.meta.url).href;
 const compiler = { bytes: 8907183, sha256: '4ef5a64b915604b42bfdba2d1f4fc3536678e3b3d5b836e586c71a16eb84d529' };
 const sequence = 'a5fe94b318916f68c16a723eabd4e0fc90a2f9573e2e2ef246f279fb0136e4d4';
@@ -11,6 +9,19 @@ const sequence = 'a5fe94b318916f68c16a723eabd4e0fc90a2f9573e2e2ef246f279fb0136e4
 const body = `
 const { createHash } = await import('node:crypto');
 const { parentPort, workerData: { guard, pin, port } } = await import('node:worker_threads');
+const nativeInstantiate = WebAssembly.instantiate;
+let undiciTimer;
+if (Number(process.versions.undici?.split('.')[0]) < 8) await Promise.race([new Promise(resolve => {
+  WebAssembly.instantiate = (...args) => {
+    WebAssembly.instantiate = nativeInstantiate;
+    const pending = nativeInstantiate(...args);
+    pending.then(resolve, resolve);
+    return pending;
+  };
+  void globalThis.Response;
+}), new Promise(resolve => { undiciTimer = setTimeout(resolve, 2000); })]);
+clearTimeout(undiciTimer);
+WebAssembly.instantiate = nativeInstantiate;
 const seen = [], record = bytes => { const view = ArrayBuffer.isView(bytes) ? new Uint8Array(bytes.buffer, bytes.byteOffset, bytes.byteLength) : new Uint8Array(bytes); seen.push([view.length, createHash('sha256').update(view).digest('hex')]); };
 const compile = WebAssembly.compile, Module = WebAssembly.Module;
 WebAssembly.compile = (bytes, options) => { record(bytes); return compile(bytes, options); };
