@@ -1,0 +1,16 @@
+# node curve.mjs <P-78 tree> 0 <sequence>, idle machine, one process each; CPU is process CPU (all threads), ms.
+# p8,k24 = 8 primer rounds then 24 P-15 kernels (compile, then WebAssembly.Module through the guard).
+p8,k24  total 2329 load 245 primers 661 kernels 1398
+p1,k24  total 2124 load 238 primers 283 kernels 1562
+p0,k24  total 2077 load 242 primers 0 kernels 1823
+p8,k24  total 2312 load 238 primers 663 kernels 1385
+p1,k24  total 2128 load 237 primers 290 kernels 1561
+p0,k24  total 2067 load 234 primers 0 kernels 1823
+# per-round primer CPU/wall: [283,89],[74,22],[47,19],[39,20],[43,21],[60,15],[89,24],[46,17], then ~30-45
+# per-round kernel CPU after no primer: [459,115],[209,43],[106,30],[82,29],[57,27], then ~45-60
+# idle cell start (warm.mjs, 1 cell): primes 8: 0.97-1.00 CPU-s, 426-479 ms wall; primes 0: 0.30 CPU-s, 210 ms wall
+# Node compile cache (module.enableCompileCache), warm second run: loadCompiler 230 -> 196 ms CPU, round 0 unchanged
+# V8 flags, p0,k80 (cell heap flags), total CPU / wall of the 80 rounds:
+#   default 3998-4044 / 1906-1924; --single-threaded-gc 3816-3818 / 2504-2507; --no-parallel-scavenge 3798-4058 / 2266-2406
+#   --min-semi-space-size=32 4247-4295 / 1960-1969; --v8-pool-size=2 3848-3852 / 2069-2081; --no-turbofan 4364-4373 / 2303-2318
+#   --no-wasm-tier-up 4159-4164 / 1946-1961; --no-maglev 4267-4291 / 1995-2000
