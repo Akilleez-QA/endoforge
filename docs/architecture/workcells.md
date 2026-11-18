@@ -63,13 +63,13 @@ thread cells on the agent path (116 against 124 ms p50).
 
 | Limit | Default | Enforced by |
 |---|---|---|
-| `size` | `os.availableParallelism()` | The queue; at most `size` cells |
+| `size` | `os.availableParallelism()` | The queue; at most `size` cells take jobs (plus one standby successor, below) |
 | `resourceLimits` | `{ maxOldGenerationSizeMb: 128, maxYoungGenerationSizeMb: 16 }` | V8 per cell. Heap flags in `execArgv` or `NODE_OPTIONS` are refused, so they can't override it |
 | `wasmMemoryMaxMb` | 64 (1–4096) | The WASM guard, per linear memory |
 | `jobTimeoutMs` | unset | Starts when the cell is ready, pauses during host calls; at expiry the cell is terminated and replaced |
 | `jobDeadlineMs` | unset | Total time from dispatch, host calls included |
 | `warmTimeoutMs` | 60,000 | A cell still warming is terminated and counts as a start failure |
-| `retireAfterJobs` | 256 | A cell is replaced after that many jobs |
+| `retireAfterJobs` | 256 | A cell is replaced after that many jobs; above 32, by a successor that started 32 jobs earlier |
 | Host calls | 4,096 per job, 1 MiB each, asynchronous and synchronous together; a synchronous reply up to 17 MiB | `hostCalls` and `syncHostCalls` channels |
 
 `createLoopPool` ([loop.mjs](../../core/runtime/x1/loop.mjs)) builds a pool for the loop: process cells by default,
@@ -112,11 +112,17 @@ carries the supervisor's copy.
 `ready()` spawns `size` cells and resolves once each has installed its guard and reported `ready`, and the ledger
 bridge has started. With `warm: {...}`, each cell first awaits its host port's `warm(options)`. The loop port's `warm`
 verifies the compiler files against the digests in `tools/asc/pin.mjs`, loads the compiler, and runs a primer kernel
-through compile and gates eight times (`primes`), so the first real job pays nothing to start. P-50 measured `ready()`
+through compile and gates once (`primes`), so the first real job does not pay the compiler's first, coldest round.
+Repeating the primer does not warm the paths real kernels take: P-81 measured rounds 2–8 at about 380 ms of CPU per
+cell start against about 165 ms saved on the later kernels. P-50 measured `ready()`
 at 2.5–3.5 s for one cell and 6–8 s for eight; [P-46](../../experiments/P-46-prewarm/RESULT.md) showed warm state
 moving the first job's cost into `ready()` without shrinking the total.
 
-A replacement cell warms itself and is not awaited; a job handed to it isn't charged for its start. After `size + 2`
+A replacement cell warms itself and is not awaited; a job handed to it isn't charged for its start. With
+`retireAfterJobs` above 32, a cell within 32 jobs of retiring starts its successor, which waits as a standby: it takes no
+job until the cell retires, then takes its slot at once, so no job waits on a warming cell (P-81). There is one standby
+at a time (`stats.standby`); a cell that retires without one is replaced as before, and a standby that exits first is
+not respawned. After `size + 2`
 cells in a row exit before reporting ready, the pool stops respawning, `halted` turns true, and queued and later jobs
 return `outcome_unknown` with reason `workcell_start_failed`.
 
