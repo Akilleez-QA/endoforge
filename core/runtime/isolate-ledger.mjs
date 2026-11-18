@@ -199,15 +199,25 @@ export class LedgerShards {
     return this.#shards.some(shard => shard.failed);
   }
 
+  get pids() {
+    return this.#shards.map(shard => shard.pid).filter(pid => pid !== undefined);
+  }
+
   get pid() {
-    return this.#shards[0].pid;
+    return this.pids[0];
+  }
+
+  #failed() {
+    return this.#shards.find(shard => shard.failed);
   }
 
   request(action, job, result) {
-    return this.#shard(job).request(action, job, result);
+    return (this.#failed() ?? this.#shard(job)).request(action, job, result);
   }
 
   async start() {
+    const failed = this.#failed();
+    if (failed) return failed.start();
     return (await Promise.all(this.#shards.map(shard => shard.start())))[0];
   }
 

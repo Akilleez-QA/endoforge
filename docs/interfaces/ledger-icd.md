@@ -138,6 +138,12 @@ closed. `pid` (read-only, since round 9) is the bridge process's pid: `undefined
 restart is pending, and still the dead process's pid after the bridge fails closed. `IsolatePool` exposes its bridge as
 `pool.ledger`; the bridge-death test uses `pool.ledger.pid` to kill exactly the pool's own bridge.
 
+Since P-76, `pool.ledger` is a `LedgerShards`: `LEDGER_SHARDS` (4) `LedgerBridge` writers, each started on its first
+request (or all by `start()`, which `ready()` of a prewarmed pool calls), with each ledger path routed to one writer.
+It keeps the single bridge's fail-closed contract: once any writer has failed closed, `failed` is true and every later
+request, to any ledger, rejects with that writer's failure without reaching or spawning a writer. `pids` lists the
+spawned writers' pids in shard order and `pid` is the first of them, so with one ledger `pid` is that ledger's writer.
+
 ### Ledger writer journal
 
 The writer drains up to 128 queued requests, groups them by ledger path, and applies each ledger's group in one

@@ -77,6 +77,25 @@ test('the shards keep each ledger on one writer and share one journal directory'
   assert.deepEqual(readdirSync(join(root, 'journal')).filter(name => name.endsWith('.journal')), []);
 });
 
+test('one writer failing closed fails every shard closed and spawns no writer', { timeout: 60000 }, async t => {
+  const root = scratch(t);
+  const shards = new LedgerShards({ extension: 'tests.fixtures.ledger_notes', journal: join(root, 'journal') });
+  t.after(() => shards.close());
+  const [first] = await drive(shards, root, 1, 1);
+  assert(first.sent.every(entry => entry.acked));
+  assert.equal(shards.pids.length, 1);
+  const [writer] = shards.pids;
+  process.kill(writer, 'SIGKILL');
+  for (let tries = 0; !shards.failed && tries < 1000; tries += 1) await new Promise(resolve => setTimeout(resolve, 5));
+  assert(shards.failed);
+  const later = await drive(shards, join(root, 'later'), 32, 1);
+  for (const { sent } of later) assert.deepEqual(sent.map(entry => entry.acked), [false]);
+  await assert.rejects(shards.request('admit', { reference: { ledger: join(root, 'other.sqlite') } }, { need: 'x' }), /bridge failed/);
+  assert.deepEqual(shards.pids, [writer]);
+  await assert.rejects(shards.start(), /bridge failed/);
+  assert.deepEqual(shards.pids, [writer]);
+});
+
 for (const [point, lost] of [['after_apply', false], ['half_frame', true], ['after_sync', true], ['half_acks', false]]) {
   test(`SIGKILL of the writer at ${point}${lost ? ' with the ledger files lost' : ''} keeps every acknowledged event once`, { timeout: 60000 }, async t => {
     const root = scratch(t), journal = join(root, 'journal');
