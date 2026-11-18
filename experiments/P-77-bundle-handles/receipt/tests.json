@@ -1,0 +1,2055 @@
+{
+ "p76": [
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/x1-contract.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/x1-frozen.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/x1-measured.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/x1-render-tests.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/x1-rerun.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/x1.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/generator-exact.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/generator-reference.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/generator-scalar.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/generator.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/promotion.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/synth-pipeline.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/synth.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/pipeline-contained.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/loop-agent.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "failing tests:",
+    "the warm transport spawns once, sends only new turns and clears between sessions"
+   ]
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/loop-count.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "a real syscall counter sees no spawn or write before commit in the cell, and sees both on the current path",
+    "failing tests:"
+   ]
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/loop-crash.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/loop-example.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/loop-feedback.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/loop-review.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "14: the counter sees writes on an open file and memfd, not only opens",
+    "7: a bridge death does not poison the pool, and no specification turn is spent on a dead bridge",
+    "failing tests:"
+   ]
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/loop-waits.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/loop.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -I tools/check-docs.py",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -I tools/experiments_index.py --check",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -I tools/source_sums.py --check",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -I tools/experiment_id.py check",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -I tools/check-privacy.py",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -I tools/check_file_url_paths.py",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -I tools/check_trace.py",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -I tools/gen_data_dictionary.py --check",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -I tools/check_durable_sync.py",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest discover -s tests -v",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest core.ledger.test_frozen",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest core.ledger.test_ledger",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest core.ledger.test_provenance",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_check_durable_sync",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_check_file_url_paths",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_dump_list",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_durable",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_fold_changelog",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_ledger_shed",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_ledger_writer",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_x1_decision_file",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_x1_labels",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_x1_revise_structured",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/engine/evaluator.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/engine/gates.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/capacity.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "failing tests:",
+    "without sysfs or cgroups the probe degrades to availableParallelism and says so"
+   ]
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/contained-js.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "a V8 fatal error takes one pool cell and no sibling",
+    "failing tests:"
+   ]
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/dump-list.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps-compat.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps-gluestate.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps-synth.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps-transport.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps-x1runtime.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps10-sandbox.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps2-commit.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps3-generator.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps3-meter.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps4-runtime.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps4-synth.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps5-capability.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps6-capability.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps6-hostcall.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps6-synthcell.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps8-capability-nested.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/isolate-deadline.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/isolate-flags.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/isolate-host-call.test.mjs",
+   "status": "excluded",
+   "code": null,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/isolate-limits.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "a process stack too small for the environment is refused when the cell starts",
+    "failing tests:",
+    "process: a stack overflow under stackSizeMb is an unknown outcome, not a dead process",
+    "process: with 1536 KiB of environment, a stack overflow is still a RangeError, not SIGSEGV",
+    "process: with 512 KiB of environment, a stack overflow is still a RangeError, not SIGSEGV"
+   ]
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/isolate-offheap.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/isolate-pool.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "bridge death rejects pending runs and all later requests without respawning",
+    "failing tests:",
+    "prewarm ready() starts the ledger bridge; lazy pools start it on first request"
+   ]
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/isolate-process.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/isolate-shared-module.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/isolate-toolchain.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/isolate-tooling-wasm.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/isolate-trusted-cap.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/ledger-writer.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "SIGKILL of the writer at half_frame with the ledger files lost keeps every acknowledged event once",
+    "failing tests:"
+   ]
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/oracle-parser.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/oracle-round2.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/oracle.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/stage-rates.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/subscription-guard.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "failing tests:",
+    "the child environment carries no key or billing override"
+   ]
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/timing-guard.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/usage-governor.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/tscheck/test/cohort-check.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/tscheck/test/contained-route.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/tscheck/test/dump-list.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/tscheck/test/requalify.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/tscheck/test/tscheck.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "failing tests:",
+    "in process cells, deep input needs the stack limit as it does in threads"
+   ]
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/tscheck/test/tsrs-reuse.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/tscheck/test/verdict.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/browser/setup.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/browser/test/engine.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/browser/test/render.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/atomizer/test/run.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "node tools/atomizer/test/agent-swarm.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "node tools/atomizer/test/cli-usage.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/atomizer/test/commands.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "node tools/atomizer/test/cutover-policy.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/atomizer/test/tools-gaps.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "node tools/atomizer/test/trace.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/atomizer/test/verify-policy-pass.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "failing tests:",
+    "fanout verifies each run against the policy it ran with",
+    "fanout without --policy verifies against the default policy"
+   ]
+  },
+  {
+   "command": "python3 -B -m unittest tools.step_harness.test_retired",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.hardware_record.test_record",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "test_capacity_refusal_restores_affinity (tools.hardware_record.test_record.RecordTests.test_capacity_refusal_restores_affinity)"
+   ]
+  },
+  {
+   "command": "node core/runtime/test/agent-pool.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "node tools/lib/test/errors.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/lib/test/exitfile.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/lib/test/headroom.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/lib/test/lock.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/conductor/test/adopt-example.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/conductor/test/conductor-gaps.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/conductor/test/failopen.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/conductor/test/principles.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "node tools/conductor/test/relaunch-done.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "a relaunch patch on a done job reopens it to streaming with a recorded transition, and the conductor runs the atom again",
+    "failing tests:"
+   ]
+  },
+  {
+   "command": "node tools/conductor/test/stream.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "node tools/conductor/test/trace-needed.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "a freeze whose change adds test files emits TRACE-NEEDED listing the new tests still present",
+    "failing tests:"
+   ]
+  },
+  {
+   "command": "node tools/hillclimb/test/compose-mounts.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/hillclimb/test/fanout-plan-scoreboard.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/hillclimb/test/lessons.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/hillclimb/test/runner.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "node tools/job/test/failopen.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/job/test/invariants-gates.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "I17: calibrateBase expands the conductor's placeholders, with ${repo} the baseline worktree",
+    "failing tests:"
+   ]
+  },
+  {
+   "command": "node tools/job/test/kinds-compile-sources.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/job/test/references.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B tools/job-locks/test_job_locks.py",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/library/test/library-reuse-example.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/library/test/library.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/library/test/union-layout.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B tools/factory_portability/test_checkpoint.py",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "python3 -B tools/factory_portability/test_transfer_qualify_resume.py",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m tools.factory_campaign.test_model_journal",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m tools.factory_campaign.test_repair",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m tools.factory_campaign.test_state",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.seeded_faults.test_generator",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.escape_harness.test_harness",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/compatibility/contract.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m tools.kernel.install_tools --check",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.kernel.test_broker",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "test_broker (unittest.loader._FailedTest.test_broker)"
+   ]
+  },
+  {
+   "command": "python3 -B -m unittest tools.kernel.test_conformance",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "test_conformance (unittest.loader._FailedTest.test_conformance)"
+   ]
+  },
+  {
+   "command": "python3 -B -m unittest tools.kernel.test_contract",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "setUpClass (tools.kernel.test_contract.KernelContractTests)"
+   ]
+  },
+  {
+   "command": "python3 -B -m unittest tools.kernel.test_effects",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "test_effects (unittest.loader._FailedTest.test_effects)"
+   ]
+  },
+  {
+   "command": "python3 -B -m unittest tools.kernel.test_limits",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "test_limits (unittest.loader._FailedTest.test_limits)"
+   ]
+  },
+  {
+   "command": "python3 -B -m unittest tools.kernel.test_workcell",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "test_workcell (unittest.loader._FailedTest.test_workcell)"
+   ]
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/test_gate_structured.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/pipeline-fallback.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/pipeline-retry.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "PYTHONOPTIMIZE= python3 -B experiments/P-19-need-to-candidate/verify.py",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.factory_runtime.test_runtime_gaps",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "test_absent_container_reconciles_without_publication (tools.factory_runtime.test_runtime_gaps.Recovery.test_absent_container_reconciles_without_publication)",
+    "test_capture_attempt_records_digest_without_publication (tools.factory_runtime.test_runtime_gaps.Runner.test_capture_attempt_records_digest_without_publication)",
+    "test_existing_journal_restores_signal_handlers (tools.factory_runtime.test_runtime_gaps.Runner.test_existing_journal_restores_signal_handlers)",
+    "test_failure_outcomes (tools.factory_runtime.test_runtime_gaps.Runner.test_failure_outcomes)",
+    "test_foreign_container_is_left_untouched (tools.factory_runtime.test_runtime_gaps.Recovery.test_foreign_container_is_left_untouched)",
+    "test_foreign_owner_label_is_never_removed (tools.factory_runtime.test_runtime_gaps.Runner.test_foreign_owner_label_is_never_removed)",
+    "test_identity_and_liveness (tools.factory_runtime.test_runtime_gaps.Fencing.test_identity_and_liveness)",
+    "test_input_hash_mismatch_never_creates_a_container (tools.factory_runtime.test_runtime_gaps.Runner.test_input_hash_mismatch_never_creates_a_container)",
+    "test_journal_before_create_is_exclusive_and_validated (tools.factory_runtime.test_runtime_gaps.Recovery.test_journal_before_create_is_exclusive_and_validated)",
+    "test_live_controller_is_refused (tools.factory_runtime.test_runtime_gaps.Recovery.test_live_controller_is_refused)",
+    "test_owned_running_container_is_stopped_logged_and_removed (tools.factory_runtime.test_runtime_gaps.Recovery.test_owned_running_container_is_stopped_logged_and_removed)",
+    "test_passed_attempt_publishes_once_with_valid_receipt (tools.factory_runtime.test_runtime_gaps.Runner.test_passed_attempt_publishes_once_with_valid_receipt)",
+    "test_publication_is_recovered_only_at_expected_digest (tools.factory_runtime.test_runtime_gaps.Recovery.test_publication_is_recovered_only_at_expected_digest)",
+    "test_runner_crash_is_reconciled (tools.factory_runtime.test_runtime_gaps.Recovery.test_runner_crash_is_reconciled)",
+    "test_second_controller_is_refused_and_stale_fence_detected (tools.factory_runtime.test_runtime_gaps.Fencing.test_second_controller_is_refused_and_stale_fence_detected)"
+   ]
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_approved_atoms",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_gen_release_docs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_check_comments",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/project-scheduler/test/scheduler.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 experiments/P-64-streaming-check/analyze.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 experiments/P-65-unit-gate/analyze.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 experiments/P-70-oracle-injected/analyze.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 experiments/P-71-oracle-round2/analyze.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  }
+ ],
+ "p77": [
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/x1-contract.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/x1-frozen.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/x1-measured.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/x1-render-tests.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/x1-rerun.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/x1.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/generator-exact.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/generator-reference.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/generator-scalar.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/generator.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/promotion.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/synth-pipeline.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/synth.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/pipeline-contained.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/loop-agent.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "failing tests:",
+    "the warm transport spawns once, sends only new turns and clears between sessions"
+   ]
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/loop-count.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "a real syscall counter sees no spawn or write before commit in the cell, and sees both on the current path",
+    "failing tests:"
+   ]
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/loop-crash.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/loop-example.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/loop-feedback.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/loop-review.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "14: the counter sees writes on an open file and memfd, not only opens",
+    "7: a bridge death does not poison the pool, and no specification turn is spent on a dead bridge",
+    "failing tests:"
+   ]
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/loop-waits.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/loop.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -I tools/check-docs.py",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -I tools/experiments_index.py --check",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -I tools/source_sums.py --check",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -I tools/experiment_id.py check",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -I tools/check-privacy.py",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -I tools/check_file_url_paths.py",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -I tools/check_trace.py",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "python3 -I tools/gen_data_dictionary.py --check",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -I tools/check_durable_sync.py",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest discover -s tests -v",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "test_repository_trace_is_clean (test_check_trace.CheckTraceTest.test_repository_trace_is_clean)"
+   ]
+  },
+  {
+   "command": "python3 -B -m unittest core.ledger.test_frozen",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest core.ledger.test_ledger",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest core.ledger.test_provenance",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_check_durable_sync",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_check_file_url_paths",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_dump_list",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_durable",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_fold_changelog",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_ledger_shed",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_ledger_writer",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_x1_decision_file",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_x1_handles",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_x1_labels",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_x1_revise_structured",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/engine/evaluator.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/engine/gates.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/capacity.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "failing tests:",
+    "without sysfs or cgroups the probe degrades to availableParallelism and says so"
+   ]
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/contained-js.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "a V8 fatal error takes one pool cell and no sibling",
+    "failing tests:"
+   ]
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/dump-list.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps-compat.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps-gluestate.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps-synth.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps-transport.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps-x1runtime.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps10-sandbox.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps2-commit.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps3-generator.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps3-meter.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps4-runtime.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps4-synth.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps5-capability.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps6-capability.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps6-hostcall.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps6-synthcell.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/gaps8-capability-nested.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/isolate-deadline.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/isolate-flags.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/isolate-host-call.test.mjs",
+   "status": "excluded",
+   "code": null,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/isolate-limits.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "a process stack too small for the environment is refused when the cell starts",
+    "failing tests:",
+    "process: a stack overflow under stackSizeMb is an unknown outcome, not a dead process",
+    "process: with 1536 KiB of environment, a stack overflow is still a RangeError, not SIGSEGV",
+    "process: with 512 KiB of environment, a stack overflow is still a RangeError, not SIGSEGV"
+   ]
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/isolate-offheap.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/isolate-pool.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "bridge death rejects pending runs and all later requests without respawning",
+    "failing tests:",
+    "prewarm ready() starts the ledger bridge; lazy pools start it on first request"
+   ]
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/isolate-process.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/isolate-shared-module.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/isolate-toolchain.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/isolate-tooling-wasm.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/isolate-trusted-cap.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/ledger-writer.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "SIGKILL of the writer at half_frame with the ledger files lost keeps every acknowledged event once",
+    "failing tests:"
+   ]
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/oracle-parser.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/oracle-round2.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/oracle.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/stage-rates.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/subscription-guard.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "failing tests:",
+    "the child environment carries no key or billing override"
+   ]
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/timing-guard.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/usage-governor.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/tscheck/test/cohort-check.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/tscheck/test/contained-route.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/tscheck/test/dump-list.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/tscheck/test/requalify.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/tscheck/test/tscheck.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "failing tests:",
+    "in process cells, deep input needs the stack limit as it does in threads"
+   ]
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/tscheck/test/tsrs-reuse.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/tscheck/test/verdict.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/browser/setup.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/browser/test/engine.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/browser/test/render.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/atomizer/test/run.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "node tools/atomizer/test/agent-swarm.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "node tools/atomizer/test/cli-usage.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/atomizer/test/commands.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "node tools/atomizer/test/cutover-policy.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/atomizer/test/tools-gaps.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "node tools/atomizer/test/trace.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/atomizer/test/verify-policy-pass.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "failing tests:",
+    "fanout verifies each run against the policy it ran with",
+    "fanout without --policy verifies against the default policy"
+   ]
+  },
+  {
+   "command": "python3 -B -m unittest tools.step_harness.test_retired",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.hardware_record.test_record",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "test_capacity_refusal_restores_affinity (tools.hardware_record.test_record.RecordTests.test_capacity_refusal_restores_affinity)"
+   ]
+  },
+  {
+   "command": "node core/runtime/test/agent-pool.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "node tools/lib/test/errors.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/lib/test/exitfile.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/lib/test/headroom.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/lib/test/lock.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/conductor/test/adopt-example.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/conductor/test/conductor-gaps.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/conductor/test/failopen.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/conductor/test/principles.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "node tools/conductor/test/relaunch-done.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "a relaunch patch on a done job reopens it to streaming with a recorded transition, and the conductor runs the atom again",
+    "failing tests:"
+   ]
+  },
+  {
+   "command": "node tools/conductor/test/stream.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "node tools/conductor/test/trace-needed.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "a freeze whose change adds test files emits TRACE-NEEDED listing the new tests still present",
+    "failing tests:"
+   ]
+  },
+  {
+   "command": "node tools/hillclimb/test/compose-mounts.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/hillclimb/test/fanout-plan-scoreboard.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/hillclimb/test/lessons.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/hillclimb/test/runner.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "node tools/job/test/failopen.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/job/test/invariants-gates.test.mjs",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "I17: calibrateBase expands the conductor's placeholders, with ${repo} the baseline worktree",
+    "failing tests:"
+   ]
+  },
+  {
+   "command": "node tools/job/test/kinds-compile-sources.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node tools/job/test/references.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B tools/job-locks/test_job_locks.py",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/library/test/library-reuse-example.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/library/test/library.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/library/test/union-layout.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B tools/factory_portability/test_checkpoint.py",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "python3 -B tools/factory_portability/test_transfer_qualify_resume.py",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m tools.factory_campaign.test_model_journal",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m tools.factory_campaign.test_repair",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m tools.factory_campaign.test_state",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.seeded_faults.test_generator",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.escape_harness.test_harness",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/compatibility/contract.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m tools.kernel.install_tools --check",
+   "status": "fail",
+   "code": 1,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.kernel.test_broker",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "test_broker (unittest.loader._FailedTest.test_broker)"
+   ]
+  },
+  {
+   "command": "python3 -B -m unittest tools.kernel.test_conformance",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "test_conformance (unittest.loader._FailedTest.test_conformance)"
+   ]
+  },
+  {
+   "command": "python3 -B -m unittest tools.kernel.test_contract",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "setUpClass (tools.kernel.test_contract.KernelContractTests)"
+   ]
+  },
+  {
+   "command": "python3 -B -m unittest tools.kernel.test_effects",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "test_effects (unittest.loader._FailedTest.test_effects)"
+   ]
+  },
+  {
+   "command": "python3 -B -m unittest tools.kernel.test_limits",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "test_limits (unittest.loader._FailedTest.test_limits)"
+   ]
+  },
+  {
+   "command": "python3 -B -m unittest tools.kernel.test_workcell",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "test_workcell (unittest.loader._FailedTest.test_workcell)"
+   ]
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/test_gate_structured.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/pipeline-fallback.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/pipeline-retry.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "PYTHONOPTIMIZE= python3 -B experiments/P-19-need-to-candidate/verify.py",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.factory_runtime.test_runtime_gaps",
+   "status": "fail",
+   "code": 1,
+   "failing": [
+    "test_absent_container_reconciles_without_publication (tools.factory_runtime.test_runtime_gaps.Recovery.test_absent_container_reconciles_without_publication)",
+    "test_capture_attempt_records_digest_without_publication (tools.factory_runtime.test_runtime_gaps.Runner.test_capture_attempt_records_digest_without_publication)",
+    "test_existing_journal_restores_signal_handlers (tools.factory_runtime.test_runtime_gaps.Runner.test_existing_journal_restores_signal_handlers)",
+    "test_failure_outcomes (tools.factory_runtime.test_runtime_gaps.Runner.test_failure_outcomes)",
+    "test_foreign_container_is_left_untouched (tools.factory_runtime.test_runtime_gaps.Recovery.test_foreign_container_is_left_untouched)",
+    "test_foreign_owner_label_is_never_removed (tools.factory_runtime.test_runtime_gaps.Runner.test_foreign_owner_label_is_never_removed)",
+    "test_identity_and_liveness (tools.factory_runtime.test_runtime_gaps.Fencing.test_identity_and_liveness)",
+    "test_input_hash_mismatch_never_creates_a_container (tools.factory_runtime.test_runtime_gaps.Runner.test_input_hash_mismatch_never_creates_a_container)",
+    "test_journal_before_create_is_exclusive_and_validated (tools.factory_runtime.test_runtime_gaps.Recovery.test_journal_before_create_is_exclusive_and_validated)",
+    "test_live_controller_is_refused (tools.factory_runtime.test_runtime_gaps.Recovery.test_live_controller_is_refused)",
+    "test_owned_running_container_is_stopped_logged_and_removed (tools.factory_runtime.test_runtime_gaps.Recovery.test_owned_running_container_is_stopped_logged_and_removed)",
+    "test_passed_attempt_publishes_once_with_valid_receipt (tools.factory_runtime.test_runtime_gaps.Runner.test_passed_attempt_publishes_once_with_valid_receipt)",
+    "test_publication_is_recovered_only_at_expected_digest (tools.factory_runtime.test_runtime_gaps.Recovery.test_publication_is_recovered_only_at_expected_digest)",
+    "test_runner_crash_is_reconciled (tools.factory_runtime.test_runtime_gaps.Recovery.test_runner_crash_is_reconciled)",
+    "test_second_controller_is_refused_and_stale_fence_detected (tools.factory_runtime.test_runtime_gaps.Fencing.test_second_controller_is_refused_and_stale_fence_detected)"
+   ]
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_approved_atoms",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_gen_release_docs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "python3 -B -m unittest tools.test_check_comments",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 tools/project-scheduler/test/scheduler.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 experiments/P-64-streaming-check/analyze.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 experiments/P-65-unit-gate/analyze.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 experiments/P-70-oracle-injected/analyze.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  },
+  {
+   "command": "node --test --test-timeout=120000 experiments/P-71-oracle-round2/analyze.test.mjs",
+   "status": "pass",
+   "code": 0,
+   "failing": []
+  }
+ ],
+ "note": "make -n -k test expanded to one command per test file (node --test) or module (unittest), each with --test-timeout=120000 under a 600 s alarm; isolate-host-call.test.mjs excluded on both arms. P-77 was run before tools/test_x1_handles.py was added to docs/verification/verification-matrix.md; that made check_trace and tests/test_check_trace fail on P-77 only, fixed in the next commit and re-run (both pass)."
+}

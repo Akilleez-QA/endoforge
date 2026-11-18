@@ -13,7 +13,9 @@ export const cellFiles = Object.freeze(['loop-port.mjs', 'agent.mjs', 'oracle.mj
 export const implementationFiles = Object.freeze([...hostFiles, ...cellFiles]);
 const oracleFiles = ['CONTRACT.md', 'tests.json', 'frozen.sha256'];
 const maximumKernelPages = 1024;
-const implementation = Object.fromEntries(implementationFiles.map(name => [name, readFileSync(new URL(name, import.meta.url)).toString('hex')]));
+const implementationBytes = implementationFiles.map(name => [name, readFileSync(new URL(name, import.meta.url))]);
+const implementation = Object.fromEntries(implementationBytes.map(([name, bytes]) => [name, bytes.toString('hex')]));
+export const implementationDigests = Object.freeze(Object.fromEntries(implementationBytes.map(([name, bytes]) => [name, hash(bytes)])));
 const primer = {
   id: 'primer',
   files: { 'CONTRACT.md': 'Warm-up primer.', 'kernel.ts': 'export function primer(a:f64,b:i32):f64{let t=a;for(let i=0;i<b;i++){t+=Math.sqrt(<f64>i)}if(b<0){throw new Error("range")}return t}',
@@ -84,13 +86,35 @@ export async function warm({ primes = 8, path = ASC_PATH, render = null } = {}) 
   for (let i = 0; i < primes; i++) runGates({ ...primer, compiled: await compileInCell(primer.files) });
 }
 
+const filled = (text, elided, quote) => {
+  const at = elided.map(name => {
+    if (implementation[name] === undefined) throw Error('frozen identity changed');
+    const key = `${quote}"${name}${quote}":${quote}"`, start = text.indexOf(`${key}${quote}"`);
+    if (start < 0 || start !== text.lastIndexOf(`${key}${quote}"`)) throw Error('frozen identity changed');
+    return [start + key.length, name];
+  }).sort((a, b) => a[0] - b[0]);
+  const pieces = [];
+  let from = 0;
+  for (const [end, name] of at) { pieces.push(text.slice(from, end), implementation[name]); from = end; }
+  pieces.push(text.slice(from));
+  return pieces;
+};
+const digestOf = pieces => pieces.reduce((sha, piece) => sha.update(piece), createHash('sha256')).digest('hex');
+function framed({ frame, elided }) {
+  const data = JSON.parse(frame), thin = JSON.stringify(data.content), at = frame.indexOf(thin);
+  if (typeof data.content !== 'string' || at < 0 || at !== frame.lastIndexOf(thin)) throw Error('frozen identity changed');
+  const escaped = filled(thin, elided, '\\');
+  return { data, encoded: [frame.slice(0, at), ...escaped, frame.slice(at + thin.length)], content: filled(data.content, elided, '') };
+}
+export const encodedOf = admission => framed(admission).encoded.join('');
 export function verifyFromMemory(admission) {
   return async reference => {
-    const { identity, encoded } = admission;
-    if (reference.identity !== identity || `evr:${hash(encoded)}` !== identity) throw Error('frozen identity changed');
-    const data = JSON.parse(encoded);
-    if (hash(data.content) !== data.freeze.digest) throw Error('frozen content digest differs');
-    return { identity, digest: data.freeze.digest, bundle: JSON.parse(data.content) };
+    const { identity } = admission, { data, encoded, content } = framed(admission);
+    if (reference.identity !== identity || `evr:${digestOf(encoded)}` !== identity) throw Error('frozen identity changed');
+    if (digestOf(content) !== data.freeze.digest) throw Error('frozen content digest differs');
+    const bundle = JSON.parse(data.content);
+    for (const name of admission.elided) bundle.files[name] = implementation[name];
+    return { identity, digest: data.freeze.digest, bundle };
   };
 }
 
@@ -144,7 +168,7 @@ export function createPort(options, { stage = () => {}, host } = {}) {
       const oracle = limits.oracle ? frozenSpecification(overlay) : null;
       overlay['frozen.sha256'] = JSON.stringify({ contract: hash(overlay['CONTRACT.md']), tests: hash(overlay['tests.json']) });
       const frozen = Object.fromEntries(oracleFiles.map(name => [name, Buffer.from(overlay[name]).toString('hex')]));
-      options.admission = await host({ kind: 'admit', files: { ...frozen, ...implementation }, ...(oracle ? { oracle } : {}) });
+      options.admission = await host({ kind: 'admit', files: frozen, implementation: implementationDigests, ...(oracle ? { oracle } : {}) });
       if (options.admission.reused) return null;
     }
     stage('admitted');
@@ -191,7 +215,7 @@ export function createPort(options, { stage = () => {}, host } = {}) {
           const oracle = limits.oracle ? frozenSpecification(overlay) : null;
           overlay['frozen.sha256'] = JSON.stringify({ contract: hash(overlay['CONTRACT.md']), tests: hash(overlay['tests.json']) });
           const frozen = Object.fromEntries(oracleFiles.map(file => [file, Buffer.from(overlay[file]).toString('hex')]));
-          options.admission = await host({ kind: 'admit', files: { ...frozen, ...implementation }, ...(oracle ? { oracle } : {}) });
+          options.admission = await host({ kind: 'admit', files: frozen, implementation: implementationDigests, ...(oracle ? { oracle } : {}) });
           if (options.admission.reused) return { reused: true };
           stage('admitted');
           begin('implementation');

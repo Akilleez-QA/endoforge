@@ -125,6 +125,31 @@ def durable_promotion(record, prior, db):
     return None
 
 
+def repository_files():
+    return {name: (REPOSITORY / "core/runtime/x1" / name).read_bytes().hex() for name in IMPLEMENTATION_FILES}
+
+
+def admitted_files(payload):
+    files, digests = payload.get("files"), payload.get("implementation", {})
+    if files is None:
+        return None
+    if any(name in IMPLEMENTATION_FILES for name in files):
+        raise ValueError("implementation files travel as digests, not payloads")
+    if not set(digests) <= set(IMPLEMENTATION_FILES):
+        raise ValueError("an implementation digest names a file outside the implementation")
+    repository = repository_files()
+    if any(hashlib.sha256(bytes.fromhex(repository[name])).hexdigest() != digest for name, digest in digests.items()):
+        raise ValueError("an implementation digest differs from the repository file")
+    return {**files, **{name: repository[name] for name in digests}}
+
+
+def admission(record, **extra):
+    data, bundle = record["data"], json.loads(record["data"]["content"])
+    elided = [name for name, text in repository_files().items() if bundle["files"].get(name) == text]
+    thin = encode(dict(bundle, files={name: "" if name in elided else text for name, text in bundle["files"].items()}))
+    return dict(identity=record["id"], digest=data["freeze"]["digest"], frame=encode(dict(data, content=thin)), elided=elided, **extra)
+
+
 def admit(request, prior, append, _process, db):
     reference, payload = request["job"]["reference"], request["result"]
     if payload.get("resume"):
@@ -140,7 +165,7 @@ def admit(request, prior, append, _process, db):
         need = payload["need"]
         append(dict(version=0, kind="task", id="task", data=dict(intent=need, acceptance=GATE_LABEL)))
         append(dict(version=0, kind="admitted_input", id="input", data=dict(task="task", content=need, origin="caller")))
-        record = frozen_record(reference.get("root"), files=payload.get("files"), task="task", admitted_input="input",
+        record = frozen_record(reference.get("root"), files=admitted_files(payload), task="task", admitted_input="input",
                                **FREEZE_FACTS, configuration=payload["configuration"], residual=GATE_LABEL, invariant_version="1")
         append(record)
     else:
@@ -149,8 +174,7 @@ def admit(request, prior, append, _process, db):
             raise ValueError("content-hashed frozen evaluator required")
         if frozen_drift(record, reference.get("root")):
             raise ValueError("running evaluator tree digest differs from frozen record")
-    return dict(identity=record["id"], digest=record["data"]["freeze"]["digest"], encoded=encode(record["data"]),
-                decision=durable_promotion(record, prior, db), **(dict(continuation=waiting(db)) if payload.get("resume") else {}))
+    return admission(record, decision=durable_promotion(record, prior, db), **(dict(continuation=waiting(db)) if payload.get("resume") else {}))
 
 
 CONTINUATIONS = ("CREATE TABLE IF NOT EXISTS x1_continuations (seq INTEGER PRIMARY KEY, state TEXT NOT NULL, "
@@ -198,8 +222,7 @@ def frozen_drift(record, root):
             return True
         if digest(content) != record["data"]["freeze"]["digest"]:
             return True
-    return any(name in stored["files"] and (REPOSITORY / "core/runtime/x1" / name).read_bytes().hex() != stored["files"][name]
-               for name in IMPLEMENTATION_FILES)
+    return any(name in stored["files"] and text != stored["files"][name] for name, text in repository_files().items())
 
 
 def usable_tolerance(tolerance):
@@ -473,8 +496,8 @@ def revise(request, prior, append, _process, _db):
                            residual=stored["residual"], invariant_version=stored["invariant_version"],
                            revision=dict(of=latest["id"], reason="specification_correction", evidence=evidence))
     append(record)
-    return dict(identity=record["id"], digest=record["data"]["freeze"]["digest"], encoded=encode(record["data"]), decision=None,
-                revision=dict(of=latest["id"], evidence=evidence), files={"tests.json": tests_text, "frozen.sha256": frozen_text})
+    return admission(record, decision=None, revision=dict(of=latest["id"], evidence=evidence),
+                     files={"tests.json": tests_text, "frozen.sha256": frozen_text})
 
 
 LOOP = dict(admit=admit, commit=commit, park=park, revise=revise)

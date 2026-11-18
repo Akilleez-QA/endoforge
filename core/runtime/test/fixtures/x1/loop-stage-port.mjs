@@ -6,6 +6,6 @@ export function createPort(options, hooks) {
   return base(options, { ...hooks, stage(name) {
     if (name === killStage) process.kill(process.pid, 'SIGKILL');
     if (name === 'gates:start' && mutateFile) appendFileSync(mutateFile, 'x');
-    if (name === 'gates:start' && flipAdmission) options.admission.encoded += ' ';
+    if (name === 'gates:start' && flipAdmission) options.admission.frame += ' ';
   } });
 }
