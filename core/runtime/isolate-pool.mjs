@@ -33,7 +33,6 @@ const syncIdle = 0, syncRequest = 1, syncReply = 2, syncClosed = 3;
 const syncRequestFd = 4, syncReplyFd = 5;
 const killGraceMs = 1000;
 const exitGraceMs = 500;
-// A retiring cell's successor starts up to this many jobs before the retirement, so it is warm when it takes the slot; one standby at a time.
 const successorLeadJobs = 32;
 export const POOL_DUMP_DEFAULTS = Object.freeze({ name: 'endoforge-isolate-pool', priority: 20, floor: 1, holdMs: 30000, intervalMs: 2000, settleMs: 1500 });
 const PRIVATE = /^Private_(?:Clean|Dirty):\s+(\d+)/gm;
