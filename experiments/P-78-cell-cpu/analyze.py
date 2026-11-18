@@ -1,4 +1,4 @@
-import json, sys, collections, os, re
+import json, sys, collections, os
 def cat(url, fn):
     u = url or ''
     if fn in ('(garbage collector)',): return 'gc'

@@ -7,7 +7,6 @@ const leb = value => {
   do { const part = value % 128; value = Math.floor(value / 128); bytes.push(part | (value ? 128 : 0)); } while (value);
   return bytes;
 };
-// One copy per output: parts are byte arrays or views, concatenated once (no per-byte JS arrays for multi-megabyte modules).
 const concat = parts => {
   const out = new Uint8Array(parts.reduce((total, part) => total + part.length, 0));
   let offset = 0;
@@ -17,7 +16,6 @@ const concat = parts => {
 const vector = entries => concat([leb(entries.length), ...entries]);
 const section = (id, bytes) => concat([[id, ...leb(bytes.length)], bytes]);
 const valueTypes = new Set([0x7f, 0x7e, 0x7d, 0x7c, 0x70, 0x6f]);
-// The immediates of each code-section opcode the guard admits (0 = none, 255 = refused); scanned once per body.
 const GROW = 1, BLOCK = 2, INDEX = 3, TABLE = 4, TWO = 5, SELECT = 6, MEMARG = 7, I64 = 8, F32 = 9, F64 = 10, MISC = 11, REFUSED = 255;
 const immediates = new Uint8Array(256).fill(REFUSED);
 for (const op of [0x00, 0x01, 0x05, 0x0b, 0x0f, 0x1a, 0x1b, 0xd1]) immediates[op] = 0;
@@ -213,7 +211,6 @@ export function installWasmLimit(maxMb, breach, trustedWasmModules = [], sharedW
     for (let i = functions; i; i--) {
       const body = new Reader(code.take(code.uint()));
       for (let j = body.uint(); j; j--) { body.uint(); valueType(body); }
-      // Each memory.grow becomes a call to its bounded helper; every other byte is copied through unchanged.
       const pieces = [];
       let copied = 0, length = body.bytes.length;
       while (body.offset < body.bytes.length) {

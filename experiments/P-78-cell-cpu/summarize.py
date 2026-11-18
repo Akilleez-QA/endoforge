@@ -40,7 +40,6 @@ def stage(row, name, key):
 def describe(arm, width):
     out = []
     for row in rows(arm, width):
-        n = row["completed"]
         out.append(dict(label=row["label"], load=round(row.get("quietLoad") or row["loadStart"], 1), rerun=row.get("rerunOf"), thr=round(row["throughput"], 2),
                         wall=round(row["buckets"]["wall"], 1), compile=round(row["buckets"]["compile"], 1), gate=round(row["buckets"]["gate"], 1), crossing=round(row["buckets"]["crossing"], 1), spawns=row.get("cellSpawnsInWindow"), freeze=round(row["buckets"]["freeze"], 1), ledger=round(row["buckets"]["ledger"], 1),
                         elu=round(row["hostElu"], 3), cores={k: round(v, 2) for k, v in row["coresByRole"].items() if k != "other"},
