@@ -278,6 +278,21 @@ class WriterTests(unittest.TestCase):
         db.close()
         self.assertEqual(ids(path), ["task"])
 
+    def test_rows_a_writer_appended_are_not_parsed_or_validated_again(self):
+        writer, output = self.writer()
+        path = self.ledger("cache")
+        writer.batch([line(1, "admit", path, need="n")])
+        writer.batch([line(2, "note", path, id="input-0"), line(3, "fail", path, id="input-1")])
+        with mock.patch("core.ledger.ledger.validate", wraps=ledger_writer.Ledger.__init__.__globals__["validate"]) as validate:
+            writer.batch([line(4, "note", path, id="input-2")])
+        self.assertEqual(validate.call_count, 1)
+        cache = writer.handles[str(path)][2]
+        fresh = []
+        Ledger(path)._read(sqlite3.connect(path), fresh)
+        self.assertEqual(cache, fresh)
+        self.assertEqual(ids(path), ["task", "input-0", "input-2"])
+        writer.close()
+
 
 if __name__ == "__main__":
     unittest.main()
