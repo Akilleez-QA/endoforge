@@ -77,7 +77,7 @@ for (const size of [1, 4, 16]) {
     assert.equal(peakWorkers, size);
     assert(queued);
     await closing;
-    assert.deepEqual(pool.stats, { size, workers: 0, busy: 0, queued: 0, standby: 0 });
+    assert.deepEqual(pool.stats, { size, workers: 0, busy: 0, queued: 0 });
     assert.equal(pool.close(), closing);
   });
 }

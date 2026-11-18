@@ -78,7 +78,7 @@ const summary = (result, before) => {
 
 export const inspect = input => (engine ? engine.inspect(input) : Promise.reject(Error('render engine is off in this cell')));
 
-export async function warm({ primes = 1, path = ASC_PATH, render = null } = {}) {
+export async function warm({ primes = 8, path = ASC_PATH, render = null } = {}) {
   ascPath = path;
   if (render) await (engine ??= createEngine({ policy: render })).start();
   compiler = pinned(path);

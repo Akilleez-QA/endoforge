@@ -33,8 +33,6 @@ const syncIdle = 0, syncRequest = 1, syncReply = 2, syncClosed = 3;
 const syncRequestFd = 4, syncReplyFd = 5;
 const killGraceMs = 1000;
 const exitGraceMs = 500;
-// A retiring cell's successor starts up to this many jobs before the retirement, so it is warm when it takes the slot; one standby at a time.
-const successorLeadJobs = 32;
 export const POOL_DUMP_DEFAULTS = Object.freeze({ name: 'endoforge-isolate-pool', priority: 20, floor: 1, holdMs: 30000, intervalMs: 2000, settleMs: 1500 });
 const PRIVATE = /^Private_(?:Clean|Dirty):\s+(\d+)/gm;
 const privateBytes = pid => {
@@ -169,7 +167,7 @@ export class IsolatePool {
   }
 
   #spareCells() {
-    return [...this.#cells].filter(cell => cell.ready && !cell.job && !cell.stopping && !cell.standby).slice(this.#dumpOptions.floor);
+    return [...this.#cells].filter(cell => cell.ready && !cell.job && !cell.stopping).slice(this.#dumpOptions.floor);
   }
 
   #weigh(cell) {
@@ -223,7 +221,7 @@ export class IsolatePool {
 
   get stats() {
     return { size: this.#size, workers: this.#cells.size,
-      busy: [...this.#cells].filter(cell => cell.job).length, queued: this.#queue.length, standby: [...this.#cells].filter(cell => cell.standby).length };
+      busy: [...this.#cells].filter(cell => cell.job).length, queued: this.#queue.length };
   }
 
   get busyMs() {
@@ -282,7 +280,7 @@ export class IsolatePool {
     return promise;
   }
 
-  #spawn(predecessor = null) {
+  #spawn() {
     const subprocess = this.#isolation === 'process';
     const entry = new URL('./isolate-workcell.mjs', import.meta.url);
     const policy = { wasmMemoryMaxMb: this.#wasmMemoryMaxMb, trustedWasmModules: this.#trustedWasmModules, toolingWasmModules: this.#toolingWasmModules,
@@ -299,7 +297,7 @@ export class IsolatePool {
       workerData: { ...policy, sharedWasmModules: this.#sharedModules },
     });
     const directory = subprocess ? attachCgroup(worker.pid, this.#cgroupRoot, this.#cgroupLimits) : null;
-    const cell = { worker, id: subprocess ? worker.pid : worker.threadId, job: null, error: null, standby: Boolean(predecessor), predecessor,
+    const cell = { worker, id: subprocess ? worker.pid : worker.threadId, job: null, error: null,
       metadata: { ...(this.#sharedSources.length ? { sharedWasmModules: this.#sharedModules.map(entry => entry.sha256) } : {}), isolation: this.#isolation, cgroup: subprocess ? (directory ? 'enabled' : 'unavailable') : 'not_applicable',
         ...(directory ? { cgroupLimits: this.#cgroupLimits } : {}) } };
     if (subprocess) {
@@ -348,10 +346,7 @@ export class IsolatePool {
       this.#finish(job, { ...result, ...cell.metadata });
       if (this.#dump?.enabled) this.#weigh(cell).then(() => this.#dump?.refresh());
       cell.jobs = (cell.jobs ?? 0) + 1;
-      if (this.#retireAfterJobs > successorLeadJobs && cell.jobs >= this.#retireAfterJobs - successorLeadJobs && cell.jobs < this.#retireAfterJobs && !cell.successor && ![...this.#cells].some(other => other.standby) && !this.#stopping && !this.#noStarts) {
-        try { cell.successor = this.#spawn(cell); } catch { }
-      }
-      if (cell.jobs >= this.#retireAfterJobs) { cell.stopping = true; this.#handOver(cell); cell.worker.terminate(); }
+      if (cell.jobs >= this.#retireAfterJobs) { cell.stopping = true; cell.worker.terminate(); }
       this.#pump();
     });
     worker.on('error', error => { if (cell.error?.code !== 'ERR_WORKCELL_DEADLINE') cell.error = error; });
@@ -377,10 +372,8 @@ export class IsolatePool {
         error: cell.error?.code || null, exitCode: code, signal: signal || null, report: null, ...cell.metadata,
         workcell: cell.id, resourceLimits: this.#limits, wasmMemoryMaxMb: this.#wasmMemoryMaxMb });
       if (!cell.ready && cell.error?.code !== 'ERR_WORKCELL_DEADLINE') this.#startFailures += 1;
-      if (cell.predecessor?.successor === cell) cell.predecessor.successor = null;
-      const successor = this.#handOver(cell);
       if (!this.#stopping) {
-        if (!cell.standby && !cell.replaced && !successor && !this.#noStarts && !(cell.shed && Date.now() < this.#shedUntil)) try { this.#spawn(); } catch { }
+        if (!this.#noStarts && !(cell.shed && Date.now() < this.#shedUntil)) try { this.#spawn(); } catch { }
         this.#pump();
         this.#dump?.refresh();
       }
@@ -396,19 +389,10 @@ export class IsolatePool {
     return cell;
   }
 
-  #handOver(cell) {
-    const successor = cell.successor && this.#cells.has(cell.successor) ? cell.successor : null;
-    if (successor) { successor.standby = false; successor.predecessor = null; cell.replaced = true; }
-    cell.successor = null;
-    if (successor) queueMicrotask(() => this.#pump());
-    return successor;
-  }
-
   #pump() {
     while (this.#queue[0]?.ready) {
-      let cell = [...this.#cells].find(cell => !cell.job && !cell.stopping && !cell.standby);
-      const cells = [...this.#cells].filter(cell => !cell.standby).length;
-      if (!cell && (this.#noStarts ? cells : cells >= this.#size)) return;
+      let cell = [...this.#cells].find(cell => !cell.job && !cell.stopping);
+      if (!cell && (this.#noStarts ? this.#cells.size : this.#cells.size >= this.#size)) return;
       const job = this.#queue.shift();
       if (!cell && this.#noStarts) {
         this.#rates?.done(job.rate);
