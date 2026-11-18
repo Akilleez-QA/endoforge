@@ -3,6 +3,7 @@
 Status: **failed** (keep bar missed at width 64; the lever is reverted on the branch), 2026-11-17, reference machine (Apple M6 Mac mini, 12 cores: 2 Super, 4 Performance, 6 Efficiency; 16 GiB; Node v26.13.1; Python 3.15.2). Stand-in model only (arm A, zero latency): **no model calls, no tokens**, credential variables asserted unset. Precommit: [PRECOMMIT.md](PRECOMMIT.md), digest in `receipt/precommit.sha256`, committed and pushed (4ed1bc4) before any measurement of the lever.
 
 - Lever measured: 6af4a68 (pushed before the acceptance rows; every P-81 receipt names it). Reverted in the next commit; the branch's product code is P-78's (8f63101).
+- After the measurement, the branch merged `climb-r5-cell-cpu` at 48cd38f (the CI fixes for P-76 to P-78: the shard fail-closed fix, lint, and the byte-identity pin run as a workcell starts). Every row here measured P-78 at 8f63101 against the lever at 6af4a68.
 - Receipts: `receipt/explore-p78/` (the profile), `receipt/accept-p78/` and `receipt/accept-p81/` (`row-{w64,w1}-{0..3}.json`), `receipt/summary.json` (`summarize.py`), `receipt/stream.json` (`stream.py`) with the capture rows in `receipt/guard-p78/` and `receipt/guard-p81/`, `receipt/tests-p78.json`, `receipt/tests-p81.json` and `receipt/reruns.json`.
 
 **Width-64 throughput rose 3.1%** (75.9 → 78.2 needs/s, Welch t = 2.06, df ≈ 5.1, **p ≈ 0.093**), against a predicted +4% to +12% and a bar of p < 0.05 and at least +3%. Needs/s per GB fell 1.7% (16.07 → 15.80), which also misses the bar. The lever is not kept.
