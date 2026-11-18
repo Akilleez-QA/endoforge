@@ -1,6 +1,6 @@
 # P-83 gate-scans: the non-finite reading reads each contract sentence once, on top of P-82: result
 
-Status: **kept**, 2026-11-18. Every local keep bar is met; CI is recorded below. Reference machine: Apple M6 Mac mini, 12 cores (2 Super, 4 Performance, 6 Efficiency), 16 GiB, Node v26.13.1, Python 3.15.2. Stand-in model only (arm A, zero latency): **no model calls, no tokens**, and the harness asserts that the credential variables are unset. Precommit: [PRECOMMIT.md](PRECOMMIT.md), digest in `receipt/precommit.sha256`. It was committed (0c33e2f) before any acceptance row.
+Status: **kept** (every keep bar met, including GitHub Linux CI on PR #185 at 85c78de: lint, test (22), test (26), coverage, rust-lane and secret-scan green), 2026-11-18. Reference machine: Apple M6 Mac mini, 12 cores (2 Super, 4 Performance, 6 Efficiency), 16 GiB, Node v26.13.1, Python 3.15.2. Stand-in model only (arm A, zero latency): **no model calls, no tokens**, and the harness asserts that the credential variables are unset. Precommit: [PRECOMMIT.md](PRECOMMIT.md), digest in `receipt/precommit.sha256`. It was committed (0c33e2f) before any acceptance row.
 
 - **Lever measured:** 192ab2d, pushed before the acceptance rows; every P-83 receipt names it. 5b1f690 changes only `nfeq.mjs`, an experiment tool.
 - **Base arm:** P-82 at c1aea68 (`climb-r9-release-successor`), run from a worktree with an uncommitted copy of this folder's `run.mjs` and PRECOMMIT.
