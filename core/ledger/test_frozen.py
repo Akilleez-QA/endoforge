@@ -1,4 +1,5 @@
 from copy import deepcopy
+import hashlib
 import json
 from pathlib import Path
 import subprocess
@@ -6,7 +7,7 @@ import sys
 from tempfile import TemporaryDirectory
 import unittest
 
-from .frozen import FrozenEvaluators, digest
+from .frozen import FrozenEvaluators, digest, frozen_record
 from .ledger import Ledger, SCHEMA, conforms, encode
 from .test_ledger import chain, record
 
@@ -133,6 +134,27 @@ class FrozenTests(unittest.TestCase):
         receipt["data"]["precommit"]["oracle_version"] = "wrong"
         with self.assertRaisesRegex(ValueError, "digest"):
             self.ledger.append(receipt)
+
+    def test_a_bundle_that_names_files_by_digest_is_frozen_and_malformed_digests_are_refused(self):
+        manifest = {key: value for key, value in self.manifest.items() if key not in self.components}
+        files = {"judge.py": b"assert value == 4\n".hex()}
+        named = {"runner.py": hashlib.sha256(b"run()\n").hexdigest()}
+        for index, (implementation, refusal) in enumerate(((named, None), ({"runner.py": "0" * 63}, "implementation digest"),
+                                                          ({"runner.py": "A" * 64}, "implementation digest"),
+                                                          ({"../runner.py": "0" * 64}, "implementation digest"),
+                                                          ({"judge.py": "0" * 64}, "invalid frozen bundle"), ({}, "invalid frozen bundle"))):
+            with self.subTest(implementation=implementation):
+                ledger = Ledger(self.root / f"digests-{index}.sqlite")
+                for row in chain()[:2]:
+                    ledger.append(row)
+                record = frozen_record(None, files=files, implementation=implementation, **manifest, **self.components)
+                if refusal is None:
+                    ledger.append(record)
+                    bundle = json.loads(Ledger(ledger.path).records()[-1]["data"]["content"])
+                    self.assertEqual((bundle["files"], bundle["implementation"]), (files, named))
+                else:
+                    with self.assertRaisesRegex(ValueError, refusal):
+                        ledger.append(record)
 
     def test_cli_freeze_and_symlink_refusal(self):
         manifest = self.manifest | {"revision": dict(of=self.frozen["id"], reason="independent_qualification", evidence="i1")}

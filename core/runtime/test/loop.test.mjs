@@ -11,7 +11,7 @@ import { IsolatePool } from '../isolate-pool.mjs';
 import { admit, checkCandidate, commitCandidate, createLoopPool, evaluateAndCommit, evaluateInCell } from '../x1/loop.mjs';
 import { configuration, hash, implementationFiles } from '../x1/host.mjs';
 import { ledger } from '../x1/ledger.mjs';
-import { encodedOf, implementationFiles as cellImplementation, verifyFromMemory } from '../x1/loop-port.mjs';
+import { encodedOf, implementationDigests, implementationFiles as cellImplementation, verifyFromMemory } from '../x1/loop-port.mjs';
 import { runNeed } from '../x1/pipeline.mjs';
 import { evaluate as evaluateReference } from '../x1/reference.mjs';
 import { candidate as additionCandidate } from './fixtures/x1/candidate.mjs';
@@ -216,6 +216,30 @@ test('an admission crosses as a small frame and verifies against the cell copy o
   for (const name of cellImplementation) assert.equal(bundle.files[name], readFileSync(join(x1Directory, name)).toString('hex'));
   for (const forged of [{ ...admission, elided: admission.elided.slice(1) }, { ...admission, frame: admission.frame.replace('"residual', '"residuaI') },
     { ...admission, elided: [...admission.elided, 'kernel.ts'] }]) {
+    await assert.rejects(verifyFromMemory(forged)({ identity: admission.identity }), /frozen identity changed/);
+  }
+});
+
+test('an admission by digest freezes a record that names the implementation by digest and verifies against the cell copy under its identity hash', async t => {
+  const root = scratch(t), pool = createLoopPool({ primes: 1 });
+  t.after(() => pool.close());
+  const { files } = additionCandidate(), directory = join(root, 'digests');
+  mkdirSync(directory, { recursive: true });
+  const frozen = Object.fromEntries(['CONTRACT.md', 'tests.json', 'frozen.sha256'].map(name => [name, Buffer.from(files[name]).toString('hex')]));
+  const admission = await admit(pool, { ledger: join(directory, 'ledger.sqlite') }, { need: 'integer add(a,b)', configuration, files: frozen, implementation: implementationDigests });
+  assert.ok(JSON.stringify(admission).length < 32 * 1024, 'the admission carries no implementation payload');
+  assert.deepEqual(admission.elided, []);
+  assert.equal(`evr:${hash(encodedOf(admission))}`, admission.identity);
+  const { bundle } = await verifyFromMemory(admission)({ identity: admission.identity });
+  for (const name of cellImplementation) assert.equal(bundle.implementation[name], hash(readFileSync(join(x1Directory, name))));
+  for (const name of cellImplementation) assert.equal(bundle.files[name], undefined);
+  const stored = (await records(join(directory, 'ledger.sqlite'))).find(record => record.kind === 'frozen_evaluator');
+  assert.equal(stored.id, admission.identity);
+  assert.ok(JSON.stringify(stored).length < 32 * 1024, 'the frozen record holds digests, not the implementation');
+  const named = JSON.parse(admission.frame), held = JSON.parse(named.content);
+  held.implementation['gates.mjs'] = hash('export const runGates = () => ({ promotable: true, gates: {} });');
+  for (const forged of [{ ...admission, elided: ['gates.mjs'] }, { ...admission, frame: admission.frame.replace('"residual', '"residuaI') },
+    { ...admission, frame: JSON.stringify({ ...named, content: JSON.stringify(held) }) }]) {
     await assert.rejects(verifyFromMemory(forged)({ identity: admission.identity }), /frozen identity changed/);
   }
 });

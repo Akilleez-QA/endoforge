@@ -16,6 +16,7 @@ const maximumKernelPages = 1024;
 const implementationBytes = implementationFiles.map(name => [name, readFileSync(new URL(name, import.meta.url))]);
 const implementation = Object.fromEntries(implementationBytes.map(([name, bytes]) => [name, bytes.toString('hex')]));
 export const implementationDigests = Object.freeze(Object.fromEntries(implementationBytes.map(([name, bytes]) => [name, hash(bytes)])));
+const drifted = bundle => implementationFiles.some(name => (bundle.implementation ? bundle.implementation[name] !== implementationDigests[name] : bundle.files[name] !== implementation[name]));
 const primer = {
   id: 'primer',
   files: { 'CONTRACT.md': 'Warm-up primer.', 'kernel.ts': 'export function primer(a:f64,b:i32):f64{let t=a;for(let i=0;i<b;i++){t+=Math.sqrt(<f64>i)}if(b<0){throw new Error("range")}return t}',
@@ -187,7 +188,7 @@ export function createPort(options, { stage = () => {}, host } = {}) {
     rounds.push(...(state.rounds ?? []));
     state.rounds = rounds;
     const admitted = () => verifyFromMemory(options.admission)({ identity: options.admission.identity }).then(({ bundle }) => {
-      for (const name of implementationFiles) if (implementation[name] !== bundle.files[name]) throw Error('host implementation drift');
+      if (drifted(bundle)) throw Error('host implementation drift');
       for (const name of oracleFiles) {
         const text = Buffer.from(bundle.files[name], 'hex').toString();
         if (state.stage === 'implementation' && overlay[name] !== text) throw Error('frozen files differ from the continuation');
@@ -234,7 +235,7 @@ export function createPort(options, { stage = () => {}, host } = {}) {
     scanEffects: value => base.scanEffects(value),
     residual(_, bundle) {
       stage('gates:start');
-      for (const name of implementationFiles) if (implementation[name] !== bundle.files[name]) throw Error('host implementation drift');
+      if (drifted(bundle)) throw Error('host implementation drift');
       for (const name of oracleFiles) if (Buffer.from(bundle.files[name], 'hex').toString() !== candidate.files[name]) throw Error('oracle binding differs');
       const begin = performance.now();
       const result = runGates(candidate);

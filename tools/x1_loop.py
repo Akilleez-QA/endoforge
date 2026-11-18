@@ -11,6 +11,7 @@ from pathlib import Path
 from core.ledger.frozen import digest, frozen_record, snapshot
 from core.ledger.ledger import Ledger, encode
 from tools.durable import sync_dir, sync_file
+from tools.ledger_writer import journal_directory
 
 REPOSITORY = Path(__file__).resolve().parents[1]
 ROUND_CHECKS = ["schema", "interface", "bounds", "determinism", "forbidden_effects", "residual"]
@@ -125,26 +126,86 @@ def durable_promotion(record, prior, db):
     return None
 
 
+def repository_bytes(names=IMPLEMENTATION_FILES):
+    return {name: (REPOSITORY / "core/runtime/x1" / name).read_bytes() for name in names}
+
+
 def repository_files():
-    return {name: (REPOSITORY / "core/runtime/x1" / name).read_bytes().hex() for name in IMPLEMENTATION_FILES}
+    return {name: content.hex() for name, content in repository_bytes().items()}
+
+
+def object_directory():
+    return journal_directory() / "objects"
+
+
+STORED = set()
+
+
+def store_objects(contents):
+    directory = object_directory()
+    missing = {sha256: content for sha256, content in contents.items() if (directory, sha256) not in STORED}
+    if not missing:
+        return
+    if not directory.is_dir():
+        directory.mkdir(parents=True, exist_ok=True, mode=0o700)
+        sync_dir(directory.parent)
+    for sha256, content in missing.items():
+        if (directory / sha256).exists():
+            continue
+        staging = directory / f".{sha256}.{os.getpid()}-{os.urandom(4).hex()}.tmp"
+        fd = os.open(staging, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o444)
+        try:
+            with os.fdopen(fd, "wb") as output:
+                output.write(content)
+                output.flush()
+                sync_file(output.fileno())
+            try:
+                os.link(staging, directory / sha256)
+            except FileExistsError:
+                pass
+        finally:
+            os.unlink(staging)
+    sync_dir(directory)
+    STORED.update((directory, sha256) for sha256 in missing)
+
+
+def stored_object(sha256):
+    content = (object_directory() / sha256).read_bytes()
+    if hashlib.sha256(content).hexdigest() != sha256:
+        raise ValueError("a stored implementation object differs from its digest")
+    return content
+
+
+def inflated(record):
+    data = record["data"]
+    bundle = json.loads(data["content"])
+    if "implementation" not in bundle:
+        return record
+    files = {**bundle["files"], **{name: stored_object(sha256).hex() for name, sha256 in bundle["implementation"].items()}}
+    content = encode(dict({key: value for key, value in bundle.items() if key != "implementation"}, files=files))
+    whole = dict(data, content=content, freeze=dict(data["freeze"], digest=digest(content)))
+    return dict(record, id="evr:" + digest(encode(whole)), data=whole)
 
 
 def admitted_files(payload):
     files, digests = payload.get("files"), payload.get("implementation", {})
     if files is None:
-        return None
+        return None, None
     if any(name in IMPLEMENTATION_FILES for name in files):
         raise ValueError("implementation files travel as digests, not payloads")
     if not set(digests) <= set(IMPLEMENTATION_FILES):
         raise ValueError("an implementation digest names a file outside the implementation")
-    repository = repository_files()
-    if any(hashlib.sha256(bytes.fromhex(repository[name])).hexdigest() != digest for name, digest in digests.items()):
+    repository = repository_bytes(digests)
+    if any(hashlib.sha256(repository[name]).hexdigest() != digest for name, digest in digests.items()):
         raise ValueError("an implementation digest differs from the repository file")
-    return {**files, **{name: repository[name] for name in digests}}
+    store_objects({digest: repository[name] for name, digest in digests.items()})
+    return files, dict(digests) or None
 
 
 def admission(record, **extra):
     data, bundle = record["data"], json.loads(record["data"]["content"])
+    if "implementation" in bundle:
+        return dict(identity=record["id"], digest=data["freeze"]["digest"], frame=encode(data), elided=[], **extra)
     elided = [name for name, text in repository_files().items() if bundle["files"].get(name) == text]
     thin = encode(dict(bundle, files={name: "" if name in elided else text for name, text in bundle["files"].items()}))
     return dict(identity=record["id"], digest=data["freeze"]["digest"], frame=encode(dict(data, content=thin)), elided=elided, **extra)
@@ -165,7 +226,8 @@ def admit(request, prior, append, _process, db):
         need = payload["need"]
         append(dict(version=0, kind="task", id="task", data=dict(intent=need, acceptance=GATE_LABEL)))
         append(dict(version=0, kind="admitted_input", id="input", data=dict(task="task", content=need, origin="caller")))
-        record = frozen_record(reference.get("root"), files=admitted_files(payload), task="task", admitted_input="input",
+        files, implementation = admitted_files(payload)
+        record = frozen_record(reference.get("root"), files=files, implementation=implementation, task="task", admitted_input="input",
                                **FREEZE_FACTS, configuration=payload["configuration"], residual=GATE_LABEL, invariant_version="1")
         append(record)
     else:
@@ -222,6 +284,11 @@ def frozen_drift(record, root):
             return True
         if digest(content) != record["data"]["freeze"]["digest"]:
             return True
+    if "implementation" in stored:
+        names = stored["implementation"]
+        if not set(names) <= set(IMPLEMENTATION_FILES):
+            return True
+        return any(hashlib.sha256(content).hexdigest() != names[name] for name, content in repository_bytes(names).items())
     return any(name in stored["files"] and text != stored["files"][name] for name, text in repository_files().items())
 
 
@@ -494,7 +561,7 @@ def revise(request, prior, append, _process, _db):
     append(dict(version=0, kind="admitted_input", id=evidence, data=dict(task="task", content=encode(report), origin=SUSPECT_ORIGIN)))
     record = frozen_record(None, files=files, task="task", admitted_input="input", **FREEZE_FACTS, configuration=stored["configuration"],
                            residual=stored["residual"], invariant_version=stored["invariant_version"],
-                           revision=dict(of=latest["id"], reason="specification_correction", evidence=evidence))
+                           implementation=stored.get("implementation"), revision=dict(of=latest["id"], reason="specification_correction", evidence=evidence))
     append(record)
     return admission(record, decision=None, revision=dict(of=latest["id"], evidence=evidence),
                      files={"tests.json": tests_text, "frozen.sha256": frozen_text})
