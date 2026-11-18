@@ -5,7 +5,7 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-ARMS = ("accept-p78", "accept-p80")
+ARMS = ("accept-p78", "accept-p81")
 
 
 def rows(arm, width):

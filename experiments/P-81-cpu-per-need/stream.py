@@ -3,13 +3,13 @@ import json
 import re
 import sys
 
-# Compare two width-1 capture rows' ledger requests need by need (P-80's correctness guard).
+# Compare two width-1 capture rows' ledger requests need by need (P-80's correctness guard, reused by P-81).
 # admit and park: byte-identical after replacing the row's temporary directory. commit: identical after dropping
 # timing and process fields (wall times, cell pids, resource limits) that differ between any two runs.
 # The lever changes loop-port.mjs, which is one of the 14 implementation files frozen into every record, so its digest
 # (and the frozen identity and digest derived from the record) differ by construction; they are mapped to placeholders.
 VOLATILE = {"timings", "workcell", "resourceLimits", "wasmMemoryMaxMb", "ms", "rerun", "evaluator_digest", "oracle_version"}
-LOOP_PORT = {"1f06c0a08a2b76355e52c4b87fc2578b37d8851a4289483ab189bcac3ee3d79f", "424325e415acf961ce99278a9c4d689a357836db3b6773c9084093c847164cb1"}
+LOOP_PORT = {"1f06c0a08a2b76355e52c4b87fc2578b37d8851a4289483ab189bcac3ee3d79f", "421c25d894ebfe4abd2c57fc68a0d4d7dd1d240b0de01c8da39eb1cf75d08ad5"}
 FROZEN = re.compile(r"evr:[0-9a-f]{64}")
 
 
