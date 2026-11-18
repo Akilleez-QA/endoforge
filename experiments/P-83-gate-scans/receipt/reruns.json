@@ -1,0 +1,64 @@
+{
+ "p82": [
+  {
+   "run": "1",
+   "failing": [
+    "bridge and supervisor kills at random times never yield a promotion without its evidence"
+   ]
+  },
+  {
+   "run": "2",
+   "failing": []
+  },
+  {
+   "run": "3",
+   "failing": [
+    "bridge and supervisor kills at random times never yield a promotion without its evidence"
+   ]
+  },
+  {
+   "run": "4",
+   "failing": []
+  }
+ ],
+ "p83": [
+  {
+   "run": "1",
+   "failing": [
+    "bridge and supervisor kills at random times never yield a promotion without its evidence"
+   ]
+  },
+  {
+   "run": "2",
+   "failing": []
+  },
+  {
+   "run": "3",
+   "failing": []
+  },
+  {
+   "run": "4",
+   "failing": []
+  }
+ ],
+ "p82_suite": [
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/loop-crash.test.mjs",
+   "code": 1,
+   "failing": [
+    "bridge and supervisor kills at random times never yield a promotion without its evidence",
+    "failing tests:"
+   ]
+  }
+ ],
+ "p83_suite": [
+  {
+   "command": "node --test --test-timeout=120000 core/runtime/test/loop-crash.test.mjs",
+   "code": 1,
+   "failing": [
+    "bridge and supervisor kills at random times never yield a promotion without its evidence",
+    "failing tests:"
+   ]
+  }
+ ]
+}
