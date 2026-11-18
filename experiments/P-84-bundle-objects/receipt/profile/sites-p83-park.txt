@@ -1,0 +1,9 @@
+requests 1103 park, CPU 0.736 ms per request (instrumented)
+sql              COMMIT                                                                 calls/req   1.00  ms/req  0.155  KB/req      0.0
+sha256           ledger.py:event_hash:50<_read:142                                      calls/req   3.00  ms/req  0.152  KB/req    424.3
+loads            ledger_writer.py:batch:469                                             calls/req   1.00  ms/req  0.108  KB/req     65.4
+loads            sites.py:<module>:81                                                   calls/req   1.00  ms/req  0.097  KB/req     53.3
+dumps            ledger_writer.py:apply:449                                             calls/req   1.00  ms/req  0.076  KB/req     65.5
+sha256           ledger_writer.py:encode_frame:49                                       calls/req   1.00  ms/req  0.026  KB/req     65.7
+sha256           ledger_writer.py:apply:450                                             calls/req   1.00  ms/req  0.024  KB/req     65.5
+{'sql': 0.21, 'sha256': 0.22, 'loads': 0.205, 'dumps': 0.083}

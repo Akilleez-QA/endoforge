@@ -1,0 +1,232 @@
+{
+ "p83-loop-crash": {
+  "runs": 12,
+  "failed": 2,
+  "detail": [
+   {
+    "run": 1,
+    "failing": [],
+    "assertion": []
+   },
+   {
+    "run": 2,
+    "failing": [],
+    "assertion": []
+   },
+   {
+    "run": 3,
+    "failing": [
+     "bridge and supervisor kills at random times never yield a promotion without its evidence"
+    ],
+    "assertion": [
+     "round 5 finished before its kill"
+    ]
+   },
+   {
+    "run": 4,
+    "failing": [],
+    "assertion": []
+   },
+   {
+    "run": 5,
+    "failing": [
+     "bridge and supervisor kills at random times never yield a promotion without its evidence"
+    ],
+    "assertion": [
+     "round 5 finished before its kill"
+    ]
+   },
+   {
+    "run": 6,
+    "failing": [],
+    "assertion": []
+   },
+   {
+    "run": 7,
+    "failing": [],
+    "assertion": []
+   },
+   {
+    "run": 8,
+    "failing": [],
+    "assertion": []
+   },
+   {
+    "run": 9,
+    "failing": [],
+    "assertion": []
+   },
+   {
+    "run": 10,
+    "failing": [],
+    "assertion": []
+   },
+   {
+    "run": 11,
+    "failing": [],
+    "assertion": []
+   },
+   {
+    "run": 12,
+    "failing": [],
+    "assertion": []
+   }
+  ]
+ },
+ "p83-ledger-writer": {
+  "runs": 4,
+  "failed": 2,
+  "detail": [
+   {
+    "run": 1,
+    "failing": [
+     "SIGKILL of the writer at half_frame with the ledger files lost keeps every acknowledged event once"
+    ],
+    "assertion": []
+   },
+   {
+    "run": 2,
+    "failing": [],
+    "assertion": []
+   },
+   {
+    "run": 3,
+    "failing": [],
+    "assertion": []
+   },
+   {
+    "run": 4,
+    "failing": [
+     "SIGKILL of the writer at half_frame with the ledger files lost keeps every acknowledged event once"
+    ],
+    "assertion": []
+   }
+  ]
+ },
+ "p84-loop-crash": {
+  "runs": 12,
+  "failed": 7,
+  "detail": [
+   {
+    "run": 1,
+    "failing": [
+     "bridge and supervisor kills at random times never yield a promotion without its evidence"
+    ],
+    "assertion": [
+     "round 5 finished before its kill"
+    ]
+   },
+   {
+    "run": 2,
+    "failing": [],
+    "assertion": []
+   },
+   {
+    "run": 3,
+    "failing": [
+     "bridge and supervisor kills at random times never yield a promotion without its evidence"
+    ],
+    "assertion": [
+     "round 5 finished before its kill"
+    ]
+   },
+   {
+    "run": 4,
+    "failing": [],
+    "assertion": []
+   },
+   {
+    "run": 5,
+    "failing": [],
+    "assertion": []
+   },
+   {
+    "run": 6,
+    "failing": [],
+    "assertion": []
+   },
+   {
+    "run": 7,
+    "failing": [],
+    "assertion": []
+   },
+   {
+    "run": 8,
+    "failing": [
+     "bridge and supervisor kills at random times never yield a promotion without its evidence"
+    ],
+    "assertion": [
+     "round 5 finished before its kill"
+    ]
+   },
+   {
+    "run": 9,
+    "failing": [
+     "bridge and supervisor kills at random times never yield a promotion without its evidence"
+    ],
+    "assertion": [
+     "round 5 finished before its kill"
+    ]
+   },
+   {
+    "run": 10,
+    "failing": [
+     "bridge and supervisor kills at random times never yield a promotion without its evidence"
+    ],
+    "assertion": [
+     "round 5 finished before its kill"
+    ]
+   },
+   {
+    "run": 11,
+    "failing": [
+     "bridge and supervisor kills at random times never yield a promotion without its evidence"
+    ],
+    "assertion": [
+     "round 5 finished before its kill"
+    ]
+   },
+   {
+    "run": 12,
+    "failing": [
+     "bridge and supervisor kills at random times never yield a promotion without its evidence"
+    ],
+    "assertion": [
+     "round 5 finished before its kill"
+    ]
+   }
+  ]
+ },
+ "p84-ledger-writer": {
+  "runs": 4,
+  "failed": 3,
+  "detail": [
+   {
+    "run": 1,
+    "failing": [
+     "SIGKILL of the writer at half_frame with the ledger files lost keeps every acknowledged event once"
+    ],
+    "assertion": []
+   },
+   {
+    "run": 2,
+    "failing": [
+     "SIGKILL of the writer at half_frame with the ledger files lost keeps every acknowledged event once"
+    ],
+    "assertion": []
+   },
+   {
+    "run": 3,
+    "failing": [
+     "SIGKILL of the writer at half_frame with the ledger files lost keeps every acknowledged event once"
+    ],
+    "assertion": []
+   },
+   {
+    "run": 4,
+    "failing": [],
+    "assertion": []
+   }
+  ]
+ }
+}
