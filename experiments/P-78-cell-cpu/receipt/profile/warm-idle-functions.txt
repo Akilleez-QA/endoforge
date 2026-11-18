@@ -1,0 +1,42 @@
+profiles 1 wall 1060 ms, main-thread busy 1051 ms
+  isolate:isolate-wasm.mjs                    545.4 ms  51.9%
+  gc                                          134.9 ms  12.8%
+  asc                                         130.1 ms  12.4%
+  node/native:utils                            55.5 ms   5.3%
+  binaryen                                     50.4 ms   4.8%
+  node/native                                  44.1 ms   4.2%
+  other:021fa6be                               26.6 ms   2.5%
+  program                                      23.9 ms   2.3%
+  node/native:js-to-wasm                       12.8 ms   1.2%
+  node/native:js-to-wasm:ii:                   11.5 ms   1.1%
+  idle                                          9.9 ms   0.9%
+  other:index.js                                6.8 ms   0.6%
+  gates                                         5.6 ms   0.5%
+  other:exit-on-term.mjs                        1.5 ms   0.1%
+  x1-other:host.mjs                             1.5 ms   0.1%
+top functions
+  isolate:isolate-wasm.mjs     rewrite                                     227.4
+  isolate:isolate-wasm.mjs     take                                        147.4
+  gc                           (garbage collector)                         134.9
+  isolate:isolate-wasm.mjs     vector                                       87.0
+  node/native:utils            compileSourceTextModule                      55.5
+  isolate:isolate-wasm.mjs     WebAssembly.compile                          40.4
+  binaryen                     zj                                           36.1
+  asc                          unsafeNext                                   32.0
+  isolate:isolate-wasm.mjs     section                                      30.0
+  program                      (program)                                    23.9
+  node/native:js-to-wasm       js-to-wasm                                   12.8
+  node/native:js-to-wasm:ii:   js-to-wasm:ii:                               11.5
+  idle                         (idle)                                        9.9
+  asc                          skip                                          9.3
+  isolate:isolate-wasm.mjs     uint                                          8.5
+  binaryen                     L6                                            7.5
+  asc                          Ay                                            7.0
+  node/native:hash             update                                        6.6
+  asc                          Yu                                            6.0
+  asc                          parseExpression                               5.9
+  asc                          t                                             4.8
+  node/native:validate         validate                                      4.5
+  asc                          (anon)                                        4.5
+  node/native:read             read                                          4.3
+  asc                          parseExpressionStart                          3.9

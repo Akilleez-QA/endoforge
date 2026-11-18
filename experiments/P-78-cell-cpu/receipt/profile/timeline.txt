@@ -1,0 +1,10 @@
+w1 cells 10 mean life s 5.3
+  0-1s: busy     496 ms/cell isolate:isolate-wasm.mjs 283, gc 62, node/native 61, asc 37, binaryen 26, program 11
+  1-3s: busy     556 ms/cell asc 211, node/native 99, other:021fa6be 88, gc 56, gates 27, binaryen 21
+  3-6s: busy     775 ms/cell asc 304, node/native 145, other:021fa6be 117, gc 72, gates 36, binaryen 32
+  6s+: busy      87 ms/cell asc 37, node/native 16, other:021fa6be 12, gc 7, binaryen 4, gates 4
+w64 cells 48 mean life s 15.5
+  0-1s: busy     495 ms/cell isolate:isolate-wasm.mjs 268, node/native 91, gc 71, binaryen 57, program 8, other:index.js 0
+  1-3s: busy    1005 ms/cell isolate:isolate-wasm.mjs 778, gc 217, program 8, node/native 2, other:[worker eval] 0
+  3-6s: busy    1342 ms/cell isolate:isolate-wasm.mjs 528, gc 318, asc 228, node/native 118, other:021fa6be 83, gates 18
+  6s+: busy    3065 ms/cell asc 896, node/native 576, gc 554, other:021fa6be 444, gates 173, binaryen 120
