@@ -178,3 +178,50 @@ export class LedgerBridge {
     clearTimeout(stop);
   }
 }
+
+export const LEDGER_SHARDS = 4;
+
+export class LedgerShards {
+  #shards;
+
+  constructor(options = {}) {
+    this.#shards = Array.from({ length: LEDGER_SHARDS }, () => new LedgerBridge(options));
+  }
+
+  #shard(job) {
+    const path = String(job?.reference?.ledger ?? '');
+    let h = 0;
+    for (let i = 0; i < path.length; i++) h = Math.imul(h, 31) + path.charCodeAt(i) >>> 0;
+    return this.#shards[h % LEDGER_SHARDS];
+  }
+
+  get failed() {
+    return this.#shards.some(shard => shard.failed);
+  }
+
+  get pids() {
+    return this.#shards.map(shard => shard.pid).filter(pid => pid !== undefined);
+  }
+
+  get pid() {
+    return this.pids[0];
+  }
+
+  #failed() {
+    return this.#shards.find(shard => shard.failed);
+  }
+
+  request(action, job, result) {
+    return (this.#failed() ?? this.#shard(job)).request(action, job, result);
+  }
+
+  async start() {
+    const failed = this.#failed();
+    if (failed) return failed.start();
+    return (await Promise.all(this.#shards.map(shard => shard.start())))[0];
+  }
+
+  async close() {
+    await Promise.all(this.#shards.map(shard => shard.close()));
+  }
+}

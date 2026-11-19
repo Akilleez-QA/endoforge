@@ -1,0 +1,3 @@
+| Probe | Question | Result |
+|---|---|---|
+| [P-76](PRECOMMIT.md) | Round 3 of the climb loop: on top of P-75, do one validation per row and four ledger writers sharded by ledger lift zero-latency throughput at width 64, now that the host loop is not binding? | **Kept**: width-64 throughput 46.6 → 56.5 needs/s (+21.4%, Welch t = 6.8), ledger wait 113 → 0 ms, ledger + freeze 375 → 146 ms per need, cells net 0.51 → 0.71, host loop 0.34 → 0.50, width 1 80.0 → 77.6 ms; replay rows and answers byte-identical; P-74 measured the same commit as a failure because the host bound then; the cells (12 on 12 cores, net 0.71) bind next | [RESULT.md](RESULT.md) |

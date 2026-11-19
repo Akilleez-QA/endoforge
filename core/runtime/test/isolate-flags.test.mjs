@@ -55,3 +55,25 @@ test('a cell is replaced after its job allowance, between jobs, and no job is lo
   assert.notEqual(results[1].workcell, results[2].workcell);
   assert.notEqual(results[3].workcell, results[4].workcell);
 });
+test('the successor of a retiring cell warms as a standby, takes no job before the retirement, and then takes the slot', { timeout: 120000 }, async t => {
+  const { fixture, hostPort } = await import('./fixtures/ledger-fixture.mjs');
+  const { IsolatePool } = await import('../isolate-pool.mjs');
+  const { job } = await fixture(t);
+  const pool = new IsolatePool({ hostPort, size: 2, retireAfterJobs: 40 });
+  t.after(() => pool.close());
+  await pool.ready();
+  const results = [], workers = [];
+  assert.equal(pool.stats.standby, 0);
+  for (let round = 0; round < 50; round++) {
+    results.push(...await Promise.all([pool.run(job()), pool.run(job())]));
+    workers.push(pool.stats.standby);
+  }
+  assert.deepEqual(results.map(result => result.status), Array(100).fill('completed'));
+  const perCell = results.reduce((all, result) => all.set(result.workcell, (all.get(result.workcell) ?? 0) + 1), new Map());
+  assert([...perCell.values()].every(count => count <= 40), 'no cell runs more than its allowance');
+  assert(perCell.size >= 3, 'retired cells were replaced');
+  assert(Math.max(...workers) <= 1, 'at most one standby');
+  assert(workers.some(count => count === 1), 'a successor existed beside its predecessor');
+  const first = results.map(result => result.workcell).indexOf([...perCell.keys()][2]);
+  assert(results.slice(0, first).every(result => [...perCell.keys()].slice(0, 2).includes(result.workcell)), 'no job ran on a standby before a retirement');
+});

@@ -71,6 +71,17 @@ test('hold keeps the cell through the model turn', { timeout: 60000 }, async t =
   assert.deepEqual(busy, [1, 1]);
 });
 
+test('the freeze holds no cell under release, and holds it under hold', { timeout: 60000 }, async t => {
+  const root = scratch(t);
+  for (const waits of ['release', 'hold']) {
+    const busy = [], pool = loopPool(t, model, { waits });
+    const result = await runNeed({ need, directory: join(root, waits), pool, env, observe: stage => { if (stage === 'admitting' || stage === 'admitted') busy.push(pool.stats.busy); } });
+    assert.equal(result.promoted, true, JSON.stringify(result));
+    assert.deepEqual(busy, waits === 'release' ? [0, 0] : [1, 1]);
+    assert.deepEqual((await kinds(join(root, waits))).slice(0, 3), ['task', 'admitted_input', 'frozen_evaluator']);
+  }
+});
+
 test('a supervisor gone during the wait leaves a durable continuation that resumes, and the old attempt cannot commit after it', { timeout: 60000 }, async t => {
   const root = scratch(t), directory = join(root, 'addition'), silent = parkedThenSilent(t);
   const stale = runNeed({ need, directory, pool: silent.pool, env, observe: silent.observe });

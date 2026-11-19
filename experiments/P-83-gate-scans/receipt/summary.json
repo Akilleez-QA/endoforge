@@ -1,0 +1,877 @@
+{
+ "w64": {
+  "rows": {
+   "accept-p82": [
+    {
+     "label": "w64-r0",
+     "load": 1.4,
+     "rerun": null,
+     "thr": 80.11,
+     "wall": 792.3,
+     "compile": 78.9,
+     "gate": 24.8,
+     "crossing": 400.6,
+     "spawns": 21,
+     "freeze": 118.7,
+     "ledger": 159.5,
+     "elu": 0.429,
+     "cores": {
+      "host": 0.63,
+      "cells": 8.5,
+      "writers": 1.22
+     },
+     "cpu_ms": {
+      "host": 7.8,
+      "cells": 106.1,
+      "writers": 15.2
+     },
+     "cell_gross": 0.925,
+     "cell_net": 0.925,
+     "cell_wait": 118.1,
+     "ledger_util": 0.858,
+     "rss_gb": 5.175,
+     "peak_gb": 5.206,
+     "all_cpu": 129.0,
+     "all_cores": 10.34,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.16,
+     "outcomes": {
+      "true/true/passed/-": 1754,
+      "false/false/failed/-": 292
+     },
+     "all": 2046,
+     "verdict": "cell"
+    },
+    {
+     "label": "w64-r1",
+     "load": 2.6,
+     "rerun": null,
+     "thr": 80.58,
+     "wall": 782.9,
+     "compile": 79.3,
+     "gate": 26.1,
+     "crossing": 416.8,
+     "spawns": 22,
+     "freeze": 107.9,
+     "ledger": 143.0,
+     "elu": 0.413,
+     "cores": {
+      "host": 0.64,
+      "cells": 8.67,
+      "writers": 1.23
+     },
+     "cpu_ms": {
+      "host": 8.0,
+      "cells": 107.6,
+      "writers": 15.2
+     },
+     "cell_gross": 0.955,
+     "cell_net": 0.955,
+     "cell_wait": 124.5,
+     "ledger_util": 0.849,
+     "rss_gb": 4.289,
+     "peak_gb": 5.269,
+     "all_cpu": 130.8,
+     "all_cores": 10.54,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.16,
+     "outcomes": {
+      "true/true/passed/-": 1780,
+      "false/false/failed/-": 296
+     },
+     "all": 2076,
+     "verdict": "cell"
+    },
+    {
+     "label": "w64-r2",
+     "load": 2.5,
+     "rerun": null,
+     "thr": 81.62,
+     "wall": 776.1,
+     "compile": 75.7,
+     "gate": 24.1,
+     "crossing": 363.4,
+     "spawns": 22,
+     "freeze": 128.0,
+     "ledger": 175.4,
+     "elu": 0.411,
+     "cores": {
+      "host": 0.65,
+      "cells": 8.66,
+      "writers": 1.23
+     },
+     "cpu_ms": {
+      "host": 7.9,
+      "cells": 106.1,
+      "writers": 15.1
+     },
+     "cell_gross": 0.927,
+     "cell_net": 0.927,
+     "cell_wait": 105.5,
+     "ledger_util": 0.848,
+     "rss_gb": 4.485,
+     "peak_gb": 5.484,
+     "all_cpu": 129.1,
+     "all_cores": 10.54,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.17,
+     "outcomes": {
+      "true/true/passed/-": 1801,
+      "false/false/failed/-": 300
+     },
+     "all": 2101,
+     "verdict": "cell"
+    },
+    {
+     "label": "w64-r3",
+     "load": 3.3,
+     "rerun": null,
+     "thr": 80.78,
+     "wall": 784.0,
+     "compile": 78.2,
+     "gate": 25.5,
+     "crossing": 368.9,
+     "spawns": 22,
+     "freeze": 126.3,
+     "ledger": 175.1,
+     "elu": 0.439,
+     "cores": {
+      "host": 0.64,
+      "cells": 8.6,
+      "writers": 1.23
+     },
+     "cpu_ms": {
+      "host": 8.0,
+      "cells": 106.4,
+      "writers": 15.3
+     },
+     "cell_gross": 0.938,
+     "cell_net": 0.938,
+     "cell_wait": 107.6,
+     "ledger_util": 0.879,
+     "rss_gb": 4.802,
+     "peak_gb": 5.502,
+     "all_cpu": 129.7,
+     "all_cores": 10.47,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.17,
+     "outcomes": {
+      "true/true/passed/-": 1780,
+      "false/false/failed/-": 297
+     },
+     "all": 2077,
+     "verdict": "cell"
+    }
+   ],
+   "accept-p83": [
+    {
+     "label": "w64-r0-rerun",
+     "load": 13.5,
+     "rerun": "w64-r0",
+     "thr": 83.17,
+     "wall": 756.2,
+     "compile": 80.0,
+     "gate": 15.2,
+     "crossing": 336.9,
+     "spawns": 24,
+     "freeze": 133.2,
+     "ledger": 184.3,
+     "elu": 0.442,
+     "cores": {
+      "host": 0.48,
+      "cells": 8.78,
+      "writers": 1.27
+     },
+     "cpu_ms": {
+      "host": 5.7,
+      "cells": 105.5,
+      "writers": 15.3
+     },
+     "cell_gross": 0.929,
+     "cell_net": 0.929,
+     "cell_wait": 95.4,
+     "ledger_util": 0.906,
+     "rss_gb": 4.591,
+     "peak_gb": 5.875,
+     "all_cpu": 126.6,
+     "all_cores": 10.53,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.18,
+     "outcomes": {
+      "true/true/passed/-": 1849,
+      "false/false/failed/-": 308
+     },
+     "all": 2157,
+     "verdict": "cell"
+    },
+    {
+     "label": "w64-r1",
+     "load": 3.4,
+     "rerun": null,
+     "thr": 84.22,
+     "wall": 752.5,
+     "compile": 81.9,
+     "gate": 16.7,
+     "crossing": 431.1,
+     "spawns": 22,
+     "freeze": 88.9,
+     "ledger": 127.3,
+     "elu": 0.434,
+     "cores": {
+      "host": 0.51,
+      "cells": 8.73,
+      "writers": 1.27
+     },
+     "cpu_ms": {
+      "host": 6.0,
+      "cells": 103.6,
+      "writers": 15.1
+     },
+     "cell_gross": 0.984,
+     "cell_net": 0.984,
+     "cell_wait": 123.4,
+     "ledger_util": 0.919,
+     "rss_gb": 4.587,
+     "peak_gb": 5.64,
+     "all_cpu": 124.8,
+     "all_cores": 10.51,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.16,
+     "outcomes": {
+      "true/true/passed/-": 1866,
+      "false/false/failed/-": 311
+     },
+     "all": 2177,
+     "verdict": "cell"
+    },
+    {
+     "label": "w64-r2-rerun",
+     "load": 13.4,
+     "rerun": "w64-r2",
+     "thr": 84.16,
+     "wall": 752.7,
+     "compile": 79.3,
+     "gate": 14.8,
+     "crossing": 330.8,
+     "spawns": 23,
+     "freeze": 133.5,
+     "ledger": 187.6,
+     "elu": 0.445,
+     "cores": {
+      "host": 0.49,
+      "cells": 8.8,
+      "writers": 1.28
+     },
+     "cpu_ms": {
+      "host": 5.8,
+      "cells": 104.6,
+      "writers": 15.2
+     },
+     "cell_gross": 0.905,
+     "cell_net": 0.905,
+     "cell_wait": 93.5,
+     "ledger_util": 0.883,
+     "rss_gb": 4.946,
+     "peak_gb": 6.157,
+     "all_cpu": 125.6,
+     "all_cores": 10.57,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.19,
+     "outcomes": {
+      "true/true/passed/-": 1869,
+      "false/false/failed/-": 311
+     },
+     "all": 2180,
+     "verdict": "cell"
+    },
+    {
+     "label": "w64-r3",
+     "load": 3.5,
+     "rerun": null,
+     "thr": 84.2,
+     "wall": 753.0,
+     "compile": 77.8,
+     "gate": 15.7,
+     "crossing": 346.0,
+     "spawns": 23,
+     "freeze": 129.5,
+     "ledger": 177.2,
+     "elu": 0.448,
+     "cores": {
+      "host": 0.5,
+      "cells": 8.69,
+      "writers": 1.27
+     },
+     "cpu_ms": {
+      "host": 5.9,
+      "cells": 103.2,
+      "writers": 15.1
+     },
+     "cell_gross": 0.907,
+     "cell_net": 0.907,
+     "cell_wait": 98.7,
+     "ledger_util": 0.884,
+     "rss_gb": 5.111,
+     "peak_gb": 5.581,
+     "all_cpu": 124.2,
+     "all_cores": 10.46,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.17,
+     "outcomes": {
+      "true/true/passed/-": 1850,
+      "false/false/failed/-": 308
+     },
+     "all": 2158,
+     "verdict": "cell"
+    }
+   ]
+  },
+  "metric": "thr",
+  "means": [
+   80.77250000000001,
+   83.9375
+  ],
+  "change": 0.039184128261475104,
+  "welch_t": 7.7886433902226235,
+  "df": 5.757124144988778,
+  "p": 0.00028857554863670476,
+  "cell_cpu_ms": [
+   106.55,
+   104.225
+  ],
+  "means_by_arm": {
+   "accept-p82": {
+    "thr": 80.77250000000001,
+    "wall": 783.825,
+    "rss_gb": 4.687749999999999,
+    "peak_gb": 5.36525,
+    "per_gb": 17.23054770412245,
+    "cell_net": 0.93625,
+    "cell_gross": 0.93625,
+    "cell_wait": 113.925,
+    "ledger_util": 0.8585,
+    "ledger_util_range": [
+     0.848,
+     0.879
+    ],
+    "all_cpu": 129.65,
+    "all_cores": 10.4725,
+    "cpu_ms": {
+     "host": 7.925,
+     "cells": 106.55,
+     "writers": 15.2
+    },
+    "cores": {
+     "host": 0.64,
+     "cells": 8.6075,
+     "writers": 1.2275
+    },
+    "buckets": {
+     "compile": 78.025,
+     "gate": 25.125,
+     "crossing": 387.425,
+     "freeze": 120.225,
+     "ledger": 163.25
+    },
+    "spawns": 21.75,
+    "verdicts": [
+     "cell"
+    ],
+    "wrong": 0,
+    "errors": 0
+   },
+   "accept-p83": {
+    "thr": 83.9375,
+    "wall": 753.6,
+    "rss_gb": 4.80875,
+    "peak_gb": 5.81325,
+    "per_gb": 17.45515986482974,
+    "cell_net": 0.93125,
+    "cell_gross": 0.93125,
+    "cell_wait": 102.75,
+    "ledger_util": 0.898,
+    "ledger_util_range": [
+     0.883,
+     0.919
+    ],
+    "all_cpu": 125.3,
+    "all_cores": 10.5175,
+    "cpu_ms": {
+     "host": 5.85,
+     "cells": 104.225,
+     "writers": 15.175
+    },
+    "cores": {
+     "host": 0.495,
+     "cells": 8.75,
+     "writers": 1.2725
+    },
+    "buckets": {
+     "compile": 79.75,
+     "gate": 15.6,
+     "crossing": 361.2,
+     "freeze": 121.275,
+     "ledger": 169.1
+    },
+    "spawns": 23,
+    "verdicts": [
+     "cell"
+    ],
+    "wrong": 0,
+    "errors": 0
+   }
+  },
+  "single": {
+   "rows": {},
+   "means_by_arm": {}
+  },
+  "gains": {
+   "accept-p83": {
+    "mean": 83.9375,
+    "change": 0.039184128261475104,
+    "welch_t": 7.7886433902226235,
+    "df": 5.757124144988778,
+    "p": 0.00028857554863670476
+   }
+  }
+ },
+ "w1": {
+  "rows": {
+   "accept-p82": [
+    {
+     "label": "w1-r0",
+     "load": 3.8,
+     "rerun": null,
+     "thr": 16.31,
+     "wall": 61.2,
+     "compile": 26.4,
+     "gate": 7.5,
+     "crossing": 4.1,
+     "spawns": 4,
+     "freeze": 9.4,
+     "ledger": 10.4,
+     "elu": 0.042,
+     "cores": {
+      "host": 0.08,
+      "cells": 1.15,
+      "writers": 0.14
+     },
+     "cpu_ms": {
+      "host": 4.8,
+      "cells": 70.6,
+      "writers": 8.7
+     },
+     "cell_gross": 0.618,
+     "cell_net": 0.618,
+     "cell_wait": 0.0,
+     "ledger_util": 0.081,
+     "rss_gb": 1.122,
+     "peak_gb": 1.322,
+     "all_cpu": 84.1,
+     "all_cores": 1.37,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.45,
+     "outcomes": {
+      "true/true/passed/-": 352,
+      "false/false/failed/-": 58
+     },
+     "all": 410,
+     "verdict": "cell"
+    },
+    {
+     "label": "w1-r1",
+     "load": 3.8,
+     "rerun": null,
+     "thr": 16.71,
+     "wall": 59.7,
+     "compile": 25.0,
+     "gate": 7.5,
+     "crossing": 3.9,
+     "spawns": 4,
+     "freeze": 9.4,
+     "ledger": 10.5,
+     "elu": 0.042,
+     "cores": {
+      "host": 0.08,
+      "cells": 1.09,
+      "writers": 0.15
+     },
+     "cpu_ms": {
+      "host": 4.8,
+      "cells": 65.0,
+      "writers": 8.7
+     },
+     "cell_gross": 0.605,
+     "cell_net": 0.605,
+     "cell_wait": 0.0,
+     "ledger_util": 0.083,
+     "rss_gb": 1.137,
+     "peak_gb": 1.494,
+     "all_cpu": 78.5,
+     "all_cores": 1.31,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.46,
+     "outcomes": {
+      "true/true/passed/-": 358,
+      "false/false/failed/-": 60
+     },
+     "all": 418,
+     "verdict": "cell"
+    },
+    {
+     "label": "w1-r2",
+     "load": 3.5,
+     "rerun": null,
+     "thr": 16.56,
+     "wall": 60.1,
+     "compile": 25.5,
+     "gate": 7.6,
+     "crossing": 4.0,
+     "spawns": 4,
+     "freeze": 9.4,
+     "ledger": 10.3,
+     "elu": 0.042,
+     "cores": {
+      "host": 0.08,
+      "cells": 1.1,
+      "writers": 0.15
+     },
+     "cpu_ms": {
+      "host": 4.6,
+      "cells": 66.6,
+      "writers": 8.8
+     },
+     "cell_gross": 0.614,
+     "cell_net": 0.614,
+     "cell_wait": 0.0,
+     "ledger_util": 0.082,
+     "rss_gb": 1.132,
+     "peak_gb": 1.401,
+     "all_cpu": 80.0,
+     "all_cores": 1.32,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.46,
+     "outcomes": {
+      "true/true/passed/-": 357,
+      "false/false/failed/-": 59
+     },
+     "all": 416,
+     "verdict": "cell"
+    },
+    {
+     "label": "w1-r3",
+     "load": 4.0,
+     "rerun": null,
+     "thr": 16.82,
+     "wall": 59.4,
+     "compile": 24.3,
+     "gate": 7.3,
+     "crossing": 3.9,
+     "spawns": 4,
+     "freeze": 9.4,
+     "ledger": 11.2,
+     "elu": 0.042,
+     "cores": {
+      "host": 0.08,
+      "cells": 1.06,
+      "writers": 0.15
+     },
+     "cpu_ms": {
+      "host": 4.6,
+      "cells": 62.7,
+      "writers": 8.7
+     },
+     "cell_gross": 0.593,
+     "cell_net": 0.593,
+     "cell_wait": 0.0,
+     "ledger_util": 0.087,
+     "rss_gb": 1.141,
+     "peak_gb": 1.503,
+     "all_cpu": 76.1,
+     "all_cores": 1.28,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.46,
+     "outcomes": {
+      "true/true/passed/-": 359,
+      "false/false/failed/-": 60
+     },
+     "all": 419,
+     "verdict": "cell"
+    }
+   ],
+   "accept-p83": [
+    {
+     "label": "w1-r0",
+     "load": 2.9,
+     "rerun": null,
+     "thr": 18.57,
+     "wall": 53.8,
+     "compile": 24.5,
+     "gate": 3.3,
+     "crossing": 3.9,
+     "spawns": 4,
+     "freeze": 9.5,
+     "ledger": 10.6,
+     "elu": 0.044,
+     "cores": {
+      "host": 0.06,
+      "cells": 1.01,
+      "writers": 0.16
+     },
+     "cpu_ms": {
+      "host": 3.3,
+      "cells": 54.2,
+      "writers": 8.8
+     },
+     "cell_gross": 0.585,
+     "cell_net": 0.585,
+     "cell_wait": 0.0,
+     "ledger_util": 0.093,
+     "rss_gb": 1.19,
+     "peak_gb": 1.322,
+     "all_cpu": 66.3,
+     "all_cores": 1.23,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.51,
+     "outcomes": {
+      "true/true/passed/-": 396,
+      "false/false/failed/-": 66
+     },
+     "all": 462,
+     "verdict": "cell"
+    },
+    {
+     "label": "w1-r1",
+     "load": 3.0,
+     "rerun": null,
+     "thr": 18.31,
+     "wall": 54.5,
+     "compile": 24.4,
+     "gate": 3.3,
+     "crossing": 4.0,
+     "spawns": 4,
+     "freeze": 9.6,
+     "ledger": 11.1,
+     "elu": 0.044,
+     "cores": {
+      "host": 0.06,
+      "cells": 1.02,
+      "writers": 0.16
+     },
+     "cpu_ms": {
+      "host": 3.3,
+      "cells": 55.9,
+      "writers": 8.8
+     },
+     "cell_gross": 0.579,
+     "cell_net": 0.579,
+     "cell_wait": 0.0,
+     "ledger_util": 0.095,
+     "rss_gb": 1.189,
+     "peak_gb": 1.506,
+     "all_cpu": 68.0,
+     "all_cores": 1.24,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.5,
+     "outcomes": {
+      "true/true/passed/-": 393,
+      "false/false/failed/-": 65
+     },
+     "all": 458,
+     "verdict": "cell"
+    },
+    {
+     "label": "w1-r2",
+     "load": 4.0,
+     "rerun": null,
+     "thr": 18.31,
+     "wall": 54.4,
+     "compile": 24.9,
+     "gate": 3.4,
+     "crossing": 4.0,
+     "spawns": 4,
+     "freeze": 9.5,
+     "ledger": 10.4,
+     "elu": 0.044,
+     "cores": {
+      "host": 0.06,
+      "cells": 1.07,
+      "writers": 0.16
+     },
+     "cpu_ms": {
+      "host": 3.3,
+      "cells": 58.5,
+      "writers": 8.8
+     },
+     "cell_gross": 0.591,
+     "cell_net": 0.591,
+     "cell_wait": 0.0,
+     "ledger_util": 0.091,
+     "rss_gb": 1.185,
+     "peak_gb": 1.521,
+     "all_cpu": 70.7,
+     "all_cores": 1.29,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.5,
+     "outcomes": {
+      "true/true/passed/-": 394,
+      "false/false/failed/-": 66
+     },
+     "all": 460,
+     "verdict": "cell"
+    },
+    {
+     "label": "w1-r3",
+     "load": 3.2,
+     "rerun": null,
+     "thr": 18.41,
+     "wall": 54.1,
+     "compile": 24.8,
+     "gate": 3.3,
+     "crossing": 3.9,
+     "spawns": 4,
+     "freeze": 9.6,
+     "ledger": 10.4,
+     "elu": 0.044,
+     "cores": {
+      "host": 0.06,
+      "cells": 1.01,
+      "writers": 0.16
+     },
+     "cpu_ms": {
+      "host": 3.3,
+      "cells": 54.8,
+      "writers": 8.8
+     },
+     "cell_gross": 0.589,
+     "cell_net": 0.589,
+     "cell_wait": 0.0,
+     "ledger_util": 0.092,
+     "rss_gb": 1.192,
+     "peak_gb": 1.321,
+     "all_cpu": 66.9,
+     "all_cores": 1.23,
+     "wrong": 0,
+     "errors": 0,
+     "recon": 0.5,
+     "outcomes": {
+      "true/true/passed/-": 396,
+      "false/false/failed/-": 66
+     },
+     "all": 462,
+     "verdict": "cell"
+    }
+   ]
+  },
+  "metric": "wall",
+  "means": [
+   60.1,
+   54.2
+  ],
+  "change": -0.09816971713810319,
+  "welch_t": -13.906433363335408,
+  "df": 3.94320486815416,
+  "p": 0.00016951936222975306,
+  "cell_cpu_ms": [
+   66.225,
+   55.85
+  ],
+  "means_by_arm": {
+   "accept-p82": {
+    "thr": 16.6,
+    "wall": 60.1,
+    "rss_gb": 1.133,
+    "peak_gb": 1.43,
+    "per_gb": 14.651368049426303,
+    "cell_net": 0.6074999999999999,
+    "cell_gross": 0.6074999999999999,
+    "cell_wait": 0.0,
+    "ledger_util": 0.08325,
+    "ledger_util_range": [
+     0.081,
+     0.087
+    ],
+    "all_cpu": 79.675,
+    "all_cores": 1.32,
+    "cpu_ms": {
+     "host": 4.699999999999999,
+     "cells": 66.225,
+     "writers": 8.725
+    },
+    "cores": {
+     "host": 0.08,
+     "cells": 1.1,
+     "writers": 0.1475
+    },
+    "buckets": {
+     "compile": 25.3,
+     "gate": 7.475,
+     "crossing": 3.9749999999999996,
+     "freeze": 9.4,
+     "ledger": 10.6
+    },
+    "spawns": 4,
+    "verdicts": [
+     "cell"
+    ],
+    "wrong": 0,
+    "errors": 0
+   },
+   "accept-p83": {
+    "thr": 18.4,
+    "wall": 54.2,
+    "rss_gb": 1.189,
+    "peak_gb": 1.4175,
+    "per_gb": 15.475189234650966,
+    "cell_net": 0.586,
+    "cell_gross": 0.586,
+    "cell_wait": 0.0,
+    "ledger_util": 0.09275,
+    "ledger_util_range": [
+     0.091,
+     0.095
+    ],
+    "all_cpu": 67.975,
+    "all_cores": 1.2475,
+    "cpu_ms": {
+     "host": 3.3,
+     "cells": 55.85,
+     "writers": 8.8
+    },
+    "cores": {
+     "host": 0.06,
+     "cells": 1.0275,
+     "writers": 0.16
+    },
+    "buckets": {
+     "compile": 24.65,
+     "gate": 3.3249999999999997,
+     "crossing": 3.95,
+     "freeze": 9.55,
+     "ledger": 10.625
+    },
+    "spawns": 4,
+    "verdicts": [
+     "cell"
+    ],
+    "wrong": 0,
+    "errors": 0
+   }
+  }
+ }
+}

@@ -2,8 +2,11 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import re
 
 from .ledger import Ledger, encode
+
+SHA256 = re.compile("[0-9a-f]{64}")
 
 
 def digest(content):
@@ -30,6 +33,10 @@ def snapshot(root, configuration, residual, invariant_version):
                        invariant_version=invariant_version))
 
 
+def frozen_name(name):
+    return bool(name) and not Path(name).is_absolute() and Path(name).as_posix() == name and ".." not in Path(name).parts
+
+
 def validate_frozen(record, prior):
     data = record["data"]
     siblings = [r for r in prior.values() if r["kind"] == "frozen_evaluator"
@@ -50,18 +57,23 @@ def validate_frozen(record, prior):
     if record["id"] != "evr:" + digest(encode(data)):
         raise ValueError("frozen evaluator identity differs from content")
     bundle = json.loads(data["content"])
-    if (not isinstance(bundle, dict) or set(bundle) != {
+    if (not isinstance(bundle, dict) or set(bundle) - {"implementation"} != {
             "files", "configuration", "residual", "invariant_version"}
             or encode(bundle) != data["content"] or not isinstance(bundle["files"], dict)
             or not bundle["files"] or not isinstance(bundle["configuration"], dict)
             or any(not isinstance(bundle[k], str) or not bundle[k]
                    for k in ("residual", "invariant_version"))):
         raise ValueError("invalid frozen bundle")
+    implementation = bundle.get("implementation", {})
+    if (not isinstance(implementation, dict) or ("implementation" in bundle and not implementation)
+            or bundle["files"].keys() & implementation.keys()):
+        raise ValueError("invalid frozen bundle")
     for name, content in bundle["files"].items():
-        if (Path(name).is_absolute() or not name or Path(name).as_posix() != name
-                or ".." in Path(name).parts or not isinstance(content, str)
-                or bytes.fromhex(content).hex() != content):
+        if not frozen_name(name) or not isinstance(content, str) or bytes.fromhex(content).hex() != content:
             raise ValueError("invalid frozen file")
+    for name, sha256 in implementation.items():
+        if not frozen_name(name) or not isinstance(sha256, str) or SHA256.fullmatch(sha256) is None:
+            raise ValueError("invalid frozen implementation digest")
     if data["admitted_input"] not in freeze["synthesis_context"]["inputs"]:
         raise ValueError("synthesis context must include the admitted input")
     for identity in freeze["synthesis_context"]["inputs"]:
@@ -84,10 +96,12 @@ def validate_frozen(record, prior):
 
 
 def frozen_record(root, *, task, admitted_input, confirmed_by, qualification,
-                  synthesis_context, configuration, residual, invariant_version, revision=None, files=None):
+                  synthesis_context, configuration, residual, invariant_version, revision=None, files=None,
+                  implementation=None):
     content = (snapshot(root, configuration, residual, invariant_version) if files is None else
                encode(dict(files=files, configuration=configuration, residual=residual,
-                           invariant_version=invariant_version)))
+                           invariant_version=invariant_version, **({} if implementation is None else
+                                                                   dict(implementation=implementation)))))
     data = dict(task=task, admitted_input=admitted_input, content=content,
                 confirmed_by=confirmed_by,
                 freeze=dict(digest=digest(content), qualification=qualification,

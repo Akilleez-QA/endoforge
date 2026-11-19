@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { hash } from '../x1/host.mjs';
 import { runGates } from '../x1/gates.mjs';
-import { glueFindings, glueProblems, kernelParameters, nonFiniteExpectation, statesComputation, unitDisagreements } from '../x1/contract.mjs';
+import { exportBlocks, glueFindings, glueProblems, kernelParameters, nonFiniteExpectation, statesComputation, unitDisagreements } from '../x1/contract.mjs';
 import { unitFindings } from '../x1/dimensions.mjs';
 import { candidate } from './fixtures/x1/candidate.mjs';
 import { wasm } from './fixtures/x1/wasm.mjs';
@@ -35,6 +35,30 @@ for (const [text, want] of [
   ['The kernel never returns NaN.', 'silent'],
   ['Multiply by two.', 'silent'],
 ]) test(`the contract "${text}" reads as ${want}`, () => assert.equal(nonFiniteExpectation(text, ['scale']).scale, want));
+test('the non-finite reading of a sentence shared by every export is the reading each export would get alone', () => {
+  const permits = /\b(?:returns?|yields?|propagates?|produces?)\b[^\n]*\b(?:non-?finite|nan|infinit(?:e|y|ies))\b|\b(?:non-?finite|nan|infinit(?:e|y|ies))\b[^\n]*\b(?:propagates?|returned)\b/i;
+  const nonFinite = /\b(?:non-?finite|nan|infinit(?:e|y|ies))\b/i, statedFinite = /\bmust be finite\b|\bfinite and\b/i, trapVerb = /\b(?:traps?|trapping|rejects?|rejecting|aborts?|throws?)\b/i;
+  const aboutTests = /\b(?:tests?|cases?|freezes?|frozen)\b/i, negated = /\b(?:never|not|no|cannot)\b/i;
+  const promises = /\b(?:results?|returns?|outputs?)\b[^\n]*\bfinite\b|\bfinite\b[^\n]*\b(?:results?|returns?|outputs?)\b/i;
+  const sentences = lines => lines.join('\n').split(/(?<=\.)\s+|\n/).filter(Boolean);
+  const alone = (contract, names) => {
+    const { blocks, shared } = exportBlocks(contract, names), excluded = nonFiniteExpectation(contract, names);
+    return Object.fromEntries(names.map(name => {
+      const relevant = sentences([...shared, ...blocks[name]]), any = pattern => relevant.some(pattern);
+      if (any(s => permits.test(s) && !negated.test(s) && !trapVerb.test(s))) return [name, 'permitted'];
+      if (any(s => (nonFinite.test(s) || statedFinite.test(s)) && trapVerb.test(s) && !aboutTests.test(s))) return [name, 'trap'];
+      if (excluded[name] === 'excluded') return [name, 'excluded'];
+      return [name, any(s => promises.test(s) && !aboutTests.test(s)) ? 'finite' : 'silent'];
+    }));
+  };
+  const words = ['returns', 'result', 'finite', 'NaN', 'traps', 'non-finite', 'never', 'tests', 'Infinity', 'propagates', 'must be finite', 'output', 'rejects', '`first`', '`second`', '# Notes'];
+  let seed = 11;
+  const pick = n => (seed = (seed * 1103515245 + 12345) % 2 ** 31) % n;
+  for (let i = 0; i < 400; i++) {
+    const contract = Array.from({ length: 3 + pick(6) }, () => Array.from({ length: 2 + pick(12) }, () => words[pick(words.length)]).join(' ') + '.').join(pick(2) ? '\n' : ' ');
+    assert.deepEqual(nonFiniteExpectation(contract, ['first', 'second', 'third']), alone(contract, ['first', 'second', 'third']), contract);
+  }
+});
 test('a statement under one export does not bind another', () => {
   const contract = '`first(x: f64): f64`\nTrap on nonfinite input.\n\n`second(x: f64): f64`\nMultiply by two.';
   assert.deepEqual(nonFiniteExpectation(contract, ['first', 'second']), { first: 'trap', second: 'silent' });

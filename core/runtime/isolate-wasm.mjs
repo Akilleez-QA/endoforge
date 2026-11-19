@@ -7,8 +7,27 @@ const leb = value => {
   do { const part = value % 128; value = Math.floor(value / 128); bytes.push(part | (value ? 128 : 0)); } while (value);
   return bytes;
 };
-const vector = entries => [...leb(entries.length), ...entries.flat()];
-const section = (id, bytes) => [id, ...leb(bytes.length), ...bytes];
+const concat = parts => {
+  const out = new Uint8Array(parts.reduce((total, part) => total + part.length, 0));
+  let offset = 0;
+  for (const part of parts) { out.set(part, offset); offset += part.length; }
+  return out;
+};
+const vector = entries => concat([leb(entries.length), ...entries]);
+const section = (id, bytes) => concat([[id, ...leb(bytes.length)], bytes]);
+const valueTypes = new Set([0x7f, 0x7e, 0x7d, 0x7c, 0x70, 0x6f]);
+const GROW = 1, BLOCK = 2, INDEX = 3, TABLE = 4, TWO = 5, SELECT = 6, MEMARG = 7, I64 = 8, F32 = 9, F64 = 10, MISC = 11, REFUSED = 255;
+const immediates = new Uint8Array(256).fill(REFUSED);
+for (const op of [0x00, 0x01, 0x05, 0x0b, 0x0f, 0x1a, 0x1b, 0xd1]) immediates[op] = 0;
+for (let op = 0x45; op <= 0xc4; op++) immediates[op] = 0;
+immediates[0x40] = GROW;
+for (const op of [0x02, 0x03, 0x04, 0x41, 0xd0]) immediates[op] = BLOCK;
+for (const op of [0x0c, 0x0d, 0x10, 0x12, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x3f, 0xd2]) immediates[op] = INDEX;
+immediates[0x0e] = TABLE;
+immediates[0x11] = immediates[0x13] = TWO;
+immediates[0x1c] = SELECT;
+for (let op = 0x28; op <= 0x3e; op++) immediates[op] = MEMARG;
+immediates[0x42] = I64; immediates[0x43] = F32; immediates[0x44] = F64; immediates[0xfc] = MISC;
 
 class Reader {
   constructor(bytes) { this.bytes = bytes; this.offset = 0; }
@@ -33,7 +52,7 @@ class Reader {
     const start = this.offset;
     this.offset += length;
     if (this.offset > this.bytes.length) throw new WebAssembly.CompileError('truncated wasm');
-    return Array.from(this.bytes.subarray(start, this.offset));
+    return this.bytes.subarray(start, this.offset);
   }
   name() { return this.take(this.uint()); }
 }
@@ -87,8 +106,7 @@ export function installWasmLimit(maxMb, breach, trustedWasmModules = [], sharedW
     return [...leb(kind | 1), ...leb(initial), ...leb(maximum)];
   };
   const valueType = reader => {
-    const type = reader.byte();
-    if (![0x7f, 0x7e, 0x7d, 0x7c, 0x70, 0x6f].includes(type)) unsupported();
+    if (!valueTypes.has(reader.byte())) unsupported();
   };
   const rewrite = source => {
     const bytes = ArrayBuffer.isView(source)
@@ -111,7 +129,7 @@ export function installWasmLimit(maxMb, breach, trustedWasmModules = [], sharedW
     let typeCount = 0, importedFunctions = 0, importedGlobals = 0, memories = 0;
     const limits = [], importedMemories = [], exportedMemories = [];
     if (sections.has(1)) {
-      const types = new Reader(Uint8Array.from(sections.get(1)));
+      const types = new Reader(sections.get(1));
       typeCount = types.uint();
       for (let i = 0; i < typeCount; i++) {
         if (types.byte() !== 0x60) unsupported();
@@ -120,7 +138,7 @@ export function installWasmLimit(maxMb, breach, trustedWasmModules = [], sharedW
       }
     }
     if (sections.has(2)) {
-      const imports = new Reader(Uint8Array.from(sections.get(2)));
+      const imports = new Reader(sections.get(2));
       const entries = [];
       for (let i = imports.uint(); i; i--) {
         const start = imports.offset;
@@ -141,28 +159,28 @@ export function installWasmLimit(maxMb, breach, trustedWasmModules = [], sharedW
           if (limits) imports.uint();
         } else if (kind === 3) { valueType(imports); imports.byte(); importedGlobals++; }
         else unsupported();
-        entries.push(Array.from(imports.bytes.slice(start, imports.offset)));
+        entries.push(imports.bytes.subarray(start, imports.offset));
       }
       sections.set(2, vector(entries));
     }
     if (sections.has(5)) {
-      const memory = new Reader(Uint8Array.from(sections.get(5)));
+      const memory = new Reader(sections.get(5));
       const entries = [];
       for (let i = memory.uint(); i; i--) { entries.push(memoryType(memory, trusted, limits)); memories++; }
       sections.set(5, vector(entries));
     }
     if (!memories) return { bytes, flag: null, start: null };
-    const count = id => sections.has(id) ? new Reader(Uint8Array.from(sections.get(id))).uint() : 0;
+    const count = id => sections.has(id) ? new Reader(sections.get(id)).uint() : 0;
     const append = (id, entries) => {
-      const content = new Reader(Uint8Array.from(sections.get(id) || [0]));
+      const content = new Reader(sections.get(id) || Uint8Array.of(0));
       const length = content.uint();
-      sections.set(id, [...leb(length + entries.length), ...content.take(content.bytes.length - content.offset), ...entries.flat()]);
+      sections.set(id, concat([leb(length + entries.length), content.take(content.bytes.length - content.offset), ...entries]));
     };
     const helperBase = importedFunctions + count(3);
     const flagIndex = importedGlobals + count(6);
     const exportNames = new Set();
     if (sections.has(7)) {
-      const exports = new Reader(Uint8Array.from(sections.get(7)));
+      const exports = new Reader(sections.get(7));
       for (let i = exports.uint(); i; i--) {
         const name = Buffer.from(exports.name());
         const kind = exports.byte(), index = exports.uint();
@@ -185,45 +203,48 @@ export function installWasmLimit(maxMb, breach, trustedWasmModules = [], sharedW
     let start = null;
     if (sections.has(8)) {
       start = privateName('__ef_start');
-      append(7, [exportEntry(start, 0, new Reader(Uint8Array.from(sections.get(8))).uint())]);
+      append(7, [exportEntry(start, 0, new Reader(sections.get(8)).uint())]);
       sections.delete(8);
     }
-    const code = new Reader(Uint8Array.from(sections.get(10) || [0]));
-    const bodies = [];
-    for (let i = code.uint(); i; i--) {
-      const body = new Reader(Uint8Array.from(code.take(code.uint())));
+    const code = new Reader(sections.get(10) || Uint8Array.of(0));
+    const bodies = [], functions = code.uint();
+    for (let i = functions; i; i--) {
+      const body = new Reader(code.take(code.uint()));
       for (let j = body.uint(); j; j--) { body.uint(); valueType(body); }
-      const output = Array.from(body.bytes.slice(0, body.offset));
+      const pieces = [];
+      let copied = 0, length = body.bytes.length;
       while (body.offset < body.bytes.length) {
         const offset = body.offset, op = body.byte();
-        if (op === 0x40) {
-          const memory = body.uint();
-          output.push(0x10, ...leb(helperBase + memory));
-          continue;
+        switch (immediates[op]) {
+          case 0: break;
+          case GROW: {
+            const call = [0x10, ...leb(helperBase + body.uint())];
+            pieces.push(body.bytes.subarray(copied, offset), call);
+            length += call.length - (body.offset - offset);
+            copied = body.offset;
+            break;
+          }
+          case BLOCK: body.skipLeb(); break;
+          case INDEX: body.uint(); break;
+          case TABLE: for (let j = body.uint() + 1; j; j--) body.uint(); break;
+          case TWO: body.uint(); body.uint(); break;
+          case SELECT: for (let j = body.uint(); j; j--) valueType(body); break;
+          case MEMARG: { const align = body.uint(); if (align & 0x40) body.uint(); body.uint(); break; }
+          case I64: body.skipLeb(10); break;
+          case F32: body.take(4); break;
+          case F64: body.take(8); break;
+          case MISC: {
+            const sub = body.uint();
+            if (sub === 8 || sub === 10 || sub === 12 || sub === 14) { body.uint(); body.uint(); }
+            else if (sub === 9 || sub === 11 || (sub >= 13 && sub <= 17)) body.uint();
+            else if (sub > 7) unsupported();
+            break;
+          }
+          default: unsupported();
         }
-        if ([0x02, 0x03, 0x04].includes(op)) body.skipLeb();
-        else if ([0x0c, 0x0d, 0x10, 0x12, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x3f, 0xd2].includes(op)) body.uint();
-        else if (op === 0x0e) { for (let j = body.uint() + 1; j; j--) body.uint(); }
-        else if ([0x11, 0x13].includes(op)) { body.uint(); body.uint(); }
-        else if (op === 0x1c) { for (let j = body.uint(); j; j--) valueType(body); }
-        else if (op >= 0x28 && op <= 0x3e) {
-          const align = body.uint();
-          if (align & 0x40) body.uint();
-          body.uint();
-        } else if (op === 0x41) body.skipLeb();
-        else if (op === 0x42) body.skipLeb(10);
-        else if (op === 0x43) body.take(4);
-        else if (op === 0x44) body.take(8);
-        else if (op === 0xd0) body.skipLeb();
-        else if (op === 0xfc) {
-          const sub = body.uint();
-          if ([8, 10, 12, 14].includes(sub)) { body.uint(); body.uint(); }
-          else if ([9, 11, 13, 15, 16, 17].includes(sub)) body.uint();
-          else if (sub > 7) unsupported();
-        } else if (![0x00, 0x01, 0x05, 0x0b, 0x0f, 0x1a, 0x1b, 0xd1].includes(op) && !(op >= 0x45 && op <= 0xc4)) unsupported();
-        for (const byte of body.bytes.subarray(offset, body.offset)) output.push(byte);
       }
-      bodies.push([...leb(output.length), ...output]);
+      pieces.push(body.bytes.subarray(copied));
+      bodies.push(leb(length), ...pieces);
     }
     for (let memory = 0; memory < memories; memory++) {
       const constant = leb(limits[memory]);
@@ -231,11 +252,11 @@ export function installWasmLimit(maxMb, breach, trustedWasmModules = [], sharedW
       const body = [0, 0x20, 0, 0x41, ...constant, 0x3f, ...leb(memory), 0x6b, 0x4b,
         0x04, 0x40, 0x41, 1, 0x24, ...leb(flagIndex), 0x00, 0x0b,
         0x20, 0, 0x40, ...leb(memory), 0x0b];
-      bodies.push([...leb(body.length), ...body]);
+      bodies.push(leb(body.length), body);
     }
-    sections.set(10, vector(bodies));
+    sections.set(10, concat([leb(functions + memories), ...bodies]));
     const order = [1, 2, 3, 4, 5, 6, 7, 9, 12, 10, 11];
-    return { bytes: Uint8Array.from([...header, ...custom.flat(), ...order.flatMap(id => sections.has(id) ? section(id, sections.get(id)) : [])]), flag, start, limits, importedMemories, exportedMemories };
+    return { bytes: concat([header, ...custom, ...order.flatMap(id => sections.has(id) ? [section(id, sections.get(id))] : [])]), flag, start, limits, importedMemories, exportedMemories };
   };
   const wrapConstructor = (key, construct) => {
     const wrapped = new Proxy(native[key], { construct });

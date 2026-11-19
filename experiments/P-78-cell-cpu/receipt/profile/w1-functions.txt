@@ -1,0 +1,52 @@
+profiles 10 wall 52815 ms, main-thread busy 19132 ms
+  idle                                      33674.9 ms 176.0%
+  asc                                        5883.4 ms  30.8%
+  isolate:isolate-wasm.mjs                   2919.6 ms  15.3%
+  other:021fa6be                             2269.6 ms  11.9%
+  gc                                         1969.8 ms  10.3%
+  node/native:RegExp: \b(?:results?|returns?|outputs?)\b[^\n]*\bfinite\b|\bfinite\b[^\n]*\b(?:results?|returns?|outputs?)\b   1178.1 ms   6.2%
+  node/native                                1148.0 ms   6.0%
+  binaryen                                    832.1 ms   4.3%
+  gates                                       689.7 ms   3.6%
+  node/native:hash                            362.8 ms   1.9%
+  program                                     352.0 ms   1.8%
+  other:index.js                              311.0 ms   1.6%
+  node/native:utils                           297.2 ms   1.6%
+  node/native:wasm-to-js                      223.4 ms   1.2%
+  x1-other:loop-port.mjs                      222.6 ms   1.2%
+  engine                                      108.1 ms   0.6%
+  other:index.mjs                              51.1 ms   0.3%
+  x1-other:host.mjs                            39.5 ms   0.2%
+  other:4ae46196                               22.6 ms   0.1%
+  x1-other:agent.mjs                           22.3 ms   0.1%
+  other:734a36ba                               21.1 ms   0.1%
+  other:adbe1736                               21.0 ms   0.1%
+  isolate:isolate-workcell.mjs                 16.8 ms   0.1%
+  other:7569ac32                               16.6 ms   0.1%
+  other:4ce2d9c6                               16.5 ms   0.1%
+top functions
+  idle                         (idle)                                    33674.9
+  gc                           (garbage collector)                        1969.8
+  asc                          unsafeNext                                 1684.1
+  node/native:RegExp: \b(?:res RegExp: \b(?:results?|returns?|outputs?)   1178.1
+  isolate:isolate-wasm.mjs     rewrite                                    1171.8
+  isolate:isolate-wasm.mjs     take                                        715.7
+  isolate:isolate-wasm.mjs     vector                                      503.6
+  binaryen                     s                                           403.4
+  asc                          skip                                        355.3
+  program                      (program)                                   352.0
+  node/native:hash             update                                      343.3
+  node/native:utils            compileSourceTextModule                     293.6
+  node/native:wasm-to-js       wasm-to-js                                  223.4
+  isolate:isolate-wasm.mjs     WebAssembly.compile                         212.5
+  asc                          Ay                                          204.5
+  asc                          parseExpressionStart                        192.3
+  binaryen                     zj                                          190.1
+  other:021fa6be               wasm-function[79]                           177.6
+  asc                          add                                         175.7
+  gates                        (anon)                                      170.6
+  isolate:isolate-wasm.mjs     section                                     169.6
+  asc                          Yu                                          163.8
+  node/native:js-to-wasm       js-to-wasm                                  157.3
+  asc                          parseExpression                             149.1
+  x1-other:loop-port.mjs       (anon)                                      138.9

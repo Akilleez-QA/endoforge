@@ -26,12 +26,23 @@ const sentences = lines => lines.join('\n').split(/(?<=\.)\s+|\n/).filter(Boolea
 export function nonFiniteExpectation(contract, names) {
   const { blocks, shared } = exportBlocks(contract, names);
   const excluded = sentences(contract.split('\n')).some(sentence => excludes.test(sentence));
+  const read = new Map(), flags = sentence => {
+    let found = read.get(sentence);
+    if (!found) {
+      found = { permitted: permits.test(sentence) && !negated.test(sentence) && !trapVerb.test(sentence),
+        trap: (nonFinite.test(sentence) || statedFinite.test(sentence)) && trapVerb.test(sentence) && !aboutTests.test(sentence),
+        finite: promises.test(sentence) && !aboutTests.test(sentence) };
+      read.set(sentence, found);
+    }
+    return found;
+  };
+  const common = sentences(shared).map(flags);
   return Object.fromEntries(names.map(name => {
-    const relevant = sentences([...shared, ...blocks[name]]), any = pattern => relevant.some(sentence => pattern(sentence));
-    if (any(s => permits.test(s) && !negated.test(s) && !trapVerb.test(s))) return [name, 'permitted'];
-    if (any(s => (nonFinite.test(s) || statedFinite.test(s)) && trapVerb.test(s) && !aboutTests.test(s))) return [name, 'trap'];
+    const relevant = blocks[name].length ? sentences([...shared, ...blocks[name]]).map(flags) : common, any = key => relevant.some(sentence => sentence[key]);
+    if (any('permitted')) return [name, 'permitted'];
+    if (any('trap')) return [name, 'trap'];
     if (excluded) return [name, 'excluded'];
-    if (any(s => promises.test(s) && !aboutTests.test(s))) return [name, 'finite'];
+    if (any('finite')) return [name, 'finite'];
     return [name, 'silent'];
   }));
 }
@@ -98,12 +109,13 @@ export function glueProblems(glue, inputs) { return glueFindings(glue, inputs).p
 export function glueFindings(glue, { source, contract }) {
   const problems = [], advisory = [], parameters = kernelParameters(source), names = glue.exports.map(entry => entry.name);
   const { blocks, shared } = exportBlocks(contract, names);
+  let whole = null;
   for (const entry of glue.exports) {
     const declared = parameters.get(entry.name), glueNames = entry.args.map(arg => arg.name);
     const compared = declared && isBuffer(entry.result) ? declared.slice(0, -1) : declared;
     if (declared && glueNames.join() !== compared.join()) problems.push(`${entry.name}: glue argument names ${glueNames.join(', ')} differ from kernel parameters ${declared.join(', ')}`);
     const block = blocks[entry.name] ?? [], stated = lines => [...new Set([...lines.join('\n').matchAll(decimals)].map(match => words[match[1].toLowerCase()] ?? Number(match[1])))];
-    const own = stated(block), expected = own.length ? own : stated([...shared, ...Object.values(blocks).flat()]);
+    const own = stated(block), expected = own.length ? own : (whole ??= stated([...shared, ...Object.values(blocks).flat()]));
     if (expected.length === 1 && Number.isInteger(entry.result.precision) && entry.result.precision !== expected[0]) problems.push(`${entry.name}: glue precision ${entry.result.precision}, contract states ${expected[0]} decimal places`);
     if (entry.result.codes) {
       const table = new Map([...block.join('\n').matchAll(/(?<![\w.])(-?\d+)\s*(?:=|→|means)\s*([^,;\n]+)/g)].map(match => [match[1], match[2]]));
