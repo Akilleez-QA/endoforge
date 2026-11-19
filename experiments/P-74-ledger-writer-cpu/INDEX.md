@@ -1,0 +1,3 @@
+| Probe | Question | Result |
+|---|---|---|
+| [P-74](PRECOMMIT.md) | Round 1 of the climb loop: does cutting the ledger writer's CPU per request (one validation per row) and sharding it by ledger (4 writers) lift P-73's zero-latency writer ceiling at width 64 without changing a ledger row? | **Failed**: ledger + freeze per need fell 58% (513 → 216 ms) and writer CPU per request 15% (3.88 → 3.30 ms) with byte-identical rows, but width-64 throughput stayed flat (37.9 → 37.6 needs/s, p ≈ 0.8); the freed time moved to cell wait as the host event loop rose from 0.66 to 0.85 utilisation, so the host is the next ceiling; the lever is not kept | [RESULT.md](RESULT.md) |
