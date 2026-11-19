@@ -11,6 +11,7 @@ import { IsolatePool } from '../isolate-pool.mjs';
 import { admit, checkCandidate, commitCandidate, createLoopPool, evaluateAndCommit, evaluateInCell } from '../x1/loop.mjs';
 import { configuration, hash, implementationFiles } from '../x1/host.mjs';
 import { ledger } from '../x1/ledger.mjs';
+import { encodedOf, implementationDigests, implementationFiles as cellImplementation, verifyFromMemory } from '../x1/loop-port.mjs';
 import { runNeed } from '../x1/pipeline.mjs';
 import { evaluate as evaluateReference } from '../x1/reference.mjs';
 import { candidate as additionCandidate } from './fixtures/x1/candidate.mjs';
@@ -171,11 +172,11 @@ test('a bundle changed in the job with its digest unchanged never passes', async
   const root = scratch(t), pool = createLoopPool({ primes: 1 });
   t.after(() => pool.close());
   const { admission, candidate, reference, decisionPath } = await task(pool, join(root, 'addition'));
-  const data = JSON.parse(admission.encoded), bundle = JSON.parse(data.content);
+  const data = JSON.parse(encodedOf(admission)), bundle = JSON.parse(data.content);
   bundle.files['gates.mjs'] = Buffer.from('export const runGates = () => ({ promotable: true, gates: {} });').toString('hex');
   data.content = JSON.stringify(bundle);
   const outcome = await evaluateAndCommit(pool, { candidate, reference, decisionPath, digest: admission.digest,
-    admission: { ...admission, encoded: JSON.stringify(data) } });
+    admission: { ...admission, frame: JSON.stringify(data), elided: [] } });
   assert.equal(outcome.promoted, false);
   assert.equal(outcome.status, 'inconclusive');
 });
@@ -184,12 +185,12 @@ test('a self-consistent changed bundle and digest cannot promote', async t => {
   const root = scratch(t), pool = createLoopPool({ primes: 1 });
   t.after(() => pool.close());
   const forge = admission => {
-    const data = JSON.parse(admission.encoded), bundle = JSON.parse(data.content);
+    const data = JSON.parse(encodedOf(admission)), bundle = JSON.parse(data.content);
     bundle.residual = 'always pass';
     data.content = JSON.stringify(bundle);
     data.freeze.digest = hash(data.content);
     const encoded = JSON.stringify(data);
-    return { identity: `evr:${hash(encoded)}`, digest: data.freeze.digest, encoded };
+    return { identity: `evr:${hash(encoded)}`, digest: data.freeze.digest, frame: encoded, elided: [] };
   };
   const honest = await task(pool, join(root, 'honest-digest'));
   const kept = await evaluateAndCommit(pool, { candidate: honest.candidate, reference: honest.reference, decisionPath: honest.decisionPath,
@@ -201,6 +202,46 @@ test('a self-consistent changed bundle and digest cannot promote', async t => {
   await assert.rejects(evaluateAndCommit(pool, { candidate: forged.candidate, reference: forged.reference, decisionPath: forged.decisionPath,
     admission: forge(forged.admission) }), /digest/);
   assert.equal((await records(forged.reference.ledger)).some(record => record.kind === 'candidate'), false);
+});
+
+test('an admission crosses as a small frame and verifies against the cell copy of the implementation under its identity hash', async t => {
+  const root = scratch(t), pool = createLoopPool({ primes: 1 });
+  t.after(() => pool.close());
+  const { admission } = await task(pool, join(root, 'framed'));
+  assert.equal(admission.encoded, undefined);
+  assert.ok(JSON.stringify(admission).length < 32 * 1024, 'the admission carries no implementation payload');
+  assert.deepEqual([...admission.elided].sort(), [...cellImplementation].sort());
+  assert.equal(`evr:${hash(encodedOf(admission))}`, admission.identity);
+  const { bundle } = await verifyFromMemory(admission)({ identity: admission.identity });
+  for (const name of cellImplementation) assert.equal(bundle.files[name], readFileSync(join(x1Directory, name)).toString('hex'));
+  for (const forged of [{ ...admission, elided: admission.elided.slice(1) }, { ...admission, frame: admission.frame.replace('"residual', '"residuaI') },
+    { ...admission, elided: [...admission.elided, 'kernel.ts'] }]) {
+    await assert.rejects(verifyFromMemory(forged)({ identity: admission.identity }), /frozen identity changed/);
+  }
+});
+
+test('an admission by digest freezes a record that names the implementation by digest and verifies against the cell copy under its identity hash', async t => {
+  const root = scratch(t), pool = createLoopPool({ primes: 1 });
+  t.after(() => pool.close());
+  const { files } = additionCandidate(), directory = join(root, 'digests');
+  mkdirSync(directory, { recursive: true });
+  const frozen = Object.fromEntries(['CONTRACT.md', 'tests.json', 'frozen.sha256'].map(name => [name, Buffer.from(files[name]).toString('hex')]));
+  const admission = await admit(pool, { ledger: join(directory, 'ledger.sqlite') }, { need: 'integer add(a,b)', configuration, files: frozen, implementation: implementationDigests });
+  assert.ok(JSON.stringify(admission).length < 32 * 1024, 'the admission carries no implementation payload');
+  assert.deepEqual(admission.elided, []);
+  assert.equal(`evr:${hash(encodedOf(admission))}`, admission.identity);
+  const { bundle } = await verifyFromMemory(admission)({ identity: admission.identity });
+  for (const name of cellImplementation) assert.equal(bundle.implementation[name], hash(readFileSync(join(x1Directory, name))));
+  for (const name of cellImplementation) assert.equal(bundle.files[name], undefined);
+  const stored = (await records(join(directory, 'ledger.sqlite'))).find(record => record.kind === 'frozen_evaluator');
+  assert.equal(stored.id, admission.identity);
+  assert.ok(JSON.stringify(stored).length < 32 * 1024, 'the frozen record holds digests, not the implementation');
+  const named = JSON.parse(admission.frame), held = JSON.parse(named.content);
+  held.implementation['gates.mjs'] = hash('export const runGates = () => ({ promotable: true, gates: {} });');
+  for (const forged of [{ ...admission, elided: ['gates.mjs'] }, { ...admission, frame: admission.frame.replace('"residual', '"residuaI') },
+    { ...admission, frame: JSON.stringify({ ...named, content: JSON.stringify(held) }) }]) {
+    await assert.rejects(verifyFromMemory(forged)({ identity: admission.identity }), /frozen identity changed/);
+  }
 });
 
 test('a change to the bundle held in the cell fails at the next verification', async t => {

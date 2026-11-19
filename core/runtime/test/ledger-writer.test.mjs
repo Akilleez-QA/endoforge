@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
-import { LedgerBridge } from '../isolate-ledger.mjs';
+import { LEDGER_SHARDS, LedgerBridge, LedgerShards } from '../isolate-ledger.mjs';
 import { python } from './fixtures/ledger-fixture.mjs';
 
 const repository = fileURLToPath(new URL('../../../', import.meta.url));
@@ -58,6 +58,42 @@ test('requests for many ledgers share one journal sync and every answer follows 
     assert.deepEqual(seen[ledger], ['task', 'input-0', 'input-1', 'input-2', 'input-3', 'input-4']);
   }
   assert.deepEqual(readdirSync(join(root, 'journal')).filter(name => name.endsWith('.journal')), []);
+});
+
+test('the shards keep each ledger on one writer and share one journal directory', { timeout: 60000 }, async t => {
+  const root = scratch(t);
+  const shards = new LedgerShards({ extension: 'tests.fixtures.ledger_notes', journal: join(root, 'journal') });
+  await shards.start();
+  const ledgers = await drive(shards, root, 32, 5);
+  assert(LEDGER_SHARDS > 1);
+  assert.equal(readdirSync(join(root, 'journal')).filter(name => name.endsWith('.journal')).length, LEDGER_SHARDS);
+  await shards.close();
+  const seen = await records(ledgers.map(entry => entry.ledger));
+  for (const { ledger, sent } of ledgers) {
+    assert(sent.every(entry => entry.acked));
+    assert.deepEqual(sent.map(entry => entry.seq), [1, 2, 3, 4, 5, 6]);
+    assert.deepEqual(seen[ledger], ['task', 'input-0', 'input-1', 'input-2', 'input-3', 'input-4']);
+  }
+  assert.deepEqual(readdirSync(join(root, 'journal')).filter(name => name.endsWith('.journal')), []);
+});
+
+test('one writer failing closed fails every shard closed and spawns no writer', { timeout: 60000 }, async t => {
+  const root = scratch(t);
+  const shards = new LedgerShards({ extension: 'tests.fixtures.ledger_notes', journal: join(root, 'journal') });
+  t.after(() => shards.close());
+  const [first] = await drive(shards, root, 1, 1);
+  assert(first.sent.every(entry => entry.acked));
+  assert.equal(shards.pids.length, 1);
+  const [writer] = shards.pids;
+  process.kill(writer, 'SIGKILL');
+  for (let tries = 0; !shards.failed && tries < 1000; tries += 1) await new Promise(resolve => setTimeout(resolve, 5));
+  assert(shards.failed);
+  const later = await drive(shards, join(root, 'later'), 32, 1);
+  for (const { sent } of later) assert.deepEqual(sent.map(entry => entry.acked), [false]);
+  await assert.rejects(shards.request('admit', { reference: { ledger: join(root, 'other.sqlite') } }, { need: 'x' }), /bridge failed/);
+  assert.deepEqual(shards.pids, [writer]);
+  await assert.rejects(shards.start(), /bridge failed/);
+  assert.deepEqual(shards.pids, [writer]);
 });
 
 for (const [point, lost] of [['after_apply', false], ['half_frame', true], ['after_sync', true], ['half_acks', false]]) {

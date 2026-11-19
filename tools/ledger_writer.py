@@ -22,7 +22,7 @@ from tools.durable import sync_data, sync_dir, sync_file
 MAGIC = b"EFJ1"
 HEADER = struct.Struct(">4sI32s")
 SEGMENT_BYTES = 128 * 2**20
-HANDLES = 1024
+HANDLES = 256
 WINDOW = 0.010
 BATCH = 128
 GROUP = 16
@@ -420,14 +420,16 @@ class Writer:
                 version = db.execute("SELECT coalesce(max(version), 0) FROM ledger_journal").fetchone()[0] + 1
                 statements, applied = head.log, False
                 prior, previous = ledger._read(db, cache)
+                verified = []
                 for request in requests:
                     recorder = Recorder(db)
                     db.execute("SAVEPOINT request")
-                    saved_prior, saved_previous = dict(prior), previous
+                    saved_prior, saved_previous, saved_verified = dict(prior), previous, len(verified)
 
                     def append(record):
                         nonlocal previous
                         previous = ledger._append(recorder, record, prior, previous)
+                        verified.append((len(prior), previous, record["id"], prior[record["id"]]))
                         return previous
 
                     try:
@@ -440,6 +442,7 @@ class Writer:
                     except Exception as error:
                         db.execute("ROLLBACK TO request")
                         prior, previous = saved_prior, saved_previous
+                        del verified[saved_verified:]
                         answered.append(dict(id=request["id"], error=str(error)))
                     db.execute("RELEASE request")
                 if applied:
@@ -447,6 +450,7 @@ class Writer:
                     digest = hashlib.sha256(encoded.encode()).hexdigest()
                     db.execute(MARK, (version, digest))
                 db.commit()
+                cache.extend(verified)
                 entry[3] = False
             except Exception:
                 db.rollback()

@@ -1,0 +1,1257 @@
+[
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/x1-contract.test.mjs",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/x1-frozen.test.mjs",
+  "code": 0,
+  "seconds": 2.5,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/x1-measured.test.mjs",
+  "code": 0,
+  "seconds": 1.2,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/x1-render-tests.test.mjs",
+  "code": 0,
+  "seconds": 0.3,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/x1-rerun.test.mjs",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/x1.test.mjs",
+  "code": 0,
+  "seconds": 2.4,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/generator-exact.test.mjs",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/generator-reference.test.mjs",
+  "code": 0,
+  "seconds": 2.3,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/generator-scalar.test.mjs",
+  "code": 0,
+  "seconds": 0.9,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/generator.test.mjs",
+  "code": 0,
+  "seconds": 1.2,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/promotion.test.mjs",
+  "code": 0,
+  "seconds": 4.4,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/synth-pipeline.test.mjs",
+  "code": 0,
+  "seconds": 1.3,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/synth.test.mjs",
+  "code": 0,
+  "seconds": 0.7,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/pipeline-contained.test.mjs",
+  "code": 0,
+  "seconds": 1.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/loop-agent.test.mjs",
+  "code": 1,
+  "seconds": 16.3,
+  "failing": [
+   "failing tests:",
+   "the warm transport spawns once, sends only new turns and clears between sessions"
+  ],
+  "tail": "/private/tmp/claude-501/climb-r11/endoforge/core/runtime/test/loop-agent.test.mjs:216:10)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: '/private/var/folders/80/pqj79m9x4cd20v55yb9b7_c40000gn/T/ef-agent-DWBEGY',\n    expected: '/var/folders/80/pqj79m9x4cd20v55yb9b7_c40000gn/T/ef-agent-DWBEGY',\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n"
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/loop-count.test.mjs",
+  "code": 1,
+  "seconds": 0.1,
+  "failing": [
+   "a real syscall counter sees no spawn or write before commit in the cell, and sees both on the current path",
+   "failing tests:"
+  ],
+  "tail": "(node:internal/test_runner/test:1262:17)\n      at startSubtestAfterBootstrap (node:internal/test_runner/harness:387:17) {\n    status: 1,\n    signal: null,\n    output: [ null, <Buffer >, <Buffer 2f 70 72 69 76 61 74 65 2f 74 6d 70 2f 63 6c 61 75 64 65 2d 35 30 31 2f 63 6c 69 6d 62 2d 72 31 31 2f 65 6e 64 6f 66 6f 72 67 65 2f 65 78 70 65 72 69 ... 168 more bytes> ],\n    pid: 50208,\n    stdout: <Buffer >,\n    stderr: <Buffer 2f 70 72 69 76 61 74 65 2f 74 6d 70 2f 63 6c 61 75 64 65 2d 35 30 31 2f 63 6c 69 6d 62 2d 72 31 31 2f 65 6e 64 6f 66 6f 72 67 65 2f 65 78 70 65 72 69 ... 168 more bytes>\n  }\n"
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/loop-crash.test.mjs",
+  "code": 0,
+  "seconds": 45.0,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/loop-example.test.mjs",
+  "code": 0,
+  "seconds": 2.5,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/loop-feedback.test.mjs",
+  "code": 0,
+  "seconds": 0.6,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/loop-review.test.mjs",
+  "code": 1,
+  "seconds": 24.2,
+  "failing": [
+   "14: the counter sees writes on an open file and memfd, not only opens",
+   "7: a bridge death does not poison the pool, and no specification turn is spent on a dead bridge",
+   "failing tests:"
+  ],
+  "tail": "    at Test.postRun (node:internal/test_runner/test:1542:19)\n      at Test.run (node:internal/test_runner/test:1467:12) {\n    status: 1,\n    signal: null,\n    output: [ null, <Buffer >, <Buffer 2f 70 72 69 76 61 74 65 2f 74 6d 70 2f 63 6c 61 75 64 65 2d 35 30 31 2f 63 6c 69 6d 62 2d 72 31 31 2f 65 6e 64 6f 66 6f 72 67 65 2f 65 78 70 65 72 69 ... 168 more bytes> ],\n    pid: 57766,\n    stdout: <Buffer >,\n    stderr: <Buffer 2f 70 72 69 76 61 74 65 2f 74 6d 70 2f 63 6c 61 75 64 65 2d 35 30 31 2f 63 6c 69 6d 62 2d 72 31 31 2f 65 6e 64 6f 66 6f 72 67 65 2f 65 78 70 65 72 69 ... 168 more bytes>\n  }\n"
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/loop-waits.test.mjs",
+  "code": 0,
+  "seconds": 13.3,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/loop.test.mjs",
+  "code": 0,
+  "seconds": 22.2,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -I tools/check-docs.py",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -I tools/experiments_index.py --check",
+  "code": 0,
+  "seconds": 0.0,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -I tools/source_sums.py --check",
+  "code": 0,
+  "seconds": 0.0,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -I tools/experiment_id.py check",
+  "code": 0,
+  "seconds": 0.0,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -I tools/check-privacy.py",
+  "code": 0,
+  "seconds": 0.0,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -I tools/check_file_url_paths.py",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -I tools/check_trace.py",
+  "code": 0,
+  "seconds": 0.2,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -I tools/gen_data_dictionary.py --check",
+  "code": 0,
+  "seconds": 0.0,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -I tools/check_durable_sync.py",
+  "code": 0,
+  "seconds": 0.0,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m unittest discover -s tests -v",
+  "code": 0,
+  "seconds": 3.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m unittest core.ledger.test_frozen",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m unittest core.ledger.test_ledger",
+  "code": 0,
+  "seconds": 0.2,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m unittest core.ledger.test_provenance",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m unittest tools.test_check_durable_sync",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m unittest tools.test_check_file_url_paths",
+  "code": 0,
+  "seconds": 0.4,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m unittest tools.test_dump_list",
+  "code": 0,
+  "seconds": 0.4,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m unittest tools.test_durable",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m unittest tools.test_fold_changelog",
+  "code": 0,
+  "seconds": 0.4,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m unittest tools.test_ledger_shed",
+  "code": 0,
+  "seconds": 2.3,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m unittest tools.test_ledger_writer",
+  "code": 0,
+  "seconds": 0.6,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m unittest tools.test_x1_decision_file",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m unittest tools.test_x1_handles",
+  "code": 0,
+  "seconds": 0.4,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m unittest tools.test_x1_labels",
+  "code": 0,
+  "seconds": 0.3,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m unittest tools.test_x1_revise_structured",
+  "code": 0,
+  "seconds": 3.6,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/engine/evaluator.test.mjs",
+  "code": 0,
+  "seconds": 1.6,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/engine/gates.test.mjs",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/capacity.test.mjs",
+  "code": 1,
+  "seconds": 0.3,
+  "failing": [
+   "failing tests:",
+   "without sysfs or cgroups the probe degrades to availableParallelism and says so"
+  ],
+  "tail": "-r11/endoforge/core/runtime/test/capacity.test.mjs:68:10)\n      at Test.runInAsyncScope (node:async_hooks:226:14)\n      at Test.run (node:internal/test_runner/test:1402:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)\n      at Test.postRun (node:internal/test_runner/test:1542:19)\n      at Test.run (node:internal/test_runner/test:1467:12)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: 6949,\n    expected: 512,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n"
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/contained-js.test.mjs",
+  "code": 1,
+  "seconds": 2.2,
+  "failing": [
+   "a V8 fatal error takes one pool cell and no sibling",
+   "failing tests:"
+  ],
+  "tail": " be strictly equal:\n  + actual - expected\n  \n  + 'process_exit'\n  - 'heap'\n  \n      at TestContext.<anonymous> (file:///private/tmp/claude-501/climb-r11/endoforge/core/runtime/test/contained-js.test.mjs:76:10)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: 'process_exit',\n    expected: 'heap',\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n"
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/dump-list.test.mjs",
+  "code": 0,
+  "seconds": 2.3,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/gaps-compat.test.mjs",
+  "code": 1,
+  "seconds": 0.1,
+  "failing": [
+   "G3: a clean, twice-identical, test-passing TypeScript candidate is promoted through the ledger under its own policy",
+   "G3: an unknown route outcome is inconclusive, and the policy tool explains itself with no arguments",
+   "G3: the policy re-scores the recorded output and refuses forged or tampered evidence",
+   "G3: type errors, failing tests and changed tests are refused, never promoted",
+   "failing tests:"
+  ],
+  "tail": "ols/tscheck/contained-route.mjs:55:23)\n      at setup (file:///private/tmp/claude-501/climb-r11/endoforge/core/runtime/test/gaps-compat.test.mjs:20:17)\n      at async TestContext.<anonymous> (file:///private/tmp/claude-501/climb-r11/endoforge/core/runtime/test/gaps-compat.test.mjs:112:41)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {\n    errno: -2,\n    code: 'ENOENT',\n    syscall: 'open',\n    path: '/private/tmp/claude-501/climb-r11/endoforge/tools/tscheck/node_modules/@tsrs/wasm/core.js'\n  }\n"
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/gaps-gluestate.test.mjs",
+  "code": 0,
+  "seconds": 0.7,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/gaps-synth.test.mjs",
+  "code": 0,
+  "seconds": 0.9,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/gaps-transport.test.mjs",
+  "code": 0,
+  "seconds": 0.6,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/gaps-x1runtime.test.mjs",
+  "code": 0,
+  "seconds": 5.9,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/gaps10-sandbox.test.mjs",
+  "code": 0,
+  "seconds": 7.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/gaps2-commit.test.mjs",
+  "code": 1,
+  "seconds": 6.2,
+  "failing": [
+   "H5: a TypeScript candidate that passes the compatibility route is promoted under its own policy, on every path",
+   "failing tests:"
+  ],
+  "tail": "stContext.<anonymous> (file:///private/tmp/claude-501/climb-r11/endoforge/core/runtime/test/gaps2-commit.test.mjs:309:17)\n      at Test.runInAsyncScope (node:async_hooks:226:14)\n      at Test.run (node:internal/test_runner/test:1402:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)\n      at Test.postRun (node:internal/test_runner/test:1542:19)\n      at Test.run (node:internal/test_runner/test:1467:12) {\n    errno: -2,\n    code: 'ENOENT',\n    syscall: 'open',\n    path: '/private/tmp/claude-501/climb-r11/endoforge/tools/tscheck/node_modules/@tsrs/wasm/core.js'\n  }\n"
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/gaps3-generator.test.mjs",
+  "code": 0,
+  "seconds": 1.3,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/gaps3-meter.test.mjs",
+  "code": 0,
+  "seconds": 0.6,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/gaps4-runtime.test.mjs",
+  "code": 0,
+  "seconds": 1.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/gaps4-synth.test.mjs",
+  "code": 0,
+  "seconds": 5.7,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/gaps5-capability.test.mjs",
+  "code": 0,
+  "seconds": 1.8,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/gaps6-capability.test.mjs",
+  "code": 0,
+  "seconds": 2.2,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/gaps6-hostcall.test.mjs",
+  "code": 0,
+  "seconds": 4.0,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/gaps6-synthcell.test.mjs",
+  "code": 0,
+  "seconds": 0.9,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/gaps8-capability-nested.test.mjs",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/isolate-deadline.test.mjs",
+  "code": 0,
+  "seconds": 20.9,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/isolate-flags.test.mjs",
+  "code": 0,
+  "seconds": 5.8,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/isolate-host-call.test.mjs",
+  "status": "excluded"
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/isolate-limits.test.mjs",
+  "code": 1,
+  "seconds": 11.4,
+  "failing": [
+   "a process stack too small for the environment is refused when the cell starts",
+   "failing tests:",
+   "process: a stack overflow under stackSizeMb is an unknown outcome, not a dead process",
+   "process: with 1536 KiB of environment, a stack overflow is still a RangeError, not SIGSEGV",
+   "process: with 512 KiB of environment, a stack overflow is still a RangeError, not SIGSEGV"
+  ],
+  "tail": "\n      at requireProcessStack (file:///private/tmp/claude-501/climb-r11/endoforge/core/runtime/isolate-pool.mjs:26:17)\n      at new IsolatePool (file:///private/tmp/claude-501/climb-r11/endoforge/core/runtime/isolate-pool.mjs:118:63)\n      at TestContext.<anonymous> (file:///private/tmp/claude-501/climb-r11/endoforge/core/runtime/test/isolate-limits.test.mjs:230:16)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7)\n"
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/isolate-offheap.test.mjs",
+  "code": 0,
+  "seconds": 0.6,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/isolate-pool.test.mjs",
+  "code": 1,
+  "seconds": 10.3,
+  "failing": [
+   "bridge death rejects pending runs and all later requests without respawning",
+   "failing tests:",
+   "prewarm ready() starts the ledger bridge; lazy pools start it on first request"
+  ],
+  "tail": "de:fs:624:20)\n      at bridges (file:///private/tmp/claude-501/climb-r11/endoforge/core/runtime/test/isolate-pool.test.mjs:430:25)\n      at TestContext.<anonymous> (file:///private/tmp/claude-501/climb-r11/endoforge/core/runtime/test/isolate-pool.test.mjs:434:16)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {\n    errno: -2,\n    code: 'ENOENT',\n    syscall: 'open',\n    path: '/proc/self/task/69335/children'\n  }\n"
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/isolate-process.test.mjs",
+  "code": 0,
+  "seconds": 2.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/isolate-shared-module.test.mjs",
+  "code": 0,
+  "seconds": 1.8,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/isolate-toolchain.test.mjs",
+  "code": 0,
+  "seconds": 1.7,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/isolate-tooling-wasm.test.mjs",
+  "code": 0,
+  "seconds": 3.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/isolate-trusted-cap.test.mjs",
+  "code": 0,
+  "seconds": 3.3,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/isolate-wasm-rewrite.test.mjs",
+  "code": 0,
+  "seconds": 0.4,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/ledger-writer.test.mjs",
+  "code": 0,
+  "seconds": 1.3,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/oracle-parser.test.mjs",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/oracle-round2.test.mjs",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/oracle.test.mjs",
+  "code": 0,
+  "seconds": 2.3,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/stage-rates.test.mjs",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/subscription-guard.test.mjs",
+  "code": 1,
+  "seconds": 0.2,
+  "failing": [
+   "failing tests:",
+   "the child environment carries no key or billing override"
+  ],
+  "tail": "   at Test.runInAsyncScope (node:async_hooks:226:14)\n      at Test.run (node:internal/test_runner/test:1402:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)\n      at Test.postRun (node:internal/test_runner/test:1542:19)\n      at Test.run (node:internal/test_runner/test:1467:12)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: undefined,\n    expected: /ANTHROPIC_|CLAUDE_CODE_OAUTH|CLAUDE_CODE_USE_|AWS_BEARER/,\n    operator: 'doesNotMatch',\n    diff: 'simple'\n  }\n"
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/timing-guard.test.mjs",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/usage-governor.test.mjs",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 tools/tscheck/test/cohort-check.test.mjs",
+  "code": 1,
+  "seconds": 0.1,
+  "failing": [
+   "a check in the cohort gives the same verdicts as the check on the supervisor",
+   "a reused instance and a host baseline give the fresh full check verdicts, including global-scope kernels",
+   "failing tests:",
+   "fused+baseline: a checker Worker that dies loses only its own attempt, as outcome_unknown, and it isn't run again",
+   "fused+baseline: a cohort killed mid-check reports every attempt in flight outcome_unknown and retries none",
+   "fused+reuse+baseline: a checker Worker that dies loses only its own attempt, as outcome_unknown, and it isn't run again",
+   "fused+reuse+baseline: a cohort killed mid-check reports every attempt in flight outcome_unknown and retries none",
+   "fused+reuse: a checker Worker that dies loses only its own attempt, as outcome_unknown, and it isn't run again",
+   "fused+reuse: a cohort killed mid-check reports every attempt in flight outcome_unknown and retries none",
+   "fused: a checker Worker that dies loses only its own attempt, as outcome_unknown, and it isn't run again",
+   "fused: a cohort killed mid-check reports every attempt in flight outcome_unknown and retries none",
+   "sibling+reuse+baseline: a checker Worker that dies loses only its own attempt, as outcome_unknown, and it isn't run again",
+   "sibling+reuse+baseline: a cohort killed mid-check reports every attempt in flight outcome_unknown and retries none",
+   "sibling: a checker Worker that dies loses only its own attempt, as outcome_unknown, and it isn't run again",
+   "sibling: a cohort killed mid-check reports every attempt in flight outcome_unknown and retries none"
+  ],
+  "tail": "stContext.<anonymous> (file:///private/tmp/claude-501/climb-r11/endoforge/tools/tscheck/test/cohort-check.test.mjs:72:19)\n      at Test.runInAsyncScope (node:async_hooks:226:14)\n      at Test.run (node:internal/test_runner/test:1402:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)\n      at Test.postRun (node:internal/test_runner/test:1542:19)\n      at Test.run (node:internal/test_runner/test:1467:12) {\n    errno: -2,\n    code: 'ENOENT',\n    syscall: 'open',\n    path: '/private/tmp/claude-501/climb-r11/endoforge/tools/tscheck/node_modules/@tsrs/wasm/core.js'\n  }\n"
+ },
+ {
+  "command": "node --test --test-timeout=120000 tools/tscheck/test/contained-route.test.mjs",
+  "code": 1,
+  "seconds": 0.1,
+  "failing": [
+   "a type error stops before anything runs",
+   "checked TypeScript is emitted and run contained, with the lane on the receipt",
+   "emitted code gets refusals for failed tests, runaway work and absent modules",
+   "failing tests:"
+  ],
+  "tail": "      at createCohortSet (file:///private/tmp/claude-501/climb-r11/endoforge/core/runtime/contained/cohort-set.mjs:40:32)\n      at createContainedRoute (file:///private/tmp/claude-501/climb-r11/endoforge/tools/tscheck/contained-route.mjs:54:7)\n      at TestContext.<anonymous> (file:///private/tmp/claude-501/climb-r11/endoforge/tools/tscheck/test/contained-route.test.mjs:31:17)\n      at Test.runInAsyncScope (node:async_hooks:226:14) {\n    errno: -2,\n    code: 'ENOENT',\n    syscall: 'open',\n    path: '/private/tmp/claude-501/climb-r11/endoforge/tools/tscheck/node_modules/@tsrs/wasm/core.js'\n  }\n"
+ },
+ {
+  "command": "node --test --test-timeout=120000 tools/tscheck/test/dump-list.test.mjs",
+  "code": 1,
+  "seconds": 0.1,
+  "failing": [
+   "a shed drops the idle Workers' reused instances and reports less, and the next check starts a fresh instance with the same verdict",
+   "failing tests:",
+   "fused: repeated sheds during in-flight checked attempts change no verdict and add no outcome_unknown",
+   "sibling: repeated sheds during in-flight checked attempts change no verdict and add no outcome_unknown"
+  ],
+  "tail": " TestContext.<anonymous> (file:///private/tmp/claude-501/climb-r11/endoforge/tools/tscheck/test/dump-list.test.mjs:54:17)\n      at Test.runInAsyncScope (node:async_hooks:226:14)\n      at Test.run (node:internal/test_runner/test:1402:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)\n      at Test.postRun (node:internal/test_runner/test:1542:19)\n      at Test.run (node:internal/test_runner/test:1467:12) {\n    errno: -2,\n    code: 'ENOENT',\n    syscall: 'open',\n    path: '/private/tmp/claude-501/climb-r11/endoforge/tools/tscheck/node_modules/@tsrs/wasm/core.js'\n  }\n"
+ },
+ {
+  "command": "node --test --test-timeout=120000 tools/tscheck/test/requalify.test.mjs",
+  "code": 1,
+  "seconds": 4.0,
+  "failing": [
+   "a compiler that does not match the pin shows as not completed in every project",
+   "a digest pin fires alone: the oracle one, then the workload one",
+   "a host option that changes the verdict shows: plain tsc disagrees with the hosted run",
+   "a job lost after its report was written shows as not completed",
+   "a job that completes without running the checker shows as not completed",
+   "a matching oracle exits zero and writes a report",
+   "a project the checker refuses shows as not completed, never compared",
+   "a workload manifest is not a skipped project",
+   "a wrong oracle version exits nonzero",
+   "any difference from the oracle exits nonzero and names the project",
+   "anything skipped fails an otherwise matching run: a directory or a loose file",
+   "each variety floor fires by itself",
+   "failing tests:",
+   "one project short of the minimum never passes",
+   "plain tsc disagreeing on only the exit code, or only the rows, still shows",
+   "the oracle gets the host options once, and a plain run with none in a copy of the project",
+   "the real pins refuse a stub oracle and any other workload, whatever they report",
+   "twenty near-identical projects never pass, even matching a real answer"
+  ],
+  "tail": "s/tscheck/test/requalify.test.mjs:47:43)\n      at answers (file:///private/tmp/claude-501/climb-r11/endoforge/tools/tscheck/test/requalify.test.mjs:52:54)\n      at TestContext.<anonymous> (file:///private/tmp/claude-501/climb-r11/endoforge/tools/tscheck/test/requalify.test.mjs:347:23)\n      at Test.runInAsyncScope (node:async_hooks:226:14)\n      at Test.run (node:internal/test_runner/test:1402:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)\n      at Test.postRun (node:internal/test_runner/test:1542:19)\n      at Test.run (node:internal/test_runner/test:1467:12)\n"
+ },
+ {
+  "command": "node --test --test-timeout=120000 tools/tscheck/test/tscheck.test.mjs",
+  "code": 1,
+  "seconds": 1.0,
+  "failing": [
+   "a clean emit binds its artifact hashes and compiler identity into the receipt, and a failed one binds nothing",
+   "a clean emit returns a hashed artifact and a failed one returns none",
+   "a tampered or missing compiler is an unknown outcome, never a pass",
+   "build info feedback matches a full check, is refused with emit, and can be forged",
+   "deep input needs the stack limit, and a compiler past its deadline is stopped",
+   "failing tests:",
+   "in a pinned workcell the compiler passes clean code and rejects a planted error",
+   "in process cells, deep input needs the stack limit as it does in threads",
+   "the module compiles once per workcell and each check has fresh state",
+   "the pinned compiler growing past a lowered maximumPages stops its cell",
+   "warm compiles in ready(), and the first job compiles nothing and keeps its verdicts",
+   "without the pin the WASM guard stops the compiler"
+  ],
+  "tail": "ude-501/climb-r11/endoforge/tools/tscheck/test/tscheck.test.mjs:172:43)\n      at TestContext.<anonymous> (file:///private/tmp/claude-501/climb-r11/endoforge/tools/tscheck/test/tscheck.test.mjs:173:22)\n      at Test.runInAsyncScope (node:async_hooks:226:14)\n      at Test.run (node:internal/test_runner/test:1402:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)\n      at Test.postRun (node:internal/test_runner/test:1542:19)\n      at Test.run (node:internal/test_runner/test:1467:12)\n      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)\n"
+ },
+ {
+  "command": "node --test --test-timeout=120000 tools/tscheck/test/tsrs-reuse.test.mjs",
+  "code": 1,
+  "seconds": 0.1,
+  "failing": [
+   "failing tests:",
+   "tools/tscheck/test/tsrs-reuse.test.mjs"
+  ],
+  "tail": " at async node:internal/modules/esm/loader:650:26\n    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:105:5) {\n  errno: -2,\n  code: 'ENOENT',\n  syscall: 'open',\n  path: '/private/tmp/claude-501/climb-r11/endoforge/tools/tscheck/node_modules/@tsrs/wasm/core.js'\n}\n\nNode.js v26.13.1\n\u2716 tools/tscheck/test/tsrs-reuse.test.mjs (24.171708ms)\n\u2139 tests 1\n\u2139 suites 0\n\u2139 pass 0\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 26.703666\n\n\u2716 failing tests:\n\ntest at tools/tscheck/test/tsrs-reuse.test.mjs:1:1\n\u2716 tools/tscheck/test/tsrs-reuse.test.mjs (24.171708ms)\n  'test failed'\n"
+ },
+ {
+  "command": "node --test --test-timeout=120000 tools/tscheck/test/verdict.test.mjs",
+  "code": 1,
+  "seconds": 0.1,
+  "failing": [
+   "failing tests:",
+   "tools/tscheck/test/verdict.test.mjs"
+  ],
+  "tail": "de:internal/modules/esm/loader:610:35)\n    at node:internal/modules/esm/loader:639:32\n    at TracingChannel.tracePromise (node:diagnostics_channel:582:22) {\n  code: 'ERR_MODULE_NOT_FOUND',\n  url: 'file:///private/tmp/claude-501/climb-r11/endoforge/tools/tscheck/node_modules/@tsrs/wasm/core.js'\n}\n\nNode.js v26.13.1\n\u2716 tools/tscheck/test/verdict.test.mjs (25.215959ms)\n\u2139 tests 1\n\u2139 suites 0\n\u2139 pass 0\n\u2139 fail 1\n\u2139 cancelled 0\n\u2139 skipped 0\n\u2139 todo 0\n\u2139 duration_ms 27.782917\n\n\u2716 failing tests:\n\ntest at tools/tscheck/test/verdict.test.mjs:1:1\n\u2716 tools/tscheck/test/verdict.test.mjs (25.215959ms)\n  'test failed'\n"
+ },
+ {
+  "command": "node tools/browser/setup.mjs",
+  "code": 0,
+  "seconds": 1.6,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 tools/browser/test/engine.test.mjs",
+  "code": 0,
+  "seconds": 6.6,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 tools/browser/test/render.test.mjs",
+  "code": 0,
+  "seconds": 0.8,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node tools/atomizer/test/run.mjs",
+  "code": 1,
+  "seconds": 0.3,
+  "failing": [],
+  "tail": "ive written and hashed\nnode:fs:624\n    return binding.readFileUtf8(path, stringToFlags(options.flag));\n                   ^\n\nError: ENOENT: no such file or directory, open '/var/folders/80/pqj79m9x4cd20v55yb9b7_c40000gn/T/atomizer-test-IfnfKE/fanout/receipt/atoms/compose.json'\n    at Object.readFileSync (node:fs:624:20)\n    at file:///private/tmp/claude-501/climb-r11/endoforge/tools/atomizer/test/run.mjs:81:27 {\n  errno: -2,\n  code: 'ENOENT',\n  syscall: 'open',\n  path: '/var/folders/80/pqj79m9x4cd20v55yb9b7_c40000gn/T/atomizer-test-IfnfKE/fanout/receipt/atoms/compose.json'\n}\n\nNode.js v26.13.1\n"
+ },
+ {
+  "command": "node tools/atomizer/test/agent-swarm.test.mjs",
+  "code": 1,
+  "seconds": 1.3,
+  "failing": [],
+  "tail": "ault) model=gpt-6-astra effort=high account=acct-c failover=none\nFAILED a5 (102 ms, attempts 2)\ncodexAccounts={}\n\n\n1 !== 0\n\nFAIL astra rejection falls back within the attempt: codex a0 attempt=1 tier=deep (kind:review) model=gpt-6-astra effort=high account=default failover=none\ncodex a0 attempt=2 tier=deep (kind:review) model=gpt-6-astra effort=high account=default failover=none\nFAILED a0 (87 ms, attempts 2)\ncodexAccounts={}\n\n\n1 !== 0\n\nPASS a spawn-gate 75 is labelled as such, not as exhausted accounts\nPASS guard 75 stops without retry or failover\nPASS guard 77 stops without retry or failover\n"
+ },
+ {
+  "command": "node tools/atomizer/test/cli-usage.test.mjs",
+  "code": 0,
+  "seconds": 0.6,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node tools/atomizer/test/commands.test.mjs",
+  "code": 1,
+  "seconds": 1.2,
+  "failing": [],
+  "tail": "t asks for the capability block asks for the layout of records, lists and text\nPASS compose-kernel refuses a contract atom whose CONTRACT.md has no capability block, before freezing\nPASS the policy names no fixed node home, so the node toolchain defaults to the Node running the atomizer\nPASS ENDOFORGE_TOOLCHAIN_NODE overrides the node home when it holds bin/node\nPASS an explicitly configured node home without bin/node is refused before any sandbox starts\nFAIL the compose helper composes and gates inside the atom isolate with the policy compose toolchain: spawn bwrap ENOENT\n\n-2 !== 0\n\n4 failed\n"
+ },
+ {
+  "command": "node tools/atomizer/test/cutover-policy.test.mjs",
+  "code": 0,
+  "seconds": 0.7,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node tools/atomizer/test/tools-gaps.test.mjs",
+  "code": 1,
+  "seconds": 0.3,
+  "failing": [],
+  "tail": "026-11-18T10-57-53-372Z-vK2gCc/bench-2026-11-18.json\nmode=real reps=1 ok=0\nwallMs: median=20 p90=20\ncriticalPathMs: median=5.3 p90=5.3\nchain.queueMs: median=0.2 p90=0.2\nchain.codexMs: median=0 p90=0\nchain.nonCodexMs: median=5.3 p90=5.3\npoolAcquireMs: median=0 p90=0\nconcurrency.avg: median=0.265 p90=0.265\nerrors={\"atomsFailed\":1,\"retries\":1,\"failovers\":0,\"modelFallbacks\":0}\n\n\n1 !== 0\n\nPASS bench refuses an atoms file that does not exist instead of recording ok=0\nPASS testcheck.mjs prints its usage and exits 2 without the arguments it needs\nPASS testcheck.mjs strip and merge still work\n1 failed\n"
+ },
+ {
+  "command": "node tools/atomizer/test/trace.test.mjs",
+  "code": 0,
+  "seconds": 0.0,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node tools/atomizer/test/verify-policy-pass.test.mjs",
+  "code": 1,
+  "seconds": 0.6,
+  "failing": [
+   "failing tests:",
+   "fanout verifies each run against the policy it ran with",
+   "fanout without --policy verifies against the default policy"
+  ],
+  "tail": "oforge/tools/atomizer/test/verify-policy-pass.test.mjs:59:10)\n      at Test.runInAsyncScope (node:async_hooks:226:14)\n      at Test.run (node:internal/test_runner/test:1402:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)\n      at Test.postRun (node:internal/test_runner/test:1542:19)\n      at Test.run (node:internal/test_runner/test:1467:12)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {\n    generatedMessage: false,\n    code: 'ERR_ASSERTION',\n    actual: 1,\n    expected: 0,\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n"
+ },
+ {
+  "command": "python3 -B -m unittest tools.step_harness.test_retired",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m unittest tools.hardware_record.test_record",
+  "code": 1,
+  "seconds": 0.2,
+  "failing": [
+   "test_capacity_refusal_restores_affinity (tools.hardware_record.test_record.RecordTests.test_capacity_refusal_restores_affinity)"
+  ],
+  "tail": "inity (tools.hardware_record.test_record.RecordTests.test_capacity_refusal_restores_affinity)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/private/tmp/claude-501/climb-r11/endoforge/tools/hardware_record/test_record.py\", line 93, in test_capacity_refusal_restores_affinity\n    original = h.os.sched_getaffinity(0)\n               ^^^^^^^^^^^^^^^^^^^^^^\nAttributeError: module 'os' has no attribute 'sched_getaffinity'\n\n----------------------------------------------------------------------\nRan 8 tests in 0.077s\n\nFAILED (errors=1)\n"
+ },
+ {
+  "command": "node core/runtime/test/agent-pool.test.mjs",
+  "code": 1,
+  "seconds": 0.9,
+  "failing": [],
+  "tail": "the caller as 75 with no failover\nPASS unset CODEX_POOL_BIN runs the codex found on PATH\nPASS an explicit CODEX_POOL_BIN still wins over PATH\nPASS no CODEX_POOL_BIN and no codex on PATH exits 2 and says so\nPASS a PATH codex that is this script is skipped\nPASS a piped prompt reaches codex on stdin\nPASS a multi-day usage cap cools every account until its reset and is not re-probed\nFAIL a file prompt survives a rate-limit failover: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'bin=stub home=acct-b args=exec - stdin=\\n'\n- 'bin=stub home=acct-b args=exec - stdin=the whole brief\\n'\n\n"
+ },
+ {
+  "command": "node tools/lib/test/errors.test.mjs",
+  "code": 0,
+  "seconds": 1.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node tools/lib/test/exitfile.test.mjs",
+  "code": 0,
+  "seconds": 0.3,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node tools/lib/test/headroom.test.mjs",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node tools/lib/test/lock.test.mjs",
+  "code": 0,
+  "seconds": 1.2,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node tools/conductor/test/adopt-example.test.mjs",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node tools/conductor/test/conductor-gaps.test.mjs",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node tools/conductor/test/failopen.test.mjs",
+  "code": 0,
+  "seconds": 8.4,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node tools/conductor/test/principles.test.mjs",
+  "code": 1,
+  "seconds": 29.6,
+  "failing": [],
+  "tail": " re-checked against it: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n+   'needs-coordinator',\n    'frozen',\n-   'frozen'\n  ]\n\nPASS U5: a judged item list is frozen on first use; a check that changes its items is unstable and not acted on\nPASS U5: a frozen item list that cannot be read is not frozen again from the current run\nFAIL U6: a change that regresses a passing item and improves none is reverted; the keep-list is in the feedback: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n+   'needs-coordinator',\n+   2\n-   'frozen',\n-   3\n  ]\n\n3 failure(s)\n"
+ },
+ {
+  "command": "node tools/conductor/test/relaunch-done.test.mjs",
+  "code": 1,
+  "seconds": 1.7,
+  "failing": [
+   "a relaunch patch on a done job reopens it to streaming with a recorded transition, and the conductor runs the atom again",
+   "failing tests:"
+  ],
+  "tail": "ded transition, and the conductor runs the atom again (792.080042ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  \n  'bad' !== 'good'\n  \n      at TestContext.<anonymous> (file:///private/tmp/claude-501/climb-r11/endoforge/tools/conductor/test/relaunch-done.test.mjs:46:10)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:387:3) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: 'bad',\n    expected: 'good',\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n"
+ },
+ {
+  "command": "node tools/conductor/test/stream.test.mjs",
+  "code": 1,
+  "seconds": 29.0,
+  "failing": [],
+  "tail": "tor-stream-HnwV5e/unscored/conductor/logs/B1-i2.log'\n\nFAIL a check that reports 78 stops the whole job loudly: Expected values to be strictly equal:\n+ actual - expected\n\n+ 'streaming'\n- 'done'\n\nFAIL each atom climbs on its own: slice render \u2192 critic \u2192 relaunch with the findings \u2192 frozen; a hopeless one escalates: B3 failed the same way twice (U1): a decision, not a third retry\n+ actual - expected\n\n  {\n    B1: [\n+     'needs-coordinator',\n-     'frozen',\n      2\n    ],\n    B2: [\n+     'needs-coordinator',\n-     'frozen',\n      2\n    ],\n    B3: [\n      'needs-coordinator',\n      2\n\n3 failure(s)\n"
+ },
+ {
+  "command": "node tools/conductor/test/trace-needed.test.mjs",
+  "code": 1,
+  "seconds": 21.4,
+  "failing": [
+   "a freeze whose change adds test files emits TRACE-NEEDED listing the new tests still present",
+   "failing tests:"
+  ],
+  "tail": "20959.463333ms)\n  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n  + actual - expected\n  \n  + 'needs-coordinator'\n  - 'frozen'\n  \n      at TestContext.<anonymous> (file:///private/tmp/claude-501/climb-r11/endoforge/tools/conductor/test/trace-needed.test.mjs:42:10)\n      at async Test.run (node:internal/test_runner/test:1409:7)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {\n    generatedMessage: true,\n    code: 'ERR_ASSERTION',\n    actual: 'needs-coordinator',\n    expected: 'frozen',\n    operator: 'strictEqual',\n    diff: 'simple'\n  }\n"
+ },
+ {
+  "command": "node tools/hillclimb/test/compose-mounts.test.mjs",
+  "code": 0,
+  "seconds": 0.0,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node tools/hillclimb/test/fanout-plan-scoreboard.test.mjs",
+  "code": 0,
+  "seconds": 0.0,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node tools/hillclimb/test/lessons.test.mjs",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node tools/hillclimb/test/runner.test.mjs",
+  "code": 1,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": "but no repo prints its usage and exits 2\nFAIL hc-patch.sh init and diff still produce a repo-relative patch: Expected values to be strictly equal:\n\n1 !== 0\n\nPASS the default runner is a file in this repository, not a home-directory launcher\nPASS the default runner maps the runner contract onto the atomizer scheduler\nPASS a custom campaign runner and the default one both get the campaign policy\nPASS plan-review works from a directory that contains neither the round nor the tool\nPASS review hands a campaign's own runner the stage policy file, with the workdir and this tool in bindRoots\n1 failed\n"
+ },
+ {
+  "command": "node tools/job/test/failopen.test.mjs",
+  "code": 0,
+  "seconds": 0.0,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node tools/job/test/invariants-gates.test.mjs",
+  "code": 1,
+  "seconds": 0.9,
+  "failing": [
+   "I17: calibrateBase expands the conductor's placeholders, with ${repo} the baseline worktree",
+   "failing tests:"
+  ],
+  "tail": "/job/test/invariants-gates.test.mjs:244:10)\n      at Test.runInAsyncScope (node:async_hooks:226:14)\n      at Test.run (node:internal/test_runner/test:1402:25)\n      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)\n      at Test.postRun (node:internal/test_runner/test:1542:19)\n      at Test.run (node:internal/test_runner/test:1467:12)\n      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {\n    generatedMessage: false,\n    code: 'ERR_ASSERTION',\n    actual: [Object],\n    expected: [Object],\n    operator: 'deepStrictEqual',\n    diff: 'simple'\n  }\n"
+ },
+ {
+  "command": "node tools/job/test/kinds-compile-sources.test.mjs",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node tools/job/test/references.test.mjs",
+  "code": 0,
+  "seconds": 0.0,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B tools/job-locks/test_job_locks.py",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/library/test/library-reuse-example.test.mjs",
+  "code": 0,
+  "seconds": 1.3,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/library/test/library.test.mjs",
+  "code": 0,
+  "seconds": 3.4,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/library/test/union-layout.test.mjs",
+  "code": 0,
+  "seconds": 0.2,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B tools/factory_portability/test_checkpoint.py",
+  "code": 1,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": "                      pass_fds, cwd, env,\n                        ^^^^^^^^^^^^^^^^^^^\n    ...<5 lines>...\n                        gid, gids, uid, umask,\n                        ^^^^^^^^^^^^^^^^^^^^^^\n                        start_new_session, process_group)\n                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/opt/homebrew/Cellar/python@3.15/3.15.2/Frameworks/Python.framework/Versions/3.15/lib/python3.15/subprocess.py\", line 2156, in _execute_child\n    raise child_exception_type(errno_num, err_msg, err_filename)\nFileNotFoundError: [Errno 2] No such file or directory: 'age-keygen'\n"
+ },
+ {
+  "command": "python3 -B tools/factory_portability/test_transfer_qualify_resume.py",
+  "code": 0,
+  "seconds": 1.0,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m tools.factory_campaign.test_model_journal",
+  "code": 1,
+  "seconds": 0.0,
+  "failing": [],
+  "tail": "n runpy>\", line 87, in _run_code\n  File \"/private/tmp/claude-501/climb-r11/endoforge/tools/factory_campaign/test_model_journal.py\", line 180, in <module>\n    else:main()\n         ~~~~^^\n  File \"/private/tmp/claude-501/climb-r11/endoforge/tools/factory_campaign/test_model_journal.py\", line 57, in main\n    base=Path(__file__).resolve().parents[2];out=Path(os.environ['ENDOFORGE_TEST_OUTPUT'])/('model-journal-'+uuid.uuid4().hex)\n                                                      ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<frozen os>\", line 729, in __getitem__\nKeyError: 'ENDOFORGE_TEST_OUTPUT'\n"
+ },
+ {
+  "command": "python3 -B -m tools.factory_campaign.test_repair",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m tools.factory_campaign.test_state",
+  "code": 1,
+  "seconds": 0.0,
+  "failing": [],
+  "tail": "ast):\n  File \"<frozen runpy>\", line 201, in _run_module_as_main\n  File \"<frozen runpy>\", line 87, in _run_code\n  File \"/private/tmp/claude-501/climb-r11/endoforge/tools/factory_campaign/test_state.py\", line 47, in <module>\n    if __name__=='__main__':main()\n                            ~~~~^^\n  File \"/private/tmp/claude-501/climb-r11/endoforge/tools/factory_campaign/test_state.py\", line 16, in main\n    root=Path(os.environ['ENDOFORGE_TEST_OUTPUT'])/'state-controls'\n              ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"<frozen os>\", line 729, in __getitem__\nKeyError: 'ENDOFORGE_TEST_OUTPUT'\n"
+ },
+ {
+  "command": "python3 -B -m unittest tools.seeded_faults.test_generator",
+  "code": 0,
+  "seconds": 0.2,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m unittest tools.escape_harness.test_harness",
+  "code": 0,
+  "seconds": 0.2,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 tools/compatibility/contract.test.mjs",
+  "code": 0,
+  "seconds": 3.5,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m tools.kernel.install_tools --check",
+  "code": 1,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": "kernel-test needs the CI-pinned kernel tools: Python wasmtime 49.0.0 (found none for /opt/homebrew/opt/python@3.15/bin/python3.15); wasm-tools 1.262.0 (found none)\nRun `make tools` to install them into .tools/ (one network fetch, hash-checked).\n"
+ },
+ {
+  "command": "python3 -B -m unittest tools.kernel.test_broker",
+  "code": 1,
+  "seconds": 0.1,
+  "failing": [
+   "test_broker (unittest.loader._FailedTest.test_broker)"
+  ],
+  "tail": "tError: Failed to import test module: test_broker\nTraceback (most recent call last):\n  File \"/opt/homebrew/Cellar/python@3.15/3.15.2/Frameworks/Python.framework/Versions/3.15/lib/python3.15/unittest/loader.py\", line 141, in loadTestsFromName\n    module = __import__(module_name)\n  File \"/private/tmp/claude-501/climb-r11/endoforge/tools/kernel/test_broker.py\", line 4, in <module>\n    from wasmtime import Store\nModuleNotFoundError: No module named 'wasmtime'. Did you mean: 'datetime'?\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (errors=1)\n"
+ },
+ {
+  "command": "python3 -B -m unittest tools.kernel.test_conformance",
+  "code": 1,
+  "seconds": 0.1,
+  "failing": [
+   "test_conformance (unittest.loader._FailedTest.test_conformance)"
+  ],
+  "tail": "ttest/loader.py\", line 141, in loadTestsFromName\n    module = __import__(module_name)\n  File \"/private/tmp/claude-501/climb-r11/endoforge/tools/kernel/test_conformance.py\", line 10, in <module>\n    from tools.kernel.test_workcell import EMITTING, SCHEMAS, build\n  File \"/private/tmp/claude-501/climb-r11/endoforge/tools/kernel/test_workcell.py\", line 6, in <module>\n    from wasmtime import Store, WasmtimeError\nModuleNotFoundError: No module named 'wasmtime'. Did you mean: 'datetime'?\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (errors=1)\n"
+ },
+ {
+  "command": "python3 -B -m unittest tools.kernel.test_contract",
+  "code": 1,
+  "seconds": 0.1,
+  "failing": [
+   "setUpClass (tools.kernel.test_contract.KernelContractTests)"
+  ],
+  "tail": "/test_contract.py\", line 18, in setUpClass\n    check_tool()\n    ~~~~~~~~~~^^\n  File \"/private/tmp/claude-501/climb-r11/endoforge/tools/kernel/contract.py\", line 28, in check_tool\n    version = wasm_tools(\"--version\").decode().split()\n              ~~~~~~~~~~^^^^^^^^^^^^^\n  File \"/private/tmp/claude-501/climb-r11/endoforge/tools/kernel/contract.py\", line 23, in wasm_tools\n    raise ValueError(f\"wasm-tools failed: {' '.join(args)}\") from error\nValueError: wasm-tools failed: --version\n\n----------------------------------------------------------------------\nRan 0 tests in 0.002s\n\nFAILED (errors=1)\n"
+ },
+ {
+  "command": "python3 -B -m unittest tools.kernel.test_effects",
+  "code": 1,
+  "seconds": 0.1,
+  "failing": [
+   "test_effects (unittest.loader._FailedTest.test_effects)"
+  ],
+  "tail": " line 141, in loadTestsFromName\n    module = __import__(module_name)\n  File \"/private/tmp/claude-501/climb-r11/endoforge/tools/kernel/test_effects.py\", line 11, in <module>\n    from tools.kernel.test_workcell import EMITTING, REFERENCE, SCHEMAS, build, emitting\n  File \"/private/tmp/claude-501/climb-r11/endoforge/tools/kernel/test_workcell.py\", line 6, in <module>\n    from wasmtime import Store, WasmtimeError\nModuleNotFoundError: No module named 'wasmtime'. Did you mean: 'datetime'?\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (errors=1)\n"
+ },
+ {
+  "command": "python3 -B -m unittest tools.kernel.test_limits",
+  "code": 1,
+  "seconds": 0.1,
+  "failing": [
+   "test_limits (unittest.loader._FailedTest.test_limits)"
+  ],
+  "tail": "5/unittest/loader.py\", line 141, in loadTestsFromName\n    module = __import__(module_name)\n  File \"/private/tmp/claude-501/climb-r11/endoforge/tools/kernel/test_limits.py\", line 7, in <module>\n    from tools.kernel.test_workcell import REFERENCE, SCHEMAS, build\n  File \"/private/tmp/claude-501/climb-r11/endoforge/tools/kernel/test_workcell.py\", line 6, in <module>\n    from wasmtime import Store, WasmtimeError\nModuleNotFoundError: No module named 'wasmtime'. Did you mean: 'datetime'?\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (errors=1)\n"
+ },
+ {
+  "command": "python3 -B -m unittest tools.kernel.test_workcell",
+  "code": 1,
+  "seconds": 0.1,
+  "failing": [
+   "test_workcell (unittest.loader._FailedTest.test_workcell)"
+  ],
+  "tail": "mport test module: test_workcell\nTraceback (most recent call last):\n  File \"/opt/homebrew/Cellar/python@3.15/3.15.2/Frameworks/Python.framework/Versions/3.15/lib/python3.15/unittest/loader.py\", line 141, in loadTestsFromName\n    module = __import__(module_name)\n  File \"/private/tmp/claude-501/climb-r11/endoforge/tools/kernel/test_workcell.py\", line 6, in <module>\n    from wasmtime import Store, WasmtimeError\nModuleNotFoundError: No module named 'wasmtime'. Did you mean: 'datetime'?\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (errors=1)\n"
+ },
+ {
+  "command": "node --test --test-timeout=120000 tools/test_gate_structured.mjs",
+  "code": 0,
+  "seconds": 4.0,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/pipeline-fallback.test.mjs",
+  "code": 0,
+  "seconds": 0.3,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 core/runtime/test/pipeline-retry.test.mjs",
+  "code": 0,
+  "seconds": 3.7,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "PYTHONOPTIMIZE= python3 -B experiments/P-19-need-to-candidate/verify.py",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m unittest tools.factory_runtime.test_runtime_gaps",
+  "code": 1,
+  "seconds": 5.3,
+  "failing": [
+   "test_absent_container_reconciles_without_publication (tools.factory_runtime.test_runtime_gaps.Recovery.test_absent_container_reconciles_without_publication)",
+   "test_capture_attempt_records_digest_without_publication (tools.factory_runtime.test_runtime_gaps.Runner.test_capture_attempt_records_digest_without_publication)",
+   "test_existing_journal_restores_signal_handlers (tools.factory_runtime.test_runtime_gaps.Runner.test_existing_journal_restores_signal_handlers)",
+   "test_failure_outcomes (tools.factory_runtime.test_runtime_gaps.Runner.test_failure_outcomes)",
+   "test_foreign_container_is_left_untouched (tools.factory_runtime.test_runtime_gaps.Recovery.test_foreign_container_is_left_untouched)",
+   "test_foreign_owner_label_is_never_removed (tools.factory_runtime.test_runtime_gaps.Runner.test_foreign_owner_label_is_never_removed)",
+   "test_identity_and_liveness (tools.factory_runtime.test_runtime_gaps.Fencing.test_identity_and_liveness)",
+   "test_input_hash_mismatch_never_creates_a_container (tools.factory_runtime.test_runtime_gaps.Runner.test_input_hash_mismatch_never_creates_a_container)",
+   "test_journal_before_create_is_exclusive_and_validated (tools.factory_runtime.test_runtime_gaps.Recovery.test_journal_before_create_is_exclusive_and_validated)",
+   "test_live_controller_is_refused (tools.factory_runtime.test_runtime_gaps.Recovery.test_live_controller_is_refused)",
+   "test_owned_running_container_is_stopped_logged_and_removed (tools.factory_runtime.test_runtime_gaps.Recovery.test_owned_running_container_is_stopped_logged_and_removed)",
+   "test_passed_attempt_publishes_once_with_valid_receipt (tools.factory_runtime.test_runtime_gaps.Runner.test_passed_attempt_publishes_once_with_valid_receipt)",
+   "test_publication_is_recovered_only_at_expected_digest (tools.factory_runtime.test_runtime_gaps.Recovery.test_publication_is_recovered_only_at_expected_digest)",
+   "test_runner_crash_is_reconciled (tools.factory_runtime.test_runtime_gaps.Recovery.test_runner_crash_is_reconciled)",
+   "test_second_controller_is_refused_and_stale_fence_detected (tools.factory_runtime.test_runtime_gaps.Fencing.test_second_controller_is_refused_and_stale_fence_detected)"
+  ],
+  "tail": "^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\\n  File \"/private/tmp/claude-501/climb-r11/endoforge/tools/factory_runtime/recovery.py\", line 42, in journal_before_create\\n    validate(j,attempt)\\n    ~~~~~~~~^^^^^^^^^^^\\n  File \"/private/tmp/claude-501/climb-r11/endoforge/tools/factory_runtime/recovery.py\", line 18, in validate\\n    raise ValueError(\\'missing controller identity/generation\\')\\nValueError: missing controller identity/generation\\n'\n\n----------------------------------------------------------------------\nRan 58 tests in 5.181s\n\nFAILED (failures=2, errors=16, skipped=5)\n"
+ },
+ {
+  "command": "python3 -B -m unittest tools.test_approved_atoms",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m unittest tools.test_gen_release_docs",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "python3 -B -m unittest tools.test_check_comments",
+  "code": 0,
+  "seconds": 0.5,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 tools/project-scheduler/test/scheduler.test.mjs",
+  "code": 0,
+  "seconds": 0.9,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 experiments/P-64-streaming-check/analyze.test.mjs",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 experiments/P-65-unit-gate/analyze.test.mjs",
+  "code": 0,
+  "seconds": 0.1,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 experiments/P-70-oracle-injected/analyze.test.mjs",
+  "code": 0,
+  "seconds": 0.5,
+  "failing": [],
+  "tail": ""
+ },
+ {
+  "command": "node --test --test-timeout=120000 experiments/P-71-oracle-round2/analyze.test.mjs",
+  "code": 0,
+  "seconds": 0.4,
+  "failing": [],
+  "tail": ""
+ }
+]
