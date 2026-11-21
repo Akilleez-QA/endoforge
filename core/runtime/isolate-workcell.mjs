@@ -56,7 +56,7 @@ const verifyFrozen = reference => callHost({ type: 'host_frozen', reference });
     if (warmError) throw new Error(`warm failed: ${warmError}`);
     checkWasm.begin();
     const { createPort } = await import(hostPort);
-    const port = await createPort(portOptions, { host, hostCall });
+    const port = await createPort(portOptions, { host, hostCall, spawn: (children, budget, merge) => hostCall({ op: 'spawn', children, budget, merge }) });
     const report = port.evaluate ? await port.evaluate(evaluateCandidates, reference) : await evaluateCandidates(reference, candidates, port, frozenThroughLedger ? { verifyFrozen } : {});
     checkWasm();
     const evidence = port.evidence?.();

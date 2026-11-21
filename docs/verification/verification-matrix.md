@@ -44,6 +44,8 @@ Evidence recorded before this re-baseline (2026-10-30 to 2026-11-02) is kept in 
 
 | Requirement | Method | Test file::test name, or item inspected | Acceptance observation | Last result |
 |---|---|---|---|---|
+| REQ-ISO-020 | T | `core/runtime/test/forge-core.test.mjs` | Host budget conservation under child loss, recursive limits, duplicate execution suppression and 100 shuffled reductions | Pending packet F1 checks |
+| REQ-ISO-021 | T | `core/runtime/test/forge-verifier.test.mjs` | Missing, invalid, failing and unknown outcomes refuse merge/cache promotion; deterministic bound evidence replay; explicit phase costs and ratio; rejected cache retries | Local targeted fixtures pass (2026-11-21); full isolate suite incomplete |
 | REQ-CORE-001 | T | `tests/test_endoforge_core_boundary.py::test_core_imports_only_the_allowlisted_stdlib`<br>`tests/test_endoforge_core_boundary.py::test_importing_the_core_loads_nothing_concrete` | Fresh process imports `core`; only allowlisted modules load | STR-main-20261108 ([index](reports/README.md)) |
 | REQ-LIFE-001 | T | `tests/test_endoforge_lifecycle.py::test_every_illegal_pair_is_refused`<br>`tests/test_endoforge_lifecycle.py::test_happy_path_records_every_decision`<br>`tests/test_endoforge_lifecycle.py::test_disposal_is_always_allowed_and_recorded` | Every state pair outside the graph refuses | STR-main-20261108 ([index](reports/README.md)) |
 | REQ-LIFE-002 | T | `tests/test_endoforge_lifecycle.py::test_qualification_needs_a_passing_receipt_under_the_frozen_oracle` | Failing, foreign or other-oracle receipts refuse | STR-main-20261108 ([index](reports/README.md)) |
