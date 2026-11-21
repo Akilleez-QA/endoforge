@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 import { IsolatePool } from '../isolate-pool.mjs';
-import { forgeAddress, reduceForgeResults } from '../forge-core.mjs';
+import { forgeAddress, forgeEvidenceHash, reduceForgeResults } from '../forge-core.mjs';
 import { fixture } from './fixtures/ledger-fixture.mjs';
 
 const hostPort = fileURLToPath(new URL('./fixtures/host-call-port.mjs', import.meta.url));
@@ -30,13 +30,20 @@ test('Forge Core deduplicates simultaneous atoms and retries by goal inputs and 
   assert.equal(second.children[0].cacheHit, true);
   assert.equal(first.hash, second.hash);
   assert.deepEqual(first.value, ['alpha']);
+  assert.equal(first.outcome.verdict, 'pass');
+  assert.equal(first.outcome.verifyGenerateRatio, 0.1);
+  assert.equal(second.outcome.verifyGenerateRatio, 0.1);
+  assert.match(first.children[0].outcome.evidenceHash, /^[a-f0-9]{64}$/);
+  const receipt = first.children[0];
+  assert.equal(receipt.outcome.evidenceHash, forgeEvidenceHash({ address: receipt.address, value: receipt.value,
+    verdict: receipt.outcome.verdict, evidence: receipt.verification }));
   assert.equal(forgeAddress(child), forgeAddress({ ...child, inputs: { forgeCalls: [{ op: 'work' }], value: ['alpha'] } }));
   assert.notEqual(forgeAddress(child), forgeAddress({ ...child, codeVersion: 'fixture-v2' }));
   assert.notEqual(forgeAddress(child), forgeAddress({ ...child, goal: 'other' }));
 });
 
 test('Forge Core reduction is associative commutative and stable over 100 shuffled arrivals', () => {
-  const rows = Array.from({ length: 12 }, (_, i) => ({ address: String(i), value: [i % 5] }));
+  const rows = Array.from({ length: 12 }, (_, i) => ({ address: String(i), value: [i % 5], outcome: { verdict: 'pass', evidenceHash: 'a'.repeat(64), verifyCost: 1, generateCost: 10 } }));
   const expected = reduceForgeResults('set-union', rows);
   let seed = 471;
   for (let n = 0; n < 100; n++) {
@@ -49,7 +56,7 @@ test('Forge Core reduction is associative commutative and stable over 100 shuffl
     assert.deepEqual(reduceForgeResults('set-union', shuffled), expected);
     const left = reduceForgeResults('set-union', shuffled.slice(0, 6));
     const right = reduceForgeResults('set-union', shuffled.slice(6));
-    assert.deepEqual(reduceForgeResults('set-union', [{ address: 'left', value: left.value }, { address: 'right', value: right.value }]).value, expected.value);
+    assert.deepEqual(reduceForgeResults('set-union', [{ address: 'left', value: left.value, outcome: left.outcome }, { address: 'right', value: right.value, outcome: right.outcome }]).value, expected.value);
   }
   assert.throws(() => reduceForgeResults('concatenate', rows), /merge/);
 });

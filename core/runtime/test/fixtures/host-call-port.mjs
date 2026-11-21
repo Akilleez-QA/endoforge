@@ -1,3 +1,4 @@
+import { forgeAddress, forgeEvidenceHash } from '../../forge-core.mjs';
 import { signature } from './identity-port.mjs';
 
 export function createPort(options, { hostCall, host, spawn }) {
@@ -26,6 +27,21 @@ export function createPort(options, { hostCall, host, spawn }) {
     invariant: () => ({ passed: true, reason: 'synthetic' }),
     residual: () => ({ passed: true, reason: 'synthetic' }),
     measure: () => ({ cost: 1 }),
-    evidence: () => ({ seen, ...(forgeCalls ? { value: options.value ?? seen } : {}), pid: process.pid }),
+    evidence: () => {
+      if (!forgeCalls) return { seen, pid: process.pid };
+      const value = options.value ?? seen;
+      const verification = { check: 'synthetic frozen fixture', replay: [true, true] };
+      const verdict = options.outcome?.verdict ?? 'pass';
+      const address = forgeAddress({ goal: options.goal ?? 'envelope', inputs: options.inputs ?? {}, codeVersion: 'fixture-v1' });
+      const outcome = options.outcome === null ? null : {
+        verdict, evidenceHash: forgeEvidenceHash({ address, value, verdict, evidence: verification }),
+        verifyCost: 1, generateCost: 10, ...options.outcome,
+      };
+      if (options.outcome?.omit) {
+        delete outcome[options.outcome.omit];
+        delete outcome.omit;
+      }
+      return { seen, value, verification, outcome, pid: process.pid };
+    },
   };
 }

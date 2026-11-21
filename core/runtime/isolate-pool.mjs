@@ -1,4 +1,4 @@
-import { ForgeBudget, budgetVector, forgeAddress, reduceForgeResults } from './forge-core.mjs';
+import { ForgeBudget, budgetVector, forgeAddress, forgeEvidenceHash, verifiedForgeOutcome, reduceForgeResults } from './forge-core.mjs';
 import { availableParallelism } from 'node:os';
 import { performance } from 'node:perf_hooks';
 import { resolve } from 'node:path';
@@ -542,9 +542,23 @@ export class IsolatePool {
           reservation.reserve(slice);
           cached = this.#run({ ...job.data, ledger: 'caller', portOptions: { ...child.inputs, goal: child.goal, inputs: child.inputs }, budget: slice }, account)
             .then(result => {
-              if (result.status !== 'completed') this.#atoms.delete(key);
-              else reduceForgeResults(merge, [{ value: result.evidence?.value }]);
-              return { address, status: result.status, value: result.status === 'completed' ? result.evidence?.value : [], forge: account.snapshot() };
+              const row = { address, status: result.status, value: result.evidence?.value,
+                outcome: result.evidence?.outcome,
+                ...(result.evidence?.verification !== undefined ? { verification: result.evidence.verification } : {}), forge: account.snapshot() };
+              try {
+                if (result.status !== 'completed') throw new Error('child outcome unknown');
+                row.outcome = verifiedForgeOutcome(row.outcome);
+                const expected = forgeEvidenceHash({ address, value: row.value, verdict: row.outcome.verdict, evidence: row.verification });
+                if (row.outcome.evidenceHash !== expected) throw new Error('outcome evidence hash mismatch');
+                reduceForgeResults(merge, [row]);
+              } catch (error) {
+                this.#atoms.delete(key);
+                row.status = result.status === 'completed' ? 'rejected' : result.status;
+                row.rejection = error.message;
+                delete row.value;
+                if (row.outcome === undefined) delete row.outcome;
+              }
+              return row;
             }).catch(error => {
               this.#atoms.delete(key);
               account.charge({ ...account.remaining });
@@ -558,6 +572,9 @@ export class IsolatePool {
       const failed = settled.find(result => result.status === 'rejected');
       if (failed) throw failed.reason;
       const results = settled.map(result => result.value);
+      if (results.some(result => result.status !== 'completed')) {
+        return { outcome: { verdict: 'unknown', verifyGenerateRatio: null }, children: results };
+      }
       return { ...reduceForgeResults(merge, results), children: results };
     } finally {
       if (reservation) job.account.settle(reservation);

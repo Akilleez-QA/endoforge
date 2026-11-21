@@ -10,7 +10,7 @@ Craig launches kernels (envelopes); the device schedules the individual jobs. Ho
 | SM/block | Isolate group on one host |
 | Warp | Same specification over variants |
 | Reduction | Order-independent merge |
-| ECC | Later F2 verdicts |
+| ECC | F2 verifier-first outcomes |
 
 ## Rules
 
@@ -42,8 +42,8 @@ The result contains child addresses, status, cache-hit flags and host budget sna
 JSON array members, removes duplicates and sorts by canonical JSON. Its identity is an empty array, and union is
 associative, commutative and idempotent. The reduction hash covers its merge identifier and canonical value, excluding
 arrival order, cache flags and timing. Arbitrary user reducers are refused because declarations cannot establish
-associativity. A lost child has an explicit unknown status and contributes an empty array; a reduction is not an
-F2 verdict that every child succeeded.
+associativity. A lost or rejected child prevents a successful reduction; its receipt retains its status and available evidence,
+without a merged value.
 
 ## Scheduling and enforcement
 
@@ -59,7 +59,42 @@ missing costs refuse. This is a reservation tariff: the handler must enforce tha
 precharged tokens and microdollars. No child-reported usage can refund a charge. Killing a cell conservatively spends
 its remaining slice because its actual usage is unknown. Only host-known unused reservations return to the parent.
 Settlement waits for accepted descendants even if their parent dies. Close refuses further spawns and drains accepted
-work. F2 verdicts and S2 kill/outbox semantics come later.
+work. S2 kill/outbox semantics remain later work.
 
 The acceptance tests in [forge-core.test.mjs](../../core/runtime/test/forge-core.test.mjs) use the existing ledger
 fixture and host-call port, with test doubles only. REQ-ISO-020 traces this packet.
+
+## ECC: verifier-first outcomes (F2)
+
+A trusted, pinned host port returns `evidence.outcome` with `verdict` (`pass`, `fail`, or `unknown`),
+`evidenceHash`, `verifyCost`, and `generateCost`, alongside `evidence.value` and `evidence.verification`.
+The costs use the same host-defined unit for both phases (for example milliseconds); they are separate from
+F1's multidimensional reservation accounting. Verification cost must be finite and nonnegative, generation
+cost finite and positive, and verification strictly cheaper than generation. Missing or invalid costs refuse
+admission. A zero generation cost cannot establish a meaningful ratio and refuses admission.
+
+`forgeEvidenceHash({ address, value, verdict, evidence })` hashes canonical JSON, where `address` binds the
+original goal, inputs and pinned code version, and `evidence` is the port's replayable verification data.
+Object key order does not change this hash; changed inputs, values, verdicts or evidence do. Verification
+must use deterministic checks and replay evidence, not another generative assertion. The host port is the
+trusted verifier boundary: the pool validates its contract and hash binding, but cannot establish the quality
+of an arbitrary port's oracle or independently meter a port's supplied phase costs.
+
+Both `reduceForgeResults` and the pool's cache-promotion boundary require a passing outcome. The pool also
+recomputes the evidence hash before cache promotion. Failed, unknown, malformed and mismatched results are
+evicted for retry and recorded as rejected children with their available outcome and rejection reason.
+Child receipts retain the replay data as `verification` alongside the bound outcome.
+They never contribute values to a successful merge. In-flight sharing still deduplicates execution; it grants
+no promotion authority. A launch with any rejected or lost child returns an `unknown` outcome, a null
+`verifyGenerateRatio`, and child receipts, without a merged value or reduction hash.
+
+Successful merge receipts expose an explicit `outcome`: passing verdict, deterministic evidence hash over the
+canonical value and sorted child evidence hashes, summed `verifyCost` and `generateCost`, and
+`verifyGenerateRatio` (verification divided by generation). These metrics describe logical merge inputs,
+including cache hits and duplicate inputs; they do not represent incremental physical spend. The F1 `hash`
+continues to identify the canonical merged value independently of evidence and costs. An empty reduction
+retains the set-union identity but has an unknown outcome and null ratio, so it cannot be promoted as verified.
+
+[forge-verifier.test.mjs](../../core/runtime/test/forge-verifier.test.mjs) covers F2 admission, evidence replay,
+ratio validation and rejected-cache retries; REQ-ISO-021 traces these checks. The F1 tests continue to cover
+budget conservation, deduplication and 100 shuffled merges.

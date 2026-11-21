@@ -18,15 +18,41 @@ export function forgeAddress({ goal, inputs, codeVersion }) {
   if (typeof goal !== 'string' || !goal || typeof codeVersion !== 'string' || !codeVersion) throw new TypeError('goal and codeVersion required');
   return hash({ goal, inputs, codeVersion });
 }
+export function forgeEvidenceHash({ address, value, verdict, evidence }) {
+  return hash({ address, value, verdict, evidence });
+}
+export function verifiedForgeOutcome(outcome) {
+  if (!outcome || outcome.verdict !== 'pass') throw new TypeError('passing outcome verdict required');
+  if (typeof outcome.evidenceHash !== 'string' || !/^[a-f0-9]{64}$/.test(outcome.evidenceHash)) throw new TypeError('outcome evidence hash required');
+  if (typeof outcome.verifyCost !== 'number' || !Number.isFinite(outcome.verifyCost) || outcome.verifyCost < 0 ||
+      typeof outcome.generateCost !== 'number' || !Number.isFinite(outcome.generateCost) || outcome.generateCost <= 0) throw new TypeError('invalid outcome cost');
+  if (outcome.verifyCost >= outcome.generateCost) throw new TypeError('verification must be cheaper than generation');
+  return { verdict: outcome.verdict, evidenceHash: outcome.evidenceHash, verifyCost: outcome.verifyCost,
+    generateCost: outcome.generateCost, verifyGenerateRatio: outcome.verifyCost / outcome.generateCost };
+}
 export function reduceForgeResults(merge, rows) {
   if (merge !== 'set-union') throw new TypeError('unsupported merge');
   const values = new Map();
+  let verifyCost = 0;
+  let generateCost = 0;
+  const evidence = [];
+  const costs = [];
   for (const row of rows) {
+    const outcome = verifiedForgeOutcome(row.outcome);
+    costs.push(outcome);
+    evidence.push(outcome.evidenceHash);
     if (!Array.isArray(row.value)) throw new TypeError('set-union requires arrays');
     for (const value of row.value) values.set(canonical(value), value);
   }
   const value = [...values].sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0).map(([, value]) => value);
-  return { value, hash: hash({ merge, value }) };
+  for (const cost of costs.sort((a, b) => a.verifyCost - b.verifyCost || a.generateCost - b.generateCost)) {
+    verifyCost += cost.verifyCost;
+    generateCost += cost.generateCost;
+  }
+  const evidenceHash = hash({ merge, value, evidence: evidence.sort() });
+  const outcome = rows.length ? verifiedForgeOutcome({ verdict: 'pass', evidenceHash, verifyCost, generateCost }) :
+    { verdict: 'unknown', evidenceHash, verifyCost: 0, generateCost: 0, verifyGenerateRatio: null };
+  return { value, hash: hash({ merge, value }), outcome };
 }
 export class ForgeBudget {
   constructor(limit, depth = 0) {

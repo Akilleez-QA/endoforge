@@ -482,6 +482,22 @@ capacity refuses rather than deadlock.
 - Verification: T — `make isolate-test`
 - Status: Implemented (packet F1)
 
+### REQ-ISO-021 — Forge Core verifier-first outcomes
+
+Forge Core shall require an explicit passing verdict, deterministic evidence hash and finite nonnegative
+verification cost before successful merge or cache promotion, and bind cached evidence to the atom address,
+value, verdict and replay evidence. Generation cost must be finite and positive in the same units, with
+verification strictly cheaper. Merge receipts must expose summed phase costs and their verify/generate ratio.
+Missing, malformed, failing, unknown or mismatched outcomes must refuse promotion and successful merge;
+rejected children retain available evidence and are evicted for retry. Empty or unsuccessful reductions must
+not claim a passing outcome or a numeric ratio. Kernels remain pure and F1 budget and dedupe rules remain enforced.
+
+- Rationale: ECC checks must precede reuse and recombination; verifier cost is an admission metric.
+- Derivation: [Forge Core](../architecture/forge-core.md#ecc-verifier-first-outcomes-f2)
+- Allocated to: SDD §4 C-06 Isolate pool
+- Verification: T — `make isolate-test`
+- Status: Implemented (packet F2)
+
 ### REQ-STUB-001 — Stub pool replay
 
 `core/runtime/stub-pool.mjs` shall copy the recorded outputs of the atom named by the launch spec's `/out` bind from `ENDOFORGE_STUB_REPLAY/atoms/<id>/out` into that bind after `ENDOFORGE_STUB_LATENCY_MS`, log a stub account line with `pid=` in the form the atomizer scheduler attributes, run `CODEX_POOL_BIN` with `SIGTERM` and `SIGINT` forwarded, return its exit status (failure when it dies on a signal), and fail with a message when the replay has no outputs for the atom, the spec has no `/out` bind or cannot be read, or the next pool cannot start.
