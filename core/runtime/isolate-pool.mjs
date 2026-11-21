@@ -1,3 +1,5 @@
+import { ForgeKillScope } from './forge-kill.mjs';
+import { ForgeBudget, budgetVector, forgeAddress, forgeEvidenceHash, verifiedForgeOutcome, reduceForgeResults } from './forge-core.mjs';
 import { availableParallelism } from 'node:os';
 import { performance } from 'node:perf_hooks';
 import { resolve } from 'node:path';
@@ -41,6 +43,11 @@ const privateBytes = pid => {
 };
 
 export class IsolatePool {
+  #forge;
+  #hostCost;
+  #atoms = new Map();
+  #atomResults = new Map();
+  #sequence = 0;
   #size;
   #hostPort;
   #limits;
@@ -81,8 +88,15 @@ export class IsolatePool {
   #rates;
   #syncHostCalls;
 
-  constructor({ hostPort, size = availableParallelism(), resourceLimits = {}, wasmMemoryMaxMb = 64,
+  constructor({ forge, hostCost, hostPort, size = availableParallelism(), resourceLimits = {}, wasmMemoryMaxMb = 64,
     isolation = 'thread', cgroupRoot, cgroupLimits = {}, trustedWasmModules = [], sharedWasmModules = [], toolingWasmModules = [], prewarm = false, warm, warmTimeoutMs = 60000, jobTimeoutMs, jobDeadlineMs, hostCall, hostCalls, syncHostCalls, frozenThroughLedger = false, cellEnv, cellFlags = [], ledgerBridge, retireAfterJobs = 256, dumpList, rates = null } = {}) {
+    if (forge !== undefined) {
+      if (!forge || typeof forge.codeVersion !== 'string' || !forge.codeVersion || !positive(forge.maxDepth) || !positive(forge.maxFanOut) ||
+          Object.keys(forge).some(key => !['codeVersion', 'maxDepth', 'maxFanOut'].includes(key))) throw new TypeError('invalid Forge Core configuration');
+      this.#forge = Object.freeze({ ...forge });
+    }
+    if (hostCost !== undefined && typeof hostCost !== 'function') throw new TypeError('hostCost must be a function');
+    this.#hostCost = hostCost;
     if (!positive(retireAfterJobs)) throw new TypeError('retireAfterJobs must be a positive integer');
     this.#retireAfterJobs = retireAfterJobs;
     this.#rates = rates;
@@ -257,21 +271,48 @@ export class IsolatePool {
     return this.#ledger.request(action, job, result);
   }
 
-  run(input) {
+  run(input, { signal, scope } = {}) {
+    if (scope !== undefined && !(scope instanceof ForgeKillScope)) return Promise.reject(new TypeError('invalid kill scope'));
+    if (signal !== undefined && !(signal instanceof AbortSignal)) return Promise.reject(new TypeError('invalid cancellation signal'));
+    return this.#run(input, undefined, undefined, { signal, scope });
+  }
+
+  #run(input, account, parent, { signal, scope } = {}) {
     if (this.#closing) return Promise.reject(new Error('isolate pool is closing'));
     let data;
     try {
       data = structuredClone(input);
+      if (!account && data.budget !== undefined) {
+        if (!this.#forge) throw new Error('Forge Core is not configured');
+        account = new ForgeBudget(data.budget);
+      }
       if (!Array.isArray(data.candidates) || !data.candidates.length ||
           !data.candidates.every(c => typeof c === 'string' && c.length) ||
           new Set(data.candidates).size !== data.candidates.length) throw new Error('unique candidates required');
     } catch (error) { return Promise.reject(error); }
     const promise = new Promise((resolve, reject) => {
-      const job = { data, resolve, reject, ready: false, started: performance.now(), rate: this.#rates?.arrive('cell') };
+      const job = { data, account, resolve, reject, parent, children: new Set(), childResults: [], controller: new AbortController(),
+        root: parent?.root ?? ++this.#sequence, scope: scope ?? parent?.scope,
+        ready: false, started: performance.now(), rate: this.#rates?.arrive('cell') };
+      parent?.children.add(job);
+      const signals = [signal, scope?.signal].filter(Boolean);
+      const cancelSignal = signals.length ? AbortSignal.any(signals) : null;
+      const cancel = () => {
+        const request = scope?.signal.aborted ? scope.signal.reason : { reason: String(cancelSignal.reason ?? 'cancelled'), requestedAt: (job.scope?.now ?? (() => performance.now()))() };
+        this.#cancel(job, request);
+      };
+      job.cleanup = () => cancelSignal?.removeEventListener('abort', cancel);
+      job.completion = new Promise(done => { job.markComplete = done; });
       this.#queue.push(job);
-      Promise.all([data.ledger === 'caller' ? null : this.#persist('prepare', data), this.#share()]).then(() => { job.prepared = performance.now(); job.ready = true; this.#pump(); }, error => {
+      if (cancelSignal?.aborted) { cancel(); return; }
+      cancelSignal?.addEventListener('abort', cancel, { once: true });
+      Promise.all([data.ledger === 'caller' ? null : this.#persist('prepare', data), this.#share()]).then(() => { if (job.settled) return; job.prepared = performance.now(); job.ready = true; this.#pump(); }, error => {
+        if (job.settled) return;
+        this.#claim(job);
         this.#queue.splice(this.#queue.indexOf(job), 1);
-        this.#rates?.done(job.rate);
+        job.cleanup();
+        parent?.children.delete(job);
+        job.markComplete();
         reject(error);
         this.#pump();
       });
@@ -369,6 +410,7 @@ export class IsolatePool {
       if (subprocess && code === 18) cell.error = { code: 'ERR_WORKCELL_WASM_MEMORY_LIMIT' };
       const limited = ['ERR_WORKER_OUT_OF_MEMORY', 'ERR_WORKCELL_WASM_MEMORY_LIMIT'].includes(cell.error?.code);
       const job = cell.job;
+      job?.controller.abort('worker_exit');
       const claimed = this.#claim(job);
       if (job) cell.job = null;
       if (claimed) this.#finish(job, { status: subprocess && limited ? 'rejected' : 'outcome_unknown',
@@ -418,7 +460,10 @@ export class IsolatePool {
       try {
         cell ||= this.#spawn();
         cell.job = job;
+        job.cell = cell;
+        if (job.account && Object.values(job.account.remaining).some(value => value === 0)) throw new Error('envelope budget exhausted');
         job.dispatched = performance.now();
+        this.#forgeResume(cell, job);
         this.#rates?.start(job.rate);
         if (cell.ready) this.#arm(cell, job);
         if (this.#jobDeadlineMs) job.total = setTimeout(() => this.#stop(cell), this.#jobDeadlineMs);
@@ -436,19 +481,162 @@ export class IsolatePool {
 
   async #answer(cell, { type, id, request, reference }) {
     const job = cell.job;
-    const reply = message => { try { cell.worker.postMessage({ type: 'host_reply', id, ...message }); } catch { } };
+    const reply = message => { if (cell.job !== job || job.settled || job.deadlineFired) return; try { cell.worker.postMessage({ type: 'host_reply', id, ...message }); } catch { } };
     try {
       if (type === 'host_frozen') return reply({ result: await this.#ledger.request('frozen', { reference }) });
-      if (!this.#hostCalls) throw new Error('no host calls are configured');
       if (++job.hostCalls > maxHostCalls) throw new Error('host-call-limit');
       if (JSON.stringify(request).length > maxHostCallBytes) throw new Error('host-call-size');
-      reply({ result: await this.#hostCalls(request, { candidates: job.data.candidates, workcell: cell.id }) });
+      reply({ result: await this.#invoke(cell, job, request, () => {
+        if (!this.#hostCalls) throw new Error('no host calls are configured');
+        return this.#hostCalls(request, { candidates: job.data.candidates, workcell: cell.id, signal: job.controller.signal });
+      }) });
     } catch (error) { reply({ error: error.message || String(error) }); }
+  }
+
+  #forgePause(job) {
+    clearTimeout(job.forgeTimer);
+    if (!job.account || job.forgeStarted === undefined) return;
+    const elapsed = Math.min(job.account.remaining.verifyMs, Math.ceil(performance.now() - job.forgeStarted));
+    job.forgeStarted = undefined;
+    job.account.charge({ tokens: 0, verifyMs: elapsed, dollars: 0 });
+  }
+
+  #forgeResume(cell, job) {
+    if (!job.account || job.settled || cell.job !== job || job.forgeWaits) return;
+    job.forgeStarted = performance.now();
+    job.forgeTimer = setTimeout(() => this.#stop(cell), job.account.remaining.verifyMs);
+  }
+
+  async #invoke(cell, job, request, handler) {
+    if (job.settled || job.cancel || cell.stopping) throw new Error('job cancelled');
+    if (request?.op === 'spawn') {
+      if (job.forgeWaits) throw new Error('concurrent spawn refused');
+      const pending = this.#spawnChildren(cell, job, request);
+      job.forgePending = pending.catch(() => {});
+      return pending;
+    }
+    if (job.account) {
+      if (job.forgeWaits) throw new Error('parent budget reserved during spawn');
+      this.#forgePause(job);
+      if (!this.#hostCost) {
+        this.#forgeResume(cell, job);
+        throw new Error('budget requires hostCost for external calls');
+      }
+      try { job.account.charge(budgetVector(this.#hostCost(request, { depth: job.account.depth }))); }
+      finally { this.#forgeResume(cell, job); }
+    }
+    return handler();
+  }
+
+  async #spawnChildren(cell, job, { children, budget, merge }) {
+    if (this.#closing || job.settled) throw new Error('isolate pool is closing');
+    if (!job.account || !this.#forge) throw new Error('spawn requires an envelope budget');
+    if (job.forgeWaits) throw new Error('concurrent spawn refused');
+    this.#forgePause(job);
+    job.forgeWaits = true;
+    let reservation;
+    try {
+      if (job.account.depth >= this.#forge.maxDepth) throw new Error('spawn depth limit');
+      if (!Array.isArray(children) || !children.length || children.length > this.#forge.maxFanOut) throw new Error('spawn fan-out limit');
+      if (Object.values(job.account.remaining).some(value => value === 0)) throw new Error('parent budget exhausted');
+      reduceForgeResults(merge, []);
+      const cap = budgetVector(budget);
+      const slices = children.map(child => {
+        if (Object.keys(child).some(key => !['goal', 'inputs', 'codeVersion', 'budget'].includes(key))) throw new Error('unknown child field');
+        if (child.codeVersion !== this.#forge.codeVersion) throw new Error('untrusted code version');
+        const address = forgeAddress(child);
+        if (job.account.ancestors.has(address)) throw new Error('recursive atom cycle');
+        return { child, address, slice: budgetVector(child.budget) };
+      });
+      const sum = { tokens: 0, verifyMs: 0, dollars: 0 };
+      for (const { slice } of slices) for (const key of Object.keys(sum)) {
+        sum[key] += slice[key];
+        if (!Number.isSafeInteger(sum[key]) || sum[key] > cap[key]) throw new Error('spawn budget exceeded');
+      }
+      if (this.#queue.length || [...this.#cells].filter(other => other.job && !other.job.settled).length >= this.#size) throw new Error('spawn capacity unavailable');
+      job.account.reserve(cap);
+      reservation = new ForgeBudget(cap, job.account.depth);
+      const pending = slices.map(({ child, address, slice }) => {
+        if (job.settled || this.#closing) throw new Error('spawn parent closed');
+        const baseKey = JSON.stringify([job.data.reference, address]);
+        const key = JSON.stringify([job.data.reference, job.root, address]);
+        let cached = this.#atomResults.get(baseKey) ?? this.#atoms.get(key);
+        const cacheHit = Boolean(cached);
+        if (!cached) {
+          const account = new ForgeBudget(slice, job.account.depth + 1);
+          account.ancestors = new Set([...job.account.ancestors, address]);
+          reservation.reserve(slice);
+          cached = this.#run({ ...job.data, ledger: 'caller', portOptions: { ...child.inputs, goal: child.goal, inputs: child.inputs }, budget: slice }, account, job)
+            .then(result => {
+              const row = { address, status: result.status, value: result.evidence?.value,
+                outcome: result.evidence?.outcome,
+                ...(result.evidence?.verification !== undefined ? { verification: result.evidence.verification } : {}), forge: account.snapshot() };
+              try {
+                if (result.status !== 'completed') throw new Error('child outcome unknown');
+                row.outcome = verifiedForgeOutcome(row.outcome);
+                const expected = forgeEvidenceHash({ address, value: row.value, verdict: row.outcome.verdict, evidence: row.verification });
+                if (row.outcome.evidenceHash !== expected) throw new Error('outcome evidence hash mismatch');
+                reduceForgeResults(merge, [row]);
+                if (!job.cancel) this.#atomResults.set(baseKey, Promise.resolve(structuredClone(row)));
+              } catch (error) {
+                this.#atoms.delete(key);
+                row.status = result.status === 'completed' ? 'rejected' : result.status;
+                row.rejection = error.message;
+                delete row.value;
+                if (row.outcome === undefined) delete row.outcome;
+              }
+              return row;
+            }).catch(error => {
+              this.#atoms.delete(key);
+              account.charge({ ...account.remaining });
+              throw error;
+            }).finally(() => { this.#atoms.delete(key); reservation.settle(account); });
+          this.#atoms.set(key, cached);
+        }
+        return cached.then(result => ({ ...structuredClone(result), cacheHit }));
+      });
+      const settled = await Promise.allSettled(pending);
+      const failed = settled.find(result => result.status === 'rejected');
+      if (failed) throw failed.reason;
+      const results = settled.map(result => result.value);
+      if (results.some(result => result.status !== 'completed')) {
+        return { outcome: { verdict: 'unknown', verifyGenerateRatio: null }, children: results };
+      }
+      return { ...reduceForgeResults(merge, results), children: results };
+    } finally {
+      if (reservation) job.account.settle(reservation);
+      job.forgeWaits = false;
+      this.#forgeResume(cell, job);
+    }
+  }
+
+  #cancel(job, request = { reason: 'parent_stopped', requestedAt: (job.scope?.now ?? (() => performance.now()))() }) {
+    if (job.settled || job.cancel) return;
+    const now = job.scope?.now ?? (() => performance.now());
+    job.cancel = { ...request, level: job.parent ? 'isolate' : job.scope?.level ?? 'isolate', observedAt: now() };
+    job.controller.abort(request.reason);
+    for (const child of job.children) this.#cancel(child, request);
+    const cell = job.cell;
+    if (cell?.job === job) {
+      job.deadlineFired = true;
+      cell.stopping = true;
+      if (this.#isolation === 'process') cell.worker.kill('SIGKILL');
+      else cell.worker.terminate();
+    } else {
+      const index = this.#queue.indexOf(job);
+      if (index >= 0) this.#queue.splice(index, 1);
+      if (this.#claim(job)) this.#finish(job, { status: 'cancelled', reason: request.reason, report: null, workcell: null });
+      this.#pump();
+    }
   }
 
   #stop(cell) {
     if (cell.job?.settled) return;
-    if (cell.job) cell.job.deadlineFired = true;
+    if (cell.job) {
+      cell.job.deadlineFired = true;
+      cell.job.controller.abort('deadline');
+      for (const child of cell.job.children) this.#cancel(child);
+    }
     cell.error = { code: 'ERR_WORKCELL_DEADLINE' };
     cell.stopping = true;
     cell.worker.terminate();
@@ -484,8 +672,12 @@ export class IsolatePool {
       }, Math.ceil(this.#jobTimeoutMs / 3));
     }
     Promise.resolve().then(() => {
-      if (!this.#hostCall) throw new Error('no host call handler');
-      return this.#hostCall(call, job.data);
+      if (++job.hostCalls > maxHostCalls) throw new Error('host-call-limit');
+      if (JSON.stringify(call).length > maxHostCallBytes) throw new Error('host-call-size');
+      return this.#invoke(cell, job, call, () => {
+        if (!this.#hostCall) throw new Error('no host call handler');
+        return this.#hostCall(call, job.data, { signal: job.controller.signal });
+      });
     }).then(value => ({ id, value }), error => ({ id, error: error.message || String(error) })).then(reply => {
       if (cell.job !== job || cell.stopping) return;
       job.calls -= 1;
@@ -574,7 +766,7 @@ export class IsolatePool {
         job.budget -= performance.now() - job.armed;
       }
       try {
-        reply = { result: await this.#syncHostCalls(request, { candidates: job.data.candidates, workcell: cell.id, data: job.data }) };
+        reply = { result: await this.#invoke(cell, job, request, () => this.#syncHostCalls(request, { candidates: job.data.candidates, workcell: cell.id, data: job.data, signal: job.controller.signal })) };
       } finally {
         job.syncing = false;
         if (this.#jobTimeoutMs && !job.calls && cell.job === job && !job.settled && !cell.stopping) this.#arm(cell, job);
@@ -588,12 +780,29 @@ export class IsolatePool {
 
   #claim(job) {
     if (!job || job.settled) return false;
+    this.#forgePause(job);
     job.settled = true;
+    for (const child of job.children) this.#cancel(child);
+    job.cleanup?.();
     this.#disarm(job);
     return true;
   }
 
   async #finish(job, result) {
+    await job.forgePending;
+    await Promise.all([...job.children].map(child => child.completion));
+    if (job.cancel) {
+      const stoppedAt = (job.scope?.now ?? (() => performance.now()))();
+      result = { status: 'cancelled', reason: job.cancel.reason, report: null, workcell: result.workcell,
+        kill: { ...job.cancel, stoppedAt, propagationMs: job.cancel.observedAt - job.cancel.requestedAt,
+          stopMs: stoppedAt - job.cancel.requestedAt, latencyLimitMs: job.scope?.latencyLimitMs ?? 1000,
+          withinBound: stoppedAt - job.cancel.requestedAt <= (job.scope?.latencyLimitMs ?? 1000) } };
+    }
+    if (result.status !== 'completed' && job.childResults.length) result = { ...result, children: job.childResults };
+    if (job.account) {
+      if (result.status !== 'completed') job.account.charge({ ...job.account.remaining });
+      result = { ...result, forge: job.account.snapshot() };
+    }
     result = { ...result, trustedWasmModules: this.#trustedWasmModules, ...(this.#toolingWasmModules.length ? { toolingWasmModules: this.#toolingWasmModules } : {}) };
     try {
       const evaluated = performance.now();
@@ -602,6 +811,15 @@ export class IsolatePool {
       job.resolve({ ...result, receipts, ...(job.data.timing === true ? { timings } : {}) });
     }
     catch (error) { error.result = result; job.reject(error); }
+    finally {
+      if (job.parent) {
+        job.parent.childResults.push({ status: result.status, workcell: result.workcell, reason: result.reason,
+          ...(result.kill ? { kill: result.kill } : {}), ...(result.forge ? { forge: result.forge } : {}),
+          ...(result.children ? { children: result.children } : {}) });
+        job.parent.children.delete(job);
+      }
+      job.markComplete();
+    }
   }
 
   close() {

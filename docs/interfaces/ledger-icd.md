@@ -84,8 +84,8 @@ explains it. This section is its contract with the ledger and its callers.
 | `warm`, `warmTimeoutMs` | Options for each cell's `warm`, and its budget (60,000 ms) |
 | `prewarm` | `true` calls `ready()` from the constructor |
 | `jobTimeoutMs`, `jobDeadlineMs` | Compute budget from the cell's readiness, paused during host calls; and total time from dispatch |
-| `hostCalls` | `(request, { candidates, workcell })` for the port's `hostCall`; at most 4,096 per job and 1 MiB each |
-| `hostCall` | `(call, jobData)` for the port's `host(call)`, used by the loop's `model` and `admit` calls |
+| `hostCalls` | `(request, { candidates, workcell, signal })` for the port's `hostCall`; at most 4,096 per job and 1 MiB each |
+| `hostCall` | `(call, jobData, { signal })` for the port's `host(call)`, used by the loop's `model` and `admit` calls |
 | `frozenThroughLedger` | `true` sends the evaluator's frozen checks to the bridge (`frozen` action) |
 | `cellEnv`, `cellFlags` | Environment and extra Node flags for process cells |
 | `ledgerBridge` | `{ extension?, restart?, journal? }` for the pool's bridge |
@@ -99,6 +99,7 @@ explains it. This section is its contract with the ledger and its callers.
 |---|---|
 | `ready()` | Spawns `size` cells, waits for each to install its guard (and warm) and report ready, and starts the bridge. Memoized. Rejects if a cell exits first or the pool is closing |
 | `run({ reference, candidates, receipts, portOptions, ledger?, timing? })` | `reference` is `{ ledger, identity, root }`; `candidates` a nonempty list of unique identities; `receipts` one full receipt template per candidate, in order, each binding `reference.identity` and its digest. The bridge validates templates (`prepare`) before dispatch. `ledger: 'caller'` skips `prepare` and `append`. `timing: true` adds `timings: { gate, ledger }` outside the persisted observation |
+| `run(envelope, { signal?, scope? })` | Host cancellation options; [Forge Core S2](../architecture/forge-core.md#kill-hierarchy-and-pure-kernels-s2) defines scope inheritance, latency receipts and child shutdown |
 | `stats` | `{ size, workers, busy, queued }` |
 | `halted` | True after `size + 2` cells in a row exit before ready, or after the bridge fails |
 | `ledger` | The pool's `LedgerBridge` |
@@ -107,15 +108,15 @@ explains it. This section is its contract with the ledger and its callers.
 ### Result
 
 `{ status, reason, report, evidence?, workcell, isolation, cgroup, cgroupLimits?, resourceLimits, wasmMemoryMaxMb,
-trustedWasmModules, toolingWasmModules?, sharedWasmModules?, receipts, timings? }`.
+trustedWasmModules, toolingWasmModules?, sharedWasmModules?, receipts, timings?, kill?, children? }`.
 
-- `status` is `completed`, `outcome_unknown`, `rejected` (process-mode heap or WASM limit) or `waiting` (a loop port
+- `status` is `completed`, `cancelled` (host kill), `outcome_unknown`, `rejected` (process-mode heap or WASM limit) or `waiting` (a loop port
   parked a model wait). A completed report may still reject candidates.
 - `report` is the evaluator's report, unmodified, or `null`.
 - `evidence` is the port's `evidence()` value: free-form observation data, no schema change, no authority.
 - `receipts` is `[{ record, hash }]` as appended.
 
-Receipt states follow the result: an unknown outcome gives `outcome_unknown` / `inconclusive` for every candidate; a
+Receipt states follow the result: an unknown or cancelled outcome gives `outcome_unknown` / `inconclusive` for every candidate; a
 process-limit rejection gives `finished` / `failed`; otherwise a rejected attempt gives `failed`, only passed attempts
 give `passed`, and no attempts give `unobserved`. Passing does not imply frontier membership or activation. A ledger
 append failure rejects the job with `error.result` holding the evaluation. Lost jobs are never retried.

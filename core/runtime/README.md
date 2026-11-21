@@ -59,6 +59,10 @@ try {
 heap exhaustion, WASM declaration and growth breaches with a healthy neighbour mid-job, worker exit and replacement,
 frozen drift and shutdown. The tests use local synthetic ports and need no model service.
 
+Recursive child jobs use the [Forge Core F1 interface](../../docs/architecture/forge-core.md), including inherited
+budgets, host limits and content-addressed set-union reductions. Its S2 kill scopes propagate cancellation through
+the child tree and return shutdown receipts for the host outbox; kernels retain their pure import boundary.
+
 ### Source basis
 
 One JavaScript job runs at a time per isolate; parallelism comes from several cells. V8's
