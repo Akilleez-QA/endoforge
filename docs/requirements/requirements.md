@@ -466,6 +466,22 @@ With `syncHostCalls` set, the pool shall give each job's port a channel (`portOp
 - Verification: T — `make isolate-test`
 - Status: Baselined (round 6)
 
+### REQ-ISO-020 — Forge Core child jobs
+
+The pool shall expose child-job spawn through bounded host calls, reserve integer tokens, verification milliseconds
+and microdollars from the parent, reject malformed or excessive slices, enforce host depth and fan-out limits,
+precharge external operations using host costs, terminate verification overruns, conservatively settle lost cells,
+return known unused reservations, and remain usable after a child loss. The pool also deduplicates canonical goal, inputs
+and pinned code-version addresses and provide the declared associative, commutative set-union reduction with an
+order-independent content hash. Closing or exhausted parents refuse further launches; insufficient cell
+capacity refuses rather than deadlock.
+
+- Rationale: Recursive work must conserve the envelope and recombine reproducibly.
+- Derivation: [Forge Core](../architecture/forge-core.md)
+- Allocated to: SDD §4 C-06 Isolate pool
+- Verification: T — `make isolate-test`
+- Status: Implemented (packet F1)
+
 ### REQ-STUB-001 — Stub pool replay
 
 `core/runtime/stub-pool.mjs` shall copy the recorded outputs of the atom named by the launch spec's `/out` bind from `ENDOFORGE_STUB_REPLAY/atoms/<id>/out` into that bind after `ENDOFORGE_STUB_LATENCY_MS`, log a stub account line with `pid=` in the form the atomizer scheduler attributes, run `CODEX_POOL_BIN` with `SIGTERM` and `SIGINT` forwarded, return its exit status (failure when it dies on a signal), and fail with a message when the replay has no outputs for the atom, the spec has no `/out` bind or cannot be read, or the next pool cannot start.

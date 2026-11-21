@@ -41,6 +41,8 @@ Read the [project README](../README.md), then the tutorial.
 
 ## Understand
 
+- [Forge Core](architecture/forge-core.md): recursive child jobs, inherited budgets and content-addressed reductions.
+
 - [System overview](architecture/architecture.md): the two products EndoForge serves, the five-stage production cycle,
   the three loop paths and where each part lives in the code.
 - [The candidate loop](architecture/candidate-loop.md): one attempt from need to decision, and what each gate checks.
