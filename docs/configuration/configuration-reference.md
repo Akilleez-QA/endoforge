@@ -278,6 +278,22 @@ Fixed limits in `core/runtime/x1/agent.mjs`: 64 KiB per file, four times that pe
 
 The [ledger ICD](../interfaces/ledger-icd.md) defines the pool's job fields and failure states.
 
+### `pool.run(envelope, options)` cancellation
+
+| Option | Default | Effect |
+|---|---|---|
+| `signal` | unset | Host AbortSignal; abort stops this job and its descendants, including queued work. |
+| `scope` | unset | Host `ForgeKillScope`; block and warp scopes can group several runs. |
+
+`new ForgeKillScope(options)` is exported from `core/runtime/forge-kill.mjs`.
+
+| Option | Default | Effect |
+|---|---|---|
+| `level` | `isolate` | `isolate`, `warp` or `block` label in kill receipts. |
+| `parent` | unset | Inherit cancellation from another scope. |
+| `now` | parent's clock, else `performance.now` | Monotonic millisecond clock used to measure propagation and stop latency. |
+| `latencyLimitMs` | `1000` | Positive finite latency budget; `kill.withinBound` reports compliance after shutdown. |
+
 ### Claude transports
 
 `SpawnClaudeTransport` (one `claude -p` per turn) and `WarmClaudeTransport` (one long-lived stream-json session per

@@ -59,7 +59,7 @@ missing costs refuse. This is a reservation tariff: the handler must enforce tha
 precharged tokens and microdollars. No child-reported usage can refund a charge. Killing a cell conservatively spends
 its remaining slice because its actual usage is unknown. Only host-known unused reservations return to the parent.
 Settlement waits for accepted descendants even if their parent dies. Close refuses further spawns and drains accepted
-work. S2 kill/outbox semantics remain later work.
+work. S2 adds the kill hierarchy below; outbox commits remain the host’s responsibility.
 
 The acceptance tests in [forge-core.test.mjs](../../core/runtime/test/forge-core.test.mjs) use the existing ledger
 fixture and host-call port, with test doubles only. REQ-ISO-020 traces this packet.
@@ -98,3 +98,43 @@ retains the set-union identity but has an unknown outcome and null ratio, so it 
 [forge-verifier.test.mjs](../../core/runtime/test/forge-verifier.test.mjs) covers F2 admission, evidence replay,
 ratio validation and rejected-cache retries; REQ-ISO-021 traces these checks. The F1 tests continue to cover
 budget conservation, deduplication and 100 shuffled merges.
+
+## Kill hierarchy and pure kernels (S2)
+
+`ForgeKillScope` in `core/runtime/forge-kill.mjs` is a host-owned cancellation scope. Construct it with
+`{ level: 'block' }`, give warp scopes that block as `parent`, and give isolate scopes a warp as `parent`.
+Pass the scope to `pool.run(envelope, { scope })`. `scope.kill(reason)` aborts that scope and every descendant;
+`pool.run(envelope, { signal })` also accepts an AbortSignal. An already killed scope refuses dispatch.
+Use `kill('budget-unknown')` when the host cannot establish remaining authority. Cancellation never grants reuse,
+verification or outbox authority.
+
+Every spawned job belongs to its launching job. Parent cancellation, deadline, worker loss (including SIGKILL)
+and early parent completion terminate outstanding descendants, including queued work. Cancellation sends immediate
+SIGKILL to process cells or terminates thread cells; it does not wait for cooperative kernel polling. The parent
+result waits for descendant termination and budget settlement. Independent roots share completed verified cache
+entries; in-flight cache entries belong to one root so a killed root cannot strand another root's work.
+
+A requested kill returns `status: 'cancelled'`, a null report and no candidate evidence. Unexpected worker loss
+retains `outcome_unknown` and the observed exit signal. Noncompleted parents carry child shutdown receipts as
+values in `children`. Unknown and cancelled child outcomes cannot merge or enter the verified cache, and their
+unsettled budget is conservatively charged. The host may record these values through its outbox.
+
+Kill receipts contain `level`, `reason`, `requestedAt`, `observedAt`, `stoppedAt`, `propagationMs` and `stopMs`.
+The host can supply a monotonic `now` function on a scope; descendants inherit it. Signal propagation and termination
+requests run synchronously, while `stoppedAt` is measured after worker exit and descendant settlement. The default
+latency budget is 1000 ms, configurable through `latencyLimitMs` on the scope. `withinBound` reports whether the
+observed stop met that budget; exceeding it still returns cancellation and never successful work. This is an
+observable latency budget, not a hard real-time operating-system scheduling guarantee.
+
+Kernels retain the existing G2 restriction: only the trapping `env.abort` import is admitted. The kernel loader
+provides no filesystem, network, process or host-outbox bindings; forbidden imports trap even before admission.
+Effects are proposed data returned to the host, which alone owns the outbox and commit decision. SIGKILL discards
+unreturned values. Trusted Node host-port modules and host callbacks are privileged adapter code, not untrusted
+kernels or an OS security sandbox. Host callbacks receive a cancellation signal (`hostCalls` and `syncHostCalls`
+in their context; `hostCall` in its third argument). Hosts must gate world effects through their outbox; an already
+started host effect cannot be undone by killing an isolate. Replies arriving after cancellation are discarded.
+
+[forge-kill.test.mjs](../../core/runtime/test/forge-kill.test.mjs) measures deterministic-clock propagation and
+termination at isolate, warp and block levels in thread and process pools, hierarchical queued cancellation,
+and real SIGKILL of parent and leaf processes while a pure WebAssembly kernel runs. Forbidden world imports are
+exercised and an uncommitted effect proposal is observed as data, with zero host world-effect calls or file writes.

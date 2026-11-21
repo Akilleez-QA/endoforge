@@ -1,3 +1,4 @@
+import { ForgeKillScope } from './forge-kill.mjs';
 import { ForgeBudget, budgetVector, forgeAddress, forgeEvidenceHash, verifiedForgeOutcome, reduceForgeResults } from './forge-core.mjs';
 import { availableParallelism } from 'node:os';
 import { performance } from 'node:perf_hooks';
@@ -45,6 +46,8 @@ export class IsolatePool {
   #forge;
   #hostCost;
   #atoms = new Map();
+  #atomResults = new Map();
+  #sequence = 0;
   #size;
   #hostPort;
   #limits;
@@ -268,11 +271,13 @@ export class IsolatePool {
     return this.#ledger.request(action, job, result);
   }
 
-  run(input) {
-    return this.#run(input);
+  run(input, { signal, scope } = {}) {
+    if (scope !== undefined && !(scope instanceof ForgeKillScope)) return Promise.reject(new TypeError('invalid kill scope'));
+    if (signal !== undefined && !(signal instanceof AbortSignal)) return Promise.reject(new TypeError('invalid cancellation signal'));
+    return this.#run(input, undefined, undefined, { signal, scope });
   }
 
-  #run(input, account) {
+  #run(input, account, parent, { signal, scope } = {}) {
     if (this.#closing) return Promise.reject(new Error('isolate pool is closing'));
     let data;
     try {
@@ -286,11 +291,28 @@ export class IsolatePool {
           new Set(data.candidates).size !== data.candidates.length) throw new Error('unique candidates required');
     } catch (error) { return Promise.reject(error); }
     const promise = new Promise((resolve, reject) => {
-      const job = { data, account, resolve, reject, ready: false, started: performance.now(), rate: this.#rates?.arrive('cell') };
+      const job = { data, account, resolve, reject, parent, children: new Set(), childResults: [], controller: new AbortController(),
+        root: parent?.root ?? ++this.#sequence, scope: scope ?? parent?.scope,
+        ready: false, started: performance.now(), rate: this.#rates?.arrive('cell') };
+      parent?.children.add(job);
+      const signals = [signal, scope?.signal].filter(Boolean);
+      const cancelSignal = signals.length ? AbortSignal.any(signals) : null;
+      const cancel = () => {
+        const request = scope?.signal.aborted ? scope.signal.reason : { reason: String(cancelSignal.reason ?? 'cancelled'), requestedAt: (job.scope?.now ?? (() => performance.now()))() };
+        this.#cancel(job, request);
+      };
+      job.cleanup = () => cancelSignal?.removeEventListener('abort', cancel);
+      job.completion = new Promise(done => { job.markComplete = done; });
       this.#queue.push(job);
-      Promise.all([data.ledger === 'caller' ? null : this.#persist('prepare', data), this.#share()]).then(() => { job.prepared = performance.now(); job.ready = true; this.#pump(); }, error => {
+      if (cancelSignal?.aborted) { cancel(); return; }
+      cancelSignal?.addEventListener('abort', cancel, { once: true });
+      Promise.all([data.ledger === 'caller' ? null : this.#persist('prepare', data), this.#share()]).then(() => { if (job.settled) return; job.prepared = performance.now(); job.ready = true; this.#pump(); }, error => {
+        if (job.settled) return;
+        this.#claim(job);
         this.#queue.splice(this.#queue.indexOf(job), 1);
-        this.#rates?.done(job.rate);
+        job.cleanup();
+        parent?.children.delete(job);
+        job.markComplete();
         reject(error);
         this.#pump();
       });
@@ -388,6 +410,7 @@ export class IsolatePool {
       if (subprocess && code === 18) cell.error = { code: 'ERR_WORKCELL_WASM_MEMORY_LIMIT' };
       const limited = ['ERR_WORKER_OUT_OF_MEMORY', 'ERR_WORKCELL_WASM_MEMORY_LIMIT'].includes(cell.error?.code);
       const job = cell.job;
+      job?.controller.abort('worker_exit');
       const claimed = this.#claim(job);
       if (job) cell.job = null;
       if (claimed) this.#finish(job, { status: subprocess && limited ? 'rejected' : 'outcome_unknown',
@@ -437,6 +460,7 @@ export class IsolatePool {
       try {
         cell ||= this.#spawn();
         cell.job = job;
+        job.cell = cell;
         if (job.account && Object.values(job.account.remaining).some(value => value === 0)) throw new Error('envelope budget exhausted');
         job.dispatched = performance.now();
         this.#forgeResume(cell, job);
@@ -457,14 +481,14 @@ export class IsolatePool {
 
   async #answer(cell, { type, id, request, reference }) {
     const job = cell.job;
-    const reply = message => { try { cell.worker.postMessage({ type: 'host_reply', id, ...message }); } catch { } };
+    const reply = message => { if (cell.job !== job || job.settled || job.deadlineFired) return; try { cell.worker.postMessage({ type: 'host_reply', id, ...message }); } catch { } };
     try {
       if (type === 'host_frozen') return reply({ result: await this.#ledger.request('frozen', { reference }) });
       if (++job.hostCalls > maxHostCalls) throw new Error('host-call-limit');
       if (JSON.stringify(request).length > maxHostCallBytes) throw new Error('host-call-size');
       reply({ result: await this.#invoke(cell, job, request, () => {
         if (!this.#hostCalls) throw new Error('no host calls are configured');
-        return this.#hostCalls(request, { candidates: job.data.candidates, workcell: cell.id });
+        return this.#hostCalls(request, { candidates: job.data.candidates, workcell: cell.id, signal: job.controller.signal });
       }) });
     } catch (error) { reply({ error: error.message || String(error) }); }
   }
@@ -484,6 +508,7 @@ export class IsolatePool {
   }
 
   async #invoke(cell, job, request, handler) {
+    if (job.settled || job.cancel || cell.stopping) throw new Error('job cancelled');
     if (request?.op === 'spawn') {
       if (job.forgeWaits) throw new Error('concurrent spawn refused');
       const pending = this.#spawnChildren(cell, job, request);
@@ -533,14 +558,15 @@ export class IsolatePool {
       reservation = new ForgeBudget(cap, job.account.depth);
       const pending = slices.map(({ child, address, slice }) => {
         if (job.settled || this.#closing) throw new Error('spawn parent closed');
-        const key = JSON.stringify([job.data.reference, address]);
-        let cached = this.#atoms.get(key);
+        const baseKey = JSON.stringify([job.data.reference, address]);
+        const key = JSON.stringify([job.data.reference, job.root, address]);
+        let cached = this.#atomResults.get(baseKey) ?? this.#atoms.get(key);
         const cacheHit = Boolean(cached);
         if (!cached) {
           const account = new ForgeBudget(slice, job.account.depth + 1);
           account.ancestors = new Set([...job.account.ancestors, address]);
           reservation.reserve(slice);
-          cached = this.#run({ ...job.data, ledger: 'caller', portOptions: { ...child.inputs, goal: child.goal, inputs: child.inputs }, budget: slice }, account)
+          cached = this.#run({ ...job.data, ledger: 'caller', portOptions: { ...child.inputs, goal: child.goal, inputs: child.inputs }, budget: slice }, account, job)
             .then(result => {
               const row = { address, status: result.status, value: result.evidence?.value,
                 outcome: result.evidence?.outcome,
@@ -551,6 +577,7 @@ export class IsolatePool {
                 const expected = forgeEvidenceHash({ address, value: row.value, verdict: row.outcome.verdict, evidence: row.verification });
                 if (row.outcome.evidenceHash !== expected) throw new Error('outcome evidence hash mismatch');
                 reduceForgeResults(merge, [row]);
+                if (!job.cancel) this.#atomResults.set(baseKey, Promise.resolve(structuredClone(row)));
               } catch (error) {
                 this.#atoms.delete(key);
                 row.status = result.status === 'completed' ? 'rejected' : result.status;
@@ -563,7 +590,7 @@ export class IsolatePool {
               this.#atoms.delete(key);
               account.charge({ ...account.remaining });
               throw error;
-            }).finally(() => reservation.settle(account));
+            }).finally(() => { this.#atoms.delete(key); reservation.settle(account); });
           this.#atoms.set(key, cached);
         }
         return cached.then(result => ({ ...structuredClone(result), cacheHit }));
@@ -583,9 +610,33 @@ export class IsolatePool {
     }
   }
 
+  #cancel(job, request = { reason: 'parent_stopped', requestedAt: (job.scope?.now ?? (() => performance.now()))() }) {
+    if (job.settled || job.cancel) return;
+    const now = job.scope?.now ?? (() => performance.now());
+    job.cancel = { ...request, level: job.parent ? 'isolate' : job.scope?.level ?? 'isolate', observedAt: now() };
+    job.controller.abort(request.reason);
+    for (const child of job.children) this.#cancel(child, request);
+    const cell = job.cell;
+    if (cell?.job === job) {
+      job.deadlineFired = true;
+      cell.stopping = true;
+      if (this.#isolation === 'process') cell.worker.kill('SIGKILL');
+      else cell.worker.terminate();
+    } else {
+      const index = this.#queue.indexOf(job);
+      if (index >= 0) this.#queue.splice(index, 1);
+      if (this.#claim(job)) this.#finish(job, { status: 'cancelled', reason: request.reason, report: null, workcell: null });
+      this.#pump();
+    }
+  }
+
   #stop(cell) {
     if (cell.job?.settled) return;
-    if (cell.job) cell.job.deadlineFired = true;
+    if (cell.job) {
+      cell.job.deadlineFired = true;
+      cell.job.controller.abort('deadline');
+      for (const child of cell.job.children) this.#cancel(child);
+    }
     cell.error = { code: 'ERR_WORKCELL_DEADLINE' };
     cell.stopping = true;
     cell.worker.terminate();
@@ -625,7 +676,7 @@ export class IsolatePool {
       if (JSON.stringify(call).length > maxHostCallBytes) throw new Error('host-call-size');
       return this.#invoke(cell, job, call, () => {
         if (!this.#hostCall) throw new Error('no host call handler');
-        return this.#hostCall(call, job.data);
+        return this.#hostCall(call, job.data, { signal: job.controller.signal });
       });
     }).then(value => ({ id, value }), error => ({ id, error: error.message || String(error) })).then(reply => {
       if (cell.job !== job || cell.stopping) return;
@@ -715,7 +766,7 @@ export class IsolatePool {
         job.budget -= performance.now() - job.armed;
       }
       try {
-        reply = { result: await this.#invoke(cell, job, request, () => this.#syncHostCalls(request, { candidates: job.data.candidates, workcell: cell.id, data: job.data })) };
+        reply = { result: await this.#invoke(cell, job, request, () => this.#syncHostCalls(request, { candidates: job.data.candidates, workcell: cell.id, data: job.data, signal: job.controller.signal })) };
       } finally {
         job.syncing = false;
         if (this.#jobTimeoutMs && !job.calls && cell.job === job && !job.settled && !cell.stopping) this.#arm(cell, job);
@@ -731,12 +782,23 @@ export class IsolatePool {
     if (!job || job.settled) return false;
     this.#forgePause(job);
     job.settled = true;
+    for (const child of job.children) this.#cancel(child);
+    job.cleanup?.();
     this.#disarm(job);
     return true;
   }
 
   async #finish(job, result) {
     await job.forgePending;
+    await Promise.all([...job.children].map(child => child.completion));
+    if (job.cancel) {
+      const stoppedAt = (job.scope?.now ?? (() => performance.now()))();
+      result = { status: 'cancelled', reason: job.cancel.reason, report: null, workcell: result.workcell,
+        kill: { ...job.cancel, stoppedAt, propagationMs: job.cancel.observedAt - job.cancel.requestedAt,
+          stopMs: stoppedAt - job.cancel.requestedAt, latencyLimitMs: job.scope?.latencyLimitMs ?? 1000,
+          withinBound: stoppedAt - job.cancel.requestedAt <= (job.scope?.latencyLimitMs ?? 1000) } };
+    }
+    if (result.status !== 'completed' && job.childResults.length) result = { ...result, children: job.childResults };
     if (job.account) {
       if (result.status !== 'completed') job.account.charge({ ...job.account.remaining });
       result = { ...result, forge: job.account.snapshot() };
@@ -749,6 +811,15 @@ export class IsolatePool {
       job.resolve({ ...result, receipts, ...(job.data.timing === true ? { timings } : {}) });
     }
     catch (error) { error.result = result; job.reject(error); }
+    finally {
+      if (job.parent) {
+        job.parent.childResults.push({ status: result.status, workcell: result.workcell, reason: result.reason,
+          ...(result.kill ? { kill: result.kill } : {}), ...(result.forge ? { forge: result.forge } : {}),
+          ...(result.children ? { children: result.children } : {}) });
+        job.parent.children.delete(job);
+      }
+      job.markComplete();
+    }
   }
 
   close() {

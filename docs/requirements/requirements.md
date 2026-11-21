@@ -498,6 +498,21 @@ not claim a passing outcome or a numeric ratio. Kernels remain pure and F1 budge
 - Verification: T — `make isolate-test`
 - Status: Implemented (packet F2)
 
+### REQ-ISO-022 — Forge Core kill hierarchy and pure kernels
+
+Forge Core shall propagate host isolate, warp and block cancellation to queued and running descendants,
+stop descendant workers on parent loss or deadline, and await their shutdown and conserved budget settlement.
+Kill receipts measure propagation and stop latency with an injectable monotonic clock and report whether
+an explicit latency budget was met. Cancelled and unknown work refuse successful reductions and cache
+promotion. Pure kernels receive no world-effect bindings; effects and cancellation receipts return
+as values for the host outbox, including when a process receives SIGKILL.
+
+- Rationale: Lost authority must stop recursive work and cannot authorize a world effect.
+- Derivation: [Forge Core](../architecture/forge-core.md#kill-hierarchy-and-pure-kernels-s2)
+- Allocated to: SDD §4 C-06 Isolate pool
+- Verification: T — `make isolate-test`
+- Status: Implemented (packet S2)
+
 ### REQ-STUB-001 — Stub pool replay
 
 `core/runtime/stub-pool.mjs` shall copy the recorded outputs of the atom named by the launch spec's `/out` bind from `ENDOFORGE_STUB_REPLAY/atoms/<id>/out` into that bind after `ENDOFORGE_STUB_LATENCY_MS`, log a stub account line with `pid=` in the form the atomizer scheduler attributes, run `CODEX_POOL_BIN` with `SIGTERM` and `SIGINT` forwarded, return its exit status (failure when it dies on a signal), and fail with a message when the replay has no outputs for the atom, the spec has no `/out` bind or cannot be read, or the next pool cannot start.
